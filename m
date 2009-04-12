@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbZDLOXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZDLOZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbZDLOXt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 10:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZDLOXj
+	id S1757002AbZDLOZf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 10:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZDLOZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 10:23:39 -0400
-Received: from rtr.ca ([76.10.145.34]:37903 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752372AbZDLOXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 10:23:38 -0400
-Message-ID: <49E1F967.9090106@rtr.ca>
-Date: Sun, 12 Apr 2009 10:23:35 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sun, 12 Apr 2009 10:25:24 -0400
+Received: from eric.schwarzvogel.de ([194.97.4.250]:55060 "EHLO
+	eric.schwarzvogel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753969AbZDLOZX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 10:25:23 -0400
+X-Greylist: delayed 2177 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Apr 2009 10:25:23 EDT
+Date: Sun, 12 Apr 2009 15:49:02 +0200
+From: Tobias Klausmann <klausman@schwarzvogel.de>
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+Subject: Re: alpha: half done futex implementation
+Message-ID: <20090412134902.GA3760@eric.schwarzvogel.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+References: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Grant Grundler <grundler@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Implementing NVMHCI...
-References: <49E0D47B.9070205@garzik.org>	<20090411203246.513a0892@lxorguk.ukuu.org.uk>	<alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>	<da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com> <20090412002527.631a5a89@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090412002527.631a5a89@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-..
-> Alternatively you go for read-modify-write (nasty performance hit
-> especially for RAID or a log structured fs).
-..
+Hi! 
 
-Initially, at least, I'd guess that this NVM-HCI thing is all about
-built-in flash memory on motherboards, to hold the "instant-boot"
-software that hardware companies (eg. ASUS) are rapidly growing fond of.
+30-rc1 doesn't compile on alpha:
 
-At present, that means a mostly read-only Linux installation,
-though MS for sure are hoping for Moore's Law to kick in and
-provide sufficient space for a copy of Vista there or something.
+net/socket.c: In function 'sock_alloc':
+net/socket.c:496: error: implicit declaration of function 'percpu_add'
+net/socket.c:496: error: 'sockets_in_use' undeclared (first use in this function)
+net/socket.c:496: error: (Each undeclared identifier is reported only once
+net/socket.c:496: error: for each function it appears in.)
+net/socket.c: In function 'sock_release':
+net/socket.c:538: error: implicit declaration of function 'percpu_sub'
+net/socket.c:538: error: 'sockets_in_use' undeclared (first use in this function)
 
-The point being, it's probable *initial* intended use is for a
-run-time read-only filesystem, so having to do dirty R-M-W sequences
-for writes might not be a significant issue.
+I vaguely remember seeing discussion about this on lkml, but I
+can't find it right now.
 
-At present.  And even if it were, it might not be much worse than
-having the hardware itself do it internally, which is what would 
-have to happen if it always only ever showed 4KB to us.
+gcc is 4.3.3. Distro is Gentoo, machine is a UP1500 (Nautilus).
 
-Longer term, as flash densities increase, we're going to end up
-with motherboards that have huge SSDs built-in, through an interface
-like this one, or over a virtual SATA link or something.
+Regards,
+Tobias
 
-I wonder how long until "desktop/notebook" computers no longer
-have replaceable "hard disks" at all?
-
-Cheers
+-- 
+Save a tree - disband an ISO working group today.
