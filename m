@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbZDLLU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbZDLLWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760295AbZDLLU7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 07:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZDLLUu
+	id S1760452AbZDLLWU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 07:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbZDLLWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 07:20:50 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:16486 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbZDLLUt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 07:20:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :user-agent;
-        b=XJDiFbouzk8h03lh/GaJddc1MjLDfc1yPnfmGW856zjCesTxW6auVJgC+YFcNkFnv3
-         BUqTj/hWYuttyhY1XikhRMwZxFRJIxBVMGsm+aJ8uhDooIIa20wiTuhTr40RJGP4JEE3
-         bTjOBdwc8RTROgKc/iqxdFVfoLXiolyyHqEek=
-Date: Sun, 12 Apr 2009 19:19:25 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: linux-pci@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH]fix a warning on drivers/pci/hotplug/ibmphp_core.c
-Message-ID: <20090412111925.GB3574@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+	Sun, 12 Apr 2009 07:22:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57210 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754519AbZDLLWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 07:22:09 -0400
+Date: Sun, 12 Apr 2009 11:21:32 GMT
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1239434726.4418.24.camel@localhost.localdomain>
+References: <1239434726.4418.24.camel@localhost.localdomain>
+Subject: [tip:x86/cleanups] x86: apic/x2apic_cluster.c x86_cpu_to_logical_apicid should be static
+Message-ID: <tip-2de1f33e99cec5fd79542a1d0e26efb9c36a98bb@git.kernel.org>
+Git-Commit-ID: 2de1f33e99cec5fd79542a1d0e26efb9c36a98bb
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 12 Apr 2009 11:21:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  2de1f33e99cec5fd79542a1d0e26efb9c36a98bb
+Gitweb:     http://git.kernel.org/tip/2de1f33e99cec5fd79542a1d0e26efb9c36a98bb
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Sat, 11 Apr 2009 12:55:26 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 12 Apr 2009 12:39:24 +0200
 
-fix this warning:
-drivers/pci/hotplug/ibmphp_core.c:1414: warning: ‘ibmphp_exit’ defined but not used
+x86: apic/x2apic_cluster.c x86_cpu_to_logical_apicid should be static
 
-It missed the "module_exit".
+Impact: reduce kernel size a bit, address sparse warning
+
+Addresses the problem pointed out by this sparse warning:
+  arch/x86/kernel/apic/x2apic_cluster.c:13:1: warning: symbol 'per_cpu__x86_cpu_to_logical_apicid' was not declared. Should it be static?
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+LKML-Reference: <1239434726.4418.24.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
->From bb3c7845b38dff4628fe482207790b82a3df0ab4 Mon Sep 17 00:00:00 2001
-From: Zhenwen Xu <Helight.Xu@gmail.com>
-Date: Sun, 12 Apr 2009 19:10:58 +0800
-Subject: [PATCH] fix the warning ‘ibmphp_exit’ defined but not used
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
 ---
- drivers/pci/hotplug/ibmphp_core.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/x86/kernel/apic/x2apic_cluster.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pci/hotplug/ibmphp_core.c b/drivers/pci/hotplug/ibmphp_core.c
-index dd18f85..29ccb8a 100644
---- a/drivers/pci/hotplug/ibmphp_core.c
-+++ b/drivers/pci/hotplug/ibmphp_core.c
-@@ -1419,3 +1419,4 @@ static void __exit ibmphp_exit(void)
- }
+diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
+index 4a903e2..8e4cbb2 100644
+--- a/arch/x86/kernel/apic/x2apic_cluster.c
++++ b/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -10,7 +10,7 @@
+ #include <asm/apic.h>
+ #include <asm/ipi.h>
  
- module_init(ibmphp_init);
-+module_exit(ibmphp_exit);
--- 
-1.5.6.5
-
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
-
+-DEFINE_PER_CPU(u32, x86_cpu_to_logical_apicid);
++static DEFINE_PER_CPU(u32, x86_cpu_to_logical_apicid);
+ 
+ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
