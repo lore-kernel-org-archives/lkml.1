@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbZDLSvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZDLS5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbZDLSvU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 14:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZDLSvL
+	id S1753468AbZDLS5V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 14:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZDLS5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 14:51:11 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:40177 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751839AbZDLSvL (ORCPT
+	Sun, 12 Apr 2009 14:57:08 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:35936 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbZDLS5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 14:51:11 -0400
-Message-ID: <49E23811.2090409@solemnwarning.net>
-Date: Sun, 12 Apr 2009 19:50:57 +0100
-From: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sun, 12 Apr 2009 14:57:06 -0400
+Date: Sun, 12 Apr 2009 19:56:59 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [RFC][PATCH 8/9] vfs: Implement generic revoked file operations
+Message-ID: <20090412185659.GE4394@shareable.org>
+References: <m1skkf761y.fsf@fess.ebiederm.org> <m1prfj5qxp.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 /proc/diskstats
-References: <49E13D18.2090805@solemnwarning.net>
-In-Reply-To: <49E13D18.2090805@solemnwarning.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.0 c=1 a=4J9GnK0NU8PFg4qgppoA:9 a=kKvcYj5bcSaVLlTebiAA:7 a=M2UmFvomYaTM5H23t7fau_b5Y1oA:4 a=eZLSmJVMEtUA:10
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1prfj5qxp.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reposting since I don't think anyone will see it ~150 messages down, 
-sorry if this is the wrong way to draw attention to a bug.
+> revoked_file_ops return 0 from reads (aka EOF). Tell poll the file is
+> always ready for I/O and return -EIO from all other operations.
 
-Daniel Collins wrote:
-> Hi
->
-> Since 2.6.28, fd0 isn't visible in /proc/diskstats from boot, only 
-> after access/mount. It is visible in /sys/block/ from boot, so there 
-> are no issues detecting it. This may also affect other devices such as 
-> hda but I haven't tested this yet, my test system and QEMU both only 
-> have ram0-ram15 from boot. I have tested 2.6.30-rc1 and found the same 
-> behavior. Is this a bug or a deliberate change?
->
-> Thanks
+I think read should return -EIO too.  If a program is reading from a
+/proc file (say), and the thing it's reading suddenly disappears, EOF
+gives the false impression that it's read to the end of formatted data
+from that file and it can process the data as if it's complete, which
+is wrong.
+
+-- Jamie
