@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZDLRap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZDLRbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZDLRap (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 13:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZDLRae
+	id S1754243AbZDLRbZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 13:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZDLRbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 13:30:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53040 "EHLO mx3.mail.elte.hu"
+	Sun, 12 Apr 2009 13:31:08 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:57398 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbZDLRae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 13:30:34 -0400
-Date: Sun, 12 Apr 2009 19:30:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, josh@freedesktop.org
-Subject: Re: [PATCH -tip] x86: acpi/sleep.c saved_magic fix overflow
-Message-ID: <20090412173009.GA25788@elte.hu>
-References: <1239385015.3169.15.camel@ht.satnam> <1239392981.5943.1.camel@localhost.localdomain> <20090410201504.GA23364@elf.ucw.cz> <200904121925.59814.rjw@sisk.pl>
+	id S1754167AbZDLRbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 13:31:06 -0400
+Date: Sun, 12 Apr 2009 10:31:08 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: iptables very slow after commit
+	784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090412173108.GO6822@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <20090411070854.GC11799@elte.hu> <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904121925.59814.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <18913.53699.544083.320542@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Friday 10 April 2009, Pavel Machek wrote:
-> > On Sat 2009-04-11 01:19:41, Jaswinder Singh Rajput wrote:
-> > > On Fri, 2009-04-10 at 21:29 +0200, Sam Ravnborg wrote:
-> > > > On Sat, Apr 11, 2009 at 12:46:56AM +0530, Jaswinder Singh Rajput wrote:
-> > > > > Sorry, I was confused by this sparse warning on 64 bit box:
-> > > > > 
-> > > > > CHECK   arch/x86/kernel/acpi/sleep.c
-> > > > >  arch/x86/kernel/acpi/sleep.c:107:16: warning: constant 0x123456789abcdef0 is so big it is long
-> > > > > 
-> > > > > atleast I found problem in sparse ;-)
-> > > > 
-> > > > Sparse tells you that the constant is so big it is long - correct.
-> > > > So rather than being implicit appending an L would make sparse happy.
-> > > > 
-> > > > So please use the constant 0x123456789abcdef0L and I think sparse is silenced.
-> > > > And code/functionality is the same.
-> > > > 
-> > > 
-> > > Yes, this fixes the sparse warning, Thanks :-)
-> > 
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
+On Sun, Apr 12, 2009 at 09:34:27PM +1000, Paul Mackerras wrote:
+> Paul E. McKenney writes:
 > 
-> OK
+> > If the generic implementation is needed only on !SMP systems, that
+> > could work.  The architectures I would be worried about include
+> > powerpc and ia64, which I believe support 32-bit SMP builds.
 > 
-> Ingo, are you going to take it or should I handle it?
+> 32-bit powerpc doesn't have 64-bit atomic operations and does support
+> SMP.
+> 
+> What about ARM?  I thought they had 32-bit SMP these days as well.
 
-Sure, feel free to take it - thanks.
+Some of Steve Hemminger's recent suggestions in this thread seem to me
+to avoid this whole issue nicely.  But we will see!  ;-)
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+							Thanx, Paul
