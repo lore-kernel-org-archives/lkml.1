@@ -1,117 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760524AbZDLMkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbZDLMnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760524AbZDLMkc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 08:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbZDLMkO
+	id S1760727AbZDLMnU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 08:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760599AbZDLMnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 08:40:14 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:41569 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760031AbZDLMkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 08:40:12 -0400
-Date: Sun, 12 Apr 2009 14:30:26 +0200
-From: Harald Welte <laforge@netfilter.org>
-To: david@lang.hm
-Cc: Kyle Moffett <kyle@moffetthome.net>, David Miller <davem@davemloft.net>,
-       jengelh@medozas.de, paulmck@linux.vnet.ibm.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       shemminger@vyatta.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
-       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
-	784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090412123026.GL19172@prithivi.gnumonks.org>
-References: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr> <20090410.230016.176733137.davem@davemloft.net> <f73f7ab80904111112n7c95d06ei32eb1f081842ae41@mail.gmail.com> <alpine.DEB.1.10.0904111751430.28893@asgard.lang.hm>
+	Sun, 12 Apr 2009 08:43:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36299 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760584AbZDLMnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 08:43:10 -0400
+Date: Sun, 12 Apr 2009 14:42:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Luis Henriques <henrix@sapo.pt>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Problem with kvm on -tip
+Message-ID: <20090412124243.GA20281@elte.hu>
+References: <20090409210738.GA4566@hades.domain.com> <49E08857.2090503@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="hLTC+yGFJlatjToQ"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904111751430.28893@asgard.lang.hm>
+In-Reply-To: <49E08857.2090503@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---hLTC+yGFJlatjToQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Avi Kivity <avi@redhat.com> wrote:
 
-Hi all,
+> index a1ecec5..b556b6a 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -630,10 +630,12 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+>  	if ((!vcpu->time_page))
+>  		return;
+>  
+> +	preempt_disable();
+>  	if (unlikely(vcpu->hv_clock_tsc_khz != __get_cpu_var(cpu_tsc_khz))) {
+>  		kvm_set_time_scale(__get_cpu_var(cpu_tsc_khz), &vcpu->hv_clock);
+>  		vcpu->hv_clock_tsc_khz = __get_cpu_var(cpu_tsc_khz);
+>  	}
+> +	preempt_enable();
 
-On Sat, Apr 11, 2009 at 05:54:41PM -0700, david@lang.hm wrote:
->> Almost all of the standard firewall tools (such as shorewall, etc) are
->> already using iptables-restore command to load firewall rules,
->> primarily because using separate iptables commands was *already* way
->> too slow.  There's also the serious race-condition of doing a firewall
->> restart that way where you only have half your rules loaded for a bit.
->> The "iptables" command is fine for fiddling around with the command
->> line and making minor tweaks, but it simply doesn't cut it for
->> large-scale rules.
->
-> what are the userspace level tools that I am supposed to use in place of =
-=20
-> my current process? (which is to have a script that 1. stops traffic, 2. =
-=20
-> executes the iptables commands to create the rules that I want, then 3. =
-=20
-> enables traffic)
->
-> iptables-restore only works if you are actually restoring the old set of =
-=20
-> rules. if you need to change the rules that doesn't work.
+fix look good, but note that this is an open-coded get_cpu_var() 
+sequence - please use get_cpu_var()/put_cpu_var() instead.
 
-That's what I implemented as "iptables-restore --noflush" a number of years
-ago. It doesn't flush the current uleset and swaps in a new one, but=20
-reads the current rules from kernel, applies any number of changes and swaps
-the new ruleset in.
-
-The syntax of iptables-restore is almost identical to iptables commands, you
-just specify the table in a different way.  So you would just create your
-desired changes in that format, and echo that into iptables-restore.  If it=
-'s
-an entire new ruleset, you use no '--noflush' and it does automatic flushing
-of all old rules.  If your stdin-file contains only incremental changes, you
-use --noflush.
-
-In the netfilter project, we knew for many years that the 'swap the entire
-table atomically in' is a bad design choice.  This is what various develope=
-rs
-have been trying to address at different times, and which finally resulted
-in the nftables implementation of Patrick McHardy.  So for the mid- to long
-term there is a clear design that moves away from that.
-
-But so far, we have to live with the API and its semantics.  iptables users=
-pace
-has been improved a number of times, and things like iptables-restore with =
-or
-without --noflush can be used as an intermediate solution - and have been u=
-sed
-by many systems out there.
-
---=20
-- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-  "Fragmentation is like classful addressing -- an interesting early
-   architectural error that shows how much experimentation was going
-   on while IP was being designed."                    -- Paul Vixie
-
---hLTC+yGFJlatjToQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQFJ4d7iXaXGVTD0i/8RAsIbAKCEurTCifbQxxy9HxXJkh9fkGvCDgCfYmiG
-j581fDfdXd0kho8vp56EtqM=
-=ruDw
------END PGP SIGNATURE-----
-
---hLTC+yGFJlatjToQ--
+	Ingo
