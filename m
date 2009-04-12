@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbZDLHYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759798AbZDLHYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759977AbZDLHYs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 03:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbZDLHXU
+	id S1759798AbZDLHYb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 03:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbZDLHWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 03:23:20 -0400
-Received: from tservice.net.ru ([195.178.208.66]:53792 "EHLO tservice.net.ru"
+	Sun, 12 Apr 2009 03:22:44 -0400
+Received: from mga14.intel.com ([143.182.124.37]:31531 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758168AbZDLHXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 03:23:18 -0400
-Date: Sun, 12 Apr 2009 11:23:12 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090412072312.GA24580@ioremap.net>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <alpine.LFD.2.00.0904111150380.4583@localhost.localdomain> <20090412003445.GK6822@linux.vnet.ibm.com>
+	id S1757514AbZDLHWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 03:22:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,174,1239001200"; 
+   d="scan'208";a="130525075"
+Date: Sun, 12 Apr 2009 15:09:44 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "yinghan@google.com" <yinghan@google.com>
+Subject: [PATCH] readahead: enforce full sync mmap readahead size
+Message-ID: <20090412070943.GB5737@localhost>
+References: <20090410060957.442203404@intel.com> <20090410061254.719205499@intel.com> <20090410163413.a014bde0.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090412003445.GK6822@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090410163413.a014bde0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Now that we do readahead for sequential mmap reads, here is
+a simple evaluation of the impacts, and one further optimization.
 
-On Sat, Apr 11, 2009 at 05:34:45PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> The issue at this point seems to be the need to get accurate snapshots
-> of various counters -- there are a number of Linux networking users who
-> need to account for every byte flowing through their systems.  However,
+It's an NFS-root debian desktop system, readahead size = 60 pages.
+The numbers are grabbed after a fresh boot into console.
 
-If we add or change the rule we can not know if iptables' return to
-userspace does mean that rule started to act. There may be other queues
-already filled with the packets which could match the new rule (like
-receiving socket buffer). So effectively we want it to take effect very
-soon. What if there will be a timer which will synchronize RCU-added states,
-so if we update single rule - it will take effect in a second, and if we
-update bunch of them - during the delay second we pretty much can load
-them all.
+approach        pgmajfault      RA miss ratio   mmap IO count   avg IO size(pages)
+   A            383             31.6%           383             11
+   B            225             32.4%           390             11
+   C            224             32.6%           307             13
 
--- 
-	Evgeniy Polyakov
+case A: mmap sync/async readahead disabled
+case B: mmap sync/async readahead enabled, with enforced full async readahead size
+case C: mmap sync/async readahead enabled, with enforced full sync/async readahead size
+or:
+A = vanilla 2.6.30-rc1
+B = A plus mmap readahead
+C = B plus this patch
+
+The numbers show that
+- there are good possibilities for random mmap reads to trigger readahead
+- 'pgmajfault' is reduced by 1/3, due to the _async_ nature of readahead
+- case C can further reduce IO count by 1/4
+- readahead miss ratios are not quite affected
+
+The theory is
+- readahead is _good_ for clustered random reads, and can perform
+  _better_ than readaround because they could be _async_.
+- async readahead size is guaranteed to be larger than readaround
+  size, and they are _async_, hence will mostly behave better
+However for B
+- sync readahead size could be smaller than readaround size, hence may
+  make things worse by produce more smaller IOs
+which will be fixed by this patch.
+
+Final conclusion:
+- mmap readahead reduced major faults by 1/3 and no obvious overheads;
+- mmap io can be further reduced by 1/4 with this patch.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/filemap.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- mm.orig/mm/filemap.c
++++ mm/mm/filemap.c
+@@ -1471,7 +1471,8 @@ static void do_sync_mmap_readahead(struc
+ 	if (VM_SequentialReadHint(vma) ||
+ 			offset - 1 == (ra->prev_pos >> PAGE_CACHE_SHIFT)) {
+ 		ra->flags |= RA_FLAG_MMAP;
+-		page_cache_sync_readahead(mapping, ra, file, offset, 1);
++		page_cache_sync_readahead(mapping, ra, file, offset,
++					  ra->ra_pages);
+ 		return;
+ 	}
+ 
