@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZDLQve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZDLQwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbZDLQve (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 12:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbZDLQvF
+	id S1753209AbZDLQwH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 12:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZDLQvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 12:51:05 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:43571 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbZDLQvB (ORCPT
+	Sun, 12 Apr 2009 12:51:07 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:24418 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZDLQvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 12:51:01 -0400
+	Sun, 12 Apr 2009 12:51:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:message-id:user-agent:date:from:to:cc:subject:references
          :content-disposition;
-        b=UaCYN0GPCAUz7Wq+IFgJxGAwoAE7wl38zPiCCaVJMTiUrRNKT/dw4WG14rzc1Rl+es
-         cr4dIbCZDRMs4G/iCM7ziT8p+doIiKpW6RY0KV3BnNR180BtH8Vum2M9dUoXV4OqTJuw
-         WzyMYd5DwkhWJMZbsMsyY4z3l3xAk4t71pPVc=
-Message-Id: <20090412165058.535921550@openvz.org>
+        b=f91uk18bK7pec0VeSNqVzRK+SwDNn7VWdzz9RXakY+ybipxGc/CVC/8N7ta/unpDL5
+         7MmVbupl7AcZF02qA+qfkAM/uvWCYv8GEQ10U6xH0dT8l8jl10jjghnXbxXiLfA/WqkP
+         nibpQI+gx+TbhJMMUjx5cfxug8Ey7ABC7gKNQ=
+Message-Id: <20090412165058.924175574@openvz.org>
 User-Agent: quilt/0.47-1
-Date: Sun, 12 Apr 2009 20:47:40 +0400
+Date: Sun, 12 Apr 2009 20:47:42 +0400
 From: Cyrill Gorcunov <gorcunov@openvz.org>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
 Cc: xemul@openvz.org, yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
        macro@linux-mips.org, andi@firstfloor.org,
        Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [rfc 2/4] x86: apic - introduce imcr_ helpers
+Subject: [rfc 4/4] x86: smp.c - align smp_ops assignments
 References: <20090412164738.967602112@openvz.org>
-Content-Disposition: inline; filename=x86-apic-imcr
+Content-Disposition: inline; filename=x86-smp-ops
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-Distinguish port writting magic into helpers with comments.
+It's a bit hard to parse by eyes without
+them being aligned.
 
 Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
 ---
- arch/x86/kernel/apic/apic.c |   29 +++++++++++++++++++++++++----
- 1 file changed, 25 insertions(+), 4 deletions(-)
+ arch/x86/kernel/smp.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
+Index: linux-2.6.git/arch/x86/kernel/smp.c
 =====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic.c
-@@ -99,6 +99,29 @@ early_param("lapic", parse_lapic);
- /* Local APIC was disabled by the BIOS and enabled by the kernel */
- static int enabled_via_apicbase;
+--- linux-2.6.git.orig/arch/x86/kernel/smp.c
++++ linux-2.6.git/arch/x86/kernel/smp.c
+@@ -193,19 +193,19 @@ void smp_call_function_single_interrupt(
+ }
  
-+/*
-+ * Handle interrupt mode configuration register (IMCR).
-+ * This register controls whether the interrupt signals
-+ * that reach the BSP come from the master PIC or from the
-+ * local APIC. Before entering Symmetric I/O Mode, either
-+ * the BIOS or the operating system must switch out of
-+ * PIC Mode by changing the IMCR.
-+ */
-+static inline imcr_pic_to_apic(void)
-+{
-+	/* select IMCR register */
-+	outb(0x70, 0x22);
-+	/* NMI and 8259 INTR go through APIC */
-+	outb(0x01, 0x23);
-+}
-+
-+static inline imcr_apic_to_pic(void)
-+{
-+	/* select IMCR register */
-+	outb(0x70, 0x22);
-+	/* NMI and 8259 INTR go directly to BSP */
-+	outb(0x00, 0x23);
-+}
- #endif
+ struct smp_ops smp_ops = {
+-	.smp_prepare_boot_cpu = native_smp_prepare_boot_cpu,
+-	.smp_prepare_cpus = native_smp_prepare_cpus,
+-	.smp_cpus_done = native_smp_cpus_done,
++	.smp_prepare_boot_cpu	= native_smp_prepare_boot_cpu,
++	.smp_prepare_cpus	= native_smp_prepare_cpus,
++	.smp_cpus_done		= native_smp_cpus_done,
  
- #ifdef CONFIG_X86_64
-@@ -1737,8 +1760,7 @@ void __init connect_bsp_APIC(void)
- 		 */
- 		apic_printk(APIC_VERBOSE, "leaving PIC mode, "
- 				"enabling APIC mode.\n");
--		outb(0x70, 0x22);
--		outb(0x01, 0x23);
-+		imcr_pic_to_apic();
- 	}
- #endif
- 	if (apic->enable_apic_mode)
-@@ -1766,8 +1788,7 @@ void disconnect_bsp_APIC(int virt_wire_s
- 		 */
- 		apic_printk(APIC_VERBOSE, "disabling APIC mode, "
- 				"entering PIC mode.\n");
--		outb(0x70, 0x22);
--		outb(0x00, 0x23);
-+		imcr_apic_to_pic();
- 		return;
- 	}
- #endif
+-	.smp_send_stop = native_smp_send_stop,
+-	.smp_send_reschedule = native_smp_send_reschedule,
++	.smp_send_stop		= native_smp_send_stop,
++	.smp_send_reschedule	= native_smp_send_reschedule,
+ 
+-	.cpu_up = native_cpu_up,
+-	.cpu_die = native_cpu_die,
+-	.cpu_disable = native_cpu_disable,
+-	.play_dead = native_play_dead,
++	.cpu_up			= native_cpu_up,
++	.cpu_die		= native_cpu_die,
++	.cpu_disable		= native_cpu_disable,
++	.play_dead		= native_play_dead,
+ 
+-	.send_call_func_ipi = native_send_call_func_ipi,
++	.send_call_func_ipi	= native_send_call_func_ipi,
+ 	.send_call_func_single_ipi = native_send_call_func_single_ipi,
+ };
+ EXPORT_SYMBOL_GPL(smp_ops);
 
