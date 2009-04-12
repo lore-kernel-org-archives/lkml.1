@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZDLBx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZDLB7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZDLBx7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 21:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZDLBxu
+	id S1757180AbZDLB7T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 21:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZDLB7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 21:53:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54000 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753845AbZDLBxu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 21:53:50 -0400
-Date: Sat, 11 Apr 2009 18:50:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
-Subject: Re: 2.6.28 /proc/diskstats
-Message-Id: <20090411185055.cab6a069.akpm@linux-foundation.org>
-In-Reply-To: <49E13D18.2090805@solemnwarning.net>
-References: <49E13D18.2090805@solemnwarning.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Apr 2009 21:59:03 -0400
+Received: from ox1.aei.mpg.de ([194.94.224.6]:38749 "EHLO ox1.aei.mpg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753470AbZDLB7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 21:59:01 -0400
+Date: Sun, 12 Apr 2009 03:58:11 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: tiwai@suse.de
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       alsa-devel@vger.kernel.org,
+       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+Subject: Re: General protection fault when unloading snd_hda_intel on
+	2.6.30-rc1+ (bisected)
+Message-ID: <20090412015811.GA3907@Pilar.aei.mpg.de>
+References: <20090411193630.GA16968@Pilar.aei.mpg.de> <20090411132033.003c581c@infradead.org> <20090411210336.GA15272@Pilar.aei.mpg.de> <20090411143950.3429ebc0@infradead.org> <20090412003320.GA17346@ellpspace.math.ualberta.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090412003320.GA17346@ellpspace.math.ualberta.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Apr 2009 02:00:08 +0100 Daniel Collins <solemnwarning@solemnwarning.no-ip.org> wrote:
-
-> Hi
+On Sat 11.Apr'09 at 18:33:20 -0600, Michal Jaegermann wrote:
+> On Sat, Apr 11, 2009 at 02:39:50PM -0700, Arjan van de Ven wrote:
+> > 
+> > so... "dev" is pointing evbit at... 697665646632785 which looks like grabage.
 > 
-> Since 2.6.28, fd0 isn't visible in /proc/diskstats from boot, only after 
-> access/mount. It is visible in /sys/block/ from boot, so there are no 
-> issues detecting it. This may also affect other devices such as hda but 
-> I haven't tested this yet, my test system and QEMU both only have 
-> ram0-ram15 from boot. I have tested 2.6.30-rc1 and found the same 
-> behavior. Is this a bug or a deliberate change?
-> 
+> FWIW 697665646632785c decodes in ASCII as "\x2fdevi".
 
-Tejun touched it last :)
+So I painfully (exchanged 'good' for 'bad' in the middle and had
+to restart all over) bisected this down to
+
+commit 3be141494a080a9189b51fa78154c975ad8d9806
+Author: Takashi Iwai <tiwai@suse.de>
+Date:   Fri Feb 20 14:11:16 2009 +0100
+
+    ALSA: hda - Add generic pincfg initialization
+
+    Added the generic pincfg cache and save/restore functions.
+    Also introduced the pin-overriding via hwdep sysfs.
+
+
+It doesn't revert cleanly from the latest kernel, so I could not double 
+check it.
+
+OBS: All tests were done with the headphone plugged in.
