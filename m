@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZDLRbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZDLRbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243AbZDLRbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 13:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZDLRbI
+	id S1754032AbZDLRbA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 13:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZDLRap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 13:31:08 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57398 "EHLO e3.ny.us.ibm.com"
+	Sun, 12 Apr 2009 13:30:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48049 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754167AbZDLRbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 13:31:06 -0400
-Date: Sun, 12 Apr 2009 10:31:08 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: iptables very slow after commit
-	784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090412173108.GO6822@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <20090411070854.GC11799@elte.hu> <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com>
+	id S1753503AbZDLRan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 13:30:43 -0400
+Message-ID: <49E22510.90608@garzik.org>
+Date: Sun, 12 Apr 2009 13:29:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18913.53699.544083.320542@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Mark Lord <liml@rtr.ca>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grant Grundler <grundler@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Implementing NVMHCI...
+References: <49E0D47B.9070205@garzik.org>	<20090411203246.513a0892@lxorguk.ukuu.org.uk>	<alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>	<da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com> <20090412002527.631a5a89@lxorguk.ukuu.org.uk> <49E1F967.9090106@rtr.ca>
+In-Reply-To: <49E1F967.9090106@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 12, 2009 at 09:34:27PM +1000, Paul Mackerras wrote:
-> Paul E. McKenney writes:
+Mark Lord wrote:
+> Alan Cox wrote:
+> ..
+>> Alternatively you go for read-modify-write (nasty performance hit
+>> especially for RAID or a log structured fs).
+> ..
 > 
-> > If the generic implementation is needed only on !SMP systems, that
-> > could work.  The architectures I would be worried about include
-> > powerpc and ia64, which I believe support 32-bit SMP builds.
+> Initially, at least, I'd guess that this NVM-HCI thing is all about
+> built-in flash memory on motherboards, to hold the "instant-boot"
+> software that hardware companies (eg. ASUS) are rapidly growing fond of.
 > 
-> 32-bit powerpc doesn't have 64-bit atomic operations and does support
-> SMP.
-> 
-> What about ARM?  I thought they had 32-bit SMP these days as well.
+> At present, that means a mostly read-only Linux installation,
+> though MS for sure are hoping for Moore's Law to kick in and
+> provide sufficient space for a copy of Vista there or something.
 
-Some of Steve Hemminger's recent suggestions in this thread seem to me
-to avoid this whole issue nicely.  But we will see!  ;-)
+Yeah... instant boot, and "trusted boot" (booting a signed image), 
+storage of useful details like boot drive layouts, etc.
 
-							Thanx, Paul
+I'm sure we can come up with other funs uses, too...
+
+	Jeff
+
+
+
+
