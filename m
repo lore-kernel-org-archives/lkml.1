@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbZDLQi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751746AbZDLQpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395AbZDLQi7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 12:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZDLQis
+	id S1751746AbZDLQpJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 12:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZDLQo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 12:38:48 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:54752 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZDLQir (ORCPT
+	Sun, 12 Apr 2009 12:44:56 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:40307 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbZDLQoz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 12:38:47 -0400
-Date: Sun, 12 Apr 2009 18:38:44 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: David Miller <davem@davemloft.net>
-cc: paulmck@linux.vnet.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, shemminger@vyatta.com, jeff.chua.linux@gmail.com,
-       dada1@cosmosbay.com, kaber@trash.net, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
- 784544739a25c30637397ace5489eeb6e15d7d49
-In-Reply-To: <20090410.230016.176733137.davem@davemloft.net>
-Message-ID: <alpine.LSU.2.00.0904121837400.27633@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr> <20090410.230016.176733137.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Sun, 12 Apr 2009 12:44:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bN/RVAZUBEMvPzD3obTcjNYOL6qthDQRELwEUXb5kjIOlTSSzrQEOc3WscGEdJXGrK
+         d/6ZZ5oyQq8jxlrDU/8ZhOG2z68xBKe/6Q823Pkd1+TocQC6HAwJcNqQsLbxdnoKJ0BY
+         qTEKBDlEhJobYpILnpMBljHDVKax38TSJcozM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1239365545-10356-8-git-send-email-philipp.reisner@linbit.com>
+References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-2-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-3-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-4-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-5-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-6-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-7-git-send-email-philipp.reisner@linbit.com>
+	 <1239365545-10356-8-git-send-email-philipp.reisner@linbit.com>
+Date: Sun, 12 Apr 2009 18:44:53 +0200
+Message-ID: <e2e108260904120944t1d0fec44yccbc50b6246988d0@mail.gmail.com>
+Subject: Re: [PATCH 07/14] DRBD: internal_data_structures
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 10, 2009 at 2:12 PM, Philipp Reisner
+<philipp.reisner@linbit.com> wrote:
+> diff -uNrp linux-2.6.30-rc1/drivers/block/drbd/drbd_int.h linux-2.6.30-rc1-drbd/drivers/block/drbd/drbd_int.h
 
-On Saturday 2009-04-11 08:00, David Miller wrote:
->From: Jan Engelhardt
->Date: Sat, 11 Apr 2009 07:14:50 +0200 (CEST)
->
->> The fact that `iptables -A` is called a hundred times means you are 
->> doing 100 table replacements -- instead of one. And calling
->> synchronize_net at least a 100 times.
->> 
->> "Wanna use iptables-restore?"
->
->I want to derail this line of thinking as fast as possible.
->
->This is not an acceptable response to this problem.  We made something
->fundamentally slower by several orders of magnitude.
->
->Therefore, saying "Don't insert your firewall rules like that." is not
->a valid response for this regression.
->
->We really have to fix it or revert.
->
-Well, there is an extra tool in SUSE's iptables, which collects
-rules added this way, and then commits them in one go when you
-are done. Perhaps that is an "adequeate" way?
+...
+
+> +#define PRINTK(level, fmt, args...) \
+> +       printk(level "drbd%d: " fmt, \
+> +               mdev->minor , ##args)
+
+The above looks similar to dev_printk() from <linux/device.h>. It
+would be great if some of the DRBD-specific macro's could be replaced
+by existing Linux macro's. This would improve the readability of the
+DRBD source code.
+
+...
+
+> +#define D_ASSERT(exp)  if (!(exp)) \
+> +        ERR("ASSERT( " #exp " ) in %s:%d\n", __FILE__, __LINE__)
+> +
+> +#define ERR_IF(exp) if (({                             \
+> +       int _b = (exp) != 0;                            \
+> +       if (_b) ERR("%s: (%s) in %s:%d\n",              \
+> +               __func__, #exp, __FILE__, __LINE__);    \
+> +        _b;                                            \
+> +       }))
+
+How about replacing invocations of D_ASSERT() and/or ERR_IF() by WARN_ON() ?
+
+Bart.
