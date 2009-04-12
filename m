@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbZDLNXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZDLNhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbZDLNXA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 09:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZDLNWu
+	id S1755625AbZDLNhp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 09:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZDLNhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 09:22:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53669 "EHLO mx2.mail.elte.hu"
+	Sun, 12 Apr 2009 09:37:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41314 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752471AbZDLNWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 09:22:49 -0400
-Date: Sun, 12 Apr 2009 15:21:50 +0200
+	id S1751995AbZDLNhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 09:37:35 -0400
+Date: Sun, 12 Apr 2009 15:37:14 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git-pull -tip] x86: declaration patches
-Message-ID: <20090412132150.GD20281@elte.hu>
-References: <1239381184.23116.5.camel@ht.satnam> <20090410172925.GA24446@uranus.ravnborg.org> <1239388390.3169.43.camel@ht.satnam>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
+Message-ID: <20090412133714.GB384@elte.hu>
+References: <49D3236D.3090705@cn.fujitsu.com> <49D32387.9040106@cn.fujitsu.com> <49E051B9.8060805@cn.fujitsu.com> <20090412130727.GC20281@elte.hu> <20090412131028.GT5178@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239388390.3169.43.camel@ht.satnam>
+In-Reply-To: <20090412131028.GT5178@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,31 +37,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Fri, 2009-04-10 at 19:29 +0200, Sam Ravnborg wrote:
-> 
-> > The above is a lot ifdefs just to:
-> > 1) use asmlinkage only on 64 bit
-> > 2) hide the prototype if do not implement the function
+> On Sun, Apr 12 2009, Ingo Molnar wrote:
 > > 
-> > Is there any relevant cost associated with asmlinkage or could we just make it
-> > always asmlinkage?
+> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
 > > 
+> > > Hi Ingo,
+> > > 
+> > > I would like to ask what's the status of these 2 patches.
+> > > 
+> > > Arnaldo acked on them.
+> > 
+> > They looked good to me - but i'm waiting for an Ack from Jens. Jens 
+> > has complained about seeing un-ack-ed patches in the blktrace code, 
+> > so i've started serializing any new patches on acks from Jens. The 
+> > workflow would be more efficient i suspect if Jens 
+> > nominated/declared you and Arnaldo as blktrace co-maintainers too - 
+> > most of the patches come from you two.
 > 
-> Ok fixed asmlinkage issue.
-> 
-> and also fixed thomas's comment issue.
-> 
-> So here is new pull request:
-> The following changes since commit 7fd61bdf06572f1ca681aa35f5c86531a821ea75:
->   Ingo Molnar (1):
->         Merge branch 'x86/urgent'
+> I'd be fine with listing Li Zefan as co-maintainer of the blktrace 
+> bits. He knows what he is doing and is also a user of blktrace, so 
+> I think he would be fine. Li, what do you think?
 
-Looks good - i've applied this as a single patch to tip:x86/cleanups 
-because it's now all simple enough, and because i had to fix a few 
-details in the individual subject lines. So it was easier to do it 
-in one bunch based on the shortlog.
+Cool ... i've also taken this as an implicit approval from you of Li 
+sending blktrace patches so i have queued the two up.
+
+The next big (and nice!) step would be the blktrace events in 
+TRACE_EVENT() style. That would integrate the blktrace tracepoints 
+with all the others, in one coherent framework.
 
 Thanks,
 
