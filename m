@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbZDLAzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbZDLA4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759379AbZDLAzu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 20:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZDLAz1
+	id S1759859AbZDLA4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 20:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759562AbZDLAzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 20:55:27 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:37997 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbZDLAzZ (ORCPT
+	Sat, 11 Apr 2009 20:55:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759438AbZDLAzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 20:55:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=vu56TA3V3vZUItil6GwHG0tR1QYA6qpEZlvfcTEhihTcuzyIPmkgonQ6blSVHZRK7z
-         LuCrsE6Rpa6akpYm2X22Ikqz8ebDL0VfqVUNKsm18RkUo6nN5U8TfGe7vJTr5t3iUajO
-         ac+K9goggkBgr+reafv8qPrbANeMVBilhhw0I=
-MIME-Version: 1.0
-Date: Sat, 11 Apr 2009 20:55:23 -0400
-Message-ID: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
-Subject: alpha: half done futex implementation
-From: Matt Turner <mattst88@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>,
-       Jay Estabrook <jay.estabrook@hp.com>,
-       Oliver Falk <oliver@linux-kernel.at>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 11 Apr 2009 20:55:52 -0400
+Date: Sat, 11 Apr 2009 17:46:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       efault@gmx.de, len.brown@intel.com, mingo@elte.hu,
+       rusty@rustcorp.com.au, tglx@linutronix.de,
+       venkatesh.pallipadi@intel.com, yakui.zhao@intel.com,
+       yanmin_zhang@linux.intel.com
+Subject: Re: [patch for 2.6.30 2/2]
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c: avoid cross-CPU interrupts
+Message-Id: <20090411174644.ea6f63c6.akpm@linux-foundation.org>
+In-Reply-To: <20090412000605.GA23869@redhat.com>
+References: <200904110617.n3B6HJ7W026502@imap1.linux-foundation.org>
+	<20090412000605.GA23869@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 11 Apr 2009 20:06:05 -0400 Dave Jones <davej@redhat.com> wrote:
 
-Going on Richard's advice, I've tried to write an alpha futex
-implementation based on the powerpc futex.h.
+> On Fri, Apr 10, 2009 at 11:17:18PM -0700, Andrew Morton wrote:
+>  > From: Andrew Morton <akpm@linux-foundation.org>
+>  > 
+>  > In drv_read(), check to see whether we can run the rdmsr() on the current
+>  > CPU.  If so, do that.  So smp_call_function_single() can avoid the IPI.
+> 
+> Wouldn't it be a better to make smp_call_function_single do this check
+> itself, so all callers benefit from this optimisation?
+> 
+> *looks*
+> 
+> Wait, won't this already be caught by this code in smp_call_function_single() ?
+> 
+> 286         this_cpu = get_cpu();
+> ...
+> 291         if (cpu == this_cpu) {
+> 292                 local_irq_save(flags);
+> 293                 func(info);
+> 294                 local_irq_restore(flags);
+> 295         } else {
+> 
+> 
+> 
 
-I've gotten this far.. :\
+The problem is that the caller (acpi-cpufreq) is doing
 
-#define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
-    __asm__ __volatile(             \
-    "1: ldl_l   %0,%2\n"            \
-        insn                        \
-    /* something needs to happen here
-     * to save result of insn across
-     * stl_c? */
-    "   stl_c   %1,%2\n"            \
-    "   beq     %1,2f\n"            \
-    "   mb\n"                       \
-    /* something needs to happen here
-     * for the ret */
-    "   .subsection 2\n"            \
-    "2: br      1b\n"               \
-    "   .previous\n"                \
-    : "=&r" (oldval), "=&r" (ret)   \
-    : "b" (uaddr) \
-    : "memory")
+	cpu = cpumask_any(mask);
+	smp_call_function_single(cpu);
 
-Could someone take a look and help finish it?
+and cpumask_any(mask) does cpumask_first(mask).  Which might be a
+different CPU, even though this thread of control is running on a CPU
+which is present in `mask'.
 
-For futex_atomic_cmpxchg_inatomic, I think Ivan's DRM_CAS
-implementation can be used with only trivial changes. See
-http://cgit.freedesktop.org/mesa/drm/commit/?id=6feac49398d0f037103a4ae3d5a512badeed61fb
+- We could fix this by making cpumask_any(mask) return this-cpu if
+  this-cpu is present `mask'.
 
-Please CC me on responses, as I'm not subscribed to linux-kernel@.
+- We could fix this by changing smp_call_function_single() to take a
+  mask, rather than a particular CPU.  Then of course it preferentially
+  chooses this-cpu if possible.
 
-Thanks,
+  Or write a new smp_call_function_any(mask, ...);
 
-Matt Turner
+I suspect that changing cpumask_any() to preferentially return this-cpu
+will always give us the behaviour that we prefer, but I haven't looked
+into it.
+
+
