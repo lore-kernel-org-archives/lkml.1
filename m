@@ -1,53 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZDLRby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZDLRdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbZDLRby (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 13:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZDLRbm
+	id S1754634AbZDLRdB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 13:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZDLRct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 13:31:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57888 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752128AbZDLRbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 13:31:41 -0400
-Date: Sun, 12 Apr 2009 10:29:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] radix-tree: add radix_tree_prev_hole()
-Message-Id: <20090412102952.0dd377d6.akpm@linux-foundation.org>
-In-Reply-To: <20090412072052.457214378@intel.com>
-References: <20090412071950.166891982@intel.com>
-	<20090412072052.457214378@intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Apr 2009 13:32:49 -0400
+Received: from THUNK.ORG ([69.25.196.29]:57336 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752844AbZDLRcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 13:32:48 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 1/2] jbd2: Convert instrumentation from markers to tracepoints
+Date: Sun, 12 Apr 2009 13:32:45 -0400
+Message-Id: <1239557566-3411-1-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <20090412172344.GC10547@mit.edu>
+References: <20090412172344.GC10547@mit.edu>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Apr 2009 15:19:51 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+---
+ fs/jbd2/checkpoint.c              |    7 ++-
+ fs/jbd2/commit.c                  |   14 +++--
+ include/trace/jbd2.h              |    9 ++++
+ include/trace/jbd2_event_types.h  |   93 +++++++++++++++++++++++++++++++++++++
+ include/trace/trace_event_types.h |    1 +
+ include/trace/trace_events.h      |    1 +
+ 6 files changed, 116 insertions(+), 9 deletions(-)
+ create mode 100644 include/trace/jbd2.h
+ create mode 100644 include/trace/jbd2_event_types.h
 
-> +unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
-> +				   unsigned long index, unsigned long max_scan)
-> +{
-> +	unsigned long i;
-> +
-> +	for (i = 0; i < max_scan; i++) {
-> +		if (!radix_tree_lookup(root, index))
-> +			break;
-> +		index--;
-> +		if (index == LONG_MAX)
-> +			break;
-> +	}
-> +
-> +	return index;
-> +}
-
-argh.  This is about as inefficient as we could possibly make it :(
-
-Really, this function should dive into radix-tree internals and walk
-individual radix_tree_node.slots[] arrays.  And heck, it can peek at
-radix_tree_node.count and _bypass_ entire nodes, too.
+diff --git a/fs/jbd2/checkpoint.c b/fs/jbd2/checkpoint.c
+index 17159ca..2b794d9 100644
+--- a/fs/jbd2/checkpoint.c
++++ b/fs/jbd2/checkpoint.c
+@@ -20,9 +20,11 @@
+ #include <linux/time.h>
+ #include <linux/fs.h>
+ #include <linux/jbd2.h>
+-#include <linux/marker.h>
+ #include <linux/errno.h>
+ #include <linux/slab.h>
++#include <trace/jbd2.h>
++
++DEFINE_TRACE(jbd2_checkpoint);
+ 
+ /*
+  * Unlink a buffer from a transaction checkpoint list.
+@@ -358,8 +360,7 @@ int jbd2_log_do_checkpoint(journal_t *journal)
+ 	 * journal straight away.
+ 	 */
+ 	result = jbd2_cleanup_journal_tail(journal);
+-	trace_mark(jbd2_checkpoint, "dev %s need_checkpoint %d",
+-		   journal->j_devname, result);
++	trace_jbd2_checkpoint(journal, result);
+ 	jbd_debug(1, "cleanup_journal_tail returned %d\n", result);
+ 	if (result <= 0)
+ 		return result;
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 073c8c3..21462a8 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -16,7 +16,6 @@
+ #include <linux/time.h>
+ #include <linux/fs.h>
+ #include <linux/jbd2.h>
+-#include <linux/marker.h>
+ #include <linux/errno.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
+@@ -26,6 +25,11 @@
+ #include <linux/writeback.h>
+ #include <linux/backing-dev.h>
+ #include <linux/bio.h>
++#include <trace/jbd2.h>
++
++DEFINE_TRACE(jbd2_start_commit);
++DEFINE_TRACE(jbd2_end_commit);
++DEFINE_TRACE(jbd2_submit_inode_data);
+ 
+ /*
+  * Default IO end handler for temporary BJ_IO buffer_heads.
+@@ -253,6 +257,7 @@ static int journal_submit_data_buffers(journal_t *journal,
+ 		 * block allocation  with delalloc. We need to write
+ 		 * only allocated blocks here.
+ 		 */
++		trace_jbd2_submit_inode_data(jinode->i_vfs_inode);
+ 		err = journal_submit_inode_data_buffers(mapping);
+ 		if (!ret)
+ 			ret = err;
+@@ -394,8 +399,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 	commit_transaction = journal->j_running_transaction;
+ 	J_ASSERT(commit_transaction->t_state == T_RUNNING);
+ 
+-	trace_mark(jbd2_start_commit, "dev %s transaction %d",
+-		   journal->j_devname, commit_transaction->t_tid);
++	trace_jbd2_start_commit(journal, commit_transaction);
+ 	jbd_debug(1, "JBD: starting commit of transaction %d\n",
+ 			commit_transaction->t_tid);
+ 
+@@ -1053,9 +1057,7 @@ restart_loop:
+ 	if (journal->j_commit_callback)
+ 		journal->j_commit_callback(journal, commit_transaction);
+ 
+-	trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
+-		   journal->j_devname, commit_transaction->t_tid,
+-		   journal->j_tail_sequence);
++	trace_jbd2_end_commit(journal, commit_transaction);
+ 	jbd_debug(1, "JBD: commit %d complete, head %d\n",
+ 		  journal->j_commit_sequence, journal->j_tail_sequence);
+ 	if (to_free)
+diff --git a/include/trace/jbd2.h b/include/trace/jbd2.h
+new file mode 100644
+index 0000000..68a93a5
+--- /dev/null
++++ b/include/trace/jbd2.h
+@@ -0,0 +1,9 @@
++#ifndef _TRACE_JBD2_H
++#define _TRACE_JBD2_H
++
++#include <linux/jbd2.h>
++#include <linux/tracepoint.h>
++
++#include <trace/jbd2_event_types.h>
++
++#endif
+diff --git a/include/trace/jbd2_event_types.h b/include/trace/jbd2_event_types.h
+new file mode 100644
+index 0000000..c550ef4
+--- /dev/null
++++ b/include/trace/jbd2_event_types.h
+@@ -0,0 +1,93 @@
++
++/* use <trace/jbd2.h> instead */
++#ifndef TRACE_EVENT
++# error Do not include this file directly.
++# error Unless you know what you are doing.
++#endif
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM jbd2
++
++#include <linux/jbd2.h>
++
++TRACE_EVENT(jbd2_checkpoint,
++
++	TP_PROTO(journal_t *journal, int result),
++
++	TP_ARGS(journal, result),
++
++	TP_STRUCT__entry(
++		__array(	char,	devname, BDEVNAME_SIZE+24 )
++		__field(	int,	result			)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->devname, journal->j_devname, BDEVNAME_SIZE+24);
++		__entry->result		= result;
++	),
++
++	TP_printk("dev %s result %d",
++		  __entry->devname, __entry->result)
++);
++
++TRACE_EVENT(jbd2_start_commit,
++
++	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
++
++	TP_ARGS(journal, commit_transaction),
++
++	TP_STRUCT__entry(
++		__array(	char,	devname, BDEVNAME_SIZE+24 )
++		__field(	int,	transaction		  )
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->devname, journal->j_devname, BDEVNAME_SIZE+24);
++		__entry->transaction	= commit_transaction->t_tid;
++	),
++
++	TP_printk("dev %s transaction %d",
++		  __entry->devname, __entry->transaction)
++);
++
++TRACE_EVENT(jbd2_end_commit,
++	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
++
++	TP_ARGS(journal, commit_transaction),
++
++	TP_STRUCT__entry(
++		__array(	char,	devname, BDEVNAME_SIZE+24 )
++		__field(	int,	transaction		  )
++		__field(	int,	head		  	  )
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->devname, journal->j_devname, BDEVNAME_SIZE+24);
++		__entry->transaction	= commit_transaction->t_tid;
++		__entry->head		= journal->j_tail_sequence;
++	),
++
++	TP_printk("dev %s transaction %d head %d",
++		  __entry->devname, __entry->transaction, __entry->head)
++);
++
++TRACE_EVENT(jbd2_submit_inode_data,
++	TP_PROTO(struct inode *inode),
++
++	TP_ARGS(inode),
++
++	TP_STRUCT__entry(
++		__array(	char,	devname, 32		)
++		__field(	ino_t,	ino			)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->devname, inode->i_sb->s_id, 32);
++		__entry->ino	= inode->i_ino;
++	),
++
++	TP_printk("dev %s transaction ino %lu",
++		  __entry->devname, __entry->ino)
++);
++
++#undef TRACE_SYSTEM
+diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
+index df56f56..bd26f4d 100644
+--- a/include/trace/trace_event_types.h
++++ b/include/trace/trace_event_types.h
+@@ -3,3 +3,4 @@
+ #include <trace/sched_event_types.h>
+ #include <trace/irq_event_types.h>
+ #include <trace/lockdep_event_types.h>
++#include <trace/jbd2_event_types.h>
+diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
+index fd13750..2a9b970 100644
+--- a/include/trace/trace_events.h
++++ b/include/trace/trace_events.h
+@@ -3,3 +3,4 @@
+ #include <trace/sched.h>
+ #include <trace/irq.h>
+ #include <trace/lockdep.h>
++#include <trace/jbd2.h>
+-- 
+1.5.6.3
 
