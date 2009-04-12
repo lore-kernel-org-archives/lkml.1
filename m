@@ -1,77 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZDLMYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbZDLMgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760610AbZDLMYw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 08:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760244AbZDLMYn
+	id S1760562AbZDLMgI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 08:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758620AbZDLMfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 08:24:43 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:11640 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760135AbZDLMYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 08:24:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :user-agent;
-        b=nmT8gNOPOHoFiJZGnD/mGM3TQh8zD1zd71YcSuxILOrshf1kxT7aASIxLd8xNWVGcU
-         HWkDWzPfrBuhOjSuoS6fhkgUEVTNaF4alaZMnsbRNfvmteOXbBmyNIgqbYwtXnIS5OSG
-         scYG4fSnxnXg+VccANP0XH+e/9jv/XlsjX1ZA=
-Date: Sun, 12 Apr 2009 20:23:17 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: sean.hefty@intel.com
-Cc: hal.rosenstock@gmail.com, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] fix a warning on drivers/infiniband/hw/nes/nes_cm.c:862:
-Message-ID: <20090412122317.GA4787@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+	Sun, 12 Apr 2009 08:35:55 -0400
+Received: from mga03.intel.com ([143.182.124.21]:6636 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756090AbZDLMfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 08:35:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,175,1239001200"; 
+   d="scan'208";a="130563572"
+Date: Sun, 12 Apr 2009 20:35:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chenfeng Xu <xcf@ustc.edu.cn>, linux-mm@kvack.org
+Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
+Message-ID: <20090412123518.GA5599@localhost>
+References: <20090412071950.166891982@intel.com> <20090412072052.686760755@intel.com> <20090412084819.GA25314@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090412084819.GA25314@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this warning:
-drivers/infiniband/hw/nes/nes_cm.c:862: warning: unused variable ‘tmp_addr’
+On Sun, Apr 12, 2009 at 04:48:19PM +0800, Ingo Molnar wrote:
+> 
+> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Introduce page cache context based readahead algorithm.
+> > This is to better support concurrent read streams in general.
+> 
+> >  /*
+> > + * Count contiguously cached pages from @offset-1 to @offset-@max,
+> > + * this count is a conservative estimation of
+> > + * 	- length of the sequential read sequence, or
+> > + * 	- thrashing threshold in memory tight systems
+> > + */
+> > +static pgoff_t count_history_pages(struct address_space *mapping,
+> > +				   struct file_ra_state *ra,
+> > +				   pgoff_t offset, unsigned long max)
+> > +{
+> > +	pgoff_t head;
+> > +
+> > +	rcu_read_lock();
+> > +	head = radix_tree_prev_hole(&mapping->page_tree, offset - 1, max);
+> > +	rcu_read_unlock();
+> > +
+> > +	return offset - 1 - head;
+> > +}
+> 
+> Very elegant method! I suspect this will work far better 
+> than adding various increasingly more complex heuristics.
+> 
+> Emphatically-Acked-by: Ingo Molnar <mingo@elte.hu>
 
-the 'tmp_addr' is defined for debug, so it should be defined in
-CONFIG_INFINIBAND_NES_DEBUG
+Thank you Ingo!
+
+The only pity is that this heuristic can be defeated by some user
+space program that tries to do aggressive drop-behind via
+fadvise(DONTNEED) calls. But as long as the drop-behind algorithm
+be a bit lazy and does not try to squeeze the last page at @offset-1,
+this patch will work just OK.
+
+The context readahead idea is so fundamental, that a slightly modified
+algorithm can be used for all kinds of sequential patterns, and it can
+automatically adapt to the thrashing threshold.
+
+        1 if (probe_page(index - 1)) {
+        2          begin = next_hole(index, max);
+        3          H     = index - prev_hole(index, 2*max);
+        4          end   = index + H;
+        5          update_window(begin, end);
+        6          submit_io();
+        7 }
+
+            [=] history [#] current [_] readahead [.] new readahead
+            ==========================#____________..............
+        1                            ^index-1
+        2                             |----------->[begin
+        3  |<----------- H -----------|
+        4                             |----------- H ----------->]end
+        5                                          [ new window ]
 
 
->From 5f67884bcda5450807dcd080378d829628e4db1c Mon Sep 17 00:00:00 2001
-From: Zhenwen Xu <Helight.Xu@gmail.com>
-Date: Sun, 12 Apr 2009 20:12:18 +0800
-Subject: [PATCH] fix a warning on drivers/infiniband/hw/nes/nes_cm.c:862:
+We didn't do that because we want to
+- avoid unnecessary page cache lookups for normal cases
+- be more aggressive when thrashings are not a concern
 
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
----
- drivers/infiniband/hw/nes/nes_cm.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+However, readahead thrashings are far more prevalent than one would
+expect in a FTP/HTTP file streaming server. It can happen in a modern
+server with 16GB memory, 1Gbps outbound bandwidth and 1MB readahead
+size, due to the existences of slow streams.
 
-diff --git a/drivers/infiniband/hw/nes/nes_cm.c b/drivers/infiniband/hw/nes/nes_cm.c
-index dbd9a75..1bad93b 100644
---- a/drivers/infiniband/hw/nes/nes_cm.c
-+++ b/drivers/infiniband/hw/nes/nes_cm.c
-@@ -854,8 +854,9 @@ static struct nes_cm_listener *find_listener(struct nes_cm_core *cm_core,
- {
- 	unsigned long flags;
- 	struct nes_cm_listener *listen_node;
-+#ifdef CONFIG_INFINIBAND_NES_DEBUG
- 	__be32 tmp_addr = cpu_to_be32(dst_addr);
--
-+#endif
- 	/* walk list and find cm_node associated with this session ID */
- 	spin_lock_irqsave(&cm_core->listen_list_lock, flags);
- 	list_for_each_entry(listen_node, &cm_core->listen_list.list, list) {
--- 
-1.5.6.5
+Let's do a coarse calculation. The 8GB inactive_list pages will be
+cycled in 64Gb/1Gbps=64 seconds. This means an async readahead window
+must be consumed in 64s, or it will be thrashed.  That's a speed of
+2048KB/64s=32KB/s. Any client below this speed will create thrashings
+in the server. In practice, those poor slow clients could amount to
+half of the total connections(partly because it will take them more
+time to download anything). The frequent thrashings will in return
+speedup the LRU cycling/aging speed...
 
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
+We need a thrashing safe mode which do
+- the above modified context readahead algorithm
+- conservative ramp up of readahead size
+- conservative async readahead size
+
+The main problem is: when shall we switch into the mode?
+
+We can start with aggressive readahead and try to detect readahead
+thrashings and switch into thrashing safe mode automatically. This
+will work for non-interleaved reads.  However the big file streamer -
+lighttpd - does interleaved reads.  The current data structure is not
+able to detect most readahead thrashings for lighttpd.
+
+Luckily, the non-resident page tracking facility could help this case.
+There the thrashed pages with their timing info can be found, based on
+which we can have some extended context readahead algorithm that could
+even overcome the drop-behind problem :)
+
+Thanks,
+Fengguang
