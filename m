@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZDLNhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZDLNvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbZDLNhp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 09:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZDLNhg
+	id S1753289AbZDLNvg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 09:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZDLNv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 09:37:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41314 "EHLO mx3.mail.elte.hu"
+	Sun, 12 Apr 2009 09:51:27 -0400
+Received: from vienpom.coecu.nl ([82.94.165.232]:50539 "EHLO vienpom.coecu.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbZDLNhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 09:37:35 -0400
-Date: Sun, 12 Apr 2009 15:37:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
-Message-ID: <20090412133714.GB384@elte.hu>
-References: <49D3236D.3090705@cn.fujitsu.com> <49D32387.9040106@cn.fujitsu.com> <49E051B9.8060805@cn.fujitsu.com> <20090412130727.GC20281@elte.hu> <20090412131028.GT5178@kernel.dk>
+	id S1751684AbZDLNv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 09:51:27 -0400
+X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Apr 2009 09:51:26 EDT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090412131028.GT5178@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Sun, 12 Apr 2009 15:45:51 +0200
+From: =?UTF-8?Q?M=C3=B4she_van_der_Sterre?= <me@moshe.nl>
+To: containers@lists.osdl.org, lxc-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: BUG in tty_open when using containers and ptrace
+Message-ID: <d06d0dd6a4ddf760bea53291c048e291@[::1]>
+User-Agent: RoundCube Webmail/0.2-beta
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+I am working on the lxc userspace tools, and got this BUG a couple of
+times.
+Here are the reports:
 
-> On Sun, Apr 12 2009, Ingo Molnar wrote:
-> > 
-> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> > > Hi Ingo,
-> > > 
-> > > I would like to ask what's the status of these 2 patches.
-> > > 
-> > > Arnaldo acked on them.
-> > 
-> > They looked good to me - but i'm waiting for an Ack from Jens. Jens 
-> > has complained about seeing un-ack-ed patches in the blktrace code, 
-> > so i've started serializing any new patches on acks from Jens. The 
-> > workflow would be more efficient i suspect if Jens 
-> > nominated/declared you and Arnaldo as blktrace co-maintainers too - 
-> > most of the patches come from you two.
-> 
-> I'd be fine with listing Li Zefan as co-maintainer of the blktrace 
-> bits. He knows what he is doing and is also a user of blktrace, so 
-> I think he would be fine. Li, what do you think?
+http://moshe.nl/tty-bugshot1.png
+http://moshe.nl/tty-bugshot2.png
 
-Cool ... i've also taken this as an implicit approval from you of Li 
-sending blktrace patches so i have queued the two up.
+I am running 2.6.29.1 from kernel.org in a virtual machine under kvm.
+I have not been able to reliably reproduce it, but it happens only after
+the container is setup and ptrace is active on lxc-start.
+I think the first screen shot is while all ttys where allowed in
+cgroup.devices, the second one while only tty1 was allowed.
 
-The next big (and nice!) step would be the blktrace events in 
-TRACE_EVENT() style. That would integrate the blktrace tracepoints 
-with all the others, in one coherent framework.
-
-Thanks,
-
-	Ingo
+Greetings,
+Môshe van der Sterre
