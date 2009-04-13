@@ -1,77 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZDMEZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZDME1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZDMEZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 00:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZDMEZq
+	id S1754619AbZDME1J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 00:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZDME0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 00:25:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52819 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbZDMEZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 00:25:45 -0400
-Date: Mon, 13 Apr 2009 06:24:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       hpa@linux.intel.com, rjw@sisk.pl, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/setup] x86, setup: "glove box" BIOS calls --
-	infrastructure
-Message-ID: <20090413042459.GA6479@elte.hu>
-References: <20090410103934.GA21506@elte.hu> <20090410104648.GA31516@elf.ucw.cz> <20090410112546.GD21506@elte.hu> <20090410113824.GA18823@elf.ucw.cz> <49E0C1AB.2050608@redhat.com> <49E17A6E.5000104@zytor.com> <alpine.LFD.2.00.0904120754240.4583@localhost.localdomain> <20090412163356.GA2392@elte.hu> <49E2398A.3050405@redhat.com> <20090413041625.GF11652@elte.hu>
+	Mon, 13 Apr 2009 00:26:55 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:36997 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbZDME0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 00:26:54 -0400
+Message-ID: <49E2BEE2.8070305@oracle.com>
+Date: Sun, 12 Apr 2009 21:26:10 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413041625.GF11652@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andres Salomon <dilinger@queued.net>
+CC: akpm@linux-foundation.org, david-b@pacbell.net, jordan@cosmicpenguin.net,
+       katzj@redhat.com, tiwai@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: + cs553x-gpio-add-amd-cs5535-cs5536-gpio-driver-support-fix-fix.patch
+ added to -mm tree
+References: <200904062355.n36NtLTf018342@imap1.linux-foundation.org>	<49DFA576.6040005@oracle.com> <20090412215203.45e2a876@ephemeral>
+In-Reply-To: <20090412215203.45e2a876@ephemeral>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.49E2BEC6.0001:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andres Salomon wrote:
+> On Fri, 10 Apr 2009 13:00:54 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+>> akpm@linux-foundation.org wrote:
+>>> The patch titled
+>>>      cs553x-gpio-add-amd-cs5535-cs5536-gpio-driver-support-fix-fix
+>>> has been added to the -mm tree.  Its filename is
+>>>      cs553x-gpio-add-amd-cs5535-cs5536-gpio-driver-support-fix-fix.patch
+>>>
+>>> Before you just go and hit "reply", please:
+>>>    a) Consider who else should be cc'ed
+>>>    b) Prefer to cc a suitable mailing list as well
+>>>    c) Ideally: find the original patch on the mailing list and do a
+>>>       reply-to-all to that, adding suitable additional cc's
+>>>
+>>> *** Remember to use Documentation/SubmitChecklist when testing your
+>>> code ***
+>>>
+>>> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+>>> out what to do about this
+>>>
+>>> The current -mm tree may be found at
+>>> http://userweb.kernel.org/~akpm/mmotm/
+>>>
+>>> ------------------------------------------------------
+>>> Subject:
+>>> cs553x-gpio-add-amd-cs5535-cs5536-gpio-driver-support-fix-fix From:
+>>> Andres Salomon <dilinger@queued.net>
+>>>
+>>> force GPIO_CS553X to be defined when OLPC is selected
+>>>
+>>> We've begun using the generic GPIO stuff for geodes, so OLPC
+>>> implicitly depends upon this.  This patch forces selection of it.
+>>>
+>>> Signed-off-by: Andres Salomon <dilinger@debian.org>
+>>> Cc: Takashi Iwai <tiwai@suse.de>
+>>> Cc: Jeremy Katz <katzj@redhat.com>
+>>> Cc: Jordan Crouse <jordan@cosmicpenguin.net>
+>>> Cc: David Brownell <david-b@pacbell.net>
+>>> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>> ---
+>>>
+>>>  arch/x86/Kconfig         |    1 +
+>>>  pci/cs5535audio/Makefile |    0 
+>>>  2 files changed, 1 insertion(+)
+>>>
+>>> diff -puN
+>>> arch/x86/Kconfig~cs553x-gpio-add-amd-cs5535-cs5536-gpio-driver-support-fix-fix
+>>> arch/x86/Kconfig ---
+>>> a/arch/x86/Kconfig~cs553x-gpio-add-amd-cs5535-cs5536-gpio-driver-support-fix-fix
+>>> +++ a/arch/x86/Kconfig @@ -1972,6 +1972,7 @@ config
+>>> GEODE_MFGPT_TIMER config OLPC
+>>>  	bool "One Laptop Per Child support"
+>>> +	select GPIO_CS553X
+>>>  	default n
+>>>  	---help---
+>>>  	  Add support for detecting the unique features of the OLPC
+>>
+>> In mmotm-2009-0410, this patch causes build errors when GPIOLIB is
+>> not enabled since GPIO_CS553X uses gpiolib functions & struct fields:
+>>
+>> drivers/gpio/cs553x-gpio.c:23: error: field 'chip' has incomplete type
+> [...]
+>>
+>> One possible patch is also to select GPIOLIB above in the OLPC config
+>> block.
+>>
+> 
+> Does the following help?  I think this is what we want (gpio-cs553x uses
+> gpiolib).  I'm a bit unclear how the other gpio drivers get away with
+> including linux/gpio.h and using gpio_chip without requiring GPIOLIB.
+> Maybe they implicitly are built on architectures which select
+> CONFIG_ARCH_REQUIRE_GPIOLIB?
+> 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+It helps some (and is needed), but there is another problem.
+
+When PCI is not enabled:
+
+drivers/gpio/cs553x-gpio.c: In function 'cs553x_gpio_probe':
+drivers/gpio/cs553x-gpio.c:176: error: implicit declaration of function 'pci_enable_device_io'
+drivers/gpio/cs553x-gpio.c:182: error: implicit declaration of function 'pci_request_region'
+drivers/gpio/cs553x-gpio.c:207: error: implicit declaration of function 'pci_release_region'
+
+I guess that OLPC needs an additional dependency on PCI ??
 
 > 
-> * Avi Kivity <avi@redhat.com> wrote:
 > 
-> > Ingo Molnar wrote:
-> >>> Sure, go ahead and wrap them in some kind of "save and restore all  
-> >>> registers" wrapping, but nothing fancier than that. It would just be 
-> >>> overkill, and likely to break more than it fixes.
-> >>>     
-> >>
-> >> Yeah. I only brought up the virtualization thing as a 
-> >> hypothetical: "if" corrupting the main OS ever became a 
-> >> widespread problem. Then i made the argument that this is 
-> >> unlikely to happen, because Windows will be affected by it just 
-> >> as much. (while register state corruptions might go unnoticed 
-> >> much more easily, just via the random call-environment clobbering 
-> >> of registers by Windows itself.)
-> >>
-> >> The only case where i could see virtualization to be useful is 
-> >> the low memory RAM corruption pattern that some people have 
-> >> observed.
-> >
-> > You could easily check that by checksumming pages (or actually 
-> > copying them to high memory) before the call, and verifying after 
-> > the call.
+> Force GPIO_CS553X to select GPIOLIB, which it makes use of.
 > 
-> Yes, we could do memory checks, and ... hey, we already do that:
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
 > 
->    bb577f9: x86: add periodic corruption check
->    5394f80: x86: check for and defend against BIOS memory corruption
-> 
-> ... and i seem to be the one who implemented it! ;-)
+> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> index 797ff45..17d7364 100644
+> --- a/drivers/gpio/Kconfig
+> +++ b/drivers/gpio/Kconfig
+> @@ -148,6 +148,7 @@ comment "PCI GPIO expanders:"
+>  config GPIO_CS553X
+>  	tristate "AMD cs5535/cs5536 GPIO support"
+>  	depends on PCI && !CS5535_GPIO && !MGEODE_LX
+> +	select GPIOLIB
+>  	help
+>  	  The AMD cs5535 and cs5536 southbridges support 28 GPIO pins that
+>  	  can be used for quite a number of things.  The cs553x is found on
 
-s/implemented/merged+fixed :-)
 
-	Ingo
+-- 
+~Randy
