@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZDMVp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZDMVrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbZDMVp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 17:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZDMVpL
+	id S1753139AbZDMVrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 17:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZDMVrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 17:45:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39802 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752087AbZDMVpJ (ORCPT
+	Mon, 13 Apr 2009 17:47:03 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:43624 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbZDMVrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 17:45:09 -0400
-Date: Mon, 13 Apr 2009 14:33:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Valdis.Kletnieks@vt.edu
-cc: "Serge E. Hallyn" <serue@us.ibm.com>, mtk.manpages@gmail.com,
-       Stephen Smalley <sds@epoch.ncsc.mil>, Andrew Morgan <morgan@kernel.org>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Igor Zhbanov <izh1979@gmail.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org,
-       linux-api@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] add some long-missing capabilities to fs_mask
-In-Reply-To: <13502.1239656608@turing-police.cc.vt.edu>
-Message-ID: <alpine.LFD.2.00.0904131433270.26713@localhost.localdomain>
-References: <20090413145614.GA15342@us.ibm.com> <13502.1239656608@turing-police.cc.vt.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 13 Apr 2009 17:47:01 -0400
+Date: Mon, 13 Apr 2009 16:47:01 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
+       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/30] cr: core stuff
+Message-ID: <20090413214701.GA24509@us.ibm.com>
+References: <20090410023539.GK27788@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410023539.GK27788@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Alexey Dobriyan (adobriyan@gmail.com):
 
+Hi Alexey,
 
-On Mon, 13 Apr 2009, Valdis.Kletnieks@vt.edu wrote:
-> 
-> Wow. How did this manage to stay un-noticed for this long?
+as far as I can see, the main differences between this patch and the
+equivalent in Oren's tree are:
 
-Because nobody uses capabilities?
+1. kernel auto-selects container init to freeze
+2. kernel freezes tasks
+3. no objhash taking references
+4. no hbuf
+5. always require CAP_SYS_ADMIN
 
-		Linus
+Are there other differences which you would consider meaningful?  Which
+do you consider the most important?
+
+Also, since Dave introduced the fops->checkpoint(), we (or at least I)
+have been struck by the ugly assymetry with checkpoint() being in fops,
+and restart() not.  Do you have an idea for fixing that?
+
+thanks,
+-serge
