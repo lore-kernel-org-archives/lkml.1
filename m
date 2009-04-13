@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZDMS7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZDMTD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbZDMS7s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 14:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZDMS7j
+	id S1753247AbZDMTD3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 15:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZDMTDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 14:59:39 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:39644 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751435AbZDMS7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 14:59:38 -0400
-From: monstr@monstr.eu
-To: jeff@garzik.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 1/1] microblaze: Fix problem with removing zero length files
-Date: Mon, 13 Apr 2009 20:56:57 +0200
-Message-Id: <1239649017-5850-1-git-send-email-monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.5.1
+	Mon, 13 Apr 2009 15:03:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:45031 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbZDMTDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 15:03:19 -0400
+Message-ID: <49E38C76.2090308@goop.org>
+Date: Mon, 13 Apr 2009 12:03:18 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       Valdis.Kletnieks@vt.edu, travis@sgi.com, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, rusty@rustcorp.com.au, davej@redhat.com,
+       lenb@kernel.org
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>	<4609.1239456126@turing-police.cc.vt.edu>	<alpine.LFD.2.00.0904130847500.4583@localhost.localdomain>	<20090413171853.GA4601@elte.hu>	<20090413102749.4ca3a217.akpm@linux-foundation.org>	<alpine.LFD.2.00.0904131040350.4583@localhost.localdomain> <20090413114932.44b47910.akpm@linux-foundation.org>
+In-Reply-To: <20090413114932.44b47910.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+Andrew Morton wrote:
+> On Mon, 13 Apr 2009 10:45:45 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>   
+>> IOW, why not just do
+>>
+>> 	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
+>>
+>> here?
+>>
+>>     
+>
+> Didn't know it existed :(
+>   
 
-Adding one new line was recommended solution.
-Test with make distclean
+It's relatively new compared to the rest of the smp_call_function_* family.
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/include/asm/auxvec.h   |    1 +
- arch/microblaze/include/asm/cputable.h |    1 +
- arch/microblaze/include/asm/hw_irq.h   |    1 +
- arch/microblaze/include/asm/user.h     |    1 +
- arch/microblaze/include/asm/vga.h      |    1 +
- 5 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/microblaze/include/asm/auxvec.h b/arch/microblaze/include/asm/auxvec.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/auxvec.h
-+++ b/arch/microblaze/include/asm/auxvec.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/cputable.h b/arch/microblaze/include/asm/cputable.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/cputable.h
-+++ b/arch/microblaze/include/asm/cputable.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/hw_irq.h b/arch/microblaze/include/asm/hw_irq.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/hw_irq.h
-+++ b/arch/microblaze/include/asm/hw_irq.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/user.h b/arch/microblaze/include/asm/user.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/user.h
-+++ b/arch/microblaze/include/asm/user.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/vga.h b/arch/microblaze/include/asm/vga.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/vga.h
-+++ b/arch/microblaze/include/asm/vga.h
-@@ -0,0 +1 @@
-+
--- 
-1.5.5.1
-
+    J
