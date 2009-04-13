@@ -1,109 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZDMIDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZDMIKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbZDMIDK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 04:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZDMICz
+	id S1753534AbZDMIKz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 04:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZDMIKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 04:02:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59742 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751836AbZDMICy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 04:02:54 -0400
-Message-ID: <49E2F19A.3040006@cn.fujitsu.com>
-Date: Mon, 13 Apr 2009 16:02:34 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 13 Apr 2009 04:10:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:13444 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbZDMIKn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 04:10:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UzTJ0YF+IPTNtSv1X3j23hTemNgBglqGiDjBEMtOpzQ0AXRDK4JBqzmF5T5qiPJkbl
+         k5uL4Kl+D0vrkF4LW6K4pgYGS5ZDzTEpoayB8E/1swnx47i7UjWiegT6qs8Myp5XWnYk
+         IbIWmiP8v7d1s1W/gh0pvNDsQJaMuez2fPgvI=
+Date: Mon, 13 Apr 2009 12:10:50 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Brian Haley <brian.haley@hp.com>
+Cc: Ingo Molnar <mingo@elte.hu>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, hch@infradead.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 10/30] cr: core stuff
+Message-ID: <20090413081050.GA4687@x200.localdomain>
+References: <20090410023539.GK27788@x200.localdomain> <20090410093520.GH17962@elte.hu> <20090410114326.GC3311@x200.localdomain> <49DF718B.9050809@hp.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] tracing: Make branch trace display correct header
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DF718B.9050809@hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before patch:
-  # tracer: branch
-  #
-  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-  #              | |       |          |         |
-             <...>-2981  [000] 24008.872738: [  ok  ] trace_irq_handler_exit:irq_event_types.h:41
-             <...>-2981  [000] 24008.872742: [  ok  ] note_interrupt:spurious.c:229
-  ...
+On Fri, Apr 10, 2009 at 12:19:23PM -0400, Brian Haley wrote:
+> Alexey Dobriyan wrote:
+> > And of course, I don't want to see multiline
+> > 
+> > 	vmflags &= ~(VM_READ|VM_WRITE|
+> > 			[5 lines skipped]
+> 
+> Then why don't you:
+> 
+> #define VM_CR_FOO (VM_READ|VM_WRITE|...)
+> 
+> 	vmflags &= ~VM_CR_FOO;
 
-After patch:
-# tracer: branch
-#
-#           TASK-PID    CPU#    TIMESTAMP  CORRECT  FUNC:FILE:LINE
-#              | |       |          |         |       |
-           <...>-2985  [000] 26329.142970: [  ok  ] slab_free:slub.c:1776
-           <...>-2985  [000] 26329.142972: [  ok  ] trace_kmem_cache_free:kmem_event_types.h:191
-  ...
-
-But it is not the best fix way.
-When format(length) of TASK-PID, CPU and TIMESTAMP chanegd in trace.c,
-other files who uses there fields need to changed for print right header line.
-
-Maybe we can make a function to print header line of these 3 field:
-print_common_head()
-{
-	seq_puts(s, "#           TASK-PID    CPU#    TIMESTAMP");
-}
-
-and call this function in other files' print_header:
-static void branch_print_header(struct seq_file *s)
-{
-	print_common_head();
-	seq_puts(s, "  CORRECT  FUNC:FILE:LINE\n");
-}
-
-But if header line is multi-line, this way can't work.
-
-Another way is to export specific header-line content in other files:
-static void branch_print_header(char *buf, int len)
-{
-	strcpy(buf, "  CORRECT  FUNC:FILE:LINE\n"
-		    "     |            |\n"
-		    );
-}
-And combile common-header and specific header in trace.c, then do seq_puts.
-But this seems too complex for tracing framework.
-
-Similar problem exists in other tracers as sched_switch.
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_branch.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index 8e64e60..7a7a9fd 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -157,6 +157,13 @@ static enum print_line_t trace_branch_print(struct trace_iterator *iter,
- 	return TRACE_TYPE_HANDLED;
- }
- 
-+static void branch_print_header(struct seq_file *s)
-+{
-+	seq_puts(s, "#           TASK-PID    CPU#    TIMESTAMP  CORRECT"
-+		"  FUNC:FILE:LINE\n");
-+	seq_puts(s, "#              | |       |          |         |   "
-+		"    |\n");
-+}
- 
- static struct trace_event trace_branch_event = {
- 	.type		= TRACE_BRANCH,
-@@ -171,6 +178,7 @@ static struct tracer branch_trace __read_mostly =
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest	= trace_selftest_startup_branch,
- #endif /* CONFIG_FTRACE_SELFTEST */
-+	.print_header	= branch_print_header,
- };
- 
- __init static int init_branch_tracer(void)
--- 1.5.5.3 
-
+This won't fix "multiline" part.
