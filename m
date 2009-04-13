@@ -1,53 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZDMVrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZDMVre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbZDMVrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 17:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZDMVrD
+	id S1754013AbZDMVre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 17:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZDMVrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 17:47:03 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43624 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbZDMVrB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 17:47:01 -0400
-Date: Mon, 13 Apr 2009 16:47:01 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
-       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/30] cr: core stuff
-Message-ID: <20090413214701.GA24509@us.ibm.com>
-References: <20090410023539.GK27788@x200.localdomain>
+	Mon, 13 Apr 2009 17:47:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59662 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752387AbZDMVrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 17:47:14 -0400
+Date: Mon, 13 Apr 2009 21:46:27 GMT
+From: tip-bot for Zhaolei <zhaolei@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tzanussi@gmail.com, arjan@linux.intel.com, zhaolei@cn.fujitsu.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tzanussi@gmail.com, arjan@linux.intel.com, zhaolei@cn.fujitsu.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <49E2E889.5000903@cn.fujitsu.com>
+References: <49E2E889.5000903@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] tracing: Fix power tracer header
+Message-ID: <tip-a3d03ecaf9fe722bf96e4ef4a2f5e42ef652ddeb@git.kernel.org>
+Git-Commit-ID: a3d03ecaf9fe722bf96e4ef4a2f5e42ef652ddeb
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090410023539.GK27788@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Apr 2009 21:46:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
+Commit-ID:  a3d03ecaf9fe722bf96e4ef4a2f5e42ef652ddeb
+Gitweb:     http://git.kernel.org/tip/a3d03ecaf9fe722bf96e4ef4a2f5e42ef652ddeb
+Author:     Zhaolei <zhaolei@cn.fujitsu.com>
+AuthorDate: Mon, 13 Apr 2009 15:23:53 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 13 Apr 2009 23:39:57 +0200
 
-Hi Alexey,
+tracing: Fix power tracer header
 
-as far as I can see, the main differences between this patch and the
-equivalent in Oren's tree are:
+Before patch:
+  # tracer: power
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+  #              | |       |          |         |
+  [  676.875865889] CSTATE: Going to C1 on cpu 0 for 0.005911463
+  [  676.882938805] CSTATE: Going to C1 on cpu 0 for 0.104796532
+  ...
 
-1. kernel auto-selects container init to freeze
-2. kernel freezes tasks
-3. no objhash taking references
-4. no hbuf
-5. always require CAP_SYS_ADMIN
+After patch:
+  # tracer: power
+  #
+  #   TIMESTAMP      STATE  EVENT
+  #       |            |      |
+  [  676.875865889] CSTATE: Going to C1 on cpu 0 for 0.005911463
+  [  676.882938805] CSTATE: Going to C1 on cpu 0 for 0.104796532
+  ...
 
-Are there other differences which you would consider meaningful?  Which
-do you consider the most important?
+v2: Use seq_puts instead of seq_printf
 
-Also, since Dave introduced the fops->checkpoint(), we (or at least I)
-have been struck by the ugly assymetry with checkpoint() being in fops,
-and restart() not.  Do you have an idea for fixing that?
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+LKML-Reference: <49E2E889.5000903@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-thanks,
--serge
+
+---
+ kernel/trace/trace_power.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/trace_power.c b/kernel/trace/trace_power.c
+index bae791e..1184397 100644
+--- a/kernel/trace/trace_power.c
++++ b/kernel/trace/trace_power.c
+@@ -186,6 +186,12 @@ static enum print_line_t power_print_line(struct trace_iterator *iter)
+ 	return TRACE_TYPE_UNHANDLED;
+ }
+ 
++static void power_print_header(struct seq_file *s)
++{
++	seq_puts(s, "#   TIMESTAMP      STATE  EVENT\n");
++	seq_puts(s, "#       |            |      |\n");
++}
++
+ static struct tracer power_tracer __read_mostly =
+ {
+ 	.name		= "power",
+@@ -194,6 +200,7 @@ static struct tracer power_tracer __read_mostly =
+ 	.stop		= stop_power_trace,
+ 	.reset		= power_trace_reset,
+ 	.print_line	= power_print_line,
++	.print_header	= power_print_header,
+ };
+ 
+ static int init_power_trace(void)
