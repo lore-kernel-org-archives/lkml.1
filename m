@@ -1,98 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZDMHNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZDMHY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZDMHNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 03:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZDMHM4
+	id S1753795AbZDMHY1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 03:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZDMHYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 03:12:56 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54406 "EHLO song.cn.fujitsu.com"
+	Mon, 13 Apr 2009 03:24:17 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63964 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752703AbZDMHMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 03:12:55 -0400
-Message-ID: <49E2E5CD.9050402@cn.fujitsu.com>
-Date: Mon, 13 Apr 2009 15:12:13 +0800
-From: Shen Feng <shen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751836AbZDMHYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 03:24:16 -0400
+Message-ID: <49E2E889.5000903@cn.fujitsu.com>
+Date: Mon, 13 Apr 2009 15:23:53 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: gregkh@suse.de, Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] doc: add documentation for debugfs
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH v2] tracing: Make power trace display correct header
+References: <49E2E317.5000002@cn.fujitsu.com>
+In-Reply-To: <49E2E317.5000002@cn.fujitsu.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ChangeLog:
+v1: Make power trace display correct header
+v2: Use seq_puts instead of seq_printf
 
-debugfs is used as a virtual filesystem devoted to debugging
-information. But it's not documented in Documentation/filesystems.
-Add one for it. The content is mainly from
-http://lwn.net/Articles/115405/
+Before patch:
+  # tracer: power
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+  #              | |       |          |         |
+  [  676.875865889] CSTATE: Going to C1 on cpu 0 for 0.005911463
+  [  676.882938805] CSTATE: Going to C1 on cpu 0 for 0.104796532
+  ...
 
-Signed-off-by: Shen Feng <shen@cn.fujitsu.com>
+After patch:
+  # tracer: power
+  #
+  #   TIMESTAMP      STATE  EVENT
+  #       |            |      |
+  [  676.875865889] CSTATE: Going to C1 on cpu 0 for 0.005911463
+  [  676.882938805] CSTATE: Going to C1 on cpu 0 for 0.104796532
+  ...
+
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 ---
- Documentation/filesystems/debugfs.txt |   51 +++++++++++++++++++++++++++++++++
- 1 files changed, 51 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/debugfs.txt
+ kernel/trace/trace_power.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/debugfs.txt b/Documentation/filesystems/debugfs.txt
-new file mode 100644
-index 0000000..112cf0c
---- /dev/null
-+++ b/Documentation/filesystems/debugfs.txt
-@@ -0,0 +1,51 @@
-+        Debugfs - a virtual filesystem devoted to debugging information
+diff --git a/kernel/trace/trace_power.c b/kernel/trace/trace_power.c
+index 810a5b7..8a30d98 100644
+--- a/kernel/trace/trace_power.c
++++ b/kernel/trace/trace_power.c
+@@ -190,6 +190,12 @@ static enum print_line_t power_print_line(struct trace_iterator *iter)
+ 	return TRACE_TYPE_UNHANDLED;
+ }
+ 
++static void power_print_header(struct seq_file *s)
++{
++	seq_puts(s, "#   TIMESTAMP      STATE  EVENT\n");
++	seq_puts(s, "#       |            |      |\n");
++}
 +
-+Debugfs is a virtual filesystem devoted to debugging information. Debugfs is
-+intended to be a relatively easy and lightweight subsystem which gracefully
-+disappears when configured out of the kernel.
-+
-+Traditionally debugfs is supposed to be mounted at /sys/kernel/debug with the
-+following command:
-+
-+ # mount -t debugfs none /sys/kernel/debug/
-+
-+A developer wishing to use debugfs starts by creating a directory within the
-+filesystem:
-+
-+    struct dentry *debugfs_create_dir(const char *name,
-+                                      struct dentry *parent);
-+
-+The parent argument will usually be NULL, causing the directory to be created
-+in the debugfs root. If debugfs is not configured into the system, the return
-+value is -ENODEV; a NULL return, instead, indicates some other sort of error.
-+
-+The general-purpose function for creating a file in debugfs is:
-+
-+    struct dentry *debugfs_create_file(const char *name, mode_t mode,
-+                                       struct dentry *parent, void *data,
-+                                       struct file_operations *fops);
-+
-+The structure pointed to by fops should, of course, contain pointers to the
-+functions which implement the actual operations on the file. In many cases,
-+most of those functions can be the helpers provided by seq_file, making the
-+task of exporting a file easy.
-+
-+Some additional helpers have been provided to make exporting a single value as
-+easy as possible:
-+
-+    struct dentry *debugfs_create_u8(const char *name, mode_t mode,
-+                                     struct dentry *parent, u8 *value);
-+    struct dentry *debugfs_create_u16(const char *name, mode_t mode,
-+                                      struct dentry *parent, u16 *value);
-+    struct dentry *debugfs_create_u32(const char *name, mode_t mode,
-+                                      struct dentry *parent, u32 *value);
-+    struct dentry *debugfs_create_bool(const char *name, mode_t mode,
-+                                       struct dentry *parent, u32 *value);
-+
-+Debugfs does not automatically clean up files when a module shuts down, so,
-+for every file or directory created with the above functions, there must be a
-+call to:
-+
-+    void debugfs_remove(struct dentry *dentry);
-+
-+See Documentation/DocBook/filesystems for more details.
+ static struct tracer power_tracer __read_mostly =
+ {
+ 	.name		= "power",
+@@ -198,6 +204,7 @@ static struct tracer power_tracer __read_mostly =
+ 	.stop		= stop_power_trace,
+ 	.reset		= power_trace_reset,
+ 	.print_line	= power_print_line,
++	.print_header	= power_print_header,
+ };
+ 
+ static int init_power_trace(void)
 -- 
-1.6.0.6
+1.5.5.3
+
 
 
