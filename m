@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbZDMX2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZDMXel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288AbZDMX2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbZDMX2V
+	id S1754043AbZDMXel (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZDMXeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:28:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56366 "EHLO mx2.mail.elte.hu"
+	Mon, 13 Apr 2009 19:34:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52957 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753093AbZDMX2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:28:21 -0400
-Date: Tue, 14 Apr 2009 01:28:07 +0200
+	id S1751976AbZDMXeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 19:34:31 -0400
+Date: Tue, 14 Apr 2009 01:33:52 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] tracing, boottrace: Move include/trace/boot.h to
-	include/linux/boottrace.h
-Message-ID: <20090413232807.GE817@elte.hu>
-References: <49E2B763.8060706@cn.fujitsu.com> <20090413142531.GC5977@nowhere> <20090413222436.GF8514@elte.hu> <alpine.DEB.2.00.0904131907020.3041@gandalf.stny.rr.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 2/7] use smp_call_function_single() in
+	arch/x86/kernel/acpi/cstate.c
+Message-ID: <20090413233352.GF817@elte.hu>
+References: <20090413000628.6F4B0DE11E@ozlabs.org> <20090412234555.32854fd4.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904131907020.3041@gandalf.stny.rr.com>
+In-Reply-To: <20090412234555.32854fd4.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,66 +39,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Mon, 13 Apr 2009 09:30:02 +0930 Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> On Tue, 14 Apr 2009, Ingo Molnar wrote:
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > 
+> > Attempting to rid us of the problematic work_on_cpu().  Just use
+> > smp_call_function_single() here.
+> > 
+> > (Includes fix from Wu Fengguang <fengguang.wu@intel.com>)
+> > 
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Zhao Yakui <yakui.zhao@intel.com>
+> > Cc: Wu Fengguang <fengguang.wu@intel.com>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 > 
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > On Mon, Apr 13, 2009 at 11:54:11AM +0800, Zhaolei wrote:
-> > > > Impact: refactor code, no functionality changed
-> > > > 
-> > > > Files in include/trace/ should be definition of tracepoints, and header
-> > > > file for boot trace should put to include/linux/.
-> > > > 
-> > > > Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> > > > ---
-> > > 
-> > > Until now I had the opinion that it's good to let every tracing 
-> > > headers to be placed in include/trace/* because they are not 
-> > > useful for anything else than the tracer itself so that we don't 
-> > > encumber include/linux for private things.
-> > > 
-> > > So that we have both tracepoints/trace_events plus the low-level 
-> > > tracers headers in include/trace/*
-> > > 
-> > > I'm not opposite to this change, but seeing this patch and the 
-> > > recent divide of kmemtrace headers, I would like to know the 
-> > > opinion of Ingo and Steven about the strict role of 
-> > > include/trace/* Is it only for tracepoints-like bits, or oslo 
-> > > intended for every private tracing purposes?
-> > 
-> > The header split itself is probably good to do - to keep the 'pure' 
-> > portions of tracepoint definitions cleanly separated from more 
-> > functional details like kmem tracer initialization.
-> > 
-> > The move to include/linux/ is indeed more debatable. I think if a 
-> > header says 'footrace.h' in its name, it could easily be in 
-> > include/trace/foo.h instead? Makes for a tidier structure - 
-> > include/linux/ is massively over-crowded already.
-> > 
-> > Steve, what do you think?
+> fyi, my canonical not-documented-anywhere format for atttributing the
+> folded-in fixups is:
 > 
-> We actually discussed this a little at the Linux Collaboration 
-> Summit. The idea was to keep only the tracepoints aka TRACE_EVENT 
-> code in include/trace/ and perhaps special headers that work with 
-> the TRACE_EVENT macros. But the infrastructure of the tracers 
-> would stay in include/linux.
+> [fengguang.wu@intel.com: short description goes here]
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Zhao Yakui <yakui.zhao@intel.com>
+> Cc: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 > 
-> The rational is that we have a separate directory reserved only 
-> for trace points / trace events. Adding more headers into that 
-> directory would make it a bit harder to see right away what trace 
-> events where defined for a particular kernel source.
+> and to include that person's Signed-off-by:, if it was provided.
 
-Hm, i have to say that is true committee design ;-)
-
-The sane thing would be to put event headers into 
-include/trace/events/ and put more generic/utility headers into 
-include/trace/.
-
-Reserving a full subdirectory for one singular purpose is a needless 
-waste of a nice (and unique) name-space resource.
+It might not be documented anywhere but it is obvious hence 
+self-documenting so i've been using your scheme for quite some time 
+for fix foldbacks. Works very well IMO.
 
 	Ingo
