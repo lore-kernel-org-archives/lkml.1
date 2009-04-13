@@ -1,293 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZDMFoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbZDMFwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbZDMFoN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 01:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZDMFn4
+	id S1755055AbZDMFwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 01:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZDMFwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 01:43:56 -0400
-Received: from mga02.intel.com ([134.134.136.20]:61494 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753434AbZDMFnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 01:43:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,178,1239001200"; 
-   d="scan'208";a="505914033"
-Subject: Re: High latency on /sys/class/thermal
-From: Zhang Rui <rui.zhang@intel.com>
-To: Tiago =?ISO-8859-1?Q?Sim=F5es?= Batista <tiagosbatista@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-In-Reply-To: <20090413042847.5ebf03b4@gmail.com>
-References: <20090411155612.5808570c@ua.pt>
-	 <20090411121416.91fe3c88.akpm@linux-foundation.org>
-	 <20090411231611.7c5f9b69@ua.pt>	<20090412170320.52e374df@gmail.com>
-	 <1239587022.7661.202.camel@rzhang-dt>	<20090413032817.32df07a0@gmail.com>
-	 <1239591771.7661.222.camel@rzhang-dt>  <20090413042847.5ebf03b4@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 13 Apr 2009 13:44:14 +0800
-Message-Id: <1239601454.7661.233.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 13 Apr 2009 01:52:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33036 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418AbZDMFwJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 01:52:09 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/4] ftrace, workqueuetrace: Make workqueue tracepoints use TRACE_EVENT macro
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20090413125653.6E01.A69D9226@jp.fujitsu.com>
+References: <49E2B656.1020308@cn.fujitsu.com> <20090413125653.6E01.A69D9226@jp.fujitsu.com>
+Message-Id: <20090413145105.6E07.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Mon, 13 Apr 2009 14:52:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-13 at 11:28 +0800, Tiago Simões Batista wrote:
-> dmesg attached
-> 
-> This is a new, the maximum latency I got with debug enabled was little
-> over 3 seconds.... For a while I was worried that debugging actually
-> masked the problem!
-> 
-3 seconds is still abnormal.
-It's weird that there is no debug info that I want.
-please add the boot parameter "log_buf_len=1048576" this time and redo
-the test both before and after a S3 cycle.
+From: Zhao Lei <zhaolei@cn.fujitsu.com>
+Subject: [PATCH v2] ftrace, workqueuetrace: Make workqueue tracepoints use TRACE_EVENT macro
 
-thanks,
-rui
+TRACE_EVENT is a more generic way to define tracepoints.
+Doing so adds these new capabilities to this tracepoint:
+
+  - zero-copy and per-cpu splice() tracing
+  - binary tracing without printf overhead
+  - structured logging records exposed under /debug/tracing/events
+  - trace events embedded in function tracer output and other plugins
+  - user-defined, per tracepoint filter expressions
+
+Then, this patch convert DEFINE_TRACE to TRACE_EVENT in workqueue related tracepoint.
 
 
-> On Mon, 13 Apr 2009 11:02:51 +0800
-> Zhang Rui <rui.zhang@intel.com> wrote:
-> 
-> > CC Alexey because this is EC related.
-> > The high letancy is probably spent on accessing the EC address space
-> > in _TMP method.
-> > 
-> > Tiago,
-> > please make sure your kernel is built with CONFIG_ACPI_DEBUG set
-> > and then
-> > 1. boot with printk.time=1 acpi.debug_level=0x07
-> > acpi.debug_layer=0x04000018
-> > 2. run ﻿cat /sys/class/thermal/thermal_zone0/temp
-> > 3. attach the full dmesg output.
-> > 
-> > thanks,
-> > rui
-> > 
-> > On Mon, 2009-04-13 at 10:28 +0800, Tiago Simões Batista wrote:
-> > > acpidump output attached.
-> > > 
-> > > I found no latency on battery iterface, included is another poke at
-> > > the thermal zone for comparison.
-> > > 
-> > > This problem is still present, but at the moment, I shut down the
-> > > sensors-applet on the gnome panel, so that it no longer makes
-> > > gnome-panel stall.
-> > > 
-> > > $ time cat /sys/class/thermal/thermal_zone0/temp 
-> > > 49000
-> > > 
-> > > real	0m13.476s
-> > > user	0m0.001s
-> > > sys	0m0.001s
-> > > $ time cat /sys/class/power_supply/BAT0/*
-> > > 0
-> > > 29
-> > > 0
-> > > 0
-> > > cat: /sys/class/power_supply/BAT0/device: Is a directory
-> > > 582640000
-> > > 65120000
-> > > 18710000
-> > > SMP-SONY
-> > > 04ZL
-> > > cat: /sys/class/power_supply/BAT0/power: Is a directory
-> > > 0
-> > > 0
-> > > 1
-> > > Full
-> > > cat: /sys/class/power_supply/BAT0/subsystem: Is a directory
-> > > Li-ion
-> > > 270
-> > > Battery
-> > > PHYSDEVPATH=/devices/LNXSYSTM:00/device:00/PNP0A03:00/device:0b/PNP0C09:00/ACPI0001:00/ACPI0002:00
-> > > PHYSDEVBUS=acpi
-> > > PHYSDEVDRIVER=sbs
-> > > POWER_SUPPLY_NAME=BAT0
-> > > POWER_SUPPLY_TYPE=Battery
-> > > POWER_SUPPLY_STATUS=Full
-> > > POWER_SUPPLY_PRESENT=1
-> > > POWER_SUPPLY_TECHNOLOGY=Li-ion
-> > > POWER_SUPPLY_VOLTAGE_MIN_DESIGN=14800000
-> > > POWER_SUPPLY_VOLTAGE_NOW=15611000
-> > > POWER_SUPPLY_CURRENT_NOW=0
-> > > POWER_SUPPLY_CURRENT_AVG=0
-> > > POWER_SUPPLY_POWER_NOW=0
-> > > POWER_SUPPLY_POWER_AVG=0
-> > > POWER_SUPPLY_CAPACITY=29
-> > > POWER_SUPPLY_ENERGY_FULL_DESIGN=65120000
-> > > POWER_SUPPLY_ENERGY_FULL=582640000
-> > > POWER_SUPPLY_ENERGY_NOW=18710000
-> > > POWER_SUPPLY_TEMP=270
-> > > POWER_SUPPLY_MODEL_NAME=04ZL
-> > > POWER_SUPPLY_MANUFACTURER=SMP-SONY
-> > > 14800000
-> > > 15611000
-> > > 
-> > > real	0m0.110s
-> > > user	0m0.001s
-> > > sys	0m0.004s
-> > > 
-> > > 
-> > > On Mon, 13 Apr 2009 09:43:42 +0800
-> > > Zhang Rui <rui.zhang@intel.com> wrote:
-> > > 
-> > > > this sounds like an EC problem to me. please attach the acpidump
-> > > > output. is there a long latency when you poke other ACPI devices,
-> > > > say battery?
-> > > > 
-> > > > thanks,
-> > > > rui
-> > > > 
-> > > > On Mon, 2009-04-13 at 00:03 +0800, Tiago Simões Batista wrote:
-> > > > > On Sat, 11 Apr 2009 23:16:11 +0100
-> > > > > Tiago Simões Batista <tiagosbatista@gmail.com> wrote:
-> > > > > 
-> > > > > > Sorry about the noise, by brain was stopped when I sent the
-> > > > > > last mail, please ignore the From address, it is wrong!
-> > > > > > 
-> > > > > > On Sat, 11 Apr 2009 12:14:16 -0700
-> > > > > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > > > 
-> > > > > > > (cc linux-acpi)
-> > > > > > > 
-> > > > > > > On Sat, 11 Apr 2009 15:56:12 +0100 "Tiago Sim__es Batista"
-> > > > > > > <tiagosbatista@gmail.com> wrote:
-> > > > > > > 
-> > > > > > > > Hi all
-> > > > > > > > 
-> > > > > > > > Yesterday, I recompiled my kernel (git + tuxonice)
-> > > > > > > > v2.6.30-rc1-1002-gac91f91, there were a couple of issues,
-> > > > > > > > the main one is ilustrated bellow.
-> > > > > > > > 
-> > > > > > > > I am not familiar with the kernel code, but if you give me
-> > > > > > > > some pointers, I will be glad to investigate this further
-> > > > > > > > 
-> > > > > > > > $time cat /sys/class/thermal/thermal_zone0/temp 
-> > > > > > > > 34000
-> > > > > > > > 
-> > > > > > > > real	0m6.613s
-> > > > > > > > user	0m0.000s
-> > > > > > > > sys	0m0.001s
-> > > > > > > > 
-> > > > > > > 
-> > > > > > > Is this a regression?  Was 2.6.29 OK?
-> > > > > > > 
-> > > > > > > Thanks.
-> > > > > > 
-> > > > > > My last kernel was fine:
-> > > > > > 
-> > > > > > $ time cat /sys/class/thermal/thermal_zone0/temp 
-> > > > > > 48000
-> > > > > > 
-> > > > > > real	0m0.007s
-> > > > > > user	0m0.001s
-> > > > > > sys	0m0.007s
-> > > > > > 
-> > > > > > 
-> > > > > > I also forgot to add some information about my kernels...
-> > > > > > 
-> > > > > > The good one is 2.6.29 + tuxonice as it was the day after the
-> > > > > > 2.6.29 kernel was released.
-> > > > > > 
-> > > > > > The bad one is a pull from linus tree on april the 9th plus
-> > > > > > tuxonice on the same day
-> > > > > > 
-> > > > > > from git (hope this helps):
-> > > > > > $ git describe v2.6.29-tiago2-ice
-> > > > > > v2.6.29-836-g00492ed
-> > > > > > $ git describe v2.6.30-rc1-tiago1-ice
-> > > > > > v2.6.30-rc1-1002-gac91f91
-> > > > > > 
-> > > > > > 
-> > > > > > If tuxonice is a suspect, I will be glad to remove it and
-> > > > > > recompile. If I have the time later this weekend, and nothing
-> > > > > > was found, I will try to bisect this.
-> > > > > > 
-> > > > > 
-> > > > > Here are some results from the bisect:
-> > > > > The metric I used to mark a revision as good/bad was
-> > > > > $ time for ((i =0; i < 100; i++)); do
-> > > > >       cat /sys/class/thermal/thermal_zone0/temp > /dev/null; 
-> > > > >   done
-> > > > > 
-> > > > > The bad ones take forever, i never even finished one bad run.
-> > > > > The good ones take about half a second.
-> > > > > 
-> > > > > When I checked out revisions v2.6.29-148-g33526a5 and
-> > > > > v2.6.29-159-g8a3f257, it took almost 2 secons to run the
-> > > > > command, so I think some of the latency my have been introduced
-> > > > > around these. Yet, I still marked them as good.
-> > > > > 
-> > > > > The resut was:
-> > > > > 478c6a43fcbc6c11609f8cee7c7b57223907754f is first bad commit
-> > > > > witch is a merge. I am out of ideas...
-> > > > > 
-> > > > > I forgot to ask, am I the only one experiencing this? I am
-> > > > > using a TravelMate 4000 with the intel graphics chip, can
-> > > > > anyone reproduce this? If no one can reproduce this, I can
-> > > > > still test a vanilla kernel to remove TOI from the equation!
-> > > > > 
-> > > > > Tiago
-> > > > > 
-> > > > > 
-> > > > > Below is the bisect log:
-> > > > > $ git bisect log
-> > > > > git bisect start
-> > > > > # bad: [ac91f917d7ed7d1ebe14532ee137fcd759b4406d] Merge branch
-> > > > > 'all' into all-tuxonice git bisect bad
-> > > > > ac91f917d7ed7d1ebe14532ee137fcd759b4406d # good:
-> > > > > [178a426510a901d9335f39d3391ae5e8628a36d1] Merge branch
-> > > > > 'tuxonice' into all-tuxonice git bisect good
-> > > > > 178a426510a901d9335f39d3391ae5e8628a36d1 # good:
-> > > > > [fdf9c9979a355916433262ea5e5e64bed5def86e] V4L/DVB (10465):
-> > > > > dsbr100: Add few lost mutex locks. git bisect good
-> > > > > fdf9c9979a355916433262ea5e5e64bed5def86e # good:
-> > > > > [edbd606c4671fcd439164c8d63e896044d706156] Staging: wlan-ng:
-> > > > > Replace WLAN_LOG_ERROR() with printk() git bisect good
-> > > > > edbd606c4671fcd439164c8d63e896044d706156 # good:
-> > > > > [3516c6a8dc0b1153c611c4cf0dc4a51631f052bb] Merge
-> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging-2.6
-> > > > > git bisect good 3516c6a8dc0b1153c611c4cf0dc4a51631f052bb # bad:
-> > > > > [3989203290fba6fdf6bc4825fbf6526e1bf17977] Merge
-> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6 git
-> > > > > bisect bad 3989203290fba6fdf6bc4825fbf6526e1bf17977 # bad:
-> > > > > [d7ca6f8cdffa5765e486edb3dada9121fba8e6aa] Merge branch
-> > > > > 'for-linus' of git://git.o-hand.com/linux-rpurdie-backlight git
-> > > > > bisect bad d7ca6f8cdffa5765e486edb3dada9121fba8e6aa # good:
-> > > > > [3b4dadf05d177289c279c50030c7c75e004952bb] Merge branch
-> > > > > 'acpi_enforce_resources' into release git bisect good
-> > > > > 3b4dadf05d177289c279c50030c7c75e004952bb # bad:
-> > > > > [32fb6c17566ec66de87324a834c7776f40e35e78] Merge branch
-> > > > > 'release' of
-> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
-> > > > > git bisect bad 32fb6c17566ec66de87324a834c7776f40e35e78 # good:
-> > > > > [45e36c1666aa6c8b0c538abcf984b336184d8c3f] Merge
-> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/lethal/sh-2.6 git
-> > > > > bisect good 45e36c1666aa6c8b0c538abcf984b336184d8c3f # good:
-> > > > > [33526a53600ac887d100e3c9b4be3637ac8ae3a5] Merge branch 'x2apic'
-> > > > > into release git bisect good
-> > > > > 33526a53600ac887d100e3c9b4be3637ac8ae3a5 # good:
-> > > > > [c542aadeb4700bc316834d862d52ba3d2664f13a] panasonic-laptop: Fix
-> > > > > autoloading git bisect good
-> > > > > c542aadeb4700bc316834d862d52ba3d2664f13a # bad:
-> > > > > [478c6a43fcbc6c11609f8cee7c7b57223907754f] Merge branch 'linus'
-> > > > > into release git bisect bad
-> > > > > 478c6a43fcbc6c11609f8cee7c7b57223907754f # good:
-> > > > > [15065531c1c5902775ae3ade24eb37d0e688353b] toshiba-acpi: remove
-> > > > > MAINTAINERS entry git bisect good
-> > > > > 15065531c1c5902775ae3ade24eb37d0e688353b # good:
-> > > > > [8a3f257c704e02aee9869decd069a806b45be3f1] Merge branch 'misc'
-> > > > > into release git bisect good
-> > > > > 8a3f257c704e02aee9869decd069a806b45be3f1
-> > > > 
-> > > 
-> > 
-> 
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Signed-off-by: KOSAKI Motohiro <kosaki@jp.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ include/trace/trace_event_types.h     |    1 
+ include/trace/trace_events.h          |    1 
+ include/trace/workqueue.h             |   19 ------
+ include/trace/workqueue_event_types.h |  101 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 105 insertions(+), 17 deletions(-)
+ create mode 100644 include/trace/workqueue_event_types.h
+
+Index: b/include/trace/trace_event_types.h
+===================================================================
+--- a/include/trace/trace_event_types.h	2009-04-13 12:11:00.000000000 +0900
++++ b/include/trace/trace_event_types.h	2009-04-13 12:18:56.000000000 +0900
+@@ -5,3 +5,4 @@
+ #include <trace/lockdep_event_types.h>
+ #include <trace/skb_event_types.h>
+ #include <trace/kmem_event_types.h>
++#include <trace/workqueue_event_types.h>
+Index: b/include/trace/trace_events.h
+===================================================================
+--- a/include/trace/trace_events.h	2009-04-13 12:11:00.000000000 +0900
++++ b/include/trace/trace_events.h	2009-04-13 12:18:56.000000000 +0900
+@@ -5,3 +5,4 @@
+ #include <trace/lockdep.h>
+ #include <trace/skb.h>
+ #include <trace/kmem.h>
++#include <trace/workqueue.h>
+Index: b/include/trace/workqueue.h
+===================================================================
+--- a/include/trace/workqueue.h	2009-04-13 12:08:59.000000000 +0900
++++ b/include/trace/workqueue.h	2009-04-13 12:18:56.000000000 +0900
+@@ -1,25 +1,10 @@
+ #ifndef __TRACE_WORKQUEUE_H
+ #define __TRACE_WORKQUEUE_H
+ 
+-#include <linux/tracepoint.h>
+ #include <linux/workqueue.h>
+ #include <linux/sched.h>
++#include <linux/tracepoint.h>
+ 
+-DECLARE_TRACE(workqueue_insertion,
+-	   TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
+-	   TP_ARGS(wq_thread, work));
+-
+-DECLARE_TRACE(workqueue_execution,
+-	   TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
+-	   TP_ARGS(wq_thread, work));
+-
+-/* Trace the creation of one workqueue thread on a cpu */
+-DECLARE_TRACE(workqueue_creation,
+-	   TP_PROTO(struct task_struct *wq_thread, int cpu),
+-	   TP_ARGS(wq_thread, cpu));
+-
+-DECLARE_TRACE(workqueue_destruction,
+-	   TP_PROTO(struct task_struct *wq_thread),
+-	   TP_ARGS(wq_thread));
++#include <trace/workqueue_event_types.h>
+ 
+ #endif /* __TRACE_WORKQUEUE_H */
+Index: b/include/trace/workqueue_event_types.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/include/trace/workqueue_event_types.h	2009-04-13 12:25:16.000000000 +0900
+@@ -0,0 +1,101 @@
++
++/* use <trace/workqueue.h> instead */
++#ifndef TRACE_EVENT
++# error Do not include this file directly.
++# error Unless you know what you are doing.
++#endif
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM workqueue
++
++TRACE_EVENT(workqueue_insertion,
++
++	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
++
++	TP_ARGS(wq_thread, work),
++
++	TP_STRUCT__entry(
++		__array(char,			thread_comm,	TASK_COMM_LEN)
++		__field(pid_t,			thread_pid)
++		__field(struct work_struct *,	work)
++		__field(work_func_t,		func)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
++		__entry->thread_pid	= wq_thread->pid;
++		__entry->work		= work;
++		__entry->func		= work->func;
++	),
++
++	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
++		__entry->thread_pid, __entry->func)
++);
++
++TRACE_EVENT(workqueue_execution,
++
++	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
++
++	TP_ARGS(wq_thread, work),
++
++	TP_STRUCT__entry(
++		__array(char,			thread_comm,	TASK_COMM_LEN)
++		__field(pid_t,			thread_pid)
++		__field(struct work_struct *,	work)
++		__field(work_func_t,		func)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
++		__entry->thread_pid	= wq_thread->pid;
++		__entry->work		= work;
++		__entry->func		= work->func;
++	),
++
++	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
++		__entry->thread_pid, __entry->func)
++);
++
++/* Trace the creation of one workqueue thread on a cpu */
++TRACE_EVENT(workqueue_creation,
++
++	TP_PROTO(struct task_struct *wq_thread, int cpu),
++
++	TP_ARGS(wq_thread, cpu),
++
++	TP_STRUCT__entry(
++		__array(char,	thread_comm,	TASK_COMM_LEN)
++		__field(pid_t,	thread_pid)
++		__field(int,	cpu)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
++		__entry->thread_pid	= wq_thread->pid;
++		__entry->cpu		= cpu;
++	),
++
++	TP_printk("thread=%s:%d cpu=%d", __entry->thread_comm,
++		__entry->thread_pid, __entry->cpu)
++);
++
++TRACE_EVENT(workqueue_destruction,
++
++	TP_PROTO(struct task_struct *wq_thread),
++
++	TP_ARGS(wq_thread),
++
++	TP_STRUCT__entry(
++		__array(char,	thread_comm,	TASK_COMM_LEN)
++		__field(pid_t,	thread_pid)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
++		__entry->thread_pid	= wq_thread->pid;
++	),
++
++	TP_printk("thread=%s:%d", __entry->thread_comm, __entry->thread_pid)
++);
++
++#undef TRACE_SYSTEM
+
 
