@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339AbZDMNdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbZDMNhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752339AbZDMNdO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 09:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZDMNc5
+	id S1752916AbZDMNhG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 09:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZDMNgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 09:32:57 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38121 "EHLO mx1.suse.de"
+	Mon, 13 Apr 2009 09:36:54 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38266 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZDMNc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 09:32:57 -0400
-Date: Mon, 13 Apr 2009 15:32:52 +0200
-Message-ID: <s5h1vrwk7az.wl%tiwai@suse.de>
+	id S1751653AbZDMNgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 09:36:53 -0400
+Date: Mon, 13 Apr 2009 15:36:52 +0200
+Message-ID: <s5hzlekisjv.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Akinobu Mita <akinobu.mita@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] sound updates for 2.6.30
-In-Reply-To: <b6a2187b0904080556gdab1382t466c7fd1303800ee@mail.gmail.com>
-References: <s5hskkli38v.wl%tiwai@suse.de>
-	<b6a2187b0904062304u609c6598i6d76a991b5ab0122@mail.gmail.com>
-	<s5hmyarq5bh.wl%tiwai@suse.de>
-	<b6a2187b0904080556gdab1382t466c7fd1303800ee@mail.gmail.com>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Clemens Ladisch <clemens@ladisch.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+Subject: Re: no sound with the new imac
+In-Reply-To: <dd18b0c30904080858s1e41d5ebjda2d59ad74b6543e@mail.gmail.com>
+References: <dd18b0c30904080023r5e915af1rdbb5333d57e49188@mail.gmail.com>
+	<200904081016.32752.rjw@sisk.pl>
+	<49DCB75A.1010005@ladisch.de>
+	<dd18b0c30904080858s1e41d5ebjda2d59ad74b6543e@mail.gmail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -33,39 +32,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 8 Apr 2009 20:56:11 +0800,
-Jeff Chua wrote:
+At Wed, 8 Apr 2009 08:58:34 -0700,
+Justin Mattock wrote:
 > 
-> On Wed, Apr 8, 2009 at 9:53 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> > At Tue, 7 Apr 2009 14:04:28 +0800,
-> > Jeff Chua wrote:
-> >>
-> >> I encountered this oops with the latest linux git pull. Will this
-> >> update fix the problem? When I rolled back to 2.6.29-stable, the sound
-> >> works find.
-> >>
-> >> Oops from dmesg ...
+> On Wed, Apr 8, 2009 at 7:40 AM, Clemens Ladisch <clemens@ladisch.de> wrote:
+> > Rafael J. Wysocki wrote:
+> >> Takashi, what's the appropriate list for ALSA-related things?
 > >
-> > Judging also from other bug reports, this looks like Analog codec
-> > specific.  Likely it's a typo or so...
+> > alsa-devel (Takashi is on vacation until after the Easter weekend).
 > >
-> > Could you add probe_only=1 module option and load the module, then
-> > run alsa-info.sh output with --no-upload option and attach the
-> > generated file?  The script is found at
-> >    http://www.alsa-project.org/alsa-info.sh
+> >> On Wednesday 08 April 2009, Justin Mattock wrote:
+> >> > Can somebody point me in the right direction
+> >> > to creating the correct pin numbers etc...
+> >> > for the new imac so I can have sound.
 > >
-> > (BTW, I'm on vacation now, and I'll check this bug after Easter
-> >  holidays.  Sorry for inconvenience.)
+> > What kernel version are you using?  Are there any messages in the
+> > system log when you load the snd-hda-intel driver?  What model do you
+> > mean with "the new imac"?  What are the contents of
+> > /proc/asound/card0/codec#0?
+> >
+> >
+> > Best regards,
+> > Clemens
+> >
 > 
-> Good news is the latest linux git pull today makes the HDA opps go
-> away. It's all good now.
+> sh^t
+> forgot about easter.
+> anyways(just another day to me)
+> 
+> As for when I mean new imac, I mean
+> the new update that took place a few weeks ago.
+> here is cat /proc/asound/*
+> dmesg,lspci  is in the file imacinfo.
+> attached.
 
-Good to know.  It must be Mita-san's patch to fix my typo.
-Two strings were concatenated due to lack of comma, and resulted in a
-too long string over the fixed size array.  I'll add strlen check or
-use strlcpy to make it safer later.
+Thanks.  The best would be the result of alsa-info.sh script.
+Get it from
+    http://www.alsa-project.org/alsa-info.sh
+and run it with --no-upload option, then attach the generated file.
 
+As another information, check $LINUX/Documentation/sound/alsa/HD-Audio.txt
+(appearing from 2.6.29).  It contains some details about the HD audio
+driver implementation and give a few debug hints.
 
-thanks,
 
 Takashi
