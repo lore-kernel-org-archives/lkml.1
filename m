@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbZDMXt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZDMXvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbZDMXt7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZDMXts
+	id S1754925AbZDMXvP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbZDMXu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:49:48 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:56299 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbZDMXts (ORCPT
+	Mon, 13 Apr 2009 19:50:59 -0400
+Received: from easi.embeddedalley.com ([71.6.201.124]:52452 "HELO
+	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753332AbZDMXu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:49:48 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: Scheduling while atomic in tty code with cdc-acm driver, kernel 2.6.29.1
-Date: Tue, 14 Apr 2009 01:50:10 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <20090413193633.33ce0710@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090413193633.33ce0710@dhcp-100-2-144.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 13 Apr 2009 19:50:59 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 19:50:59 EDT
+In-Reply-To: <20090413160814.1c335d1d.akpm@linux-foundation.org>
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com> <20090413160814.1c335d1d.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <298A09AD-495E-4671-84A1-B831826424A8@embeddedalley.com>
+Cc: linux-kernel@vger.kernel.org, menage@google.com,
+       containers@lists.linux-foundation.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904140150.10790.oliver@neukum.org>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH] Memory usage limit notification addition to memcg
+Date: Mon, 13 Apr 2009 16:45:17 -0700
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 14 April 2009 01:36:33 schrieb Chuck Ebbert:
-> BUG: sleeping function called from invalid context at kernel/mutex.c:88
-> in_atomic(): 1, irqs_disabled(): 0, pid: 0, name: swapper
-> Pid: 0, comm: swapper Not tainted 2.6.29.1-54.fc11.x86_64 #1
 
-Is this specific to 2.6.29.1? It looks like setting low_latency, as cdc-acm,
-does for legacy reasons, is harmful now. Please remove these lines:
+OK, I'll rewrite and resubmit the patch with suggested updates.
+Comments below...
 
+On Apr 13, 2009, at 4:08 PM, Andrew Morton wrote:
 
-	/* force low_latency on so that our tty_push actually forces the data 
-through,
-	   otherwise it is scheduled, and with high data rates data can get lost. */
-	tty->low_latency = 1;
+> We've run into problems in the past where a percentage number is too
+> coarse on large-memory systems.
+>
+> Proabably that won't be an issue here, but I invite you to convince us
+> of this ;)
 
-	HTH
-		Oliver
+The challenge here is that the absolute limit of the memcg can
+be dynamically changed, so I wanted to avoid a couple of problems.
+One is just a system configuration error where someone forgets
+to modify both.  For example, if you start with the memcg limit of 100M,
+and the notification limit to 80M, then come back and change the memcg
+limit to 90M (or worse, < 80M) you now have a clearly incorrect
+configuration.   Another problem is the operation isn't atomic, at some
+point during the changes, even if you remember to do it correctly, you
+will have the two values not representing what you really want.  It
+could trigger an erroneous notification, or simply OOM kill before you
+get the configuration correct.
+
+If an integer number turns out to not be sufficient, we could change  
+this
+to some fixed point representation and adjust the arithmetic in the  
+tests.
+I believe the integer number will be fine, even in large memory systems.
+This is just a notification model, if we want something more fine  
+grained
+I believe it would need different semantics.
+
+> Does it support select()/poll()/eventfd()/etc?
+
+No.  Unfortunately this is a cgroup implementation limitation.
+My TODO list includes updating cgroups to allow this, using
+this notification as an example.
+
+> Stylistic trick: here, please add
+
+Will do, including some others to get rid of ifdefs.
+
+> ifdefs-in-c make kernel developers sad.
+
+I know.  I'll make them go away.
+
+I'll fix it up and resubmit shortly.
+
+Thanks.
+
+	-- Dan
 
