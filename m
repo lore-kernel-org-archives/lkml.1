@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZDMBES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZDMBGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZDMBES (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 21:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZDMBEA
+	id S1753682AbZDMBGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 21:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZDMBGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 21:04:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:8340 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbZDMBD7 (ORCPT
+	Sun, 12 Apr 2009 21:06:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49990 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752204AbZDMBF7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 21:03:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nWeFxS/ZpV/mN6a2RKmql9S93N6KA/fSJK0HODQ+8UwzsGGUhKyDGgiRIZgor7LLYa
-         pV93TNOFH+DyJPvaGhyM2uyjU3Jxe2by6fdfEnMHtIvbQngUp6gOMeeQV5pBtWXnCpMk
-         YRLBZ3/hSkVknpCETcCCsVDR6J09xJ8f8pVNc=
-Date: Sun, 12 Apr 2009 18:03:49 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [git pull] Input updates for 2.6.30-rc1
-Message-ID: <20090413010345.GA11041@dtor-d630.eng.vmware.com>
-References: <20090408072935.GA27920@dtor-d630.eng.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408072935.GA27920@dtor-d630.eng.vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 12 Apr 2009 21:05:59 -0400
+Date: Mon, 13 Apr 2009 10:04:21 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: linux-kernel@vger.kernel.org, mel@csn.ul.ie, Nick Piggin <npiggin@suse.de>
+Subject: Re: How movable is zone movable?
+Message-Id: <20090413100421.bf80cf99.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200904121129.09851.edt@aei.ca>
+References: <200904121129.09851.edt@aei.ca>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 12:29:35AM -0700, Dmitry Torokhov wrote:
-> Hi Linus,
+On Sun, 12 Apr 2009 11:29:09 -0400
+Ed Tomlinson <edt@aei.ca> wrote:
+
+> Hi,
 > 
-> Please pull from:
+> How dependable should zone movable be?  After a boot kvm is able to get enough hugepages to 
+> back the session.  After a day or two it becomes a lot less predictable.  Sometimes it will swap out for 30 seconds
+> and then succeed other times it will fail.  Interestingly, it sometimes works if I cancel the kvm session after
+> it tells me it cannot allocate the hugepages and immediatly restart.  It there some way to determine what
+> is not respecting zone moveable?  Or is zone moveable just a suggestion and not expected to really be 
+> moveable?
 > 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> or
-> 	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> I have the following set in sysctl.conf
 > 
-> to receive updates for the input subsystem. Bunch of new drivers plus
-> some cleanups to existing ones, nothing too exciting. It looks like I
-> managed to miss the merge window. Oh well...
+> # huge_pages with movablecore set to 3G
+> kernel.shmmax = 8589934592
+> vm.nr_hugepages = 128
+> vm.nr_overcommit_hugepages = 1408
+> vm.hugepages_treat_as_movable = 1
+> vm.hugetlb_shm_group = 1005
+> 
+> This is with any recient kernel release (2.6.28 and later)
 > 
 
-*ping* Any chance this could still be pulled? There were no significant
-changes to the core code, just simple bugfixes and a few new drivers,
-and the changes has been in the linux-next forever...
+At first, "Movable" means that it's only includes anon/file-cache, they are migratable by page
+migration (memory hotremove) and considered to be easy to be freed. 
+Unfortunately, "move/migrate memory" for memory recalim is not implemented yet. So, at allocating
+hugepages, all necessary memory should be freed (swapped out).
 
--- 
-Dmitry
+Plz see /proc/meminfo before trying to allocate hugepages.
+%cat /proc/meminfo
+Then, ACTIVE+INACTIVE is current usage of "Movable" pages. (AnonPages means pages needs swap to be freed.)
+(or plz see /proc/zoneinfo)
+
+If ACTIVE+INACTIVE is near to 3G in your system, some amount of memory will be swapped out
+at huge page allocation.
+
+One tricky way to gain big unused chunk of memory is memory offline->online. This will use
+page migration. (But I don't think it's tested widely.)
+
+
+Thanks,
+-Kame
+
