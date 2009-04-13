@@ -1,134 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZDMWes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZDMWfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753010AbZDMWes (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZDMWeg
+	id S1754515AbZDMWfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZDMWfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:34:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58472 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751656AbZDMWef (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:34:35 -0400
-Date: Mon, 13 Apr 2009 15:24:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: paulmck@linux.vnet.ibm.com, davem@davemloft.net, paulus@samba.org,
-       mingo@elte.hu, torvalds@linux-foundation.org, laijs@cn.fujitsu.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
-Message-Id: <20090413152437.c48723f6.akpm@linux-foundation.org>
-In-Reply-To: <20090413095309.631cf395@nehalam>
-References: <20090411174801.GG6822@linux.vnet.ibm.com>
-	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>
-	<20090412173108.GO6822@linux.vnet.ibm.com>
-	<20090412.181330.23529546.davem@davemloft.net>
-	<20090413040413.GQ6822@linux.vnet.ibm.com>
-	<20090413095309.631cf395@nehalam>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Apr 2009 18:35:32 -0400
+Received: from thunk.org ([69.25.196.29]:59309 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751482AbZDMWfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 18:35:32 -0400
+Date: Mon, 13 Apr 2009 18:35:26 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, RFC 0/3] Improvements to the tracing documentation
+Message-ID: <20090413223526.GB32182@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>
+References: <1239479479-2603-1-git-send-email-tytso@mit.edu> <20090412092524.GA30349@elte.hu> <20090412121533.GB10547@mit.edu> <20090412130105.GB20281@elte.hu> <20090412172344.GC10547@mit.edu> <20090413213124.GB8514@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413213124.GB8514@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009 09:53:09 -0700
-Stephen Hemminger <shemminger@vyatta.com> wrote:
+On Mon, Apr 13, 2009 at 11:31:24PM +0200, Ingo Molnar wrote:
+> Cool. [ And i guess you'll like the per tracepoint filter 
+> expressions too :-) ]
 
-> This is an alternative version of ip/ip6/arp tables locking using
-> per-cpu locks.  This avoids the overhead of synchronize_net() during
-> update but still removes the expensive rwlock in earlier versions.
-> 
-> The idea for this came from an earlier version done by Eric Duzamet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  The slow case involves acquiring the locks on
-> all cpu's.
-> 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
-> 
-> Tested basic functionality (add/remove/list), but don't have test cases
-> for stress, ip6tables or arptables.
-> 
->  unsigned int
->  ipt_do_table(struct sk_buff *skb,
-> @@ -339,9 +341,10 @@ ipt_do_table(struct sk_buff *skb,
->  
->  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
->  
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	local_bh_disable();
-> +	spin_lock(&__get_cpu_var(ip_tables_lock));
+I haven't played with them yet, but I was looking over the source code
+at them (since they aren't documented yet :-).  It looks like at the
+moment only integer matches are allowed, right?  That's a bit of an
+issue for me, since one of the things I'd really like to be able to do
+is filter based on devname (i.e., sda2).  (Most of the time we only
+want to collect information for a particular block device or
+filesystem.)
 
-spin_lock_bh()?
+Actually, the fact that I'm having to drop some 32 bytes for each jbd2
+and ext4 trace log for the bdevname in the ring buffer is really for
+the birds.  What I really want to do is just to drop in the dev_t, and
+then for the tracing infrastructure to have an efficient (cached) way
+of taking the dev_t and turning that back into struct block_device at
+TP_printk time so we can print the bdevname when it's needed.  We
+deifnitely don't want to be calling bdget() in fs/block_dev.c each
+time we print a line in the tracing buffer!  I'm guessing that's
+something the blktrace tracer would find handy as well.
 
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
->  
->  	e = get_entry(table_base, private->hook_entry[hook]);
->  
-> @@ -436,8 +439,8 @@ ipt_do_table(struct sk_buff *skb,
->  			e = (void *)e + e->next_offset;
->  		}
->  	} while (!hotdrop);
-> -
-> -	rcu_read_unlock_bh();
-> +	spin_unlock(&__get_cpu_var(ip_tables_lock));
-> +	local_bh_enable();
->  
->  #ifdef DEBUG_ALLOW_ALL
->  	return NF_ACCEPT;
-> @@ -891,86 +894,34 @@ get_counters(const struct xt_table_info 
->  	     struct xt_counters counters[])
->  {
->  	unsigned int cpu;
-> -	unsigned int i;
-> -	unsigned int curcpu;
-> +	unsigned int i = 0;
-> +	unsigned int curcpu = raw_smp_processor_id();
->  
->  	/* Instead of clearing (by a previous call to memset())
->  	 * the counters and using adds, we set the counters
->  	 * with data used by 'current' CPU
->  	 * We dont care about preemption here.
->  	 */
-> -	curcpu = raw_smp_processor_id();
-> -
-> -	i = 0;
-> +	spin_lock_bh(&per_cpu(ip_tables_lock, curcpu));
->  	IPT_ENTRY_ITERATE(t->entries[curcpu],
->  			  t->size,
->  			  set_entry_to_counter,
->  			  counters,
->  			  &i);
-> +	spin_unlock_bh(&per_cpu(ip_tables_lock, curcpu));
->  
->  	for_each_possible_cpu(cpu) {
->  		if (cpu == curcpu)
->  			continue;
-> +
->  		i = 0;
-> +		spin_lock_bh(&per_cpu(ip_tables_lock, cpu));
->  		IPT_ENTRY_ITERATE(t->entries[cpu],
->  				  t->size,
->  				  add_entry_to_counter,
->  				  counters,
->  				  &i);
-> -	}
+Of course having more kernel code play with dev_t's directly isn't
+considered politically correct in some circles, but tough.  :-)  We
+can't exactly drop a pointer to a struct block_device in the trace
+buffer, since there's no guarantee it will still be valid when we read
+it out.  Dropping in a dev_t is exactly what we want.  It would be
+nice though if there was a way to specify a major/minor number as the
+filter predicate for the dev_t, and not to have the user generate the
+MAJOR/MINOR encoding.  So some way of parsing "MKDEV(8, 4)" as the
+input to the filter predicate would probably be a really good thing to
+do.
 
-This would be racy against cpu hotplug if this code was hotplug-aware.
-
-And it should be hotplug aware, really.  num_possible_cpus() can exceed
-num_online_cpus().  The extent by which possible>online is
-controversial, but one can conceive of situations where it is "lots".
-
-Is lib/percpu_counter.c no good for this application?  Unfixably no
-good?  That code automagically handles cpu hotplug.
-
-
+						- Ted
