@@ -1,107 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZDMO4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZDMO5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZDMO4p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 10:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZDMO4e
+	id S1753376AbZDMO5E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 10:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbZDMO4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 10:56:34 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:58630 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbZDMO4d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 10:56:33 -0400
-Date: Mon, 13 Apr 2009 09:56:14 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: mtk.manpages@gmail.com, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Andrew Morgan <morgan@kernel.org>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Igor Zhbanov <izh1979@gmail.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org,
-       linux-api@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH] add some long-missing capabilities to fs_mask
-Message-ID: <20090413145614.GA15342@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 13 Apr 2009 10:56:47 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:42075 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754258AbZDMO4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 10:56:45 -0400
+Date: Mon, 13 Apr 2009 07:56:38 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH 4/4] net: bonding: add slave device addresses in mode
+ alb
+Message-ID: <20090413075638.61839874@nehalam>
+In-Reply-To: <20090413084614.GE23734@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+	<20090413083729.GA23734@psychotron.englab.brq.redhat.com>
+	<20090413084614.GE23734@psychotron.englab.brq.redhat.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When POSIX capabilities were introduced during the 2.1 Linux
-cycle, the fs mask, which represents the capabilities which having
-fsuid==0 is supposed to grant, did not include CAP_MKNOD and
-CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
-to call these did in fact depend upon fsuid==0.
+On Mon, 13 Apr 2009 10:46:15 +0200
+Jiri Pirko <jpirko@redhat.com> wrote:
 
-This patch introduces those capabilities into the fsmask,
-restoring the old behavior.
+> When in mode alb, add all device addresses which belong to an enslaved slave
+> device to the bond device. This ensures that all mac addresses will be
+> treated as local and bonding in this mode will work fine in bridge.
+> 
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> ---
+>  drivers/net/bonding/bond_main.c |   30 +++++++++++++++++++++++++++++-
+>  1 files changed, 29 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+> index 99610f3..47795c7 100644
+> --- a/drivers/net/bonding/bond_main.c
+> +++ b/drivers/net/bonding/bond_main.c
+> @@ -1385,6 +1385,11 @@ static void bond_setup_by_slave(struct net_device *bond_dev,
+>  	bond->setup_by_slave = 1;
+>  }
+>  
+> +static inline int should_copy_dev_addrs(struct bonding *bond)
+> +{
+> +	return bond->params.mode == BOND_MODE_ALB ? 1 : 0;
+> +}
 
-See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
-reference.
+static inline bool should_copy_dev_addrs(const struct bonding *bond)
+{
+	return (bond->params.mode == BOND_MODE_ALB);
+}
 
-Note that if this fix is deemed valid, then earlier kernel versions (2.4
-and 2.2) ought to be fixed too.
+Three things are wrong with your style here:
+   1. Needless use of tri-graph operator, just return the result
+   2. Use const for test_foo() type functions
+   3. Use bool to make it clearer what the result is.
 
-Changelog:
-	[Mar 23] Actually delete old CAP_FS_SET definition...
-	[Mar 20] Updated against J. Bruce Fields's patch
+>  /* enslave device <slave> to bond device <master> */
+>  int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev)
+>  {
+> @@ -1510,6 +1515,13 @@ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev)
+>  	 */
+>  	new_slave->original_flags = slave_dev->flags;
+>  
+> +	if (should_copy_dev_addrs(bond)) {
+> +		res = dev_addr_add_multiple(bond_dev, slave_dev);
+> +		if (res)
+> +			goto err_free;
+> +		dev_mac_address_changed(bond_dev);
 
-Reported-by: Igor Zhbanov <izh1979@gmail.com>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Cc: stable@kernel.org
-Cc: J. Bruce Fields <bfields@citi.umich.edu>
----
- include/linux/capability.h |   23 +++++++++++++++++++----
- 1 files changed, 19 insertions(+), 4 deletions(-)
+The notifier (dev_mac_address_changed) should be part of dev_addr_add
 
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 4864a43..c302110 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -377,7 +377,21 @@ struct cpu_vfs_cap_data {
- #define CAP_FOR_EACH_U32(__capi)  \
- 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
- 
-+/*
-+ * CAP_FS_MASK and CAP_NFSD_MASKS:
-+ *
-+ * The fs mask is all the privileges that fsuid==0 historically meant.
-+ * At one time in the past, that included CAP_MKNOD and CAP_LINUX_IMMUTABLE.
-+ *
-+ * It has never meant setting security.* and trusted.* xattrs.
-+ *
-+ * We could also define fsmask as follows:
-+ *   1. CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
-+ *   2. The security.* and trusted.* xattrs are fs-related MAC permissions
-+ */
-+
- # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
-+			    | CAP_TO_MASK(CAP_MKNOD)		\
- 			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
- 			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
- 			    | CAP_TO_MASK(CAP_FOWNER)		\
-@@ -392,11 +406,12 @@ struct cpu_vfs_cap_data {
- # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
- # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
- # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
--# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
-+# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-+				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
-+				    CAP_FS_MASK_B1 } })
- # define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
--					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
--					    | CAP_TO_MASK(CAP_MKNOD), \
--					    CAP_FS_MASK_B1 } })
-+				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
-+				    CAP_FS_MASK_B1 } })
- 
- #endif /* _KERNEL_CAPABILITY_U32S != 2 */
- 
--- 
-1.5.4.3
-
-
------ End forwarded message -----
