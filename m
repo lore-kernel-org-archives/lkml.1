@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbZDMTlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZDMTmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbZDMTlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 15:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZDMTlD
+	id S1753388AbZDMTmB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 15:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZDMTlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 15:41:03 -0400
-Received: from sorrow.cyrius.com ([65.19.161.204]:50611 "EHLO
-	sorrow.cyrius.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZDMTlB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 15:41:01 -0400
-Date: Mon, 13 Apr 2009 21:33:11 +0200
-From: Martin Michlmayr <tbm@cyrius.com>
-To: Peter Horton <zero@colonel-panic.org>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       dwmw2@infradead.org
-Subject: Re: [PATCH] mtd: fix timeout in M25P80 driver
-Message-ID: <20090413193311.GA16597@deprecation.cyrius.com>
-References: <20090413142633.GA1560@sloth.localnet>
+	Mon, 13 Apr 2009 15:41:51 -0400
+Received: from relay3.ptmail.sapo.pt ([212.55.154.23]:32794 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751281AbZDMTlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 15:41:51 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Mon, 13 Apr 2009 20:24:50 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] perf_counter: alignment in /proc/interrupts
+Message-ID: <20090413192449.GA3920@hades.domain.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090413142633.GA1560@sloth.localnet>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Horton <zero@colonel-panic.org> [2009-04-13 15:26]:
-> Extend erase timeout in M25P80 SPI Flash driver.
-> 
-> The M25P80 drivers fails erasing sectors on a M25P128 because the ready
-> wait timeout is too short. Change the timeout from a simple loop count to a
-> suitable number of seconds.
-> 
-> Signed-off-by: Peter Horton <zero@colonel-panic.org>
+Trivial fix on columns alignment in /proc/interrupts file.
 
-Tested-by: Martin Michlmayr <tbm@cyrius.com>
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ arch/x86/kernel/irq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-This solves the problem I've seen on the QNAP TS-219.
-
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 1ac5921..38287b5 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -66,7 +66,7 @@ static int show_other_interrupts(struct seq_file *p, int prec)
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
+ 	seq_printf(p, "  Performance counter interrupts\n");
+-	seq_printf(p, "PND: ");
++	seq_printf(p, "%*s: ", prec, "PND");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
+ 	seq_printf(p, "  Performance pending work\n");
 -- 
-Martin Michlmayr
-http://www.cyrius.com/
+1.6.2.1
+
