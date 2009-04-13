@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZDMXhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZDMXkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbZDMXhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZDMXhV
+	id S1754630AbZDMXkQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZDMXkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:37:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53430 "EHLO mx2.redhat.com"
+	Mon, 13 Apr 2009 19:40:01 -0400
+Received: from thunk.org ([69.25.196.29]:38274 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753066AbZDMXhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:37:20 -0400
-Date: Mon, 13 Apr 2009 19:36:33 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-usb@vger.kernel.org
-Subject: Scheduling while atomic in tty code with cdc-acm driver, kernel
- 2.6.29.1
-Message-ID: <20090413193633.33ce0710@dhcp-100-2-144.bos.redhat.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753031AbZDMXj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 19:39:59 -0400
+Date: Mon, 13 Apr 2009 19:39:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH, RFC 0/3] Improvements to the tracing documentation
+Message-ID: <20090413233953.GA955@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+References: <1239479479-2603-1-git-send-email-tytso@mit.edu> <20090412092524.GA30349@elte.hu> <20090412121533.GB10547@mit.edu> <20090412130105.GB20281@elte.hu> <20090412172344.GC10547@mit.edu> <20090413213124.GB8514@elte.hu> <20090413223526.GB32182@mit.edu> <20090413225542.GJ8514@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413225542.GJ8514@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BUG: sleeping function called from invalid context at kernel/mutex.c:88
-in_atomic(): 1, irqs_disabled(): 0, pid: 0, name: swapper
-Pid: 0, comm: swapper Not tainted 2.6.29.1-54.fc11.x86_64 #1
-Call Trace:
- <IRQ>  [<ffffffff8104255c>] __might_sleep+0x10b/0x110
- [<ffffffff813a8f2c>] mutex_lock+0x22/0x38
- [<ffffffff8103f597>] ? enqueue_task_fair+0x2a/0x6d
- [<ffffffff8122f794>] echo_char+0x25/0x81
- [<ffffffff81230e03>] n_tty_receive_buf+0x309/0xe50
- [<ffffffff8103be38>] ? task_rq_unlock+0x11/0x13
- [<ffffffff81042d5c>] ? default_wake_function+0x12/0x14
- [<ffffffff8103a1e0>] ? __wake_up_common+0x4e/0x84
- [<ffffffff8104fe2d>] ? __tasklet_schedule+0x77/0x8e
- [<ffffffff8102af47>] ? default_spin_lock_flags+0x9/0xe
- [<ffffffff81232a48>] ? tty_ldisc_try+0x3c/0x44
- [<ffffffff81233781>] flush_to_ldisc+0x10c/0x19f
- [<ffffffff81233864>] tty_flip_buffer_push+0x50/0x61
- [<ffffffffa03ab6ef>] acm_rx_tasklet+0x10c/0x28c [cdc_acm]
- [<ffffffff81050025>] tasklet_action+0x8e/0xf8
- [<ffffffff81050803>] __do_softirq+0x94/0x179
- [<ffffffff810127cc>] call_softirq+0x1c/0x30
- [<ffffffff8101394e>] do_softirq+0x52/0xb9
- [<ffffffff81050426>] irq_exit+0x53/0x90
- [<ffffffff81013c77>] do_IRQ+0x12c/0x151
- [<ffffffff81011f13>] ret_from_intr+0x0/0x2e
- <EOI>  [<ffffffff812187bd>] ? acpi_idle_enter_bm+0x28f/0x2de
- [<ffffffff812187b5>] ? acpi_idle_enter_bm+0x287/0x2de
- [<ffffffff812ee957>] ? cpuidle_idle_call+0x8d/0xc2
- [<ffffffff810102c7>] ? cpu_idle+0x68/0xb3
- [<ffffffff813a435c>] ? start_secondary+0x199/0x19e
+On Tue, Apr 14, 2009 at 12:55:42AM +0200, Ingo Molnar wrote:
+> 
+> It could be worked around right now by converting it to an integer 
+> but i think what we want is native support for kdev_t, together with 
+> all the usual convenience forms of specifying it: sda1 should work 
+> the same way as 8:1 or 0801. Even /dev/sda1 should be recognized in 
+> a filter expression.
 
+Yeah, I could just drop in the integer now, and and just have
+TP_printk() display "(8, 2)" instead of "sda2".  It's really a
+question of how far we want to take pretty-printing and parsing for
+ftrace, I suppose.
 
+But if we are going to have end-users use it, having real
+pretty-printed names would be a good thing, IMHO.  Especially if
+major/minor numbers start becoming completely random beasts, as some
+have proposed.  (I think it's a terrible idea, but I'm clearly not
+politically correct.  :-)
 
-Partial trace by kernel line numbers:
-
-drivers/char/n_tty.c:828
-
-drivers/char/n_tty.c:1160
-
-drivers/char/tty_buffer.c:444
-
-drivers/char/tty_buffer.c:486
-  if (tty->low_latency)
-    flush_to_ldisc(&tty->buf.work.work);  
+						- Ted
