@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZDMFGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZDMFf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbZDMFGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 01:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZDMFFu
+	id S1754762AbZDMFf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 01:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZDMFfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 01:05:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51833 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752167AbZDMFFt (ORCPT
+	Mon, 13 Apr 2009 01:35:20 -0400
+Received: from night.yars.free.net ([193.233.48.54]:57039 "EHLO
+	night.yars.free.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418AbZDMFfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 01:05:49 -0400
-Date: Sun, 12 Apr 2009 21:59:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: liqin.chen@sunplusct.com
-Cc: Arnd Bergmann <arnd@arndb.de>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 4/14] score - New architecure port to SunplusCT S+CORE
-Message-Id: <20090412215953.9be8b921.akpm@linux-foundation.org>
-In-Reply-To: <OF43EC993E.C89EBBA3-ON48257597.000E9F34-48257597.000F6685@sunplusct.com>
-References: <20090409232957.b97dd46e.akpm@linux-foundation.org>
-	<OF43EC993E.C89EBBA3-ON48257597.000E9F34-48257597.000F6685@sunplusct.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 13 Apr 2009 01:35:19 -0400
+X-Greylist: delayed 2417 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 01:35:18 EDT
+Date: Mon, 13 Apr 2009 08:54:52 +0400
+From: "Alexander V. Lukyanov" <lav@netis.ru>
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29.1 vs 2.6.27.21 ext4 performance problem
+Message-ID: <20090413045452.GA16038@night.netis.ru>
+References: <20090410151235.GA9690@proxy> <20090410163620.GA14814@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410163620.GA14814@mit.edu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009 10:45:54 +0800 liqin.chen@sunplusct.com wrote:
+On Fri, Apr 10, 2009 at 12:36:20PM -0400, Theodore Tso wrote:
+> Does the differences go away if you do echo 0 into
+> /sys/fs/ext4/<dev>/inode_readahead_blks?
 
->         You only commented 4 patches,
->         how about others?
+Yes! Thanks for the tip. I think the problem here is that there
+are lots of files (2M per file system) and the access is random.
 
-I'm a slow reader ;)
+> Are you seeing an increase in time, or decrease in transactions per
+> second, or just that there is is an increase in read rates?
 
-Maybe later in the week.
+Load average goes up from 6 to 30, and request latency increases.
+
+-- 
+   Alexander..
