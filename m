@@ -1,33 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbZDMLrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZDMLz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbZDMLrw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 07:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZDMLrn
+	id S1754025AbZDMLz2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 07:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZDMLzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 07:47:43 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:51126 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbZDMLrm (ORCPT
+	Mon, 13 Apr 2009 07:55:18 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60956 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752372AbZDMLzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 07:47:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:content-type
-         :content-transfer-encoding;
-        b=Om34JXGoC8NOrUglIU2ZZKnVHNZQ56tk091uLBM6nbRmU9hZMIz6rDm3nBmwgSlzG1
-         CwXrHTRymvx0guC3uEfC2rnskFGNEhP5fwEaWwUtwqwYR3OA57qOa2euXnKcJT+hBbVu
-         wTlvpnUwFyzXWteEIBnFl4KEQx5l9KUhdoGnA=
-MIME-Version: 1.0
-Reply-To: aakifah1@hotmail.fr
-Date: Mon, 13 Apr 2009 11:46:57 +0000
-Message-ID: <86ceec250904130446j44ef617ar114d8f30688d13b2@mail.gmail.com>
-Subject: your assistance is needed
-From: aakifah qareebah <aakifah16@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Apr 2009 07:55:17 -0400
+Date: Mon, 13 Apr 2009 12:56:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Soeren Sonnenburg <sonne@debian.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Uhhuh. NMI received for unknown reason b0 on CPU 0.
+Message-ID: <20090413125625.6926ef37@lxorguk.ukuu.org.uk>
+In-Reply-To: <1239430584.10277.2.camel@localhost>
+References: <1239430584.10277.2.camel@localhost>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please get back to me
+On Sat, 11 Apr 2009 08:16:24 +0200
+Soeren Sonnenburg <sonne@debian.org> wrote:
+
+> Dear all,
+> 
+> I just got this error on a samsung nc 10 netbook running 2.6.29.1:
+> 
+> Message from syslogd@x at Fri Apr 10 16:31:48 2009 ...
+> s3 kernel: Uhhuh. NMI received for unknown reason b0 on CPU 0.
+> 
+> Message from syslogd@x at Fri Apr 10 16:31:48 2009 ...
+> s3 kernel: You have some hardware problem, likely on the PCI bus.
+> 
+> Message from syslogd@x at Fri Apr 10 16:31:48 2009 ...
+> s3 kernel: Dazed and confused, but trying to continue
+> 
+> The thing operates as normal but leaves me (and the kernel!) confused?!
+> 
+> Should I be worried?
+
+Possibly. NMI normally comes from things like dud memory.
+
+I would try memtest86 for a few hours just to be sure, and also if you
+can reproduce it load the edac base module and set it to poll for pci
+errors.
+
+It could also be arising from a software error triggering hardware so
+knowing if its reproducable and how/when will be useful.
