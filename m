@@ -1,440 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751686AbZDMR5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZDMSBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751686AbZDMR5t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 13:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZDMR5i
+	id S1752624AbZDMSBM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 14:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZDMSA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 13:57:38 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:3273 "EHLO MMS3.broadcom.com"
+	Mon, 13 Apr 2009 14:00:56 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50282 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbZDMR5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 13:57:36 -0400
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Date: Mon, 13 Apr 2009 10:57:24 -0700
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Robin Holt" <holt@sgi.com>
-cc: "Michael Chan" <mchan@broadcom.com>,
-       "Matthew Carlson" <mcarlson@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Benjamin Li" <benli@broadcom.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.30-rc1 tg3 endian issues with MAC addresses on
- BCM5701. Bisected.
-Message-ID: <20090413175724.GA11076@xw6200.broadcom.net>
-References: <20090408053721.GE10768@sgi.com>
- <C27F8246C663564A84BB7AB343977242176F6BF106@IRVEXCHCCR01.corp.ad.broadcom.com>
- <20090408062559.GF10768@sgi.com> <20090408071204.GG10768@sgi.com>
+	id S1751649AbZDMSAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 14:00:55 -0400
+Date: Mon, 13 Apr 2009 20:00:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Theodore Ts'o" <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blktrace: move trace/ dir to /sys/block/sda/
+Message-ID: <20090413180054.GZ5178@kernel.dk>
+References: <49E31931.5000506@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090408071204.GG10768@sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-WSS-ID: 65FDA28C5Y821072470-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <49E31931.5000506@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for doing this bisection Robin.  This, and the data you
-provided in your previous email is really helpful.  Unfortunately, they
-raise more questions than answers.
+On Mon, Apr 13 2009, Li Zefan wrote:
+> Impact: allow ftrace-plugin blktrace to trace device-mapper devices
+> 
+> blktrace can't trace a single partition, so it makes no sense to
+> have one trace/ dir in each /sys/block/sda/sdaX. Move it to
+> /sys/block/sda/.
+> 
+> Thus we fix an issue reported by Ted, that ftrace-plugin blktrace
+> can't be used to trace device-mapper devices.
 
-I reviewed this patch again, and it still looks correct to me.  It
-should be one big behavioral no-op.  Obviously something is wrong, but
-I'm not seeing the root cause at the moment.  I need to think about this
-some more.
+Perhaps I never committed that patch, but it would be trivial to do
+partition based blktrace tracing. It's also quite useful. So please
+don't go changing things to make that harder to support, it would be
+nicer to just add the (small) bits to support per-partition tracing.
+It's basically just a start/stop sector range, while some events are
+per-device and should just be included always.
 
-On Wed, Apr 08, 2009 at 12:12:04AM -0700, Robin Holt wrote:
-> git-bisect points at:
-> 
-> [holt@attica 20090408-tg3]$ git-bisect good
-> e4f341103e4a2b35f56a0f89802f1b1448e8d04b is first bad commit
-> commit e4f341103e4a2b35f56a0f89802f1b1448e8d04b
-> Author: Matt Carlson <mcarlson@broadcom.com>
-> Date:   Wed Feb 25 14:25:00 2009 +0000
-> 
->     tg3: Invert nvram_read() and nvram_read_swab()
->     
->     This patch removes the blind byteswap of NVRAM data as it is read in.
->     To preserve the logic at the call sites, this patch also inverts every
->     call to tg3_nvram_read() and tg3_nvram_read_swab().  The call swap gets
->     confusing within tg3_nvram_read_le() (LE is a misnomer), but the reader
->     should be able to convince himself / herself that the resulting behavior
->     is still unchanged.
->     
->     Signed-off-by: Matt Carlson <mcarlson@broadcom.com>
->     Signed-off-by: Benjamin Li <benli@broadcom.com>
->     Signed-off-by: Michael Chan <mchan@broadcom.com>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> :040000 040000 847eba840b1c0fceeb2378dc3b0fb8c1628f441d 80c40390c38976d0ca9cdb59d21bc39c145aa9ce M      drivers
-> 
-> On Wed, Apr 08, 2009 at 01:25:59AM -0500, Robin Holt wrote:
-> > On Tue, Apr 07, 2009 at 10:54:33PM -0700, Michael Chan wrote:
-> > > Robin Holt wrote:
-> > > 
-> > > > Booting an ia64 box with a tg3 adapter results in no network.
-> > > >  If I look
-> > > > at the MAC address of the adapter, it has changed radically from the
-> > > > original MAC.  The original MAC continues to be reported by EFI and
-> > > > booting an old kernel gets the correct MAC.
-> > > >
-> > > > Good MAC:     08:00:69:13:E6:3C
-> > > > Bad MAC:      00:00:3C:E6:13:69 (recreated from memory)
-> > > 
-> > > Looks like endian swapped.  Can you provide the entire tg3 signon
-> > > string?  Please also dump the beginning part of the nvram:
-> > > 
-> > > ethtool -e eth0 length 0x90
-> > 
-> > >From a good boot (2.6.27):
-> > tg3.c:v3.94 (August 14, 2008)
-> > tg3 0006:00:01.0: PCI INT A -> GSI 65 (level, low) -> IRQ 65
-> > eth0: Tigon3 [partno(9210292) rev 2003 PHY(5704)] (PCIX:133MHz:64-bit) 10/100/1000Base-T Ethernet 00:e0:ed:08:6c:18
-> > eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-> > eth0: dma_rwctrl[769f4000] dma_mask[64-bit] tg3 0006:00:01.1: PCI INT B -> GSI 66 (level, low) -> IRQ 66
-> > eth1: Tigon3 [partno(9210292) rev 2003 PHY(5704)] (PCIX:133MHz:64-bit) 10/100/1000Base-T Ethernet 00:e0:ed:08:6c:19
-> > eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-> > eth1: dma_rwctrl[769f4000] dma_mask[64-bit]
-> > tg3 0001:00:04.0: PCI INT A -> GSI 62 (level, low) -> IRQ 62
-> > eth2: Tigon3 [partno(030-1771-000) rev 0105 PHY(5701)] (PCI:66MHz:64-bit) 10/100/1000Base-T Ethernet 08:00:69:13:e6:3c
-> > eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[0]
-> > 
-> > ethtool -e eth2 length 0x90
-> > Address   	Data
-> > ----------	----
-> > 0x00000000	0x66
-> > 0x00000001	0x99
-> > 0x00000002	0x55
-> > 0x00000003	0xaa
-> > 0x00000004	0x08
-> > 0x00000005	0x00
-> > 0x00000006	0x00
-> > 0x00000007	0x00
-> > 0x00000008	0x00
-> > 0x00000009	0x00
-> > 0x0000000a	0x02
-> > 0x0000000b	0xa5
-> > 0x0000000c	0x00
-> > 0x0000000d	0x00
-> > 0x0000000e	0x02
-> > 0x0000000f	0x00
-> > 0x00000010	0x08
-> > 0x00000011	0xdf
-> > 0x00000012	0x2a
-> > 0x00000013	0xb1
-> > 0x00000014	0x00
-> > 0x00000015	0x01
-> > 0x00000016	0x00
-> > 0x00000017	0x00
-> > 0x00000018	0x00
-> > 0x00000019	0x00
-> > 0x0000001a	0x3c
-> > 0x0000001b	0x00
-> > 0x0000001c	0x00
-> > 0x0000001d	0x00
-> > 0x0000001e	0x10
-> > 0x0000001f	0x00
-> > 0x00000020	0x00
-> > 0x00000021	0x00
-> > 0x00000022	0x00
-> > 0x00000023	0x00
-> > 0x00000024	0x00
-> > 0x00000025	0x00
-> > 0x00000026	0x00
-> > 0x00000027	0x00
-> > 0x00000028	0x00
-> > 0x00000029	0x00
-> > 0x0000002a	0x00
-> > 0x0000002b	0x00
-> > 0x0000002c	0x00
-> > 0x0000002d	0x00
-> > 0x0000002e	0x00
-> > 0x0000002f	0x00
-> > 0x00000030	0x00
-> > 0x00000031	0x00
-> > 0x00000032	0x00
-> > 0x00000033	0x00
-> > 0x00000034	0x00
-> > 0x00000035	0x00
-> > 0x00000036	0x00
-> > 0x00000037	0x00
-> > 0x00000038	0x00
-> > 0x00000039	0x00
-> > 0x0000003a	0x00
-> > 0x0000003b	0x00
-> > 0x0000003c	0x00
-> > 0x0000003d	0x00
-> > 0x0000003e	0x00
-> > 0x0000003f	0x00
-> > 0x00000040	0x00
-> > 0x00000041	0x00
-> > 0x00000042	0x00
-> > 0x00000043	0x00
-> > 0x00000044	0x00
-> > 0x00000045	0x00
-> > 0x00000046	0x00
-> > 0x00000047	0x00
-> > 0x00000048	0x00
-> > 0x00000049	0x00
-> > 0x0000004a	0x00
-> > 0x0000004b	0x00
-> > 0x0000004c	0x00
-> > 0x0000004d	0x00
-> > 0x0000004e	0x00
-> > 0x0000004f	0x00
-> > 0x00000050	0x00
-> > 0x00000051	0x00
-> > 0x00000052	0x00
-> > 0x00000053	0x00
-> > 0x00000054	0x00
-> > 0x00000055	0x00
-> > 0x00000056	0x00
-> > 0x00000057	0x00
-> > 0x00000058	0x00
-> > 0x00000059	0x00
-> > 0x0000005a	0x00
-> > 0x0000005b	0x00
-> > 0x0000005c	0x00
-> > 0x0000005d	0x00
-> > 0x0000005e	0x00
-> > 0x0000005f	0x00
-> > 0x00000060	0x00
-> > 0x00000061	0x00
-> > 0x00000062	0x00
-> > 0x00000063	0x00
-> > 0x00000064	0x00
-> > 0x00000065	0x00
-> > 0x00000066	0x00
-> > 0x00000067	0x00
-> > 0x00000068	0x00
-> > 0x00000069	0x00
-> > 0x0000006a	0x00
-> > 0x0000006b	0x00
-> > 0x0000006c	0x00
-> > 0x0000006d	0x00
-> > 0x0000006e	0x00
-> > 0x0000006f	0x00
-> > 0x00000070	0x00
-> > 0x00000071	0x00
-> > 0x00000072	0x00
-> > 0x00000073	0x00
-> > 0x00000074	0x43
-> > 0x00000075	0x00
-> > 0x00000076	0x00
-> > 0x00000077	0x8c
-> > 0x00000078	0x00
-> > 0x00000079	0x00
-> > 0x0000007a	0x00
-> > 0x0000007b	0x01
-> > 0x0000007c	0x00
-> > 0x0000007d	0x00
-> > 0x0000007e	0x08
-> > 0x0000007f	0x00
-> > 0x00000080	0x69
-> > 0x00000081	0x13
-> > 0x00000082	0xe6
-> > 0x00000083	0x3c
-> > 0x00000084	0x33
-> > 0x00000085	0x43
-> > 0x00000086	0x39
-> > 0x00000087	0x39
-> > 0x00000088	0x36
-> > 0x00000089	0x42
-> > 0x0000008a	0x2d
-> > 0x0000008b	0x54
-> > 0x0000008c	0x00
-> > 0x0000008d	0x00
-> > 0x0000008e	0x00
-> > 0x0000008f	0x00
-> > 
-> > 
-> > >From bad boot (v2.6.30-rc1):
-> > tg3.c:v3.98 (February 25, 2009)
-> > tg3 0006:00:01.0: PCI INT A -> GSI 65 (level, low) -> IRQ 65
-> > tg3 0006:00:01.0: PME# disabled
-> > eth0: Tigon3 [partno(9210292) rev 2003] (PCIX:133MHz:64-bit) MAC address 00:e0:ed:08:6c:18
-> > eth0: attached PHY is 5704 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-> > eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-> > eth0: dma_rwctrl[769f4000] dma_mask[64-bit]
-> > tg3 0006:00:01.1: PCI INT B -> GSI 66 (level, low) -> IRQ 66
-> > tg3 0006:00:01.1: PME# disabled
-> > eth1: Tigon3 [partno(9210292) rev 2003] (PCIX:133MHz:64-bit) MAC address 00:e0:ed:08:6c:19
-> > eth1: attached PHY is 5704 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-> > eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-> > eth1: dma_rwctrl[769f4000] dma_mask[64-bit]
-> > tg3 0001:00:04.0: PCI INT A -> GSI 62 (level, low) -> IRQ 62
-> > tg3 0001:00:04.0: PME# disabled
-> > eth2: Tigon3 [partno(030-1771-000) rev 0105] (PCI:66MHz:64-bit) MAC address 00:00:3c:e6:13:69
-> > eth2: attached PHY is 5701 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-> > eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[0]
-> > eth2: dma_rwctrl[76ff3f0f] dma_mask[64-bit]
-> > 
-> > ethtool -e eth2 length 0x90
-> > Address   	Data
-> > ----------	----
-> > 0x00000000	0x66
-> > 0x00000001	0x99
-> > 0x00000002	0x55
-> > 0x00000003	0xaa
-> > 0x00000004	0x08
-> > 0x00000005	0x00
-> > 0x00000006	0x30
-> > 0x00000007	0x00
-> > 0x00000008	0x00
-> > 0x00000009	0x00
-> > 0x0000000a	0x03
-> > 0x0000000b	0x15
-> > 0x0000000c	0x00
-> > 0x0000000d	0x00
-> > 0x0000000e	0x02
-> > 0x0000000f	0xf8
-> > 0x00000010	0xaf
-> > 0x00000011	0xfc
-> > 0x00000012	0x24
-> > 0x00000013	0xb1
-> > 0x00000014	0x00
-> > 0x00000015	0x01
-> > 0x00000016	0x00
-> > 0x00000017	0x00
-> > 0x00000018	0x00
-> > 0x00000019	0x00
-> > 0x0000001a	0x3d
-> > 0x0000001b	0xaa
-> > 0x0000001c	0x00
-> > 0x0000001d	0x00
-> > 0x0000001e	0x1f
-> > 0x0000001f	0xb0
-> > 0x00000020	0x00
-> > 0x00000021	0x00
-> > 0x00000022	0x00
-> > 0x00000023	0x00
-> > 0x00000024	0x00
-> > 0x00000025	0x00
-> > 0x00000026	0x00
-> > 0x00000027	0x00
-> > 0x00000028	0x00
-> > 0x00000029	0x00
-> > 0x0000002a	0x00
-> > 0x0000002b	0x00
-> > 0x0000002c	0x00
-> > 0x0000002d	0x00
-> > 0x0000002e	0x00
-> > 0x0000002f	0x00
-> > 0x00000030	0x00
-> > 0x00000031	0x00
-> > 0x00000032	0x00
-> > 0x00000033	0x00
-> > 0x00000034	0x00
-> > 0x00000035	0x00
-> > 0x00000036	0x00
-> > 0x00000037	0x00
-> > 0x00000038	0x00
-> > 0x00000039	0x00
-> > 0x0000003a	0x00
-> > 0x0000003b	0x00
-> > 0x0000003c	0x00
-> > 0x0000003d	0x00
-> > 0x0000003e	0x00
-> > 0x0000003f	0x00
-> > 0x00000040	0x00
-> > 0x00000041	0x00
-> > 0x00000042	0x00
-> > 0x00000043	0x00
-> > 0x00000044	0x00
-> > 0x00000045	0x00
-> > 0x00000046	0x00
-> > 0x00000047	0x00
-> > 0x00000048	0x00
-> > 0x00000049	0x00
-> > 0x0000004a	0x00
-> > 0x0000004b	0x00
-> > 0x0000004c	0x00
-> > 0x0000004d	0x00
-> > 0x0000004e	0x00
-> > 0x0000004f	0x00
-> > 0x00000050	0x00
-> > 0x00000051	0x00
-> > 0x00000052	0x00
-> > 0x00000053	0x00
-> > 0x00000054	0x00
-> > 0x00000055	0x00
-> > 0x00000056	0x00
-> > 0x00000057	0x00
-> > 0x00000058	0x00
-> > 0x00000059	0x00
-> > 0x0000005a	0x00
-> > 0x0000005b	0x00
-> > 0x0000005c	0x00
-> > 0x0000005d	0x00
-> > 0x0000005e	0x00
-> > 0x0000005f	0x00
-> > 0x00000060	0x00
-> > 0x00000061	0x00
-> > 0x00000062	0x00
-> > 0x00000063	0x00
-> > 0x00000064	0x00
-> > 0x00000065	0x00
-> > 0x00000066	0x00
-> > 0x00000067	0x00
-> > 0x00000068	0x00
-> > 0x00000069	0x00
-> > 0x0000006a	0x00
-> > 0x0000006b	0x00
-> > 0x0000006c	0x00
-> > 0x0000006d	0x00
-> > 0x0000006e	0x00
-> > 0x0000006f	0x00
-> > 0x00000070	0x00
-> > 0x00000071	0x00
-> > 0x00000072	0x00
-> > 0x00000073	0x00
-> > 0x00000074	0x43
-> > 0x00000075	0x00
-> > 0x00000076	0x00
-> > 0x00000077	0x8c
-> > 0x00000078	0x00
-> > 0x00000079	0x20
-> > 0x0000007a	0x61
-> > 0x0000007b	0x10
-> > 0x0000007c	0x00
-> > 0x0000007d	0x00
-> > 0x0000007e	0x00
-> > 0x0000007f	0xe0
-> > 0x00000080	0xed
-> > 0x00000081	0x08
-> > 0x00000082	0x6c
-> > 0x00000083	0x18
-> > 0x00000084	0x39
-> > 0x00000085	0x32
-> > 0x00000086	0x31
-> > 0x00000087	0x30
-> > 0x00000088	0x32
-> > 0x00000089	0x39
-> > 0x0000008a	0x32
-> > 0x0000008b	0x00
-> > 0x0000008c	0x00
-> > 0x0000008d	0x00
-> > 0x0000008e	0x00
-> > 0x0000008f	0x00
-> > 
-> > 
-> > > > If I set the MAC using ifconfig, then everything works normally.
-> > > >
-> > > 
-> > > The bad MAC address that has been swapped is also a valid MAC address
-> > > and should still work though.
-> > 
-> > Our network dhcp servers on this test network only hand out IPs to known
-> > MACs so we detect situations like this.
-> > 
-> > Robin
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Jens Axboe
 
