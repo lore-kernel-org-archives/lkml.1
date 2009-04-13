@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbZDMRm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257AbZDMRmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751824AbZDMRm3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 13:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZDMRmP
+	id S1752257AbZDMRmo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 13:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZDMRm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 13:42:15 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:41274 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbZDMRmO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 13:42:14 -0400
-Message-ID: <49E37908.2080903@cosmosbay.com>
-Date: Mon, 13 Apr 2009 19:40:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 13 Apr 2009 13:42:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34700 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751122AbZDMRm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 13:42:27 -0400
+Date: Mon, 13 Apr 2009 19:41:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
+       Mike Travis <travis@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mm-commits@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+Message-ID: <20090413174104.GA856@elte.hu>
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org> <4609.1239456126@turing-police.cc.vt.edu> <alpine.LFD.2.00.0904130847500.4583@localhost.localdomain> <20090413171853.GA4601@elte.hu> <20090413102749.4ca3a217.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       paulus@samba.org, mingo@elte.hu, torvalds@linux-foundation.org,
-       laijs@cn.fujitsu.com, jeff.chua.linux@gmail.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
-References: <20090411174801.GG6822@linux.vnet.ibm.com>	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>	<20090412173108.GO6822@linux.vnet.ibm.com>	<20090412.181330.23529546.davem@davemloft.net>	<20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam>
-In-Reply-To: <20090413095309.631cf395@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 13 Apr 2009 19:40:33 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413102749.4ca3a217.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger a écrit :
-> This is an alternative version of ip/ip6/arp tables locking using
-> per-cpu locks.  This avoids the overhead of synchronize_net() during
-> update but still removes the expensive rwlock in earlier versions.
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > I think Andrew has a stack of fixes queued up, one of which 
+> > should solve this problem too - which Mike tested - as the 
+> > commit from Andrew has caused another regression as well.
+> > 
+> > There's no sha1 - the patch is in this thread on lkml:
+> > 
+> >   sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
+> > 
+> > | From: Andrew Morton <akpm@linux-foundation.org>
+> > |
+> > | Atttempting to rid us of the problematic work_on_cpu().  Just use
+> > | smp_call_fuction_single() here.
+> > |
+> > | This repairs a 10% sysbench(oltp)+mysql regression which Mike 
+> > | reported,
+> > 
 > 
-> The idea for this came from an earlier version done by Eric Duzamet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  The slow case involves acquiring the locks on
-> all cpu's.
+> Yup.  It's presently in Len's hands.  And Rusty's.
 > 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
-> 
-> Tested basic functionality (add/remove/list), but don't have test cases
-> for stress, ip6tables or arptables.
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> Vladis, perhaps you can verify?
 
-Patch seems good to me, but apparently xt_replace_table()
-misses the "acquiring the locks on all cpus" you mentioned in ChangeLog ?
+I have not tested it but it looks good and the use of a much more 
+atomic primitive can only improve the situation - so unless there's 
+something suspicious about it i'd suggest for Linus to pick this up 
+from email, before -rc2.
 
-I am still off-computers until tomorrow so cannot provide a patch for this, sorry.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Some form of
-
-local_bh_disable();
-for_each_possible_cpu(cpu)
-	spin_lock(&per_cpu(ip_tables_lock, cpu));
-
-oldinfo = private;
-/* do the substitution */
-table->private = newinfo;
-newinfo->initial_entries = oldinfo->initial_entries;
-
-for_each_possible_cpu(cpu)
-	spin_unlock(&per_cpu(ip_tables_lock, cpu));
-local_bh_enable();
-
-
-But I wonder if this could hit a limit of max spinlocks held by this cpu, say on a 4096 cpu machine ?
-
-
-
+	Ingo
