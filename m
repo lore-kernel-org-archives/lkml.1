@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZDMXoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZDMXrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbZDMXoi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZDMXo3
+	id S1753906AbZDMXrs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZDMXrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:44:29 -0400
-Received: from mail-qy0-f117.google.com ([209.85.221.117]:65087 "EHLO
-	mail-qy0-f117.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbZDMXo2 (ORCPT
+	Mon, 13 Apr 2009 19:47:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46682 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750747AbZDMXri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:44:28 -0400
-X-Greylist: delayed 5906 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 19:44:27 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gd6OyWYYkonFXIjqy9LQtcb+PnD4pyeKrfP0bvvZ8fuzbpTGN0aYCVTdy1/GIOGsMU
-         mRRgpJG77ND6Q9qn/8us+rkp7aiiSdPLxVxNoFVaMZc6AwU46SbGx1PTljexUAvd1qyF
-         k+S9Dgj1R9TE9RveY6gmDAcYhN9NgQFhcNINA=
+	Mon, 13 Apr 2009 19:47:38 -0400
+Date: Mon, 13 Apr 2009 16:37:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Stephen Hemminger <shemminger@vyatta.com>, paulmck@linux.vnet.ibm.com,
+       davem@davemloft.net, paulus@samba.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
+       jengelh@medozas.de, kaber@trash.net, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
+In-Reply-To: <20090413162620.01353461.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0904131631400.26713@localhost.localdomain>
+References: <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com> <20090412173108.GO6822@linux.vnet.ibm.com> <20090412.181330.23529546.davem@davemloft.net> <20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam>
+ <20090413152437.c48723f6.akpm@linux-foundation.org> <20090413162000.5f8d9a05@nehalam> <20090413162620.01353461.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
-References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu>
-	 <20090412235010.c8e3475b.akpm@linux-foundation.org>
-	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
-	 <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
-Date: Mon, 13 Apr 2009 19:44:26 -0400
-Message-ID: <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com>
-Subject: Re: NFS BUG_ON in nfs_do_writepage
-From: Rince <rincebrain@gmail.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 6:06 PM, Rince <rincebrain@gmail.com> wrote:
-> Patch does not apply cleanly to 2.6.30-rc1. Working on this.
 
-Okay, so I'm having trouble getting this to apply to anything at all.
-I can see it requires a previous patch by Nick, but even in the thread
-it's mentioned that it doesn't apply cleanly.
 
-Is there a canonical form that I can apply somewhere?
+On Mon, 13 Apr 2009, Andrew Morton wrote:
+> > > >  
+> > > > -	rcu_read_lock_bh();
+> > > > -	private = rcu_dereference(table->private);
+> > > > -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
+> > > > +	local_bh_disable();
+> > > > +	spin_lock(&__get_cpu_var(ip_tables_lock));
+> > > 
+> > > spin_lock_bh()?
+> > 
+> > No. get_cpu_var implies smp_processor_id which is not safe
+> > without preempt_disable (ie bh disable).
+> 
+> spin_lock_bh() will dtrt, but spelling it out seems a good idea.
 
-- Rich
+No, spin_lock_bh() will _not_ do the right thing. 
 
-PS: I rather expect my report here to be the same as that Bugzilla
-bug, since I filed it. :)
--- 
+On UP it will actually work for two reasons: it will work because (a) it's 
+UP, so there are no issues with smp_processor_id() to beging with, but 
+also because even if there _were_ issues, it would still work because it 
+would all expand as a macro, and the preempt_disable() will actually 
+happen before the argument is evaluated.
 
-If we were meant to get up early, God would have created us with alarm clocks.
+But on SMP, spin_lock_bh() expands to just _spin_lock_bh(), and is a real 
+function - and the argument will be evaluated before the call (obviously), 
+and thus before the preempt_disable().
+
+So
+
+	local_bh_disable();
+	spin_lock(&__get_cpu_var(ip_tables_lock));
+
+is correct, and 
+
+	spin_lock_bh(&__get_cpu_var(ip_tables_lock));
+
+is _not_ correct. The latter will do "&__get_cpu_var(ip_tables_lock)"
+with no protection from the process being switched to another CPU.
+
+			Linus
