@@ -1,118 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZDMAGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZDMAG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbZDMAGl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 20:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZDMAGa
+	id S1753110AbZDMAG6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 20:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbZDMAGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 20:06:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:39041 "EHLO ozlabs.org"
+	Sun, 12 Apr 2009 20:06:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:39042 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbZDMAG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751065AbZDMAG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 12 Apr 2009 20:06:29 -0400
-To: linux-kernel@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon, 13 Apr 2009 09:30:03 +0930
-Subject: [PATCH 7/7] work_on_cpu: use on drivers/firmware/dcdbas.c
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Douglas_Warzecha@dell.com
-Message-Id: <20090413000628.29833DE108@ozlabs.org>
+Date: Mon, 13 Apr 2009 09:30:02 +0930
+Subject: [PATCH 2/7] use smp_call_function_single() in arch/x86/kernel/acpi/cstate.c
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Zhao Yakui <yakui.zhao@intel.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <20090413000628.6F4B0DE11E@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Impact: don't play with current's cpumask
+Attempting to rid us of the problematic work_on_cpu().  Just use
+smp_call_function_single() here.
 
-It's generally a very bad idea to mug some process's cpumask: it could
-legitimately and reasonably be changed by root, which could break us
-(if done before our code) or them (if we restore the wrong value).
+(Includes fix from Wu Fengguang <fengguang.wu@intel.com>)
 
-So we use work_on_cpu instead of cpumask games.
-
-Note one subtle change.  If we can't get to CPU 0 for some reason, the
-return will be -EINVAL not -EBUSY.  We could fix this in the
-caller?  ie:
-
-	return work_on_cpu(0, generate_smi, smi_cmd) == 0 ? 0 : -EBUSY;
-
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Zhao Yakui <yakui.zhao@intel.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Douglas_Warzecha@dell.com
 ---
- drivers/firmware/dcdbas.c |   51 +++++++++++++++++-----------------------------
- 1 file changed, 19 insertions(+), 32 deletions(-)
+ arch/x86/kernel/acpi/cstate.c |   36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/firmware/dcdbas.c b/drivers/firmware/dcdbas.c
---- a/drivers/firmware/dcdbas.c
-+++ b/drivers/firmware/dcdbas.c
-@@ -237,34 +237,9 @@ static ssize_t host_control_on_shutdown_
- 	return count;
- }
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -53,6 +53,12 @@ struct cstate_entry {
+ };
+ static struct cstate_entry *cpu_cstate_entry;	/* per CPU ptr */
  
--/**
-- * dcdbas_smi_request: generate SMI request
-- *
-- * Called with smi_data_lock.
-- */
--int dcdbas_smi_request(struct smi_cmd *smi_cmd)
-+static long generate_smi(void *_smi_cmd)
- {
--	cpumask_var_t old_mask;
--	int ret = 0;
--
--	if (smi_cmd->magic != SMI_CMD_MAGIC) {
--		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
--			 __func__);
--		return -EBADR;
--	}
--
--	/* SMI requires CPU 0 */
--	if (!alloc_cpumask_var(&old_mask, GFP_KERNEL))
--		return -ENOMEM;
--
--	cpumask_copy(old_mask, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current, cpumask_of(0));
--	if (smp_processor_id() != 0) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
--			__func__);
--		ret = -EBUSY;
--		goto out;
--	}
-+	struct smi_cmd *smi_cmd = _smi_cmd;
- 
- 	/* generate SMI */
- 	asm volatile (
-@@ -276,13 +251,25 @@ int dcdbas_smi_request(struct smi_cmd *s
- 		  "c" (smi_cmd->ecx)
- 		: "memory"
- 	);
--
--out:
--	set_cpus_allowed_ptr(current, old_mask);
--	free_cpumask_var(old_mask);
--	return ret;
-+	return 0;
- }
- 
-+/**
-+ * dcdbas_smi_request: generate SMI request
-+ *
-+ * Called with smi_data_lock.
-+ */
-+int dcdbas_smi_request(struct smi_cmd *smi_cmd)
-+{
-+	if (smi_cmd->magic != SMI_CMD_MAGIC) {
-+		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
-+			 __func__);
-+		return -EBADR;
-+	}
++/* Used for the cross-CPU calls */
++struct acpi_processor_cx_cross_cpu {
++	struct acpi_processor_cx *cx;
++	long retval;
++};
 +
-+	/* SMI requires CPU 0 */
-+	return work_on_cpu(0, generate_smi, smi_cmd);
-+}
- /**
-  * smi_request_store:
-  *
+ static short mwait_supported[ACPI_PROCESSOR_MAX_POWER];
+ 
+ #define MWAIT_SUBSTATE_MASK	(0xf)
+@@ -67,10 +73,10 @@ static short mwait_supported[ACPI_PROCES
+ 
+ #define NATIVE_CSTATE_BEYOND_HALT	(2)
+ 
+-static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
++static void acpi_processor_ffh_cstate_probe_cpu(void *_cxcc)
+ {
+-	struct acpi_processor_cx *cx = _cx;
+-	long retval;
++	struct acpi_processor_cx_cross_cpu *cxcc = _cxcc;
++	struct acpi_processor_cx *cx = cxcc->cx;
+ 	unsigned int eax, ebx, ecx, edx;
+ 	unsigned int edx_part;
+ 	unsigned int cstate_type; /* C-state type and not ACPI C-state type */
+@@ -84,16 +90,16 @@ static long acpi_processor_ffh_cstate_pr
+ 	edx_part = edx >> (cstate_type * MWAIT_SUBSTATE_SIZE);
+ 	num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
+ 
+-	retval = 0;
++	cxcc->retval = 0;
+ 	if (num_cstate_subtype < (cx->address & MWAIT_SUBSTATE_MASK)) {
+-		retval = -1;
++		cxcc->retval = -1;
+ 		goto out;
+ 	}
+ 
+ 	/* mwait ecx extensions INTERRUPT_BREAK should be supported for C2/C3 */
+ 	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED) ||
+ 	    !(ecx & CPUID5_ECX_INTERRUPT_BREAK)) {
+-		retval = -1;
++		cxcc->retval = -1;
+ 		goto out;
+ 	}
+ 
+@@ -107,7 +113,7 @@ static long acpi_processor_ffh_cstate_pr
+ 			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+ 			cx->address);
+ out:
+-	return retval;
++	return;
+ }
+ 
+ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
+@@ -115,6 +121,7 @@ int acpi_processor_ffh_cstate_probe(unsi
+ {
+ 	struct cstate_entry *percpu_entry;
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
++	struct acpi_processor_cx_cross_cpu cxcc = { .cx = cx, };
+ 	long retval;
+ 
+ 	if (!cpu_cstate_entry || c->cpuid_level < CPUID_MWAIT_LEAF)
+@@ -127,13 +134,18 @@ int acpi_processor_ffh_cstate_probe(unsi
+ 	percpu_entry->states[cx->index].eax = 0;
+ 	percpu_entry->states[cx->index].ecx = 0;
+ 
+-	/* Make sure we are running on right CPU */
++	/* Run acpi_processor_ffh_cstate_probe_cpu() on the target CPU */
+ 
+-	retval = work_on_cpu(cpu, acpi_processor_ffh_cstate_probe_cpu, cx);
++	retval = smp_call_function_single(cpu,
++				acpi_processor_ffh_cstate_probe_cpu, &cxcc, 1);
+ 	if (retval == 0) {
+-		/* Use the hint in CST */
+-		percpu_entry->states[cx->index].eax = cx->address;
+-		percpu_entry->states[cx->index].ecx = MWAIT_ECX_INTERRUPT_BREAK;
++		retval = cxcc.retval;
++		if (retval == 0) {
++			/* Use the hint in CST */
++			percpu_entry->states[cx->index].eax = cx->address;
++			percpu_entry->states[cx->index].ecx =
++					MWAIT_ECX_INTERRUPT_BREAK;
++		}
+ 	}
+ 	return retval;
+ }
 
