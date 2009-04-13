@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbZDMUMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZDMUQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbZDMUMa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 16:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDMUMS
+	id S1753363AbZDMUQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 16:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZDMUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 16:12:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55128 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbZDMUMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 16:12:17 -0400
-Date: Mon, 13 Apr 2009 22:11:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] blktrace: move trace/ dir to /sys/block/sda/
-Message-ID: <20090413201155.GA17450@elte.hu>
-References: <49E31931.5000506@cn.fujitsu.com> <20090413180054.GZ5178@kernel.dk>
+	Mon, 13 Apr 2009 16:16:01 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:54396 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750935AbZDMUQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 16:16:00 -0400
+Date: Mon, 13 Apr 2009 15:15:58 -0500
+From: Robin Holt <holt@sgi.com>
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Robin Holt <holt@sgi.com>, Michael Chan <mchan@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Li <benli@broadcom.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.30-rc1 tg3 endian issues with MAC addresses on
+	BCM5701. Bisected.
+Message-ID: <20090413201558.GK10768@sgi.com>
+References: <20090408053721.GE10768@sgi.com> <C27F8246C663564A84BB7AB343977242176F6BF106@IRVEXCHCCR01.corp.ad.broadcom.com> <20090408062559.GF10768@sgi.com> <20090408071204.GG10768@sgi.com> <20090413175724.GA11076@xw6200.broadcom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090413180054.GZ5178@kernel.dk>
+In-Reply-To: <20090413175724.GA11076@xw6200.broadcom.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Mon, Apr 13 2009, Li Zefan wrote:
-> > Impact: allow ftrace-plugin blktrace to trace device-mapper devices
-> > 
-> > blktrace can't trace a single partition, so it makes no sense to
-> > have one trace/ dir in each /sys/block/sda/sdaX. Move it to
-> > /sys/block/sda/.
-> > 
-> > Thus we fix an issue reported by Ted, that ftrace-plugin 
-> > blktrace can't be used to trace device-mapper devices.
+On Mon, Apr 13, 2009 at 10:57:24AM -0700, Matt Carlson wrote:
+> Thank you for doing this bisection Robin.  This, and the data you
+> provided in your previous email is really helpful.  Unfortunately, they
+> raise more questions than answers.
 > 
-> Perhaps I never committed that patch, but it would be trivial to 
-> do partition based blktrace tracing. It's also quite useful. So 
-> please don't go changing things to make that harder to support, it 
-> would be nicer to just add the (small) bits to support 
-> per-partition tracing. It's basically just a start/stop sector 
-> range, while some events are per-device and should just be 
-> included always.
+> I reviewed this patch again, and it still looks correct to me.  It
+> should be one big behavioral no-op.  Obviously something is wrong, but
+> I'm not seeing the root cause at the moment.  I need to think about this
+> some more.
 
-btw., per tracepoint filters could be used for that. That would 
-allow multiple partitions to be traced at once.
+If you want me to build test kernels with debug printk's, etc.  Let me
+know.  I will be working that issue on the side, so my responses may be
+slightly delayed.  I have access to many tests machines that exhibit
+this problem.
 
-blktrace user-space could make use of sector range filters straight 
-away [ hm, Tom - do we have the <= comparison operator already, or 
-is that still WIP? ] - but i think it's better to do this in a more 
-integrated way: via the sysfs API, via /sys/block/sda/sda2/trace/.
+The problem seems to affect BCM5701 based systems only.  BCM5704 have
+the correct MAC addresses.  Nearly all of our SGI Altix 3700/4700
+machines have the BCM5701 adapters on their base I/O board.
 
-So when a partition's trace entry is activated, it would 
-auto-install a specific filter expression for sda, with the sector 
-range of that partition. Or something like that. How does this 
-sound?
-
-	Ingo
+Thanks,
+Robin
