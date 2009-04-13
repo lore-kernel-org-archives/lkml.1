@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbZDMRpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbZDMRwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752350AbZDMRpT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 13:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZDMRo7
+	id S1752437AbZDMRwl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 13:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbZDMRwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 13:44:59 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52003 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbZDMRo6 (ORCPT
+	Mon, 13 Apr 2009 13:52:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53020 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750904AbZDMRwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 13:44:58 -0400
-Message-ID: <49E379FE.8060202@novell.com>
-Date: Mon, 13 Apr 2009 13:44:30 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Mon, 13 Apr 2009 13:52:31 -0400
+Date: Mon, 13 Apr 2009 10:45:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, Valdis.Kletnieks@vt.edu,
+       Mike Travis <travis@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mm-commits@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+In-Reply-To: <20090413102749.4ca3a217.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0904131040350.4583@localhost.localdomain>
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org> <4609.1239456126@turing-police.cc.vt.edu> <alpine.LFD.2.00.0904130847500.4583@localhost.localdomain> <20090413171853.GA4601@elte.hu> <20090413102749.4ca3a217.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org, bhutchings@solarflare.com,
-       andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
-       chrisw@sous-sol.org, shemminger@vyatta.com
-Subject: Re: [RFC PATCH v2 15/19] kvm: add dynamic IRQ support
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163200.32740.90490.stgit@dev.haskins.net> <49E0CCDB.4000806@redhat.com>
-In-Reply-To: <49E0CCDB.4000806@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
->>  
+
+
+On Mon, 13 Apr 2009, Andrew Morton wrote:
 >
-> Given that you're using the apic to inject the IRQ, you'll need an
-> EOI.  So what's the difference between dynirq and MSI, performance wise?
->
+>  static void drv_write(struct drv_cmd *cmd)
+>  {
+> -	unsigned int i;
+> +	unsigned int cpu;
+>  
+> -	for_each_cpu(i, cmd->mask) {
+> -		work_on_cpu(i, do_drv_write, cmd);
+> -	}
+> +	for_each_cpu(cpu, cmd->mask)
+> +		smp_call_function_single(cpu, do_drv_write, cmd, 1);
 
-I would have loved to eliminate that EOI completely, but that is a much
-broader problem to solve ;)
+Ok, that's just -wrong-.
 
-Actually dynirq wasnt introduced as a performance alternative over MSI. 
-Rather, I was trying to eliminate the complexity of needing to sync
-between the userspace PCI emulation and the in kernel models.
+Doesn't anybody else see anything odd in doing
 
-However, its moot.  Since v2 introduce virtio-vbus, I now have a much
-clearer picture of what is needed here, and v3 will simply integrate
-with MSI interrupts and drop dynirq completely.  So please ignore this
-patch.
+	for_each_cpu(cpu, cmd->mask)
+		smp_call_function_single(cpu, ..);
 
--Greg
+and react to it?
 
+IOW, why not just do
 
+	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
+
+here?
+
+			Linus
