@@ -1,261 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZDMDK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZDMDRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617AbZDMDK3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 23:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZDMDKR
+	id S1754546AbZDMDRm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 23:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZDMDRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 23:10:17 -0400
-Received: from 219-87-157-179.static.tfn.net.tw ([219.87.157.179]:39215 "EHLO
-	mswedge1.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbZDMDKP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 23:10:15 -0400
-In-Reply-To: <20090409232957.b97dd46e.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       torvalds@linux-foundation.org
-MIME-Version: 1.0
-Subject: Re: [PATCH 4/14] score - New architecure port to SunplusCT S+CORE
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF43EC993E.C89EBBA3-ON48257597.000E9F34-48257597.000F6685@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Mon, 13 Apr 2009 10:45:54 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/13 ?? 10:46:03,
-	Serialize complete at 2009/04/13 ?? 10:46:03
-Content-Type: text/plain; charset="GB2312"
+	Sun, 12 Apr 2009 23:17:30 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11642 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753404AbZDMDR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 23:17:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,178,1239001200"; 
+   d="scan'208";a="402549269"
+Subject: Re: [PATCH 0/13] Per-bdi writeback flusher threads #3
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <20090410072109.GK5178@kernel.dk>
+References: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
+	 <1239335199.2567.784.camel@ymzhang>  <20090410072109.GK5178@kernel.dk>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 13 Apr 2009 11:18:03 +0800
+Message-Id: <1239592683.2567.796.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3D3AYqu024417
 
-Hi Andrew Morton,
-
-        You only commented 4 patches,
-        how about others?
-
-        We want to update the code after you finished it.
-
-Best Regards
-Liqin
-
-Andrew Morton <akpm@linux-foundation.org> –¥”⁄ 2009-04-10 14:29:57:
-
-> On Wed, 8 Apr 2009 15:23:28 +0800 liqin.chen@sunplusct.com wrote:
-> 
-> > From: Chen Liqin <liqin.chen@sunplusct.com>
+On Fri, 2009-04-10 at 09:21 +0200, Jens Axboe wrote:
+> On Fri, Apr 10 2009, Zhang, Yanmin wrote:
+> > On Wed, 2009-04-08 at 14:00 +0200, Jens Axboe wrote:
+> > > Hi,
+> > > 
+> > > This is the third version of the patchset. Changes since v2:
+> > Jens,
 > > 
-> > asm/kmap_types.h, asm/linkage.h, asm/local.h, asm/mman.h, 
-> > asm/mmu_context.h,
-> > asm/mmu.h, asm/module.h, asm/msgbuf.h, asm/mutex.h, asm/page.h, 
-> > asm/param.h,
-> > asm/pci.h, asm/percpu.h, asm/pgalloc.h, asm/pgtable-32.h, 
-> > asm/pgtable-bits.h,
-> > asm/pgtable.h, asm/poll.h, asm/posix_types.h and asm/processor.h
-> > for the score architecture.
-> >
-> > ...
-> >
-> > --- linux-2.6-git.ori/arch/score/include/asm/kmap_types.h 1970-01-01 
-> > 08:00:00.000000000 +0800
-> > +++ linux-2.6-git.new/arch/score/include/asm/kmap_types.h 2009-04-03 
-> > 17:01:04.000000000 +0800
-> > @@ -0,0 +1,21 @@
-> > +#ifndef __SCORE_KMAP_TYPES_H
-> > +#define __SCORE_KMAP_TYPES_H
-> > +
-> > +enum km_type {
-> > +       KM_BOUNCE_READ,
-> > +       KM_SKB_SUNRPC_DATA,
-> > +       KM_SKB_DATA_SOFTIRQ,
-> > +       KM_USER0,
-> > +       KM_USER1,
-> > +       KM_BIO_SRC_IRQ,
-> > +       KM_BIO_DST_IRQ,
-> > +       KM_PTE0,
-> > +       KM_PTE1,
-> > +       KM_IRQ0,
-> > +       KM_IRQ1,
-> > +       KM_SOFTIRQ0,
-> > +       KM_SOFTIRQ1,
-> > +       KM_TYPE_NR
-> > +};
+> > The patchset forgets kernel/sysctl.c part, so the compilation link fails.
 > 
-> hm.  Our nineteenth copy of kmap_types.h, all of them basically the
-> same.
-> 
-> That's not a problem for this patchset, but we suck.
-> 
-> >
-> > ...
-> >
-> > +static inline void
-> > +get_new_mmu_context(struct mm_struct *mm, unsigned long cpu)
-> > +{
-> > +       unsigned long asid = asid_cache(0);
-> > +
-> > +       if (!((asid = asid + ASID_INC) & ASID_MASK)) {
-> 
-> ick.  Complex statements likethis are to be avoided, please.
-> 
->    unsigned long asid = asid_cache(0) + ASID_INC;
-> 
->    if (!(asid & ASID_MASK)) {
-> 
-> is nicer, no?
-> 
-> > +               local_flush_tlb_all();          /* start new asid 
-cycle */
-> > +               if (!asid)                      /* fix version if 
-needed 
-> > */
-> > +                       asid = ASID_FIRST_VERSION;
-> > +       }
-> > +       cpu_context(0, mm) = asid_cache(0) = asid;
-> 
-> This style causes less concern, but some would even prefer
-> 
->    cpu_context(0, mm) = asid;
->    asid_cache(0) = asid;
-> 
-> C lets you perform lots of weird shortcuts and tricks, but we actively
-> avoid many of them in the kernel.
-> 
-> > +}
-> > +
-> > +/*
-> > + * Initialize the context related info for a new mm_struct
-> > + * instance.
-> > + */
-> > +static inline int
-> > +init_new_context(struct task_struct *tsk, struct mm_struct *mm)
-> > +{
-> > +       cpu_context(0, mm) = 0;
-> 
-> More stylistic whining - this is one of my pet peeves.  It's just a
-> meaningless absurdity to call a function and to then modify its return
-> value.
-> 
-> So cpu_context() _has_ to be a macro which evaluates to an lvalue. 
-> Which wrecks any concept of encapsulation. 
-> Macros-which-look-like-functions should be interchangesable with
-> functions, but this one isn't.
-> 
-> I mean, the above statement jusst isn't C.  Whereas
-> 
->    set_cpu_context(0, mm0, 0);
-> 
-> _is_ C.  See what I mean.
-> 
-> Anwyay.  I'm not saying you should go off and change everything.  But
-> it's daft.
-> 
-> > +       return 0;
-> > +}
-> > +
-> > +static inline void switch_mm(struct mm_struct *prev, struct mm_struct 
+> Yep, noticed that as well. Not really great timing with adding more
+> pdflush tunables...
+When I run a fio testing with a partition on one of my machines, I hit below bug
+checking. It's a Ôªø fio_mmap_randwrite_4k_preread testing. I'm not sure if it happens
+after the testing and before the next testing, or just happens when the testing is
+ongoing. When I see it, next testing stops at the beginning when mounting the partition.
 
-> > *next,
-> > +                               struct task_struct *tsk)
-> > +{
-> > +       unsigned long flags;
-> > +
-> > +       local_irq_save(flags);
-> > +       if ((cpu_context(0, next) ^ asid_cache(0)) & 
-ASID_VERSION_MASK)
-> > +               get_new_mmu_context(next, 0);
-> > +       set_PEVN(cpu_context(0, next));
-> > +       TLBMISS_HANDLER_SETUP_PGD(next->pgd);
+----------------------sys log--------------------
+
+kernel BUG at fs/jbd/journal.c:1166!
+invalid opcode: 0000 [#1] SMP 
+last sysfs file: /sys/block/sdb/stat
+CPU 0 
+Modules linked in: igb
+Pid: 18329, comm: umount Not tainted 2.6.30-rc1-bdiflusherv3 #1 X8DTN
+RIP: 0010:[<ffffffff80344747>]  [<ffffffff80344747>] journal_destroy+0x108/0x1b4
+RSP: 0018:ffff8800bd95fe08  EFLAGS: 00010286
+RAX: 000000000000c7c7 RBX: ffff8800bc93dc00 RCX: 0000000000000000
+RDX: 0000000000000001 RSI: 0000000000000246 RDI: ffff8800bc93dd64
+RBP: ffff8800bc93dd64 R08: ffff8800bc93dc88 R09: 00000000bd95fcc0
+R10: 0000000000000246 R11: 00000000fffffffb R12: ffff8800bd95fe08
+R13: ffff8800bd95fe20 R14: ffff8800bc93dc98 R15: ffff8800bc93dcc8
+FS:  00007f3f26c717d0(0000) GS:ffffc20000000000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f3f263fe000 CR3: 00000000bc18e000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process umount (pid: 18329, threadinfo ffff8800bd95e000, task ffff8800bcdcdca0)
+Stack:
+ 0000000000000000 ffff8800bcdcdca0 ffffffff8024ddaa ffff8800bd95fe20
+ ffff8800bd95fe20 ffffffff802e53ac ffff8800bd95fe38 ffff8800bd0e3a00
+ ffff8800a1ff2400 ffff8800bc93b000 ffff8800bb8cb400 0000000000000000
+Call Trace:
+ [<ffffffff8024ddaa>] ? autoremove_wake_function+0x0/0x2e
+ [<ffffffff802e53ac>] ? mb_cache_shrink+0x22/0x9e
+ [<ffffffff8032fbcc>] ? ext3_put_super+0x29/0x204
+ [<ffffffff802ac7ab>] ? generic_shutdown_super+0x70/0xde
+ [<ffffffff802ac83b>] ? kill_block_super+0x22/0x3a
+ [<ffffffff802ac8fe>] ? deactivate_super+0x5f/0x77
+ [<ffffffff802bf20a>] ? sys_umount+0x2da/0x309
+ [<ffffffff8020ba2b>] ? system_call_fastpath+0x16/0x1b
+Code: ff 48 8d ab 64 01 00 00 eb 0b fe 45 00 48 89 df e8 cc e8 ff ff 48 89 ef e8 2f e8 3d 00 48 83 7b 60 00 75 e6 48 83 7b 50 00 74 04 <0f> 0b eb fe 48 83 7b 58 00 74 04 0f 0b eb fe fe 83 64 01 00 00 
+RIP  [<ffffffff80344747>] journal_destroy+0x108/0x1b4
+ RSP <ffff8800bd95fe08>
+---[ end trace 14f5ccbafee46eb4 ]---
+
+
 > 
-> Some macros are all-lower-case.
-> 
-> Some macros are part-lower-case and part-upper-case.
-> 
-> Some macros are all-upper-case.
-> 
-> Is there any sense behind it all?
-> 
-> > +       local_irq_restore(flags);
-> > +}
-> > +
-> > +/*
-> > + * Destroy context related info for an mm_struct that is about
-> > + * to be put to rest.
-> > + */
-> > +static inline void destroy_context(struct mm_struct *mm)
-> > +{}
-> > +
-> > +#define deactivate_mm(tsk, mm) do {} while (0)
-> 
-> static inline void deactivate_mm(struct task_struct *task, struct 
-> mm_struct *mm)
-> 
-> is nicer.  It isn't a macro, and it provides typechecking and sometimes
-> it can fix an unused-variable warning at callsites.
-> 
-> Probably you copied this from somewhere else.  Sigh.
-> 
-> > +/*
-> > + * After we have set current->mm to a new value, this activates
-> > + * the context for the new mm so we see the new mappings.
-> > + */
-> > +static inline void
-> > +activate_mm(struct mm_struct *prev, struct mm_struct *next)
-> > +{
-> > +       unsigned long flags;
-> > +
-> > +       local_irq_save(flags);
-> > +       get_new_mmu_context(next, 0);
-> > +       set_PEVN(cpu_context(0, next));
-> > +       TLBMISS_HANDLER_SETUP_PGD(next->pgd);
-> > +       local_irq_restore(flags);
-> > +}
-> > +
-> > +#endif /* __SCORE_MMU_CONTEXT_H */
-> > diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-> > linux-2.6-git.ori/arch/score/include/asm/mmu.h 
-> > linux-2.6-git.new/arch/score/include/asm/mmu.h
-> > --- linux-2.6-git.ori/arch/score/include/asm/mmu.h      1970-01-01 
-> > 08:00:00.000000000 +0800
-> > +++ linux-2.6-git.new/arch/score/include/asm/mmu.h      2009-04-08 
-> > 10:51:34.000000000 +0800
-> > @@ -0,0 +1,6 @@
-> > +#ifndef __SCORE_MMU_H
-> > +#define __SCORE_MMU_H
-> > +
-> > +typedef unsigned long mm_context_t[NR_CPUS];
-> 
-> hm.  Is this an SMP-capable architecture?
-> 
-> > +#endif /* __SCORE_MMU_H */
-> > diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-> >
-> > ...
-> >
-> > +#ifdef CONFIG_CPU_SCORE7
-> > +#define MODULE_PROC_FAMILY "SCORE7"
-> > +#else
-> > +#error MODULE_PROC_FAMILY undefined for your processor configuration
-> > +#endif
-> 
-> Is the #error necessary?  If it triggers, that indicates a bug in
-> Kconfig, no?
-> 
-> >
-> > ...
-> >
-> > +#define ARCH_PFN_OFFSET                PFN_UP(PHYS_OFFSET)
-> > +
-> > +#define clear_page(page)       memset((void *)(page), 0, PAGE_SIZE)
-> > +#define copy_page(to, from)    memcpy((to), (from), PAGE_SIZE)
-> > +
-> > +#define clear_user_page(page, vaddr, pg)       clear_page(page)
-> > +#define copy_user_page(to, from, vaddr, pg)    copy_page(to, from)
-> 
-> Well that's nice and simple ;)
-> 
+> There's also an issue with the SRCU init, so it will not even work
+> irregardless of the compilation problem. I'll have to update and repost
+> next week.
 > 
 
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
