@@ -1,127 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbZDMM1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbZDMM7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752100AbZDMM1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 08:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZDMM1f
+	id S1752651AbZDMM7a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 08:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZDMM7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 08:27:35 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:57012 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751562AbZDMM1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 08:27:34 -0400
-To: arjan@linux.intel.com, gregkh@suse.de
-Cc: jmorris@namei.org, alan@redhat.com, hooanon05@yahoo.co.jp,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: current->mm == NULL in security_vm_enough_memory().
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200903260130.n2Q1U9EJ040448@www262.sakura.ne.jp>
-	<alpine.LRH.2.00.0903261236580.30336@tundra.namei.org>
-	<200904092105.HBG52601.MHFOtQOLSVFOFJ@I-love.SAKURA.ne.jp>
-In-Reply-To: <200904092105.HBG52601.MHFOtQOLSVFOFJ@I-love.SAKURA.ne.jp>
-Message-Id: <200904132127.FBG30222.OOFFtQLJFOHSMV@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 13 Apr 2009 21:27:29 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Apr 2009 08:59:20 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:30576 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbZDMM7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 08:59:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=VrwRB3rMBEldVOJxr+1h07smFV3A7tRsxjhzdJgiXeh/AnCNU3hUtxjWAPT8XY2+gq
+         OjbOT2RspnJ8R/lyP6dvGhFMxaU6+fBYIvZ12Zo4+Wa8/uUJBqkoKExKkX6qNV7E5rhP
+         zG+H/TtZympLosTBfa4DTUwi1OTHhsgQSviS8=
+Date: Mon, 13 Apr 2009 14:59:12 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: tj@kernel.org, bharrosh@panasas.com, James.Bottomley@hansenpartnership.com,
+       linux-scsi@vger.kernel.org, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/17] scsi: replace custom rq mapping with
+	blk_rq_map_kern_sgl()
+Message-ID: <20090413125912.GA16337@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tj@kernel.org,
+	bharrosh@panasas.com, James.Bottomley@hansenpartnership.com,
+	linux-scsi@vger.kernel.org, axboe@kernel.dk,
+	linux-kernel@vger.kernel.org
+References: <49D39DBC.3000206@panasas.com> <20090413164146J.fujita.tomonori@lab.ntt.co.jp> <49E3080F.7080206@kernel.org> <20090413190747V.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090413190747V.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-I'm experiencing
-
-  WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
-
-messages.
-"git bisect" reported that commit f520360d93cdc37de5d972dac4bf3bdef6a7f6a7
-is the cause of this warning. May I ignore this warning?
-
-Regards.
-
-Tetsuo Handa wrote:
-> James Morris wrote:
-> > khelper is a kernel thread, so it should not have an ->mm, but I wonder
-> > why this hasn't shown up before.  Odd...
+On Mon, Apr 13, 2009 at 07:07:58PM +0900, FUJITA Tomonori wrote:
+> On Mon, 13 Apr 2009 18:38:23 +0900
+> Tejun Heo <tj@kernel.org> wrote:
 > 
-> I don't see this message for 2.6.29 and earlier.
-> As of 2.6.30-rc1, this problem is not solved yet.
-> I think something happened between 2.6.29 and 2.6.30-rc1.
+> > FUJITA Tomonori wrote:
+> > >> I thought that was agreed and done? What is left to do for that to go
+> > >> in.
+> > > 
+> > > I've converted all the users (sg, st, osst). Nothing is left. So we
+> > > don't need this.
+> > 
+> > Yeah, pulled it.  Okay, so we can postpone diddling with request
+> > mapping for now.  I'll re-post fixes only from this and the previous
+> > patchset and proceed with other patchsets.
 > 
-> http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc1.txt
-> http://I-love.SAKURA.ne.jp/tmp/config-2.6.30-rc1
+> To be honest, I don't think that we can clean up the block
+> mapping. For example, blk_rq_map_kern_prealloc() in your patchset
+> doesn't look cleanup to me. It's just moving a hack from ide to the
+> block (well, I have to admit that I did the same thing when I
+> converted sg/st/osst...).
 
-# git bisect start v2.6.30-rc1 v2.6.29 -- arch/x86/ fs/ kernel/ include/asm-generic/
-Bisecting: 1304 revisions left to test after this
-[749b0afc3a9d90dda3319fd1464a3b32fc225361] kexec: Change kexec jump code ordering
-# git bisect bad
-Bisecting: 639 revisions left to test after this
-[6d2e91bf80e4410207f01edb0962aec9213f3533] Merge branch 'x86/urgent' into x86/mm
-# git bisect good
-Bisecting: 326 revisions left to test after this
-[6e15cf04860074ad032e88c306bea656bbdd0f22] Merge branch 'core/percpu' into percpu-cpumask-x86-for-linus-2
-# git bisect bad
-Bisecting: 163 revisions left to test after this
-[13220a94d35708d5378114e96ffcc88d0a74fe99] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6
-# git bisect bad
-Bisecting: 81 revisions left to test after this
-[08abe18af1f78ee80c3c3a5ac47c3e0ae0beadf6] Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-# git bisect bad
-Bisecting: 44 revisions left to test after this
-[562f477a54478002ddfbb5b85627c009ca41e71d] Merge git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6
-# git bisect good
-Bisecting: 23 revisions left to test after this
-[8ff64b539bfd998792614481ccb67139b97075ef] Merge git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw
-# git bisect good
-Bisecting: 11 revisions left to test after this
-[aa4abc9bcce0d2a7ec189e897f8f8c58ca04643b] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-# git bisect good
-Bisecting: 5 revisions left to test after this
-[f67f129e519fa87f8ebd236b6336fe43f31ee141] Driver core: implement uevent suppress in kobject
-# git bisect good
-Bisecting: 2 revisions left to test after this
-[e9d376f0fa66bd630fe27403669c6ae6c22a868f] dynamic debug: combine dprintk and dynamic printk
-# git bisect bad
-Bisecting: 1 revisions left to test after this
-[669420644c79c207f83fdf9105ae782867e2991f] sysfs: only allow one scheduled removal callback per kobj
-# gid bisect good
-(...snipped...)
-# git bisect reset
-(...snipped...)
-# git bisect start e9d376f0fa66bd630fe27403669c6ae6c22a868f v2.6.29 6d2e91bf80e4410207f01edb0962aec9213f3533 562f477a54478002ddfbb5b85627c009ca41e71d 8ff64b539bfd998792614481ccb67139b97075ef aa4abc9bcce0d2a7ec189e897f8f8c58ca04643b f67f129e519fa87f8ebd236b6336fe43f31ee141 669420644c79c207f83fdf9105ae782867e2991f
-Bisecting: 1 revisions left to test after this
-[095160aee954688a9bad225952c4bee546541e19] sysfs: fix some bin_vm_ops errors
-# git bisect bad
-Bisecting: 0 revisions left to test after this
-[f520360d93cdc37de5d972dac4bf3bdef6a7f6a7] kobject: don't block for each kobject_uevent
-# git bisect bad
-f520360d93cdc37de5d972dac4bf3bdef6a7f6a7 is first bad commit
-commit f520360d93cdc37de5d972dac4bf3bdef6a7f6a7
-Author: Arjan van de Ven <arjan@linux.intel.com>
-Date:   Thu Mar 19 09:09:05 2009 -0700
+Well, since blk_rq_map_kern_prealloc() is going to be used only in
+ide-cd (driver needs it to queue a sense request from within the irq
+handler) and since it is considered a hack I could try to move it out of
+the irq handler and do away only with blk_rq_map_kern() if that is more
+of an agreeable solution?
 
-    kobject: don't block for each kobject_uevent
-
-    Right now, the kobject_uevent code blocks for each uevent that's being
-    generated, due to using (for hystoric reasons) UHM_WAIT_EXEC as flag to
-    call_usermode_helper().  Specifically, the effect is that each uevent
-    that is being sent causes the code to wake up keventd, then block until
-    keventd has processed the work. Needless to say, this happens many times
-    during the system boot.
-
-    This patches changes that to UHN_NO_WAIT (brilliant name for a constant
-    btw) so that we only schedule the work to fire the uevent message, but
-    do not wait for keventd to process the work.
-
-    This removes one of the bottlenecks during boot; each one of them is
-    only a small effect, but the sum of them does add up.
-
-    [Note, distros that need this are broken, they should be setting
-    CONFIG_UEVENT_HELPER_PATH to "", that way this code path will never be
-    excuted at all -- gregkh]
-
-    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-:040000 040000 b1bfc977d11bb63ee29e42ad552eb89df4508815 4b301b5d0277359da91ee5e0162d44f76bbc7585 M      lib
+-- 
+Regards/Gruss,
+    Boris.
