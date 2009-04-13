@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZDMITF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZDMIXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbZDMITF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 04:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZDMISw
+	id S1754259AbZDMIXi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 04:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZDMIX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 04:18:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51480 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbZDMISw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 04:18:52 -0400
-Message-ID: <49E2F55F.5060108@garzik.org>
-Date: Mon, 13 Apr 2009 04:18:39 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sata_nv: sgpio for nvidia mcp55 -v3
-References: <20061031104055.GA8898@infradead.org>	 <15F501D1A78BD343BE8F4D8DB854566B0C8DDCF5@hkemmail01.nvidia.com>	 <86802c440711062009t7e98d27fqdfb466b9843da060@mail.gmail.com> <86802c440901180120u3e60e73dm53a37b7cd9034915@mail.gmail.com> <4972F4E5.3030203@kernel.org> <49768355.4040301@kernel.org> <4977DAAF.5060006@kernel.org>
-In-Reply-To: <4977DAAF.5060006@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Mon, 13 Apr 2009 04:23:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45456 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbZDMIX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 04:23:27 -0400
+Date: Mon, 13 Apr 2009 10:26:03 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add MCE support to KVM
+Message-ID: <20090413082603.GS14687@one.firstfloor.org>
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com> <49DE195D.1020303@redhat.com> <1239332455.6384.108.camel@yhuang-dev.sh.intel.com> <49E08762.1010206@redhat.com> <20090411121911.GR14687@one.firstfloor.org> <49E08C2F.4010003@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E08C2F.4010003@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Impact: new features
+On Sat, Apr 11, 2009 at 03:25:19PM +0300, Avi Kivity wrote:
+> Andi Kleen wrote:
+> >>Right, but we can allocate the maximum number, no?  it's a fairly small 
+> >>amount of memory.
+> >>    
+> >
+> >There are 255 banks worst case which need upto 4 (in theory 5) MSRs each
+> >
+> >  
 > 
-> based on patch on
->     http://marc.info/?l=linux-ide&m=116289338705418&w=2
+> That's 8KB, which would normally not be allocated.  But I think we can 
+> live with it.
 > 
-> 1. update the patch for 2.6.19 to latest upstream ( 2.6.28?)
-> 2. fix shared sgpio to support several mcp55 + io55, so every mcp55 have
->    seperate spinlock
-> 3. use scratch_source as numbering of sgpio instead of address of struct,
->    so could go through kexec/kdump
-> 
-> v2: revert NV_ON and NV_OFF, so turn on Activity LED all the time when disk is idle.
-> v3: use one timer per sgpio instead of per nv_host, so for mcp55+io55 system will use 2 timers
->     instead of 6 timers.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  drivers/ata/sata_nv.c |  562 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 562 insertions(+)
+> Do we actually need to support 255 banks? 
 
+Probably not. Current CPUs all have a single digit number.
 
-Is this really over 500 LOC, just to blink some lights from the data 
-xfer hot path?  :)
+e.g. 64 would be plenty for now.
 
-	Jeff
+> Or can we support a smaller 
+> number transparently?
 
+Not transparently. In theory software can hardcode that for cpu model X bank Y 
+is available and does Z. Software doesn't have too, Intel provides a bank 
+independent way to report errors too, but we don't know if everyone uses it.
+Linux doesn't rely on bank numbers on Intel at least.
 
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
