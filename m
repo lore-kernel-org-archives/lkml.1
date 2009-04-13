@@ -1,215 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZDMAHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZDMAI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbZDMAHm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 20:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZDMAGd
+	id S1754004AbZDMAI0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 20:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDMAGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 20:06:33 -0400
-Received: from ozlabs.org ([203.10.76.45]:39047 "EHLO ozlabs.org"
+	Sun, 12 Apr 2009 20:06:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:39052 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618AbZDMAGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 20:06:30 -0400
+	id S1752204AbZDMAGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 20:06:31 -0400
 CC: linux-kernel@vger.kernel.org
-To: davej@redhat.com
-To: cpufreq@vger.kernel.org
-CC: Ingo Molnar <mingo@redhat.com>
+To: Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Mon, 13 Apr 2009 09:30:02 +0930
-Subject: [PATCH 3/7] cpumask: avoid playing with cpus_allowed in speedstep-ich.c
-Cc: Dominik Brodowski <linux@brodo.de>
-Message-Id: <20090413000629.870F5DE125@ozlabs.org>
+Subject: [PATCH 1/7] use smp_call_function_single() in arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Zhao Yakui <yakui.zhao@intel.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <20090413000630.21C09DE12A@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Impact: don't play with current's cpumask
+Impact: fix sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
 
-It's generally a very bad idea to mug some process's cpumask: it could
-legitimately and reasonably be changed by root, which could break us
-(if done before our code) or them (if we restore the wrong value).
+Mike says:
+   It's kondemand, do_dbs_timer() is queueing work 9-14 times/sec/cpu.
 
-For speedstep_set_state and speedstep_get_state we use
-smp_call_function_single: this had the advantage of being more
-efficient, too.
-
-For speedstep_get_freqs() in speedstep_cpu_init(), we use
-work_on_cpu: slightly less efficient, but not performance critical.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: davej@redhat.com
-To: cpufreq@vger.kernel.org
-Cc: Dominik Brodowski <linux@brodo.de>
+Tested-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Zhao Yakui <yakui.zhao@intel.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (use rdmsr_on_cpu)
 ---
- arch/x86/kernel/cpu/cpufreq/speedstep-ich.c |   79 +++++++++++++++-------------
- arch/x86/kernel/cpu/cpufreq/speedstep-lib.c |    1 
- 2 files changed, 44 insertions(+), 36 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-@@ -89,7 +89,8 @@ static int speedstep_find_register(void)
-  * speedstep_set_state - set the SpeedStep state
-  * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
-  *
-- *   Tries to change the SpeedStep state.
-+ *   Tries to change the SpeedStep state.  Can be called from
-+ *   smp_call_function_single.
-  */
- static void speedstep_set_state(unsigned int state)
+diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+--- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -153,7 +153,8 @@ struct drv_cmd {
+ 	u32 val;
+ };
+ 
+-static long do_drv_read(void *_cmd)
++/* Called via smp_call_function_single(), on the target CPU */
++static void do_drv_read(void *_cmd)
  {
-@@ -143,6 +144,11 @@ static void speedstep_set_state(unsigned
- 	return;
+ 	struct drv_cmd *cmd = _cmd;
+ 	u32 h;
+@@ -170,10 +171,10 @@ static long do_drv_read(void *_cmd)
+ 	default:
+ 		break;
+ 	}
+-	return 0;
  }
  
-+/* Wrapper for smp_call_function_single. */
-+static void _speedstep_set_state(void *_state)
-+{
-+	speedstep_set_state(*(unsigned int *)_state);
-+}
- 
- /**
-  * speedstep_activate - activate SpeedStep control in the chipset
-@@ -226,22 +232,28 @@ static unsigned int speedstep_detect_chi
- 	return 0;
+-static long do_drv_write(void *_cmd)
++/* Called via smp_call_function_single(), on the target CPU */
++static void do_drv_write(void *_cmd)
+ {
+ 	struct drv_cmd *cmd = _cmd;
+ 	u32 lo, hi;
+@@ -192,23 +193,21 @@ static long do_drv_write(void *_cmd)
+ 	default:
+ 		break;
+ 	}
+-	return 0;
  }
  
--static unsigned int _speedstep_get(const struct cpumask *cpus)
-+struct get_freq_data {
-+	unsigned int speed;
-+	unsigned int processor;
-+};
-+
-+static void get_freq_data(void *_data)
+ static void drv_read(struct drv_cmd *cmd)
  {
--	unsigned int speed;
--	cpumask_t cpus_allowed;
-+	struct get_freq_data *data = _data;
+ 	cmd->val = 0;
  
--	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpus);
--	speed = speedstep_get_frequency(speedstep_processor);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
--	dprintk("detected %u kHz as current frequency\n", speed);
--	return speed;
-+	data->speed = speedstep_get_frequency(data->processor);
+-	work_on_cpu(cpumask_any(cmd->mask), do_drv_read, cmd);
++	smp_call_function_single(cpumask_any(cmd->mask), do_drv_read, cmd, 1);
  }
  
- static unsigned int speedstep_get(unsigned int cpu)
+ static void drv_write(struct drv_cmd *cmd)
  {
--	return _speedstep_get(cpumask_of(cpu));
-+	struct get_freq_data data = { .processor = cpu };
-+
-+	/* You're supposed to ensure CPU is online. */
-+	if (smp_call_function_single(cpu, get_freq_data, &data, 1) != 0)
-+		BUG();
-+
-+	dprintk("detected %u kHz as current frequency\n", data.speed);
-+	return data.speed;
+-	unsigned int i;
++	unsigned int cpu;
+ 
+-	for_each_cpu(i, cmd->mask) {
+-		work_on_cpu(i, do_drv_write, cmd);
+-	}
++	for_each_cpu(cpu, cmd->mask)
++		smp_call_function_single(cpu, do_drv_write, cmd, 1);
  }
  
- /**
-@@ -257,16 +269,16 @@ static int speedstep_target(struct cpufr
- 			     unsigned int target_freq,
- 			     unsigned int relation)
+ static u32 get_cur_val(const struct cpumask *mask)
+@@ -253,14 +252,13 @@ struct perf_pair {
+ };
+ 
+ 
+-static long read_measured_perf_ctrs(void *_cur)
++/* Called via smp_call_function_single(), on the target CPU */
++static void read_measured_perf_ctrs(void *_cur)
  {
--	unsigned int newstate = 0;
-+	unsigned int newstate = 0, policy_cpu;
- 	struct cpufreq_freqs freqs;
--	cpumask_t cpus_allowed;
- 	int i;
+ 	struct perf_pair *cur = _cur;
  
- 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0],
- 				target_freq, relation, &newstate))
- 		return -EINVAL;
+ 	rdmsr(MSR_IA32_APERF, cur->aperf.split.lo, cur->aperf.split.hi);
+ 	rdmsr(MSR_IA32_MPERF, cur->mperf.split.lo, cur->mperf.split.hi);
+-
+-	return 0;
+ }
  
--	freqs.old = _speedstep_get(policy->cpus);
-+	policy_cpu = cpumask_any_and(policy->cpus, cpu_online_mask);
-+	freqs.old = speedstep_get(policy_cpu);
- 	freqs.new = speedstep_freqs[newstate].frequency;
- 	freqs.cpu = policy->cpu;
+ /*
+@@ -283,7 +281,7 @@ static unsigned int get_measured_perf(st
+ 	unsigned int perf_percent;
+ 	unsigned int retval;
  
-@@ -276,20 +288,13 @@ static int speedstep_target(struct cpufr
- 	if (freqs.old == freqs.new)
+-	if (!work_on_cpu(cpu, read_measured_perf_ctrs, &readin))
++	if (!smp_call_function_single(cpu, read_measured_perf_ctrs, &readin, 1))
  		return 0;
  
--	cpus_allowed = current->cpus_allowed;
--
- 	for_each_cpu(i, policy->cpus) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 	}
- 
--	/* switch to physical CPU where state is to be changed */
--	set_cpus_allowed_ptr(current, policy->cpus);
--
--	speedstep_set_state(newstate);
--
--	/* allow to be run on all CPUs */
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	smp_call_function_single(policy_cpu, _speedstep_set_state, &newstate,
-+				 true);
- 
- 	for_each_cpu(i, policy->cpus) {
- 		freqs.cpu = i;
-@@ -312,33 +317,35 @@ static int speedstep_verify(struct cpufr
- 	return cpufreq_frequency_table_verify(policy, &speedstep_freqs[0]);
- }
- 
-+static long get_freqs_on_cpu(void *_policy)
-+{
-+	struct cpufreq_policy *policy = _policy;
-+
-+	return speedstep_get_freqs(speedstep_processor,
-+				   &speedstep_freqs[SPEEDSTEP_LOW].frequency,
-+				   &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
-+				   &policy->cpuinfo.transition_latency,
-+				   &speedstep_set_state);
-+}
- 
- static int speedstep_cpu_init(struct cpufreq_policy *policy)
- {
--	int result = 0;
--	unsigned int speed;
--	cpumask_t cpus_allowed;
-+	int result;
-+	unsigned int policy_cpu, speed;
- 
- 	/* only run on CPU to be set, or on its sibling */
- #ifdef CONFIG_SMP
- 	cpumask_copy(policy->cpus, cpu_sibling_mask(policy->cpu));
- #endif
--
--	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, policy->cpus);
-+	policy_cpu = cpumask_any_and(policy->cpus, cpu_online_mask);
- 
- 	/* detect low and high frequency and transition latency */
--	result = speedstep_get_freqs(speedstep_processor,
--				     &speedstep_freqs[SPEEDSTEP_LOW].frequency,
--				     &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
--				     &policy->cpuinfo.transition_latency,
--				     &speedstep_set_state);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	result = work_on_cpu(policy_cpu, get_freqs_on_cpu, policy);
- 	if (result)
- 		return result;
- 
- 	/* get current speed setting */
--	speed = _speedstep_get(policy->cpus);
-+	speed = speedstep_get(policy_cpu);
- 	if (!speed)
- 		return -EIO;
- 
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-@@ -226,6 +226,7 @@ static unsigned int pentium4_get_frequen
- }
- 
- 
-+/* Warning: may get called from smp_call_function_single. */
- unsigned int speedstep_get_frequency(unsigned int processor)
- {
- 	switch (processor) {
+ 	cur.aperf.whole = readin.aperf.whole -
 
