@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZDMXsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZDMXtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbZDMXsK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZDMXru
+	id S1754501AbZDMXtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZDMXsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:47:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60221 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753801AbZDMXrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:47:48 -0400
-Date: Tue, 14 Apr 2009 01:47:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Theodore Tso <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH, RFC 0/3] Improvements to the tracing documentation
-Message-ID: <20090413234741.GI817@elte.hu>
-References: <1239479479-2603-1-git-send-email-tytso@mit.edu> <20090412092524.GA30349@elte.hu> <20090412121533.GB10547@mit.edu> <20090412130105.GB20281@elte.hu> <20090412172344.GC10547@mit.edu> <20090413213124.GB8514@elte.hu> <20090413223526.GB32182@mit.edu> <20090413225542.GJ8514@elte.hu> <20090413233953.GA955@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413233953.GA955@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 13 Apr 2009 19:48:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35241 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751319AbZDMXsp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 19:48:45 -0400
+Date: Mon, 13 Apr 2009 16:45:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yan Seiner" <yan@seiner.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: mcp55 forcedeth woes
+Message-Id: <20090413164548.f241ec1e.akpm@linux-foundation.org>
+In-Reply-To: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us>
+References: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(suitable cc's added)
 
-* Theodore Tso <tytso@mit.edu> wrote:
+On Mon, 13 Apr 2009 15:13:05 -0700 (PDT)
+"Yan Seiner" <yan@seiner.com> wrote:
 
-> On Tue, Apr 14, 2009 at 12:55:42AM +0200, Ingo Molnar wrote:
-> > 
-> > It could be worked around right now by converting it to an 
-> > integer but i think what we want is native support for kdev_t, 
-> > together with all the usual convenience forms of specifying it: 
-> > sda1 should work the same way as 8:1 or 0801. Even /dev/sda1 
-> > should be recognized in a filter expression.
+> I have a few Asus M2N-SLI deluxe mobos.  These mobos have the MCP55
+> chipset and two 1gb ethernet ports.  Occasionally, and for no reason that
+> I can figure out, these ports will die.  There are various ways to try and
+> fix these; they seem to be about 50% effective, and approach something
+> akin to voodoo.
 > 
-> Yeah, I could just drop in the integer now, and and just have 
-> TP_printk() display "(8, 2)" instead of "sda2".  It's really a 
-> question of how far we want to take pretty-printing and parsing 
-> for ftrace, I suppose.
+> Based on this discussion here:
+> 
+> http://patchwork.kernel.org/patch/16212/
+> 
+> I've gotten the ability to turn the ports on and off somewhat.
+> 
+> For port 0,
+> 
+> ethtool -s eth0 autoneg off speed 10 duplex full
+> 
+> turns on the link, and gets me half-duplex, 10mb/sec. Not much, granted.
+> 
+> ethtool -s eth0 autoneg off speed 100 duplex full
+> 
+> causes the link to go up and down on about a 2 second cycle.
+> 
+> ethtool -s eth0 autoneg on
+> 
+> causes the link to drop.
+> 
+> For port 1, the behavior is similar, except that I can get a stable 100
+> mbit connection.
+> 
+> So the problem is in the autoneg code. It's a driver issue as this is
+> reported widely to work under windows of various flavors.
+> 
+> I'm running 2.6.29.1; I'm ok with patching and building kernels, but I'm
+> not a kernel hacker.
+> 
+> What, if anything, can I provide and do to fix this?
+> 
 
-We try to do it as far as daily use in /debug/tracing/ dictates. 
-Interacting with the kernel on such a direct channel is really 
-intuitive and useful in debugging and development sessions IMHO.
-
-Raw binary records would encode it in an efficient and 
-well-specified manner, so information density is not hurt by 
-pretty-printing.
-
-> But if we are going to have end-users use it, having real 
-> pretty-printed names would be a good thing, IMHO.  Especially if 
-> major/minor numbers start becoming completely random beasts, as 
-> some have proposed.  (I think it's a terrible idea, but I'm 
-> clearly not politically correct.  :-)
-
-Sounds like a terrible idea to me too. If more space is needed then 
-perhaps dynamically allocate the _new_ bits needed - but leave the 
-well-established spaces alone. Making everything random looking is 
-just asking for all sorts of trouble IMO. Making the system harder 
-to understand at a glance, on such a fundamental level, seems silly.
-
-	Ingo
