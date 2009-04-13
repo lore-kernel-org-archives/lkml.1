@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZDMU2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZDMU34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753751AbZDMU2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 16:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZDMU2i
+	id S1753873AbZDMU34 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 16:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDMU3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 16:28:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55424 "EHLO hera.kernel.org"
+	Mon, 13 Apr 2009 16:29:46 -0400
+Received: from are.twiddle.net ([75.149.56.221]:53255 "EHLO are.twiddle.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZDMU2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 16:28:37 -0400
-Date: Mon, 13 Apr 2009 20:18:54 GMT
-From: tip-bot for Luis Henriques <henrix@sapo.pt>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, henrix@sapo.pt, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, henrix@sapo.pt, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090413192449.GA3920@hades.domain.com>
-References: <20090413192449.GA3920@hades.domain.com>
-Subject: [tip:perfcounters/core] perf_counter: fix alignment in /proc/interrupts
-Message-ID: <tip-0f3fd87ce43727d6b8573191ce89e874533b1429@git.kernel.org>
-Git-Commit-ID: 0f3fd87ce43727d6b8573191ce89e874533b1429
-X-Mailer: tip-git-log-daemon
+	id S1752151AbZDMU3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 16:29:45 -0400
+X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 16:29:45 EDT
+Message-ID: <49E39F3D.4060501@twiddle.net>
+Date: Mon, 13 Apr 2009 13:23:25 -0700
+From: Richard Henderson <rth@twiddle.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Apr 2009 20:18:57 +0000 (UTC)
+To: Matt Turner <mattst88@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jay Estabrook <jay.estabrook@hp.com>,
+       Oliver Falk <oliver@linux-kernel.at>, linuxppc-dev@ozlabs.org
+Subject: Re: alpha: half done futex implementation
+References: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
+In-Reply-To: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0f3fd87ce43727d6b8573191ce89e874533b1429
-Gitweb:     http://git.kernel.org/tip/0f3fd87ce43727d6b8573191ce89e874533b1429
-Author:     Luis Henriques <henrix@sapo.pt>
-AuthorDate: Mon, 13 Apr 2009 20:24:50 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 13 Apr 2009 22:16:51 +0200
+Matt Turner wrote:
+> Hi,
+> 
+> Going on Richard's advice, I've tried to write an alpha futex
+> implementation based on the powerpc futex.h.
+> 
+> I've gotten this far.. :\
+> 
 
-perf_counter: fix alignment in /proc/interrupts
+#define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
+      __asm__ __volatile(             \
+      __ASM_MB                        \
+      "1: ldl_l   %0,0(%3)\n"         \
+          insn                        \
+      "2: stl_c   %1,0(%3)\n"         \
+      "   beq     %1,4f\n"            \
+      "   mov     $31,%1\n"           \
+      "3: .subsection 2\n"            \
+      "4: br      1b\n"               \
+      "   .previous\n"                \
+      ".section __ex_table,\"a\"\n"   \
+      "   .long   1b-.\n"             \
+      "   lda     %0,3b-1b(%2)\n"     \
+      "   .long   2b-.\n"             \
+      "   lda     %0,3b-2b(%2)\n"     \
+      "   .previous\n"                \
+      : "=&r" (oldval), "=&r"(ret)    \
+      : "r" (uaddr), "r"(oparg)       \
+      : "memory")
 
-Trivial fix on columns alignment in /proc/interrupts file.
+   switch (op) {
+     case FUTEX_OP_SET:
+       __futex_atomic_op("mov %0,%1", ret, oldval, uaddr, oparg);
+       break;
+     case FUTEX_OP_ADD:
+       __futex_atomic_op("addl %0,%4,%1\n", ret, oldval, uaddr, oparg);
+       break;
+     case FUTEX_OP_OR:
+       __futex_atomic_op("or %0,%4,%1\n", ret, oldval, uaddr, oparg);
+       break;
+     case FUTEX_OP_ANDN:
+       __futex_atomic_op("andnot %0,%4,%1\n", ret, oldval, uaddr, oparg);
+       break;
+     case FUTEX_OP_XOR:
+       __futex_atomic_op("xor %0,%4,%1\n", ret, oldval, uaddr, oparg);
+       break;
+     default:
+       ret = -ENOSYS;
+   }
 
-Signed-off-by: Luis Henriques <henrix@sapo.pt>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090413192449.GA3920@hades.domain.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Also, there's a bug in the powerpc implementation.  It appears that 
+oparg is clobbered, and if stwcx fails the operation will be repeated 
+with incorrect inputs.
 
 
----
- arch/x86/kernel/irq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+r~
 
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index dccaaa8..849cfab 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -67,7 +67,7 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
- 	seq_printf(p, "  Performance counter interrupts\n");
--	seq_printf(p, "PND: ");
-+	seq_printf(p, "%*s: ", prec, "PND");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
- 	seq_printf(p, "  Performance pending work\n");
+
+
