@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZDMWsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZDMWv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304AbZDMWsg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZDMWs1
+	id S1753451AbZDMWv5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZDMWvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:48:27 -0400
-Received: from flatoutfitness.com ([66.178.130.209]:49491 "EHLO selene"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753146AbZDMWs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:48:26 -0400
-X-Greylist: delayed 2169 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 18:48:26 EDT
-Message-ID: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us>
-Date: Mon, 13 Apr 2009 15:13:05 -0700 (PDT)
-Subject: mcp55 forcedeth woes
-From: "Yan Seiner" <yan@seiner.com>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
+	Mon, 13 Apr 2009 18:51:48 -0400
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:37726 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752365AbZDMWvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 18:51:48 -0400
+Message-ID: <49E3C209.5030705@lougher.demon.co.uk>
+Date: Mon, 13 Apr 2009 23:51:53 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Doug Chapman <doug.chapman@hp.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] squashfs broken when pageszie > blocksize
+References: <1239652637.1127.10.camel@oberon>
+In-Reply-To: <1239652637.1127.10.camel@oberon>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a few Asus M2N-SLI deluxe mobos.  These mobos have the MCP55
-chipset and two 1gb ethernet ports.  Occasionally, and for no reason that
-I can figure out, these ports will die.  There are various ways to try and
-fix these; they seem to be about 50% effective, and approach something
-akin to voodoo.
+Doug Chapman wrote:
+> Squashfs is broken on any system where the pageszie is larger than either
+> the block size of the squashfs image or larger than the metadata size (8192).
+> This is easily fixed by ensuring cache->pages is always > 0.
+> 
+> Signed-off-by: Doug Chapman <doug.chapman@hp.com>
+> Cc: Phillip Lougher <phillip@lougher.demon.co.uk>
+> 
 
-Based on this discussion here:
+Good catch.  BTW what is the page size on ia64?
 
-http://patchwork.kernel.org/patch/16212/
+For completeness there should also be a mount time check that
+the block size used in the Squashfs filesystem is at least as
+large as the pagesize.  This doesn't matter for metadata
+(size 8192), but does matter for data blocks, because Squashfs
+read_page doesn't handle block_size < pagesize.
 
-I've gotten the ability to turn the ports on and off somewhat.
+Squashfs read_page used to handle block_size < pagesize but I
+removed that code when I removed filesystem support for block_sizes
+< 4K.  If ia64 users (or any other architecture with larger than
+4K pagesizes) want to use Squashfs filesystems with blocksizes less
+than their pagesize, then I can put that code back in.
 
-For port 0,
-
-ethtool -s eth0 autoneg off speed 10 duplex full
-
-turns on the link, and gets me half-duplex, 10mb/sec. Not much, granted.
-
-ethtool -s eth0 autoneg off speed 100 duplex full
-
-causes the link to go up and down on about a 2 second cycle.
-
-ethtool -s eth0 autoneg on
-
-causes the link to drop.
-
-For port 1, the behavior is similar, except that I can get a stable 100
-mbit connection.
-
-So the problem is in the autoneg code. It's a driver issue as this is
-reported widely to work under windows of various flavors.
-
-I'm running 2.6.29.1; I'm ok with patching and building kernels, but I'm
-not a kernel hacker.
-
-What, if anything, can I provide and do to fix this?
-
-
--- 
-Yan Seiner, PE
-
-Support my bid for the 4J School Board
-http://www.seiner.com
+Phillip
 
