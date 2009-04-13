@@ -1,161 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZDMBUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZDMBVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbZDMBUp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 21:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZDMBUV
+	id S1753687AbZDMBVh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 21:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZDMBV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 21:20:21 -0400
-Received: from mga01.intel.com ([192.55.52.88]:4023 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753469AbZDMBUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 21:20:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,177,1239001200"; 
-   d="scan'208";a="447295378"
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
-	brightness with hotkeys
-From: yakui_zhao <yakui.zhao@intel.com>
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       mjg59@srcf.ucam.org
-In-Reply-To: <49E234ED.5010105@gmail.com>
-References: <49E10684.5090101@gmail.com>
-	 <20090411150555.8b13ed18.akpm@linux-foundation.org>
-	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Mon, 13 Apr 2009 09:21:35 +0800
-Message-Id: <1239585695.5564.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Sun, 12 Apr 2009 21:21:27 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:47346 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750734AbZDMBV0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 21:21:26 -0400
+Message-ID: <49E29386.20204@solemnwarning.net>
+Date: Mon, 13 Apr 2009 02:21:10 +0100
+From: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28 /proc/diskstats
+References: <49E13D18.2090805@solemnwarning.net>
+In-Reply-To: <49E13D18.2090805@solemnwarning.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=4J9GnK0NU8PFg4qgppoA:9 a=M2UmFvomYaTM5H23t7fau_b5Y1oA:4 a=CWfAmLVWKswA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-13 at 02:37 +0800, Niel Lambrechts wrote:
-> On 04/12/2009 06:14 PM, Henrique de Moraes Holschuh wrote:
-> > On Sat, 11 Apr 2009, Andrew Morton wrote:
-> >   
-> >>> With latest git kernel, I'm no longer able to control my Thinkpad (W500)
-> >>> brightness, although I can still control the backlight, bluetooth etc.
-> >>>       
-> >
-> > Niels, something just occourred to me.  Is your problem the hotkeys, or the
-> > brightness control itself?  Check /sys/class/backlight/*, please.  What do
-> > you have in there?  Does it work?
-> >   
-> Hi Henrique,
-Will you please check whether there exists the /sys/class/backlight/*/*?
- 
-If not, will you please load the i915 driver and see whether the
-backlight can be controlled by hotkeys?(The CONFIG_DRM_I915_KMS should
-be enabled in kernel configuration).
+I've stepped through the commits in linux-2.6, the first revision with 
+this behavior is 074a7aca7afa6f230104e8e65eba3420263714a5
 
-Thanks.
-> 
-> The directory is empty - this is when I used 2.6.30-rc1 (latest git)
-> from yesterday. I'll keep retrying with the latest git kernels though.
-> 
-> The only additional observations I can provide is:
-> 1) pulling/plugging the power cord does actually have an effect on the
-> brightness.
-> 2) resuming form hibernate - Xorg is blank, until I simultaneously press
-> a keyboard key and touch the synaptics pad. But I have this problem in
-> 2.6.28/2.6.29 as well, and I guess it could either be vesafb or ACPI
-> related, as it also happened when I used s2disk in a console session
-> outside of X.
-> 
-> In 2.6.29.1:
-> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
-> -> ../../devices/virtual/backlight/acpi_video0
-> 
-> which contains:
-> drwxr-xr-x 3 root root    0 Apr 12 20:01 ./
-> drwxr-xr-x 3 root root    0 Apr 12 20:01 ../
-> -r--r--r-- 1 root root 4096 Apr 12 20:02 actual_brightness
-> -rw-r--r-- 1 root root 4096 Apr 12 20:02 bl_power
-> -rw-r--r-- 1 root root 4096 Apr 12 20:02 brightness
-> -r--r--r-- 1 root root 4096 Apr 12 20:01 max_brightness
-> drwxr-xr-x 2 root root    0 Apr 12 20:02 power/
-> lrwxrwxrwx 1 root root    0 Apr 12 20:01 subsystem ->
-> ../../../../class/backlight/
-> -rw-r--r-- 1 root root 4096 Apr 12 20:01 uevent
-> 
-> max_brightness = 15 and echoing values [0-15] to brightness controls it
-> as expected, or just using the standard thinkpad keys (Fn-Home to increase).
-> > If it is the hotkeys, make sure you either have the legacy ACPI events
-> > enabled in kconfig, or that you have something tied to the thinkpad-acpi
-> > input device (no, HAL doesn't do it _yet_, it just forwards the events to
-> > X.org)...
-> >   
-> I'm not sure what provides the "glue", other than "it works" in 2.6.29.1
-> and 2.6.28.9 with OpenSUSE 11.1 with xorg-x11-server-7.4-41.8.
-> 
-> Would it help if I send the ACPI parts of my .config? These are based on
-> the default /proc/config.gz that comes with the distro.
-> 
-> # Power management and ACPI
-> options                                                               
-> CONFIG_ACPI=y                                                                                     
-> 
-> CONFIG_ACPI_SLEEP=y                                                                               
-> 
-> CONFIG_ACPI_PROCFS=y                                                                              
-> 
-> CONFIG_ACPI_PROCFS_POWER=y                                                                        
-> 
-> CONFIG_ACPI_SYSFS_POWER=y                                                                         
-> 
-> CONFIG_ACPI_PROC_EVENT=y                                                                          
-> 
-> CONFIG_ACPI_AC=m                                                                                  
-> 
-> CONFIG_ACPI_BATTERY=m                                                                             
-> 
-> CONFIG_ACPI_BUTTON=m                                                                              
-> 
-> CONFIG_ACPI_VIDEO=m                                                                               
-> 
-> CONFIG_ACPI_FAN=m                                                                                 
-> 
-> CONFIG_ACPI_DOCK=y
-> CONFIG_ACPI_PROCESSOR=m
-> CONFIG_ACPI_HOTPLUG_CPU=y
-> CONFIG_ACPI_THERMAL=m
-> CONFIG_ACPI_CUSTOM_DSDT_FILE=""
-> # CONFIG_ACPI_CUSTOM_DSDT is not set
-> CONFIG_ACPI_BLACKLIST_YEAR=2001
-> # CONFIG_ACPI_DEBUG is not set
-> # CONFIG_ACPI_PCI_SLOT is not set
-> CONFIG_ACPI_CONTAINER=m
-> CONFIG_ACPI_SBS=m
-> CONFIG_X86_ACPI_CPUFREQ=m
-> CONFIG_X86_POWERNOW_K7_ACPI=y
-> CONFIG_X86_POWERNOW_K8_ACPI=y
-> CONFIG_HOTPLUG_PCI_ACPI=m
-> CONFIG_HOTPLUG_PCI_ACPI_IBM=m
-> CONFIG_PNPACPI=y
-> CONFIG_BLK_DEV_IDEACPI=y
-> CONFIG_ATA_ACPI=y
-> CONFIG_PATA_ACPI=m
-> CONFIG_THINKPAD_ACPI=m
-> # CONFIG_THINKPAD_ACPI_DEBUGFACILITIES is not set
-> # CONFIG_THINKPAD_ACPI_DEBUG is not set
-> CONFIG_THINKPAD_ACPI_BAY=y
-> CONFIG_THINKPAD_ACPI_VIDEO=y
-> CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
-> CONFIG_ACPI_WMI=m
-> # CONFIG_ACPI_ASUS is not set
-> CONFIG_ACPI_TOSHIBA=m
-> 
-> Regards,
-> Niel
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Daniel Collins wrote:
+> Hi
+>
+> Since 2.6.28, fd0 isn't visible in /proc/diskstats from boot, only 
+> after access/mount. It is visible in /sys/block/ from boot, so there 
+> are no issues detecting it. This may also affect other devices such as 
+> hda but I haven't tested this yet, my test system and QEMU both only 
+> have ram0-ram15 from boot. I have tested 2.6.30-rc1 and found the same 
+> behavior. Is this a bug or a deliberate change?
+>
+> Thanks
