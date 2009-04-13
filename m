@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZDMVuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZDMVun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZDMVuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 17:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZDMVuF
+	id S1754270AbZDMVun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 17:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZDMVu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 17:50:05 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43677 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbZDMVuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 17:50:03 -0400
-Date: Mon, 13 Apr 2009 16:50:03 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mtk.manpages@gmail.com,
-       Stephen Smalley <sds@epoch.ncsc.mil>, Andrew Morgan <morgan@kernel.org>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Igor Zhbanov <izh1979@gmail.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org,
-       linux-api@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] add some long-missing capabilities to fs_mask
-Message-ID: <20090413215003.GB25085@us.ibm.com>
-References: <20090413145614.GA15342@us.ibm.com> <13502.1239656608@turing-police.cc.vt.edu>
+	Mon, 13 Apr 2009 17:50:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56317 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754133AbZDMVu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 17:50:26 -0400
+Date: Mon, 13 Apr 2009 23:45:13 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] rework/fix is_single_threaded()
+Message-ID: <20090413214513.GA1119@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <13502.1239656608@turing-police.cc.vt.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu):
-> On Mon, 13 Apr 2009 09:56:14 CDT, "Serge E. Hallyn" said:
-> > When POSIX capabilities were introduced during the 2.1 Linux
-> > cycle, the fs mask, which represents the capabilities which having
-> > fsuid==0 is supposed to grant, did not include CAP_MKNOD and
-> > CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
-> > to call these did in fact depend upon fsuid==0.
-> 
-> Wow. How did this manage to stay un-noticed for this long?
+- Fix the comment, is_single_threaded(p) actually means that nobody shares
+  ->mm with p.
 
-I guess setfsuid() is mainly used by NFS, and not a lot of people
-do mknod over NFS?
+  I think this helper should be renamed, and it should not have arguments.
+  With or without this patch it must not be used unless p == current,
+  otherwise we can't safely use p->signal or p->mm.
 
-To run into this, you'd have to do something like
+- "if (atomic_read(&p->signal->count) != 1)" is not right when we have a
+  zombie group leader, use signal->live instead.
 
-	1. run as root
-	2. setresuid(500,500,0);
-	3. (...)
-	4. setfsuid(0);
-	5. mknod(path, mode, dev);
+- Add PF_KTHREAD check to skip kernel threads which may borrow p->mm,
+  otherwise we can return the wrong "false".
 
-so I suspect the simpler (cross-platform) thing to do was
-seteuid(0) for the mknod anyway...  Plus there is nowhere I've
-found where the precise capabilities afforded to fsuid=0 are
-documented, so noone would complain, they'd just accept it and
-do seteuid()?
+- Use for_each_process() instead of do_each_thread(), all threads must use
+  the same ->mm.
 
-I'm guessing of course.
+- Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
+  to iterate over the process list. If there is another CLONE_VM process
+  it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
+  a freshly forked CLONE_VM task, but this doesn't matter because we must
+  see its parent and return false.
 
--serge
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+--- 6.30/lib/is_single_threaded.c~ISS	2009-04-06 00:03:42.000000000 +0200
++++ 6.30/lib/is_single_threaded.c	2009-04-13 23:39:56.000000000 +0200
+@@ -12,34 +12,44 @@
+ 
+ #include <linux/sched.h>
+ 
+-/**
+- * is_single_threaded - Determine if a thread group is single-threaded or not
+- * @p: A task in the thread group in question
+- *
+- * This returns true if the thread group to which a task belongs is single
+- * threaded, false if it is not.
++/*
++ * Returns true if the task does not share ->mm with another thread/process.
+  */
+-bool is_single_threaded(struct task_struct *p)
++bool is_single_threaded(struct task_struct *task)
+ {
+-	struct task_struct *g, *t;
+-	struct mm_struct *mm = p->mm;
++	struct mm_struct *mm = task->mm;
++	struct task_struct *p, *t;
++	bool ret;
+ 
+-	if (atomic_read(&p->signal->count) != 1)
+-		goto no;
++	might_sleep();
+ 
+-	if (atomic_read(&p->mm->mm_users) != 1) {
+-		read_lock(&tasklist_lock);
+-		do_each_thread(g, t) {
+-			if (t->mm == mm && t != p)
+-				goto no_unlock;
+-		} while_each_thread(g, t);
+-		read_unlock(&tasklist_lock);
+-	}
++	if (atomic_read(&task->signal->live) != 1)
++		return false;
+ 
+-	return true;
++	if (atomic_read(&mm->mm_users) == 1)
++		return true;
+ 
+-no_unlock:
+-	read_unlock(&tasklist_lock);
+-no:
+-	return false;
++	ret = false;
++	down_write(&mm->mmap_sem);
++	rcu_read_lock();
++	for_each_process(p) {
++		if (unlikely(p->flags & PF_KTHREAD))
++			continue;
++		if (unlikely(p == task->group_leader))
++			continue;
++
++		t = p;
++		do {
++			if (unlikely(t->mm == mm))
++				goto found;
++			if (likely(t->mm))
++				break;
++		} while_each_thread(p, t);
++	}
++	ret = true;
++found:
++	rcu_read_unlock();
++	up_write(&mm->mmap_sem);
++
++	return ret;
+ }
+
