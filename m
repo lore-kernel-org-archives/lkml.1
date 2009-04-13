@@ -1,76 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZDMK00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZDMKvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbZDMK00 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 06:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbZDMK0Q
+	id S1755992AbZDMKvB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 06:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZDMKuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 06:26:16 -0400
-Received: from sh.osrg.net ([192.16.179.4]:59286 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754280AbZDMK0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 06:26:16 -0400
-Date: Mon, 13 Apr 2009 19:26:09 +0900
-To: Jens.Axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH] block: fix SG_IO to return a proper error value
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090403204911X.fujita.tomonori@lab.ntt.co.jp>
-References: <20090403204911X.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 13 Apr 2009 06:50:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63447 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752158AbZDMKuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 06:50:52 -0400
+Message-ID: <49E31931.5000506@cn.fujitsu.com>
+Date: Mon, 13 Apr 2009 18:51:29 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>
+CC: "Theodore Ts'o" <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] blktrace: move trace/ dir to /sys/block/sda/
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090413192604N.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 13 Apr 2009 19:26:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ping?
+Impact: allow ftrace-plugin blktrace to trace device-mapper devices
 
-This patch is necessary to return a proper error for applications
-issuing READ requests with a bogus buffer.
+blktrace can't trace a single partition, so it makes no sense to
+have one trace/ dir in each /sys/block/sda/sdaX. Move it to
+/sys/block/sda/.
 
-On Fri, 3 Apr 2009 20:49:03 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+Thus we fix an issue reported by Ted, that ftrace-plugin blktrace
+can't be used to trace device-mapper devices.
 
-> blk_rq_unmap_user() returns -EFAULT if a program passes an invalid
-> address to kernel. SG_IO path needs to pass the returned value to user
-> space instead of ignoring it.
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  block/scsi_ioctl.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-> index 626ee27..84b7f87 100644
-> --- a/block/scsi_ioctl.c
-> +++ b/block/scsi_ioctl.c
-> @@ -217,7 +217,7 @@ static int blk_fill_sghdr_rq(struct request_queue *q, struct request *rq,
->  static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
->  				 struct bio *bio)
->  {
-> -	int ret = 0;
-> +	int r, ret = 0;
->  
->  	/*
->  	 * fill in all the output members
-> @@ -242,7 +242,9 @@ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
->  			ret = -EFAULT;
->  	}
->  
-> -	blk_rq_unmap_user(bio);
-> +	r = blk_rq_unmap_user(bio);
-> +	if (!ret)
-> +		ret = r;
->  	blk_put_request(rq);
->  
->  	return ret;
-> -- 
-> 1.6.0.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Now:
+
+  # echo 1 > /sys/block/dm-0/trace/enable
+  echo: write error: No such device or address
+  # mount -t ext4 /dev/dm-0 /mnt
+  # echo 1 > /sys/block/dm-0/trace/enable
+  # echo blk > /debug/tracing/current_tracer
+
+Reported-by: Theodore Tso <tytso@mit.edu>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ block/blk-sysfs.c            |    7 ++++++-
+ fs/partitions/check.c        |    3 ---
+ include/linux/blktrace_api.h |    7 ++++++-
+ kernel/trace/blktrace.c      |    7 ++++++-
+ 4 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index 73f36be..8653d71 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -387,16 +387,21 @@ struct kobj_type blk_queue_ktype = {
+ int blk_register_queue(struct gendisk *disk)
+ {
+ 	int ret;
++	struct device *dev = disk_to_dev(disk);
+ 
+ 	struct request_queue *q = disk->queue;
+ 
+ 	if (WARN_ON(!q))
+ 		return -ENXIO;
+ 
++	ret = blk_trace_init_sysfs(dev);
++	if (ret)
++		return ret;
++
+ 	if (!q->request_fn)
+ 		return 0;
+ 
+-	ret = kobject_add(&q->kobj, kobject_get(&disk_to_dev(disk)->kobj),
++	ret = kobject_add(&q->kobj, kobject_get(&dev->kobj),
+ 			  "%s", "queue");
+ 	if (ret < 0)
+ 		return ret;
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 99e33ef..445fd2f 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -295,9 +295,6 @@ static struct attribute_group part_attr_group = {
+ 
+ static struct attribute_group *part_attr_groups[] = {
+ 	&part_attr_group,
+-#ifdef CONFIG_BLK_DEV_IO_TRACE
+-	&blk_trace_attr_group,
+-#endif
+ 	NULL
+ };
+ 
+diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+index d960889..518e32a 100644
+--- a/include/linux/blktrace_api.h
++++ b/include/linux/blktrace_api.h
+@@ -197,7 +197,7 @@ extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ extern int blk_trace_startstop(struct request_queue *q, int start);
+ extern int blk_trace_remove(struct request_queue *q);
+ 
+-extern struct attribute_group blk_trace_attr_group;
++extern int blk_trace_init_sysfs(struct device *dev);
+ 
+ #else /* !CONFIG_BLK_DEV_IO_TRACE */
+ #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
+@@ -209,6 +209,11 @@ extern struct attribute_group blk_trace_attr_group;
+ #define blk_trace_remove(q)			(-ENOTTY)
+ #define blk_add_trace_msg(q, fmt, ...)		do { } while (0)
+ 
++static inline int blk_trace_init_sysfs(struct device *dev)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_BLK_DEV_IO_TRACE */
+ #endif /* __KERNEL__ */
+ #endif
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 2b98195..9bae35f 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1420,7 +1420,7 @@ static struct attribute *blk_trace_attrs[] = {
+ 	NULL
+ };
+ 
+-struct attribute_group blk_trace_attr_group = {
++static struct attribute_group blk_trace_attr_group = {
+ 	.name  = "trace",
+ 	.attrs = blk_trace_attrs,
+ };
+@@ -1620,3 +1620,8 @@ out:
+ 	return ret ? ret : count;
+ }
+ 
++int blk_trace_init_sysfs(struct device *dev)
++{
++	return sysfs_create_group(&dev->kobj, &blk_trace_attr_group);
++}
++
+-- 
+1.5.4.rc3
+
