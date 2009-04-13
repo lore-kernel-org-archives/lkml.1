@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZDMS2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbZDMS22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbZDMS2A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 14:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZDMS1u
+	id S1753511AbZDMS22 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 14:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZDMS2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 14:27:50 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:58577 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbZDMS1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 14:27:50 -0400
-Date: Mon, 13 Apr 2009 14:18:08 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
-       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
- default percpu allocator
-In-Reply-To: <20090408162651.GA14449@elte.hu>
-Message-ID: <alpine.DEB.1.10.0904131409510.13756@qirst.com>
-References: <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain>
- <20090401223241.GA28168@elte.hu> <alpine.DEB.1.10.0904012216370.32656@qirst.com> <20090402034223.GA25791@elte.hu> <alpine.DEB.1.10.0904020948570.31756@qirst.com> <20090408162651.GA14449@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 13 Apr 2009 14:28:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51457 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752139AbZDMS2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 14:28:15 -0400
+Date: Mon, 13 Apr 2009 20:27:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>, Peter Oruba <peter.oruba@amd.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       amd64-microcode@amd64.org, Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: microcode driver newly spews warnings
+Message-ID: <20090413182746.GA9954@elte.hu>
+References: <49E38331.3090808@garzik.org> <49E38393.8000700@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E38393.8000700@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009, Ingo Molnar wrote:
 
-> Dude, this is a new facility freshly modernized and freshly made
-> usable. What did you expect, for a thousand usecases pop up in the
-> kernel overnight? _None_ of this code is "common" today per se. (the
-> networking folks are working on making it more and more common
-> though)
+(added Cc:s)
 
-?? kfree(NULL) has been allowed for years. None of this is new.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-> > Speculation. A shutdown fastpath? The percpu allocation and free
-> > operations are expensive and deal with teardown and setup of
-> > virtual mappings. Those paths are *not* optimized for fastpath
-> > use. kfree is different.
+> Jeff Garzik wrote:
+>>
+>> Kernel: 2.6.30-rc1-00306-g8371f87
+>> Hardware: ICH10 x86-64
+>>
+>> This is a regression from 2.6.29.  Microcode spews the following 
+>> WARNING multiple times during boot:
+>>
+>>> ------------[ cut here ]------------
+>>> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
+>>> Hardware name:         sysfs group ffffffffa0209700 not found for  
+>>> kobject 'cpu0'
+>>> Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801  
+>>> cdrom i2c_c
+>>> ore ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell  
+>>> snd_hda_inte
+>>> l snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc  
+>>> e1000e ahci lib
+>>> ata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last  
+>>> unloaded: scsi_w
+>>> ait_scan]
+>>> Pid: 2161, comm: rmmod Not tainted 2.6.30-rc1-00306-g8371f87 #1
+>>> Call Trace:
+>>>  [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
+>>>  [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
+>>>  [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
+>>>  [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
+>>>  [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
+>>>  [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
+>>>  [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
+>>>  [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
+>>>  [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
+>>>  [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
+>>>  [<ffffffff8026c511>] sys_delete_module+0x191/0x250
+>>>  [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
+>>> ---[ end trace 0a72bfd99e89dde6 ]---
+>>> ------------[ cut here ]------------
+>>
+>>
+>> Full dmesg and lspci attached.
 >
-> Of course a lot of this is speculation, dynamic percpu so far has
-> been a rarely used facility compared to kmalloc()/kfree(). If you
-> dont accept my analogy that's fine - but that is opinion against
-> opinion - while you state you opinion as truism.
+> Whoops, forgot kernel config.  Attached.
+>
+> 	Jeff
+>
+>
+>
 
 
-Please look at the kernel source for the use of percpu_free and
-percpu_alloc.
-
-> So my point remains: your patch had effects you clearly did not
-> anticipate, and the cacheline alignment management situation is not
-> nearly as clear-cut as you imagine it to be.
-
-There was no effect that I did not anticipate. Just imagination on your
-part that percpu_free is used like kfree.
-
-Again: The frequent insertion of __read_mostly will
-destroy the purpose and function of the read mostly areas!
-
-> Unfortunately you failed to answer my detailed mail that made very
-> specific points though, you only got into generalities and flames
-> about my summary mail - so it's hard to judge what your opinion
-> about those specific facts is - you have not stated one.
-
-I was pretty clear on those points. Not sure what material question I did
-not answer. What you say here fits your posts. Generalizing from kfree to
-percpu_free etc...
