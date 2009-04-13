@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZDMIKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZDMILo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbZDMIKz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 04:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZDMIKn
+	id S1754821AbZDMILo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 04:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZDMILf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 04:10:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:13444 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751836AbZDMIKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 04:10:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UzTJ0YF+IPTNtSv1X3j23hTemNgBglqGiDjBEMtOpzQ0AXRDK4JBqzmF5T5qiPJkbl
-         k5uL4Kl+D0vrkF4LW6K4pgYGS5ZDzTEpoayB8E/1swnx47i7UjWiegT6qs8Myp5XWnYk
-         IbIWmiP8v7d1s1W/gh0pvNDsQJaMuez2fPgvI=
-Date: Mon, 13 Apr 2009 12:10:50 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Brian Haley <brian.haley@hp.com>
-Cc: Ingo Molnar <mingo@elte.hu>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, hch@infradead.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 10/30] cr: core stuff
-Message-ID: <20090413081050.GA4687@x200.localdomain>
-References: <20090410023539.GK27788@x200.localdomain> <20090410093520.GH17962@elte.hu> <20090410114326.GC3311@x200.localdomain> <49DF718B.9050809@hp.com>
+	Mon, 13 Apr 2009 04:11:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59298 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751985AbZDMILe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 04:11:34 -0400
+Message-ID: <49E2F3B2.3080701@garzik.org>
+Date: Mon, 13 Apr 2009 04:11:30 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DF718B.9050809@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Marin Mitov <mitov@issp.bas.bg>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]Silencing warning: 'host' may be used uninitialized in
+ this function
+References: <200904100133.58556.mitov@issp.bas.bg> <49DE78E4.2060201@garzik.org> <200904100231.32307.mitov@issp.bas.bg>
+In-Reply-To: <200904100231.32307.mitov@issp.bas.bg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 12:19:23PM -0400, Brian Haley wrote:
-> Alexey Dobriyan wrote:
-> > And of course, I don't want to see multiline
-> > 
-> > 	vmflags &= ~(VM_READ|VM_WRITE|
-> > 			[5 lines skipped]
+Marin Mitov wrote:
+> On Friday 10 April 2009 01:38:28 am Jeff Garzik wrote:
+>> Marin Mitov wrote:
+>>> Hi all,
+>>>
+>>> I do not know if that is worth the effort, but...
+>>>
+>>> Silencing:  warning: 'host' may be used uninitialized in this function
+>>> It is a false positive.
+>>>
+>>> The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
+>>>
+>>> Signed-off-by: Marin Mitov mitov@issp.bas.bg
+>>> ================================================
+>>> --- a/drivers/ata/sata_via.c	2009-04-05 22:59:26.000000000 +0300
+>>> +++ b/drivers/ata/sata_via.c	2009-04-06 00:07:25.000000000 +0300
+>>> @@ -566,7 +566,7 @@
+>>>  	static int printed_version;
+>>>  	unsigned int i;
+>>>  	int rc;
+>>> -	struct ata_host *host;
+>>> +	struct ata_host *host = host;
+>>>  	int board_id = (int) ent->driver_data;
+>>>  	const unsigned *bar_sizes;
+>> we use the uninitialized_var() macro for false positives.
+>>
+>> 	Jeff
+>>
+>  
+> Well, changed and resubmitted.
 > 
-> Then why don't you:
+> Marin Mitov
 > 
-> #define VM_CR_FOO (VM_READ|VM_WRITE|...)
+> Silencing: " warning: 'host' may be used uninitialized in this function"
 > 
-> 	vmflags &= ~VM_CR_FOO;
+> The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
+> 
+> Signed-off-by: Marin Mitov mitov@issp.bas.bg
+> ================================================
+> --- a/drivers/ata/sata_via.c	2009-04-05 22:59:26.000000000 +0300
+> +++ b/drivers/ata/sata_via.c	2009-04-06 00:07:25.000000000 +0300
+> @@ -566,7 +566,7 @@
+>  	static int printed_version;
+>  	unsigned int i;
+>  	int rc;
+> -	struct ata_host *host;
+> +	struct ata_host *uninitialized_var(host);
+>  	int board_id = (int) ent->driver_data;
+>  	const unsigned *bar_sizes;
 
-This won't fix "multiline" part.
+I did this a slightly different way...  I went ahead and simply 
+initialized it.
+
+	Jeff
+
+
+
+
