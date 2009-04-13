@@ -1,125 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZDMIs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZDMIwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbZDMIs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 04:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZDMIso
+	id S1755667AbZDMIwv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 04:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbZDMIwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 04:48:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48474 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbZDMIsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 04:48:43 -0400
-Date: Mon, 13 Apr 2009 10:46:15 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
-Subject: [PATCH 4/4] net: bonding: add slave device addresses in mode alb
-Message-ID: <20090413084614.GE23734@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090413083729.GA23734@psychotron.englab.brq.redhat.com>
+	Mon, 13 Apr 2009 04:52:41 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57643 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754584AbZDMIwk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 04:52:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=Q0rC5IWHrrbXi0B3w5/2QdQIf5dYyOo+ksNOagvp/FhPN4XXOQzzRtsaLaStpJGd+y
+         RE/3afnos5uBfzqNVlgF+kuu4CkX/jn/mo/A7/xjdYPXrzw1nsQzgIWEd69aozCgRoPq
+         wgvfO2qGmRWbINXYbidMEgUIUEaTZAr1yj+pU=
+Date: Mon, 13 Apr 2009 10:52:33 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 14/14] ide-cd: use bio for request sense
+Message-ID: <20090413085233.GA10115@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
+	bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+	linux-ide@vger.kernel.org
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-15-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090413083729.GA23734@psychotron.englab.brq.redhat.com>
+In-Reply-To: <1237910776-10983-15-git-send-email-tj@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When in mode alb, add all device addresses which belong to an enslaved slave
-device to the bond device. This ensures that all mac addresses will be
-treated as local and bonding in this mode will work fine in bridge.
+On Wed, Mar 25, 2009 at 01:06:16AM +0900, Tejun Heo wrote:
+> Impact: unify request data buffer handling
+> 
+> rq->data is used mostly to pass kernel buffer through request queue
+> without using bio.  There are only a couple of places which still do
+> this in kernel and converting to bio isn't difficult.
+> 
+> This patch converts ide-cd to use bio instead of rq->data for request
+> sense and internal pc commands.  As request sense is issued from
+> atomic context, drive->request_sense_bio and ->request_sense_bvec[2]
+> are used via bio_map_kern_prealloc().  Internal pc commands use
+> blk_rq_map_kern().
+> 
+> cdrom_do_block_pc() now doesn't have to deal with REQ_TYPE_ATA_PC
+> special case.  Simplified.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Jens Axboe <axboe@kernel.dk>
+> ---
+>  drivers/ide/ide-cd.c |   31 ++++++++++++++++++-------------
+>  1 files changed, 18 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> index de6ce8d..22c95b9 100644
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -209,8 +209,12 @@ static void cdrom_analyze_sense_data(ide_drive_t *drive,
+>  static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
+>  				      struct request *failed_command)
+>  {
+> -	struct cdrom_info *info		= drive->driver_data;
+> -	struct request *rq		= &drive->request_sense_rq;
+> +	struct cdrom_info *info	= drive->driver_data;
+> +	struct request *rq	= &drive->request_sense_rq;
+> +	struct bio *bio		= &drive->request_sense_bio;
+> +	struct bio_vec *bvec	= drive->request_sense_bvec;
+> +	unsigned int bvec_len	= ARRAY_SIZE(drive->request_sense_bvec);
+> +	int error;
+>  
+>  	ide_debug_log(IDE_DBG_SENSE, "enter");
+>  
+> @@ -224,10 +228,12 @@ static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
+>  	rq->cmd_type = REQ_TYPE_ATA_PC;
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
----
- drivers/net/bonding/bond_main.c |   30 +++++++++++++++++++++++++++++-
- 1 files changed, 29 insertions(+), 1 deletions(-)
+by the way, this line can go too, since the correct type is REQ_TYPE_SENSE now.
 
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 99610f3..47795c7 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -1385,6 +1385,11 @@ static void bond_setup_by_slave(struct net_device *bond_dev,
- 	bond->setup_by_slave = 1;
- }
- 
-+static inline int should_copy_dev_addrs(struct bonding *bond)
-+{
-+	return bond->params.mode == BOND_MODE_ALB ? 1 : 0;
-+}
-+
- /* enslave device <slave> to bond device <master> */
- int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev)
- {
-@@ -1510,6 +1515,13 @@ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev)
- 	 */
- 	new_slave->original_flags = slave_dev->flags;
- 
-+	if (should_copy_dev_addrs(bond)) {
-+		res = dev_addr_add_multiple(bond_dev, slave_dev);
-+		if (res)
-+			goto err_free;
-+		dev_mac_address_changed(bond_dev);
-+	}
-+
- 	/*
- 	 * Save slave's original ("permanent") mac address for modes
- 	 * that need it, and for restoring it upon release, and then
-@@ -1527,7 +1539,7 @@ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev)
- 		res = dev_set_mac_address(slave_dev, &addr);
- 		if (res) {
- 			pr_debug("Error %d calling set_mac_address\n", res);
--			goto err_free;
-+			goto err_remove_dev_addrs;
- 		}
- 	}
- 
-@@ -1769,6 +1781,12 @@ err_restore_mac:
- 		dev_set_mac_address(slave_dev, &addr);
- 	}
- 
-+err_remove_dev_addrs:
-+	if (should_copy_dev_addrs(bond)) {
-+		dev_addr_del_multiple(bond_dev, slave_dev);
-+		dev_mac_address_changed(bond_dev);
-+	}
-+
- err_free:
- 	kfree(new_slave);
- 
-@@ -1954,6 +1972,11 @@ int bond_release(struct net_device *bond_dev, struct net_device *slave_dev)
- 	/* close slave before restoring its mac address */
- 	dev_close(slave_dev);
- 
-+	if (should_copy_dev_addrs(bond)) {
-+		dev_addr_del_multiple(bond_dev, slave_dev);
-+		dev_mac_address_changed(bond_dev);
-+	}
-+
- 	if (bond->params.fail_over_mac != BOND_FOM_ACTIVE) {
- 		/* restore original ("permanent") mac address */
- 		memcpy(addr.sa_data, slave->perm_hwaddr, ETH_ALEN);
-@@ -2090,6 +2113,9 @@ static int bond_release_all(struct net_device *bond_dev)
- 		/* close slave before restoring its mac address */
- 		dev_close(slave_dev);
- 
-+		if (should_copy_dev_addrs(bond))
-+			dev_addr_del_multiple(bond_dev, slave_dev);
-+
- 		if (!bond->params.fail_over_mac) {
- 			/* restore original ("permanent") mac address*/
- 			memcpy(addr.sa_data, slave->perm_hwaddr, ETH_ALEN);
-@@ -2106,6 +2132,8 @@ static int bond_release_all(struct net_device *bond_dev)
- 		write_lock_bh(&bond->lock);
- 	}
- 
-+	dev_mac_address_changed(bond_dev);
-+
- 	/* zero the mac address of the master so it will be
- 	 * set by the application to the mac address of the
- 	 * first slave
+>  	rq->rq_disk = info->disk;
+>  
+> -	rq->data = sense;
+> +	error = blk_rq_map_kern_prealloc(drive->queue, rq, bio, bvec, bvec_len,
+> +					 sense, 18, true);
+> +	BUG_ON(error);
+> +
+>  	rq->cmd[0] = GPCMD_REQUEST_SENSE;
+>  	rq->cmd[4] = 18;
+> -	rq->data_len = 18;
+>  
+>  	rq->cmd_type = REQ_TYPE_SENSE;
+>  	rq->cmd_flags |= REQ_PREEMPT;
+> @@ -556,8 +562,12 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
+>  		rq->cmd_flags |= cmd_flags;
+>  		rq->timeout = timeout;
+>  		if (buffer) {
+> -			rq->data = buffer;
+> -			rq->data_len = *bufflen;
+> +			error = blk_rq_map_kern(drive->queue, rq, buffer,
+> +						*bufflen, __GFP_WAIT);
+> +			if (error) {
+> +				blk_put_request(rq);
+> +				return error;
+> +			}
+>  		}
+>  
+>  		error = blk_execute_rq(drive->queue, info->disk, rq, 0);
+> @@ -847,15 +857,10 @@ static void cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)
+>  	drive->dma = 0;
+>  
+>  	/* sg request */
+> -	if (rq->bio || ((rq->cmd_type == REQ_TYPE_ATA_PC) && rq->data_len)) {
+> +	if (rq->bio) {
+>  		struct request_queue *q = drive->queue;
+> +		char *buf = bio_data(rq->bio);
+>  		unsigned int alignment;
+> -		char *buf;
+> -
+> -		if (rq->bio)
+> -			buf = bio_data(rq->bio);
+> -		else
+> -			buf = rq->data;
+>  
+>  		drive->dma = !!(drive->dev_flags & IDE_DFLAG_USING_DMA);
+>  
+> -- 
+> 1.6.0.2
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 -- 
-1.6.0.6
-
+Regards/Gruss,
+    Boris.
