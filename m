@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZDMSYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZDMSZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbZDMSYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 14:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZDMSYB
+	id S1752828AbZDMSZi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 14:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZDMSZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 14:24:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44537 "EHLO mail.dvmed.net"
+	Mon, 13 Apr 2009 14:25:29 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44546 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265AbZDMSX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 14:23:59 -0400
-Message-ID: <49E38331.3090808@garzik.org>
-Date: Mon, 13 Apr 2009 14:23:45 -0400
+	id S1752148AbZDMSZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 14:25:28 -0400
+Message-ID: <49E38393.8000700@garzik.org>
+Date: Mon, 13 Apr 2009 14:25:23 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: microcode driver newly spews warnings
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: microcode driver newly spews warnings
+References: <49E38331.3090808@garzik.org>
+In-Reply-To: <49E38331.3090808@garzik.org>
 Content-Type: multipart/mixed;
- boundary="------------040602020605060709060206"
+ boundary="------------070507090009090207090604"
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
 	Content analysis details:   (-4.4 points, 5.0 required)
@@ -27,1134 +29,319 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------040602020605060709060206
+--------------070507090009090207090604
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
+Jeff Garzik wrote:
+> 
+> Kernel: 2.6.30-rc1-00306-g8371f87
+> Hardware: ICH10 x86-64
+> 
+> This is a regression from 2.6.29.  Microcode spews the following WARNING 
+> multiple times during boot:
+> 
+>> ------------[ cut here ]------------
+>> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
+>> Hardware name:         sysfs group ffffffffa0209700 not found for 
+>> kobject 'cpu0'
+>> Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 
+>> cdrom i2c_c
+>> ore ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell 
+>> snd_hda_inte
+>> l snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc 
+>> e1000e ahci lib
+>> ata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last 
+>> unloaded: scsi_w
+>> ait_scan]
+>> Pid: 2161, comm: rmmod Not tainted 2.6.30-rc1-00306-g8371f87 #1
+>> Call Trace:
+>>  [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
+>>  [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
+>>  [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
+>>  [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
+>>  [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
+>>  [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
+>>  [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
+>>  [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
+>>  [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
+>>  [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
+>>  [<ffffffff8026c511>] sys_delete_module+0x191/0x250
+>>  [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
+>> ---[ end trace 0a72bfd99e89dde6 ]---
+>> ------------[ cut here ]------------
+> 
+> 
+> Full dmesg and lspci attached.
 
-Kernel: 2.6.30-rc1-00306-g8371f87
-Hardware: ICH10 x86-64
-
-This is a regression from 2.6.29.  Microcode spews the following WARNING 
-multiple times during boot:
-
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-> Hardware name:         
-> sysfs group ffffffffa0209700 not found for kobject 'cpu0'
-> Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_c
-> ore ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_inte
-> l snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci lib
-> ata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_w
-> ait_scan]
-> Pid: 2161, comm: rmmod Not tainted 2.6.30-rc1-00306-g8371f87 #1
-> Call Trace:
->  [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
->  [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
->  [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
->  [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
->  [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
->  [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
->  [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
->  [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
->  [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
->  [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
->  [<ffffffff8026c511>] sys_delete_module+0x191/0x250
->  [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
-> ---[ end trace 0a72bfd99e89dde6 ]---
-> ------------[ cut here ]------------
-
-
-Full dmesg and lspci attached.
+Whoops, forgot kernel config.  Attached.
 
 	Jeff
 
 
 
 
---------------040602020605060709060206
-Content-Type: text/plain;
- name="lspci.txt"
-Content-Transfer-Encoding: 7bit
+--------------070507090009090207090604
+Content-Type: application/x-gzip;
+ name="config.txt.gz"
+Content-Transfer-Encoding: base64
 Content-Disposition: inline;
- filename="lspci.txt"
+ filename="config.txt.gz"
 
-00:00.0 Host bridge: Intel Corporation X58 I/O Hub to ESI Port (rev 12)
-00:01.0 PCI bridge: Intel Corporation X58 I/O Hub PCI Express Root Port 1 (rev 12)
-00:03.0 PCI bridge: Intel Corporation X58 I/O Hub PCI Express Root Port 3 (rev 12)
-00:07.0 PCI bridge: Intel Corporation X58 I/O Hub PCI Express Root Port 7 (rev 12)
-00:10.0 PIC: Intel Corporation X58 Physical and Link Layer Registers Port 0 (rev 12)
-00:10.1 PIC: Intel Corporation X58 Routing and Protocol Layer Registers Port 0 (rev 12)
-00:14.0 PIC: Intel Corporation X58 I/O Hub System Management Registers (rev 12)
-00:14.1 PIC: Intel Corporation X58 I/O Hub GPIO and Scratch Pad Registers (rev 12)
-00:14.2 PIC: Intel Corporation X58 I/O Hub Control Status and RAS Registers (rev 12)
-00:14.3 PIC: Intel Corporation X58 I/O Hub Throttle Registers (rev 12)
-00:19.0 Ethernet controller: Intel Corporation 82567LM-2 Gigabit Network Connection
-00:1a.0 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB UHCI Controller #4
-00:1a.1 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB UHCI Controller #5
-00:1a.2 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB UHCI Controller #6
-00:1a.7 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB2 EHCI Controller #2
-00:1b.0 Audio device: Intel Corporation 82801JI (ICH10 Family) HD Audio Controller
-00:1c.0 PCI bridge: Intel Corporation 82801JI (ICH10 Family) PCI Express Port 1
-00:1c.1 PCI bridge: Intel Corporation 82801JI (ICH10 Family) PCI Express Port 2
-00:1c.4 PCI bridge: Intel Corporation 82801JI (ICH10 Family) PCI Express Port 5
-00:1d.0 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB UHCI Controller #1
-00:1d.1 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB UHCI Controller #2
-00:1d.2 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB UHCI Controller #3
-00:1d.7 USB Controller: Intel Corporation 82801JI (ICH10 Family) USB2 EHCI Controller #1
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 90)
-00:1f.0 ISA bridge: Intel Corporation 82801JIR (ICH10R) LPC Interface Controller
-00:1f.2 SATA controller: Intel Corporation 82801JI (ICH10 Family) SATA AHCI Controller
-00:1f.3 SMBus: Intel Corporation 82801JI (ICH10 Family) SMBus Controller
-02:00.0 PCI bridge: nVidia Corporation Tesla S870 (rev a2)
-03:00.0 PCI bridge: nVidia Corporation Tesla S870 (rev a2)
-03:02.0 PCI bridge: nVidia Corporation Tesla S870 (rev a2)
-04:00.0 3D controller: nVidia Corporation GeForce 9800 GX2 (rev a2)
-05:00.0 VGA compatible controller: nVidia Corporation GeForce 9800 GX2 (rev a2)
-09:00.0 IDE interface: Marvell Technology Group Ltd. 88SE6121 SATA II Controller (rev b2)
-0a:02.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet Controller (rev 05)
-0a:03.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
-
---------------040602020605060709060206
-Content-Type: text/plain;
- name="dmesg.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dmesg.txt"
-
-Linux version 2.6.30-rc1-00306-g8371f87 (jgarzik@bd.yyz.us) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #1 SMP Mon Apr 13 14:01:37 EDT 2009
-Command line: ro root=UUID=f12abe85-327f-4e7d-9b06-5bb07624196d nogui
-KERNEL supported cpus:
-  Intel GenuineIntel
-  AMD AuthenticAMD
-  Centaur CentaurHauls
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
- BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000bcdbf000 (usable)
- BIOS-e820: 00000000bcdbf000 - 00000000bcfd8000 (ACPI NVS)
- BIOS-e820: 00000000bcfd8000 - 00000000bf6bd000 (usable)
- BIOS-e820: 00000000bf6bd000 - 00000000bf6bf000 (reserved)
- BIOS-e820: 00000000bf6bf000 - 00000000bf714000 (usable)
- BIOS-e820: 00000000bf714000 - 00000000bf7bf000 (ACPI NVS)
- BIOS-e820: 00000000bf7bf000 - 00000000bf7e7000 (usable)
- BIOS-e820: 00000000bf7e7000 - 00000000bf7ff000 (ACPI data)
- BIOS-e820: 00000000bf7ff000 - 00000000bf800000 (usable)
- BIOS-e820: 00000000bf800000 - 00000000c0000000 (reserved)
- BIOS-e820: 00000000f8000000 - 00000000fd000000 (reserved)
- BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
-DMI 2.5 present.
-last_pfn = 0x140000 max_arch_pfn = 0x100000000
-MTRR default type: uncachable
-MTRR fixed ranges enabled:
-  00000-9FFFF write-back
-  A0000-BFFFF uncachable
-  C0000-DFFFF write-protect
-  E0000-FFFFF uncachable
-MTRR variable ranges enabled:
-  0 base 000000000 mask F80000000 write-back
-  1 base 080000000 mask FC0000000 write-back
-  2 base 100000000 mask FC0000000 write-back
-  3 disabled
-  4 disabled
-  5 disabled
-  6 disabled
-  7 disabled
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-e820 update range: 00000000c0000000 - 0000000100000000 (usable) ==> (reserved)
-last_pfn = 0xbf800 max_arch_pfn = 0x100000000
-init_memory_mapping: 0000000000000000-00000000bf800000
- 0000000000 - 00bf800000 page 2M
-kernel direct mapping tables up to bf800000 @ 8000-c000
-init_memory_mapping: 0000000100000000-0000000140000000
- 0100000000 - 0140000000 page 2M
-kernel direct mapping tables up to 140000000 @ a000-10000
-RAMDISK: 37c54000 - 37fef6ce
-ACPI: RSDP 00000000000fe020 00024 (v02 INTEL )
-ACPI: XSDT 00000000bf7fe120 0006C (v01 INTEL  DX58SO   0000084F      01000013)
-ACPI: FACP 00000000bf7fd000 000F4 (v03 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI Warning (tbfadt-0562): Optional field Pm2ControlBlock has zero address or length: 0000000000000450/0 [20090320]
-ACPI Warning (tbfadt-0612): Invalid length for Pm2ControlBlock: 0, using default 8 [20090320]
-ACPI: DSDT 00000000bf7f8000 043CE (v02 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: FACS 00000000bf726000 00040
-ACPI: APIC 00000000bf7f7000 00138 (v02 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: WDDT 00000000bf7f6000 00040 (v01 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: MCFG 00000000bf7f5000 0003C (v01 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: ASF! 00000000bf7f4000 000AC (v32 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: SSDT 00000000bf7ea000 070AC (v01 INTEL  SSDT  PM 0000084F MSFT 0100000D)
-ACPI: DMAR 00000000bf7e7000 00140 (v01 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: WDTT 00000000bf7f2000 0020C (v01 INTEL  DX58SO   0000084F MSFT 0100000D)
-ACPI: ASPT 00000000bf7f3000 00034 (v04 INTEL  PerfTune 0000084F MSFT 0100000D)
-ACPI: Local APIC address 0xfee00000
-(8 early reservations) ==> bootmem [0000000000 - 0140000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
-  #2 [0000200000 - 0004d9aaa4]    TEXT DATA BSS ==> [0000200000 - 0004d9aaa4]
-  #3 [0037c54000 - 0037fef6ce]          RAMDISK ==> [0037c54000 - 0037fef6ce]
-  #4 [000009cc00 - 0000100000]    BIOS reserved ==> [000009cc00 - 0000100000]
-  #5 [0004d9b000 - 0004d9b15e]              BRK ==> [0004d9b000 - 0004d9b15e]
-  #6 [0000008000 - 000000a000]          PGTABLE ==> [0000008000 - 000000a000]
-  #7 [000000a000 - 000000b000]          PGTABLE ==> [000000a000 - 000000b000]
- [ffffe20000000000-ffffe200045fffff] PMD -> [ffff880028200000-ffff88002c7fffff] on node 0
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  DMA32    0x00001000 -> 0x00100000
-  Normal   0x00100000 -> 0x00140000
-Movable zone start PFN for each node
-early_node_map[7] active PFN ranges
-    0: 0x00000000 -> 0x0000009c
-    0: 0x00000100 -> 0x000bcdbf
-    0: 0x000bcfd8 -> 0x000bf6bd
-    0: 0x000bf6bf -> 0x000bf714
-    0: 0x000bf7bf -> 0x000bf7e7
-    0: 0x000bf7ff -> 0x000bf800
-    0: 0x00100000 -> 0x00140000
-On node 0 totalpages: 1045694
-  DMA zone: 56 pages used for memmap
-  DMA zone: 105 pages reserved
-  DMA zone: 3835 pages, LIFO batch:0
-  DMA32 zone: 14280 pages used for memmap
-  DMA32 zone: 765274 pages, LIFO batch:31
-  Normal zone: 3584 pages used for memmap
-  Normal zone: 258560 pages, LIFO batch:31
-ACPI: PM-Timer IO Port: 0x408
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x02] enabled)
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x04] enabled)
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x06] enabled)
-ACPI: LAPIC (acpi_id[0x04] lapic_id[0x01] enabled)
-ACPI: LAPIC (acpi_id[0x05] lapic_id[0x03] enabled)
-ACPI: LAPIC (acpi_id[0x06] lapic_id[0x05] enabled)
-ACPI: LAPIC (acpi_id[0x07] lapic_id[0x07] enabled)
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x10] disabled)
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x12] disabled)
-ACPI: LAPIC (acpi_id[0x05] lapic_id[0x14] disabled)
-ACPI: LAPIC (acpi_id[0x07] lapic_id[0x16] disabled)
-ACPI: LAPIC (acpi_id[0x09] lapic_id[0x11] disabled)
-ACPI: LAPIC (acpi_id[0x0b] lapic_id[0x13] disabled)
-ACPI: LAPIC (acpi_id[0x0d] lapic_id[0x15] disabled)
-ACPI: LAPIC (acpi_id[0x0f] lapic_id[0x17] disabled)
-ACPI: LAPIC_NMI (acpi_id[0x00] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x01] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x02] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x03] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x04] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x05] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x06] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x07] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x08] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x09] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x0a] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x0b] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x0c] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x0d] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x0e] high level lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x0f] high level lint[0x1])
-ACPI: IOAPIC (id[0x08] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 8, version 0, address 0xfec00000, GSI 0-23
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-ACPI: IRQ0 used by override.
-ACPI: IRQ2 used by override.
-ACPI: IRQ9 used by override.
-Using ACPI (MADT) for SMP configuration information
-SMP: Allowing 16 CPUs, 8 hotplug CPUs
-nr_irqs_gsi: 24
-Allocating PCI resources starting at c4000000 (gap: c0000000:38000000)
-NR_CPUS:4096 nr_cpumask_bits:16 nr_cpu_ids:16 nr_node_ids:1
-PERCPU: Embedded 25 pages at ffff88002c800000, static data 70880 bytes
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1027669
-Kernel command line: ro root=UUID=f12abe85-327f-4e7d-9b06-5bb07624196d nogui
-Initializing CPU#0
-NR_IRQS:4352
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-Extended CMOS year: 2000
-Fast TSC calibration using PIT
-Detected 3200.228 MHz processor.
-Console: colour VGA+ 80x25
-console [tty0] enabled
-Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Checking aperture...
-No AGP bridge found
-PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-Placing 64MB software IO TLB between ffff880020000000 - ffff880024000000
-software IO TLB at phys 0x20000000 - 0x24000000
-Memory: 3946404k/5242880k available (3288k kernel code, 1060104k absent, 235496k reserved, 2494k data, 400k init)
-Calibrating delay loop (skipped), value calculated using timer frequency.. 6400.45 BogoMIPS (lpj=12800912)
-Mount-cache hash table entries: 256
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU0: Thermal monitoring enabled (TM1)
-CPU 0 MCA banks CMCI:2 CMCI:3 CMCI:5 CMCI:6 CMCI:8
-using mwait in idle threads.
-ACPI: Core revision 20090320
-Setting APIC routing to flat
-..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-CPU0: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Booting processor 1 APIC 0x2 ip 0x6000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 6400.36 BogoMIPS (lpj=12800733)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU1: Thermal monitoring enabled (TM1)
-CPU 1 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-CPU1: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Booting processor 2 APIC 0x4 ip 0x6000
-Initializing CPU#2
-Calibrating delay using timer specific routine.. 6400.36 BogoMIPS (lpj=12800730)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 2
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU2: Thermal monitoring enabled (TM1)
-CPU 2 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 2, old 0x7040600070406, new 0x7010600070106
-CPU2: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Booting processor 3 APIC 0x6 ip 0x6000
-Initializing CPU#3
-Calibrating delay using timer specific routine.. 6400.36 BogoMIPS (lpj=12800730)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 3
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU3: Thermal monitoring enabled (TM1)
-CPU 3 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 3, old 0x7040600070406, new 0x7010600070106
-CPU3: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Booting processor 4 APIC 0x1 ip 0x6000
-Initializing CPU#4
-Calibrating delay using timer specific routine.. 6400.36 BogoMIPS (lpj=12800731)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU4: Thermal monitoring enabled (TM1)
-CPU 4 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 4, old 0x7040600070406, new 0x7010600070106
-CPU4: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Booting processor 5 APIC 0x3 ip 0x6000
-Initializing CPU#5
-Calibrating delay using timer specific routine.. 6400.36 BogoMIPS (lpj=12800729)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU5: Thermal monitoring enabled (TM1)
-CPU 5 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 5, old 0x7040600070406, new 0x7010600070106
-CPU5: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Booting processor 6 APIC 0x5 ip 0x6000
-Initializing CPU#6
-Calibrating delay using timer specific routine.. 6400.36 BogoMIPS (lpj=12800733)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 2
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU6: Thermal monitoring enabled (TM1)
-CPU 6 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 6, old 0x7040600070406, new 0x7010600070106
-CPU6: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Booting processor 7 APIC 0x7 ip 0x6000
-Initializing CPU#7
-Calibrating delay using timer specific routine.. 6400.35 BogoMIPS (lpj=12800718)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 3
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 256K
-CPU: L3 cache: 8192K
-CPU7: Thermal monitoring enabled (TM1)
-CPU 7 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-x86 PAT enabled: cpu 7, old 0x7040600070406, new 0x7010600070106
-CPU7: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-Skipping synchronization checks as TSC is reliable.
-Brought up 8 CPUs
-Total of 8 processors activated (51203.00 BogoMIPS).
-net_namespace: 1720 bytes
-NET: Registered protocol family 16
-ACPI FADT declares the system doesn't support PCIe ASPM, so disable it
-ACPI: bus type pci registered
-dca service started, version 1.8
-PCI: MCFG configuration 0: base f8000000 segment 0 buses 0 - 63
-PCI: MCFG area at f8000000 reserved in E820
-PCI: Using MMCONFIG at f8000000 - fbffffff
-PCI: Using configuration type 1 for base access
-bio: create slab <bio-0> at 0
-ACPI: EC: Look up EC in DSDT
-ACPI: Interpreter enabled
-ACPI: (supports S0 S1 S3 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: No dock devices found.
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-pci 0000:00:01.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:01.0: PME# disabled
-pci 0000:00:03.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:03.0: PME# disabled
-pci 0000:00:07.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:07.0: PME# disabled
-pci 0000:00:19.0: reg 10 32bit mmio: [0xc7200000-0xc721ffff]
-pci 0000:00:19.0: reg 14 32bit mmio: [0xc7223000-0xc7223fff]
-pci 0000:00:19.0: reg 18 io port: [0x5100-0x511f]
-pci 0000:00:19.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:19.0: PME# disabled
-pci 0000:00:1a.0: reg 20 io port: [0x50e0-0x50ff]
-pci 0000:00:1a.1: reg 20 io port: [0x50c0-0x50df]
-pci 0000:00:1a.2: reg 20 io port: [0x50a0-0x50bf]
-pci 0000:00:1a.7: reg 10 32bit mmio: [0xc7222000-0xc72223ff]
-pci 0000:00:1a.7: PME# supported from D0 D3hot D3cold
-pci 0000:00:1a.7: PME# disabled
-pci 0000:00:1b.0: reg 10 64bit mmio: [0xf0000000-0xf0003fff]
-pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:1b.0: PME# disabled
-pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:1c.0: PME# disabled
-pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
-pci 0000:00:1c.1: PME# disabled
-pci 0000:00:1c.4: PME# supported from D0 D3hot D3cold
-pci 0000:00:1c.4: PME# disabled
-pci 0000:00:1d.0: reg 20 io port: [0x5080-0x509f]
-pci 0000:00:1d.1: reg 20 io port: [0x5060-0x507f]
-pci 0000:00:1d.2: reg 20 io port: [0x5040-0x505f]
-pci 0000:00:1d.7: reg 10 32bit mmio: [0xc7221000-0xc72213ff]
-pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
-pci 0000:00:1d.7: PME# disabled
-pci 0000:00:1f.0: Force enabled HPET at 0xfed00000
-pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
-pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 007f)
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 2 PIO at 0810 (mask 007f)
-pci 0000:00:1f.2: reg 10 io port: [0x5128-0x512f]
-pci 0000:00:1f.2: reg 14 io port: [0x5134-0x5137]
-pci 0000:00:1f.2: reg 18 io port: [0x5120-0x5127]
-pci 0000:00:1f.2: reg 1c io port: [0x5130-0x5133]
-pci 0000:00:1f.2: reg 20 io port: [0x5020-0x503f]
-pci 0000:00:1f.2: reg 24 32bit mmio: [0xc7220000-0xc72207ff]
-pci 0000:00:1f.2: PME# supported from D3hot
-pci 0000:00:1f.2: PME# disabled
-pci 0000:00:1f.3: reg 10 64bit mmio: [0xf0004000-0xf00040ff]
-pci 0000:00:1f.3: reg 20 io port: [0x5000-0x501f]
-pci 0000:02:00.0: PME# supported from D0 D3hot D3cold
-pci 0000:02:00.0: PME# disabled
-pci 0000:00:03.0: bridge io port: [0x3000-0x4fff]
-pci 0000:00:03.0: bridge 32bit mmio: [0xc0000000-0xc6ffffff]
-pci 0000:00:03.0: bridge 64bit mmio pref: [0xd0000000-0xefffffff]
-pci 0000:03:00.0: PME# supported from D0 D3hot D3cold
-pci 0000:03:00.0: PME# disabled
-pci 0000:03:02.0: PME# supported from D0 D3hot D3cold
-pci 0000:03:02.0: PME# disabled
-pci 0000:02:00.0: bridge io port: [0x3000-0x4fff]
-pci 0000:02:00.0: bridge 32bit mmio: [0xc0000000-0xc6ffffff]
-pci 0000:02:00.0: bridge 64bit mmio pref: [0xd0000000-0xefffffff]
-pci 0000:04:00.0: reg 10 32bit mmio: [0xc6000000-0xc6ffffff]
-pci 0000:04:00.0: reg 14 64bit mmio: [0xe0000000-0xefffffff]
-pci 0000:04:00.0: reg 1c 64bit mmio: [0xc4000000-0xc5ffffff]
-pci 0000:04:00.0: reg 24 io port: [0x4000-0x407f]
-pci 0000:04:00.0: reg 30 32bit mmio: [0xfffe0000-0xffffffff]
-pci 0000:03:00.0: bridge io port: [0x4000-0x4fff]
-pci 0000:03:00.0: bridge 32bit mmio: [0xc4000000-0xc6ffffff]
-pci 0000:03:00.0: bridge 64bit mmio pref: [0xe0000000-0xefffffff]
-pci 0000:05:00.0: reg 10 32bit mmio: [0xc2000000-0xc2ffffff]
-pci 0000:05:00.0: reg 14 64bit mmio: [0xd0000000-0xdfffffff]
-pci 0000:05:00.0: reg 1c 64bit mmio: [0xc0000000-0xc1ffffff]
-pci 0000:05:00.0: reg 24 io port: [0x3000-0x307f]
-pci 0000:05:00.0: reg 30 32bit mmio: [0xfffe0000-0xffffffff]
-pci 0000:03:02.0: bridge io port: [0x3000-0x3fff]
-pci 0000:03:02.0: bridge 32bit mmio: [0xc0000000-0xc2ffffff]
-pci 0000:03:02.0: bridge 64bit mmio pref: [0xd0000000-0xdfffffff]
-pci 0000:09:00.0: reg 10 io port: [0x2018-0x201f]
-pci 0000:09:00.0: reg 14 io port: [0x2024-0x2027]
-pci 0000:09:00.0: reg 18 io port: [0x2010-0x2017]
-pci 0000:09:00.0: reg 1c io port: [0x2020-0x2023]
-pci 0000:09:00.0: reg 20 io port: [0x2000-0x200f]
-pci 0000:09:00.0: reg 24 32bit mmio: [0xc7100000-0xc71003ff]
-pci 0000:09:00.0: supports D1
-pci 0000:09:00.0: PME# supported from D0 D1 D3hot
-pci 0000:09:00.0: PME# disabled
-pci 0000:00:1c.4: bridge io port: [0x2000-0x2fff]
-pci 0000:00:1c.4: bridge 32bit mmio: [0xc7100000-0xc71fffff]
-pci 0000:0a:02.0: reg 10 32bit mmio: [0xc7020000-0xc703ffff]
-pci 0000:0a:02.0: reg 14 32bit mmio: [0xc7000000-0xc701ffff]
-pci 0000:0a:02.0: reg 18 io port: [0x1000-0x103f]
-pci 0000:0a:02.0: reg 30 32bit mmio: [0xfffe0000-0xffffffff]
-pci 0000:0a:02.0: PME# supported from D0 D3hot D3cold
-pci 0000:0a:02.0: PME# disabled
-pci 0000:0a:03.0: reg 10 32bit mmio: [0xc7044000-0xc70447ff]
-pci 0000:0a:03.0: reg 14 32bit mmio: [0xc7040000-0xc7043fff]
-pci 0000:0a:03.0: supports D1 D2
-pci 0000:0a:03.0: PME# supported from D0 D1 D2 D3hot
-pci 0000:0a:03.0: PME# disabled
-pci 0000:00:1e.0: transparent bridge
-pci 0000:00:1e.0: bridge io port: [0x1000-0x1fff]
-pci 0000:00:1e.0: bridge 32bit mmio: [0xc7000000-0xc70fffff]
-pci_bus 0000:00: on NUMA node 0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P32_._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEG1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEG3._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEG7._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX4._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 9 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 *10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 9 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 9 *10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 *5 6 7 9 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 *5 6 7 9 10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 9 *10 11 12 14 15)
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-DMAR:Host address width 39
-DMAR:DRHD (flags: 0x00000000)base: 0x00000000fe711000
-DMAR:DRHD (flags: 0x00000001)base: 0x00000000fe710000
-DMAR:RMRR base: 0x00000000000e9000 end: 0x00000000000e9fff
-DMAR:RMRR base: 0x00000000000ea000 end: 0x00000000000eafff
-DMAR:RMRR base: 0x00000000000eb000 end: 0x00000000000ebfff
-DMAR:RMRR base: 0x00000000000e6000 end: 0x00000000000e6fff
-DMAR:RMRR base: 0x00000000000e7000 end: 0x00000000000e7fff
-DMAR:RMRR base: 0x00000000000e8000 end: 0x00000000000e8fff
-DMAR:RMRR base: 0x00000000000ec000 end: 0x00000000000eefff
-hpet clockevent registered
-HPET: 4 timers in total, 0 timers will be used for per-cpu timer
-hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
-hpet0: 4 comparators, 64-bit 14.318180 MHz counter
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 2
-Switched to high resolution mode on CPU 3
-Switched to high resolution mode on CPU 1
-Switched to high resolution mode on CPU 4
-Switched to high resolution mode on CPU 6
-Switched to high resolution mode on CPU 5
-Switched to high resolution mode on CPU 7
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 8 devices
-ACPI: ACPI bus type pnp unregistered
-system 00:05: ioport range 0x500-0x53f has been reserved
-system 00:05: ioport range 0x400-0x47f has been reserved
-system 00:05: ioport range 0x680-0x6ff has been reserved
-pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
-pci 0000:00:01.0:   IO window: disabled
-pci 0000:00:01.0:   MEM window: disabled
-pci 0000:00:01.0:   PREFETCH window: disabled
-pci 0000:04:00.0: BAR 6: can't allocate mem resource [0xf0000000-0xefffffff]
-pci 0000:03:00.0: PCI bridge, secondary bus 0000:04
-pci 0000:03:00.0:   IO window: 0x4000-0x4fff
-pci 0000:03:00.0:   MEM window: 0xc4000000-0xc6ffffff
-pci 0000:03:00.0:   PREFETCH window: 0x000000e0000000-0x000000efffffff
-pci 0000:05:00.0: BAR 6: can't allocate mem resource [0xe0000000-0xdfffffff]
-pci 0000:03:02.0: PCI bridge, secondary bus 0000:05
-pci 0000:03:02.0:   IO window: 0x3000-0x3fff
-pci 0000:03:02.0:   MEM window: 0xc0000000-0xc2ffffff
-pci 0000:03:02.0:   PREFETCH window: 0x000000d0000000-0x000000dfffffff
-pci 0000:02:00.0: PCI bridge, secondary bus 0000:03
-pci 0000:02:00.0:   IO window: 0x3000-0x4fff
-pci 0000:02:00.0:   MEM window: 0xc0000000-0xc6ffffff
-pci 0000:02:00.0:   PREFETCH window: 0x000000d0000000-0x000000efffffff
-pci 0000:00:03.0: PCI bridge, secondary bus 0000:02
-pci 0000:00:03.0:   IO window: 0x3000-0x4fff
-pci 0000:00:03.0:   MEM window: 0xc0000000-0xc6ffffff
-pci 0000:00:03.0:   PREFETCH window: 0x000000d0000000-0x000000efffffff
-pci 0000:00:07.0: PCI bridge, secondary bus 0000:06
-pci 0000:00:07.0:   IO window: disabled
-pci 0000:00:07.0:   MEM window: disabled
-pci 0000:00:07.0:   PREFETCH window: disabled
-pci 0000:00:1c.0: PCI bridge, secondary bus 0000:07
-pci 0000:00:1c.0:   IO window: disabled
-pci 0000:00:1c.0:   MEM window: disabled
-pci 0000:00:1c.0:   PREFETCH window: disabled
-pci 0000:00:1c.1: PCI bridge, secondary bus 0000:08
-pci 0000:00:1c.1:   IO window: disabled
-pci 0000:00:1c.1:   MEM window: disabled
-pci 0000:00:1c.1:   PREFETCH window: disabled
-pci 0000:00:1c.4: PCI bridge, secondary bus 0000:09
-pci 0000:00:1c.4:   IO window: 0x2000-0x2fff
-pci 0000:00:1c.4:   MEM window: 0xc7100000-0xc71fffff
-pci 0000:00:1c.4:   PREFETCH window: disabled
-pci 0000:00:1e.0: PCI bridge, secondary bus 0000:0a
-pci 0000:00:1e.0:   IO window: 0x1000-0x1fff
-pci 0000:00:1e.0:   MEM window: 0xc7000000-0xc70fffff
-pci 0000:00:1e.0:   PREFETCH window: 0x000000c7300000-0x000000c73fffff
-pci 0000:00:01.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-pci 0000:00:01.0: setting latency timer to 64
-pci 0000:00:03.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-pci 0000:00:03.0: setting latency timer to 64
-pci 0000:02:00.0: setting latency timer to 64
-pci 0000:03:00.0: setting latency timer to 64
-pci 0000:03:02.0: setting latency timer to 64
-pci 0000:00:07.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-pci 0000:00:07.0: setting latency timer to 64
-pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-pci 0000:00:1c.0: setting latency timer to 64
-pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
-pci 0000:00:1c.1: setting latency timer to 64
-pci 0000:00:1c.4: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-pci 0000:00:1c.4: setting latency timer to 64
-pci 0000:00:1e.0: setting latency timer to 64
-pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
-pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffffffffffff]
-pci_bus 0000:01: resource 0 mem: [0x0-0x0]
-pci_bus 0000:01: resource 1 mem: [0x0-0x0]
-pci_bus 0000:01: resource 2 mem: [0x0-0x0]
-pci_bus 0000:01: resource 3 mem: [0x0-0x0]
-pci_bus 0000:02: resource 0 io:  [0x3000-0x4fff]
-pci_bus 0000:02: resource 1 mem: [0xc0000000-0xc6ffffff]
-pci_bus 0000:02: resource 2 mem: [0xd0000000-0xefffffff]
-pci_bus 0000:02: resource 3 mem: [0x0-0x0]
-pci_bus 0000:03: resource 0 io:  [0x3000-0x4fff]
-pci_bus 0000:03: resource 1 mem: [0xc0000000-0xc6ffffff]
-pci_bus 0000:03: resource 2 mem: [0xd0000000-0xefffffff]
-pci_bus 0000:03: resource 3 mem: [0x0-0x0]
-pci_bus 0000:04: resource 0 io:  [0x4000-0x4fff]
-pci_bus 0000:04: resource 1 mem: [0xc4000000-0xc6ffffff]
-pci_bus 0000:04: resource 2 mem: [0xe0000000-0xefffffff]
-pci_bus 0000:04: resource 3 mem: [0x0-0x0]
-pci_bus 0000:05: resource 0 io:  [0x3000-0x3fff]
-pci_bus 0000:05: resource 1 mem: [0xc0000000-0xc2ffffff]
-pci_bus 0000:05: resource 2 mem: [0xd0000000-0xdfffffff]
-pci_bus 0000:05: resource 3 mem: [0x0-0x0]
-pci_bus 0000:06: resource 0 mem: [0x0-0x0]
-pci_bus 0000:06: resource 1 mem: [0x0-0x0]
-pci_bus 0000:06: resource 2 mem: [0x0-0x0]
-pci_bus 0000:06: resource 3 mem: [0x0-0x0]
-pci_bus 0000:07: resource 0 mem: [0x0-0x0]
-pci_bus 0000:07: resource 1 mem: [0x0-0x0]
-pci_bus 0000:07: resource 2 mem: [0x0-0x0]
-pci_bus 0000:07: resource 3 mem: [0x0-0x0]
-pci_bus 0000:08: resource 0 mem: [0x0-0x0]
-pci_bus 0000:08: resource 1 mem: [0x0-0x0]
-pci_bus 0000:08: resource 2 mem: [0x0-0x0]
-pci_bus 0000:08: resource 3 mem: [0x0-0x0]
-pci_bus 0000:09: resource 0 io:  [0x2000-0x2fff]
-pci_bus 0000:09: resource 1 mem: [0xc7100000-0xc71fffff]
-pci_bus 0000:09: resource 2 mem: [0x0-0x0]
-pci_bus 0000:09: resource 3 mem: [0x0-0x0]
-pci_bus 0000:0a: resource 0 io:  [0x1000-0x1fff]
-pci_bus 0000:0a: resource 1 mem: [0xc7000000-0xc70fffff]
-pci_bus 0000:0a: resource 2 mem: [0xc7300000-0xc73fffff]
-pci_bus 0000:0a: resource 3 io:  [0x00-0xffff]
-pci_bus 0000:0a: resource 4 mem: [0x000000-0xffffffffffffffff]
-NET: Registered protocol family 2
-IP route cache hash table entries: 131072 (order: 8, 1048576 bytes)
-TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
-TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
-TCP: Hash tables configured (established 262144 bind 65536)
-TCP reno registered
-NET: Registered protocol family 1
-checking if image is initramfs...
-rootfs image is initramfs; unpacking...
-Freeing initrd memory: 3693k freed
-Intel AES-NI instructions are not detected.
-audit: initializing netlink socket (disabled)
-type=2000 audit(1239645826.884:1): initialized
-HugeTLB registered 2 MB page size, pre-allocated 0 pages
-msgmni has been set to 7716
-alg: No test for stdrng (krng)
-Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-pci 0000:05:00.0: Boot video device
-pcieport-driver 0000:00:01.0: irq 24 for MSI/MSI-X
-pcieport-driver 0000:00:01.0: setting latency timer to 64
-pcieport-driver 0000:00:03.0: irq 25 for MSI/MSI-X
-pcieport-driver 0000:00:03.0: setting latency timer to 64
-pcieport-driver 0000:00:07.0: irq 26 for MSI/MSI-X
-pcieport-driver 0000:00:07.0: setting latency timer to 64
-pcieport-driver 0000:00:1c.0: irq 27 for MSI/MSI-X
-pcieport-driver 0000:00:1c.0: setting latency timer to 64
-pcieport-driver 0000:00:1c.1: irq 28 for MSI/MSI-X
-pcieport-driver 0000:00:1c.1: setting latency timer to 64
-pcieport-driver 0000:00:1c.4: irq 29 for MSI/MSI-X
-pcieport-driver 0000:00:1c.4: setting latency timer to 64
-aer 0000:00:01.0:pcie02: AER service couldn't init device: no _OSC support
-aer 0000:00:03.0:pcie02: AER service couldn't init device: no _OSC support
-aer 0000:00:07.0:pcie02: AER service couldn't init device: no _OSC support
-pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-input: Power Button (FF) as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
-ACPI: Power Button (FF) [PWRF]
-input: Sleep Button (CM) as /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input1
-ACPI: Sleep Button (CM) [SLPB]
-Monitor-Mwait will be used to enter C-1 state
-Monitor-Mwait will be used to enter C-3 state
-ACPI: CPU0 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:00: registered as cooling_device0
-ACPI: Processor [CPU0] (supports 8 throttling states)
-ACPI: CPU1 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:01: registered as cooling_device1
-ACPI: Processor [CPU1] (supports 8 throttling states)
-ACPI: CPU2 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:02: registered as cooling_device2
-ACPI: Processor [CPU2] (supports 8 throttling states)
-ACPI: CPU3 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:03: registered as cooling_device3
-ACPI: Processor [CPU3] (supports 8 throttling states)
-ACPI: CPU4 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:04: registered as cooling_device4
-ACPI: Processor [CPU4] (supports 8 throttling states)
-ACPI: CPU5 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:05: registered as cooling_device5
-ACPI: Processor [CPU5] (supports 8 throttling states)
-ACPI: CPU6 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:06: registered as cooling_device6
-ACPI: Processor [CPU6] (supports 8 throttling states)
-ACPI: CPU7 (power states: C1[C1] C2[C3])
-processor ACPI_CPU:07: registered as cooling_device7
-ACPI: Processor [CPU7] (supports 8 throttling states)
-Linux agpgart interface v0.103
-Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a NS16550A
-brd: module loaded
-usbcore: registered new interface driver libusual
-PNP: No PS/2 controller found. Probing ports directly.
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: PC Speaker as /devices/platform/pcspkr/input/input2
-cpuidle: using governor ladder
-usbcore: registered new interface driver hiddev
-usbcore: registered new interface driver usbhid
-usbhid: v2.6:USB HID core driver
-Advanced Linux Sound Architecture Driver Version 1.0.19.
-ALSA device list:
-  No soundcards found.
-TCP cubic registered
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-Freeing unused kernel memory: 400k freed
-Write protecting the kernel read-only data: 4284k
-ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-ehci_hcd 0000:00:1a.7: setting latency timer to 64
-ehci_hcd 0000:00:1a.7: EHCI Host Controller
-ehci_hcd 0000:00:1a.7: new USB bus registered, assigned bus number 1
-ehci_hcd 0000:00:1a.7: debug port 1
-ehci_hcd 0000:00:1a.7: cache line size of 32 is not supported
-ehci_hcd 0000:00:1a.7: irq 18, io mem 0xc7222000
-ehci_hcd 0000:00:1a.7: USB 2.0 started, EHCI 1.00
-usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb1: Product: EHCI Host Controller
-usb usb1: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 ehci_hcd
-usb usb1: SerialNumber: 0000:00:1a.7
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 6 ports detected
-ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
-ehci_hcd 0000:00:1d.7: setting latency timer to 64
-ehci_hcd 0000:00:1d.7: EHCI Host Controller
-ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 2
-ehci_hcd 0000:00:1d.7: debug port 1
-ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
-ehci_hcd 0000:00:1d.7: irq 23, io mem 0xc7221000
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
-usb usb2: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb2: Product: EHCI Host Controller
-usb usb2: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 ehci_hcd
-usb usb2: SerialNumber: 0000:00:1d.7
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 6 ports detected
-uhci_hcd: USB Universal Host Controller Interface driver
-uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-uhci_hcd 0000:00:1a.0: setting latency timer to 64
-uhci_hcd 0000:00:1a.0: UHCI Host Controller
-uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus number 3
-uhci_hcd 0000:00:1a.0: irq 16, io base 0x000050e0
-usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb3: Product: UHCI Host Controller
-usb usb3: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 uhci_hcd
-usb usb3: SerialNumber: 0000:00:1a.0
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-uhci_hcd 0000:00:1a.1: setting latency timer to 64
-uhci_hcd 0000:00:1a.1: UHCI Host Controller
-uhci_hcd 0000:00:1a.1: new USB bus registered, assigned bus number 4
-uhci_hcd 0000:00:1a.1: irq 21, io base 0x000050c0
-usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb4: Product: UHCI Host Controller
-usb usb4: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 uhci_hcd
-usb usb4: SerialNumber: 0000:00:1a.1
-usb usb4: configuration #1 chosen from 1 choice
-hub 4-0:1.0: USB hub found
-hub 4-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1a.2: PCI INT D -> GSI 19 (level, low) -> IRQ 19
-uhci_hcd 0000:00:1a.2: setting latency timer to 64
-uhci_hcd 0000:00:1a.2: UHCI Host Controller
-uhci_hcd 0000:00:1a.2: new USB bus registered, assigned bus number 5
-uhci_hcd 0000:00:1a.2: irq 19, io base 0x000050a0
-usb usb5: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb5: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb5: Product: UHCI Host Controller
-usb usb5: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 uhci_hcd
-usb usb5: SerialNumber: 0000:00:1a.2
-usb usb5: configuration #1 chosen from 1 choice
-hub 5-0:1.0: USB hub found
-hub 5-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
-uhci_hcd 0000:00:1d.0: setting latency timer to 64
-uhci_hcd 0000:00:1d.0: UHCI Host Controller
-uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 6
-uhci_hcd 0000:00:1d.0: irq 23, io base 0x00005080
-usb usb6: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb6: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb6: Product: UHCI Host Controller
-usb usb6: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 uhci_hcd
-usb usb6: SerialNumber: 0000:00:1d.0
-usb usb6: configuration #1 chosen from 1 choice
-hub 6-0:1.0: USB hub found
-hub 6-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-uhci_hcd 0000:00:1d.1: setting latency timer to 64
-uhci_hcd 0000:00:1d.1: UHCI Host Controller
-uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 7
-uhci_hcd 0000:00:1d.1: irq 19, io base 0x00005060
-usb usb7: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb7: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb7: Product: UHCI Host Controller
-usb usb7: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 uhci_hcd
-usb usb7: SerialNumber: 0000:00:1d.1
-usb usb7: configuration #1 chosen from 1 choice
-hub 7-0:1.0: USB hub found
-hub 7-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-uhci_hcd 0000:00:1d.2: setting latency timer to 64
-uhci_hcd 0000:00:1d.2: UHCI Host Controller
-uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 8
-uhci_hcd 0000:00:1d.2: irq 18, io base 0x00005040
-usb usb8: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb8: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb8: Product: UHCI Host Controller
-usb usb8: Manufacturer: Linux 2.6.30-rc1-00306-g8371f87 uhci_hcd
-usb usb8: SerialNumber: 0000:00:1d.2
-usb usb8: configuration #1 chosen from 1 choice
-hub 8-0:1.0: USB hub found
-hub 8-0:1.0: 2 ports detected
-SCSI subsystem initialized
-Driver 'sd' needs updating - please use bus_type methods
-libata version 3.00 loaded.
-ahci 0000:00:1f.2: version 3.0
-ahci 0000:00:1f.2: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-ahci 0000:00:1f.2: irq 30 for MSI/MSI-X
-ahci 0000:00:1f.2: AHCI 0001.0200 32 slots 6 ports 3 Gbps 0x3f impl SATA mode
-ahci 0000:00:1f.2: flags: 64bit ncq sntf pm led clo pio slum part ems 
-ahci 0000:00:1f.2: setting latency timer to 64
-scsi0 : ahci
-scsi1 : ahci
-scsi2 : ahci
-scsi3 : ahci
-scsi4 : ahci
-scsi5 : ahci
-ata1: SATA max UDMA/133 irq_stat 0x00400040, connection status changed irq 30
-ata2: SATA max UDMA/133 abar m2048@0xc7220000 port 0xc7220180 irq 30
-ata3: SATA max UDMA/133 irq_stat 0x00400040, connection status changed irq 30
-ata4: SATA max UDMA/133 abar m2048@0xc7220000 port 0xc7220280 irq 30
-ata5: SATA max UDMA/133 abar m2048@0xc7220000 port 0xc7220300 irq 30
-ata6: SATA max UDMA/133 irq_stat 0x00400040
-ata2: SATA link down (SStatus 0 SControl 300)
-ata4: SATA link down (SStatus 0 SControl 300)
-ata5: SATA link down (SStatus 0 SControl 300)
-usb 4-1: new low speed USB device using uhci_hcd and address 2
-usb 4-1: New USB device found, idVendor=045e, idProduct=0047
-usb 4-1: New USB device strings: Mfr=1, Product=3, SerialNumber=0
-usb 4-1: Product: Microsoft 5-Button Mouse with IntelliEye(TM)
-usb 4-1: Manufacturer: Microsoft
-usb 4-1: configuration #1 chosen from 1 choice
-input: Microsoft Microsoft 5-Button Mouse with IntelliEye(TM) as /devices/pci0000:00/0000:00:1a.1/usb4/4-1/4-1:1.0/input/input3
-generic-usb 0003:045E:0047.0001: input,hidraw0: USB HID v1.10 Mouse [Microsoft Microsoft 5-Button Mouse with IntelliEye(TM)] on usb-0000:00:1a.1-1/input0
-ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata3.00: ATA-8: G.SKILL 128GB SSD, 02.10104, max UDMA/100
-ata3.00: 250445824 sectors, multi 0: LBA 
-ata1.00: ATA-8: ST3500320AS, SD15, max UDMA/133
-ata1.00: 976773168 sectors, multi 0: LBA48 NCQ (depth 31/32)
-ata3.00: configured for UDMA/100
-ata6.00: ATAPI: PIONEER BD-ROM  BDC-202, 1.04, max UDMA/66
-ata1.00: configured for UDMA/133
-ata6.00: configured for UDMA/66
-scsi 0:0:0:0: Direct-Access     ATA      ST3500320AS      SD15 PQ: 0 ANSI: 5
-scsi 2:0:0:0: Direct-Access     ATA      G.SKILL 128GB SS 02.1 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 976773168 512-byte hardware sectors: (500 GB/465 GiB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda:<5>sd 2:0:0:0: [sdb] 250445824 512-byte hardware sectors: (128 GB/119 GiB)
-sd 2:0:0:0: [sdb] Write Protect is off
-sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
- sdb: sda1 sda2 sda3 sda4 < sda5<5>scsi 5:0:0:0: CD-ROM            PIONEER  BD-ROM  BDC-202  1.04 PQ: 0 ANSI: 5
- sda6 >
-sd 0:0:0:0: [sda] Attached SCSI disk
-usb 4-2: new low speed USB device using uhci_hcd and address 3
-usb 4-2: New USB device found, idVendor=045e, idProduct=000b
-usb 4-2: New USB device strings: Mfr=0, Product=1, SerialNumber=0
-usb 4-2: Product: Microsoft Natural Keyboard Elite
-usb 4-2: configuration #1 chosen from 1 choice
-input: Microsoft Natural Keyboard Elite as /devices/pci0000:00/0000:00:1a.1/usb4/4-2/4-2:1.0/input/input4
-generic-usb 0003:045E:000B.0002: input,hidraw1: USB HID v1.10 Keyboard [Microsoft Natural Keyboard Elite] on usb-0000:00:1a.1-2/input0
- sdb1
-sd 2:0:0:0: [sdb] Attached SCSI disk
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with writeback data mode.
-udevd version 127 started
-e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.4-k4
-e1000e: Copyright (c) 1999-2008 Intel Corporation.
-e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-e1000e 0000:00:19.0: setting latency timer to 64
-e1000e 0000:00:19.0: irq 31 for MSI/MSI-X
-0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:1c:c0:79:c8:c2
-0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
-0000:00:19.0: eth0: MAC: 7, PHY: 8, PBA No: ffffff-0ff
-HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-HDA Intel 0000:00:1b.0: setting latency timer to 64
-pata_marvell 0000:09:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-pata_marvell 0000:09:00.0: setting latency timer to 64
-scsi6 : pata_marvell
-scsi7 : pata_marvell
-ata7: PATA max UDMA/100 cmd 0x2018 ctl 0x2024 bmdma 0x2000 irq 16
-ata8: PATA max UDMA/133 cmd 0x2010 ctl 0x2020 bmdma 0x2008 irq 16
-firewire_ohci 0000:0a:03.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-firewire_ohci: Added fw-ohci device 0000:0a:03.0, OHCI version 1.10
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-sd 2:0:0:0: Attached scsi generic sg1 type 0
-scsi 5:0:0:0: Attached scsi generic sg2 type 5
-i801_smbus 0000:00:1f.3: PCI INT B -> GSI 18 (level, low) -> IRQ 18
-Driver 'sr' needs updating - please use bus_type methods
-sr0: scsi3-mmc drive: 32x/32x writer dvd-ram cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 5:0:0:0: Attached scsi CD-ROM sr0
-firewire_core: created device fw0: GUID 0090270002258426, S400
-EXT3 FS on sda2, internal journal
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda1, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda3, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb1, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda6, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-Adding 6144820k swap on /dev/sda5.  Priority:-1 extents:1 across:6144820k 
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-platform microcode: firmware: requesting intel-ucode/06-1a-04
-Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu0'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Not tainted 2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89dde6 ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu1'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89dde7 ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu2'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89dde8 ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu3'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89dde9 ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu4'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89ddea ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu5'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89ddeb ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu6'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89ddec ]---
-------------[ cut here ]------------
-WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
-Hardware name:         
-sysfs group ffffffffa0209700 not found for kobject 'cpu7'
-Modules linked in: microcode(-) kvm_intel kvm uinput sr_mod i2c_i801 cdrom i2c_core ata_generic sg firewire_ohci snd_hda_codec_realtek pata_marvell snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc e1000e ahci libata sd_mod scsi_mod crc_t10dif ext3 jbd uhci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2161, comm: rmmod Tainted: G        W  2.6.30-rc1-00306-g8371f87 #1
-Call Trace:
- [<ffffffff80241a2f>] warn_slowpath+0xaf/0x110
- [<ffffffff80324046>] ? sysfs_addrm_finish+0x1a6/0x250
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff802294d9>] ? __phys_addr+0x9/0x50
- [<ffffffff8036c49d>] ? kobject_release+0x5d/0xa0
- [<ffffffff802ba7c2>] ? __vunmap+0x12/0x110
- [<ffffffff80325a8b>] sysfs_remove_group+0xeb/0xf0
- [<ffffffffa0207468>] mc_sysdev_remove+0x38/0x50 [microcode]
- [<ffffffff803fc2f8>] sysdev_driver_unregister+0x68/0xa0
- [<ffffffffa0207eed>] microcode_exit+0x39/0x65 [microcode]
- [<ffffffff8026c511>] sys_delete_module+0x191/0x250
- [<ffffffff8020b5bb>] system_call_fastpath+0x16/0x1b
----[ end trace 0a72bfd99e89dded ]---
-Microcode Update Driver: v2.00 removed.
-e1000e 0000:00:19.0: irq 31 for MSI/MSI-X
-e1000e 0000:00:19.0: irq 31 for MSI/MSI-X
-ADDRCONF(NETDEV_UP): eth0: link is not ready
-NET: Registered protocol family 17
-e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-Bridge firewalling registered
-virbr0: starting userspace STP failed, starting kernel STP
-ip_tables: (C) 2000-2006 Netfilter Core Team
-nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
-CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Please use
-nf_conntrack.acct=1 kernel paramater, acct=1 nf_conntrack module option or
-sysctl net.netfilter.nf_conntrack_acct=1 to enable it.
-virbr0: no IPv6 routers present
-fuse init (API version 7.11)
-
---------------040602020605060709060206--
+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
+AA==
+--------------070507090009090207090604--
