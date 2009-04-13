@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbZDMOOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZDMORQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752690AbZDMOOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 10:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZDMONv
+	id S1752775AbZDMORQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 10:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZDMORA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 10:13:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41342 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbZDMONu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 10:13:50 -0400
-Subject: Re: [PATCH 4/4] tracing: fix splice return too large
-From: Steven Rostedt <srostedt@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090408095509.GA22471@elte.hu>
-References: <49D46674.9030804@cn.fujitsu.com>
-	 <20090403131629.GA8875@elte.hu> <49DC6F01.6030203@cn.fujitsu.com>
-	 <20090408095509.GA22471@elte.hu>
+	Mon, 13 Apr 2009 10:17:00 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:42705 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750802AbZDMOQ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 10:16:59 -0400
+Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and
+	misc	cleanups
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
+       tj@kernel.org, petkovbb@gmail.com, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+In-Reply-To: <49E2F84C.6080804@garzik.org>
+References: <49D214E7.2040908@panasas.com>
+	 <20090413163957P.fujita.tomonori@lab.ntt.co.jp>
+	 <49E2EFBE.5000709@garzik.org>
+	 <20090413172143B.fujita.tomonori@lab.ntt.co.jp>
+	 <49E2F84C.6080804@garzik.org>
 Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 13 Apr 2009 10:13:39 -0400
-Message-Id: <1239632019.21121.7.camel@localhost.localdomain>
+Date: Mon, 13 Apr 2009 14:16:58 +0000
+Message-Id: <1239632218.3278.14.camel@mulgrave.int.hansenpartnership.com>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2009-04-08 at 11:55 +0200, Ingo Molnar wrote:
-> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
-> > Ingo Molnar wrote:
-> > > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> > > 
-> > >> -	for (i = 0; i < PIPE_BUFFERS && len; i++, len -= size) {
-> > >> +	if (*ppos & (PAGE_SIZE - 1)) {
-> > >> +		WARN_ONCE(1, "Ftrace: previous read must page-align\n");
-
-Small English grammar nit,
-
-  "Ftrace: previous read must be page-aligned"
-
-> > >> +		return -EINVAL;
-> > >> +	}
-> > >> +
-> > >> +	if (len & (PAGE_SIZE - 1)) {
-> > >> +		WARN_ONCE(1, "Ftrace: splice_read should page-align\n");
-
-  "Ftrace: splice_read should be page-aligned"
-
-> > >> +		if (len < PAGE_SIZE)
-> > >> +			return -EINVAL;
-> > >> +		len &= PAGE_MASK;
-> > >> +	}
-> > > 
-> > > Hm, the fix looks good, but is it a good idea to allow the 
-> > > triggering of this message from user-space?
-> > > 
+On Mon, 2009-04-13 at 04:31 -0400, Jeff Garzik wrote:
+> >> What is the multi-device problem with bio?
 > > 
-> > But it is only triggered once.
-> > 
-> > If user get content from trace_pipe_raw with non-page-align, the 
-> > content is garbage. It's wasting, the kernel disallows it. This 
-> > message tell user why he read failed.
-> > 
-> > These 4 patches make trace_pipe_raw more robustious and consistent 
-> > (read by read(2) and splice). I focus on handling raw ftrace data 
-> > in userspace, these raw ftrace data should be trustiness.
+> > Well, if it works nicely, I guess that we don't have something like
+> > drivers/dm/{dm-bio-record.h, dm-bio-list.h}, btrfs_multi_bio struct,
+> > or md's own page carrier?
 > 
-> Ok, agreed.
-> 
-> i've applied these four fixes from you to tip:tracing/splice, 
-> thanks. Steve: i think they are tracing/urgent material - do you 
-> agree?
+> It was an honest question.  I am seeking information, not denying your 
+> argument.
 
-Agreed. With my comments above:
+I think it wasn't quite designed like that.  The original designed
+carrier of pages was the bio_vec array.   The bio was designed to carry
+the bio_vec into the top end of block.  bio_vec is incredibly
+lightweight (it's more like a scatterlist), but bio is a lot heavier and
+now has a lot of quirky initialisers (like call backs and merge counts)
+that need to be set correctly, making it a more difficult think to use
+generically.   bio is really designed to be the merge unit for requests
+not a generic carrier of pages.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+The final irony is that most of the page list mappings we do want to go
+straight to requests, making the bio complexity even more superfluous.
 
--- Steve
+> What, specifically, is this multi-device problem with bio, please?
+
+The multi device problem is that it's very hard to split a bio up again
+once we've assembled it, so if you get a single bio whose I/O crosses
+multiple devices in md or dm, there's a lot of work that has to go on
+behind the scenes to get the split to happen because we need one bio per
+underlying device that we send I/O to.
+
+James
 
 
