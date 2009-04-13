@@ -1,39 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZDMKEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZDMKIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbZDMKEx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 06:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbZDMKEo
+	id S1755998AbZDMKIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 06:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbZDMKIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 06:04:44 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59139 "EHLO gir.skynet.ie"
+	Mon, 13 Apr 2009 06:08:09 -0400
+Received: from sh.osrg.net ([192.16.179.4]:59469 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753422AbZDMKEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 06:04:44 -0400
-Date: Mon, 13 Apr 2009 11:04:40 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
-Subject: Re: How movable is zone movable?
-Message-ID: <20090413100440.GB15333@csn.ul.ie>
-References: <200904121129.09851.edt@aei.ca> <20090413095924.GA15333@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090413095924.GA15333@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1755405AbZDMKII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 06:08:08 -0400
+Date: Mon, 13 Apr 2009 19:07:56 +0900
+To: bharrosh@panasas.com
+Cc: htejun@gmail.com, bzolnier@gmail.com, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49CB3765.4070406@panasas.com>
+References: <49CAE425.5050009@kernel.org>
+	<49CB31DB.2040608@gmail.com>
+	<49CB3765.4070406@panasas.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090413190400H.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 13 Apr 2009 19:07:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 10:59:25AM +0100, Mel Gorman wrote:
-> > # huge_pages with movablecore set to 3G
+On Thu, 26 Mar 2009 10:05:57 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
+
+> On 03/26/2009 09:42 AM, Tejun Heo wrote:
+> > Hello,
+> > 
+> > A few issues.
+> > 
+> > Tejun Heo wrote:
+> >>> Perhaps you could reorder the code below a bit?
+> >>>
+> >>> My proposal is:
+> >>> * blk_rq_map_kern_prealloc => is simplified to be
+> >>>     int blk_rq_map_bio(struct request_queue *q, struct request *rq,
+> >>> 		       struct bio *bio);
+> > 
+> > The thing is that the prealloc variant should be allowed to be called
+> > from IRQ context and blk_queue_bounce() shouldn't be called.
+> > Hmmm... well, the caller is supposed to know what it's doing and maybe
+> > we can just add a comment that it shouldn't be called with buffers
+> > which might get bounced from IRQ context.
+> > 
 > 
-> How big did you make the movable zone and what is the hugepage size?
+> Hmm that is a problem. I would suggest a flag or a check. My bios come
+> from VFS they need bouncing.
+> 
+> Can you think of a solution?
+> 
+> We could just call blk_queue_bounce(). IRQ callers need to make sure their
+> buffers don't need bouncing anyway, so there is no such bug right? If a programmer
+> gets it wrong he will get a BUG check that tells him that.
 
-Scratch that question, I missed you said it was 3G. Are pages being
-mlocked()?
+If I understand the old IDE code, it's broken about the kernel buffer
+bouncing.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Fixing this in the old ide needs a big surgery, I think. When I
+converted the old ide code to use the block layer API to allocate a
+request, I gave up the requests on the stack (used in IRQ).
+
+
