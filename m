@@ -1,137 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZDMWVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZDMWW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZDMWVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZDMWVA
+	id S1754259AbZDMWW0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZDMWWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:21:00 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53330 "EHLO mga11.intel.com"
+	Mon, 13 Apr 2009 18:22:12 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:54344 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbZDMWU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:20:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,181,1239001200"; 
-   d="scan'208";a="447580548"
-Date: Mon, 13 Apr 2009 15:20:58 -0700
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Gary Hade <garyhade@us.ibm.com>,
-       "mingo@elte.hu" <mingo@elte.hu>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lcm@us.ibm.com" <lcm@us.ibm.com>, suresh.b.siddha@intel.com
-Subject: [PATCH] irq, x86: Remove IRQ_DISABLED check in process context IRQ move
-Message-ID: <20090413222058.GB8211@linux-os.sc.intel.com>
-References: <20090408210735.GD11159@us.ibm.com> <m1r601fg9l.fsf@fess.ebiederm.org> <20090410200919.GA7242@us.ibm.com> <m1tz4wcgm8.fsf@fess.ebiederm.org> <86802c440904110051p3e071f8etd0792702c08d9ec5@mail.gmail.com> <m1myanbgiv.fsf@fess.ebiederm.org> <1239644495.4529.8580.camel@localhost.localdomain> <m1ab6kfkwj.fsf@fess.ebiederm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751577AbZDMWWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 18:22:11 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Lin Ming <ming.m.lin@intel.com>
+Subject: Re: 2.6.30-rc1 A few issues and a stall
+Date: Mon, 13 Apr 2009 18:22:06 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-crc; KDE/4.2.2; x86_64; ; )
+Cc: Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+References: <200904121124.07193.edt@aei.ca> <1239588307.7661.209.camel@rzhang-dt> <1239591031.4445.4091.camel@minggr.sh.intel.com>
+In-Reply-To: <1239591031.4445.4091.camel@minggr.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1ab6kfkwj.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200904131822.06815.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 12 April 2009 22:50:31 Lin Ming wrote:
+> On Mon, 2009-04-13 at 10:05 +0800, Zhang Rui wrote:
+> > On Sun, 2009-04-12 at 23:24 +0800, Ed Tomlinson wrote:
+> > > Hi,
+> > > 
+> > > I got tired of building out of tree DRM drivers so decided to try 2.6.30-rc1.  For simple tasks
+> > > it works fine, for slightly more complex ones it is not quite as good...
+> > > 
+> > > Here is an example.  I normally start a kvm session with the commands below:
+> > > 
+> > > ed@grover ~/vm $ sudo modprobe tun
+> > > ed@grover ~/vm $ sudo brctl addbr br0
+> > > ed@grover ~/vm $ sudo ifconfig br0 192.168.100.254 netmask 255.255.255.0 up
+> > > ed@grover ~/vm $ sudo tunctl -b -u ed -t qtap0
+> > > qtap0
+> > > ed@grover ~/vm $ sudo brctl addif br0 qtap0
+> > > ed@grover ~/vm $ sudo ifconfig qtap0 up 0.0.0.0 promisc
+> > > ed@grover ~/vm $ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+> > > iptables v1.4.2: can't initialize iptables table `nat': Table does not exist (do you need to insmod?)
+> > > Perhaps iptables or your kernel needs to be upgraded.
+> > > 
+> > > Issue 1 - I need to manually modprobe be get iptables to work.  This exact procedure worked in 2.6.29.
+> > > 
+> > > ed@grover ~/vm $ sudo modprobe nf_nat
+> > > ed@grover ~/vm $ sudo modprobe ipt_MASQUERADE
+> > > ed@grover ~/vm $ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+> > > 
+> > > Once the above networking stuff is setup I start kvm with the command below
+> > > 
+> > > QEMU_AUDIO_DRV=alsa kvm -m 1024 -cdrom /mnt/sdc4/divx/archlinux-2009.02-ftp-i686.iso -boot c -smp 3 -usb -usbdevice tablet -vga std -drive file=arch.img -net nic,macaddr=52:54:00:12:34:23 -net tap,ifname=qtap0,script=no -soundhw all -mem-path /hugepages
+> > > 
+> > > which works and the kvm session boots just fine.  
+> > > 
+> > > Issue 2.  When I attempt to ping outside the kvm session the pc (not just the kvm session) hangs.
+> > > Its impossible to kill the kvm session and there are numerious info messages from RCU (tree RCU enabled)
+> > > about stalls.  
+> > > 
+> > > Issue 3.  ACPI is having fun during startup.  This does not seem to cause problems later but is 
+> > > noisy and probably should be fixed before .30's release.
+> > > 
+> > this is a duplicate of bug
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13036
+> > please try the patch in comment #6 there and see if it helps.
+> 
+> please also have a try the patch in comment #10 (don't apply the patch
+> in comment #6).
 
-As discussed in the thread here
-http://marc.info/?l=linux-kernel&m=123964468521142&w=2
+The patch from   http://bugzilla.kernel.org/show_bug.cgi?id=13036 in comment 10 cleans up the console 
+acpi messages nicely.
 
-On Fri, Apr 10, 2009 at 3:02 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
->
-> It looks like some additional bugs have slipped in since last I looked.
->
-> set_irq_affinity does this:
-> ifdef CONFIG_GENERIC_PENDING_IRQ
->        if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
->                cpumask_copy(desc->affinity, cpumask);
->                desc->chip->set_affinity(irq, cpumask);
->        } else {
->                desc->status |= IRQ_MOVE_PENDING;
->                cpumask_copy(desc->pending_mask, cpumask);
->        }
-> #else
->
-> That IRQ_DISABLED case is a software state and as such it has nothing to
-> do with how safe it is to move an irq in process context.
->
+<ACK> Ed  Tomlinson <edt@aei.ca>
 
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> writes:
-> On Sat, 2009-04-11 at 04:01 -0700, Eric W. Biederman wrote:
-> >
-> > If the goal is moving MSIs, we should modify the msi code to be safe
-> > in process context and to set IRQ_MOVE_PCNTXT.
-> >
-> > The only reason we migrate MSIs in interrupt context today is that there
-> > wasn't infrastructure for support migration both in interrupt context
-> > and outside of it.
->
-> Yes. The idea here was to force the MSI migration to happen in process
-> context. One of the patches in the series did
->
->         disable_irq(dev->irq);
->         irq_set_affinity(dev->irq, cpumask_of(dev->cpu));
->         enable_irq(dev->irq);
->
-> with the above patch adding irq/manage code check for interrupt disabled
-> and moving the interrupt in process context.
->
-> IIRC, there was no IRQ_MOVE_PCNTXT when we were developing this HPET
-> code and we ended up having this ugly hack. IRQ_MOVE_PCNTXT was there
-> when we eventually submitted the patch upstream. But, looks like I did a
-> blind rebasing instead of using IRQ_MOVE_PCNTXT in hpet MSI code. That
-> was my fault. Will send a patch to fix this ugliness.
+Except for the following entry which, possibily, is valid:
 
-Below patch fixes this. i.e., revert
-commit 932775a4ab622e3c99bd59f14cc7d96722f79501
-and add PCNTXT to HPET MSI setup. Also removes copying of desc->affinity
-in generic code as set_affinity routines are doing it internally.
+[    0.341115] ACPI Warning (tbutils-0246): Incorrect checksum in table [OEMB] - E8, should be DF [20090320]
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
- arch/x86/kernel/apic/io_apic.c |    2 ++
- kernel/irq/manage.c            |    5 ++---
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 767fe7e..aaf8212 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3667,12 +3667,14 @@ int arch_setup_hpet_msi(unsigned int irq)
- {
- 	int ret;
- 	struct msi_msg msg;
-+	struct irq_desc *desc = irq_to_desc(irq);
- 
- 	ret = msi_compose_msg(NULL, irq, &msg);
- 	if (ret < 0)
- 		return ret;
- 
- 	hpet_msi_write(irq, &msg);
-+	desc->status |= IRQ_MOVE_PCNTXT;
- 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
- 		"edge");
- 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 7e2e7dd..2734eca 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -109,10 +109,9 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
- 	spin_lock_irqsave(&desc->lock, flags);
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
--	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
--		cpumask_copy(desc->affinity, cpumask);
-+	if (desc->status & IRQ_MOVE_PCNTXT)
- 		desc->chip->set_affinity(irq, cpumask);
--	} else {
-+	else {
- 		desc->status |= IRQ_MOVE_PENDING;
- 		cpumask_copy(desc->pending_mask, cpumask);
- 	}
--- 
-1.6.0.6
-
+Thanks,
+Ed
