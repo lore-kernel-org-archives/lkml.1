@@ -1,69 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZDMORQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbZDMOZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZDMORQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 10:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZDMORA
+	id S1753397AbZDMOZs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 10:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZDMOZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 10:17:00 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:42705 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750802AbZDMOQ7 (ORCPT
+	Mon, 13 Apr 2009 10:25:39 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41351 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbZDMOZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 10:16:59 -0400
-Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and
-	misc	cleanups
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       tj@kernel.org, petkovbb@gmail.com, bzolnier@gmail.com,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-In-Reply-To: <49E2F84C.6080804@garzik.org>
-References: <49D214E7.2040908@panasas.com>
-	 <20090413163957P.fujita.tomonori@lab.ntt.co.jp>
-	 <49E2EFBE.5000709@garzik.org>
-	 <20090413172143B.fujita.tomonori@lab.ntt.co.jp>
-	 <49E2F84C.6080804@garzik.org>
-Content-Type: text/plain
-Date: Mon, 13 Apr 2009 14:16:58 +0000
-Message-Id: <1239632218.3278.14.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Apr 2009 10:25:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xkT9BBdlit9zMW3w9ctmdKWQdUO0MQ/kDpdFRfbomKWtrTPCia/CIYQN7z8RNCeSp1
+         Ff2AhWKDfz76Mwcw7i0tfkD8I9UyF+WgZBDM8D24HFuEMoQ6DrQpKFbFKS8HjwygLftM
+         mH1lrystsvgd4PqQrLVcZHAOu8ISgcY88ELGs=
+Date: Mon, 13 Apr 2009 16:25:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] tracing, boottrace: Move include/trace/boot.h to
+	include/linux/boottrace.h
+Message-ID: <20090413142531.GC5977@nowhere>
+References: <49E2B763.8060706@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E2B763.8060706@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-13 at 04:31 -0400, Jeff Garzik wrote:
-> >> What is the multi-device problem with bio?
-> > 
-> > Well, if it works nicely, I guess that we don't have something like
-> > drivers/dm/{dm-bio-record.h, dm-bio-list.h}, btrfs_multi_bio struct,
-> > or md's own page carrier?
+On Mon, Apr 13, 2009 at 11:54:11AM +0800, Zhaolei wrote:
+> Impact: refactor code, no functionality changed
 > 
-> It was an honest question.  I am seeking information, not denying your 
-> argument.
+> Files in include/trace/ should be definition of tracepoints, and header
+> file for boot trace should put to include/linux/.
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
 
-I think it wasn't quite designed like that.  The original designed
-carrier of pages was the bio_vec array.   The bio was designed to carry
-the bio_vec into the top end of block.  bio_vec is incredibly
-lightweight (it's more like a scatterlist), but bio is a lot heavier and
-now has a lot of quirky initialisers (like call backs and merge counts)
-that need to be set correctly, making it a more difficult think to use
-generically.   bio is really designed to be the merge unit for requests
-not a generic carrier of pages.
 
-The final irony is that most of the page list mappings we do want to go
-straight to requests, making the bio complexity even more superfluous.
 
-> What, specifically, is this multi-device problem with bio, please?
+Until now I had the opinion that it's good to let every tracing headers
+to be placed in include/trace/* because they are not useful for anything
+else than the tracer itself so that we don't encumber include/linux for
+private things.
 
-The multi device problem is that it's very hard to split a bio up again
-once we've assembled it, so if you get a single bio whose I/O crosses
-multiple devices in md or dm, there's a lot of work that has to go on
-behind the scenes to get the split to happen because we need one bio per
-underlying device that we send I/O to.
+So that we have both tracepoints/trace_events plus the low-level tracers
+headers in include/trace/*
 
-James
+I'm not opposite to this change, but seeing this patch and the recent divide
+of kmemtrace headers, I would like to know the opinion of Ingo and Steven
+about the strict role of include/trace/*
+Is it only for tracepoints-like bits, or oslo intended for every private tracing
+purposes?
 
+
+Thanks.
+
+
+>  include/{trace/boot.h => linux/boottrace.h} |    0 
+>  init/main.c                                 |    2 +-
+>  kernel/trace/trace.h                        |    2 +-
+>  3 files changed, 2 insertions(+), 2 deletions(-)
+>  rename include/{trace/boot.h => linux/boottrace.h} (100%)
+> 
+> diff --git a/include/trace/boot.h b/include/linux/boottrace.h
+> similarity index 100%
+> rename from include/trace/boot.h
+> rename to include/linux/boottrace.h
+> diff --git a/init/main.c b/init/main.c
+> index 694a563..d7d4741 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -66,7 +66,7 @@
+>  #include <linux/ftrace.h>
+>  #include <linux/async.h>
+>  #include <linux/kmemtrace.h>
+> -#include <trace/boot.h>
+> +#include <linux/boottrace.h>
+>  
+>  #include <asm/io.h>
+>  #include <asm/bugs.h>
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index ce6bdc4..5b654ce 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -8,7 +8,7 @@
+>  #include <linux/ring_buffer.h>
+>  #include <linux/mmiotrace.h>
+>  #include <linux/ftrace.h>
+> -#include <trace/boot.h>
+> +#include <linux/boottrace.h>
+>  #include <linux/kmemtrace.h>
+>  #include <trace/power.h>
+>  
+> -- 
+> 1.5.5.3
+> 
+> 
 
