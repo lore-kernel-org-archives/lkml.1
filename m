@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZDMXf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZDMXfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbZDMXf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbZDMXey
+	id S1754630AbZDMXfz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZDMXfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:34:54 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:39110 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754482AbZDMXew (ORCPT
+	Mon, 13 Apr 2009 19:35:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57821 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751697AbZDMXfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:34:52 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, Eric Miao <eric.y.miao@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrey Borzenkov <arvidjaar@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Pavel Roskin <proski@gnu.org>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix fb_info->lock and mm->mmap_sem ...} causes Xfbdev not working
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-	<20090409125850.GA2727@linux>
-	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
-	<20090410220521.GB21294@linux>
-	<20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
-	<49E05C36.9040204@s5r6.in-berlin.de> <20090411110840.GA7108@linux>
-	<20090411150359.GA8265@linux>
-X-Yow: ..  I think I'll KILL myself by leaping out of this
- 14th STORY WINDOW while reading ERICA JONG'S poetry!!
-Date: Tue, 14 Apr 2009 01:34:47 +0200
-In-Reply-To: <20090411150359.GA8265@linux> (Andrea Righi's message of "Sat, 11
-	Apr 2009 17:04:00 +0200")
-Message-ID: <m21vrwi0vc.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Apr 2009 19:35:40 -0400
+Date: Mon, 13 Apr 2009 16:26:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: paulmck@linux.vnet.ibm.com, davem@davemloft.net, paulus@samba.org,
+       mingo@elte.hu, torvalds@linux-foundation.org, laijs@cn.fujitsu.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
+Message-Id: <20090413162620.01353461.akpm@linux-foundation.org>
+In-Reply-To: <20090413162000.5f8d9a05@nehalam>
+References: <20090411174801.GG6822@linux.vnet.ibm.com>
+	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>
+	<20090412173108.GO6822@linux.vnet.ibm.com>
+	<20090412.181330.23529546.davem@davemloft.net>
+	<20090413040413.GQ6822@linux.vnet.ibm.com>
+	<20090413095309.631cf395@nehalam>
+	<20090413152437.c48723f6.akpm@linux-foundation.org>
+	<20090413162000.5f8d9a05@nehalam>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi <righi.andrea@gmail.com> writes:
+On Mon, 13 Apr 2009 16:20:00 -0700
+Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-> Tested intelfb and X11 with fbdev. It seems to work fine, but I may be
-> unable to test the mode switching right now:
->
->   intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
->
-> It would be great if someone could help me to test this patch (against
-> latest Linus' git - no need to revert 66c1ca).
+> On Mon, 13 Apr 2009 15:24:37 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Mon, 13 Apr 2009 09:53:09 -0700
+> > Stephen Hemminger <shemminger@vyatta.com> wrote:
+> > 
+> > > This is an alternative version of ip/ip6/arp tables locking using
+> > > per-cpu locks.  This avoids the overhead of synchronize_net() during
+> > > update but still removes the expensive rwlock in earlier versions.
+> > > 
+> > > The idea for this came from an earlier version done by Eric Duzamet.
+> > > Locking is done per-cpu, the fast path locks on the current cpu
+> > > and updates counters.  The slow case involves acquiring the locks on
+> > > all cpu's.
+> > > 
+> > > The mutex that was added for 2.6.30 in xt_table is unnecessary since
+> > > there already is a mutex for xt[af].mutex that is held.
+> > > 
+> > > Tested basic functionality (add/remove/list), but don't have test cases
+> > > for stress, ip6tables or arptables.
+> > > 
+> > >  unsigned int
+> > >  ipt_do_table(struct sk_buff *skb,
+> > > @@ -339,9 +341,10 @@ ipt_do_table(struct sk_buff *skb,
+> > >  
+> > >  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
+> > >  
+> > > -	rcu_read_lock_bh();
+> > > -	private = rcu_dereference(table->private);
+> > > -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
+> > > +	local_bh_disable();
+> > > +	spin_lock(&__get_cpu_var(ip_tables_lock));
+> > 
+> > spin_lock_bh()?
+> 
+> No. get_cpu_var implies smp_processor_id which is not safe
+> without preempt_disable (ie bh disable).
 
-I can confirm that it fixes the issue.  Tested with radeonfb and MOL.
+spin_lock_bh() will dtrt, but spelling it out seems a good idea.
 
-Andreas.
+It should have an explanatory comment, IMO.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+> > 
+> > And it should be hotplug aware, really.  num_possible_cpus() can exceed
+> > num_online_cpus().  The extent by which possible>online is
+> > controversial, but one can conceive of situations where it is "lots".
+> 
+> It is doing right thing already with hotplug.
+
+It's slow.
+
+> This code still needs to count packets processed by previously online
+> cpu, that is no longer there.
+
+Those counts could be migrated off that CPU when it is offlined.  As
+percpucounter does.
+
+> > Is lib/percpu_counter.c no good for this application?  Unfixably no
+> > good?  That code automagically handles cpu hotplug.
+> 
+> percpu_counter can't deal with the layout/load here.
+
+Insufficient detail here for anyone to understand why percpucounter
+cannot be adapted to this requirement.
+
