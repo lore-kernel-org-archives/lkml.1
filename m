@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZDMXxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbZDMXxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZDMXxh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZDMXxY
+	id S1755206AbZDMXxv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZDMXxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:53:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60898 "EHLO mx3.mail.elte.hu"
+	Mon, 13 Apr 2009 19:53:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57739 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbZDMXxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:53:22 -0400
-Date: Tue, 14 Apr 2009 01:52:55 +0200
+	id S1754687AbZDMXxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 19:53:37 -0400
+Date: Tue, 14 Apr 2009 01:53:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Hemminger <shemminger@vyatta.com>, paulmck@linux.vnet.ibm.com,
-       davem@davemloft.net, paulus@samba.org, laijs@cn.fujitsu.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
-Message-ID: <20090413235255.GJ817@elte.hu>
-References: <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com> <20090412173108.GO6822@linux.vnet.ibm.com> <20090412.181330.23529546.davem@davemloft.net> <20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam> <20090413152437.c48723f6.akpm@linux-foundation.org> <20090413162000.5f8d9a05@nehalam> <20090413162620.01353461.akpm@linux-foundation.org> <alpine.LFD.2.00.0904131631400.26713@localhost.localdomain>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] tracing, boottrace: Move include/trace/boot.h to
+	include/linux/boottrace.h
+Message-ID: <20090413235325.GK817@elte.hu>
+References: <49E2B763.8060706@cn.fujitsu.com> <20090413142531.GC5977@nowhere> <20090413222436.GF8514@elte.hu> <alpine.DEB.2.00.0904131907020.3041@gandalf.stny.rr.com> <20090413232807.GE817@elte.hu> <alpine.DEB.2.00.0904131933110.3041@gandalf.stny.rr.com> <20090413234027.GH817@elte.hu> <alpine.DEB.2.00.0904131950580.3041@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904131631400.26713@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.00.0904131950580.3041@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,58 +36,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> 
-> 
-> On Mon, 13 Apr 2009, Andrew Morton wrote:
-> > > > >  
-> > > > > -	rcu_read_lock_bh();
-> > > > > -	private = rcu_dereference(table->private);
-> > > > > -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> > > > > +	local_bh_disable();
-> > > > > +	spin_lock(&__get_cpu_var(ip_tables_lock));
-> > > > 
-> > > > spin_lock_bh()?
+> > > #include <trace/events/sched.h>
 > > > 
-> > > No. get_cpu_var implies smp_processor_id which is not safe
-> > > without preempt_disable (ie bh disable).
+> > > That might be fine too.
 > > 
-> > spin_lock_bh() will dtrt, but spelling it out seems a good idea.
+> > Yes - it would allow the dropping of the annoyingly repetitive 
+> > _event string from those definition files as well?
 > 
-> No, spin_lock_bh() will _not_ do the right thing. 
-> 
-> On UP it will actually work for two reasons: it will work because (a) it's 
-> UP, so there are no issues with smp_processor_id() to beging with, but 
-> also because even if there _were_ issues, it would still work because it 
-> would all expand as a macro, and the preempt_disable() will actually 
-> happen before the argument is evaluated.
-> 
-> But on SMP, spin_lock_bh() expands to just _spin_lock_bh(), and is 
-> a real function - and the argument will be evaluated before the 
-> call (obviously), and thus before the preempt_disable().
-> 
-> So
-> 
-> 	local_bh_disable();
-> 	spin_lock(&__get_cpu_var(ip_tables_lock));
-> 
-> is correct, and 
-> 
-> 	spin_lock_bh(&__get_cpu_var(ip_tables_lock));
-> 
-> is _not_ correct. The latter will do 
-> "&__get_cpu_var(ip_tables_lock)" with no protection from the 
-> process being switched to another CPU.
+> The coming patches for modules already does that ;-)
 
-One option would be to make it more robust for such use. The 
-downside would be all the other cases where the expression is really 
-constant (but still takes a few instructions to calculate) and could 
-be (and should be) evaluated outside of that critical section.
-
-So i'd tend to leave it in its current (optimistic) form: we've got 
-1283 uses of spin_lock_bh(), and just a quick look at git grep 
-suggests that the current optimistic optimization matters in 
-practice.
+Cool. Cannot wait! :-)
 
 	Ingo
