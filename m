@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbZDMATZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbZDMAkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752225AbZDMATZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 20:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZDMATR
+	id S1753126AbZDMAkb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 20:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZDMAkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 20:19:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47185 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750734AbZDMATQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 20:19:16 -0400
-Date: Sun, 12 Apr 2009 20:16:57 -0400
-From: Dave Jones <davej@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/7] use smp_call_function_single() in
-	arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-Message-ID: <20090413001657.GA24946@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-	Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20090413000630.21C09DE12A@ozlabs.org>
+	Sun, 12 Apr 2009 20:40:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57364 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750734AbZDMAkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 20:40:20 -0400
+Message-ID: <49E28A17.5000602@cn.fujitsu.com>
+Date: Mon, 13 Apr 2009 08:40:55 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413000630.21C09DE12A@ozlabs.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
+References: <49D3236D.3090705@cn.fujitsu.com> <49D32387.9040106@cn.fujitsu.com> <49E051B9.8060805@cn.fujitsu.com> <20090412130727.GC20281@elte.hu> <20090412131028.GT5178@kernel.dk>
+In-Reply-To: <20090412131028.GT5178@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 09:30:02AM +0930, Rusty Russell wrote:
- > From: Andrew Morton <akpm@linux-foundation.org>
- > 
- > Impact: fix sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
- > 
+Jens Axboe wrote:
+> On Sun, Apr 12 2009, Ingo Molnar wrote:
+>> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+>>
+>>> Hi Ingo,
+>>>
+>>> I would like to ask what's the status of these 2 patches.
+>>>
+>>> Arnaldo acked on them.
+>> They looked good to me - but i'm waiting for an Ack from Jens. Jens 
+>> has complained about seeing un-ack-ed patches in the blktrace code, 
+>> so i've started serializing any new patches on acks from Jens. The 
+>> workflow would be more efficient i suspect if Jens 
+>> nominated/declared you and Arnaldo as blktrace co-maintainers too - 
+>> most of the patches come from you two.
+> 
+> I'd be fine with listing Li Zefan as co-maintainer of the blktrace bits.
+> He knows what he is doing and is also a user of blktrace, so I think he
+> would be fine. Li, what do you think?
+> 
 
-This, and the other cpufreq related patches in this series look sound to me.
-Given the other non-cpufreq bits in the series, do you want to just
-have these go through Andrew and onto Linus?
+Thanks. It's fine for me too.
 
-	Dave
-
+--
+Zefan
