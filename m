@@ -1,62 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbZDMHLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZDMHNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbZDMHLT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 03:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbZDMHLF
+	id S1754485AbZDMHNJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 03:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZDMHM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 03:11:05 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:40075 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbZDMHLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 03:11:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nG96uCVjLhOw/UMcCGG1ShU9ap0FYwUAPEF0PqUhpq0n7XIZJEPi8T7o4kCJIES8Z9
-         QmG9iqt1l5KI9Po+fSO05VGwLMJltbQaD30RFRwO7kVzFlSplrJ4BvtBAH0FfZiRSnF0
-         6rMNGS4VlIwHb56xGnAT/tX/+fzKMUHyx/o1I=
-Date: Mon, 13 Apr 2009 11:11:11 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
-       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/30] netns: extract net_create()
-Message-ID: <20090413071111.GA7085@x200.localdomain>
-References: <20090410023448.GH27788@x200.localdomain> <20090410225636.GD13873@us.ibm.com>
+	Mon, 13 Apr 2009 03:12:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54406 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752703AbZDMHMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 03:12:55 -0400
+Message-ID: <49E2E5CD.9050402@cn.fujitsu.com>
+Date: Mon, 13 Apr 2009 15:12:13 +0800
+From: Shen Feng <shen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090410225636.GD13873@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: gregkh@suse.de, Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] doc: add documentation for debugfs
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 05:56:36PM -0500, Serge E. Hallyn wrote:
-> Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> > net_create() will be used by C/R code to create fresh netns on restart.
-> > 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> 
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> 
-> Although this ends up making a new assumption that setup_net(), and
-> therefore the pernet_ops->init() functions, do not return error > 0.
-> There's nothing actually stopping that (outside of code review, but
-> there appears to be no comment anywhere saying that's uncooth).
-> 
-> If it returns > 0, then we return the ns as though it were valid, but
-> don't add it to the list of namespaces...  Do we care?
 
-I think, no.
+debugfs is used as a virtual filesystem devoted to debugging
+information. But it's not documented in Documentation/filesystems.
+Add one for it. The content is mainly from
+http://lwn.net/Articles/115405/
 
-Recalling all the code put under netns changes, ->init hooks were put
-under 0/-E convention. For sure, my changes in netns xtables,
-conntracking and xfrm were definitely under it.
+Signed-off-by: Shen Feng <shen@cn.fujitsu.com>
+---
+ Documentation/filesystems/debugfs.txt |   51 +++++++++++++++++++++++++++++++++
+ 1 files changed, 51 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/debugfs.txt
 
-> > -struct net *copy_net_ns(unsigned long flags, struct net *old_net)
-> > +struct net *net_create(void)
+diff --git a/Documentation/filesystems/debugfs.txt b/Documentation/filesystems/debugfs.txt
+new file mode 100644
+index 0000000..112cf0c
+--- /dev/null
++++ b/Documentation/filesystems/debugfs.txt
+@@ -0,0 +1,51 @@
++        Debugfs - a virtual filesystem devoted to debugging information
++
++Debugfs is a virtual filesystem devoted to debugging information. Debugfs is
++intended to be a relatively easy and lightweight subsystem which gracefully
++disappears when configured out of the kernel.
++
++Traditionally debugfs is supposed to be mounted at /sys/kernel/debug with the
++following command:
++
++ # mount -t debugfs none /sys/kernel/debug/
++
++A developer wishing to use debugfs starts by creating a directory within the
++filesystem:
++
++    struct dentry *debugfs_create_dir(const char *name,
++                                      struct dentry *parent);
++
++The parent argument will usually be NULL, causing the directory to be created
++in the debugfs root. If debugfs is not configured into the system, the return
++value is -ENODEV; a NULL return, instead, indicates some other sort of error.
++
++The general-purpose function for creating a file in debugfs is:
++
++    struct dentry *debugfs_create_file(const char *name, mode_t mode,
++                                       struct dentry *parent, void *data,
++                                       struct file_operations *fops);
++
++The structure pointed to by fops should, of course, contain pointers to the
++functions which implement the actual operations on the file. In many cases,
++most of those functions can be the helpers provided by seq_file, making the
++task of exporting a file easy.
++
++Some additional helpers have been provided to make exporting a single value as
++easy as possible:
++
++    struct dentry *debugfs_create_u8(const char *name, mode_t mode,
++                                     struct dentry *parent, u8 *value);
++    struct dentry *debugfs_create_u16(const char *name, mode_t mode,
++                                      struct dentry *parent, u16 *value);
++    struct dentry *debugfs_create_u32(const char *name, mode_t mode,
++                                      struct dentry *parent, u32 *value);
++    struct dentry *debugfs_create_bool(const char *name, mode_t mode,
++                                       struct dentry *parent, u32 *value);
++
++Debugfs does not automatically clean up files when a module shuts down, so,
++for every file or directory created with the above functions, there must be a
++call to:
++
++    void debugfs_remove(struct dentry *dentry);
++
++See Documentation/DocBook/filesystems for more details.
+-- 
+1.6.0.6
+
+
