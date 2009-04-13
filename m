@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZDMVJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbZDMVST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbZDMVJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 17:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZDMVJr
+	id S1753043AbZDMVST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 17:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZDMVSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 17:09:47 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:58353 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751314AbZDMVJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 17:09:46 -0400
-Date: Mon, 13 Apr 2009 16:09:39 -0500
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.30-rc2
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Mon, 13 Apr 2009 17:18:05 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:53799 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbZDMVSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 17:18:04 -0400
+Date: Mon, 13 Apr 2009 22:18:00 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org, lenb@intel.com
+Subject: Re: [PATCH 1/2] toshiba-acpi: Add support for hotkey notifications
+Message-ID: <20090413211800.GA17922@srcf.ucam.org>
+References: <20090331214501.GC29489@srcf.ucam.org> <200904132128.54769.elendil@planet.nl> <20090413194341.GA16579@srcf.ucam.org> <200904132238.11401.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090413210939.A986BA24F540@attica.americas.sgi.com>
-From: felixb@sgi.com (Felix Blyakher)
+Content-Disposition: inline
+In-Reply-To: <200904132238.11401.elendil@planet.nl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 62b8e680e61d3f48f2a12ee248ca03ea8f376926:
-  David Howells (1):
-        MN10300: Kill MN10300's own profiling Kconfig
+On Mon, Apr 13, 2009 at 10:38:09PM +0200, Frans Pop wrote:
+> On Monday 13 April 2009, Matthew Garrett wrote:
+> > Hm. Do you get events for the multimedia keys without this patch and
+> > using the old interface?
+> 
+> Yes, 2.6.28 gives in /proc/acpi/toshiba/keys as value for 'hotkey':
+> previous track:	0x0b31
+> next track:	0x0b32
+> play/pause:	0x0b33
+> stop:		0x0b30
 
-are available in the git repository at:
+Without running any software, does hitting these keys cause the acpi 
+interrupt in /proc/interrupts to increment?
 
-  git://oss.sgi.com/xfs/xfs for-linus
-
-Dave Chinner (9):
-      xfs: validate log feature fields correctly
-      xfs: fix double free of inode
-      xfs: prevent unwritten extent conversion from blocking I/O completion
-      xfs: inform the xfsaild of the push target before sleeping
-      xfs: use xfs_sync_inodes() for device flushing
-      xfs: make inode flush at ENOSPC synchronous
-      xfs: block callers of xfs_flush_inodes() correctly
-      xfs: flush delayed allcoation blocks on ENOSPC in create
-      xfs: remove xfs_flush_space
-
-Felix Blyakher (1):
-      Merge branch 'master' into for-linus
-
- fs/xfs/linux-2.6/xfs_aops.c    |   38 +++++++++++---------
- fs/xfs/linux-2.6/xfs_aops.h    |    1 +
- fs/xfs/linux-2.6/xfs_buf.c     |    9 +++++
- fs/xfs/linux-2.6/xfs_fs_subr.c |   14 ++++----
- fs/xfs/linux-2.6/xfs_lrw.c     |   18 +++++++++-
- fs/xfs/linux-2.6/xfs_sync.c    |   78 +++++++++++++++++-----------------------
- fs/xfs/linux-2.6/xfs_sync.h    |    9 +++--
- fs/xfs/xfs_iget.c              |   23 +++++++-----
- fs/xfs/xfs_iomap.c             |   61 ++++++++-----------------------
- fs/xfs/xfs_iomap.h             |    3 +-
- fs/xfs/xfs_log.c               |   78 +++++++++++++++++++++++++---------------
- fs/xfs/xfs_mount.h             |    2 +-
- fs/xfs/xfs_vnodeops.c          |    7 ++++
- 13 files changed, 180 insertions(+), 161 deletions(-)
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
