@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZDMJJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZDMJO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZDMJJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 05:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZDMJJL
+	id S1755774AbZDMJO0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 05:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZDMJOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 05:09:11 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60685 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300AbZDMJJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 05:09:10 -0400
-Message-ID: <49E30131.2020408@garzik.org>
-Date: Mon, 13 Apr 2009 05:09:05 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 13 Apr 2009 05:14:16 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64996 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZDMJOP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 05:14:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MXxFixUiNVA+4xdFxYqQt3a5VUSW41FaryT9f2eUaHGmpGKadxImytCifcNmAyG2yw
+         hZpYqtblwypYZv18DyA57/HwXfk+NLncHPSQaZ8ZqaFPfD3NHuY0cK92Hh6LfLue9iGb
+         B+avx2vU+1/z8B28noTEmGkq3dZKwqJHzhbX4=
+Date: Mon, 13 Apr 2009 13:14:23 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, serue@us.ibm.com, mingo@elte.hu,
+       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+Message-ID: <20090413091423.GA19236@x200.localdomain>
+References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz>
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sata_sx4: refresh and convert to new EH
-References: <20090408200511.GA24071@havoc.gtf.org>	 <a4423d670904111946w2a8f3839n27b77f5473076563@mail.gmail.com>	 <49E1CE26.9050401@garzik.org> <a4423d670904121923l391d67cake297c5a71ca49ace@mail.gmail.com>
-In-Reply-To: <a4423d670904121923l391d67cake297c5a71ca49ace@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239340031.24083.21.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> 2009/4/12 Jeff Garzik <jeff@garzik.org>:
->> Alexander Beregalov wrote:
->>> 2009/4/9 Jeff Garzik <jeff@garzik.org>:
->>>> I reviewed and refreshed libata-dev.git#new-eh, now renamed to #sx4.
->>>>
->>>> Several bugs and missing pieces in the new-EH conversion were addressed
->>>> (often by copying highly similar code from sata_promise, a highly
->>>> similar chip)
->>>>
->>>> The only thing left is some "it still works" testing...  any takers?
->>>>
->>> Hi Jeff
->>>
->>> I have SX4000 card, it is based on the same PDC20621 chip, but has PATA
->>> ports
->>> (without PATA-SATA bridges).
->>> Can I help?
->>>
->>> I am newbie here, but I will try to modify the driver to support PATA
->>> card as well
->>> and test your patch.
->> It's unknown how well, or what is needed, to support the SX4000.  You are
->> welcome to dive in and figure out what is needed, but you'd be asking
->> questions to which we wouldn't have answers.
-> 
-> I found Promise provided docs for FreeBSD team.
-> http://unix.derkeiler.com/Mailing-Lists/FreeBSD/performance/2003-07/0043.html
+On Thu, Apr 09, 2009 at 10:07:11PM -0700, Dave Hansen wrote:
+> I'm curious how you see these fitting in with the work that we've been
+> doing with Oren.  Do you mean to just start a discussion or are you
+> really proposing these as an alternative to what Oren has been posting?
 
-Well, you can find several docs at 
-http://gkernel.sourceforge.net/specs/promise/
+Yes, this is posted as alternative.
 
+Some design decisions are seen as incorrect from here like:
+* not rejecting checkpoint with possible "leaks" from container
+* not having CAP_SYS_ADMIN on restart(2)
+* having small (TASK_COMM_LEN) and bigger (objref[1]) image format
+  misdesigns.
+* doing fork(2)+restart(2) per restarted task and whole orchestration
+  done from userspace/future init task.
+* not seeing bigger picture (note, this is not equivalent to supporting
+  everything at once, nobody is asking for everything at once) wrt shared
+  objects and format and code changes because of that (note again, image
+  format will change, but it's easy to design high level structure which
+  won't change)
+* checking of unsupported features done at wrong place and wrong time
+  and runtime overhead because of that on CR=y kernels.
 
->> I do have the sx4000 in the works (thanks to Promise who has provided docs
->> and HW to make this happen)..
-> Can we ask them too? :)
-> 
-> Interesting, I cut off all unrelated lines from freebsd/ata/ata-chipset.c
-> and it seems SX4/SX4000 driver is only about 700 lines long.
+There are also low-level things, but it's cumulative effect.
 
-The current FreeBSD has split up things into multiple files.  You can 
-check out the kernel via
+[1] Do I inderstand correctly that cookie for shared object is an
+address on kernel stack? This is obviously unreliable, if yes :-)
 
-	cd $repo
-	mkdir -p freebsd/src
-	cd freebsd
-	svn checkout svn://svn.freebsd.org/base/head/sys src/sys
-	cd src/sys/dev/ata/chipsets
-
-and indeed ata-promise.c has plenty of SX4[000] goodies to mess around with!
-
-Also, check out this stuff from sata_promise maintainer Mikael:
-http://marc.info/?l=linux-ide&m=121144512109826&w=2
-http://marc.info/?l=linux-ide&m=121135828227724&w=2
-
-My revised sata_sx4.c is currently stored on the "sx4" branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
-
-	Jeff
-
-
-
+	int objref;
+		...
+	/* adding 'file' to the hash will keep a reference to it */
+	new = cr_obj_add_ptr(ctx, file, &objref, CR_OBJ_FILE, 0);
+					^^^^^^^
