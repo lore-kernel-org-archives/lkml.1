@@ -1,50 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZDMOud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbZDMOvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbZDMOud (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 10:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZDMOuX
+	id S1754358AbZDMOvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 10:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZDMOvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 10:50:23 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:44213 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbZDMOuW (ORCPT
+	Mon, 13 Apr 2009 10:51:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58866 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752141AbZDMOvT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 10:50:22 -0400
-Date: Mon, 13 Apr 2009 15:50:15 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org, lenb@intel.com
-Subject: Re: [PATCH 1/2] toshiba-acpi: Add support for hotkey notifications
-Message-ID: <20090413145015.GA10976@srcf.ucam.org>
-References: <20090331214501.GC29489@srcf.ucam.org> <200904112150.38010.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904112150.38010.elendil@planet.nl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Mon, 13 Apr 2009 10:51:19 -0400
+Date: Mon, 13 Apr 2009 07:49:17 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH 2/4] net: introduce a list of device addresses
+ dev_addr_list
+Message-ID: <20090413074917.4e317115@nehalam>
+In-Reply-To: <20090413084201.GC23734@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+	<20090413083729.GA23734@psychotron.englab.brq.redhat.com>
+	<20090413084201.GC23734@psychotron.englab.brq.redhat.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 09:50:35PM +0200, Frans Pop wrote:
-> Matthew Garrett wrote:
-> > Calling the ENAB method on Toshiba laptops results in notifications
-> > being sent when laptop hotkeys are pressed. This patch simply calls that
-> > method and sets up an input device if it's successful.
-> 
-> Hi Matthew,
-> 
-> On my Satellite A40-241 the patch works fine for the Fn keys, but it does 
-> not work for the multimedia keys next to the power button. No event is 
-> generated (I tested this by directly reading the /dev/input/eventX file).
-> 
-> Any chance those could be made to work too?
+On Mon, 13 Apr 2009 10:42:02 +0200
+Jiri Pirko <jpirko@redhat.com> wrote:
 
-Can you send me the acpidump?
+> This patch introduces a new list in struct net_device and brings a set of
+> functions to handle the work with device address list. The list is a replacement
+> for the original dev_addr field and because in some situations there is need to
+> carry several device addresses with the net device. To be backward compatible,
+> dev_addr is made to point to the first member of the list so original drivers
+> sees no difference.
+> 
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> ---
+>  include/linux/netdevice.h |   51 +++++++++-
+>  net/core/dev.c            |  264 +++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 313 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+> index ff8db51..8cf62f1 100644
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -210,6 +210,12 @@ struct dev_addr_list
+>  #define dmi_users	da_users
+>  #define dmi_gusers	da_gusers
+>  
+> +struct hw_addr {
+> +	struct list_head	list;
+> +	unsigned char		addr[MAX_ADDR_LEN];
+> +	int			refcount;
+> +};
+> +
+>  struct hh_cache
+>  {
+>  	struct hh_cache *hh_next;	/* Next entry			     */
+> @@ -776,8 +782,12 @@ struct net_device
+>   */
+>  	unsigned long		last_rx;	/* Time of last Rx	*/
+>  	/* Interface address info used in eth_type_trans() */
+> -	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast
+> -							   because most packets are unicast) */
+> +	unsigned char		*dev_addr;	/* hw address, (before bcast
+> +						   because most packets are
+> +						   unicast) */
+> +
+> +	struct list_head	dev_addr_list; /* list of device hw addresses */
+> +	spinlock_t              dev_addr_list_lock;
+>  
+>  	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
+>  
+> @@ -1779,6 +1789,32 @@ static inline void netif_addr_unlock_bh(struct net_device *dev)
+>  	spin_unlock_bh(&dev->addr_list_lock);
+>  }
+>  
+> +/* Locking helpers for spinlock guarding dev_addr_list */
+> +
+> +static inline void netif_dev_addr_lock(struct net_device *dev)
+> +{
+> +	spin_lock(&dev->dev_addr_list_lock);
+> +}
+> +
+> +static inline void netif_dev_addr_lock_bh(struct net_device *dev)
+> +{
+> +	spin_lock_bh(&dev->dev_addr_list_lock);
+> +}
+> +
+> +static inline void netif_dev_addr_unlock(struct net_device *dev)
+> +{
+> +	spin_unlock(&dev->dev_addr_list_lock);
+> +}
+> +
+> +static inline void netif_dev_addr_unlock_bh(struct net_device *dev)
+> +{
+> +	spin_unlock_bh(&dev->dev_addr_list_lock);
+> +}
+> +
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+This lock is unnecessary, use RCU list for read.
+Since all changes are under RTNL mutex, there is no chance
+for conflict on update.
