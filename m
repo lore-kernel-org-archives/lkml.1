@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZDMXXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZDMXXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZDMXXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZDMXW5
+	id S1753682AbZDMXXu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZDMXXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:22:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59667
+	Mon, 13 Apr 2009 19:23:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59671
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752257AbZDMXW5 (ORCPT
+	by vger.kernel.org with ESMTP id S1752686AbZDMXXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:22:57 -0400
-Date: Mon, 13 Apr 2009 16:22:48 -0700 (PDT)
-Message-Id: <20090413.162248.60285999.davem@davemloft.net>
-To: jesse.brandeburg@intel.com
-Cc: amluto@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Tell linkwatch about new interfaces
+	Mon, 13 Apr 2009 19:23:38 -0400
+Date: Mon, 13 Apr 2009 16:23:29 -0700 (PDT)
+Message-Id: <20090413.162329.83864908.davem@davemloft.net>
+To: mschmidt@redhat.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com
+Subject: Re: [PATCH] skge: fix occasional BUG during MTU change
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.WNT.2.00.0904091128270.6048@jbrandeb-desk1.amr.corp.intel.com>
-References: <20090404.170539.148727646.davem@davemloft.net>
-	<cb0375e10904042100o1a203512l593021ee66cb591d@mail.gmail.com>
-	<alpine.WNT.2.00.0904091128270.6048@jbrandeb-desk1.amr.corp.intel.com>
+In-Reply-To: <20090407183623.7545bb0b@leela>
+References: <20090407183623.7545bb0b@leela>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,23 +27,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Date: Thu, 9 Apr 2009 17:48:04 -0700 (Pacific Daylight Time)
+From: Michal Schmidt <mschmidt@redhat.com>
+Date: Tue, 7 Apr 2009 18:36:23 +0200
 
-> Dave, if we move the netif_carrier_off call to our dev->open like tg3 has, 
-> do you think this is sufficient?
-
-Yes.
-
-> e1000e: indicate link down at load
+> The BUG_ON(skge->tx_ring.to_use != skge->tx_ring.to_clean) in skge_up()
+> was sometimes observed when setting MTU.
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> skge_down() disables the TX queue, but then reenables it by mistake via
+> skge_tx_clean().
+> Fix it by moving the waking of the queue from skge_tx_clean() to the
+> other caller. And to make sure start_xmit is not in progress on another
+> CPU, skge_down() should call netif_tx_disable().
 > 
-> same kind of patch as e1000, let driver explicitly push link state
-> once link comes up.
+> The bug was reported to me by Jiri Jilek whose Debian system sometimes
+> failed to boot. He tested the patch and the bug did not happen anymore.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 
-I'll wait to get this via Jeff Kirsher.
+Stephen have you had a chance to test this yet?
 
 Thanks.
