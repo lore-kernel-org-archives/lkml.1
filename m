@@ -1,71 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257AbZDMRmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbZDMRoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752257AbZDMRmo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 13:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZDMRm3
+	id S1752315AbZDMRoB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 13:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZDMRnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 13:42:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34700 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbZDMRm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 13:42:27 -0400
-Date: Mon, 13 Apr 2009 19:41:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
-       Mike Travis <travis@sgi.com>,
+	Mon, 13 Apr 2009 13:43:51 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2799 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbZDMRnt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 13:43:49 -0400
+Subject: Re: [BISECTED] 20 ACPI interrupts per second on EEEPC 4G
+From: Joe Perches <joe@perches.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       yakui_zhao <yakui.zhao@intel.com>, Zhang Rui <rui.zhang@intel.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mm-commits@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>
-Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
-Message-ID: <20090413174104.GA856@elte.hu>
-References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org> <4609.1239456126@turing-police.cc.vt.edu> <alpine.LFD.2.00.0904130847500.4583@localhost.localdomain> <20090413171853.GA4601@elte.hu> <20090413102749.4ca3a217.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413102749.4ca3a217.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <20090413170531.GA13188@srcf.ucam.org>
+References: <49DF6835.9040501@tuffmail.co.uk> <49DFE345.3010109@gmail.com>
+	 <49E05F83.2090500@tuffmail.co.uk> <49E20EBA.2090708@tuffmail.co.uk>
+	 <1239588248.5564.19.camel@localhost.localdomain>
+	 <49E3085D.3060403@tuffmail.co.uk>  <20090413170531.GA13188@srcf.ucam.org>
+Content-Type: text/plain
+Date: Mon, 13 Apr 2009 10:43:31 -0700
+Message-Id: <1239644611.32203.37.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > I think Andrew has a stack of fixes queued up, one of which 
-> > should solve this problem too - which Mike tested - as the 
-> > commit from Andrew has caused another regression as well.
-> > 
-> > There's no sha1 - the patch is in this thread on lkml:
-> > 
-> >   sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
-> > 
-> > | From: Andrew Morton <akpm@linux-foundation.org>
-> > |
-> > | Atttempting to rid us of the problematic work_on_cpu().  Just use
-> > | smp_call_fuction_single() here.
-> > |
-> > | This repairs a 10% sysbench(oltp)+mysql regression which Mike 
-> > | reported,
-> > 
+On Mon, 2009-04-13 at 18:05 +0100, Matthew Garrett wrote:
+> Ok, I think I've got it. Does this fix things? Ridiculous thinko...
 > 
-> Yup.  It's presently in Len's hands.  And Rusty's.
-> 
-> Vladis, perhaps you can verify?
+> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+> index 9cd15e8..564ea14 100644
+> --- a/drivers/acpi/thermal.c
+> +++ b/drivers/acpi/thermal.c
+> @@ -909,7 +909,7 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+>  			thermal_zone_device_register("acpitz", trips, tz,
+>  						     &acpi_thermal_zone_ops,
+>  						     0, 0, 0,
+> -						     tz->polling_frequency);
+> +						     tz->polling_frequency*100);
+>  	if (IS_ERR(tz->thermal_zone))
+>  		return -ENODEV;
 
-I have not tested it but it looks good and the use of a much more 
-atomic primitive can only improve the situation - so unless there's 
-something suspicious about it i'd suggest for Linus to pick this up 
-from email, before -rc2.
+Perhaps this is clearer?
+It also makes cleans up a for loop with a naked ;
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Joe Perches <joe@perches.com>
 
-	Ingo
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 9cd15e8..e8a6490 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -883,6 +880,10 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+ 	int result;
+ 	acpi_status status;
+ 	int i;
++	int tc1;
++	int tc2;
++	int passive_delay;
++	int polling_delay;
+ 
+ 	if (tz->trips.critical.flags.valid)
+ 		trips++;
+@@ -894,22 +895,25 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+ 		trips++;
+ 
+ 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE &&
+-			tz->trips.active[i].flags.valid; i++, trips++);
++		    tz->trips.active[i].flags.valid; i++)
++		trips++;
+ 
+-	if (tz->trips.passive.flags.valid)
+-		tz->thermal_zone =
+-			thermal_zone_device_register("acpitz", trips, tz,
+-						     &acpi_thermal_zone_ops,
+-						     tz->trips.passive.tc1,
+-						     tz->trips.passive.tc2,
+-						     tz->trips.passive.tsp*100,
+-						     tz->polling_frequency*100);
+-	else
+-		tz->thermal_zone =
+-			thermal_zone_device_register("acpitz", trips, tz,
+-						     &acpi_thermal_zone_ops,
+-						     0, 0, 0,
+-						     tz->polling_frequency);
++	if (tz->trips.passive.flags.valid) {
++		tc1 = tz->trips.passive.tc1;
++		tc2 = tz->trips.passive.tc2;
++		passive_delay = tz->trips.passive.tsp * 100;
++	} else {
++		tc1 = 0;
++		tc2 = 0;
++		passive_delay = 0;
++	}
++	polling_delay = tz->polling_frequency * 100;
++
++	tz->thermal_zone =
++		thermal_zone_device_register("acpitz", trips, tz,
++					     &acpi_thermal_zone_ops,
++					     tc1, tc2, passive_delay,
++					     polling_delay);
+ 	if (IS_ERR(tz->thermal_zone))
+ 		return -ENODEV;
+ 
+
+
