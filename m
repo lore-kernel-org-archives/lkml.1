@@ -1,38 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZDMDly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbZDMDpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbZDMDly (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 23:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZDMDlp
+	id S1755023AbZDMDpt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 23:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZDMDpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 23:41:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36323 "EHLO mx3.mail.elte.hu"
+	Sun, 12 Apr 2009 23:45:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42519 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753404AbZDMDlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 23:41:44 -0400
-Date: Mon, 13 Apr 2009 05:40:58 +0200
+	id S1753434AbZDMDpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 23:45:39 -0400
+Date: Mon, 13 Apr 2009 05:45:32 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Dave Jones <davej@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/7] use smp_call_function_single() in
-	arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-Message-ID: <20090413034058.GB11652@elte.hu>
-References: <20090413000630.21C09DE12A@ozlabs.org> <20090413001657.GA24946@redhat.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/7] tracing/filters: allow user to specify a filter val
+	to be string
+Message-ID: <20090413034531.GC11652@elte.hu>
+References: <49E04C22.4040608@cn.fujitsu.com> <49E04C61.10209@cn.fujitsu.com> <20090411143533.GA5977@nowhere> <49E2974D.6080105@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090413001657.GA24946@redhat.com>
+In-Reply-To: <49E2974D.6080105@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,23 +37,58 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dave Jones <davej@redhat.com> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> On Mon, Apr 13, 2009 at 09:30:02AM +0930, Rusty Russell wrote:
->  > From: Andrew Morton <akpm@linux-foundation.org>
->  > 
->  > Impact: fix sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
->  > 
+> > Well, IMHO, it would be rather better to just echo 'parent_comm == 123'
+> > and let it answer depending of which filter_pred_*() callback we have
+> > for the concerned field.
+> > 
+> > The culprit is this part in filter_parse():
+> > 
+> > pred->val = simple_strtoull(val_str, &tmp, 10);
+> > if (tmp == val_str) {
+> > 	pred->str_val = kstrdup(val_str, GFP_KERNEL);
+> > 	if (!pred->str_val)
+> > 		return -ENOMEM;
+> > }
+> > 
+> > The idea would be to not anymore base the check on simple_strtoull to
+> > guess whether this is a number or a string, making it act subsequently
+> > to this assumption, which is not the good assumption we must base our
+> > parsing yet.
+> > 
+> > Instead, we could let filter_parse only do the job of extracting the tokens
+> > and then fill the whole pred struct without yet bothering about the type
+> > of the value.
+> > 
+> > Thereafter we may defer the real value type checking on filter_add_pred()
+> > depending on the type of the concerned field:
+> > 
+> > if (is_string_field()) {
+> > 	add it as a string value;
+> > } else {
+> > 	do the check with simple_strtoull
+> > 	looks good? Then go to the number size switch....
+> > 	...
+> > }
+> > 
+> > You see?
+> > 
 > 
-> This, and the other cpufreq related patches in this series look 
-> sound to me. Given the other non-cpufreq bits in the series, do 
-> you want to just have these go through Andrew and onto Linus?
+> Right! Actually I thought about this, then I found one issue, 
+> suppose event foo and event bar both have a field named fb but one 
+> is string and one is integer. Now do this:
+>
+>   # echo 'fb == 123' > events/foo-bar/filter
+> 
+> This will set both filters, but not only the integer one.
+> 
+> But now I think this hardly happen in real-life, and it's not a 
+> big issue if it does happen. So I agree with you on this issue.
 
-the other x86 bits look good to me too. It would be best to do this 
-via -mm because the regression was introduced from there too so the 
-'lets do a revert and these patches in the next cycle' versus 'lets 
-do these fixes right now' decision should be driven from there too.
-
-Thanks,
+Yeah, good point. I think we should avoid such field name aliasing. 
+Even without the filter assignment ambiguity problem it would be 
+confusing to users to have two same-name but different-type fields 
+in two separate events.
 
 	Ingo
