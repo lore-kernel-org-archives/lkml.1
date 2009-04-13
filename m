@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752752AbZDMPiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZDMPul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752752AbZDMPiU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 11:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZDMPiE
+	id S1753939AbZDMPul (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 11:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZDMPua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 11:38:04 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45057 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752569AbZDMPiB (ORCPT
+	Mon, 13 Apr 2009 11:50:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:6367 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751886AbZDMPu3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 11:38:01 -0400
-Subject: Re: Implementing NVMHCI...
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Szabolcs Szakacsits <szaka@ntfs-3g.com>,
-       Grant Grundler <grundler@google.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0904130747440.4583@localhost.localdomain>
-References: <20090412091228.GA29937@elte.hu>
-	 <Pine.LNX.4.62.0904121806060.9521@tamago.serverit.net>
-	 <20090412162018.6c1507b4@lxorguk.ukuu.org.uk> <49E213AE.4060506@redhat.com>
-	 <alpine.LFD.2.00.0904120950050.4583@localhost.localdomain>
-	 <49E2DC96.6090407@redhat.com>
-	 <alpine.LFD.2.00.0904130747440.4583@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 13 Apr 2009 10:38:02 -0500
-Message-Id: <1239637082.3278.36.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Apr 2009 11:50:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Dg0NOQnixCrZdLcch8q5n4Qc9OMYdtWSedIonBAuACvTQvrVoX+YPwQsuBiZHM9nin
+         GZjaHWFix5k3Xnqqbje3nhMcucb6O5PE0bg743UBVuTcxet5f7xQ6tKgdPKgiEvM/nu1
+         Wm0P0s27PWu1N/H48fwQ2vmuehkX1akpq4edE=
+MIME-Version: 1.0
+In-Reply-To: <49E2F55F.5060108@garzik.org>
+References: <20061031104055.GA8898@infradead.org>
+	 <15F501D1A78BD343BE8F4D8DB854566B0C8DDCF5@hkemmail01.nvidia.com>
+	 <86802c440711062009t7e98d27fqdfb466b9843da060@mail.gmail.com>
+	 <86802c440901180120u3e60e73dm53a37b7cd9034915@mail.gmail.com>
+	 <4972F4E5.3030203@kernel.org> <49768355.4040301@kernel.org>
+	 <4977DAAF.5060006@kernel.org> <49E2F55F.5060108@garzik.org>
+Date: Mon, 13 Apr 2009 08:50:28 -0700
+Message-ID: <86802c440904130850r38a1671es68cd2b4cf436c61f@mail.gmail.com>
+Subject: Re: [PATCH] sata_nv: sgpio for nvidia mcp55 -v3
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Peer Chen <pchen@nvidia.com>, Kuan Luo <kluo@nvidia.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-13 at 08:10 -0700, Linus Torvalds wrote:
-> On Mon, 13 Apr 2009, Avi Kivity wrote:
-> > > Of course, the _really_ conclusive thing (in a virtualized environment) is
-> > > to just make the virtual disk only able to do 16kB IO accesses (and with
-> > > 16kB alignment). IOW, actually emulate a disk with a 16kB hard sector size,
-> > > and reporting a 16kB sector size to the READ CAPACITY command. If it works
-> > > then, then clearly WNT has no issues with bigger sectors.
-> > 
-> > I don't think IDE supports this?  And Windows 2008 doesn't like the LSI
-> > emulated device we expose.
-> 
-> Yeah, you'd have to have the OS use the SCSI commands for disk discovery, 
-> so at least a SATA interface. With IDE disks, the sector size always has 
-> to be 512 bytes, I think.
+On Mon, Apr 13, 2009 at 1:18 AM, Jeff Garzik <jeff@garzik.org> wrote:
+> Yinghai Lu wrote:
+>>
+>> Impact: new features
+>>
+>> based on patch on
+>>    http://marc.info/?l=linux-ide&m=116289338705418&w=2
+>>
+>> 1. update the patch for 2.6.19 to latest upstream ( 2.6.28?)
+>> 2. fix shared sgpio to support several mcp55 + io55, so every mcp55 have
+>>   seperate spinlock
+>> 3. use scratch_source as numbering of sgpio instead of address of struct,
+>>   so could go through kexec/kdump
+>>
+>> v2: revert NV_ON and NV_OFF, so turn on Activity LED all the time when
+>> disk is idle.
+>> v3: use one timer per sgpio instead of per nv_host, so for mcp55+io55
+>> system will use 2 timers
+>>    instead of 6 timers.
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> ---
+>>  drivers/ata/sata_nv.c |  562
+>> ++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 562 insertions(+)
+>
+>
+> Is this really over 500 LOC, just to blink some lights from the data xfer
+> hot path?  :)
+>
+there is timer to blink the activity led. per sgpio, normally one for
+mcp55 and one for io55.
+data xfer hot path only set some status.
 
-Actually, the latest ATA rev supports different sector sizes in
-preparation for native 4k sector size SATA disks (words 117-118 of
-IDENTIFY).  Matthew Wilcox already has the patches for libata ready.
-
-James
-
-
+YH
