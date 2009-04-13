@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZDMXkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZDMXmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbZDMXkv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZDMXkm
+	id S1754799AbZDMXmu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZDMXmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:40:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56816 "EHLO mx2.mail.elte.hu"
+	Mon, 13 Apr 2009 19:42:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45462 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753869AbZDMXkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:40:41 -0400
-Date: Tue, 14 Apr 2009 01:40:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] tracing, boottrace: Move include/trace/boot.h to
-	include/linux/boottrace.h
-Message-ID: <20090413234027.GH817@elte.hu>
-References: <49E2B763.8060706@cn.fujitsu.com> <20090413142531.GC5977@nowhere> <20090413222436.GF8514@elte.hu> <alpine.DEB.2.00.0904131907020.3041@gandalf.stny.rr.com> <20090413232807.GE817@elte.hu> <alpine.DEB.2.00.0904131933110.3041@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904131933110.3041@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753066AbZDMXmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 19:42:36 -0400
+Date: Mon, 13 Apr 2009 17:41:05 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "John Stoffel" <john@stoffel.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-usb@vger.kernel.org, zaitcev@redhat.com
+Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
+Message-Id: <20090413174105.b03a1f19.zaitcev@redhat.com>
+In-Reply-To: <18909.65347.234817.29689@stoffel.org>
+References: <18906.49779.243047.207639@stoffel.org>
+	<20090407120022.GA6519@ff.dom.local>
+	<18907.28788.965069.573489@stoffel.org>
+	<20090407130403.e0061a8d.zaitcev@redhat.com>
+	<18908.42166.404232.721757@stoffel.org>
+	<20090408232344.afed8103.zaitcev@redhat.com>
+	<18909.65347.234817.29689@stoffel.org>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 9 Apr 2009 09:59:31 -0400, "John Stoffel" <john@stoffel.org> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> Here's a dmesg of bootup:
 
-> On Tue, 14 Apr 2009, Ingo Molnar wrote:
-> > 
-> > The sane thing would be to put event headers into 
-> > include/trace/events/ and put more generic/utility headers into 
-> > include/trace/.
-> > 
-> > Reserving a full subdirectory for one singular purpose is a needless 
-> > waste of a nice (and unique) name-space resource.
-> 
-> That's fine with me too. I just want the trace points to be easily 
-> seen. But by making a sub directory, wont we need to have all 
-> users of tracepoints do something like:
-> 
-> #include <trace/events/sched.h>
-> 
-> That might be fine too.
+> [    0.000000] Linux version 2.6.29.1 (john@sail) (gcc version 4.3.3 (Ubuntu 4.3.3-5ubuntu4) ) #24 SMP PREEMPT Tue Apr 7 11:30:52 EDT 2009
+> [    0.000999] Checking aperture...
+> [    0.000999] No AGP bridge found
+> [    0.000999] Node 0: aperture @ 20000000 size 32 MB
+> [    0.000999] Aperture pointing to e820 RAM. Ignoring.
+> [    0.000999] Your BIOS doesn't leave a aperture memory hole
+> [    0.000999] Please enable the IOMMU option in the BIOS setup
+> [    0.000999] This costs you 64 MB of RAM
+> [    0.000999] Mapping aperture over 65536 KB of RAM @ 20000000
 
-Yes - it would allow the dropping of the annoyingly repetitive 
-_event string from those definition files as well?
+> [ 1396.271782] BUG: unable to handle kernel paging request at ffff880020a15cc0
 
-	Ingo
+So 20a15000 is in the aperture. Oh well, I screwed up. I meant to
+check for this back in 2006 but forgot, and miraclously it worked
+until now.
+
+Here's the problem:
+
+	pg = phys_to_page(dma_addr);
+	map = kmap_atomic(pg, KM_IRQ0);
+	offset = mon_copy_to_buff(rp, offset, map + page_off, step_len);
+	kunmap_atomic(map, KM_IRQ0);
+
+Obviously we don't want the page that's overlayed by the aperture,
+but the page where IOMMU is pointing.
+
+-- Pete
