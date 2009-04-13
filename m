@@ -1,115 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZDMWaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZDMWes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbZDMWaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZDMWaG
+	id S1753010AbZDMWes (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZDMWeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:30:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59766 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257AbZDMWaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:30:04 -0400
-Date: Tue, 14 Apr 2009 00:29:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing/filters: allow user-input to be
-	integer-like string
-Message-ID: <20090413222951.GG8514@elte.hu>
-References: <49E2A594.4060306@cn.fujitsu.com> <20090413144513.GF5977@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413144513.GF5977@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 13 Apr 2009 18:34:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58472 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751656AbZDMWef (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 18:34:35 -0400
+Date: Mon, 13 Apr 2009 15:24:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: paulmck@linux.vnet.ibm.com, davem@davemloft.net, paulus@samba.org,
+       mingo@elte.hu, torvalds@linux-foundation.org, laijs@cn.fujitsu.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
+Message-Id: <20090413152437.c48723f6.akpm@linux-foundation.org>
+In-Reply-To: <20090413095309.631cf395@nehalam>
+References: <20090411174801.GG6822@linux.vnet.ibm.com>
+	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>
+	<20090412173108.GO6822@linux.vnet.ibm.com>
+	<20090412.181330.23529546.davem@davemloft.net>
+	<20090413040413.GQ6822@linux.vnet.ibm.com>
+	<20090413095309.631cf395@nehalam>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 13 Apr 2009 09:53:09 -0700
+Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Mon, Apr 13, 2009 at 10:38:12AM +0800, Li Zefan wrote:
-> > Suppose we would like to trace all tasks named '123', but this
-> > will fail:
-> >  # echo 'parent_comm == 123' > events/sched/sched_process_fork/filter
-> >  bash: echo: write error: Invalid argument
-> > 
-> > Don't guess the type of the filter pred in filter_parse(), but instead
-> > we check it in filter_add_pred().
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > ---
-> >  kernel/trace/trace_events_filter.c |   26 +++++++++++++-------------
-> >  1 files changed, 13 insertions(+), 13 deletions(-)
-> > 
-> > diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> > index 9f8ecca..a63f965 100644
-> > --- a/kernel/trace/trace_events_filter.c
-> > +++ b/kernel/trace/trace_events_filter.c
-> > @@ -229,6 +229,7 @@ static int is_string_field(const char *type)
-> >  int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
-> >  {
-> >  	struct ftrace_event_field *field;
-> > +	unsigned long long val;
-> >  
-> >  	field = find_event_field(call, pred->field_name);
-> >  	if (!field)
-> > @@ -237,14 +238,14 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
-> >  	pred->offset = field->offset;
-> >  
-> >  	if (is_string_field(field->type)) {
-> > -		if (!pred->str_val)
-> > -			return -EINVAL;
-> >  		pred->fn = filter_pred_string;
-> >  		pred->str_len = field->size;
-> >  		return __filter_add_pred(call, pred);
-> >  	} else {
-> > -		if (pred->str_val)
-> > +		if (strict_strtoull(pred->str_val, 0, &val))
-> >  			return -EINVAL;
-> > +		pred->val = val;
-> > +		kfree(pred->str_val);
+> This is an alternative version of ip/ip6/arp tables locking using
+> per-cpu locks.  This avoids the overhead of synchronize_net() during
+> update but still removes the expensive rwlock in earlier versions.
 > 
+> The idea for this came from an earlier version done by Eric Duzamet.
+> Locking is done per-cpu, the fast path locks on the current cpu
+> and updates counters.  The slow case involves acquiring the locks on
+> all cpu's.
 > 
-> And you might also want to do
-> pred->str_val = NULL;
-> Otherwise filter_free_pred() may crash later:
+> The mutex that was added for 2.6.30 in xt_table is unnecessary since
+> there already is a mutex for xt[af].mutex that is held.
 > 
-> void filter_free_pred(struct filter_pred *pred)
-> {
-> 	if (!pred)
-> 		return;
+> Tested basic functionality (add/remove/list), but don't have test cases
+> for stress, ip6tables or arptables.
 > 
-> 	kfree(pred->field_name);
-> 	kfree(pred->str_val);
-> 	kfree(pred);
-> }
-> 
-> 
-> Other than that, it looks good.
+>  unsigned int
+>  ipt_do_table(struct sk_buff *skb,
+> @@ -339,9 +341,10 @@ ipt_do_table(struct sk_buff *skb,
+>  
+>  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
+>  
+> -	rcu_read_lock_bh();
+> -	private = rcu_dereference(table->private);
+> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
+> +	local_bh_disable();
+> +	spin_lock(&__get_cpu_var(ip_tables_lock));
 
-This also conflicts with Tom's rewrite of the filter engine to make 
-it on-the-fly modifiable.
+spin_lock_bh()?
 
-Li, mind reworking your series against latest -tip? (it has Tom's 
-patch included already)
+> +	private = table->private;
+> +	table_base = private->entries[smp_processor_id()];
+>  
+>  	e = get_entry(table_base, private->hook_entry[hook]);
+>  
+> @@ -436,8 +439,8 @@ ipt_do_table(struct sk_buff *skb,
+>  			e = (void *)e + e->next_offset;
+>  		}
+>  	} while (!hotdrop);
+> -
+> -	rcu_read_unlock_bh();
+> +	spin_unlock(&__get_cpu_var(ip_tables_lock));
+> +	local_bh_enable();
+>  
+>  #ifdef DEBUG_ALLOW_ALL
+>  	return NF_ACCEPT;
+> @@ -891,86 +894,34 @@ get_counters(const struct xt_table_info 
+>  	     struct xt_counters counters[])
+>  {
+>  	unsigned int cpu;
+> -	unsigned int i;
+> -	unsigned int curcpu;
+> +	unsigned int i = 0;
+> +	unsigned int curcpu = raw_smp_processor_id();
+>  
+>  	/* Instead of clearing (by a previous call to memset())
+>  	 * the counters and using adds, we set the counters
+>  	 * with data used by 'current' CPU
+>  	 * We dont care about preemption here.
+>  	 */
+> -	curcpu = raw_smp_processor_id();
+> -
+> -	i = 0;
+> +	spin_lock_bh(&per_cpu(ip_tables_lock, curcpu));
+>  	IPT_ENTRY_ITERATE(t->entries[curcpu],
+>  			  t->size,
+>  			  set_entry_to_counter,
+>  			  counters,
+>  			  &i);
+> +	spin_unlock_bh(&per_cpu(ip_tables_lock, curcpu));
+>  
+>  	for_each_possible_cpu(cpu) {
+>  		if (cpu == curcpu)
+>  			continue;
+> +
+>  		i = 0;
+> +		spin_lock_bh(&per_cpu(ip_tables_lock, cpu));
+>  		IPT_ENTRY_ITERATE(t->entries[cpu],
+>  				  t->size,
+>  				  add_entry_to_counter,
+>  				  counters,
+>  				  &i);
+> -	}
 
-Also, it would be nice to hear Tom's opinion about this series as 
-well. I know there's new parsing features planned - if it's better 
-that way then Tom you might want to pick up Li's patches and submit 
-them together with any pending or upcoming changes? We can apply 
-them directly too if that's easier to you.
+This would be racy against cpu hotplug if this code was hotplug-aware.
 
-Thanks,
+And it should be hotplug aware, really.  num_possible_cpus() can exceed
+num_online_cpus().  The extent by which possible>online is
+controversial, but one can conceive of situations where it is "lots".
 
-	Ingo
+Is lib/percpu_counter.c no good for this application?  Unfixably no
+good?  That code automagically handles cpu hotplug.
+
+
