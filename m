@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZDMI1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbZDMI3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZDMI1i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 04:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZDMI13
+	id S1755293AbZDMI3v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 04:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbZDMI3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 04:27:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51180 "EHLO mail.dvmed.net"
+	Mon, 13 Apr 2009 04:29:42 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46495 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751985AbZDMI12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 04:27:28 -0400
-Message-ID: <49E2F76B.9080706@garzik.org>
-Date: Mon, 13 Apr 2009 04:27:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jgarzik@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: fix obviously wrong comment
-References: <20090408162452.GA10440@damson.cased.tu-darmstadt.de>
-In-Reply-To: <20090408162452.GA10440@damson.cased.tu-darmstadt.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752352AbZDMI3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 04:29:41 -0400
+Date: Mon, 13 Apr 2009 17:29:31 +0900 (JST)
+Message-Id: <20090413.172931.45933263.ryusuke@osrg.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-kernel@vger.kernel.org, konishi.ryusuke@lab.ntt.co.jp
+Subject: Pull request for nilfs2 tree
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 13 Apr 2009 17:29:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
->>From 776d93d1e11ff79ed2693541b0663dbb2ffa3aee Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Wed, 8 Apr 2009 18:19:39 +0200
-> Subject: [PATCH] ata: fix obviously wrong comment
-> 
-> Also remove the now-useless debug printouts which are supposed to
-> tell us when the scan starts and ends.
-> 
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> ---
->  drivers/ata/libata-core.c |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
+Hi dear Stephen,
 
-applied
+Could you consider pulling the for-next branch of this tree:
 
+   git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git
+
+into linux-next, please?
+
+This branch now includes some bug-fixes of the nilfs2 file system
+Linus merged in kenrel 2.6.30-rc1.
+
+This series should be sent to Linus at an early stage, but I'd like to
+have it tested on the -next tree before that.
+
+Regards,
+Ryusuke Konishi
+---
+The following changes since commit b0cbc861a3c05e634520b049b5cc27ad6febb51f:
+ Linus Torvalds (1):
+     Revert "ACPI battery: fix async boot oops"
+
+are available in the git repository at:
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-next
+
+Ryusuke Konishi (8):
+      nilfs2: return f_fsid for statfs2
+      nilfs2: fix lockdep recursive locking warning on bmap
+      nilfs2: fix lockdep recursive locking warning on meta data files
+      nilfs2: remove module version
+      nilfs2: simplify handling of active state of segments fix
+      nilfs2: fix wrong accounting and duplicate brelse in nilfs_sufile_set_error
+      nilfs2: segment usage file cleanups
+      nilfs2: fix possible mismatch of sufile counters on recovery
+
+
+ fs/nilfs2/bmap.c      |    5 +
+ fs/nilfs2/nilfs.h     |    5 -
+ fs/nilfs2/recovery.c  |   20 +---
+ fs/nilfs2/sufile.c    |  290 ++++++++++++++++++-------------------------------
+ fs/nilfs2/sufile.h    |   79 +++++++++++++-
+ fs/nilfs2/super.c     |    7 +-
+ fs/nilfs2/the_nilfs.c |    4 +
+ 7 files changed, 197 insertions(+), 213 deletions(-)
