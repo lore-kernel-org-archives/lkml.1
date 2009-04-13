@@ -1,80 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZDMBgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZDMBnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZDMBgo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 21:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZDMBgf
+	id S1753518AbZDMBnf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 21:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZDMBnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 21:36:35 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52282 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbZDMBge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 21:36:34 -0400
-Message-ID: <49E2974D.6080105@cn.fujitsu.com>
-Date: Mon, 13 Apr 2009 09:37:17 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/7] tracing/filters: allow user to specify a filter	val
- to be string
-References: <49E04C22.4040608@cn.fujitsu.com> <49E04C61.10209@cn.fujitsu.com> <20090411143533.GA5977@nowhere>
-In-Reply-To: <20090411143533.GA5977@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Apr 2009 21:43:23 -0400
+Received: from mga01.intel.com ([192.55.52.88]:43749 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbZDMBnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 21:43:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,177,1239001200"; 
+   d="scan'208";a="447298802"
+Subject: Re: High latency on /sys/class/thermal
+From: Zhang Rui <rui.zhang@intel.com>
+To: Tiago =?ISO-8859-1?Q?Sim=F5es?= Batista <tiagosbatista@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <20090412170320.52e374df@gmail.com>
+References: <20090411155612.5808570c@ua.pt>
+	 <20090411121416.91fe3c88.akpm@linux-foundation.org>
+	 <20090411231611.7c5f9b69@ua.pt>  <20090412170320.52e374df@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 13 Apr 2009 09:43:42 +0800
+Message-Id: <1239587022.7661.202.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, IMHO, it would be rather better to just echo 'parent_comm == 123'
-> and let it answer depending of which filter_pred_*() callback we have
-> for the concerned field.
-> 
-> The culprit is this part in filter_parse():
-> 
-> pred->val = simple_strtoull(val_str, &tmp, 10);
-> if (tmp == val_str) {
-> 	pred->str_val = kstrdup(val_str, GFP_KERNEL);
-> 	if (!pred->str_val)
-> 		return -ENOMEM;
-> }
-> 
-> The idea would be to not anymore base the check on simple_strtoull to
-> guess whether this is a number or a string, making it act subsequently
-> to this assumption, which is not the good assumption we must base our
-> parsing yet.
-> 
-> Instead, we could let filter_parse only do the job of extracting the tokens
-> and then fill the whole pred struct without yet bothering about the type
-> of the value.
-> 
-> Thereafter we may defer the real value type checking on filter_add_pred()
-> depending on the type of the concerned field:
-> 
-> if (is_string_field()) {
-> 	add it as a string value;
-> } else {
-> 	do the check with simple_strtoull
-> 	looks good? Then go to the number size switch....
-> 	...
-> }
-> 
-> You see?
-> 
+this sounds like an EC problem to me. please attach the acpidump output.
+is there a long latency when you poke other ACPI devices, say battery?
 
-Right! Actually I thought about this, then I found one issue, suppose event
-foo and event bar both have a field named fb but one is string and one is
-integer. Now do this:
-  # echo 'fb == 123' > events/foo-bar/filter
+thanks,
+rui
 
-This will set both filters, but not only the integer one.
-
-But now I think this hardly happen in real-life, and it's not a big issue
-if it does happen. So I agree with you on this issue.
-
-Thanks.
-
-> I think it would be a saner basis of parsing.
+On Mon, 2009-04-13 at 00:03 +0800, Tiago Simões Batista wrote:
+> On Sat, 11 Apr 2009 23:16:11 +0100
+> Tiago Simões Batista <tiagosbatista@gmail.com> wrote:
 > 
+> > Sorry about the noise, by brain was stopped when I sent the last mail,
+> > please ignore the From address, it is wrong!
+> > 
+> > On Sat, 11 Apr 2009 12:14:16 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > (cc linux-acpi)
+> > > 
+> > > On Sat, 11 Apr 2009 15:56:12 +0100 "Tiago Sim__es Batista"
+> > > <tiagosbatista@gmail.com> wrote:
+> > > 
+> > > > Hi all
+> > > > 
+> > > > Yesterday, I recompiled my kernel (git + tuxonice)
+> > > > v2.6.30-rc1-1002-gac91f91, there were a couple of issues, the main
+> > > > one is ilustrated bellow.
+> > > > 
+> > > > I am not familiar with the kernel code, but if you give me some
+> > > > pointers, I will be glad to investigate this further
+> > > > 
+> > > > $time cat /sys/class/thermal/thermal_zone0/temp 
+> > > > 34000
+> > > > 
+> > > > real	0m6.613s
+> > > > user	0m0.000s
+> > > > sys	0m0.001s
+> > > > 
+> > > 
+> > > Is this a regression?  Was 2.6.29 OK?
+> > > 
+> > > Thanks.
+> > 
+> > My last kernel was fine:
+> > 
+> > $ time cat /sys/class/thermal/thermal_zone0/temp 
+> > 48000
+> > 
+> > real	0m0.007s
+> > user	0m0.001s
+> > sys	0m0.007s
+> > 
+> > 
+> > I also forgot to add some information about my kernels...
+> > 
+> > The good one is 2.6.29 + tuxonice as it was the day after the 2.6.29
+> > kernel was released.
+> > 
+> > The bad one is a pull from linus tree on april the 9th plus tuxonice
+> > on the same day
+> > 
+> > from git (hope this helps):
+> > $ git describe v2.6.29-tiago2-ice
+> > v2.6.29-836-g00492ed
+> > $ git describe v2.6.30-rc1-tiago1-ice
+> > v2.6.30-rc1-1002-gac91f91
+> > 
+> > 
+> > If tuxonice is a suspect, I will be glad to remove it and recompile.
+> > If I have the time later this weekend, and nothing was found, I will
+> > try to bisect this.
+> > 
+> 
+> Here are some results from the bisect:
+> The metric I used to mark a revision as good/bad was
+> $ time for ((i =0; i < 100; i++)); do
+>       cat /sys/class/thermal/thermal_zone0/temp > /dev/null; 
+>   done
+> 
+> The bad ones take forever, i never even finished one bad run. The good
+> ones take about half a second.
+> 
+> When I checked out revisions v2.6.29-148-g33526a5 and
+> v2.6.29-159-g8a3f257, it took almost 2 secons to run the command, so I
+> think some of the latency my have been introduced around these. Yet, I
+> still marked them as good.
+> 
+> The resut was:
+> 478c6a43fcbc6c11609f8cee7c7b57223907754f is first bad commit
+> witch is a merge. I am out of ideas...
+> 
+> I forgot to ask, am I the only one experiencing this? I am using a
+> TravelMate 4000 with the intel graphics chip, can anyone reproduce this?
+> If no one can reproduce this, I can still test a vanilla kernel to
+> remove TOI from the equation!
+> 
+> Tiago
+> 
+> 
+> Below is the bisect log:
+> $ git bisect log
+> git bisect start
+> # bad: [ac91f917d7ed7d1ebe14532ee137fcd759b4406d] Merge branch 'all' into all-tuxonice
+> git bisect bad ac91f917d7ed7d1ebe14532ee137fcd759b4406d
+> # good: [178a426510a901d9335f39d3391ae5e8628a36d1] Merge branch 'tuxonice' into all-tuxonice
+> git bisect good 178a426510a901d9335f39d3391ae5e8628a36d1
+> # good: [fdf9c9979a355916433262ea5e5e64bed5def86e] V4L/DVB (10465): dsbr100: Add few lost mutex locks.
+> git bisect good fdf9c9979a355916433262ea5e5e64bed5def86e
+> # good: [edbd606c4671fcd439164c8d63e896044d706156] Staging: wlan-ng: Replace WLAN_LOG_ERROR() with printk()
+> git bisect good edbd606c4671fcd439164c8d63e896044d706156
+> # good: [3516c6a8dc0b1153c611c4cf0dc4a51631f052bb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging-2.6
+> git bisect good 3516c6a8dc0b1153c611c4cf0dc4a51631f052bb
+> # bad: [3989203290fba6fdf6bc4825fbf6526e1bf17977] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+> git bisect bad 3989203290fba6fdf6bc4825fbf6526e1bf17977
+> # bad: [d7ca6f8cdffa5765e486edb3dada9121fba8e6aa] Merge branch 'for-linus' of git://git.o-hand.com/linux-rpurdie-backlight
+> git bisect bad d7ca6f8cdffa5765e486edb3dada9121fba8e6aa
+> # good: [3b4dadf05d177289c279c50030c7c75e004952bb] Merge branch 'acpi_enforce_resources' into release
+> git bisect good 3b4dadf05d177289c279c50030c7c75e004952bb
+> # bad: [32fb6c17566ec66de87324a834c7776f40e35e78] Merge branch 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
+> git bisect bad 32fb6c17566ec66de87324a834c7776f40e35e78
+> # good: [45e36c1666aa6c8b0c538abcf984b336184d8c3f] Merge git://git.kernel.org/pub/scm/linux/kernel/git/lethal/sh-2.6
+> git bisect good 45e36c1666aa6c8b0c538abcf984b336184d8c3f
+> # good: [33526a53600ac887d100e3c9b4be3637ac8ae3a5] Merge branch 'x2apic' into release
+> git bisect good 33526a53600ac887d100e3c9b4be3637ac8ae3a5
+> # good: [c542aadeb4700bc316834d862d52ba3d2664f13a] panasonic-laptop: Fix autoloading
+> git bisect good c542aadeb4700bc316834d862d52ba3d2664f13a
+> # bad: [478c6a43fcbc6c11609f8cee7c7b57223907754f] Merge branch 'linus' into release
+> git bisect bad 478c6a43fcbc6c11609f8cee7c7b57223907754f
+> # good: [15065531c1c5902775ae3ade24eb37d0e688353b] toshiba-acpi: remove MAINTAINERS entry
+> git bisect good 15065531c1c5902775ae3ade24eb37d0e688353b
+> # good: [8a3f257c704e02aee9869decd069a806b45be3f1] Merge branch 'misc' into release
+> git bisect good 8a3f257c704e02aee9869decd069a806b45be3f1
+
