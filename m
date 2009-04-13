@@ -1,144 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbZDMBUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZDMBUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419AbZDMBUa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 21:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZDMBUR
+	id S1753132AbZDMBUp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 21:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZDMBUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 21:20:17 -0400
-Received: from mango.safe-mail.net ([213.8.192.71]:50052 "EHLO
-	mango.safe-mail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbZDMBUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 21:20:15 -0400
-X-Greylist: delayed 8420 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Apr 2009 21:20:15 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-	s=N1-0105; d=Safe-mail.net;
-	b=tC/q9PpP5FliRUPe5SGMuANw8ElIdosGp69xOTlHGT92nCBPTYfC5Hk/4rGpzW+W
-	Jj21VFPAAjaedPponUtNR8oSbT9BeTJPe0kzK0qKWv5hLTbxHU3TjEu2KrXaR0ym
-	Dr41NQFslkRQxjchR3S+H/dbKqyYkJtwrj+QVEftCRI=;
-Subject: Unknown initrd commands
-Date: Sun, 12 Apr 2009 15:59:36 -0700
-From: stonee@Safe-mail.net
-To: linux-kernel@vger.kernel.org
-CC: stonee@Safe-mail.net
-X-SMType: Regular
-X-SMRef: N1N-uRW2YWBw5x
-Message-Id: <N1N-uRW2YWBw5x@Safe-mail.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 12 Apr 2009 21:20:21 -0400
+Received: from mga01.intel.com ([192.55.52.88]:4023 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753469AbZDMBUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 21:20:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,177,1239001200"; 
+   d="scan'208";a="447295378"
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
+	brightness with hotkeys
+From: yakui_zhao <yakui.zhao@intel.com>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       mjg59@srcf.ucam.org
+In-Reply-To: <49E234ED.5010105@gmail.com>
+References: <49E10684.5090101@gmail.com>
+	 <20090411150555.8b13ed18.akpm@linux-foundation.org>
+	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Mon, 13 Apr 2009 09:21:35 +0800
+Message-Id: <1239585695.5564.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-SMSignature: H+4oMZdWtGCDrS9RwEbNDD0YatwZtmXMFxoor//sFJx4dj248HMvTG8G96vgy5u6
-	RkFMRZoNGG9e7cE53Q20j1uZ9Rfcv4x55aRstK8J7BUF0zAKiziXsHeKcfnq3+KP
-	qQyjY70G3/f76ca5yLZySNsYtXX24vSsV9MWoVLIX/M=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been digging around a few times online, and have not been able to find where some commands invoked from the Fedora init script are located.
+On Mon, 2009-04-13 at 02:37 +0800, Niel Lambrechts wrote:
+> On 04/12/2009 06:14 PM, Henrique de Moraes Holschuh wrote:
+> > On Sat, 11 Apr 2009, Andrew Morton wrote:
+> >   
+> >>> With latest git kernel, I'm no longer able to control my Thinkpad (W500)
+> >>> brightness, although I can still control the backlight, bluetooth etc.
+> >>>       
+> >
+> > Niels, something just occourred to me.  Is your problem the hotkeys, or the
+> > brightness control itself?  Check /sys/class/backlight/*, please.  What do
+> > you have in there?  Does it work?
+> >   
+> Hi Henrique,
+Will you please check whether there exists the /sys/class/backlight/*/*?
+ 
+If not, will you please load the i915 driver and see whether the
+backlight can be controlled by hotkeys?(The CONFIG_DRM_I915_KMS should
+be enabled in kernel configuration).
 
-The contents of the script are as follows along with some notes that I've added:
+Thanks.
+> 
+> The directory is empty - this is when I used 2.6.30-rc1 (latest git)
+> from yesterday. I'll keep retrying with the latest git kernels though.
+> 
+> The only additional observations I can provide is:
+> 1) pulling/plugging the power cord does actually have an effect on the
+> brightness.
+> 2) resuming form hibernate - Xorg is blank, until I simultaneously press
+> a keyboard key and touch the synaptics pad. But I have this problem in
+> 2.6.28/2.6.29 as well, and I guess it could either be vesafb or ACPI
+> related, as it also happened when I used s2disk in a console session
+> outside of X.
+> 
+> In 2.6.29.1:
+> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
+> -> ../../devices/virtual/backlight/acpi_video0
+> 
+> which contains:
+> drwxr-xr-x 3 root root    0 Apr 12 20:01 ./
+> drwxr-xr-x 3 root root    0 Apr 12 20:01 ../
+> -r--r--r-- 1 root root 4096 Apr 12 20:02 actual_brightness
+> -rw-r--r-- 1 root root 4096 Apr 12 20:02 bl_power
+> -rw-r--r-- 1 root root 4096 Apr 12 20:02 brightness
+> -r--r--r-- 1 root root 4096 Apr 12 20:01 max_brightness
+> drwxr-xr-x 2 root root    0 Apr 12 20:02 power/
+> lrwxrwxrwx 1 root root    0 Apr 12 20:01 subsystem ->
+> ../../../../class/backlight/
+> -rw-r--r-- 1 root root 4096 Apr 12 20:01 uevent
+> 
+> max_brightness = 15 and echoing values [0-15] to brightness controls it
+> as expected, or just using the standard thinkpad keys (Fn-Home to increase).
+> > If it is the hotkeys, make sure you either have the legacy ACPI events
+> > enabled in kconfig, or that you have something tied to the thinkpad-acpi
+> > input device (no, HAL doesn't do it _yet_, it just forwards the events to
+> > X.org)...
+> >   
+> I'm not sure what provides the "glue", other than "it works" in 2.6.29.1
+> and 2.6.28.9 with OpenSUSE 11.1 with xorg-x11-server-7.4-41.8.
+> 
+> Would it help if I send the ACPI parts of my .config? These are based on
+> the default /proc/config.gz that comes with the distro.
+> 
+> # Power management and ACPI
+> options                                                               
+> CONFIG_ACPI=y                                                                                     
+> 
+> CONFIG_ACPI_SLEEP=y                                                                               
+> 
+> CONFIG_ACPI_PROCFS=y                                                                              
+> 
+> CONFIG_ACPI_PROCFS_POWER=y                                                                        
+> 
+> CONFIG_ACPI_SYSFS_POWER=y                                                                         
+> 
+> CONFIG_ACPI_PROC_EVENT=y                                                                          
+> 
+> CONFIG_ACPI_AC=m                                                                                  
+> 
+> CONFIG_ACPI_BATTERY=m                                                                             
+> 
+> CONFIG_ACPI_BUTTON=m                                                                              
+> 
+> CONFIG_ACPI_VIDEO=m                                                                               
+> 
+> CONFIG_ACPI_FAN=m                                                                                 
+> 
+> CONFIG_ACPI_DOCK=y
+> CONFIG_ACPI_PROCESSOR=m
+> CONFIG_ACPI_HOTPLUG_CPU=y
+> CONFIG_ACPI_THERMAL=m
+> CONFIG_ACPI_CUSTOM_DSDT_FILE=""
+> # CONFIG_ACPI_CUSTOM_DSDT is not set
+> CONFIG_ACPI_BLACKLIST_YEAR=2001
+> # CONFIG_ACPI_DEBUG is not set
+> # CONFIG_ACPI_PCI_SLOT is not set
+> CONFIG_ACPI_CONTAINER=m
+> CONFIG_ACPI_SBS=m
+> CONFIG_X86_ACPI_CPUFREQ=m
+> CONFIG_X86_POWERNOW_K7_ACPI=y
+> CONFIG_X86_POWERNOW_K8_ACPI=y
+> CONFIG_HOTPLUG_PCI_ACPI=m
+> CONFIG_HOTPLUG_PCI_ACPI_IBM=m
+> CONFIG_PNPACPI=y
+> CONFIG_BLK_DEV_IDEACPI=y
+> CONFIG_ATA_ACPI=y
+> CONFIG_PATA_ACPI=m
+> CONFIG_THINKPAD_ACPI=m
+> # CONFIG_THINKPAD_ACPI_DEBUGFACILITIES is not set
+> # CONFIG_THINKPAD_ACPI_DEBUG is not set
+> CONFIG_THINKPAD_ACPI_BAY=y
+> CONFIG_THINKPAD_ACPI_VIDEO=y
+> CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
+> CONFIG_ACPI_WMI=m
+> # CONFIG_ACPI_ASUS is not set
+> CONFIG_ACPI_TOSHIBA=m
+> 
+> Regards,
+> Niel
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
---------------------------------------------------------------------------------------------
-
-#!/bin/nash
-
-mount -t proc /proc /proc
-
-setquiet
-   # nash: cause any late echos in this start script not to be displayed
-
-echo Mounting proc filesystem
-echo Mounting sysfs filesystem
-mount -t sysfs /sys /sys
-echo Creating /dev
-mount -o mode=0755 -t tmpfs /dev /dev
-mkdir /dev/pts
-mount -t devpts -o gid=5,mode=620 /dev/pts /dev/pts
-mkdir /dev/shm
-mkdir /dev/mapper
-echo Creating initial device nodes
-mknod /dev/null c 1 3
-mknod /dev/zero c 1 5
-mknod /dev/systty c 4 0
-mknod /dev/tty c 5 0
-mknod /dev/console c 5 1
-mknod /dev/ptmx c 5 2
-mknod /dev/tty0 c 4 0
-mknod /dev/tty1 c 4 1
-mknod /dev/tty2 c 4 2
-mknod /dev/tty3 c 4 3
-mknod /dev/tty4 c 4 4
-mknod /dev/tty5 c 4 5
-mknod /dev/tty6 c 4 6
-mknod /dev/tty7 c 4 7
-mknod /dev/tty8 c 4 8
-mknod /dev/tty9 c 4 9
-mknod /dev/tty10 c 4 10
-mknod /dev/tty11 c 4 11
-mknod /dev/tty12 c 4 12
-mknod /dev/ttyS0 c 4 64
-mknod /dev/ttyS1 c 4 65
-mknod /dev/ttyS2 c 4 66
-mknod /dev/ttyS3 c 4 67
-echo Setting up hotplug.
-
-hotplug
-   # /etc/sysconfig/network-scripts/net.hotplug
-   # /lib/modules/2.6.25-14.fc9.i686/kernel/drivers/pci/hotplug/
-   # 
-
-echo Creating block device nodes.
-
-mkblkdevs
-   # ? 
-
-echo "Loading ehci-hcd module"
-modprobe -q ehci-hcd
-echo "Loading ohci-hcd module"
-modprobe -q ohci-hcd
-echo "Loading uhci-hcd module"
-modprobe -q uhci-hcd
-mount -t usbfs /proc/bus/usb /proc/bus/usb
-echo "Loading pata_via module"
-modprobe -q pata_via
-echo Waiting for driver initialization.
-
-stabilized --hash --interval 250 /proc/scsi/scsi
-   # ?
-
-mkblkdevs
-   # ?
-
-resume /dev/sda2
-   # ?
-
-echo Creating root device.
-mkrootdev -t ext3 -o defaults,ro /dev/sda1
-echo Mounting root filesystem.
-mount /sysroot
-echo Setting up other filesystems.
-
-setuproot
-   # ?
-
-loadpolicy
-   # ?
-
-echo Switching to new root and running init.
-
-switchroot
-   # nash command
-
-echo Booting has failed.
-sleep -1
-
---------------------------------------------------------------------------------------------
-
-Where are these commands documented? Also, do initrd/nash have a home page? 
-
-Thanks! 
-
-By the way, please include my safemail e-mail in responses as I am not subscribed to the list.
-
-
-stonee
