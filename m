@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZDMVEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZDMVEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752089AbZDMVEk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 17:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZDMVE3
+	id S1752087AbZDMVEy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 17:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZDMVEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 17:04:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50116 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbZDMVE2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 17:04:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=hZud/J7v75z4k2Fl1iv/7MfOXPlOKS5Z04Vz/bFNqbKePIInqaxFzRF0OrqPNRxcL
-	pMAwNnr5tz7irXT5WQPEg==
+	Mon, 13 Apr 2009 17:04:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41529 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752463AbZDMVEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 17:04:33 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] add self-tests for rfc4309(ccm(aes))
+Date: Mon, 13 Apr 2009 17:03:48 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-54.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert.xu@redhat.com>
+References: <200904091434.59639.jarod@redhat.com> <200904091516.57048.jarod@redhat.com> <20090410023108.GA7933@localhost.localdomain>
+In-Reply-To: <20090410023108.GA7933@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0904131254480.26713@localhost.localdomain>
-References: <604427e00904131244y68fa7e62x85d599f588776eee@mail.gmail.com>
-	 <alpine.LFD.2.00.0904131254480.26713@localhost.localdomain>
-Date: Mon, 13 Apr 2009 14:04:23 -0700
-Message-ID: <604427e00904131404g5284478cw126e21b368b35dfc@mail.gmail.com>
-Subject: Re: [V4][PATCH 0/4]page fault retry with NOPAGE_RETRY
-From: Ying Han <yinghan@google.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Waychison <mikew@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Disposition: inline
+Message-Id: <200904131703.50196.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 12:57 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Mon, 13 Apr 2009, Ying Han wrote:
->>
->> Benchmarks:
->> case 1. one application has a high count of threads each faulting in
->> different pages of a hugefile. Benchmark indicate that this double data
->> structure walking in case of major fault results in << 1% performance hit.
->>
->> case 2. add another thread in the above application which in a tight loop
->> of mmap()/munmap(). Here we measure loop count in the new thread while other
->> threads doing the same amount of work as case one. we got << 3% performance
->> hit on the Complete Time(benchmark value for case one) and 10% performance
->> improvement on the mmap()/munmap() counter.
->>
->> This patch helps a lot in cases we have writer which is waitting behind all
->> readers, so it could execute much faster.
->
-> Hmm. I normally think of "<<" as "much smaller than", but the way you use
-> it makes me wonder. In particular, "<< 3%" sounds very odd. If it's much
-> smaller than 3%, I'd have expected "<< 1%" again. So it probably isn't.
+On Thursday 09 April 2009 22:31:08 Neil Horman wrote:
+> On Thu, Apr 09, 2009 at 03:16:53PM -0400, Jarod Wilson wrote:
+> > On Thursday 09 April 2009 14:52:04 Neil Horman wrote:
+> > > On Thu, Apr 09, 2009 at 02:34:59PM -0400, Jarod Wilson wrote:
+> > > > Patch is against current cryptodev-2.6 tree, successfully tested via
+> > > > 'modprobe tcrypt type=45'. The number of test vectors might be a bit
+> > > > excessive, but I tried to hit a wide range of combinations of varying
+> > > > key sizes, associate data lengths, input lengths and pass/fail.
+> > > > 
+> > > > Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-Yes, it should be "< 3%", i will make the change.
+Ugh. I clearly missed *something* when testing, there's no way the patch
+I sent actually fully passed. I have things working for real now though
+locally, including a back-port to a certain 2.6.18-based kernel. :)
 
->> benchmarks from Wufengguang:
->> Just tested the sparse-random-read-on-sparse-file case, and found the
->> performance impact to be 0.4% (8.706s vs 8.744s) in the worst case.
->> Kind of acceptable.
->
-> Well, have you tried the obvious optimization of _not_ doing the RETRY
-> path when atomic_read(&mm->counter) == 1?
->
-> After all, if it's not a threaded app, and it doesn't have a possibility
-> of concurrent mmap/fault, then why release the lock?
->
->                Linus
->
+Updated patch or patches forthcoming... (probably tomorrow)
+
+-- 
+Jarod Wilson
+jarod@redhat.com
