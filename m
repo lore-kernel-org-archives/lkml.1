@@ -1,42 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZDMWy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbZDMW4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbZDMWy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZDMWyq
+	id S1754299AbZDMW4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZDMWz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:54:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43351
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752922AbZDMWyp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:54:45 -0400
-Date: Mon, 13 Apr 2009 15:54:36 -0700 (PDT)
-Message-Id: <20090413.155436.230187370.davem@davemloft.net>
-To: shemminger@linux-foundation.org
-Cc: jpirko@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jgarzik@pobox.com, bridge@lists.linux-foundation.org, fubar@us.ibm.com,
-       bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
-Subject: Re: [PATCH 2/4] net: introduce a list of device addresses
- dev_addr_list
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090413074917.4e317115@nehalam>
-References: <20090413083729.GA23734@psychotron.englab.brq.redhat.com>
-	<20090413084201.GC23734@psychotron.englab.brq.redhat.com>
-	<20090413074917.4e317115@nehalam>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Apr 2009 18:55:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51122 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbZDMWz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 18:55:58 -0400
+Date: Tue, 14 Apr 2009 00:55:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Theodore Tso <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH, RFC 0/3] Improvements to the tracing documentation
+Message-ID: <20090413225542.GJ8514@elte.hu>
+References: <1239479479-2603-1-git-send-email-tytso@mit.edu> <20090412092524.GA30349@elte.hu> <20090412121533.GB10547@mit.edu> <20090412130105.GB20281@elte.hu> <20090412172344.GC10547@mit.edu> <20090413213124.GB8514@elte.hu> <20090413223526.GB32182@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413223526.GB32182@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Date: Mon, 13 Apr 2009 07:49:17 -0700
 
-> This lock is unnecessary, use RCU list for read.
-> Since all changes are under RTNL mutex, there is no chance
-> for conflict on update.
+* Theodore Tso <tytso@mit.edu> wrote:
 
-Agreed.
+> On Mon, Apr 13, 2009 at 11:31:24PM +0200, Ingo Molnar wrote:
+> > Cool. [ And i guess you'll like the per tracepoint filter 
+> > expressions too :-) ]
+> 
+> I haven't played with them yet, but I was looking over the source 
+> code at them (since they aren't documented yet :-).  It looks like 
+> at the moment only integer matches are allowed, right?  That's a 
+> bit of an issue for me, since one of the things I'd really like to 
+> be able to do is filter based on devname (i.e., sda2).  (Most of 
+> the time we only want to collect information for a particular 
+> block device or filesystem.)
+
+You can already do:
+
+ aldebaran:/debug/tracing/events/sched/sched_process_wait> echo "comm == Xorg" > filter 
+ aldebaran:/debug/tracing/events/sched/sched_process_wait> cat filter 
+ comm == Xorg
+
+But string values depends on the type of the format field - so you 
+cannot do string matches on integer fields.
+
+For kdev_t matches i think we'll need native support for that type - 
+in addition to the integer/string types. It will come up in other 
+places as well and user-space knows about devices as well.
+
+> Actually, the fact that I'm having to drop some 32 bytes for each 
+> jbd2 and ext4 trace log for the bdevname in the ring buffer is 
+> really for the birds.  What I really want to do is just to drop in 
+> the dev_t, and then for the tracing infrastructure to have an 
+> efficient (cached) way of taking the dev_t and turning that back 
+> into struct block_device at TP_printk time so we can print the 
+> bdevname when it's needed.  We deifnitely don't want to be calling 
+> bdget() in fs/block_dev.c each time we print a line in the tracing 
+> buffer!  I'm guessing that's something the blktrace tracer would 
+> find handy as well.
+
+Yeah.
+
+It could be worked around right now by converting it to an integer 
+but i think what we want is native support for kdev_t, together with 
+all the usual convenience forms of specifying it: sda1 should work 
+the same way as 8:1 or 0801. Even /dev/sda1 should be recognized in 
+a filter expression.
+
+> Of course having more kernel code play with dev_t's directly isn't 
+> considered politically correct in some circles, but tough.  :-) We 
+> can't exactly drop a pointer to a struct block_device in the trace 
+> buffer, since there's no guarantee it will still be valid when we 
+> read it out.  Dropping in a dev_t is exactly what we want.  It 
+> would be nice though if there was a way to specify a major/minor 
+> number as the filter predicate for the dev_t, and not to have the 
+> user generate the MAJOR/MINOR encoding.  So some way of parsing 
+> "MKDEV(8, 4)" as the input to the filter predicate would probably 
+> be a really good thing to do.
+
+Yeah, exactly. We already have smarts in init/* to recognize certain 
+device string patterns (for rootdev specification) - that could be 
+factored out (it already is to a large degree) and reused. We dont 
+need full udev enumeration really - we just need the most common 
+variants.
+
+Regardless of whether it's considered politically correct or not ;-) 
+It's clearly useful.
+
+	Ingo
