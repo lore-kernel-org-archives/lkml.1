@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753053AbZDMSxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbZDMSzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753053AbZDMSxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 14:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZDMSxQ
+	id S1753064AbZDMSzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 14:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZDMSzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 14:53:16 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:7803 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbZDMSxP convert rfc822-to-8bit (ORCPT
+	Mon, 13 Apr 2009 14:55:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44715 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751122AbZDMSzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 14:53:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=AqhVTwmPL1TGH6Wn7K4Lx2FUUW/8BPE08/CY3qdKY4/qjmCKsxURYJAROeZkFPgwCv
-         /vctUD5DWpLlAJVedS+J3aUhS3sI6wy+zyc1944ztNcudofn6U+J/44+otdWZU/wOj2l
-         Ca/uvGTZgT5eRrvnqV0gsLGx/5lIz32lMU6kM=
-MIME-Version: 1.0
-In-Reply-To: <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org>
-References: <20090330045520.2869.24777.stgit@sofia.in.ibm.com>
-	 <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org>
-Date: Mon, 13 Apr 2009 11:53:13 -0700
-X-Google-Sender-Auth: 824913e8327064f1
-Message-ID: <12c511ca0904131153g39b99ec6n6c6ec2e7de3f7ea6@mail.gmail.com>
-Subject: Re: [tip:sched/urgent] sched: Print sched_group::__cpu_power in 
-	sched_domain_debug
-From: Tony Luck <tony.luck@intel.com>
-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 13 Apr 2009 14:55:31 -0400
+Date: Mon, 13 Apr 2009 11:49:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: mingo@elte.hu, Valdis.Kletnieks@vt.edu, travis@sgi.com,
+       linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       rusty@rustcorp.com.au, davej@redhat.com, lenb@kernel.org
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+Message-Id: <20090413114932.44b47910.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0904131040350.4583@localhost.localdomain>
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>
+	<4609.1239456126@turing-police.cc.vt.edu>
+	<alpine.LFD.2.00.0904130847500.4583@localhost.localdomain>
+	<20090413171853.GA4601@elte.hu>
+	<20090413102749.4ca3a217.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0904131040350.4583@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6963,7 +6963,8 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
->                cpumask_or(groupmask, groupmask, sched_group_cpus(group));
->
->                cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
-> -               printk(KERN_CONT " %s", str);
-> +               printk(KERN_CONT " %s (__cpu_power = %d)", str,
-> +                                               group->__cpu_power);
+On Mon, 13 Apr 2009 10:45:45 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-This has added a lot of clutter to the console log during boot
-(especially on large systems).
+> 
+> 
+> On Mon, 13 Apr 2009, Andrew Morton wrote:
+> >
+> >  static void drv_write(struct drv_cmd *cmd)
+> >  {
+> > -	unsigned int i;
+> > +	unsigned int cpu;
+> >  
+> > -	for_each_cpu(i, cmd->mask) {
+> > -		work_on_cpu(i, do_drv_write, cmd);
+> > -	}
+> > +	for_each_cpu(cpu, cmd->mask)
+> > +		smp_call_function_single(cpu, do_drv_write, cmd, 1);
+> 
+> Ok, that's just -wrong-.
+> 
+> Doesn't anybody else see anything odd in doing
+> 
+> 	for_each_cpu(cpu, cmd->mask)
+> 		smp_call_function_single(cpu, ..);
+> 
+> and react to it?
+> 
+> IOW, why not just do
+> 
+> 	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
+> 
+> here?
+> 
 
-Here is the start of the diff output comparing old and new console
-messages on a 16 cpu machine:
-
-77c77
-<   groups: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
----
->   groups: 0 (__cpu_power = 1024) 1 (__cpu_power = 1024) 2 (__cpu_power = 1024) 3 (__cpu_power = 1024) 4 (__cpu_power = 1024) 5 (__cpu_power = 1024) 6 (__cpu_power = 1024) 7 (__cpu_power = 1024) 8 (
-__cpu_power = 1024) 9 (__cpu_power = 1024) 10 (__cpu_power = 1024) 11
-(__cpu_power = 1024) 12 (__cpu_power = 1024) 13 (__cpu_power = 1024)
-14 (__cpu_power = 1024) 15 (__cpu_power = 1024)
-80c80
-<   groups: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 0
----
->   groups: 1 (__cpu_power = 1024) 2 (__cpu_power = 1024) 3 (__cpu_power = 1024) 4 (__cpu_power = 1024) 5 (__cpu_power = 1024) 6 (__cpu_power = 1024) 7 (__cpu_power = 1024) 8 (__cpu_power = 1024) 9 (
-__cpu_power = 1024) 10 (__cpu_power = 1024) 11 (__cpu_power = 1024) 12
-(__cpu_power = 1024) 13 (__cpu_power = 1024) 14 (__cpu_power = 1024)
-15 (__cpu_power = 1024) 0 (__cpu_power = 1024)
-
-continues as each group is reported.
-
--Tony
+Didn't know it existed :(
