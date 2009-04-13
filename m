@@ -1,216 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZDMDBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZDMDCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZDMDBv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 23:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZDMDBm
+	id S1754631AbZDMDCo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 23:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZDMDCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 23:01:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61105 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753434AbZDMDBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 23:01:41 -0400
-Message-ID: <49E2AAB3.9010801@cn.fujitsu.com>
-Date: Mon, 13 Apr 2009 11:00:03 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ring_buffer: enlarge RB_MAX_SMALL_DATA
+	Sun, 12 Apr 2009 23:02:34 -0400
+Received: from mga09.intel.com ([134.134.136.24]:48594 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbZDMDCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 23:02:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,178,1239001200"; 
+   d="scan'208";a="505884950"
+Subject: Re: High latency on /sys/class/thermal
+From: Zhang Rui <rui.zhang@intel.com>
+To: Tiago =?ISO-8859-1?Q?Sim=F5es?= Batista <tiagosbatista@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+In-Reply-To: <20090413032817.32df07a0@gmail.com>
+References: <20090411155612.5808570c@ua.pt>
+	 <20090411121416.91fe3c88.akpm@linux-foundation.org>
+	 <20090411231611.7c5f9b69@ua.pt>	<20090412170320.52e374df@gmail.com>
+	 <1239587022.7661.202.camel@rzhang-dt>  <20090413032817.32df07a0@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Mon, 13 Apr 2009 11:02:51 +0800
+Message-Id: <1239591771.7661.222.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CC Alexey because this is EC related.
+The high letancy is probably spent on accessing the EC address space in
+_TMP method.
 
-When I am writing userspace tools for ftrace, I found
-RB_MAX_SMALL_DATA is too small, some events waste an 'u32'
-to save the actually length.
+Tiago,
+please make sure your kernel is built with CONFIG_ACPI_DEBUG set
+and then
+1. boot with printk.time=1 acpi.debug_level=0x07
+acpi.debug_layer=0x04000018
+2. run ﻿cat /sys/class/thermal/thermal_zone0/temp
+3. attach the full dmesg output.
 
-This fix will break previous userspace tools,
-so complaints are also welcome.
---------------
+thanks,
+rui
 
-Subject: [PATCH] ring_buffer: enlarge RB_MAX_SMALL_DATA
-
-Impact: save memory in ring_buffer
-
-I found 28bytes for an event data is sometimes too small,
-it will waste an 'u32' to save the actually length for
-events which data size > 28.
-
-'len=5' in the next logs means the event size is sizeof(u32)*5=20 bytes,
-it includes event head and event data. This logs are collected
-in 32bits system.
-
-syscall tracer:
-time_stamp=391042354662405, len=10
-time_stamp=391042354679741, len=5
-time_stamp=391042354686278, len=9
-time_stamp=391042354691465, len=5
-time_stamp=391042354695348, len=9
-time_stamp=391042354698631, len=5
-time_stamp=391042354703472, len=7
-time_stamp=391042354756153, len=5
-time_stamp=391042354766952, len=7
-time_stamp=391042354790733, len=5
-time_stamp=391042355124535, len=10
-time_stamp=391042355136474, len=5
-time_stamp=391042355141883, len=9
-time_stamp=391042355146048, len=5
-time_stamp=391042355149837, len=9
-time_stamp=391042355152939, len=5
-time_stamp=391042355157944, len=7
-time_stamp=391042355194303, len=5
-time_stamp=391042355200947, len=10
-time_stamp=391042355690428, len=5
-time_stamp=391042355700443, len=9
-
-kmemtrace tracer:
-time_stamp=391116237929771, len=6
-time_stamp=391116237935560, len=6
-time_stamp=391116237937269, len=6
-time_stamp=391116649408762, len=11
-time_stamp=391116649415541, len=11
-time_stamp=391116649421702, len=11
-time_stamp=391116649428121, len=6
-time_stamp=391116649612696, len=6
-time_stamp=391116649616327, len=6
-time_stamp=391116649948694, len=11
-time_stamp=391116650097324, len=11
-time_stamp=391116650111344, len=11
-time_stamp=391116650116344, len=6
-time_stamp=391116656377385, len=11
-time_stamp=391116656383258, len=11
-time_stamp=391116656399858, len=11
-time_stamp=391116656406757, len=6
-time_stamp=391116657165045, len=11
-time_stamp=391116657172126, len=11
-time_stamp=391116657178716, len=11
-time_stamp=391116657185031, len=6
-time_stamp=391116657268110, len=6
-time_stamp=391116657273307, len=6
-time_stamp=391116657275341, len=6
-time_stamp=391116657276638, len=6
-time_stamp=391116657283869, len=6
-
-sched_switch tracer:
-time_stamp=391250280621660, len=9
-time_stamp=391250281277013, len=9
-time_stamp=391250281328332, len=9
-time_stamp=391250600954274, len=9
-time_stamp=391250601092171, len=9
-time_stamp=391250601276548, len=9
-time_stamp=391250601342968, len=9
-time_stamp=391250601616099, len=9
-time_stamp=391250602099709, len=9
-time_stamp=391250603414452, len=9
-time_stamp=391250605580652, len=9
-time_stamp=391250605598567, len=9
-
-function_graph tracer:
-time_stamp=391216875265827, len=11
-time_stamp=391216875270031, len=5
-time_stamp=391216875272943, len=5
-time_stamp=391216875275169, len=5
-time_stamp=391216875279253, len=11
-time_stamp=391216875282684, len=5
-time_stamp=391216875291602, len=11
-time_stamp=391216875294898, len=5
-
-After this fix applied, function_graph tracer:
-
-time_stamp=395685660789931, len=5
-time_stamp=395685660792751, len=10
-time_stamp=395685660795807, len=5
-time_stamp=395685660798260, len=10
-time_stamp=395685660801224, len=10
-time_stamp=395685660804164, len=10
-time_stamp=395685660807068, len=5
-time_stamp=395685660809314, len=5
-time_stamp=395685660812001, len=10
-time_stamp=395685660815589, len=10
-time_stamp=395685660823151, len=5
-time_stamp=395685660825215, len=5
-time_stamp=395685660827697, len=5
-time_stamp=395685660829589, len=10
-time_stamp=395685660833558, len=10
-time_stamp=395685660836630, len=10
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 3d3ab00..5298ee1 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -13,7 +13,7 @@ struct ring_buffer_iter;
-  */
- struct ring_buffer_event {
- 	kmemcheck_define_bitfield(bitfield, {
--		u32		type:2, len:3, time_delta:27;
-+		u32		type:2, len:4, time_delta:26;
- 	});
- 
- 	u32		array[];
-@@ -31,7 +31,7 @@ struct ring_buffer_event {
-  *				  everything else same as RINGBUF_TYPE_DATA
-  *
-  * @RINGBUF_TYPE_TIME_EXTEND:	Extend the time delta
-- *				 array[0] = time delta (28 .. 59)
-+ *				 array[0] = time delta (27 .. 58)
-  *				 size = 8 bytes
-  *
-  * @RINGBUF_TYPE_TIME_STAMP:	Sync time stamp with external clock
-@@ -64,7 +64,7 @@ void *ring_buffer_event_data(struct ring_buffer_event *event);
-  * ring_buffer_event_time_delta - return the delta timestamp of the event
-  * @event: the event to get the delta timestamp of
-  *
-- * The delta timestamp is the 27 bit timestamp since the last event.
-+ * The delta timestamp is the 26 bit timestamp since the last event.
-  */
- static inline unsigned
- ring_buffer_event_time_delta(struct ring_buffer_event *event)
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index e773c57..33bdde2 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -183,7 +183,7 @@ EXPORT_SYMBOL_GPL(tracing_is_on);
- 
- #define RB_EVNT_HDR_SIZE (offsetof(struct ring_buffer_event, array))
- #define RB_ALIGNMENT		4U
--#define RB_MAX_SMALL_DATA	28
-+#define RB_MAX_SMALL_DATA	60
- 
- enum {
- 	RB_LEN_TIME_EXTEND = 8,
-@@ -285,7 +285,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_event_data);
- #define for_each_buffer_cpu(buffer, cpu)		\
- 	for_each_cpu(cpu, buffer->cpumask)
- 
--#define TS_SHIFT	27
-+#define TS_SHIFT	26
- #define TS_MASK		((1ULL << TS_SHIFT) - 1)
- #define TS_DELTA_TEST	(~TS_MASK)
- 
-@@ -330,7 +330,7 @@ static void free_buffer_page(struct buffer_page *bpage)
- }
- 
- /*
-- * We need to fit the time_stamp delta into 27 bits.
-+ * We need to fit the time_stamp delta into 26 bits.
-  */
- static inline int test_time_stamp(u64 delta)
- {
-@@ -1299,7 +1299,7 @@ rb_add_time_stamp(struct ring_buffer_per_cpu *cpu_buffer,
- 	static int once;
- 	int ret;
- 
--	if (unlikely(*delta > (1ULL << 59) && !once++)) {
-+	if (unlikely(*delta > (1ULL << 58) && !once++)) {
- 		printk(KERN_WARNING "Delta way too big! %llu"
- 		       " ts=%llu write stamp = %llu\n",
- 		       (unsigned long long)*delta,
-
+On Mon, 2009-04-13 at 10:28 +0800, Tiago Simões Batista wrote:
+> acpidump output attached.
+> 
+> I found no latency on battery iterface, included is another poke at the
+> thermal zone for comparison.
+> 
+> This problem is still present, but at the moment, I shut down the
+> sensors-applet on the gnome panel, so that it no longer makes
+> gnome-panel stall.
+> 
+> $ time cat /sys/class/thermal/thermal_zone0/temp 
+> 49000
+> 
+> real	0m13.476s
+> user	0m0.001s
+> sys	0m0.001s
+> $ time cat /sys/class/power_supply/BAT0/*
+> 0
+> 29
+> 0
+> 0
+> cat: /sys/class/power_supply/BAT0/device: Is a directory
+> 582640000
+> 65120000
+> 18710000
+> SMP-SONY
+> 04ZL
+> cat: /sys/class/power_supply/BAT0/power: Is a directory
+> 0
+> 0
+> 1
+> Full
+> cat: /sys/class/power_supply/BAT0/subsystem: Is a directory
+> Li-ion
+> 270
+> Battery
+> PHYSDEVPATH=/devices/LNXSYSTM:00/device:00/PNP0A03:00/device:0b/PNP0C09:00/ACPI0001:00/ACPI0002:00
+> PHYSDEVBUS=acpi
+> PHYSDEVDRIVER=sbs
+> POWER_SUPPLY_NAME=BAT0
+> POWER_SUPPLY_TYPE=Battery
+> POWER_SUPPLY_STATUS=Full
+> POWER_SUPPLY_PRESENT=1
+> POWER_SUPPLY_TECHNOLOGY=Li-ion
+> POWER_SUPPLY_VOLTAGE_MIN_DESIGN=14800000
+> POWER_SUPPLY_VOLTAGE_NOW=15611000
+> POWER_SUPPLY_CURRENT_NOW=0
+> POWER_SUPPLY_CURRENT_AVG=0
+> POWER_SUPPLY_POWER_NOW=0
+> POWER_SUPPLY_POWER_AVG=0
+> POWER_SUPPLY_CAPACITY=29
+> POWER_SUPPLY_ENERGY_FULL_DESIGN=65120000
+> POWER_SUPPLY_ENERGY_FULL=582640000
+> POWER_SUPPLY_ENERGY_NOW=18710000
+> POWER_SUPPLY_TEMP=270
+> POWER_SUPPLY_MODEL_NAME=04ZL
+> POWER_SUPPLY_MANUFACTURER=SMP-SONY
+> 14800000
+> 15611000
+> 
+> real	0m0.110s
+> user	0m0.001s
+> sys	0m0.004s
+> 
+> 
+> On Mon, 13 Apr 2009 09:43:42 +0800
+> Zhang Rui <rui.zhang@intel.com> wrote:
+> 
+> > this sounds like an EC problem to me. please attach the acpidump
+> > output. is there a long latency when you poke other ACPI devices, say
+> > battery?
+> > 
+> > thanks,
+> > rui
+> > 
+> > On Mon, 2009-04-13 at 00:03 +0800, Tiago Simões Batista wrote:
+> > > On Sat, 11 Apr 2009 23:16:11 +0100
+> > > Tiago Simões Batista <tiagosbatista@gmail.com> wrote:
+> > > 
+> > > > Sorry about the noise, by brain was stopped when I sent the last
+> > > > mail, please ignore the From address, it is wrong!
+> > > > 
+> > > > On Sat, 11 Apr 2009 12:14:16 -0700
+> > > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > 
+> > > > > (cc linux-acpi)
+> > > > > 
+> > > > > On Sat, 11 Apr 2009 15:56:12 +0100 "Tiago Sim__es Batista"
+> > > > > <tiagosbatista@gmail.com> wrote:
+> > > > > 
+> > > > > > Hi all
+> > > > > > 
+> > > > > > Yesterday, I recompiled my kernel (git + tuxonice)
+> > > > > > v2.6.30-rc1-1002-gac91f91, there were a couple of issues, the
+> > > > > > main one is ilustrated bellow.
+> > > > > > 
+> > > > > > I am not familiar with the kernel code, but if you give me
+> > > > > > some pointers, I will be glad to investigate this further
+> > > > > > 
+> > > > > > $time cat /sys/class/thermal/thermal_zone0/temp 
+> > > > > > 34000
+> > > > > > 
+> > > > > > real	0m6.613s
+> > > > > > user	0m0.000s
+> > > > > > sys	0m0.001s
+> > > > > > 
+> > > > > 
+> > > > > Is this a regression?  Was 2.6.29 OK?
+> > > > > 
+> > > > > Thanks.
+> > > > 
+> > > > My last kernel was fine:
+> > > > 
+> > > > $ time cat /sys/class/thermal/thermal_zone0/temp 
+> > > > 48000
+> > > > 
+> > > > real	0m0.007s
+> > > > user	0m0.001s
+> > > > sys	0m0.007s
+> > > > 
+> > > > 
+> > > > I also forgot to add some information about my kernels...
+> > > > 
+> > > > The good one is 2.6.29 + tuxonice as it was the day after the
+> > > > 2.6.29 kernel was released.
+> > > > 
+> > > > The bad one is a pull from linus tree on april the 9th plus
+> > > > tuxonice on the same day
+> > > > 
+> > > > from git (hope this helps):
+> > > > $ git describe v2.6.29-tiago2-ice
+> > > > v2.6.29-836-g00492ed
+> > > > $ git describe v2.6.30-rc1-tiago1-ice
+> > > > v2.6.30-rc1-1002-gac91f91
+> > > > 
+> > > > 
+> > > > If tuxonice is a suspect, I will be glad to remove it and
+> > > > recompile. If I have the time later this weekend, and nothing was
+> > > > found, I will try to bisect this.
+> > > > 
+> > > 
+> > > Here are some results from the bisect:
+> > > The metric I used to mark a revision as good/bad was
+> > > $ time for ((i =0; i < 100; i++)); do
+> > >       cat /sys/class/thermal/thermal_zone0/temp > /dev/null; 
+> > >   done
+> > > 
+> > > The bad ones take forever, i never even finished one bad run. The
+> > > good ones take about half a second.
+> > > 
+> > > When I checked out revisions v2.6.29-148-g33526a5 and
+> > > v2.6.29-159-g8a3f257, it took almost 2 secons to run the command,
+> > > so I think some of the latency my have been introduced around
+> > > these. Yet, I still marked them as good.
+> > > 
+> > > The resut was:
+> > > 478c6a43fcbc6c11609f8cee7c7b57223907754f is first bad commit
+> > > witch is a merge. I am out of ideas...
+> > > 
+> > > I forgot to ask, am I the only one experiencing this? I am using a
+> > > TravelMate 4000 with the intel graphics chip, can anyone reproduce
+> > > this? If no one can reproduce this, I can still test a vanilla
+> > > kernel to remove TOI from the equation!
+> > > 
+> > > Tiago
+> > > 
+> > > 
+> > > Below is the bisect log:
+> > > $ git bisect log
+> > > git bisect start
+> > > # bad: [ac91f917d7ed7d1ebe14532ee137fcd759b4406d] Merge branch
+> > > 'all' into all-tuxonice git bisect bad
+> > > ac91f917d7ed7d1ebe14532ee137fcd759b4406d # good:
+> > > [178a426510a901d9335f39d3391ae5e8628a36d1] Merge branch 'tuxonice'
+> > > into all-tuxonice git bisect good
+> > > 178a426510a901d9335f39d3391ae5e8628a36d1 # good:
+> > > [fdf9c9979a355916433262ea5e5e64bed5def86e] V4L/DVB (10465):
+> > > dsbr100: Add few lost mutex locks. git bisect good
+> > > fdf9c9979a355916433262ea5e5e64bed5def86e # good:
+> > > [edbd606c4671fcd439164c8d63e896044d706156] Staging: wlan-ng:
+> > > Replace WLAN_LOG_ERROR() with printk() git bisect good
+> > > edbd606c4671fcd439164c8d63e896044d706156 # good:
+> > > [3516c6a8dc0b1153c611c4cf0dc4a51631f052bb] Merge
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging-2.6
+> > > git bisect good 3516c6a8dc0b1153c611c4cf0dc4a51631f052bb # bad:
+> > > [3989203290fba6fdf6bc4825fbf6526e1bf17977] Merge
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6 git
+> > > bisect bad 3989203290fba6fdf6bc4825fbf6526e1bf17977 # bad:
+> > > [d7ca6f8cdffa5765e486edb3dada9121fba8e6aa] Merge branch 'for-linus'
+> > > of git://git.o-hand.com/linux-rpurdie-backlight git bisect bad
+> > > d7ca6f8cdffa5765e486edb3dada9121fba8e6aa # good:
+> > > [3b4dadf05d177289c279c50030c7c75e004952bb] Merge branch
+> > > 'acpi_enforce_resources' into release git bisect good
+> > > 3b4dadf05d177289c279c50030c7c75e004952bb # bad:
+> > > [32fb6c17566ec66de87324a834c7776f40e35e78] Merge branch 'release'
+> > > of
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
+> > > git bisect bad 32fb6c17566ec66de87324a834c7776f40e35e78 # good:
+> > > [45e36c1666aa6c8b0c538abcf984b336184d8c3f] Merge
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/lethal/sh-2.6 git
+> > > bisect good 45e36c1666aa6c8b0c538abcf984b336184d8c3f # good:
+> > > [33526a53600ac887d100e3c9b4be3637ac8ae3a5] Merge branch 'x2apic'
+> > > into release git bisect good
+> > > 33526a53600ac887d100e3c9b4be3637ac8ae3a5 # good:
+> > > [c542aadeb4700bc316834d862d52ba3d2664f13a] panasonic-laptop: Fix
+> > > autoloading git bisect good
+> > > c542aadeb4700bc316834d862d52ba3d2664f13a # bad:
+> > > [478c6a43fcbc6c11609f8cee7c7b57223907754f] Merge branch 'linus'
+> > > into release git bisect bad
+> > > 478c6a43fcbc6c11609f8cee7c7b57223907754f # good:
+> > > [15065531c1c5902775ae3ade24eb37d0e688353b] toshiba-acpi: remove
+> > > MAINTAINERS entry git bisect good
+> > > 15065531c1c5902775ae3ade24eb37d0e688353b # good:
+> > > [8a3f257c704e02aee9869decd069a806b45be3f1] Merge branch 'misc' into
+> > > release git bisect good 8a3f257c704e02aee9869decd069a806b45be3f1
+> > 
+> 
 
