@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZDMS2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZDMS3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbZDMS2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 14:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZDMS2T
+	id S1753853AbZDMS3o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 14:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZDMS3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 14:28:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:63177 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753584AbZDMS2S convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 14:28:18 -0400
+	Mon, 13 Apr 2009 14:29:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57762 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752603AbZDMS3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 14:29:33 -0400
+Date: Mon, 13 Apr 2009 15:28:52 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blktrace: move trace/ dir to /sys/block/sda/
+Message-ID: <20090413182852.GD18150@ghostprotocols.net>
+References: <49E31931.5000506@cn.fujitsu.com> <20090413180054.GZ5178@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <20090408210013.62e878c6@halo.dirtyepic.sk.ca>
-References: <49C03208.6050603@gmail.com>
-	 <1237399938.4529.208.camel@localhost.localdomain>
-	 <49C572CC.6090704@gmail.com>
-	 <20090323190720.GA16831@linux-os.sc.intel.com>
-	 <49C95C66.2050100@gmail.com> <20090324222516.GA4292@elte.hu>
-	 <20090408210013.62e878c6@halo.dirtyepic.sk.ca>
-Date: Mon, 13 Apr 2009 13:27:52 -0500
-Message-ID: <be01dd250904131127r15629e74t550a5a1dc5f72aa8@mail.gmail.com>
-Subject: Re: Error: freeing invalid memtype
-From: "Jason D. Clinton" <me@jasonclinton.com>
-To: Ryan Hill <dirtyepic@gentoo.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413180054.GZ5178@kernel.dk>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 10:00 PM, Ryan Hill <dirtyepic@gentoo.org> wrote:
-> I'm running 2.6.29.1 which has this patch but I'm still seeing an insane
-> number of these.  I can't trigger them just by running glxinfo like
-> Kevin, however opening a few tabs containing large images in firefox does the
-> trick and also freezes my system for about a minute.
-...
-> wxwidgets @ gentoo     EFFD 380E 047A 4B51 D2BD C64F 8AA8 8346 F9A4 0662
+Em Mon, Apr 13, 2009 at 08:00:54PM +0200, Jens Axboe escreveu:
+> On Mon, Apr 13 2009, Li Zefan wrote:
+> > Impact: allow ftrace-plugin blktrace to trace device-mapper devices
+> > 
+> > blktrace can't trace a single partition, so it makes no sense to
+> > have one trace/ dir in each /sys/block/sda/sdaX. Move it to
+> > /sys/block/sda/.
+> > 
+> > Thus we fix an issue reported by Ted, that ftrace-plugin blktrace
+> > can't be used to trace device-mapper devices.
+> 
+> Perhaps I never committed that patch, but it would be trivial to do
+> partition based blktrace tracing. It's also quite useful. So please
+> don't go changing things to make that harder to support, it would be
+> nicer to just add the (small) bits to support per-partition tracing.
+> It's basically just a start/stop sector range, while some events are
+> per-device and should just be included always.
 
-(replying from off-list)
-100% "me too" but in Fedora rawhide--so it does not appear to be a
-distro-specific patch. Exact same reproduction criteria.
+I was a bit skeptical about this one as well, the fact that partition
+based tracing was not available annoyed me, but as I was concentrating
+just on getting the ftrace plugin merged and not on actually improving
+what was there before... Anyway, will continue listening to these
+discussions, blktrace was such a early champion for kernel tracing
+infrastructure that it _has_ to be studied properly in light of current
+tracing woodstock 8-)
+
+- Arnaldo
