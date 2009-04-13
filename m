@@ -1,102 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbZDMPOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZDMPQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbZDMPOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 11:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZDMPOp
+	id S1754220AbZDMPQg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 11:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZDMPQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 11:14:45 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42566 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbZDMPOp (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 11:14:45 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
-In-Reply-To: Your message of "Fri, 10 Apr 2009 02:22:23 PDT."
-             <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1239456126_4005P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 13 Apr 2009 11:16:26 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:34925 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653AbZDMPQZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 11:16:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=T4RloARAbw0rpSM9Mh9xXkw+oykYn72WtFGVivQhX3MbiMky4S4JxZVfr2MprV+of+
+         x/fCeiAsVC7MSwSyewVddM1uPjuzjELptWldooWZWfcvQ+SmAF+W26u+OQSOUWyo8Zm7
+         P72T4VGgXYgWdlfsk2Tx5r/+XRWXVEOQY8P2Y=
+Message-ID: <49E3575A.60204@gmail.com>
+Date: Mon, 13 Apr 2009 17:16:42 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
+MIME-Version: 1.0
+To: yakui_zhao <yakui.zhao@intel.com>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       mjg59@srcf.ucam.org
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control	brightness
+ with hotkeys
+References: <49E10684.5090101@gmail.com>	 <20090411150555.8b13ed18.akpm@linux-foundation.org>	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com> <1239585695.5564.5.camel@localhost.localdomain>
+In-Reply-To: <1239585695.5564.5.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Sat, 11 Apr 2009 09:22:06 -0400
-Message-ID: <4609.1239456126@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1239456126_4005P
-Content-Type: text/plain; charset=us-ascii
+On 04/13/2009 03:21 AM, yakui_zhao wrote:
+> On Mon, 2009-04-13 at 02:37 +0800, Niel Lambrechts wrote:
+>   
+>> On 04/12/2009 06:14 PM, Henrique de Moraes Holschuh wrote:
+>>     
+>>> On Sat, 11 Apr 2009, Andrew Morton wrote:
+>>>   
+>>>       
+>>>>> With latest git kernel, I'm no longer able to control my Thinkpad (W500)
+>>>>> brightness, although I can still control the backlight, bluetooth etc.
+>>>>>       
+>>>>>           
+>>> Niels, something just occourred to me.  Is your problem the hotkeys, or the
+>>> brightness control itself?  Check /sys/class/backlight/*, please.  What do
+>>> you have in there?  Does it work?
+>>>   
+>>>       
+>> Hi Henrique,
+>>     
+> Will you please check whether there exists the /sys/class/backlight/*/*?
+>   
+I already did mention that the directory does not exist when using
+2.6.30 - see down below.
 
-On Fri, 10 Apr 2009 02:22:23 PDT, akpm@linux-foundation.org said:
-> The mm-of-the-moment snapshot 2009-04-10-02-21 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
+The directory only exists when I use 2.6.29.1 or 2.6.28.x, so there is
+some type of regression.
+>  
+> If not, will you please load the i915 driver and see whether the
+> backlight can be controlled by hotkeys?(The CONFIG_DRM_I915_KMS should
+> be enabled in kernel configuration).
+>   
 
-My system is reporting 70-90 forks per second, 'lastcomm' is reporting:
+I'm not using modeset=1, as I have even worse results with
+i915.modeset=1 enabled (freezing system / black screen). So the results
+I gave was using:
 
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
-work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+Graphics card: Mobile Intel GM45 Express Chipset
 
-(and about 100K more of same).
-
-Reverting this commit made the forks go away:
-
-commit 6b44003e5ca66a3fffeb5bc90f40ada2c4340896
-Author: Andrew Morton <akpm@linux-foundation.org>
-Date:   Thu Apr 9 09:50:37 2009 -0600
-
-    work_on_cpu(): rewrite it to create a kernel thread on demand
-
-No, I don't see why this generated a user-visible fork and accounting
-record to be cut.  Maybe that's a normal side effect of kthread_create()
-that I've never noticed because kthreads rarely exit, especially not at
-90/sec.  I also don't know who's *calling* work_on_cpu() 90 times a
-second, but I suspect it's this:
-
-    This is not terribly fast, but the only current caller of work_on_cpu() is
-    pci_call_probe().
-
-Umm. No.
-
-% find . -name '*.c' | xargs grep -l work_on_cpu 2> /dev/null 
-./arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-./arch/x86/kernel/microcode_core.c
-./arch/x86/kernel/acpi/cstate.c
-./arch/x86/kernel/apm_32.c
-./kernel/workqueue.c
-./drivers/acpi/processor_throttling.c
-./drivers/pci/pci-driver.c
-
-Probable cause for my problem:
-
-arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c calls work_on_cpu(). We get into a
-state where we have enough activity to kick us to a high CPU speed, and then
-the activity of writing 90 acct records per sec keeps us there - with continual
-callbacks to see if we can drop the CPU speed.
-
-
---==_Exmh_1239456126_4005P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ4Jl+cC3lWbTT17ARAlWkAJ0cE21Ct8xo1I03rFGxO+8hq6KnXgCgyMiX
-rbUSSCmVWq3AIsMP0i6s+wE=
-=lcWo
------END PGP SIGNATURE-----
-
---==_Exmh_1239456126_4005P--
+Option  "EXANoComposite"
+Option "AccelMethod" "exa"
+Option "MigrationHeuristic" "greedy"
+Option "ExaNoComposite" "false"
+Option "VBERestore" "true"
+  
+> Thanks.
+>   
+>> The directory is empty - this is when I used 2.6.30-rc1 (latest git)
+>> from yesterday. I'll keep retrying with the latest git kernels though.
+>>
+>> The only additional observations I can provide is:
+>> 1) pulling/plugging the power cord does actually have an effect on the
+>> brightness.
+>> 2) resuming form hibernate - Xorg is blank, until I simultaneously press
+>> a keyboard key and touch the synaptics pad. But I have this problem in
+>> 2.6.28/2.6.29 as well, and I guess it could either be vesafb or ACPI
+>> related, as it also happened when I used s2disk in a console session
+>> outside of X.
+>>
+>> In 2.6.29.1:
+>> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
+>> -> ../../devices/virtual/backlight/acpi_video0
+>>
+>> which contains:
+>> drwxr-xr-x 3 root root    0 Apr 12 20:01 ./
+>> drwxr-xr-x 3 root root    0 Apr 12 20:01 ../
+>> -r--r--r-- 1 root root 4096 Apr 12 20:02 actual_brightness
+>> -rw-r--r-- 1 root root 4096 Apr 12 20:02 bl_power
+>> -rw-r--r-- 1 root root 4096 Apr 12 20:02 brightness
+>> -r--r--r-- 1 root root 4096 Apr 12 20:01 max_brightness
+>> drwxr-xr-x 2 root root    0 Apr 12 20:02 power/
+>> lrwxrwxrwx 1 root root    0 Apr 12 20:01 subsystem ->
+>> ../../../../class/backlight/
+>> -rw-r--r-- 1 root root 4096 Apr 12 20:01 uevent
+>>
+>> max_brightness = 15 and echoing values [0-15] to brightness controls it
+>> as expected, or just using the standard thinkpad keys (Fn-Home to increase).
+>>     
+Thanks
+Niel
