@@ -1,140 +1,480 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbZDMWMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZDMWPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbZDMWMI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZDMWLy
+	id S1753103AbZDMWPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZDMWPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:11:54 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:51075 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbZDMWLx convert rfc822-to-8bit (ORCPT
+	Mon, 13 Apr 2009 18:15:32 -0400
+Received: from postoffice.embeddedalley.com ([65.114.89.228]:33105 "HELO
+	postoffice.embeddedalley.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750713AbZDMWPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:11:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PsPZLMr0cjC+ZTGWtKwuJx3/v3sM/5ezqmfoYSTz+1/wmSMIPUH/KoqDNVGEjJDBAI
-         mww7Jl+0a7OFCrRqYY86+SlgpF5FzFltnTOhdr8imFtkd9aI1cWMwaHUuySVcepfrrdY
-         XG6tFCAt/RE3PecGUYNL88gu3RCsiylWAbKeI=
-MIME-Version: 1.0
-In-Reply-To: <1239650202.16771.15.camel@heimdal.trondhjem.org>
-References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu>
-	 <20090412235010.c8e3475b.akpm@linux-foundation.org>
-	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
-Date: Mon, 13 Apr 2009 18:06:00 -0400
-Message-ID: <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
-Subject: Re: NFS BUG_ON in nfs_do_writepage
-From: Rince <rincebrain@gmail.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 13 Apr 2009 18:15:31 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 18:15:30 EDT
+From: Dan Malek <dan@embeddedalley.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Paul Menage <menage@google.com>, Dan Malek <dan@embeddedalley.com>
+Subject: [PATCH] Memory usage limit notification addition to memcg
+Date: Mon, 13 Apr 2009 18:08:32 -0400
+Message-Id: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>
+X-Mailer: git-send-email 1.6.2.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 3:16 PM, Trond Myklebust
-<trond.myklebust@fys.uio.no> wrote:
-> On Sun, 2009-04-12 at 23:50 -0700, Andrew Morton wrote:
->> (cc linux-nfs)
->>
->> On Mon, 13 Apr 2009 01:46:24 -0400 (EDT) rercola@acm.jhu.edu wrote:
->>
->> > Hi world,
->> > I've got a production server that's running as an NFSv4 client, along with
->> > a number of other machines.
->> >
->> > All the other machines are perfectly happy, but this one is a bit of a
->> > bother. It's got a Core 2 Duo 6700, with a D975XBX2 motherboard and 4 GB
->> > of ECC RAM.
->> >
->> > The problem is that, under heavy load, NFS will trip a BUG_ON in
->> > nfs_do_writepage, as follows:
->> > ------------[ cut here ]------------
->> > kernel BUG at fs/nfs/write.c:252!
->> > invalid opcode: 0000 [#1] SMP
->> > last sysfs file: /sys/devices/virtual/block/dm-
->> > 0/range
->> > CPU 0
->> > Modules linked in: fuse autofs4 coretemp hwmon nfs lockd nfs_acl
->> > auth_rpcgss sunrpc ipv6 cpufreq_ondemand acpi_cpufreq freq_table kvm_intel
->> > kvm snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_seq_dummy
->> > snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss
->> > snd_mixer_oss snd_pcm snd_timer usb_storage snd cpia_usb e1000e soundcore
->> > cpia ppdev firewire_ohci snd_page_alloc firewire_core i2c_i801 videodev
->> > parport_pc pcspkr iTCO_wdt i2c_core v4l1_compat crc_itu_t parport
->> > iTCO_vendor_support v4l2_compat_ioctl32 i82975x_edac edac_core raid1
->> > Pid: 309, comm: pdflush Not tainted 2.6.29.1 #1
->> > RIP: 0010:[<ffffffffa0291a47>]  [<ffffffffa0291a47>]
->> > nfs_do_writepage+0x106/0x1a2 [nfs]
->> > RSP: 0018:ffff88012d805af0  EFLAGS: 00010282
->> > RAX: 0000000000000001 RBX: ffffe20001f66878 RCX: 0000000000000015
->> > RDX: 0000000000600020 RSI: 0000000000000000 RDI: ffff88000155789c
->> > RBP: ffff88012d805b20 R08: ffff88012cd53460 R09: 0000000000000004
->> > R10: ffff88009d421700 R11: ffffffffa02a98d0 R12: ffff88010253a300
->> > R13: ffff88000155789c R14: ffffe20001f66878 R15: ffff88012d805c80
->> > FS:  0000000000000000(0000) GS:ffffffff817df000(0000)
->> > knlGS:0000000000000000
->> > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->> > CR2: 00000000f7d2b000 CR3: 000000008708a000 CR4: 00000000000026e0
->> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> > Process pdflush (pid: 309, threadinfo ffff88012d804000, task
->> > ffff88012e4fdb80)
->> > Stack:
->> >   ffff88012d805b20 ffffe20001f66878 ffffe20001f66878 0000000000000000
->> >   0000000000000001 0000000000000000 ffff88012d805b40 ffffffffa0291f5a
->> >   ffffe20001f66878 ffff88012d805e40 ffff88012d805c70 ffffffff810a9c1d
->> > Call Trace:
->> >   [<ffffffffa0291f5a>] nfs_writepages_callback+0x14/0x25 [nfs]
->> >   [<ffffffff810a9c1d>] write_cache_pages+0x261/0x3a4
->> >   [<ffffffffa0291f46>] ? nfs_writepages_callback+0x0/0x25 [nfs]
->> >   [<ffffffffa0291f1c>] nfs_writepages+0xb5/0xdf [nfs]
->> >   [<ffffffffa02932bd>] ? nfs_flush_one+0x0/0xeb [nfs]
->> >   [<ffffffff81060f78>] ? bit_waitqueue+0x17/0xa4
->> >   [<ffffffff810a9db7>] do_writepages+0x2d/0x3d
->> >   [<ffffffff810f4a51>] __writeback_single_inode+0x1b2/0x347
->> >   [<ffffffff8100f7d4>] ? __switch_to+0xbe/0x3eb
->> >   [<ffffffff810f4ffb>] generic_sync_sb_inodes+0x24a/0x395
->> >   [<ffffffff810f5354>] writeback_inodes+0xa9/0x102
->> >   [<ffffffff810a9f26>] wb_kupdate+0xa8/0x11e
->> >   [<ffffffff810aac9d>] pdflush+0x173/0x236
->> >   [<ffffffff810a9e7e>] ? wb_kupdate+0x0/0x11e
->> >   [<ffffffff810aab2a>] ? pdflush+0x0/0x236
->> >   [<ffffffff810aab2a>] ? pdflush+0x0/0x236
->> >   [<ffffffff81060c9e>] kthread+0x4e/0x7b
->> >   [<ffffffff810126ca>] child_rip+0xa/0x20
->> >   [<ffffffff81011fe7>] ? restore_args+0x0/0x30
->> >   [<ffffffff81060c50>] ? kthread+0x0/0x7b
->> >   [<ffffffff810126c0>] ? child_rip+0x0/0x20
->> > Code: 89 e7 e8 d5 cc ff ff 4c 89 e7 89 c3 e8 2a cd ff ff 85 db 74 a0 e9 83
->> > 00 00 00 41 f6 44 24 40 02 74 0d 4c 89 ef e8 e2 a5 d9 e0 90 <0f> 0b eb fe
->> > 4c 89 f7 e8 f5 7a e1 e0 85 c0 75 49 49 8b 46 18 ba
->> > RIP  [<ffffffffa0291a47>] nfs_do_writepage+0x106/0x1a2 [nfs]
->> >   RSP <ffff88012d805af0>
->> > ---[ end trace 6d60c9b253ebcf15 ]---
->> >
->> > 64bit kernel, 32bit userland. 2.6.29.1 vanilla, bug occurred as early as
->> > 2.6.28, bug still occurs with 2.6.30-rc1. I'm running bisect now, but
->> > there's a limit on how often I can reboot a production server, so I'll
->> > report back when I find it.
->
-> This looks like the same issue as
->    http://bugzilla.kernel.org/show_bug.cgi?id=12913
->
-> Does the following patch from Nick help? It should apply on top of
-> 2.6.30-rc1, and fixes a race in which the VM layer can end up marking a
-> page dirty after the filesystem has cleaned it...
->
-> Cheers
->  Trond
->
+This patch updates the Memory Controller cgroup to add
+a configurable memory usage limit notification.  The feature
+was presented at the April 2009 Embedded Linux Conference.
 
-Patch does not apply cleanly to 2.6.30-rc1. Working on this.
+Signed-off-by: Dan Malek <dan@embeddedalley.com>
+---
+ Documentation/cgroups/mem_notify.txt |  129 +++++++++++++++++++++
+ include/linux/memcontrol.h           |    7 +
+ init/Kconfig                         |    9 ++
+ mm/memcontrol.c                      |  207 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 352 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/cgroups/mem_notify.txt
 
-- Rich
+diff --git a/Documentation/cgroups/mem_notify.txt b/Documentation/cgroups/mem_notify.txt
+new file mode 100644
+index 0000000..72d5c26
+--- /dev/null
++++ b/Documentation/cgroups/mem_notify.txt
+@@ -0,0 +1,129 @@
++
++Memory Limit Notificiation
++
++Attempts have been made in the past to provide a mechanism for
++the notification to processes (task, an address space) when memory
++usage is approaching a high limit.  The intention is that it gives
++the application an opportunity to release some memory and continue
++operation rather than be OOM killed.  The CE Linux Forum requested
++a more comtemporary implementation, and this is the result.
++
++The memory limit notification is a configurable extension to the
++existing Memory Resource Controller.  Please read memory.txt in this
++directory to understand its operation before continuing here.
++
++1. Operation
++
++When a kernel is configured with CGROUP_MEM_NOTIFY, three additional
++files will appear in the memory resource controller:
++
++	memory.notify_limit_percent
++	memory.notify_limit_usage
++	memory.notify_limit_lowait
++
++The notification is based upon reaching a percentage of the memory
++resource controller limit (memory.limit_in_bytes).  When the controller
++group is created, the percentage is set to 100.  Any integer percentage
++may be set by writing to memory.notify_limit_percent, such as:
++
++	echo 80 > memory.notify_limit_percent
++
++The current integer usage percentage may be read at any time from
++the memory.notify_limit_usage file.
++
++The memory.notify_limit_lowait is a blocking read file.  The read will
++block until one of four conditions occurs:
++
++    - The usage reaches or exceeds the memory.notify_limit_percent
++    - The memory.notify_limit_lowait file is written with any value (debug)
++    - A thread is moved to another controller group
++    - The cgroup is destroyed or forced empty (memory.force_empty)
++
++
++1.1 Example Usage
++
++An application must be designed to properly take advantage of this
++memory limit notification feature.  It is a powerful management component
++of some operating systems and embedded devices that must provide
++highly available and reliable computing services.  The application works
++in conjunction with information provided by the operating system to
++control limited resource usage.  Since many programmers still think
++memory is infinite and never check the return value from malloc(), it
++may come as a surprise that such mechanisms have been utilized long ago.
++
++A typical application will be multithreaded, with one thread either
++polling or waiting for the notification event.  When the event occurs,
++the thread will take whatever action is appropriate within the application
++design.  This could be actually running a garbage collection algorithm
++or to simply signal other processing threads they must do something to
++reduce their memory usage.  The notification thread will then be required
++to poll the actual usage until the low limit of its choosing is met,
++at which time the reclaim of memory can stop and the notification thread
++will wait for the next event.
++
++Internally, the application only needs to fopen("memory.notify_limit_usage" ..)
++and fopen("memory.notify_limit_lowait" ...), then either poll the former
++file or block read on the latter file using fread() or fscanf() as desired.
++
++2. Configuration
++
++Follow the instructions in memory.txt for the configuration and usage of
++the Memory Resource Controller cgroup.  Once this is created and tasks
++assigned, use the memory limit notification as described here.
++
++The only action that is needed outside of the application waiting or polling
++is to set the memory.notify_limit_percent.  To set a notification to occur
++when memory usage of the cgroup reaches or exceeds 80 percent can be
++simply done:
++
++	echo 80 > memory.notify_limit_percent
++
++This value may be read or changed at any time.  Writing a lower value once
++the Memory Resource Controller is in operation may trigger immediate
++notification if the usage is above the new limit.
++
++3. Debug and Testing
++
++The design of cgroups makes it easier to perform some debugging or
++monitoring tasks without modification to the application.  For example,
++a write of any value to memory.notify_limit_lowait will wake up all
++threads waiting for notifications regardless of current memory usage.
++
++Collecting performance data about the cgroup is also simplified, as
++no application modifications are necessary.  A separate task can be
++created that will open and monitor any necessary files of the cgroup
++(such as current limits, usage and usage percentages and even when
++notification occurs).  This task can also operate outside of the cgroup,
++so its memory usage is not charged to the cgroup.
++
++4. Design
++
++The memory limit notification is a configurable extension to the
++existing Memory Resource Controller, which operates as described to
++track and manage the memory of the Control Group.  The Memory Resource
++Controller will still continue to reclaim memory under pressure
++of the limits, and may OOM kill tasks within the cgroup according to
++the OOM Killer configuration.
++
++The memory notification limit was chosen as a percentage of the
++memory in use so the cgroup paramaters may continue to be dynamically
++modified without the need to modify the notificaton parameters.
++Otherwise, the notification limit would have to also be computed
++and modified on any Memory Resource Controller operating parameter change.
++
++The cgroup file semantics are not well suited for this type of notificaton
++mechanism.  While applications may choose to simply poll the current
++usage at their convenience, it was also desired to have a notification
++event that would trigger when the usage attained the limit.  The
++blocking read() was chosen, as it is the only current useful method.
++This presented the problems of "out of band" notification, when you want
++to return some exceptional status other than reaching the notification
++limit.  In the cases listed above, the read() on the memory.notify_limit_lowait
++file will not block and return "0" for the percentage.  When this occurs,
++the thread must determine if the task has moved to a new cgroup or if
++the cgroup has been destroyed.  Due to the usage model of this cgroup,
++neither is likely to happen during normal operation of a product.
++
++Dan Malek <dan@embeddedalley.com>
++Embedded Alley Solutions, Inc.
++10 March 2009
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 18146c9..031e5d1 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -117,6 +117,13 @@ static inline bool mem_cgroup_disabled(void)
+ 
+ extern bool mem_cgroup_oom_called(struct task_struct *task);
+ 
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++extern void test_and_wakeup_notify(struct mem_cgroup *mcg,
++				unsigned long long newlimit);
++extern unsigned long compute_usage_percent(unsigned long long usage,
++				unsigned long long limit);
++#endif
++
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index f2f9b53..97138da 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -588,6 +588,15 @@ config CGROUP_MEM_RES_CTLR
+ 	  This config option also selects MM_OWNER config option, which
+ 	  could in turn add some fork/exit overhead.
+ 
++config CGROUP_MEM_NOTIFY
++	bool "Memory Usage Limit Notification"
++	depends on CGROUP_MEM_RES_CTLR
++	help
++	  Provides a memory notification when usage reaches a preset limit.
++	  It is an extenstion to the memory resource controller, since it
++	  uses the memory usage accounting of the cgroup to test against
++	  the notification limit.  (See Documentation/cgroups/mem_notify.txt)
++
+ config CGROUP_MEM_RES_CTLR_SWAP
+ 	bool "Memory Resource Controller Swap Extension(EXPERIMENTAL)"
+ 	depends on CGROUP_MEM_RES_CTLR && SWAP && EXPERIMENTAL
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 2fc6d6c..d6367ed 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -6,6 +6,10 @@
+  * Copyright 2007 OpenVZ SWsoft Inc
+  * Author: Pavel Emelianov <xemul@openvz.org>
+  *
++ * Memory Limit Notification update
++ * Copyright 2009 CE Linux Forum and Embedded Alley Solutions, Inc.
++ * Author: Dan Malek <dan@embeddedalley.com>
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+@@ -180,6 +184,11 @@ struct mem_cgroup {
+ 	 * statistics. This must be placed at the end of memcg.
+ 	 */
+ 	struct mem_cgroup_stat stat;
++
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++	unsigned long notify_limit_percent;
++	wait_queue_head_t notify_limit_wait;
++#endif
+ };
+ 
+ enum charge_type {
+@@ -934,6 +943,21 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+ 
+ 	VM_BUG_ON(mem_cgroup_is_obsolete(mem));
+ 
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++	/* We check on the way in so we don't have to duplicate code
++	 * in both the normal and error exit path.
++	 */
++	if (likely(mem->res.limit != (unsigned long long)LLONG_MAX)) {
++		unsigned long usage_pct;
++
++		usage_pct = compute_usage_percent(mem->res.usage + PAGE_SIZE,
++								mem->res.limit);
++		if ((usage_pct >= mem->notify_limit_percent) &&
++		    waitqueue_active(&mem->notify_limit_wait))
++			wake_up(&mem->notify_limit_wait);
++	}
++#endif
++
+ 	while (1) {
+ 		int ret;
+ 		bool noswap = false;
+@@ -1663,6 +1687,13 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
+ 	int children = mem_cgroup_count_children(memcg);
+ 	u64 curusage, oldusage;
+ 
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++	/* Test and notify ahead of the necessity to free pages, as
++	 * applications giving up pages may help this reclaim procedure.
++	 */
++	test_and_wakeup_notify(memcg, val);
++#endif
++
+ 	/*
+ 	 * For keeping hierarchical_reclaim simple, how long we should retry
+ 	 * is depends on callers. We set our retry-count to be function
+@@ -2215,6 +2246,147 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++#define CGROUP_LOCAL_BUFFER_SIZE 64 /* Would be nice if this was in cgroup.h */
++
++/* The resource counters are defined as long long, but few processors
++ * handle 64-bit divisor in hardware, and the software to do it isn't
++ * present in the kernel.  It would be nice if the resource counters were
++ * platform specific configurable typedefs, but for now we'll just divide
++ * down the byte counters by the page size to get 32-bit arithmetic.
++ * With a 4K page size, this will work up to about 16384G resource limit.
++ */
++unsigned long compute_usage_percent(unsigned long long usage,
++					unsigned long long limit)
++{
++	unsigned long lim;
++	unsigned long long usage_pct;
++
++	usage_pct = (usage / PAGE_SIZE) * 100;
++	lim = (unsigned long)(limit / PAGE_SIZE);
++
++	do_div(usage_pct, lim);
++
++	return (unsigned long)usage_pct;
++}
++
++void test_and_wakeup_notify(struct mem_cgroup *mcg, unsigned long long newlimit)
++{
++	unsigned long usage_pct;
++
++	/* Check to see if the new limit should cause notification.
++	*/
++	usage_pct = compute_usage_percent(mcg->res.usage, newlimit);
++
++	if ((usage_pct >= mcg->notify_limit_percent) &&
++	    waitqueue_active(&mcg->notify_limit_wait))
++		wake_up(&mcg->notify_limit_wait);
++}
++
++static ssize_t notify_limit_read(struct cgroup *cgrp, struct cftype *cft,
++			       struct file *file,
++			       char __user *buf, size_t nbytes,
++			       loff_t *ppos)
++{
++	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
++	char tmp[CGROUP_LOCAL_BUFFER_SIZE];
++	int len;
++
++	len = sprintf(tmp, "%lu\n", memcg->notify_limit_percent);
++
++	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
++}
++
++static int notify_limit_write(struct cgroup *cgrp, struct cftype *cft,
++			    const char *buffer)
++{
++	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
++	unsigned long val;
++	char *endptr;
++
++	val = simple_strtoul(buffer, &endptr, 0);
++	if (val > 100)
++		return -EINVAL;
++
++	memcg->notify_limit_percent = val;
++
++	/* Check to see if the new percentage limit should cause notification.
++	*/
++	test_and_wakeup_notify(memcg, memcg->res.limit);
++
++	return 0;
++}
++
++static ssize_t notify_limit_usage_read(struct cgroup *cgrp, struct cftype *cft,
++			       struct file *file,
++			       char __user *buf, size_t nbytes,
++			       loff_t *ppos)
++{
++	struct mem_cgroup *mem = mem_cgroup_from_cont(cgrp);
++	char tmp[CGROUP_LOCAL_BUFFER_SIZE];
++	unsigned long usage_pct;
++	int len;
++
++	usage_pct = compute_usage_percent(mem->res.usage, mem->res.limit);
++
++	len = sprintf(tmp, "%lu\n", usage_pct);
++
++	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
++}
++
++static ssize_t notify_limit_lowait(struct cgroup *cgrp, struct cftype *cft,
++			       struct file *file,
++			       char __user *buf, size_t nbytes,
++			       loff_t *ppos)
++{
++	struct mem_cgroup *mem = mem_cgroup_from_cont(cgrp);
++	char tmp[CGROUP_LOCAL_BUFFER_SIZE];
++	unsigned long usage_pct;
++	int len;
++	DEFINE_WAIT(notify_lowait);
++
++	/* A memory resource usage of zero is a special case that
++	 * causes us not to sleep.  It normally happens when the
++	 * cgroup is about to be destroyed, and we don't want someone
++	 * trying to sleep on a queue that is about to go away.  This
++	 * condition can also be forced as part of testing.
++	 */
++	usage_pct = compute_usage_percent(mem->res.usage, mem->res.limit);
++	if (likely(mem->res.usage != 0)) {
++
++		prepare_to_wait(&mem->notify_limit_wait, &notify_lowait,
++							TASK_INTERRUPTIBLE);
++
++		if (usage_pct < mem->notify_limit_percent) {
++			schedule();
++
++			/* Compute percentage we have now and return it.
++			*/
++			usage_pct = compute_usage_percent(mem->res.usage,
++							mem->res.limit);
++		}
++		finish_wait(&mem->notify_limit_wait, &notify_lowait);
++	}
++
++	len = sprintf(tmp, "%lu\n", usage_pct);
++
++	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
++}
++
++/* This is used to wake up all threads that may be hanging
++ * out waiting for a low memory condition prior to that happening.
++ * Useful for triggering the event to assist with debug of applications.
++ */
++static int notify_limit_wake_em_up(struct cgroup *cgrp, unsigned int event)
++{
++	struct mem_cgroup *mem;
++
++	mem = mem_cgroup_from_cont(cgrp);
++	wake_up(&mem->notify_limit_wait);
++	return 0;
++}
++#endif /* CONFIG_CGROUP_MEM_NOTIFY */
++
+ 
+ static struct cftype mem_cgroup_files[] = {
+ 	{
+@@ -2258,6 +2430,22 @@ static struct cftype mem_cgroup_files[] = {
+ 		.read_u64 = mem_cgroup_swappiness_read,
+ 		.write_u64 = mem_cgroup_swappiness_write,
+ 	},
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++	{
++		.name = "notify_limit_percent",
++		.write_string = notify_limit_write,
++		.read = notify_limit_read,
++	},
++	{
++		.name = "notify_limit_usage",
++		.read = notify_limit_usage_read,
++	},
++	{
++		.name = "notify_limit_lowait",
++		.trigger = notify_limit_wake_em_up,
++		.read = notify_limit_lowait,
++	},
++#endif
+ };
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+@@ -2461,6 +2649,11 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	mem->last_scanned_child = 0;
+ 	spin_lock_init(&mem->reclaim_param_lock);
+ 
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++	init_waitqueue_head(&mem->notify_limit_wait);
++	mem->notify_limit_percent = 100;
++#endif
++
+ 	if (parent)
+ 		mem->swappiness = get_swappiness(parent);
+ 	atomic_set(&mem->refcnt, 1);
+@@ -2504,6 +2697,20 @@ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ 				struct cgroup *old_cont,
+ 				struct task_struct *p)
+ {
++#ifdef CONFIG_CGROUP_MEM_NOTIFY
++	/* We wake up all notification threads any time a migration takes
++	 * place.  They will have to check to see if a move is needed to
++	 * a new cgroup file to wait for notification.
++	 * This isn't so much a task move as it is an attach.  A thread not
++	 * a child of an existing task won't have a valid parent, which
++	 * is necessary to test because it won't have a valid mem_cgroup
++	 * either.  Which further means it won't have a proper wait queue
++	 * and we can't do a wakeup.
++	 */
++	if (old_cont->parent != NULL)
++		notify_limit_wake_em_up(old_cont, 0);
++#endif
++
+ 	mutex_lock(&memcg_tasklist);
+ 	/*
+ 	 * FIXME: It's better to move charges of this process from old
 -- 
+1.6.2.GIT
 
-I'm so miserable without you, it's almost like you're here.
