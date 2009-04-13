@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbZDMWrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZDMWsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbZDMWrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 18:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZDMWr0
+	id S1754304AbZDMWsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 18:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZDMWs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 18:47:26 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:58892 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752341AbZDMWr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 18:47:26 -0400
-Date: Mon, 13 Apr 2009 15:47:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, hugh@veritas.com,
-       jmorris@namei.org, akpm@linux-foundation.org
-Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
-Message-ID: <20090413224724.GJ6983@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp> <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk> <200904130048.n3D0mw1f077050@www262.sakura.ne.jp> <20090413195504.GF6983@linux.vnet.ibm.com> <200904140631.BCI82883.LFOHOFJtFMOSVQ@I-love.SAKURA.ne.jp>
+	Mon, 13 Apr 2009 18:48:27 -0400
+Received: from flatoutfitness.com ([66.178.130.209]:49491 "EHLO selene"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753146AbZDMWs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 18:48:26 -0400
+X-Greylist: delayed 2169 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 18:48:26 EDT
+Message-ID: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us>
+Date: Mon, 13 Apr 2009 15:13:05 -0700 (PDT)
+Subject: mcp55 forcedeth woes
+From: "Yan Seiner" <yan@seiner.com>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904140631.BCI82883.LFOHOFJtFMOSVQ@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 06:31:05AM +0900, Tetsuo Handa wrote:
-> Paul E. McKenney wrote:
-> > > Hello.
-> > > 
-> > > Paul E. McKenney wrote:
-> > > > Is this reproducible?
-> > > Not always, but it is reproducible.
-> > 
-> > Does it reproduce well enough to bisect?
-> > 
-> Not impossible, but difficult. This happens less than once on 10 trials.
-> 
-> > > Al Viro wrote:
-> > > > I'd really love to see results of repeated alt-sysrq-p/alt-sysrq-l, just
-> > > > to see where was it actually spinning.
-> > > Below is sysrq message.
-> > > Maybe something related to khelper's current->mm == NULL warning problem.
-> > > Full log is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc1-200904130930.txt .
-> > 
-> > I have to defer to the mm guys on this one.
-> 
-> Latest info on khelper's current->mm == NULL warning problem is at
-> http://lkml.org/lkml/2009/4/13/85 .
+I have a few Asus M2N-SLI deluxe mobos.  These mobos have the MCP55
+chipset and two 1gb ethernet ports.  Occasionally, and for no reason that
+I can figure out, these ports will die.  There are various ways to try and
+fix these; they seem to be about 50% effective, and approach something
+akin to voodoo.
 
-Thank you for the pointer!
+Based on this discussion here:
 
-							Thanx, Paul
+http://patchwork.kernel.org/patch/16212/
+
+I've gotten the ability to turn the ports on and off somewhat.
+
+For port 0,
+
+ethtool -s eth0 autoneg off speed 10 duplex full
+
+turns on the link, and gets me half-duplex, 10mb/sec. Not much, granted.
+
+ethtool -s eth0 autoneg off speed 100 duplex full
+
+causes the link to go up and down on about a 2 second cycle.
+
+ethtool -s eth0 autoneg on
+
+causes the link to drop.
+
+For port 1, the behavior is similar, except that I can get a stable 100
+mbit connection.
+
+So the problem is in the autoneg code. It's a driver issue as this is
+reported widely to work under windows of various flavors.
+
+I'm running 2.6.29.1; I'm ok with patching and building kernels, but I'm
+not a kernel hacker.
+
+What, if anything, can I provide and do to fix this?
+
+
+-- 
+Yan Seiner, PE
+
+Support my bid for the 4J School Board
+http://www.seiner.com
+
