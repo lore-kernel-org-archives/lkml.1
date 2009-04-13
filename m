@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZDMXmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZDMXoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbZDMXmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 19:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZDMXmh
+	id S1754248AbZDMXoi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 19:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZDMXo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 19:42:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45462 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753066AbZDMXmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 19:42:36 -0400
-Date: Mon, 13 Apr 2009 17:41:05 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "John Stoffel" <john@stoffel.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
-Message-Id: <20090413174105.b03a1f19.zaitcev@redhat.com>
-In-Reply-To: <18909.65347.234817.29689@stoffel.org>
-References: <18906.49779.243047.207639@stoffel.org>
-	<20090407120022.GA6519@ff.dom.local>
-	<18907.28788.965069.573489@stoffel.org>
-	<20090407130403.e0061a8d.zaitcev@redhat.com>
-	<18908.42166.404232.721757@stoffel.org>
-	<20090408232344.afed8103.zaitcev@redhat.com>
-	<18909.65347.234817.29689@stoffel.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Apr 2009 19:44:29 -0400
+Received: from mail-qy0-f117.google.com ([209.85.221.117]:65087 "EHLO
+	mail-qy0-f117.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbZDMXo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 19:44:28 -0400
+X-Greylist: delayed 5906 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Apr 2009 19:44:27 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gd6OyWYYkonFXIjqy9LQtcb+PnD4pyeKrfP0bvvZ8fuzbpTGN0aYCVTdy1/GIOGsMU
+         mRRgpJG77ND6Q9qn/8us+rkp7aiiSdPLxVxNoFVaMZc6AwU46SbGx1PTljexUAvd1qyF
+         k+S9Dgj1R9TE9RveY6gmDAcYhN9NgQFhcNINA=
+MIME-Version: 1.0
+In-Reply-To: <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
+References: <alpine.LFD.2.00.0904130145050.4396@centaur.acm.jhu.edu>
+	 <20090412235010.c8e3475b.akpm@linux-foundation.org>
+	 <1239650202.16771.15.camel@heimdal.trondhjem.org>
+	 <5da0588e0904131506k5c58e8ddob9bf38f61da6302a@mail.gmail.com>
+Date: Mon, 13 Apr 2009 19:44:26 -0400
+Message-ID: <5da0588e0904131644g131dc816r61884e83bc4cd006@mail.gmail.com>
+Subject: Re: NFS BUG_ON in nfs_do_writepage
+From: Rince <rincebrain@gmail.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Apr 2009 09:59:31 -0400, "John Stoffel" <john@stoffel.org> wrote:
+On Mon, Apr 13, 2009 at 6:06 PM, Rince <rincebrain@gmail.com> wrote:
+> Patch does not apply cleanly to 2.6.30-rc1. Working on this.
 
-> Here's a dmesg of bootup:
+Okay, so I'm having trouble getting this to apply to anything at all.
+I can see it requires a previous patch by Nick, but even in the thread
+it's mentioned that it doesn't apply cleanly.
 
-> [    0.000000] Linux version 2.6.29.1 (john@sail) (gcc version 4.3.3 (Ubuntu 4.3.3-5ubuntu4) ) #24 SMP PREEMPT Tue Apr 7 11:30:52 EDT 2009
-> [    0.000999] Checking aperture...
-> [    0.000999] No AGP bridge found
-> [    0.000999] Node 0: aperture @ 20000000 size 32 MB
-> [    0.000999] Aperture pointing to e820 RAM. Ignoring.
-> [    0.000999] Your BIOS doesn't leave a aperture memory hole
-> [    0.000999] Please enable the IOMMU option in the BIOS setup
-> [    0.000999] This costs you 64 MB of RAM
-> [    0.000999] Mapping aperture over 65536 KB of RAM @ 20000000
+Is there a canonical form that I can apply somewhere?
 
-> [ 1396.271782] BUG: unable to handle kernel paging request at ffff880020a15cc0
+- Rich
 
-So 20a15000 is in the aperture. Oh well, I screwed up. I meant to
-check for this back in 2006 but forgot, and miraclously it worked
-until now.
+PS: I rather expect my report here to be the same as that Bugzilla
+bug, since I filed it. :)
+-- 
 
-Here's the problem:
-
-	pg = phys_to_page(dma_addr);
-	map = kmap_atomic(pg, KM_IRQ0);
-	offset = mon_copy_to_buff(rp, offset, map + page_off, step_len);
-	kunmap_atomic(map, KM_IRQ0);
-
-Obviously we don't want the page that's overlayed by the aperture,
-but the page where IOMMU is pointing.
-
--- Pete
+If we were meant to get up early, God would have created us with alarm clocks.
