@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752311AbZDMIjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZDMIkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752311AbZDMIjY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 04:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZDMIjL
+	id S1755294AbZDMIkd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 04:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZDMIkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 04:39:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53384 "EHLO mx2.redhat.com"
+	Mon, 13 Apr 2009 04:40:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53420 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249AbZDMIjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 04:39:09 -0400
-Date: Mon, 13 Apr 2009 10:37:30 +0200
+	id S1751048AbZDMIkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 04:40:18 -0400
+Date: Mon, 13 Apr 2009 10:38:48 +0200
 From: Jiri Pirko <jpirko@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
        shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
        fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
        mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
-Subject: [PATCH 0/4] bonding: allow bond in mode balance-alb to work
-	properly in bridge -try5
-Message-ID: <20090413083729.GA23734@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+Subject: [PATCH 1/4] net: introduce dev_mac_address_changed
+Message-ID: <20090413083848.GB23734@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090413083729.GA23734@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20090413083729.GA23734@psychotron.englab.brq.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resend, updated changelog, completely reworked)
+Introducing function dev_mac_address_changed which can be called from driver
+which changed his mac address to force notifiers to be called.
 
-Hi all.
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+---
+ include/linux/netdevice.h |    1 +
+ net/core/dev.c            |   12 ++++++++++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
 
-The problem is described in following bugzilla:
-https://bugzilla.redhat.com/show_bug.cgi?id=487763
-
-Basically here's what's going on. In every mode, bonding interface uses the same
-mac address for all enslaved devices (except fail_over_mac). Only balance-alb
-will simultaneously use multiple MAC addresses across different slaves. When you
-put this kind of bond device into a bridge it will only add one of mac adresses
-into a hash list of mac addresses, say X. This mac address is marked as local.
-But this bonding interface also has mac address Y. Now then packet arrives with
-destination address Y, this address is not marked as local and the packed looks
-like it needs to be forwarded. This packet is then lost which is wrong.
-
-Notice that interfaces can be added and removed from bond while it is in bridge.
-
-This patchset solves this issue in the best way it can be possibly solved. By
-adding all mac addresses of all slave devices to the bridge hash list. To carry
-these addresses the new list has to be introduced in struct net_device.
-
-Jirka
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 2e7783f..ff8db51 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1461,6 +1461,7 @@ extern int		dev_change_net_namespace(struct net_device *,
+ extern int		dev_set_mtu(struct net_device *, int);
+ extern int		dev_set_mac_address(struct net_device *,
+ 					    struct sockaddr *);
++extern void		dev_mac_address_changed(struct net_device *);
+ extern int		dev_hard_start_xmit(struct sk_buff *skb,
+ 					    struct net_device *dev,
+ 					    struct netdev_queue *txq);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 91d792d..1adc89b 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3833,6 +3833,18 @@ int dev_set_mac_address(struct net_device *dev, struct sockaddr *sa)
+ 	return err;
+ }
+ 
++/**
++ *	dev_mac_address_changed - Notify Media Access Control Address changed
++ *	@dev: device
++ *
++ *	Notifies the change of the hardware (MAC) address of the device
++ */
++void dev_mac_address_changed(struct net_device *dev)
++{
++	call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
++}
++EXPORT_SYMBOL(dev_mac_address_changed);
++
+ /*
+  *	Perform the SIOCxIFxxx calls, inside read_lock(dev_base_lock)
+  */
+-- 
+1.6.0.6
 
