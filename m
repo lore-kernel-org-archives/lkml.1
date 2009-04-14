@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZDNDDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZDNDMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZDNDDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 23:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZDNDDe
+	id S1752740AbZDNDMu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 23:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZDNDMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 23:03:34 -0400
-Received: from mga14.intel.com ([143.182.124.37]:7680 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZDNDDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 23:03:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,182,1239001200"; 
-   d="scan'208";a="131109218"
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
-	brightness with hotkeys
-From: Zhang Rui <rui.zhang@intel.com>
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <1239670956.7661.245.camel@rzhang-dt>
-References: <49E10684.5090101@gmail.com>
-	 <20090411150555.8b13ed18.akpm@linux-foundation.org>
-	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com>
-	 <1239587622.7661.205.camel@rzhang-dt> <49E357D9.40604@gmail.com>
-	 <49E3828A.5010004@gmail.com>  <1239670956.7661.245.camel@rzhang-dt>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 11:03:52 +0800
-Message-Id: <1239678232.7661.256.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 13 Apr 2009 23:12:41 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52108 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbZDNDMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 23:12:40 -0400
+Message-ID: <49E3FF53.6010205@cn.fujitsu.com>
+Date: Tue, 14 Apr 2009 11:13:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Theodore Ts'o" <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blktrace: move trace/ dir to /sys/block/sda/
+References: <49E31931.5000506@cn.fujitsu.com> <20090413180054.GZ5178@kernel.dk>
+In-Reply-To: <20090413180054.GZ5178@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 09:02 +0800, Zhang Rui wrote:
-> Niel,
+Jens Axboe wrote:
+> On Mon, Apr 13 2009, Li Zefan wrote:
+>> Impact: allow ftrace-plugin blktrace to trace device-mapper devices
+>>
+>> blktrace can't trace a single partition, so it makes no sense to
+>> have one trace/ dir in each /sys/block/sda/sdaX. Move it to
+>> /sys/block/sda/.
+>>
+>> Thus we fix an issue reported by Ted, that ftrace-plugin blktrace
+>> can't be used to trace device-mapper devices.
 > 
-> please make sure CONFIG_ACPI_VIDEO is set,
-> please attach the full dmesg output.
+> Perhaps I never committed that patch, but it would be trivial to do
+> partition based blktrace tracing. It's also quite useful. So please
+> don't go changing things to make that harder to support, it would be
+> nicer to just add the (small) bits to support per-partition tracing.
+> It's basically just a start/stop sector range, while some events are
+> per-device and should just be included always.
 > 
-and please make sure the patch at
-http://patchwork.kernel.org/patch/18010/
-is applied on top of the previous one.
 
-thanks,
-rui
+Ok, I found that patch in btrace mailing list. I'll rebase it and
+send it out.
 
+How about just add trace/ to /sys/block/sda? Then if we want to trace
+the whole sda, we can:
+  # echo 1 > /sys/block/sda/enable
+If we want to trace a single partition:
+  # echo 1 > /sys/block/sda/sda1/enable
 
-> thanks,
-> rui
-> 
-> On Tue, 2009-04-14 at 02:20 +0800, Niel Lambrechts wrote:
-> > On 04/13/2009 05:18 PM, Niel Lambrechts wrote:
-> > > On 04/13/2009 03:53 AM, Zhang Rui wrote:
-> > >   
-> > >> please attach the acpidump output.
-> > >> please apply this patch and see if it helps,
-> > >> http://patchwork.kernel.org/patch/17339/
-> > >>   
-> > >>     
-> > > Hi,
-> > >
-> > > The patch you mention above has no effect when applied to the latest
-> > > 2.6.30-rc1 git kernel. I'm still unable to control brightness, and the
-> > > display is still blank on resume (unless I press both a keyboard key and
-> > > touch the synaptic pad).
-> > >
-> > > dmesg shows:
-> > > thinkpad_acpi: ThinkPad ACPI Extras v0.22
-> > > thinkpad_acpi: http://ibm-acpi.sf.net/
-> > > thinkpad_acpi: ThinkPad BIOS 6FET50WW (1.20 ), EC 7VHT12WW-1.01
-> > > thinkpad_acpi: Lenovo ThinkPad W500, model 40622XG
-> > > thinkpad_acpi: radio switch found; radios are enabled
-> > > thinkpad_acpi: This ThinkPad has standard ACPI backlight brightness
-> > > control, supported by the ACPI video driver
-> > > thinkpad_acpi: Disabling thinkpad-acpi brightness events by default...
-> > > Registered led device: tpacpi::thinklight
-> > > Registered led device: tpacpi::power
-> > > Registered led device: tpacpi::standby
-> > > thinkpad_acpi: Standard ACPI backlight interface available, not loading
-> > > native one.
-> > > pci 0000:00:02.0: power state changed by ACPI to D0
-> > >
-> > > but /sys/class/backlight still is empty.
-> > >
-> > > acpidump output attached, please let me know if I can test anything else
-> > > or provide more info...
-> > >   
-> > I've just retried this with the latest Lenovo firmware *2.12-1.01
-> > *6FET64WW (which came out last week). It still gives the same bad result
-> > though...
-> > 
-> > I attach acpidump again in case it matters after upgrading the BIOS.
-> > 
-> > cheers
-> > Niel
-> > 
+Like "btrace /dev/sda" and "btrace /dev/sda1" when using userspace blktrace.
 
+And when this is done, tracing device-mapper is supported, and I think
+current md devices can't be traced by ftrace-plugin blktrace too.
+
+--
+Zefan
