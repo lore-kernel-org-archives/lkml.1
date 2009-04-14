@@ -1,98 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbZDNI1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZDNI2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbZDNI1H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 04:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZDNI0v
+	id S1754560AbZDNI2W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 04:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZDNI2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 04:26:51 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51002 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752011AbZDNI0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 04:26:50 -0400
-Message-ID: <49E448F6.5010506@cn.fujitsu.com>
-Date: Tue, 14 Apr 2009 16:27:34 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 14 Apr 2009 04:28:09 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:46023 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbZDNI2G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 04:28:06 -0400
+To: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Hugh Dickins <hugh@veritas.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <m1skkf761y.fsf@fess.ebiederm.org> <49E4000E.10308@kernel.org>
+	<m13acbbs5u.fsf@fess.ebiederm.org> <49E43F1D.3070400@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 14 Apr 2009 01:27:58 -0700
+In-Reply-To: <49E43F1D.3070400@kernel.org> (Tejun Heo's message of "Tue\, 14 Apr 2009 16\:45\:33 +0900")
+Message-ID: <m18wm38ws1.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Shawn Du <duyuyang@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-btrace@vger.kernel.org
-Subject: Re: PATCH 1/3] blktrace: support per-partition tracing
-References: <49E42620.4050701@cn.fujitsu.com> <20090414080919.GB27003@elte.hu>
-In-Reply-To: <20090414080919.GB27003@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: tj@kernel.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, hugh@veritas.com, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [RFC][PATCH 0/9] File descriptor hot-unplug support
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
->> From: Shawn Du <duyuyang@gmail.com>
->>
->> Though one can specify '-d /dev/sda1' when using blktrace, it 
->> still traces the whole sda.
->>
->> To support per-partition tracing, when we start tracing, we 
->> initialize bt->start_lba and bt->end_lba to the start and end 
->> sector of that partition.
->>
->> Note some actions are per device, thus we don't filter 0-sector 
->> events.
->>
->> The original patch and discussion can be found here:
->> 	http://marc.info/?l=linux-btrace&m=122949374214540&w=2
->>
->> Signed-off-by: Shawn Du <duyuyang@gmail.com>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Thanks - beyond the small detail i mailed about a few minutes ago 
-> the series looks good: i'll queue this up in tracing/blktrace unless 
-> Jens has second thoughts.
-> 
-> Lets note that this approach still has the (long existing) 
-> limitation that only one device can be block-traced at a time.
-> 
+Tejun Heo <tj@kernel.org> writes:
 
-No, both userspace blktrace and ftrace-plugin trace can trace
-more than one device at a time.
+> Eric W. Biederman wrote:
+>> Do you know of a case where we actually have multiple tasks accessing
+>> a file simultaneously?
+>
+> I don't have anything at hand but multithread/process server accepting
+> on the same socket comes to mind.  I don't think it would be a very
+> rare thing.  If you confine the scope to character devices or sysfs,
+> it could be quite rare tho.
 
- # btrace /dev/sda /dev/dm-0
+Yes.  I think I can safely exclude sockets, and not bother with
+reference counting them.
 
-or
+The only strong evidence I have that multi-threading on a single file
+descriptor is likely to be common is that we have pread and pwrite
+syscalls.  At the same time the number of races we have in struct file
+if it is accessed by multiple threads at the same time, suggests
+that at least for cases where you have an offset it doesn't happen often.
 
- # echo 1 > /sys/block/sda/trace/enable
- # echo 1 > /sys/block/dm-0/trace/enable
+I cringe when I see per cpu counters for something like files that we
+are likely to have a lot of.  I keep imagining a quadratic explosion
+in data size.  In practice we are likely to have a small cpu count <=
+8-16 cpus so it is likely ok.  Especially if we are only allocating 8
+bytes per cpu per file.  I guess in total that is at most 128K per file.
+8bytes*16k cpus.  With the default system file-max on my systems 203871
+to 705863, it looks like we would max out at between 1M and 5M per cpu.
+Still a lot but survivable.
 
-> Furthermore, various other aspects of act_log_check() itself could 
-> be expressed in terms of per tracepoint filters as well: the PID 
-> filter field for example - which is supported in the ioctl ABI but 
-> currently not exposed in the user-space blktrace utility. Same goes 
-> for the action mask which is frequently used.
-> 
+Somewhere it all falls down, but only if you max out a very rare
+very large machine, and that seems to be case with just about everything.
 
-Actually action mask can be specified by 'blktrace -a/-A mask/mask_name'
+Which all leads me to say that if we can avoid per cpu memory and not impact
+performance I want to do that.
 
-But yes the pid filter is not exposed in user-space blktrace.
-
-> But before we can lift all these limitations and can have equivalent 
-> functionality in the generic event tracer we still need more filter 
-> engine infrastructure work (range operators and dev_t field 
-> support). Plus TRACE_EVENT() based blk tracepoints.
-> 
-> Once we have that, the conversion will be straightforward: all 
-> existing filter functionality of blktrace is static, so it will map 
-> directly to new-style filter expressions. That will give us block 
-> tracing for an arbitrary number of block devices (including the 
-> basic mode of 'trace all block IO in the system') and a much wider 
-> range of filtering capabilities.
-> 
-> Thanks,
-> 
-> 	Ingo
-> 
-> 
+Eric
