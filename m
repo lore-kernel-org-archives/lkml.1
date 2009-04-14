@@ -1,117 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZDNDfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZDNDje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbZDNDfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 23:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZDNDee
+	id S1753869AbZDNDje (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 23:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZDNDjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 23:34:34 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:51054 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786AbZDNDeb (ORCPT
+	Mon, 13 Apr 2009 23:39:24 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:21204 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbZDNDjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 23:34:31 -0400
+	Mon, 13 Apr 2009 23:39:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=woBeJNtbftJ5OtXuvM6+bA+fmuaNJXLfArIsKVHJ4qGNH43qsvIjhyFCCeTnOWB+If
-         48gZ+wwKwLyimOZejbDzhw78OaRUBdpqs3u9IQTsq66RGceXhGwP3KyoJtqiyCINsB1Z
-         ET06o7/zf1EulpINKpo5zGQB/FwkUs55CSaRE=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Alessio Igor Bogani <abogani@texware.it>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: [PATCH 3/3] kill-the-BKL/reiserfs: only acquire the write lock once in reiserfs_dirty_inode
-Date: Tue, 14 Apr 2009 05:34:25 +0200
-Message-Id: <1239680065-25013-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.1
-In-Reply-To: <1239680065-25013-1-git-send-email-fweisbec@gmail.com>
-References: <1239680065-25013-1-git-send-email-fweisbec@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=kOVD1vnEfYifqLqcM2RrD0KvaS68HrNIjPgBqov5lHF8X3dgxUA2DhcXxpqTXV4VCX
+         Isw+tieWp9awTHZQtN6OTCTv7Qah4zeKjdpSoPgTcrrYh0SNt9fGyx5+wUcmkVss425Y
+         4j4BMBxiHjVAd4We6yRmYrsPMCIAlZXSJULdM=
+Message-ID: <49E40597.8070901@gmail.com>
+Date: Tue, 14 Apr 2009 12:40:07 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: jimyeh98@acard.com
+CC: Jeff Garzik <jeff@garzik.org>, jason wu <jason_wu@acard.com>,
+       =?UTF-8?B?IuiOiuaWh+iIiShKYXNvbiBDaHVhbmcpIg==?= <jason@acard.com>,
+       =?UTF-8?B?IumZs+WKm+iqoChSaWNoYXJkIENoZW4pIg==?= <rchern@acard.com>,
+       =?UTF-8?B?Iue/geiMguizgChEYW5pZWwgV2VuZyki?= <dweng@acard.com>,
+       =?UTF-8?B?IuWQs+S9s+eSiyhMYXVyZW5jZSBXdSki?= <laurence@acard.com>,
+       =?UTF-8?B?IumZs+W+t+WogShEZXJ3ZWkgQ2hlbiki?= <derwei@acard.com>,
+       =?UTF-8?B?IumZs+mHkea4hShHZWluZ0NoaW5nIENoZW4pIg==?= 
+	<geingching@acard.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Fw: [PATCH] ahci: add ACard 8620 support (rough draft)
+References: <000d01c9b815$73006700$b500a8c0@JasonWuNB> <49E31219.1000301@acard.com> <49E323E1.90907@garzik.org> <49E3F4B0.1080909@acard.com>
+In-Reply-To: <49E3F4B0.1080909@acard.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix a deadlock
+Jim Yeh wrote:
+> Dear Jeff,
+> 
+> Thanks for your explanation. We agree with you.
+> 
+> I'll prepare the hardware for your testing. The form factor of PCB will
+> be a 32bit PCI-base add-on card. Please advise the address for both of
+> yours. It is expected to be sent by next week.
 
-reiserfs_dirty_inode() is the super_operations::dirty_inode() callback
-of reiserfs. It can be called from different contexts where the write
-lock can be already held.
+My address is
 
-But this function also grab the write lock (possibly recursively).
-Subsequent release of the lock before sleep will actually not release
-the lock if the caller of mark_inode_dirty() (which in turn calls
-reiserfs_dirty_inode()) already owns the lock.
+ Bekgung Dongyang Paragon B#2107
+ Jeongja, Bundang, Seongnam, Kyoungki
+ South Korea
+ zip: 463842
+ cell: +82-10-5488-4679 (please print on top of the package)
 
-A typical case:
+Thanks.
 
-reiserfs_write_end() {
-	acquire_write_lock()
-	mark_inode_dirty() {
-		reiserfs_dirty_inode() {
-			reacquire_write_lock() {
-				journal_begin() {
-					do_journal_begin_r() {
-						/*
-						 * fail to release, still
-						 * one depth of lock
-						 */
-						release_write_lock()
-						reiserfs_wait_on_write_block() {
-							wait_event()
-
-The event is usually provided by something which needs the write lock but
-it hasn't been released.
-
-We use reiserfs_write_lock_once() here to ensure we only grab the
-write lock in one level.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- fs/reiserfs/super.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index 1ac4fcb..f6c5606 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -567,25 +567,28 @@ static void reiserfs_dirty_inode(struct inode *inode)
- 	struct reiserfs_transaction_handle th;
- 
- 	int err = 0;
-+	int lock_depth;
-+
- 	if (inode->i_sb->s_flags & MS_RDONLY) {
- 		reiserfs_warning(inode->i_sb, "clm-6006",
- 				 "writing inode %lu on readonly FS",
- 				 inode->i_ino);
- 		return;
- 	}
--	reiserfs_write_lock(inode->i_sb);
-+	lock_depth = reiserfs_write_lock_once(inode->i_sb);
- 
- 	/* this is really only used for atime updates, so they don't have
- 	 ** to be included in O_SYNC or fsync
- 	 */
- 	err = journal_begin(&th, inode->i_sb, 1);
--	if (err) {
--		reiserfs_write_unlock(inode->i_sb);
--		return;
--	}
-+	if (err)
-+		goto out;
-+
- 	reiserfs_update_sd(&th, inode);
- 	journal_end(&th, inode->i_sb, 1);
--	reiserfs_write_unlock(inode->i_sb);
-+
-+out:
-+	reiserfs_write_unlock_once(inode->i_sb, lock_depth);
- }
- 
- #ifdef CONFIG_REISERFS_FS_POSIX_ACL
 -- 
-1.6.1
-
+tejun
