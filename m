@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZDNNAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZDNNXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbZDNNAG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZDNM7w
+	id S1755562AbZDNNXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZDNNXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:59:52 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32940 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752339AbZDNM7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:59:51 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 4/4] parport_pc: Fix build failure
-	drivers/parport/parport_pc.c for powerpc
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Tue, 14 Apr 2009 14:58:41 +0100
-Message-ID: <20090414135828.13935.22659.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090414135501.13935.13500.stgit@t61.ukuu.org.uk>
-References: <20090414135501.13935.13500.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 14 Apr 2009 09:23:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45040 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754429AbZDNNXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 09:23:34 -0400
+Date: Tue, 14 Apr 2009 15:23:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30-rc1 - nmi_watchdog broken?
+Message-ID: <20090414132319.GB4403@elte.hu>
+References: <200904140000.30155.edt@aei.ca> <20090414084232.GG27003@elte.hu> <200904140829.21493.edt@aei.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904140829.21493.edt@aei.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tony Breeds <tony@bakeyournoodle.com>
 
-In commit 51dcdfec6a274afc1c6fce180d582add9ff512c0 (parport: Use the PCI
-IRQ if offered) parport_pc_probe_port() gained an irqflags arg.  This
-isn't being supplied on powerpc.  This patch make powerpc fallback to
-the old behaviour, that is using "0" for irqflags.
+* Ed Tomlinson <edt@aei.ca> wrote:
 
-Fixes build failure:
-In file included from drivers/parport/parport_pc.c:68:
-arch/powerpc/include/asm/parport.h: In function 'parport_pc_find_nonpci_ports':
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-make[3]: *** [drivers/parport/parport_pc.o] Error 1
+> On Tuesday 14 April 2009 04:42:32 Ingo Molnar wrote:
+> > 
+> > * Ed Tomlinson <edt@aei.ca> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > I've been having fun finding bugs in 30-rc1.  One of them is a 
+> > > hard freeze.  I've not seen this type of problem on this hardware 
+> > > before 30-rc1 - so I doubt if its hardware.  The best way I know 
+> > > to debug a hard hang is with the nmi_watchdog.  I just cannot get 
+> > > it to work.
+> > 
+> > [ Btw., have you tried CONFIG_PROVE_LOCKING=y - does it produce
+> >   anything before or at the hard lockup point? ]
+> > 
+> > > The system is a 3 core amd cpu on a 790gx chipset.
+> > > 
+> > > If I boot the nmi_watchdog=1 it complains that lapci is not 
+> > > available and the boot stops.  Same problem if I change the 
+> > > clocksource to tsc, If I disable highres timers it panics.  If I 
+> > > use nmi_watchdog=2 it panics. Am I doing something wrong or have I 
+> > > hit a bug?
+> > > 
+> > > Logs of boots with and without highres timers inlined below.
+> > 
+> > hm, nmi_watchdog=1 acting funny is not unheard of. But 
+> > nmi_watchdog=2 should really work. How does it panic, do
+> > you have a capture of that?
+> 
+> I had not tried nmi_watchdog=2 highres=off.  This works.  Looks 
+> like there is a conflict between highres timers and nmi_watchdog 
+> here.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+yes. Both use a limited resource of the lapic so we get one or the 
+other.
 
- arch/powerpc/include/asm/parport.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+( Might be fixable once we migrate the NMI watchdog code over to 
+  perfcounters. )
 
-
-diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
-index 414c50e..94942d6 100644
---- a/arch/powerpc/include/asm/parport.h
-+++ b/arch/powerpc/include/asm/parport.h
-@@ -29,7 +29,7 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 		prop = of_get_property(np, "interrupts", NULL);
- 		if (!prop)
- 			continue;
--		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL) != NULL)
-+		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
- 			count++;
- 	}
- 	return count;
-
+	Ingo
