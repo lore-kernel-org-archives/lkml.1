@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZDNLF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZDNLH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbZDNLF2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 07:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZDNLFS
+	id S1753211AbZDNLH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 07:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZDNLHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 07:05:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42311 "EHLO mx3.mail.elte.hu"
+	Tue, 14 Apr 2009 07:07:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42606 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbZDNLFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 07:05:17 -0400
-Date: Tue, 14 Apr 2009 13:04:57 +0200
+	id S1751314AbZDNLHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 07:07:17 -0400
+Date: Tue, 14 Apr 2009 13:06:10 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing/filters: allow user-input to be
-	integer-like string
-Message-ID: <20090414110457.GN3558@elte.hu>
-References: <49E2A594.4060306@cn.fujitsu.com> <20090413144513.GF5977@nowhere> <20090413222951.GG8514@elte.hu> <1239682887.7011.54.camel@tropicana> <49E42C04.3020304@cn.fujitsu.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/7] use smp_call_function_single() in
+	arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+Message-ID: <20090414110610.GO3558@elte.hu>
+References: <20090413000630.21C09DE12A@ozlabs.org> <20090413001657.GA24946@redhat.com> <200904141835.41961.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49E42C04.3020304@cn.fujitsu.com>
+In-Reply-To: <200904141835.41961.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,29 +40,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> >> This also conflicts with Tom's rewrite of the filter engine to make 
-> >> it on-the-fly modifiable.
-> >>
-> >> Li, mind reworking your series against latest -tip? (it has Tom's 
-> >> patch included already)
-> >>
-> >> Also, it would be nice to hear Tom's opinion about this series as 
-> >> well. I know there's new parsing features planned - if it's better 
-> >> that way then Tom you might want to pick up Li's patches and submit 
-> >> them together with any pending or upcoming changes? We can apply 
-> >> them directly too if that's easier to you.
-> >>
+> On Mon, 13 Apr 2009 09:46:57 am Dave Jones wrote:
+> > On Mon, Apr 13, 2009 at 09:30:02AM +0930, Rusty Russell wrote:
+> >  > From: Andrew Morton <akpm@linux-foundation.org>
+> >  > 
+> >  > Impact: fix sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
+> >  > 
 > > 
-> > I had started on the new parser a couple weeks ago, but got sidetracked
-> > by other things.  I'll be getting back to it this week, but until it's
-> > ready it wouldn't hurt for you to pick up Li's patches, and I'll make
-> > any changes I need to in the new code.
-> > 
+> > This, and the other cpufreq related patches in this series look 
+> > sound to me. Given the other non-cpufreq bits in the series, do 
+> > you want to just have these go through Andrew and onto Linus?
 > 
-> Ok, I'll rebase those patches and send to Ingo.
+> Sure, that's certainly easiest for me.  I'd assumed Ingo would 
+> snarf them, but as he's suggested -mm, Andrew?
 
-Thanks!
+I tend to let the snarfing be done by the tree which introduced a 
+regression to begin with ;-)
 
 	Ingo
