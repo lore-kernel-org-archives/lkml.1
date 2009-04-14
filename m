@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZDNTYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZDNT1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbZDNTYX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 15:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZDNTYG
+	id S1754008AbZDNT1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 15:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZDNT1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 15:24:06 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:46669 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZDNTYE (ORCPT
+	Tue, 14 Apr 2009 15:27:35 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:31402 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbZDNT1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 15:24:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XeN6KjNSMGQ9uJVeHQPWaEWP4MpUPOgxrgS/mbcC6UaPGk/oNOTpTavk++TUccVYgD
-         Fh5TXv+cxl9/Qs5axiXTporMaFzjzHB4qhA6oge8weFDtS2NWx0a0SIO0dexv+LQVDYb
-         VStN4jUc79CGTZzzqvGGj0L2f/z3tUtQwE9AU=
-Date: Tue, 14 Apr 2009 22:24:40 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Joe Perches <joe@perches.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] MAINTAINERS - Update KMEMTRACE pattern after file
-	rename
-Message-ID: <20090414192440.GA5485@localhost>
-References: <1239734197.7994.8.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239734197.7994.8.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 14 Apr 2009 15:27:34 -0400
+Subject: Re: Out-of-order writing by disk drives
+From: Chris Mason <chris.mason@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
+       Anton Ertl <anton@mips.complang.tuwien.ac.at>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090414185058.GZ14687@one.firstfloor.org>
+References: <87r5zv72cl.fsf@basil.nowhere.org>
+	 <E1Ltla2-0000bS-5j@a4.complang.tuwien.ac.at>
+	 <20090414172406.GX14687@one.firstfloor.org> <49E4CA75.902@rtr.ca>
+	 <20090414175433.GY14687@one.firstfloor.org>
+	 <49E4D16C.7030809@msgid.tls.msk.ru>
+	 <20090414185058.GZ14687@one.firstfloor.org>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 15:27:06 -0400
+Message-Id: <1239737226.28321.22.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.49E4E38F.0145:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 11:36:37AM -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
+On Tue, 2009-04-14 at 20:50 +0200, Andi Kleen wrote:
+> On Tue, Apr 14, 2009 at 10:09:48PM +0400, Michael Tokarev wrote:
+> > Andi Kleen wrote:
+> > []
+> > >Where I see it as a problem is with virtualization; LVM seems to be the
+> > >most sane way to manage file systems for lots of VMs and you likely
+> > >want barriers there too.
+> > 
+> > Virtualisation is the best fit for partitionable raid1 arrays.
+> > It is, in fact, what we have here -- I tested LVM but rejected
+> > it because of this very issue - it does not support barriers.
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5b4f1dd..d8fe7eb 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3267,7 +3267,7 @@ P:	Eduard - Gabriel Munteanu
->  M:	eduard.munteanu@linux360.ro
->  L:	linux-kernel@vger.kernel.org
->  S:	Maintained
-> -F:	Documentation/vm/kmemtrace.txt
-> +F:	Documentation/trace/kmemtrace.txt
->  F:	include/trace/kmemtrace.h
->  F:	kernel/trace/kmemtrace.c
->  
-> 
+> It does now as of 2.6.29, as long as you only have a single
+> underlying device and use dm linear.
 
-Thanks, I'm acking it.
+Eric Sandeen noticed this is actually still broken:
 
-Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+http://lkml.org/lkml/2009/3/23/360
+
+-chris
+
 
