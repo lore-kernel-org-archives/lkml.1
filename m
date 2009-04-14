@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZDNQBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbZDNQAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbZDNQBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbZDNQBA
+	id S1757539AbZDNQAz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZDNQAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:01:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52971 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbZDNQA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:00:59 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix lpfc_parse_bg_err()'s use of do_div()
-To: james.smart@emulex.com, linux-scsi@vger.kernel.org
-Cc: dhowells@redhat.com, akpm@linux-foundation.org,
+	Tue, 14 Apr 2009 12:00:43 -0400
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:33570 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757179AbZDNQAm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:00:42 -0400
+Subject: Re: [linux-pm] [RFC][PATCH] Add late pm notifiers for hibernate
+From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, schwidefsky@de.ibm.com,
+       ubraun@linux.vnet.ibm.com, heiko.carstens@de.ibm.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 14 Apr 2009 16:59:49 +0100
-Message-ID: <20090414155948.27755.2131.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <Pine.LNX.4.44L0.0904091414340.2992-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0904091414340.2992-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 14 Apr 2009 18:00:43 +0200
+Message-Id: <1239724843.4295.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix lpfc_parse_bg_err()'s use of do_div().  It should be passing a 64-bit
-variable as the first parameter.  However, since it's only using a 32-bit
-variable, it doesn't need to use do_div() at all, but can instead use the
-division operator.
+Hallo Alan,
 
-This deals with the following warnings:
+Am Donnerstag, den 09.04.2009, 14:17 -0400 schrieb Alan Stern:
+> On Wed, 8 Apr 2009, Michael Holzheu wrote:
+> 
+> > From: Michael Holzheu <holzheu at linux.vnet.ibm.com>
+> > 
+> > This patch is a suggestion to solve the issue reported by Ursula Braun:
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-March/020443.html
+> > 
+> > On s390 we have device drivers that don't belong to a Linux bus. Therefore
+> > we can't use the PM device callbacks (dev_pm_ops). The only way to get
+> > informed that we hibernate or resume is the pm_notifier_call_chain.
+> 
+> I'm curious to know what device drivers these are that don't have a 
+> bus.  Could they use the platform bus?  That's more or less what it's 
+> intended for -- devices that don't fit anywhere else.
 
-  CC      drivers/scsi/lpfc/lpfc_scsi.o
-drivers/scsi/lpfc/lpfc_scsi.c: In function 'lpfc_parse_bg_err':
-drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: comparison of distinct pointer types lacks a cast
-drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: right shift count >= width of type
-drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: passing argument 1 of '__div64_32' from incompatible pointer type
+Examples are:
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+* xpram: drivers/s390/block/xpram.c - Block device driver that exports  
+         expanded ram as block devices.
+* sclp:  drivers/s390/char/sclp.c - Driver to talk to the s390
+         service element. E.g. used to control the console.
+* and some others like DCSS driver etc ...
 
- drivers/scsi/lpfc/lpfc_scsi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Your suggestion with the platform bus looks good. Probably we can use it
+for those drivers. At least for xpram and sclp. For the other device
+drivers we are still discussing.
 
+> > Unfortunately some of our drivers need a frozen userspace to do their
+> > hibernate actions and the current notifiers are called before userspace is
+> > frozen. Another point is that we want our console driver to suspend as late
+> > as possible so that we can see all the hibernate progress messages on the
+> > console.
+> 
+> It's possible to avoid suspending the console at all if you boot with
+> "no_console_suspend" as a kernel parameter.
 
-diff --git a/drivers/scsi/lpfc/lpfc_scsi.c b/drivers/scsi/lpfc/lpfc_scsi.c
-index b1bd3fc..36fd2e7 100644
---- a/drivers/scsi/lpfc/lpfc_scsi.c
-+++ b/drivers/scsi/lpfc/lpfc_scsi.c
-@@ -1394,7 +1394,7 @@ lpfc_parse_bg_err(struct lpfc_hba *phba, struct lpfc_scsi_buf *lpfc_cmd,
- 		 */
- 		cmd->sense_buffer[8] = 0;     /* Information */
- 		cmd->sense_buffer[9] = 0xa;   /* Add. length */
--		do_div(bghm, cmd->device->sector_size);
-+		bghm /= cmd->device->sector_size;
- 
- 		failing_sector = scsi_get_lba(cmd);
- 		failing_sector += bghm;
+For s390 we have real console devices that do IO and get interrupts. We
+have to suspend these devices. The problem is that when the console
+device is suspended, we do not get any more messages - independent from
+no_console_suspend.
+
+In case of panic, we have implemented a hack, where we register a panic
+notifier that enables the console again and writes out the last
+messages. This ensures that when the kernel crashes during suspend or
+resume we get at least the last messages. Not nice, but useful.
+
+Michael
 
