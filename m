@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbZDNQ5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZDNQ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbZDNQ5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZDNQ5R
+	id S1756664AbZDNQ6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbZDNQ5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:57:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52105 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757908AbZDNQ5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:57:16 -0400
-Date: Tue, 14 Apr 2009 09:40:29 -0700
-From: Greg KH <gregkh@suse.de>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: arjan@linux.intel.com, jmorris@namei.org, alan@redhat.com,
-       hooanon05@yahoo.co.jp, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: current->mm == NULL in security_vm_enough_memory().
-Message-ID: <20090414164029.GC4791@suse.de>
-References: <200903260130.n2Q1U9EJ040448@www262.sakura.ne.jp> <alpine.LRH.2.00.0903261236580.30336@tundra.namei.org> <200904092105.HBG52601.MHFOtQOLSVFOFJ@I-love.SAKURA.ne.jp> <200904132127.FBG30222.OOFFtQLJFOHSMV@I-love.SAKURA.ne.jp>
+	Tue, 14 Apr 2009 12:57:25 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:49801 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757913AbZDNQ5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:57:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=In5H4OapI0plgKgbJJEjO78HpahM9y9qVeOOI3m4bArrA9EYp8wvgPyjUosjfAJcz4
+         p/szuJRM10iC1CmmOqY9mNQbgAioiwzR83OKG5iWrDsFRYG8KOglj/7jiBTO5K8CeB3H
+         2JzlR/wgaSGxr0+LqdJ3JsuDSod2AnOmWsTmQ=
+Date: Tue, 14 Apr 2009 20:57:34 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/30] cr: core stuff
+Message-ID: <20090414165734.GB27923@x200.localdomain>
+References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain> <1239723694.32604.62.camel@nimitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904132127.FBG30222.OOFFtQLJFOHSMV@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1239723694.32604.62.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 09:27:29PM +0900, Tetsuo Handa wrote:
-> Hello.
+On Tue, Apr 14, 2009 at 08:41:34AM -0700, Dave Hansen wrote:
+> On Tue, 2009-04-14 at 19:27 +0400, Alexey Dobriyan wrote:
+> > > Also, since Dave introduced the fops->checkpoint(), we (or at least I)
+> > > have been struck by the ugly assymetry with checkpoint() being in fops,
+> > > and restart() not.  Do you have an idea for fixing that?
+> > 
+> > Module can legally support C/R for its files.
+> > 
+> > In the end it most certainly will end up with module registering restart
+> > hook for file type N.
+> > 
+> > Or module registering hook to restart object type N.
 > 
-> I'm experiencing
+> Yeah, that was my expectation as well.  There's a point when we just
+> have too many kinds of checkpoint objects and the switch statements get
+> out of hand.  Oversimplified, of course, but:
 > 
->   WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
+> 	init_restart_handler(CR_FD_GENERIC, restore_generic_fd);
+> 	init_restart_handler(CR_FD_SOCKET, restore_socket);
+> 	init_restart_handler(CR_FD_PIPE, restore_pipe);
 > 
-> messages.
-> "git bisect" reported that commit f520360d93cdc37de5d972dac4bf3bdef6a7f6a7
-> is the cause of this warning. May I ignore this warning?
+> The only question to me is whether we allow the handler functions to do
+> further reading of the checkpoint image or whether the higher-level code
+> should be feeding them all the data they'll need in some way.
 
-I don't know, can you provide the full warning?
+It depends, but since you don't know what it's in dumped state, it's
+better to leave freedom for restart hook.
 
-And what kernel version is this happening on?
-
-thanks,
-
-greg k-h
+It gets restart context as cookie, position of start of an object, and
+exported functions cr_read/cr_pread/whatever which accept cooked
+context.
