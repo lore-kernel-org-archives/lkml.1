@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbZDNQMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZDNQNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbZDNQMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZDNQMZ
+	id S1757254AbZDNQNu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZDNQNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:12:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33068 "EHLO mx2.redhat.com"
+	Tue, 14 Apr 2009 12:13:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33090 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752436AbZDNQMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:12:25 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix lpfc_parse_bg_err()'s use of do_div()
-To: torvalds@osdl.org, tj@kernel.org, mingo@elte.hu, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Tue, 14 Apr 2009 17:08:34 +0100
-Message-ID: <20090414160834.28090.75128.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1752436AbZDNQNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:13:37 -0400
+Message-ID: <49E4B654.6060101@redhat.com>
+Date: Tue, 14 Apr 2009 19:14:12 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
+References: <1239653210-10422-1-git-send-email-glommer@redhat.com> <49E45894.7090700@redhat.com> <49E4B4D4.1020903@zytor.com>
+In-Reply-To: <49E4B4D4.1020903@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix lpfc_parse_bg_err()'s use of do_div().  It should be passing a 64-bit
-variable as the first parameter.  However, since it's only using a 32-bit
-variable, it doesn't need to use do_div() at all, but can instead use the
-division operator.
+H. Peter Anvin wrote:
+> Avi Kivity wrote:
+>   
+>> The comment about repeating 'mov ss' in the manual has that wonderful
+>> word in it, May.  That means we're perfectly allowed to ignore it and
+>> just set the flag unconditionally.
+>>
+>>     
+>
+> Realistically, though, this should only be done for a limited number of
+> sequential instructions.
+>
+>   
 
-This deals with the following warnings:
+Why?  Do you see a guest filling all of memory with 'mov ss' and 
+expecting to break out of it via an interrupt?
 
-  CC      drivers/scsi/lpfc/lpfc_scsi.o
-drivers/scsi/lpfc/lpfc_scsi.c: In function 'lpfc_parse_bg_err':
-drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: comparison of distinct pointer types lacks a cast
-drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: right shift count >= width of type
-drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: passing argument 1 of '__div64_32' from incompatible pointer type
+>> I doubt we'll ever see a repeated 'mov ss', once is more than enough.
+>>     
+>
+> True enough, except maliciously.
+>   
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Why do we care?  The guest can only harm itself, and if it wants to 
+disable interrupts, it would be a lot easier for it to run a plain 'cli'.
 
- drivers/scsi/lpfc/lpfc_scsi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I guess it would be a problem if we emulated 'mov ss' for ordinary 
+userspace or vm86 mode, but we don't.
 
-
-diff --git a/drivers/scsi/lpfc/lpfc_scsi.c b/drivers/scsi/lpfc/lpfc_scsi.c
-index b1bd3fc..36fd2e7 100644
---- a/drivers/scsi/lpfc/lpfc_scsi.c
-+++ b/drivers/scsi/lpfc/lpfc_scsi.c
-@@ -1394,7 +1394,7 @@ lpfc_parse_bg_err(struct lpfc_hba *phba, struct lpfc_scsi_buf *lpfc_cmd,
- 		 */
- 		cmd->sense_buffer[8] = 0;     /* Information */
- 		cmd->sense_buffer[9] = 0xa;   /* Add. length */
--		do_div(bghm, cmd->device->sector_size);
-+		bghm /= cmd->device->sector_size;
- 
- 		failing_sector = scsi_get_lba(cmd);
- 		failing_sector += bghm;
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
