@@ -1,204 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZDNVAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZDNVBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbZDNVAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZDNVA2
+	id S1753793AbZDNVBs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 17:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZDNVBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:00:28 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:44484 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbZDNVA1 (ORCPT
+	Tue, 14 Apr 2009 17:01:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:31835 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbZDNVBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:00:27 -0400
-Subject: [PATCH 1/2] Add block_write_full_page_endio for passing endio
- handler
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <1239742633.28321.39.camel@think.oraclecorp.com>
-References: <1239742633.28321.39.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 16:59:13 -0400
-Message-Id: <1239742754.28321.41.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49E4F927.0151:SCFMA4539814,ss=1,fgs=0
+	Tue, 14 Apr 2009 17:01:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hYCCcbPIsVZ4BoyIPdalfH047VxDBjjZA/lgAi1FEnyFEgaeJzxzy1RWzCTnEuE8XG
+         XxbiCsqX2LqZUTFBWpOXjSFNHHuCaOtrUVOgzCrbD4kaH/xUkyGHECckeEpU/rEmKzta
+         mihfS1nAdyaU43+DypQlx1ibdkFq4xpWUcKME=
+Date: Wed, 15 Apr 2009 01:01:50 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.osdl.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Creating tasks on restart: userspace vs kernel
+Message-ID: <20090414210150.GA28967@x200.localdomain>
+References: <49E40662.2040508@cs.columbia.edu> <20090414163633.GE27461@x200.localdomain> <49E4D89D.9060903@cs.columbia.edu> <20090414195909.GA28353@x200.localdomain> <49E4EDCD.5010406@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E4EDCD.5010406@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 14, 2009 at 04:10:53PM -0400, Oren Laadan wrote:
+> 
+> 
+> Alexey Dobriyan wrote:
+> >>> In the end correctness of chopping will be equal to how good user
+> >>> understands that two task_struct's are independent of each other.
+> >>>
+> >>>> But it will still be a useful tool for many use cases, like batch cpu jobs,
+> >>>> some servers, vnc sessions (if you want graphics) etc. Imagine you run
+> >>>> 'octave' for a week and must reboot now - 'octave' wouldn't care if
+> >>>> you checkpointed it and then restart with a different pid !
+> >>>>
+> >>>> <3> Clone with pid:
+> >>>>
+> >>>> To restart processes from userspace, there needs to be a way to
+> >>>> request a specific pid--in the current pid_ns--for the child process
+> >>>> (clearly, if it isn't in use).
+> >>>>
+> >>>> Why is it a disadvantage ?  to Linus, a syscall clone_with_pid()
+> >>>> "sounds like a _wonderful_ attack vector against badly written
+> >>>> user-land software...".  Actually, getting a specific pid is possible
+> >>>> without this syscall.  But the point is that it's undesirable to have
+> >>>> this functionality unrestricted.
+> >>>>
+> >>>> So one option is to require root privileges. Another option is to
+> >>>> restrict such action in pid_ns created by the same user. Even more so,
+> >>>> restrict to only containers that are being restarted.
+> >>> You want to do small part in userspace and consequently end up with hacks
+> >>> both userspace-visible and in-kernel.
+> >> I want to extend existing kernel interface to leverage fork/clone
+> >> from user space, AND to allow the flexibility mentioned above (which
+> >> you conveniently ignored).
+> >>
+> >> All hacks are in-kernel, aren't they ?
+> > 
+> > mktree.c can be vieved as hack, why not?
+> 
+> Lol .. I meant "all kernel hacks are in-kernel" :)
+> 
+> > 
+> > The whole existence of these requirements. You want new syscall or SET_NEX_PID
+> > or /proc file or something.
+> 
+> Or embed it into a restart(2) call with special argument.
+> 
+> > 
+> >> As for asking for a specific pid from user space, it can be done by:
+> >> * a new syscall (restricted to user-owned-namespace or CAP_SYS_ADMIN)
+> >> * a sys_restart(... SET_NEXT_PID) interface specific for restart (ugh)
+> >> * setting a special /proc/PID/next_id  file which is consulted by fork
+> > 
+> > /proc/*/next_id was disscussed and hopefully died, but no.
+> > 
+> >> and in all cases, limit this so it can only allowed in a restarting
+> >> container, under the proper security model (again, e.g., Serge's
+> >> suggestion).
+> >>
+> >>> Pids aren't special, they are struct pid, dynamically allocated and
+> >>> refcounted just like any other structtures.
+> >>>
+> >>> They _become_ special for you intended method of restart.
+> >> They are special. And I allow them not to be restored, as well, if
+> >> the use case so wishes.
+> > 
+> > The use case is to restore as much as possible to the same state as
+> > equal as possible. Not going with fork_with_pid() in any form helps
+> > kernel to ensure correctness of restore and helps to avoid surprise
+> > failure modes from user POV.
+> > 
+> >>> You also have flags in nsproxy image (or where?) like "do clone with
+> >>> CLONE_NEWUTS".
+> >> Nope. Read the code.
+> > 
+> > Which code?
+> > 
+> > 	static int cr_write_namespaces(struct cr_ctx *ctx, struct task_struct *t)
+> > 	{
+> > 		...
+> > 
+> > 		new_uts = cr_obj_add_ptr(ctx, nsproxy->uts_ns,
+> > 					&hh->uts_ref, CR_OBJ_UTSNS, 0);
+> > 		if (new_uts < 0) {
+> > 			ret = new_uts;
+> > 			goto out;
+> > 		}
+> > 
+> > 		hh->flags = 0;
+> > 		if (new_uts)
+> > 	===>		hh->flags |= CLONE_NEWUTS;
+> > 
+> > 		ret = cr_write_obj(ctx, &h, hh);
+> > 			...
+> > 
+> >>> This is unneeded!
+> >>>
+> >>> nsproxy (or task_struct) image have reference (objref/position) to uts_ns image.
+> >>>
+> >>> On restart, one lookups object by reference or restore it if needed,
+> >>> takes refcount and glue. Just like with every other two structures.
+> >> That's exactly how it's done.
+> > 
+> > Not for uts_ns and future namespaces.
+> > 
+> > 	ret = cr_restore_utsns(ctx, hh->uts_ref, hh->flags);
+> > 						 ^^^^^^^^^
+> > 						 comes from disk
+> 
+> Where else would it come from ?  that's part of the state saved during
+> checkpoint.
 
-block_write_full_page doesn't allow the caller to control what happens
-when the IO is over.  This adds a new call named block_write_full_page_endio
-so the buffer head end_io handler can be provided by the caller.
+This is bogus part saved during checkpoint.
 
-This will be used by the ext3 data=guarded mode to do i_size updates
-in a workqueue based end_io handler.  end_buffer_async_write is also
-exported so it can be called to do the dirty work of managing
-page writeback for the higher level end_io handler.
+To restore nsproxy you only need references to uts_ns, ipc_ns, mnt_ns,
+pid_ns and net_nsm, no flags.
 
-Signed-off-by: Chris Mason <chris.mason@oracle.com>
+You can try to be smart and, consequently, end up with checks where
+a) flags tell to unshare uts_ns, but reference is the same, and
+b) flags don't tell to unshare, but reference is different.
 
----
- fs/buffer.c                 |   45 ++++++++++++++++++++++++++++++++----------
- include/linux/buffer_head.h |    3 ++
- 2 files changed, 37 insertions(+), 11 deletions(-)
+This is unneeded code coming from the way you restore nsproxy
+incorrectly.
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 13edf7a..308865b 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -360,7 +360,7 @@ still_busy:
-  * Completion handler for block_write_full_page() - pages which are unlocked
-  * during I/O, and which have PageWriteback cleared upon I/O completion.
-  */
--static void end_buffer_async_write(struct buffer_head *bh, int uptodate)
-+void end_buffer_async_write(struct buffer_head *bh, int uptodate)
- {
- 	char b[BDEVNAME_SIZE];
- 	unsigned long flags;
-@@ -438,11 +438,17 @@ static void mark_buffer_async_read(struct buffer_head *bh)
- 	set_buffer_async_read(bh);
- }
- 
--void mark_buffer_async_write(struct buffer_head *bh)
-+void mark_buffer_async_write_endio(struct buffer_head *bh,
-+				   bh_end_io_t *handler)
- {
--	bh->b_end_io = end_buffer_async_write;
-+	bh->b_end_io = handler;
- 	set_buffer_async_write(bh);
- }
-+
-+void mark_buffer_async_write(struct buffer_head *bh)
-+{
-+	mark_buffer_async_write_endio(bh, end_buffer_async_write);
-+}
- EXPORT_SYMBOL(mark_buffer_async_write);
- 
- 
-@@ -1608,7 +1614,8 @@ EXPORT_SYMBOL(unmap_underlying_metadata);
-  * unplugging the device queue.
-  */
- static int __block_write_full_page(struct inode *inode, struct page *page,
--			get_block_t *get_block, struct writeback_control *wbc)
-+			get_block_t *get_block, struct writeback_control *wbc,
-+			bh_end_io_t *handler)
- {
- 	int err;
- 	sector_t block;
-@@ -1693,7 +1700,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 			continue;
- 		}
- 		if (test_clear_buffer_dirty(bh)) {
--			mark_buffer_async_write(bh);
-+			mark_buffer_async_write_endio(bh, handler);
- 		} else {
- 			unlock_buffer(bh);
- 		}
-@@ -1746,7 +1753,7 @@ recover:
- 		if (buffer_mapped(bh) && buffer_dirty(bh) &&
- 		    !buffer_delay(bh)) {
- 			lock_buffer(bh);
--			mark_buffer_async_write(bh);
-+			mark_buffer_async_write_endio(bh, handler);
- 		} else {
- 			/*
- 			 * The buffer may have been set dirty during
-@@ -2672,7 +2679,8 @@ int nobh_writepage(struct page *page, get_block_t *get_block,
- out:
- 	ret = mpage_writepage(page, get_block, wbc);
- 	if (ret == -EAGAIN)
--		ret = __block_write_full_page(inode, page, get_block, wbc);
-+		ret = __block_write_full_page(inode, page, get_block, wbc,
-+					      end_buffer_async_write);
- 	return ret;
- }
- EXPORT_SYMBOL(nobh_writepage);
-@@ -2830,9 +2838,10 @@ out:
- 
- /*
-  * The generic ->writepage function for buffer-backed address_spaces
-+ * this form passes in the end_io handler used to finish the IO.
-  */
--int block_write_full_page(struct page *page, get_block_t *get_block,
--			struct writeback_control *wbc)
-+int block_write_full_page_endio(struct page *page, get_block_t *get_block,
-+			struct writeback_control *wbc, bh_end_io_t *handler)
- {
- 	struct inode * const inode = page->mapping->host;
- 	loff_t i_size = i_size_read(inode);
-@@ -2841,7 +2850,8 @@ int block_write_full_page(struct page *page, get_block_t *get_block,
- 
- 	/* Is the page fully inside i_size? */
- 	if (page->index < end_index)
--		return __block_write_full_page(inode, page, get_block, wbc);
-+		return __block_write_full_page(inode, page, get_block, wbc,
-+					       handler);
- 
- 	/* Is the page fully outside i_size? (truncate in progress) */
- 	offset = i_size & (PAGE_CACHE_SIZE-1);
-@@ -2864,9 +2874,20 @@ int block_write_full_page(struct page *page, get_block_t *get_block,
- 	 * writes to that region are not written out to the file."
- 	 */
- 	zero_user_segment(page, offset, PAGE_CACHE_SIZE);
--	return __block_write_full_page(inode, page, get_block, wbc);
-+	return __block_write_full_page(inode, page, get_block, wbc, handler);
- }
- 
-+/*
-+ * The generic ->writepage function for buffer-backed address_spaces
-+ */
-+int block_write_full_page(struct page *page, get_block_t *get_block,
-+			struct writeback_control *wbc)
-+{
-+	return block_write_full_page_endio(page, get_block, wbc,
-+					   end_buffer_async_write);
-+}
-+
-+
- sector_t generic_block_bmap(struct address_space *mapping, sector_t block,
- 			    get_block_t *get_block)
- {
-@@ -3335,9 +3356,11 @@ EXPORT_SYMBOL(block_read_full_page);
- EXPORT_SYMBOL(block_sync_page);
- EXPORT_SYMBOL(block_truncate_page);
- EXPORT_SYMBOL(block_write_full_page);
-+EXPORT_SYMBOL(block_write_full_page_endio);
- EXPORT_SYMBOL(cont_write_begin);
- EXPORT_SYMBOL(end_buffer_read_sync);
- EXPORT_SYMBOL(end_buffer_write_sync);
-+EXPORT_SYMBOL(end_buffer_async_write);
- EXPORT_SYMBOL(file_fsync);
- EXPORT_SYMBOL(generic_block_bmap);
- EXPORT_SYMBOL(generic_cont_expand_simple);
-diff --git a/include/linux/buffer_head.h b/include/linux/buffer_head.h
-index 7b73bb8..16ed028 100644
---- a/include/linux/buffer_head.h
-+++ b/include/linux/buffer_head.h
-@@ -155,6 +155,7 @@ void create_empty_buffers(struct page *, unsigned long,
- 			unsigned long b_state);
- void end_buffer_read_sync(struct buffer_head *bh, int uptodate);
- void end_buffer_write_sync(struct buffer_head *bh, int uptodate);
-+void end_buffer_async_write(struct buffer_head *bh, int uptodate);
- 
- /* Things to do with buffers at mapping->private_list */
- void mark_buffer_dirty_inode(struct buffer_head *bh, struct inode *inode);
-@@ -197,6 +198,8 @@ extern int buffer_heads_over_limit;
- void block_invalidatepage(struct page *page, unsigned long offset);
- int block_write_full_page(struct page *page, get_block_t *get_block,
- 				struct writeback_control *wbc);
-+int block_write_full_page_endio(struct page *page, get_block_t *get_block,
-+			struct writeback_control *wbc, bh_end_io_t *handler);
- int block_read_full_page(struct page*, get_block_t*);
- int block_is_partially_uptodate(struct page *page, read_descriptor_t *desc,
- 				unsigned long from);
+> That's for nested UTS namespaces,
 
+Just to clear terminology, UTS namespaces aren't nested, only
+PID namespaces are.
 
-
+> where a task in container called unshare().
