@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZDNWOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZDNWP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbZDNWOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZDNWOY
+	id S1753973AbZDNWP1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZDNWPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:14:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42880
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750839AbZDNWOX (ORCPT
+	Tue, 14 Apr 2009 18:15:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50250 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751307AbZDNWPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:14:23 -0400
-Date: Tue, 14 Apr 2009 15:14:15 -0700 (PDT)
-Message-Id: <20090414.151415.267444590.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: michal.simek@petalogix.com, linux-kernel@vger.kernel.org
-Subject: Re: struct exception_table_entry
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200904141636.11676.arnd@arndb.de>
-References: <49DE0EC4.4010409@petalogix.com>
-	<200904141636.11676.arnd@arndb.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 14 Apr 2009 18:15:09 -0400
+Date: Tue, 14 Apr 2009 15:09:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
+       mtosatti@redhat.com, hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com,
+       ieidus@redhat.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v3
+Message-Id: <20090414150903.b01fa3b9.akpm@linux-foundation.org>
+In-Reply-To: <1239249521-5013-1-git-send-email-ieidus@redhat.com>
+References: <1239249521-5013-1-git-send-email-ieidus@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 14 Apr 2009 16:36:11 +0200
+On Thu,  9 Apr 2009 06:58:37 +0300
+Izik Eidus <ieidus@redhat.com> wrote:
 
-> On Thursday 09 April 2009, Michal Simek wrote:
-> 
->> I am doing some cleanup things in MB MMU kernel and I looked at
->> exception_table_entry structure.
->> Only alpha use different types among others. Some arch use only
->> different names and types int/long.
->> I think that this structure could be moved to any generic location ->
->> asm-generic/uaccess.h folder.
->> 
->> I think that this structure types should be acceptable for every archs?
->> 
->> #ifndef exception_table_entry
->> struct exception_table_entry {
->>     unsigned long insn;
->>     unsigned long fixup;
->> };
->> #endif
->> 
->> What do you think?
-> 
-> Yes, sounds good to me. Have you tried using my generic version of
-> uaccess.h on microblaze? It already contains a definition like this,
-> though most of the header doesn't apply for MMU-based architectures.
-> 
-> I suppose it can be improved a bit, but should do the basic job.
+> KSM is a linux driver that allows dynamicly sharing identical memory
+> pages between one or more processes.
 
-Note that for space saving several 64-bit architectures use plain
-"int" here when they know that all kernel addresses are in the low
-32-bits of the address space.
+Generally looks OK to me.  But that doesn't mean much.  We should rub
+bottles with words like "hugh" and "nick" on them to be sure.
 
-sparc64 is one such architecture and I'd prefer if the size of these
-tables does not bloat up when you guys try to make this thing generic.
+
+>
+> ...
+>
+>  include/linux/ksm.h          |   48 ++
+>  include/linux/miscdevice.h   |    1 +
+>  include/linux/mm.h           |    5 +
+>  include/linux/mmu_notifier.h |   34 +
+>  include/linux/rmap.h         |   11 +
+>  mm/Kconfig                   |    6 +
+>  mm/Makefile                  |    1 +
+>  mm/ksm.c                     | 1674 ++++++++++++++++++++++++++++++++++++++++++
+>  mm/memory.c                  |   90 +++-
+>  mm/mmu_notifier.c            |   20 +
+>  mm/rmap.c                    |  139 ++++
+
+And it's pretty unobtrusive for what it is.  I expect we can get this
+into 2.6.31 unless there are some pratfalls which I missed.
+
