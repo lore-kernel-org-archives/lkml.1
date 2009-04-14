@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZDNQtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZDNQvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbZDNQtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZDNQti
+	id S1757491AbZDNQvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZDNQvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:49:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51387 "EHLO mx2.redhat.com"
+	Tue, 14 Apr 2009 12:51:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46349 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756487AbZDNQth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:49:37 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <aarcange@redhat.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC][PATCH v3 3/6] nfs, direct-io: fix fork vs direct-io race on nfs
-References: <20090414151204.C647.A69D9226@jp.fujitsu.com>
-	<20090414151806.C650.A69D9226@jp.fujitsu.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 14 Apr 2009 12:48:01 -0400
-In-Reply-To: <20090414151806.C650.A69D9226@jp.fujitsu.com> (KOSAKI Motohiro's
-	message of "Tue, 14 Apr 2009 15:19:24 +0900 (JST)")
-Message-ID: <x4963h7yyf2.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751330AbZDNQvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:51:05 -0400
+Date: Tue, 14 Apr 2009 18:50:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
+	inappropriate or CPU is not supported
+Message-ID: <20090414165052.GA2089@elte.hu>
+References: <1239725240.2966.4.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239725240.2966.4.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
 
-> Subject: [PATCH] nfs, direct-io: fix fork vs direct-io race on nfs
->
-> After fs/diorect-io.c fix, following testcase still fail on nfs running.
-> it's because nfs has own specific diorct-io implementation.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Same issue as 2/6.
+> +		if (!per_cpu(cpu_modelflag, cpu))
 
-Cheers,
-Jeff
+hm, on a second look - the whole cpu_model / cpu_modelflag 
+business in arch/x86/kernel/cpu/cpu_debug.c looks 
+over-complicated and broken. You encode it into a 
+'modelflag':
+
+                per_cpu(cpu_model, cpu) = ((cpui->x86_vendor << 16) |
+                                           (cpui->x86 << 8) |
+                                           (cpui->x86_model));
+
+just to decode it later on:
+
+        flag = per_cpu(cpu_model, cpu);
+
+        switch (flag >> 16) {
+
+That does not make much sense. Please use a proper 
+boot_cpu_data.x86_vendor switch() statement, ok?
+
+	Ingo
