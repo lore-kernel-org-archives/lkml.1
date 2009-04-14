@@ -1,99 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZDNXjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZDNXoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbZDNXjw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 19:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZDNXjm
+	id S1754527AbZDNXoW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 19:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZDNXoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 19:39:42 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:6073 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752123AbZDNXjl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 19:39:41 -0400
-Date: Wed, 15 Apr 2009 03:39:39 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: subrata@linux.vnet.ibm.com, sachinp <sachinp@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 2.6.30] fsl_devices.h: Bring the legacy
-	fsl_spi_platform_data hooks back
-Message-ID: <20090414233939.GA15492@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1239733836.5344.83.camel@subratamodak.linux.ibm.com> <fa686aa40904141142s3717812ep293973fefce8853d@mail.gmail.com> <20090414212724.GA12371@oksana.dev.rtsoft.ru> <fa686aa40904141431q2f7575a1sd4ada4ee611b6426@mail.gmail.com> <20090414215124.GA20534@oksana.dev.rtsoft.ru> <fa686aa40904141454s6bc4d226x8bfb66de5d2d8887@mail.gmail.com> <20090414220237.GA21581@oksana.dev.rtsoft.ru> <fa686aa40904141519w73f3f724m1393e9ae7e437021@mail.gmail.com> <20090414222753.GA26006@oksana.dev.rtsoft.ru> <fa686aa40904141603u6b533fcfs401e09b718d35ed3@mail.gmail.com>
+	Tue, 14 Apr 2009 19:44:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:54958 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751765AbZDNXoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 19:44:12 -0400
+Message-ID: <49E51FC1.8090306@goop.org>
+Date: Tue, 14 Apr 2009 16:44:01 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <fa686aa40904141603u6b533fcfs401e09b718d35ed3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/8] tracing: create automated trace defines
+References: <20090414172337.280621613@goodmis.org> <20090414172640.796858018@goodmis.org>
+In-Reply-To: <20090414172640.796858018@goodmis.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 364fdbc00fbdd409ade63500710123fe323aa164 ("spi_mpc83xx:
-rework chip selects handling"), I merged activate_cs and deactivate_cs
-hooks into cs_control, but I overlooked that mpc52xx_psc_spi driver
-is using these hooks too. And that resulted in the following build
-failure:
+How about something like this:
 
-CC      drivers/spi/mpc52xx_psc_spi.o
-drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_do_probe':
-drivers/spi/mpc52xx_psc_spi.c:398: error: 'struct fsl_spi_platform_data'
-has no member named 'activate_cs'
-drivers/spi/mpc52xx_psc_spi.c:399: error: 'struct fsl_spi_platform_data'
-has no member named 'deactivate_cs'
-make[2]: *** [drivers/spi/mpc52xx_psc_spi.o] Error 1
+>From f7fa71c046bc383706bf58503c4b75e05e252152 Mon Sep 17 00:00:00 2001
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Date: Tue, 14 Apr 2009 16:41:18 -0700
+Subject: [PATCH] tracing: move __DO_TRACE out of line
 
-This patch simply adds the legacy hooks back for 2.6.30, and for
-2.6.31 we'll convert the driver to ->cs_control.
+Mainly simplify linux/tracepoint.h's include dependencies (removes
+rcupdate.h), but it can't help with icache locality, since it
+definitely moves the code out of line, rather than relying on gcc
+to do it.
 
-Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-On Tue, Apr 14, 2009 at 05:03:52PM -0600, Grant Likely wrote:
-[...]
-> > Hm. struct fsl_spi_platform_data is still there. It's just there
-> > is no two functions (activate_cs and deactivate_cs) any longer,
-> > there's just one: cs_ontrol that takes "spi_device" and "on"
-> > arguments).
-> >
-> > And the build fix (down below) is trivial.
-> 
-> Regardless of how trivial the build fix is for in-tree, I'm not
-> thrilled with breaking out of tree users.  I don't bend over backwards
-> for out-of-tree, but the decision should be intentional and not forced
-> into, especially during the stabilization period.  Please add the
-> hooks back for 2.6.30.  You can send another patch targeted at 2.6.31
-> -next to remove them again so that it can be discussed properly on the
-> list.
-
-Okay. Here it is.
-
- include/linux/fsl_devices.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index f2a78b5..0cde180 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -83,6 +83,10 @@ struct fsl_spi_platform_data {
- 	u16	max_chipselect;
- 	void	(*cs_control)(struct spi_device *spi, bool on);
- 	u32	sysclk;
-+
-+	/* Legacy hooks, used by mpc52xx_psc_spi driver. */
-+	void	(*activate_cs)(u8 cs, u8 polarity);
-+	void	(*deactivate_cs)(u8 cs, u8 polarity);
- };
+diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+index 4353f3f..1052e33 100644
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -15,7 +15,6 @@
+  */
  
- struct mpc8xx_pcmcia_ops {
--- 
-1.6.2.2
+ #include <linux/types.h>
+-#include <linux/rcupdate.h>
+ 
+ struct module;
+ struct tracepoint;
+@@ -42,19 +41,20 @@ struct tracepoint {
+  * it_func[0] is never NULL because there is at least one element in the array
+  * when the array itself is non NULL.
+  */
+-#define __DO_TRACE(tp, proto, args)					\
+-	do {								\
++#define DEFINE_DO_TRACE(name, proto, args)				\
++	void __do_trace_##name(struct tracepoint *tp, TP_PROTO(proto))	\
++	{								\
+ 		void **it_func;						\
+ 									\
+ 		rcu_read_lock_sched_notrace();				\
+-		it_func = rcu_dereference((tp)->funcs);			\
++		it_func = rcu_dereference(tp->funcs);			\
+ 		if (it_func) {						\
+ 			do {						\
+ 				((void(*)(proto))(*it_func))(args);	\
+ 			} while (*(++it_func));				\
+ 		}							\
+ 		rcu_read_unlock_sched_notrace();			\
+-	} while (0)
++	}
+ 
+ /*
+  * Make sure the alignment of the structure in the __tracepoints section will
+@@ -63,11 +63,13 @@ struct tracepoint {
+  */
+ #define DECLARE_TRACE(name, proto, args)				\
+ 	extern struct tracepoint __tracepoint_##name;			\
++	extern void __do_trace_##name(struct tracepoint *tp,		\
++				      TP_PROTO(proto));			\
+ 	static inline void trace_##name(proto)				\
+ 	{								\
+ 		if (unlikely(__tracepoint_##name.state))		\
+-			__DO_TRACE(&__tracepoint_##name,		\
+-				TP_PROTO(proto), TP_ARGS(args));	\
++			__do_trace_##name(&__tracepoint_##name,		\
++					  TP_ARGS(args));		\
+ 	}								\
+ 	static inline int register_trace_##name(void (*probe)(proto))	\
+ 	{								\
+@@ -151,10 +153,7 @@ extern int tracepoint_get_iter_range(struct tracepoint **tracepoint,
+  * probe unregistration and the end of module exit to make sure there is no
+  * caller executing a probe when it is freed.
+  */
+-static inline void tracepoint_synchronize_unregister(void)
+-{
+-	synchronize_sched();
+-}
++extern void tracepoint_synchronize_unregister(void);
+ 
+ #define PARAMS(args...) args
+ 
+diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+index 980eb66..1a0502e 100644
+--- a/include/trace/define_trace.h
++++ b/include/trace/define_trace.h
+@@ -24,14 +24,17 @@
+ 
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(name, proto, args, tstruct, assign, print)	\
++	DEFINE_DO_TRACE(name, TP_PROTO(proto), TP_ARGS(args))	\
+ 	DEFINE_TRACE(name)
+ 
+ #undef TRACE_FORMAT
+-#define TRACE_FORMAT(name, proto, args, print)	\
++#define TRACE_FORMAT(name, proto, args, print)			\
++	DEFINE_DO_TRACE(name, TP_PROTO(proto), TP_ARGS(args))	\
+ 	DEFINE_TRACE(name)
+ 
+ #undef DECLARE_TRACE
+-#define DECLARE_TRACE(name, proto, args)	\
++#define DECLARE_TRACE(name, proto, args)			\
++	DEFINE_DO_TRACE(name, TP_PROTO(proto), TP_ARGS(args))	\
+ 	DEFINE_TRACE(name)
+ 
+ #undef TRACE_INCLUDE
+diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+index 1ef5d3a..6ac1f48 100644
+--- a/kernel/tracepoint.c
++++ b/kernel/tracepoint.c
+@@ -545,6 +545,12 @@ void tracepoint_iter_reset(struct tracepoint_iter *iter)
+ }
+ EXPORT_SYMBOL_GPL(tracepoint_iter_reset);
+ 
++void tracepoint_synchronize_unregister(void)
++{
++	synchronize_sched();
++}
++EXPORT_SYMBOL_GPL(tracepoint_synchronize_unregister);
++
+ #ifdef CONFIG_MODULES
+ 
+ int tracepoint_module_notify(struct notifier_block *self,
+
 
