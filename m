@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZDNSOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZDNSQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758045AbZDNSOu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbZDNSOb
+	id S1758130AbZDNSQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZDNSQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:14:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46868 "EHLO mail.dvmed.net"
+	Tue, 14 Apr 2009 14:16:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56619 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757930AbZDNSOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:14:30 -0400
-Message-ID: <49E4D27F.6040406@garzik.org>
-Date: Tue, 14 Apr 2009 14:14:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753220AbZDNSQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:16:15 -0400
+Date: Tue, 14 Apr 2009 20:15:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
+Message-ID: <20090414181516.GA19814@elte.hu>
+References: <20090414172337.280621613@goodmis.org>
 MIME-Version: 1.0
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       Andy Yan <ayan@marvell.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [ANNOUNCE]: A target driver for Marvell 88SE64xx(3G) and 88SE94xx(6G)
- SAS cards
-References: <49E4B6D5.9060007@vlnb.net>
-In-Reply-To: <49E4B6D5.9060007@vlnb.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414172337.280621613@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> Hi All,
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
 > 
-> I'm glad to announce that a target driver for Marvell 88SE64xx(3G) and 
-> 88SE94xx(6G) SAS cards has been just added in the SCST SVN repository. A 
-> lot of thanks to Marvell and Andy Yan!
+> This is the long awaited TRACE_EVENT for modules patch series.
 > 
-> This driver allows to use a SAS controller based on Marvell 88SE64xx or 
-> 88SE94xx chips as a SAN storage server (target). More info you can find 
-> on the SCST page http://scst.sourceforge.net.
-> 
-> You can download the driver from SCST SVN by running a command:
-> 
-> $ svn co https://scst.svn.sourceforge.net/svnroot/scst
+> Not only does it allow for modules to use the TRACE_EVENT 
+> infrastructure, but it also cleans up the way TRACE_EVENTS are 
+> used in core kernel code.
 
-Nice!
+Really impressive!
 
-I'm glad to see this progressing.  I'm amazed that some of my original 
-mvsas code still remains :)
+I've got a small testing hickup with it:
 
-I'll give this a shot on my 6440.
+  In file included from include/trace/lockdep.h:60,
+                   from kernel/lockdep.c:51:
+  include/trace/define_trace.h:57:43: error: trace/lock.h: No such file or directory
 
-	Jeff
+The patch below fixes it.
 
+	Ingo
 
-
+Index: linux/include/trace/lockdep.h
+===================================================================
+--- linux.orig/include/trace/lockdep.h
++++ linux/include/trace/lockdep.h
+@@ -5,7 +5,7 @@
+ #include <linux/tracepoint.h>
+ 
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM lock
++#define TRACE_SYSTEM lockdep
+ 
+ #ifdef CONFIG_LOCKDEP
+ 
