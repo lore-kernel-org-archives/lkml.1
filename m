@@ -1,67 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZDNDje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZDNDkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZDNDje (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 23:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZDNDjY
+	id S1755087AbZDNDkB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 23:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZDNDjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 23:39:24 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:21204 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbZDNDjX (ORCPT
+	Mon, 13 Apr 2009 23:39:51 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:45588 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZDNDju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 23:39:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=kOVD1vnEfYifqLqcM2RrD0KvaS68HrNIjPgBqov5lHF8X3dgxUA2DhcXxpqTXV4VCX
-         Isw+tieWp9awTHZQtN6OTCTv7Qah4zeKjdpSoPgTcrrYh0SNt9fGyx5+wUcmkVss425Y
-         4j4BMBxiHjVAd4We6yRmYrsPMCIAlZXSJULdM=
-Message-ID: <49E40597.8070901@gmail.com>
-Date: Tue, 14 Apr 2009 12:40:07 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 13 Apr 2009 23:39:50 -0400
+Date: Tue, 14 Apr 2009 09:09:36 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tony Luck <tony.luck@intel.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/urgent] sched: Print sched_group::__cpu_power in
+	sched_domain_debug
+Message-ID: <20090414033936.GA534@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090330045520.2869.24777.stgit@sofia.in.ibm.com> <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org> <12c511ca0904131153g39b99ec6n6c6ec2e7de3f7ea6@mail.gmail.com> <20090414000934.GN817@elte.hu>
 MIME-Version: 1.0
-To: jimyeh98@acard.com
-CC: Jeff Garzik <jeff@garzik.org>, jason wu <jason_wu@acard.com>,
-       =?UTF-8?B?IuiOiuaWh+iIiShKYXNvbiBDaHVhbmcpIg==?= <jason@acard.com>,
-       =?UTF-8?B?IumZs+WKm+iqoChSaWNoYXJkIENoZW4pIg==?= <rchern@acard.com>,
-       =?UTF-8?B?Iue/geiMguizgChEYW5pZWwgV2VuZyki?= <dweng@acard.com>,
-       =?UTF-8?B?IuWQs+S9s+eSiyhMYXVyZW5jZSBXdSki?= <laurence@acard.com>,
-       =?UTF-8?B?IumZs+W+t+WogShEZXJ3ZWkgQ2hlbiki?= <derwei@acard.com>,
-       =?UTF-8?B?IumZs+mHkea4hShHZWluZ0NoaW5nIENoZW4pIg==?= 
-	<geingching@acard.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Fw: [PATCH] ahci: add ACard 8620 support (rough draft)
-References: <000d01c9b815$73006700$b500a8c0@JasonWuNB> <49E31219.1000301@acard.com> <49E323E1.90907@garzik.org> <49E3F4B0.1080909@acard.com>
-In-Reply-To: <49E3F4B0.1080909@acard.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090414000934.GN817@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jim Yeh wrote:
-> Dear Jeff,
+On Tue, Apr 14, 2009 at 02:09:34AM +0200, Ingo Molnar wrote:
 > 
-> Thanks for your explanation. We agree with you.
+> * Tony Luck <tony.luck@intel.com> wrote:
 > 
-> I'll prepare the hardware for your testing. The form factor of PCB will
-> be a 32bit PCI-base add-on card. Please advise the address for both of
-> yours. It is expected to be sent by next week.
+> > > --- a/kernel/sched.c
+> > > +++ b/kernel/sched.c
+> > > @@ -6963,7 +6963,8 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+> > >                cpumask_or(groupmask, groupmask, sched_group_cpus(group));
+> > >
+> > >                cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
+> > > -               printk(KERN_CONT " %s", str);
+> > > +               printk(KERN_CONT " %s (__cpu_power = %d)", str,
+> > > +                                               group->__cpu_power);
+> > 
+> > This has added a lot of clutter to the console log during boot
+> > (especially on large systems).
+> > 
+> > Here is the start of the diff output comparing old and new console
+> > messages on a 16 cpu machine:
+> > 
+> > 77c77
+> > <   groups: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+> > ---
+> > >   groups: 0 (__cpu_power = 1024) 1 (__cpu_power = 1024) 2 (__cpu_power = 1024) 3 (__cpu_power = 1024) 4 (__cpu_power = 1024) 5 (__cpu_power = 1024) 6 (__cpu_power = 1024) 7 (__cpu_power = 1024) 8 (
+> > __cpu_power = 1024) 9 (__cpu_power = 1024) 10 (__cpu_power = 1024) 11
+> > (__cpu_power = 1024) 12 (__cpu_power = 1024) 13 (__cpu_power = 1024)
+> > 14 (__cpu_power = 1024) 15 (__cpu_power = 1024)
+> > 80c80
+> 
+> indeed ...
+> 
+> I think we should skip the printout in the default (power==1024) 
+> case. Gautham?
 
-My address is
+Makes sense. Patch appended.
+> 
+> 	Ingo
+-->
 
- Bekgung Dongyang Paragon B#2107
- Jeongja, Bundang, Seongnam, Kyoungki
- South Korea
- zip: 463842
- cell: +82-10-5488-4679 (please print on top of the package)
+sched: Avoid printing sched_group::__cpu_power for default case.
 
-Thanks.
+From: Gautham R Shenoy <ego@in.ibm.com>
 
+The following commit produces a messy dmesg output while attempting to print
+the sched_group::__cpu_power for each group in the sched_domain hierarchy.
+
+commit 46e0bb9c12f4bab539736f1714cbf16600f681ec
+Author: Gautham R Shenoy <ego@in.ibm.com>
+Date:   Mon Mar 30 10:25:20 2009 +0530
+sched: Print sched_group::__cpu_power in sched_domain_debug
+
+Fix this by avoid printing the __cpu_power for default cases.
+(i.e, __cpu_power == SCHED_LOAD_SCALE).
+
+Reported-by: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+---
+
+ kernel/sched.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 681d4ae..0584e04 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7467,8 +7467,9 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 		cpumask_or(groupmask, groupmask, sched_group_cpus(group));
+ 
+ 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
+-		printk(KERN_CONT " %s (__cpu_power = %d)", str,
+-						group->__cpu_power);
++		if (group->__cpu_power != SCHED_LOAD_SCALE)
++			printk(KERN_CONT " %s (__cpu_power = %d)", str,
++							group->__cpu_power);
+ 
+ 		group = group->next;
+ 	} while (group != sd->groups);
 -- 
-tejun
+Thanks and Regards
+gautham
