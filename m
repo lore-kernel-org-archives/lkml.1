@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZDNJnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZDNJmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZDNJnE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:43:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZDNJjt
+	id S1755865AbZDNJmq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbZDNJjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:39:49 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:42739 "EHLO mx1.emlix.com"
+	Tue, 14 Apr 2009 05:39:48 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:34000 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbZDNJjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753039AbZDNJjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Apr 2009 05:39:42 -0400
 From: Johannes Weiner <jw@emlix.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org,
-       Oskar Schirmer <os@emlix.com>,
        =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [patch 11/12] xtensa: s6105 specific configuration for s6gmac
-Date: Tue, 14 Apr 2009 11:41:19 +0200
-Message-Id: <1239702080-14355-12-git-send-email-jw@emlix.com>
+Subject: [patch 09/12] xtensa: allow platform and variant to initialize own irq chips
+Date: Tue, 14 Apr 2009 11:41:17 +0200
+Message-Id: <1239702080-14355-10-git-send-email-jw@emlix.com>
 In-Reply-To: <1239702080-14355-1-git-send-email-jw@emlix.com>
 References: <1239702080-14355-1-git-send-email-jw@emlix.com>
 MIME-Version: 1.0
@@ -27,183 +26,111 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oskar Schirmer <os@emlix.com>
+From: Daniel Glöckner <dg@emlix.com>
 
-Platform-specific configuration for the s6gmac driver, including the
-PHY interrupt line.
+There was already a PLATFORM_NR_IRQS define, which is now accompanied
+by a VARIANT_NR_IRQS. To be able to initialize these interrupts,
+init_IRQ now calls variant and platform specific hooks.
 
 Signed-off-by: Daniel Glöckner <dg@emlix.com>
-Signed-off-by: Oskar Schirmer <os@emlix.com>
 ---
- arch/xtensa/platforms/s6105/device.c |   91 ++++++++++++++++++++++++++++++++++
- arch/xtensa/platforms/s6105/setup.c  |    9 +++
- 2 files changed, 100 insertions(+), 0 deletions(-)
+ arch/xtensa/include/asm/irq.h                     |   21 ++++++++++++++++++---
+ arch/xtensa/kernel/irq.c                          |    3 +++
+ arch/xtensa/variants/dc232b/include/variant/irq.h |    4 ++++
+ arch/xtensa/variants/fsf/include/variant/irq.h    |    4 ++++
+ arch/xtensa/variants/s6000/include/variant/irq.h  |    1 +
+ 5 files changed, 30 insertions(+), 3 deletions(-)
+ create mode 100644 arch/xtensa/variants/dc232b/include/variant/irq.h
+ create mode 100644 arch/xtensa/variants/fsf/include/variant/irq.h
 
-diff --git a/arch/xtensa/platforms/s6105/device.c b/arch/xtensa/platforms/s6105/device.c
-index 78b08be..963634a 100644
---- a/arch/xtensa/platforms/s6105/device.c
-+++ b/arch/xtensa/platforms/s6105/device.c
-@@ -5,14 +5,27 @@
-  */
+diff --git a/arch/xtensa/include/asm/irq.h b/arch/xtensa/include/asm/irq.h
+index dfac82d..c3c10a7 100644
+--- a/arch/xtensa/include/asm/irq.h
++++ b/arch/xtensa/include/asm/irq.h
+@@ -11,21 +11,36 @@
+ #ifndef _XTENSA_IRQ_H
+ #define _XTENSA_IRQ_H
  
- #include <linux/kernel.h>
-+#include <linux/gpio.h>
- #include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/phy.h>
- #include <linux/platform_device.h>
- #include <linux/serial.h>
- #include <linux/serial_8250.h>
++#include <linux/init.h>
+ #include <platform/hardware.h>
+ #include <variant/core.h>
  
- #include <variant/hardware.h>
-+#include <variant/dmac.h>
+-#ifdef CONFIG_VARIANT_IRQ_SWITCH
+ #include <variant/irq.h>
+-#else
++#ifndef CONFIG_VARIANT_IRQ_SWITCH
+ static inline void variant_irq_enable(unsigned int irq) { }
+ static inline void variant_irq_disable(unsigned int irq) { }
+ #endif
  
-+#include <platform/gpio.h>
++#ifndef VARIANT_NR_IRQS
++# define VARIANT_NR_IRQS 0
++#endif
+ #ifndef PLATFORM_NR_IRQS
+ # define PLATFORM_NR_IRQS 0
+ #endif
+ #define XTENSA_NR_IRQS XCHAL_NUM_INTERRUPTS
+-#define NR_IRQS (XTENSA_NR_IRQS + PLATFORM_NR_IRQS)
++#define NR_IRQS (XTENSA_NR_IRQS + VARIANT_NR_IRQS + PLATFORM_NR_IRQS)
 +
-+#define GPIO3_INTNUM		3
- #define UART_INTNUM		4
-+#define GMAC_INTNUM		5
++#if VARIANT_NR_IRQS == 0
++static inline void variant_init_IRQ(void) { }
++#else
++void variant_init_IRQ(void) __init;
++#endif
 +
-+static const signed char gpio3_irq_mappings[] = {
-+	S6_INTC_GPIO(3),
-+	-1
-+};
++#if PLATFORM_NR_IRQS == 0
++static inline void platform_init_IRQ(void) { }
++#else
++void platform_init_IRQ(void) __init;
++#endif
  
- static const signed char uart_irq_mappings[] = {
- 	S6_INTC_UART(0),
-@@ -20,8 +33,18 @@ static const signed char uart_irq_mappings[] = {
- 	-1,
- };
- 
-+static const signed char gmac_irq_mappings[] = {
-+	S6_INTC_GMAC_STAT,
-+	S6_INTC_GMAC_ERR,
-+	S6_INTC_DMA_HOSTTERMCNT(0),
-+	S6_INTC_DMA_HOSTTERMCNT(1),
-+	-1
-+};
-+
- const signed char *platform_irq_mappings[NR_IRQS] = {
-+	[GPIO3_INTNUM] = gpio3_irq_mappings,
- 	[UART_INTNUM] = uart_irq_mappings,
-+	[GMAC_INTNUM] = gmac_irq_mappings,
- };
- 
- static struct plat_serial8250_port serial_platform_data[] = {
-@@ -46,6 +69,66 @@ static struct plat_serial8250_port serial_platform_data[] = {
- 	{ },
- };
- 
-+static struct resource s6_gmac_resource[] = {
-+	{
-+		.name   = "mem",
-+		.start  = (resource_size_t)S6_REG_GMAC,
-+		.end    = (resource_size_t)S6_REG_GMAC + 0x10000 - 1,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+	{
-+		.name   = "dma",
-+		.start  = (resource_size_t)
-+			DMA_CHNL(S6_REG_HIFDMA, S6_HIFDMA_GMACTX),
-+		.end    = (resource_size_t)
-+			DMA_CHNL(S6_REG_HIFDMA, S6_HIFDMA_GMACTX) + 0x100 - 1,
-+		.flags  = IORESOURCE_DMA,
-+	},
-+	{
-+		.name   = "dma",
-+		.start  = (resource_size_t)
-+			DMA_CHNL(S6_REG_HIFDMA, S6_HIFDMA_GMACRX),
-+		.end    = (resource_size_t)
-+			DMA_CHNL(S6_REG_HIFDMA, S6_HIFDMA_GMACRX) + 0x100 - 1,
-+		.flags  = IORESOURCE_DMA,
-+	},
-+	{
-+		.name   = "io",
-+		.start  = (resource_size_t)S6_MEM_GMAC,
-+		.end    = (resource_size_t)S6_MEM_GMAC + 0x2000000 - 1,
-+		.flags  = IORESOURCE_IO,
-+	},
-+	{
-+		.name   = "irq",
-+		.start  = (resource_size_t)GMAC_INTNUM,
-+		.flags  = IORESOURCE_IRQ,
-+	},
-+	{
-+		.name   = "irq",
-+		.start  = (resource_size_t)PHY_POLL,
-+		.flags  = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static int __init prepare_phy_irq(int pin)
-+{
-+	int irq;
-+	if (gpio_request(pin, "s6gmac_phy") < 0)
-+		goto fail;
-+	if (gpio_direction_input(pin) < 0)
-+		goto free;
-+	irq = gpio_to_irq(pin);
-+	if (irq < 0)
-+		goto free;
-+	if (set_irq_type(irq, IRQ_TYPE_LEVEL_LOW) < 0)
-+		goto free;
-+	return irq;
-+free:
-+	gpio_free(pin);
-+fail:
-+	return PHY_POLL;
-+}
-+
- static struct platform_device platform_devices[] = {
- 	{
- 		.name = "serial8250",
-@@ -54,12 +137,20 @@ static struct platform_device platform_devices[] = {
- 			.platform_data = serial_platform_data,
- 		},
- 	},
-+	{
-+		.name = "s6gmac",
-+		.id = 0,
-+		.resource = s6_gmac_resource,
-+		.num_resources = ARRAY_SIZE(s6_gmac_resource),
-+	},
- };
- 
- static int __init device_init(void)
+ static __inline__ int irq_canonicalize(int irq)
  {
- 	int i;
+diff --git a/arch/xtensa/kernel/irq.c b/arch/xtensa/kernel/irq.c
+index a36c85e..61c03a3 100644
+--- a/arch/xtensa/kernel/irq.c
++++ b/arch/xtensa/kernel/irq.c
+@@ -197,4 +197,7 @@ void __init init_IRQ(void)
+ 	}
  
-+	s6_gmac_resource[5].start = prepare_phy_irq(GPIO_PHY_IRQ);
+ 	cached_irq_mask = 0;
 +
- 	for (i = 0; i < ARRAY_SIZE(platform_devices); i++)
- 		platform_device_register(&platform_devices[i]);
- 	return 0;
-diff --git a/arch/xtensa/platforms/s6105/setup.c b/arch/xtensa/platforms/s6105/setup.c
-index 95fa23c..86ce730 100644
---- a/arch/xtensa/platforms/s6105/setup.c
-+++ b/arch/xtensa/platforms/s6105/setup.c
-@@ -35,12 +35,21 @@ void __init platform_setup(char **cmdline)
- {
- 	unsigned long reg;
- 
-+	reg = readl(S6_REG_GREG1 + S6_GREG1_PLLSEL);
-+	reg &= ~(S6_GREG1_PLLSEL_GMAC_MASK << S6_GREG1_PLLSEL_GMAC |
-+		S6_GREG1_PLLSEL_GMII_MASK << S6_GREG1_PLLSEL_GMII);
-+	reg |= S6_GREG1_PLLSEL_GMAC_125MHZ << S6_GREG1_PLLSEL_GMAC |
-+		S6_GREG1_PLLSEL_GMII_125MHZ << S6_GREG1_PLLSEL_GMII;
-+	writel(reg, S6_REG_GREG1 + S6_GREG1_PLLSEL);
++	variant_init_IRQ();
++	platform_init_IRQ();
+ }
+diff --git a/arch/xtensa/variants/dc232b/include/variant/irq.h b/arch/xtensa/variants/dc232b/include/variant/irq.h
+new file mode 100644
+index 0000000..070b9f5
+--- /dev/null
++++ b/arch/xtensa/variants/dc232b/include/variant/irq.h
+@@ -0,0 +1,4 @@
++#ifndef __XTENSA_VARIANT_IRQ_H
++#define __XTENSA_VARIANT_IRQ_H
 +
- 	reg = readl(S6_REG_GREG1 + S6_GREG1_CLKGATE);
- 	reg &= ~(1 << S6_GREG1_BLOCK_SB);
-+	reg &= ~(1 << S6_GREG1_BLOCK_GMAC);
- 	writel(reg, S6_REG_GREG1 + S6_GREG1_CLKGATE);
++#endif
+diff --git a/arch/xtensa/variants/fsf/include/variant/irq.h b/arch/xtensa/variants/fsf/include/variant/irq.h
+new file mode 100644
+index 0000000..070b9f5
+--- /dev/null
++++ b/arch/xtensa/variants/fsf/include/variant/irq.h
+@@ -0,0 +1,4 @@
++#ifndef __XTENSA_VARIANT_IRQ_H
++#define __XTENSA_VARIANT_IRQ_H
++
++#endif
+diff --git a/arch/xtensa/variants/s6000/include/variant/irq.h b/arch/xtensa/variants/s6000/include/variant/irq.h
+index fa031cb..55403d1 100644
+--- a/arch/xtensa/variants/s6000/include/variant/irq.h
++++ b/arch/xtensa/variants/s6000/include/variant/irq.h
+@@ -2,6 +2,7 @@
+ #define __XTENSA_S6000_IRQ_H
  
- 	reg = readl(S6_REG_GREG1 + S6_GREG1_BLOCKENA);
- 	reg |= 1 << S6_GREG1_BLOCK_SB;
-+	reg |= 1 << S6_GREG1_BLOCK_GMAC;
- 	writel(reg, S6_REG_GREG1 + S6_GREG1_BLOCKENA);
+ #define NO_IRQ		(-1)
++#define VARIANT_NR_IRQS 8 /* GPIO interrupts */
  
- 	printk(KERN_NOTICE "S6105 on Stretch S6000 - "
+ extern void variant_irq_enable(unsigned int irq);
+ extern void variant_irq_disable(unsigned int irq);
 -- 
 1.6.2.107.ge47ee
 
