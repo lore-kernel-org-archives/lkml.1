@@ -1,53 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZDNQeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbZDNQfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbZDNQeG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZDNQdx
+	id S1756514AbZDNQfX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZDNQfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:33:53 -0400
-Received: from a4.complang.tuwien.ac.at ([128.130.173.65]:48001 "EHLO
-	a4.complang.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbZDNQdx (ORCPT
+	Tue, 14 Apr 2009 12:35:06 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:44930 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbZDNQfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:33:53 -0400
-Subject: Re: Out-of-order writing by disk drives
-To: andi@firstfloor.org (Andi Kleen)
-Date: Tue, 14 Apr 2009 18:33:50 +0200 (CEST)
-From: "Anton Ertl" <anton@mips.complang.tuwien.ac.at>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <87r5zv72cl.fsf@basil.nowhere.org>
-Reply-To: anton@mips.complang.tuwien.ac.at
-X-Info: DVR-Nummer der TU Wien: 0005886
-X-Mailer: ELM [version 2.5 PL7]
+	Tue, 14 Apr 2009 12:35:04 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <E1Ltla2-0000bS-5j@a4.complang.tuwien.ac.at>
+Message-ID: <18916.47906.73896.346385@stoffel.org>
+Date: Tue, 14 Apr 2009 12:34:42 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Yan Seiner <yan@seiner.com>
+Cc: Gene Heskett <gene.heskett@verizon.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, aabdulla@nvidia.com
+Subject: Re: mcp55 forcedeth woes
+In-Reply-To: <49E49F46.8030509@seiner.com>
+References: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us>
+	<200904132100.58056.gene.heskett@verizon.net>
+	<49E3EF9F.6090600@seiner.com>
+	<200904132224.13716.gene.heskett@verizon.net>
+	<49E49F46.8030509@seiner.com>
+X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> "Anton Ertl" <anton@mips.complang.tuwien.ac.at> writes:
-> >
-> > /dev/md2        /home           ext3    defaults,barrier=1      1	2
-> 
-> Just make sure /dev/md2 is a RAID1, MD RAID0/5/10 don't support barriers.
+>>>>> "Yan" == Yan Seiner <yan@seiner.com> writes:
 
-Thank you.  I added the following to the README:
+Yan> Gene Heskett wrote:
+>> On Monday 13 April 2009, Yan Seiner wrote:
+>> 
+>>> Gene Heskett wrote:
+>>> 
+>>>> On Monday 13 April 2009, Yan Seiner wrote:
+>>>> 
+>>>>> I have a few Asus M2N-SLI deluxe mobos.  These mobos have the MCP55
+>>>>> chipset and two 1gb ethernet ports.  Occasionally, and for no reason that
+>>>>> I can figure out, these ports will die.  There are various ways to try
+>>>>> and fix these; they seem to be about 50% effective, and approach
+>>>>> something akin to voodoo.
+>>>>> 
+>>>>> Based on this discussion here:
+>>>>> 
+>>>>> http://patchwork.kernel.org/patch/16212/
+>>>>> 
+>>>>> I've gotten the ability to turn the ports on and off somewhat.
+>>>>> 
+>>>>> For port 0,
+>>>>> 
+>>>>> ethtool -s eth0 autoneg off speed 10 duplex full
+>>>>> 
+>>>>> turns on the link, and gets me half-duplex, 10mb/sec. Not much, granted.
+>>>>> 
+>>>>> ethtool -s eth0 autoneg off speed 100 duplex full
+>>>>> 
+>>>>> causes the link to go up and down on about a 2 second cycle.
+>>>>> 
+>>>>> ethtool -s eth0 autoneg on
+>>>>> 
+>>>>> causes the link to drop.
+>>>>> 
+>>>>> For port 1, the behavior is similar, except that I can get a stable 100
+>>>>> mbit connection.
+>>>>> 
+>>>>> So the problem is in the autoneg code. It's a driver issue as this is
+>>>>> reported widely to work under windows of various flavors.
+>>>>> 
+>>>>> I'm running 2.6.29.1; I'm ok with patching and building kernels, but I'm
+>>>>> not a kernel hacker.
+>>>>> 
+>>>>> What, if anything, can I provide and do to fix this?
+>>>>> 
+>>>> It was in 2.6.29-rc8 or 9 that they finally got the ability to turn them
+>>>> back on on my identical mobo.  Through most of the 29-rcx series we had
+>>>> the choice of rebooting with the reset button, or powering everything
+>>>> associated with the ports down for about 2 minutes so they would forget
+>>>> they were turned off by a graceful shutdown.  Now they are turned off (and
+>>>> I've still NDI why) and back on like they are supposed to be.   I called
+>>>> that a PIMA.
+>>>> 
+>>> Yeah, I've been fighting this for a while....  The boards are rock-solid
+>>> under load, which is why I like them.... But this is a PITA.
+>>> 
+>>> This board worked fine, then I shutdown and the ports have not come back
+>>> since.  I'm running 2.6.29.1 - no joy on the ports.
+>>> 
+>>> 
+>> 
+>> Shut it down, including removing the power cord, and unplug all ethernet 
+>> cables attached, give it time to fully discharge all stored power in the caps, 
+>> at least 30 secs, I usually go make a cup of tea in the microwave, so its 
+>> about 3 minutes.  Plug everything back in and power it up, they should work 
+>> again.
+>> 
+>> However, I've been running 2.6.29.1-rc2, and that has not been a problem, I 
+>> can see the leds on the ports go plumb dark at it runs the shutdown, and come 
+>> back on about 15 seconds before the init.d/network script runs as it boots up.
+>> 
+>> 
+>>> I'm building forcedeth from .30-rc1 - we'll see if that helps.
+>>> Something like 15% of the driver changed, so it's still in very heavy
+>>> development.
+>>> 
+>> 
+>> Wow!  Like you, I'm using forcedeth. 2.6.29.1-rc1 did have a short uptime for 
+>> forcedeth bug IIRC, but so far, -rc2 has lasted longer than KDE-4.2.1 on this 
+>> F10 system will, I had an 8 day uptime at first, and I'm in the 5th day again.  
+>> I killed it the first time screwing with some worthless bluetooth dongles I 
+>> got from USBGear.  Locked it up tighter than a Nebraska bulls ass in flytime.  
+>> Had to use the reset button. :(
+>> 
+Yan> I followed Gene's advice and got some progress....
 
-|Note that, as of this writing (2009-04), not all Linux devices support
-|barriers, in particular md devices only support them in RAID 1 mode;
-|the kernel will reportedly warn about the lack of barriers if you try
-|to use ext3 with barriers on a device that does not support barriers
-|(look in, e.g., dmesg).
+Yan> port 0 is now fully functional.  Port 1, however, remains in its 
+Yan> semi-zombie state.  Maybe I'll take the machine off-line longer next 
+Yan> time.   Maybe I'll sacrifice a black and white chicken at the same time.
 
-> See also my general treatise of multiple device barriers earlier today.
+Yan> I also back-ported 2.9.30-rc1 forcedeth.c to my 2.6.29.1 kernel; no 
+Yan> difference whatsoever.
 
-I guess you mean <878wm3903h.fsf@basil.nowhere.org> in the
-"dm-multipath and write request ordering" thread.  Thank you for the
-pointer.
+Yan> One other observation:
 
-- anton
+Yan> On the switch, the status LEDs glow with half-brightness when I enable 
+Yan> port 1 using ethtool...  This leads me to suspect that the voltage 
+Yan> levels on the port aren't normal.  Not being a hardware engineer, I have 
+Yan> no idea what importance this has; I am offering this as an observation.
 
+I've also got one of these boards, but I seem to recall that 2.6.28
+and higher worked just fine, but when I was chasing another problem
+with complete system crashes when running tcpdump, I found the dead
+port problem as well.
+
+Thanks for posting your workaround, they'll be a big help.  Esp if I
+put them in early to the system boot process as a quick hack.  
+
+The M2N-SLI Deluxe boards are nice though, stable stable stable.  I've
+been very happy with mine.  I wonder if there's a newer BIOS which
+might address some of these issues as well, since it seems to me that
+the BIOS, esp on power up, should be reseting the ports to something
+more sane.
+
+John
