@@ -1,274 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZDNEDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZDNEP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838AbZDNEDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 00:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZDNEDl
+	id S1752810AbZDNEP1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 00:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZDNEPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 00:03:41 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37351 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZDNEDk (ORCPT
+	Tue, 14 Apr 2009 00:15:12 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:50183 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbZDNEPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 00:03:40 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 5/4] ftrace, workqueuetrace: display work name
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20090413145105.6E07.A69D9226@jp.fujitsu.com>
-References: <20090413125653.6E01.A69D9226@jp.fujitsu.com> <20090413145105.6E07.A69D9226@jp.fujitsu.com>
-Message-Id: <20090414125142.C63D.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 14 Apr 2009 00:15:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=xOzaTShkiDU8PVe3lbFtOHZm+r8ybLON4TvqdFn1eq32aiE3bODr+W12+hkV8R7rV2
+         84oouxWL4oTofmxvaGyYGwfcMLGjlVpA/dzQYPSCciM48+ei/9Z0HNIIuygV4DQUSqYz
+         tOkl2PnAO5Gy2RheIlgptPnPV3C+cjKPzk7QE=
+Subject: Re: [PATCH] blktrace: move trace/ dir to /sys/block/sda/
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090413201155.GA17450@elte.hu>
+References: <49E31931.5000506@cn.fujitsu.com>
+	 <20090413180054.GZ5178@kernel.dk>  <20090413201155.GA17450@elte.hu>
+Content-Type: text/plain
+Date: Mon, 13 Apr 2009 23:15:04 -0500
+Message-Id: <1239682504.7011.46.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 13:03:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-04-13 at 22:11 +0200, Ingo Molnar wrote:
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Mon, Apr 13 2009, Li Zefan wrote:
+> > > Impact: allow ftrace-plugin blktrace to trace device-mapper devices
+> > > 
+> > > blktrace can't trace a single partition, so it makes no sense to
+> > > have one trace/ dir in each /sys/block/sda/sdaX. Move it to
+> > > /sys/block/sda/.
+> > > 
+> > > Thus we fix an issue reported by Ted, that ftrace-plugin 
+> > > blktrace can't be used to trace device-mapper devices.
+> > 
+> > Perhaps I never committed that patch, but it would be trivial to 
+> > do partition based blktrace tracing. It's also quite useful. So 
+> > please don't go changing things to make that harder to support, it 
+> > would be nicer to just add the (small) bits to support 
+> > per-partition tracing. It's basically just a start/stop sector 
+> > range, while some events are per-device and should just be 
+> > included always.
+> 
+> btw., per tracepoint filters could be used for that. That would 
+> allow multiple partitions to be traced at once.
+> 
+> blktrace user-space could make use of sector range filters straight 
+> away [ hm, Tom - do we have the <= comparison operator already, or 
+> is that still WIP? ] - but i think it's better to do this in a more 
 
-Frederic, What do you think this patch?
-===============
+The new comparison operators aren't there yet, but will be part of the
+new parser, which I'll be getting back to this week.
 
-Currently, event-tracer only display function name. it is enough useful.
-but some driver share work-function between multiple work_struct.
-then, work name displaying is better.
+Tom
 
-example output
-------------------------------
-# tracer: nop
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-          <idle>-0     [003]  1540.844960: workqueue_insertion: thread=events/3:30 func=e1000_watchdog_task+0x0/0x6ae [e1000e] work=&adapter->watchdog_task
-          <idle>-0     [003]  1540.844964: workqueue_insertion: thread=events/3:30 func=vmstat_update+0x0/0x3f work=vmstat_work
-           <...>-30    [003]  1540.844969: workqueue_handler_entry: thread=events/3:30 latency=0ms func=e1000_watchdog_task+0x0/0x6ae [e1000e] work=&adapter-
->watchdog_task
-           <...>-30    [003]  1540.845003: workqueue_handler_exit: thread=events/3:30 func=e1000_watchdog_task+0x0/0x6ae [e1000e] work=&adapter->watchdog_tas
-k
-           <...>-30    [003]  1540.845004: workqueue_handler_entry: thread=events/3:30 latency=0ms func=vmstat_update+0x0/0x3f work=vmstat_work
-           <...>-30    [003]  1540.845007: workqueue_handler_exit: thread=events/3:30 func=vmstat_update+0x0/0x3f work=vmstat_work
-
-This patch increase kernel-size for work name string table.
-But actually, lockdep already have work name string table. then if you already use lockdep,
-you don't get kernel-size increasing by this patch.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- include/linux/workqueue.h             |   34 +++++++++++++++++++++++++++++++++-
- include/trace/workqueue_event_types.h |   23 ++++++++++++++++-------
- kernel/workqueue.c                    |    2 +-
- 3 files changed, 50 insertions(+), 9 deletions(-)
-
-Index: b/include/linux/workqueue.h
-===================================================================
---- a/include/linux/workqueue.h	2009-04-14 11:57:05.000000000 +0900
-+++ b/include/linux/workqueue.h	2009-04-14 12:53:57.000000000 +0900
-@@ -22,6 +22,11 @@ typedef void (*work_func_t)(struct work_
-  */
- #define work_data_bits(work) ((unsigned long *)(&(work)->data))
- 
-+#if defined(CONFIG_WORKQUEUE_TRACER) || defined(CONFIG_EVENT_TRACING)
-+#define HAVE_WORK_TRACE 1
-+#endif
-+
-+
- struct work_struct {
- 	atomic_long_t data;
- #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
-@@ -32,8 +37,9 @@ struct work_struct {
- #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map lockdep_map;
- #endif
--#ifdef CONFIG_WORKQUEUE_TRACER
-+#ifdef HAVE_WORK_TRACE
- 	unsigned long expected_time;
-+	char *name;
- #endif
- };
- 
-@@ -65,11 +71,19 @@ struct execute_work {
- #define __WORK_INIT_LOCKDEP_MAP(n, k)
- #endif
- 
-+#ifdef HAVE_WORK_TRACE
-+#define __WORK_INIT_NAME(_work, _name)				\
-+	.name = _name,
-+#else
-+#define __WORK_INIT_NAME(_work, _name)
-+#endif
-+
- #define __WORK_INITIALIZER(n, f) {				\
- 	.data = WORK_DATA_INIT(),				\
- 	.entry	= { &(n).entry, &(n).entry },			\
- 	.func = (f),						\
- 	__WORK_INIT_LOCKDEP_MAP(#n, &(n))			\
-+	__WORK_INIT_NAME(&n, #n)				\
- 	}
- 
- #define __DELAYED_WORK_INITIALIZER(n, f) {			\
-@@ -94,6 +108,18 @@ struct execute_work {
- #define PREPARE_DELAYED_WORK(_work, _func)			\
- 	PREPARE_WORK(&(_work)->work, (_func))
- 
-+#ifdef HAVE_WORK_TRACE
-+#define SET_WORK_NAME(_work, _name)				\
-+	do {							\
-+		(_work)->name = (_name);			\
-+	} while (0)
-+
-+#else /*!HAVE_WORK_TRACE*/
-+#define SET_WORK_NAME(_work, name)
-+#endif /*!HAVE_WORK_TRACE*/
-+
-+
-+
- /*
-  * initialize all of a work item in one go
-  *
-@@ -110,6 +136,7 @@ struct execute_work {
- 		lockdep_init_map(&(_work)->lockdep_map, #_work, &__key, 0);\
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
-+		SET_WORK_NAME((_work), #_work);				\
- 	} while (0)
- #else
- #define INIT_WORK(_work, _func)						\
-@@ -117,6 +144,7 @@ struct execute_work {
- 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
-+		SET_WORK_NAME((_work), #_work);				\
- 	} while (0)
- #endif
- 
-@@ -124,24 +152,28 @@ struct execute_work {
- 	do {							\
- 		INIT_WORK(&(_work)->work, (_func));		\
- 		init_timer(&(_work)->timer);			\
-+		SET_WORK_NAME(&(_work)->work, #_work);		\
- 	} while (0)
- 
- #define INIT_DELAYED_WORK_ON_STACK(_work, _func)		\
- 	do {							\
- 		INIT_WORK(&(_work)->work, (_func));		\
- 		init_timer_on_stack(&(_work)->timer);		\
-+		SET_WORK_NAME(&(_work)->work, #_work);		\
- 	} while (0)
- 
- #define INIT_DELAYED_WORK_DEFERRABLE(_work, _func)			\
- 	do {							\
- 		INIT_WORK(&(_work)->work, (_func));		\
- 		init_timer_deferrable(&(_work)->timer);		\
-+		SET_WORK_NAME(&(_work)->work, #_work);		\
- 	} while (0)
- 
- #define INIT_DELAYED_WORK_ON_STACK(_work, _func)		\
- 	do {							\
- 		INIT_WORK(&(_work)->work, (_func));		\
- 		init_timer_on_stack(&(_work)->timer);		\
-+		SET_WORK_NAME(&(_work)->work, #_work);		\
- 	} while (0)
- 
- /**
-Index: b/include/trace/workqueue_event_types.h
-===================================================================
---- a/include/trace/workqueue_event_types.h	2009-04-14 11:57:05.000000000 +0900
-+++ b/include/trace/workqueue_event_types.h	2009-04-14 12:15:26.000000000 +0900
-@@ -19,6 +19,7 @@ TRACE_EVENT(workqueue_insertion,
- 		__field(pid_t,			thread_pid)
- 		__field(struct work_struct *,	work)
- 		__field(work_func_t,		func)
-+		__field(char*,			workname)
- 	),
- 
- 	TP_fast_assign(
-@@ -26,10 +27,12 @@ TRACE_EVENT(workqueue_insertion,
- 		__entry->thread_pid	= wq_thread->pid;
- 		__entry->work		= work;
- 		__entry->func		= work->func;
-+		__entry->workname	= work->name;
- 	),
- 
--	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
--		__entry->thread_pid, __entry->func)
-+	TP_printk("thread=%s:%d func=%pF work=%s",
-+		  __entry->thread_comm, __entry->thread_pid,
-+		  __entry->func, __entry->workname)
- );
- 
- TRACE_EVENT(workqueue_handler_entry,
-@@ -45,6 +48,7 @@ TRACE_EVENT(workqueue_handler_entry,
- 		__field(work_func_t,		func)
- 		__field(unsigned long,		expected_time)
- 		__field(unsigned long,		actual_time)
-+		__field(char*,			workname)
- 	),
- 
- 	TP_fast_assign(
-@@ -54,12 +58,14 @@ TRACE_EVENT(workqueue_handler_entry,
- 		__entry->func		= work->func;
- 		__entry->expected_time	= work->expected_time;
- 		__entry->actual_time	= jiffies;
-+		__entry->workname	= work->name;
- 	),
- 
--	TP_printk("thread=%s:%d latency=%lums func=%pF", __entry->thread_comm,
--		  __entry->thread_pid,
-+	TP_printk("thread=%s:%d latency=%lums func=%pF work=%s",
-+		  __entry->thread_comm, __entry->thread_pid,
- 		  jiffies_to_msecs(__entry->actual_time-__entry->expected_time),
--		  __entry->func)
-+		  __entry->func,
-+		  __entry->workname)
- );
- 
- TRACE_EVENT(workqueue_handler_exit,
-@@ -72,6 +78,7 @@ TRACE_EVENT(workqueue_handler_exit,
- 		__field(pid_t,			thread_pid)
- 		__field(struct work_struct *,	work)
- 		__field(work_func_t,		func)
-+		__field(char*,			workname)
- 	),
- 
- 	TP_fast_assign(
-@@ -79,10 +86,12 @@ TRACE_EVENT(workqueue_handler_exit,
- 		__entry->thread_pid	= wq_thread->pid;
- 		__entry->work		= work;
- 		__entry->func		= work->func;
-+		__entry->workname	= work->name;
- 	),
- 
--	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
--		  __entry->thread_pid, __entry->func)
-+	TP_printk("thread=%s:%d func=%pF work=%s",
-+		  __entry->thread_comm, __entry->thread_pid,
-+		  __entry->func, __entry->workname)
- );
- 
- /* Trace the creation of one workqueue thread on a cpu */
-Index: b/kernel/workqueue.c
-===================================================================
---- a/kernel/workqueue.c	2009-04-14 11:57:05.000000000 +0900
-+++ b/kernel/workqueue.c	2009-04-14 11:59:52.000000000 +0900
-@@ -82,7 +82,7 @@ static const struct cpumask *cpu_singlet
-  */
- static cpumask_var_t cpu_populated_map __read_mostly;
- 
--#ifdef CONFIG_WORKQUEUE_TRACER
-+#if HAVE_WORK_TRACE
- static void set_expected_time(struct work_struct *work,
- 			      unsigned long expected_jiffies)
- {
-
+> integrated way: via the sysfs API, via /sys/block/sda/sda2/trace/.
+> 
+> So when a partition's trace entry is activated, it would 
+> auto-install a specific filter expression for sda, with the sector 
+> range of that partition. Or something like that. How does this 
+> sound?
+> 
+> 	Ingo
 
