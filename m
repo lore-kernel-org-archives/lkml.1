@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZDNSVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZDNSV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758403AbZDNSVB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbZDNSUv
+	id S1758273AbZDNSV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZDNSVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:20:51 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36808 "EHLO kernel.dk"
+	Tue, 14 Apr 2009 14:21:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37935 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754850AbZDNSUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:20:51 -0400
-Date: Tue, 14 Apr 2009 20:20:49 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Nikanth Karthikesan <knikanth@suse.de>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Kleikamp <shaggy@austin.ibm.com>, xfs-masters@oss.sgi.com
-Subject: Re: [PATCH 0/6] Handle bio_alloc failure
-Message-ID: <20090414182049.GI5178@kernel.dk>
-References: <200904141636.26557.knikanth@novell.com> <20090414111838.GG5178@kernel.dk> <200904141711.20378.knikanth@suse.de> <20090414181632.GI955@mit.edu>
+	id S1751636AbZDNSVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:21:46 -0400
+Date: Tue, 14 Apr 2009 20:21:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
+Message-ID: <20090414182100.GB19814@elte.hu>
+References: <20090414172337.280621613@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090414181632.GI955@mit.edu>
+In-Reply-To: <20090414172337.280621613@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14 2009, Theodore Tso wrote:
-> On Tue, Apr 14, 2009 at 05:11:19PM +0530, Nikanth Karthikesan wrote:
-> > On Tuesday 14 April 2009 16:48:38 Jens Axboe wrote:
-> > >
-> > > It will not fail as long as __GFP_WAIT is set, which it is for all 6 of
-> > > your patches.
-> 
-> Um, before we take out the checks, can we please make sure this is a
-> guaranteed, documented behaviour?  In include/linux/page_alloc.h,
-> __GFP_NOFAIL is documented as "will never fail", but it says
-> absolutely nothing about __GFP_WAIT.
-> 
-> Some day, someone will create a static checker that will flag warnings
-> when people fail to check for allocation failures, and it would be
-> good if the formal semantics for __GFP_WAIT, and hence for GFP_NOFS,
-> GFP_KERNEL, and GFP_USER, et. al. are defined.
-> 
-> We have code in fs/jbd2/transaction.c that calls kzalloc with
-> GFP_NOFS|__GFP_NOFAIL, since I and many other people had the
-> assumption that without __GFP_NOFAIL, an GFP_NOFS allocation could
-> very well fail.
-> 
-> Or is this special-case behaviour which bio_alloc() guarantees, but
-> not necessarily any other allocation function?
 
-It's a bio_alloc() guarantee, it uses a mempool backing. And if you use
-a mempool backing, any allocation that can wait will always be
-satisfied.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
--- 
-Jens Axboe
+>  include/trace/define_trace.h        |   79 ++++++
+>  include/trace/ftrace.h              |  493 +++++++++++++++++++++++++++++++++++
+>  include/trace/irq.h                 |   56 ++++-
+>  include/trace/irq_event_types.h     |   55 ----
+>  include/trace/kmem.h                |  189 +++++++++++++-
+>  include/trace/lockdep.h             |   55 ++++-
+>  include/trace/lockdep_event_types.h |   57 ----
+>  include/trace/sched.h               |  336 +++++++++++++++++++++++-
+>  include/trace/sched_event_types.h   |  337 ------------------------
+>  include/trace/skb.h                 |   39 +++-
+>  include/trace/skb_event_types.h     |   38 ---
+>  include/trace/trace_event_types.h   |    7 -
+>  include/trace/trace_events.h        |    7 -
 
+Detail: we still have include/trace/kmem_event_types.h around - is 
+that intentional? It isnt actually used by anything so we can git-rm 
+it.
+
+Also, we mix tracepoint definition headers with other misc headers 
+such as syscall.h or boot.h.
+
+I think it would be cleaner and better sructured to have these 
+centrally enumerated tracepoint definitions separated in 
+include/trace/events/.
+
+That sub-directory would _only_ include the TRACE_EVENT() 
+definitions - nothing else. Hence it would also be a nice in-situ 
+template collection for anyone adding new tracepoints. The existence 
+of other headers really distracts from that.
+
+What do you think?
+
+	Ingo
