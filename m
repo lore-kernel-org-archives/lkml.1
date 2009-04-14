@@ -1,314 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbZDNSH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZDNSIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbZDNSH6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZDNSHt
+	id S1756574AbZDNSIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZDNSIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:07:49 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:59082 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751949AbZDNSHs (ORCPT
+	Tue, 14 Apr 2009 14:08:30 -0400
+Received: from ppp-111-110.adsl.restena.lu ([158.64.111.110]:48807 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754580AbZDNSI3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:07:48 -0400
-Date: Tue, 14 Apr 2009 23:37:06 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC][PATCH] Add file RSS accounting to the memory resource
-	controller
-Message-ID: <20090414180706.GQ7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Apr 2009 14:08:29 -0400
+X-Greylist: delayed 660 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Apr 2009 14:08:29 EDT
+Date: Tue, 14 Apr 2009 19:57:26 +0200
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: yakui_zhao <yakui.zhao@intel.com>
+Cc: "Shi, Alex" <alex.shi@intel.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: 2.6.30-rc1 regression: boot hang due to commit
+ ff69f2bba67bd45514923aaedbf40fe351787c59
+Message-ID: <20090414195726.0244e6ba@neptune.home>
+In-Reply-To: <1239669968.5564.51.camel@localhost.localdomain>
+References: <20090413161101.0b3fc6f7@neptune.home>
+	<1239669968.5564.51.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 14 April 2009 yakui_zhao <yakui.zhao@intel.com> wrote:
+> On Mon, 2009-04-13 at 22:11 +0800, Bruno Prémont wrote:
+> > Hi All,
+> > 
+> > I bisected a boot-hang on Acer TravelMate 66x laptop and ended on
+> > commit ff69f2bba67bd45514923aaedbf40fe351787c59.
+> Will you please add the boot option of "initcall_debug" and attach the
+> screenshot where it hangs?
+>    
+> It will be great if you can file a new bug at
+> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+> and attach the output of acpidump?
+> Thanks.
 
-Feature: Add file RSS tracking per memory cgroup
+Bug created as
+  http://bugzilla.kernel.org/show_bug.cgi?id=13087
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+and includes complete boot log (until place where kernel hangs) as well
+as acpidump output.
 
-Testing
-
-1. Feature enabled, built and booted the kernel. Mounted the memory
-resource controller and verified the statistics
-2. Compiled with CGROUP_MEM_RES_CTLR disabled
-
-We currently don't track file RSS, the RSS we report is actually anon RSS.
-All the file mapped pages, come in through the page cache and get accounted
-there. This patch adds support for accounting file RSS pages. It should
-
-1. Help improve the metrics reported by the memory resource controller
-2. Will form the basis for a future shared memory accounting heuristic
-   that has been proposed by Kamezawa.
-
-Unfortunately, we cannot rename the existing "rss" keyword used in memory.stat
-to "anon_rss". We however, add "file_rss" data and hope to educate the end
-user through documentation.
----
-
- include/linux/memcontrol.h |    7 +++++++
- include/linux/rmap.h       |    4 ++--
- mm/filemap_xip.c           |    2 +-
- mm/fremap.c                |    2 +-
- mm/memcontrol.c            |   34 +++++++++++++++++++++++++++++++++-
- mm/memory.c                |    8 ++++----
- mm/migrate.c               |    2 +-
- mm/rmap.c                  |   13 ++++++++-----
- 8 files changed, 57 insertions(+), 15 deletions(-)
-
-
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 18146c9..c844a13 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -116,6 +116,8 @@ static inline bool mem_cgroup_disabled(void)
- }
- 
- extern bool mem_cgroup_oom_called(struct task_struct *task);
-+extern void
-+mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val);
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
- struct mem_cgroup;
-@@ -264,6 +266,11 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
- {
- }
- 
-+static inline void
-+mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val)
-+{
-+}
-+
- #endif /* CONFIG_CGROUP_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index b35bc0e..01b4af1 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -68,8 +68,8 @@ void __anon_vma_link(struct vm_area_struct *);
-  */
- void page_add_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
- void page_add_new_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
--void page_add_file_rmap(struct page *);
--void page_remove_rmap(struct page *);
-+void page_add_file_rmap(struct page *, struct vm_area_struct *);
-+void page_remove_rmap(struct page *, struct vm_area_struct *);
- 
- #ifdef CONFIG_DEBUG_VM
- void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address);
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-index 427dfe3..e8b2b18 100644
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -193,7 +193,7 @@ retry:
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
- 			pteval = ptep_clear_flush_notify(vma, address, pte);
--			page_remove_rmap(page);
-+			page_remove_rmap(page, vma);
- 			dec_mm_counter(mm, file_rss);
- 			BUG_ON(pte_dirty(pteval));
- 			pte_unmap_unlock(pte, ptl);
-diff --git a/mm/fremap.c b/mm/fremap.c
-index b6ec85a..01ea2da 100644
---- a/mm/fremap.c
-+++ b/mm/fremap.c
-@@ -37,7 +37,7 @@ static void zap_pte(struct mm_struct *mm, struct vm_area_struct *vma,
- 		if (page) {
- 			if (pte_dirty(pte))
- 				set_page_dirty(page);
--			page_remove_rmap(page);
-+			page_remove_rmap(page, vma);
- 			page_cache_release(page);
- 			update_hiwater_rss(mm);
- 			dec_mm_counter(mm, file_rss);
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index e44fb0f..d903b61 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -62,7 +62,8 @@ enum mem_cgroup_stat_index {
- 	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
- 	 */
- 	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
--	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
-+	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
-+	MEM_CGROUP_STAT_FILE_RSS,  /* # of pages charged as file rss */
- 	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
- 	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
- 
-@@ -321,6 +322,33 @@ static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
- 	return css_is_removed(&mem->css);
- }
- 
-+/*
-+ * Currently used to update file_rss statistics, but the routine can be
-+ * generalized to update other statistics as well.
-+ */
-+void
-+mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val)
-+{
-+	struct mem_cgroup *mem;
-+	struct mem_cgroup_stat *stat;
-+	struct mem_cgroup_stat_cpu *cpustat;
-+	int cpu = get_cpu();
-+
-+	if (!page_is_file_cache(page))
-+		return;
-+
-+	if (unlikely(!mm))
-+		mm = &init_mm;
-+
-+	mem = try_get_mem_cgroup_from_mm(mm);
-+	if (!mem)
-+		return;
-+
-+	stat = &mem->stat;
-+	cpustat = &stat->cpustat[cpu];
-+
-+	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_RSS, val);
-+}
- 
- /*
-  * Call callback function against all cgroup under hierarchy tree.
-@@ -2051,6 +2079,7 @@ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
- enum {
- 	MCS_CACHE,
- 	MCS_RSS,
-+	MCS_FILE_RSS,
- 	MCS_PGPGIN,
- 	MCS_PGPGOUT,
- 	MCS_INACTIVE_ANON,
-@@ -2071,6 +2100,7 @@ struct {
- } memcg_stat_strings[NR_MCS_STAT] = {
- 	{"cache", "total_cache"},
- 	{"rss", "total_rss"},
-+	{"file_rss", "total_file_rss"},
- 	{"pgpgin", "total_pgpgin"},
- 	{"pgpgout", "total_pgpgout"},
- 	{"inactive_anon", "total_inactive_anon"},
-@@ -2091,6 +2121,8 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
- 	s->stat[MCS_CACHE] += val * PAGE_SIZE;
- 	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
- 	s->stat[MCS_RSS] += val * PAGE_SIZE;
-+	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_FILE_RSS);
-+	s->stat[MCS_FILE_RSS] += val * PAGE_SIZE;
- 	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
- 	s->stat[MCS_PGPGIN] += val;
- 	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
-diff --git a/mm/memory.c b/mm/memory.c
-index a715b19..95a9ded 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -822,7 +822,7 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
- 					mark_page_accessed(page);
- 				file_rss--;
- 			}
--			page_remove_rmap(page);
-+			page_remove_rmap(page, vma);
- 			if (unlikely(page_mapcount(page) < 0))
- 				print_bad_pte(vma, addr, ptent, page);
- 			tlb_remove_page(tlb, page);
-@@ -1421,7 +1421,7 @@ static int insert_page(struct vm_area_struct *vma, unsigned long addr,
- 	/* Ok, finally just insert the thing.. */
- 	get_page(page);
- 	inc_mm_counter(mm, file_rss);
--	page_add_file_rmap(page);
-+	page_add_file_rmap(page, vma);
- 	set_pte_at(mm, addr, pte, mk_pte(page, prot));
- 
- 	retval = 0;
-@@ -2080,7 +2080,7 @@ gotten:
- 			 * mapcount is visible. So transitively, TLBs to
- 			 * old page will be flushed before it can be reused.
- 			 */
--			page_remove_rmap(old_page);
-+			page_remove_rmap(old_page, vma);
- 		}
- 
- 		/* Free the old page.. */
-@@ -2718,7 +2718,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 			page_add_new_anon_rmap(page, vma, address);
- 		} else {
- 			inc_mm_counter(mm, file_rss);
--			page_add_file_rmap(page);
-+			page_add_file_rmap(page, vma);
- 			if (flags & FAULT_FLAG_WRITE) {
- 				dirty_page = page;
- 				get_page(dirty_page);
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 068655d..098d365 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -131,7 +131,7 @@ static void remove_migration_pte(struct vm_area_struct *vma,
- 	if (PageAnon(new))
- 		page_add_anon_rmap(new, vma, addr);
- 	else
--		page_add_file_rmap(new);
-+		page_add_file_rmap(new, vma);
- 
- 	/* No need to invalidate - it was non-present before */
- 	update_mmu_cache(vma, addr, pte);
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 1652166..3ece45e 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -686,10 +686,12 @@ void page_add_new_anon_rmap(struct page *page,
-  *
-  * The caller needs to hold the pte lock.
-  */
--void page_add_file_rmap(struct page *page)
-+void page_add_file_rmap(struct page *page, struct vm_area_struct *vma)
- {
--	if (atomic_inc_and_test(&page->_mapcount))
-+	if (atomic_inc_and_test(&page->_mapcount)) {
- 		__inc_zone_page_state(page, NR_FILE_MAPPED);
-+		mem_cgroup_update_statistics(page, vma->vm_mm, 1);
-+	}
- }
- 
- #ifdef CONFIG_DEBUG_VM
-@@ -719,7 +721,7 @@ void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long
-  *
-  * The caller needs to hold the pte lock.
-  */
--void page_remove_rmap(struct page *page)
-+void page_remove_rmap(struct page *page, struct vm_area_struct *vma)
- {
- 	if (atomic_add_negative(-1, &page->_mapcount)) {
- 		/*
-@@ -738,6 +740,7 @@ void page_remove_rmap(struct page *page)
- 			mem_cgroup_uncharge_page(page);
- 		__dec_zone_page_state(page,
- 			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
-+		mem_cgroup_update_statistics(page, vma->vm_mm, -1);
- 		/*
- 		 * It would be tidy to reset the PageAnon mapping here,
- 		 * but that might overwrite a racing page_add_anon_rmap
-@@ -835,7 +838,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
- 		dec_mm_counter(mm, file_rss);
- 
- 
--	page_remove_rmap(page);
-+	page_remove_rmap(page, vma);
- 	page_cache_release(page);
- 
- out_unmap:
-@@ -950,7 +953,7 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
- 		if (pte_dirty(pteval))
- 			set_page_dirty(page);
- 
--		page_remove_rmap(page);
-+		page_remove_rmap(page, vma);
- 		page_cache_release(page);
- 		dec_mm_counter(mm, file_rss);
- 		(*mapcount)--;
-
--- 
-	Balbir
+Bruno
