@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbZDNAN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZDNAOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbZDNAN4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 20:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZDNANp
+	id S1754773AbZDNAOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 20:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZDNANq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 20:13:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42101 "EHLO hera.kernel.org"
+	Mon, 13 Apr 2009 20:13:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42102 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751697AbZDNANo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 20:13:44 -0400
-Date: Tue, 14 Apr 2009 00:13:04 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
+	id S1751482AbZDNANp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 20:13:45 -0400
+Date: Tue, 14 Apr 2009 00:12:52 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mingo@elte.hu
+       fujita.tomonori@lab.ntt.co.jp, jaswinder@kernel.org,
+       jaswinderrajput@gmail.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <49D458B1.5000703@cn.fujitsu.com>
-References: <49D458B1.5000703@cn.fujitsu.com>
-Subject: [tip:sched/urgent] tracing, sched: mark get_parent_ip() notrace
-Message-ID: <tip-132380a06b24704fd6c9be55c44d4ef3972cead2@git.kernel.org>
-Git-Commit-ID: 132380a06b24704fd6c9be55c44d4ef3972cead2
+       jaswinder@kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       jaswinderrajput@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1239558861.3938.2.camel@localhost.localdomain>
+References: <1239558861.3938.2.camel@localhost.localdomain>
+Subject: [tip:x86/urgent] x86: pci-swiotlb.c swiotlb_dma_ops should be static
+Message-ID: <tip-49cc21f93ddc4c17c2be77d9da43a2db69acc0d3@git.kernel.org>
+Git-Commit-ID: 49cc21f93ddc4c17c2be77d9da43a2db69acc0d3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 00:13:06 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 00:12:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  132380a06b24704fd6c9be55c44d4ef3972cead2
-Gitweb:     http://git.kernel.org/tip/132380a06b24704fd6c9be55c44d4ef3972cead2
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Thu, 2 Apr 2009 14:18:25 +0800
+Commit-ID:  49cc21f93ddc4c17c2be77d9da43a2db69acc0d3
+Gitweb:     http://git.kernel.org/tip/49cc21f93ddc4c17c2be77d9da43a2db69acc0d3
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Sun, 12 Apr 2009 23:24:21 +0530
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 14 Apr 2009 02:11:05 +0200
+CommitDate: Tue, 14 Apr 2009 01:35:11 +0200
 
-tracing, sched: mark get_parent_ip() notrace
+x86: pci-swiotlb.c swiotlb_dma_ops should be static
 
-Impact: remove overly redundant tracing entries
+Impact: reduce kernel size a bit, address sparse warning
 
-When tracer is "function" or "function_graph", way too much
-"get_parent_ip" entries are recorded in ring_buffer.
+Addresses the problem pointed out by this sparse warning:
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Steven Rostedt <srostedt@redhat.com>
-LKML-Reference: <49D458B1.5000703@cn.fujitsu.com>
+  arch/x86/kernel/pci-swiotlb.c:53:20: warning: symbol 'swiotlb_dma_ops' was not declared. Should it be static?
+
+For x86: swiotlb_dma_ops can be static, because it's not used outside
+of pci-swiotlb.c
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+LKML-Reference: <1239558861.3938.2.camel@localhost.localdomain>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched.c |    2 +-
+ arch/x86/kernel/pci-swiotlb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 5724508..e90e70e 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4846,7 +4846,7 @@ void scheduler_tick(void)
- #endif
+diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+index 34f12e9..221a385 100644
+--- a/arch/x86/kernel/pci-swiotlb.c
++++ b/arch/x86/kernel/pci-swiotlb.c
+@@ -50,7 +50,7 @@ static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	return swiotlb_alloc_coherent(hwdev, size, dma_handle, flags);
  }
  
--unsigned long get_parent_ip(unsigned long addr)
-+notrace unsigned long get_parent_ip(unsigned long addr)
- {
- 	if (in_lock_functions(addr)) {
- 		addr = CALLER_ADDR2;
+-struct dma_map_ops swiotlb_dma_ops = {
++static struct dma_map_ops swiotlb_dma_ops = {
+ 	.mapping_error = swiotlb_dma_mapping_error,
+ 	.alloc_coherent = x86_swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
