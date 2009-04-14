@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZDNQIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZDNQKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbZDNQIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZDNQIG
+	id S1756689AbZDNQKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZDNQKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:08:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51964 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZDNQIE (ORCPT
+	Tue, 14 Apr 2009 12:10:04 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:63081 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbZDNQKC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:08:04 -0400
-Message-ID: <49E4B4D4.1020903@zytor.com>
-Date: Tue, 14 Apr 2009 09:07:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 14 Apr 2009 12:10:02 -0400
+Message-ID: <49E4B51E.3040402@emulex.com>
+Date: Tue, 14 Apr 2009 12:09:02 -0400
+From: James Smart <James.Smart@Emulex.Com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
-References: <1239653210-10422-1-git-send-email-glommer@redhat.com> <49E45894.7090700@redhat.com>
-In-Reply-To: <49E45894.7090700@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+To: David Howells <dhowells@redhat.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix lpfc_parse_bg_err()'s use of do_div()
+References: <20090414155948.27755.2131.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090414155948.27755.2131.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Apr 2009 16:09:03.0997 (UTC) FILETIME=[54B95AD0:01C9BD1B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> 
-> The comment about repeating 'mov ss' in the manual has that wonderful
-> word in it, May.  That means we're perfectly allowed to ignore it and
-> just set the flag unconditionally.
-> 
+David,
 
-Realistically, though, this should only be done for a limited number of
-sequential instructions.
+I already posted the same fix on 4/7. See:
+http://marc.info/?l=linux-scsi&m=123912745216961&w=2
 
-> I doubt we'll ever see a repeated 'mov ss', once is more than enough.
+-- james s
 
-True enough, except maliciously.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+David Howells wrote:
+> Fix lpfc_parse_bg_err()'s use of do_div().  It should be passing a 64-bit
+> variable as the first parameter.  However, since it's only using a 32-bit
+> variable, it doesn't need to use do_div() at all, but can instead use the
+> division operator.
+>
+> This deals with the following warnings:
+>
+>   CC      drivers/scsi/lpfc/lpfc_scsi.o
+> drivers/scsi/lpfc/lpfc_scsi.c: In function 'lpfc_parse_bg_err':
+> drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: comparison of distinct pointer types lacks a cast
+> drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: right shift count >= width of type
+> drivers/scsi/lpfc/lpfc_scsi.c:1397: warning: passing argument 1 of '__div64_32' from incompatible pointer type
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+>
+>  drivers/scsi/lpfc/lpfc_scsi.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+>
+> diff --git a/drivers/scsi/lpfc/lpfc_scsi.c b/drivers/scsi/lpfc/lpfc_scsi.c
+> index b1bd3fc..36fd2e7 100644
+> --- a/drivers/scsi/lpfc/lpfc_scsi.c
+> +++ b/drivers/scsi/lpfc/lpfc_scsi.c
+> @@ -1394,7 +1394,7 @@ lpfc_parse_bg_err(struct lpfc_hba *phba, struct lpfc_scsi_buf *lpfc_cmd,
+>  		 */
+>  		cmd->sense_buffer[8] = 0;     /* Information */
+>  		cmd->sense_buffer[9] = 0xa;   /* Add. length */
+> -		do_div(bghm, cmd->device->sector_size);
+> +		bghm /= cmd->device->sector_size;
+>  
+>  		failing_sector = scsi_get_lba(cmd);
+>  		failing_sector += bghm;
+>
+>   
