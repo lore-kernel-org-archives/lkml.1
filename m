@@ -1,145 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbZDNMtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZDNM6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755726AbZDNMtq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZDNMth
+	id S1755330AbZDNM6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZDNM6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:49:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40985 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753190AbZDNMtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:49:36 -0400
-Subject: Re: [tip:x86/cpu] x86: cacheinfo: replace sysfs interface for
- cache_disable feature
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andreas.herrmann3@amd.com, akpm@linux-foundation.org,
-       mark.langsdorf@amd.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090414115805.GW3558@elte.hu>
-References: <20090409131849.GJ31527@alberich.amd.com>
-	 <tip-f8b201fc7110c3673437254e8ba02451461ece0b@git.kernel.org>
-	 <1239598324.2983.2.camel@ht.satnam> <1239598612.2983.4.camel@ht.satnam>
-	 <20090414115805.GW3558@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 14 Apr 2009 18:18:20 +0530
-Message-Id: <1239713300.3079.22.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	Tue, 14 Apr 2009 08:58:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32930 "EHLO
+	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751835AbZDNM6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 08:58:13 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 0/4] Small fixes for rc2
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Tue, 14 Apr 2009 14:57:21 +0100
+Message-ID: <20090414135501.13935.13500.stgit@t61.ukuu.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 13:58 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > On Mon, 2009-04-13 at 10:22 +0530, Jaswinder Singh Rajput wrote:
-> > > Hello Mark,
-> > > 
-> > > On Fri, 2009-04-10 at 12:37 +0000, Mark Langsdorf wrote:
-> > > > Commit-ID:  f8b201fc7110c3673437254e8ba02451461ece0b
-> > > > Gitweb:     http://git.kernel.org/tip/f8b201fc7110c3673437254e8ba02451461ece0b
-> > > > Author:     Mark Langsdorf <mark.langsdorf@amd.com>
-> > > > AuthorDate: Thu, 9 Apr 2009 15:18:49 +0200
-> > > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > > CommitDate: Fri, 10 Apr 2009 14:21:53 +0200
-> > > > 
-> > > > x86: cacheinfo: replace sysfs interface for cache_disable feature
-> > > > 
-> > > > Impact: replace sysfs attribute
-> > > > 
-> > > > Current interface violates against "one-value-per-sysfs-attribute
-> > > > rule". This patch replaces current attribute with two attributes --
-> > > > one for each L3 Cache Index Disable register.
-> > > > 
-> > > > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> > > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > > > LKML-Reference: <20090409131849.GJ31527@alberich.amd.com>
-> > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > > 
-> > > > 
-> > > > ---
-> > > >  arch/x86/kernel/cpu/intel_cacheinfo.c |   90 ++++++++++++++++----------------
-> > > >  1 files changed, 45 insertions(+), 45 deletions(-)
-> > > > 
-> > > > diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> > > > index 0cde071..fc28291 100644
-> > > > --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-> > > > +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> > > > @@ -697,73 +697,69 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
-> > > >  #define to_object(k)	container_of(k, struct _index_kobject, kobj)
-> > > >  #define to_attr(a)	container_of(a, struct _cache_attr, attr)
-> > > >  
-> > > > -static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
-> > > > +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
-> > > > +				  unsigned int index)
-> > > >  {
-> > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
-> > > > -	int node = cpu_to_node(cpumask_first(mask));
-> > > > -	struct pci_dev *dev = NULL;
-> > > > -	ssize_t ret = 0;
-> > > > -	int i;
-> > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-> > > > +	int node = cpu_to_node(cpu);
-> > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
-> > > > +	unsigned int reg = 0;
-> > > 
-> > > This leads to compilation warnings:
-> > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
-> > > 
-> > > >  
-> > > > -static ssize_t
-> > > > -store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
-> > > > -		    size_t count)
-> > > > +static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
-> > > > +	const char *buf, size_t count, unsigned int index)
-> > > >  {
-> > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
-> > > > -	int node = cpu_to_node(cpumask_first(mask));
-> > > > -	struct pci_dev *dev = NULL;
-> > > > -	unsigned int ret, index, val;
-> > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-> > > > +	int node = cpu_to_node(cpu);
-> > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
-> > > > +	unsigned long val = 0;
-> > > >  
-> > > 
-> > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c:737: warning: unused variable ‘cpu’
-> > 
-> > Oops it is also pointing to node:
-> > 
-> > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
-> > arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
-> 
-> Mind sending a fix? We really dont want warnings noise in the x86 
-> tree.
-> 
+---
 
-Ok I send it.
+Alan Cox (3):
+      parport: Fix various uses of parport_pc
+      tty: Fix leak in ti-usb
+      cdc-acm: Fix long standing abuse of tty->low_latency
 
-when I fixed node then it gives warnings for :
-  arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
-  arch/x86/kernel/cpu/intel_cacheinfo.c:713: warning: unused variable ‘cpu’
-
-So I also fixed it.
+Tony Breeds (1):
+      parport_pc: Fix build failure drivers/parport/parport_pc.c for powerpc
 
 
-> I was also thinking about adopting the Sparc trick: adding -Werror 
-> to arch/x86/ files only, fixing all the fallout and ensuring no new 
-> warnings from a flag day on. Anyone interested in doing that?
-> 
+ arch/powerpc/include/asm/parport.h    |    2 +-
+ arch/sparc/include/asm/parport.h      |    5 +++--
+ drivers/parisc/superio.c              |    3 ++-
+ drivers/usb/class/cdc-acm.c           |    4 ----
+ drivers/usb/serial/ti_usb_3410_5052.c |   26 ++++++++++++++------------
+ 5 files changed, 20 insertions(+), 20 deletions(-)
 
-Yes, this will be nice idea. Should I send patch for:
-"adding -Werror to arch/x86/ files only"
-
-Thanks,
 --
-JSR
+ "And the nice thing is you don't need to be able to type, because every
+  possible keystroke does {something} for/to you. Anything from point out
+  off-by-one errors to perform a sex change on your gerbil."
+			-- Bill Davidsen describing emacs
 
