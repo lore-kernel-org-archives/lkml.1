@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbZDNQsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZDNQsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbZDNQsj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZDNQsF
+	id S1757447AbZDNQsy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbZDNQs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:48:05 -0400
-Received: from flatoutfitness.com ([66.178.130.209]:33507 "EHLO selene"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755992AbZDNQsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:48:04 -0400
-Message-ID: <acfb5c7f894e2376902adb7d9d5512f6.squirrel@www.datavault.us>
-In-Reply-To: <18916.47906.73896.346385@stoffel.org>
-References: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us>
-    <200904132100.58056.gene.heskett@verizon.net>
-    <49E3EF9F.6090600@seiner.com>
-    <200904132224.13716.gene.heskett@verizon.net>
-    <49E49F46.8030509@seiner.com> <18916.47906.73896.346385@stoffel.org>
-Date: Tue, 14 Apr 2009 09:47:59 -0700 (PDT)
-Subject: Re: mcp55 forcedeth woes
-From: "Yan Seiner" <yan@seiner.com>
-To: "John Stoffel" <john@stoffel.org>
-Cc: "Gene Heskett" <gene.heskett@verizon.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, aabdulla@nvidia.com
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Tue, 14 Apr 2009 12:48:29 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55868 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757338AbZDNQs2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:48:28 -0400
+Subject: Re: [PATCH 10/30] cr: core stuff
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090414154139.GA8085@us.ibm.com>
+References: <20090410023539.GK27788@x200.localdomain>
+	 <20090413214701.GA24509@us.ibm.com>
+	 <20090414152752.GC27461@x200.localdomain>
+	 <20090414154139.GA8085@us.ibm.com>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 09:48:24 -0700
+Message-Id: <1239727704.32604.80.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-04-14 at 10:41 -0500, Serge E. Hallyn wrote:
+> > Module can legally support C/R for its files.
+> > In the end it most certainly will end up with module registering restart
+> 
+> Which module?  The module defining a filesystem?
+> 
+> In that case I'm just not clear on how the restart code will know which
+> fs's file_operations to use to pick a fops->restart() fn.
 
-On Tue, April 14, 2009 9:34 am, John Stoffel wrote:
->
-> I've also got one of these boards, but I seem to recall that 2.6.28
-> and higher worked just fine, but when I was chasing another problem
-> with complete system crashes when running tcpdump, I found the dead
-> port problem as well.
+There's not an f_op on the restart side -- there can't be.  The problem
+is that we get a CR_FD_FOO object and need to call off into the "foo"
+code to recreate the 'struct file'.  To me, that screams of a nice list
+of function handlers indexed be CR_FD_FOO.
 
-Yeah, this one surfaced after I had a memory stick go bad and lock up the
-machine several times.
+So, we have a list of these sitting around somewhere:
 
->
-> Thanks for posting your workaround, they'll be a big help.  Esp if I
-> put them in early to the system boot process as a quick hack.
->
-> The M2N-SLI Deluxe boards are nice though, stable stable stable.  I've
-> been very happy with mine.  I wonder if there's a newer BIOS which
-> might address some of these issues as well, since it seems to me that
-> the BIOS, esp on power up, should be reseting the ports to something
-> more sane.
+int restore_fd_func(struct cr_ctx *ctx, struct cr_fd_hdr *fd, void *private)
 
-There is a newer bios, 1702, that may address these issues - at least teh
-writeup for the 17xx bios for the m2n32 talks about a network lockup fix. 
-I haven't tried yet.  These are the most stable boards I've found; one of
-mine runs 6 SATA drives locally, 9 via eSATA, 2 dual DVI video cards, and
-2 15K scsi drives, all without a hitch.  It never glitches - except for
-the d*mn network, this board is a piece of perfection.
+and when we see a CR_FD_HDR object, we look up its type and call the
+respective handler.  The handler will get enough data to go and restore
+the fd.  The fd number and other things common to all fds should be
+present in the cr_fd_hdr.
 
--- 
-Yan Seiner, PE
-
-Support my bid for the 4J School Board
-http://www.seiner.com
+-- Dave
 
