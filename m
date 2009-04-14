@@ -1,60 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbZDNSKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbZDNSLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbZDNSKd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbZDNSKH
+	id S1758012AbZDNSLW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757927AbZDNSKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:10:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:65268 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757527AbZDNSKF (ORCPT
+	Tue, 14 Apr 2009 14:10:54 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:43281 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757602AbZDNSKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:10:05 -0400
-Message-ID: <49E4D17E.8020602@vlnb.net>
-Date: Tue, 14 Apr 2009 22:10:06 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 14 Apr 2009 14:10:52 -0400
+Message-ID: <49E4D115.5080601@cs.columbia.edu>
+Date: Tue, 14 Apr 2009 14:08:21 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
-Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between
- 	different SCSI targets (SCST, STGT, IET, LIO)
-References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org> <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com> <49D9D9A0.40106@wpkg.org> <49DA33EF.3020700@vlnb.net> <49DA49AA.1060106@wpkg.org> <49DE4243.5060004@vlnb.net> <49E46E73.8020703@wpkg.org>
-In-Reply-To: <49E46E73.8020703@wpkg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       serue@us.ibm.com, mingo@elte.hu, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz> <20090413091423.GA19236@x200.localdomain> <49E4108A.8050201@cs.columbia.edu> <20090414145830.GA27461@x200.localdomain>
+In-Reply-To: <20090414145830.GA27461@x200.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18rPrlNHiPQaRJ/dbLKESxh43++9ovA4gv8nVN
- xedbX4ELtN4xWy8aWjx/Nbhh5NL6ibgklaiDMVEYJNKDUdo6c2
- xpLK23CS2bDNBfwKqWZiw==
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Tomasz Chmielewski, on 04/14/2009 03:07 PM wrote:
-> Vladislav Bolkhovitin schrieb:
-> 
->>> Could anyone recheck if it's the same on some other system?
+
+Alexey Dobriyan wrote:
+> On Tue, Apr 14, 2009 at 12:26:50AM -0400, Oren Laadan wrote:
+>> Alexey Dobriyan wrote:
+>>> On Thu, Apr 09, 2009 at 10:07:11PM -0700, Dave Hansen wrote:
+>>>> I'm curious how you see these fitting in with the work that we've been
+>>>> doing with Oren.  Do you mean to just start a discussion or are you
+>>>> really proposing these as an alternative to what Oren has been posting?
+>>> Yes, this is posted as alternative.
 >>>
->>>> Which IO scheduler on the target did you use? I guess, deadline? If 
->>>> so, you should try with CFQ as well.
->>> I used CFQ.
->> You didn't apply io_context-XXX.patch, correct? With it you should see a 
->>  noticeable increase, like in http://scst.sourceforge.net/vl_res.txt.
+>>> Some design decisions are seen as incorrect from here like:
+>> A definition of "design" would help; I find most of your comments
+>> below either vague, cryptic, or technical nits...
+>>
+>>> * not rejecting checkpoint with possible "leaks" from container
+>> ...like this, for example.
 > 
-> I didn't apply this one.
+> Like checkpointing one process out of many living together.
+
+See the thread on creating tasks in userspace vs. kernel space:
+the argument here is that is an interesting enough use case for
+a checkpoint of not-an-entire-container.
+
+Of course it will require more logic to it, so the user can choose
+what she cares or does not care about, and the kernel could alert
+the user about it.
+
+The point is, that it is, IMHO, a desirable capability.
+
 > 
-> I used 2.6.26.x kernel and io_context-XXX.patch was for 2.6.27, 2.6.28 
-> and 2.6.29 only; 2.6.27 fails to apply to 2.6.26.8 kernel (perhaps in a 
-> trivial way, I didn't check).
+> If you allow this you consequently drop checks (e.g. refcount checks)
+> for "somebody else is using structure to be checkpointed".
+> 
 
-Yes, io_context patch for 2.6.26.x kernels doesn't exist, because it 
-isn't clear if it has the necessary functionality.
+>From this point below, I totally agree with you that for the purpose
+of a whole-container-checkpoint this is certainly desirable. My point
+was that it can be easily added the existing patchset (not yours).
+Why not add it there ?
 
-But it's worth for you to upgrade to 2.6.27.x. Have you seen 
-http://scst.sourceforge.net/vl_res.txt?
+> If you drop these checks, you can't decipher legal sutiations like
+> "process genuinely doesn't care about routing table of netns it lives in"
+> from "illegal" situations like "process created shm segment but currently
+> doesn't use it so not checkpointing ipcns will result in breakagenlater".
+> 
+> You'll have to move responsibility to user, so user exactly knows what
+> app relies on and on what. And probably add flags like CKPT_SHM,
+> CKPT_NETNS_ROUTE ad infinitum.
+> 
+> And user will screw it badly and complain: "after restart my app
+> segfaulted". And user himself is screwed now: old running process is
+> already killed (it was checkpointed on purpose) and new process in image
+> segfaults every time it's restarted.
+> 
+> All of this in out opinion results in doing C/R unreliably and badly.
+> 
+> We are going to do it well and dig from the other side.
+> 
+> If "leak" (any "leak") is detected, C/R is aborted because kernel
+> doesn't know what app relies on and what app doesn't care about.
+> 
+> This protected from situations and failure modes described above.
+> 
+> This also protects to some extent from in-kernel changes where C/R code
+> should have been updated but wasn't. Person doing incomplete change won't
+> notice e.g refcount checks and won't try to "fix" them. But we'll notice it,
+> e.g. when running testsuite (amen) and update C/R code accordingly.
+> 
+> I'm talking about these checks so that everyone understands:
+> 
+> 	for_each_cr_object(ctx, obj, CR_CTX_MM_STRUCT) {
+>                 struct mm_struct *mm = obj->o_obj;
+>                 unsigned int cnt = atomic_read(&mm->mm_users);
+> 
+>                 if (obj->o_count != cnt) {
+>                         printk("%s: mm_struct %p has external references %lu:%u\n", __func__, mm, obj->o_count, cnt);
+>                         return -EINVAL;
+>                 }
+>         }
+> 
+> They are like moving detectors, small, invisible, something moved, you don't
+> know what, but you don't care because you have to investigate anyway.
+> 
+> In this scheme, if user wants to checkpoint just one process, he should
+> start it alone in separate container. Right now, in posted patchset
+> as cloned process with
+> CLONE_NEWNS|CLONE_NEWUTS|CLONE_NEWIPC|CLONE_NEWUSER|CLONE_NEWPID|CLONE_NEWNET
 
-Vlad
+So you suggest that to checkpoint a single process, say a cpu job that
+would run a week, which runs in the topmost pid_ns, I will need to
+checkpoint the entire topmost pid_ns (as a container, if at all possible
+- surely there will non-checkpointable tasks there) and then in
+user-space filter out the data and leave only one task, and then to
+restart I'll use a container again ?
+
+Pffff ... why not just allow subtree checkpoint, not in a container,
+with its well known limitations -- would work the same, for very little
+additional implementation cost.
+
+> 
+> All of this by definition won't create situation "mom, where did my shm segment go?".
+> 
+>> Anything in the current design makes it impossible ?
+>>
+>> Anything prohibiting your from adding this feature to the current
+>> patch-set ?
+>>
+>>> * not having CAP_SYS_ADMIN on restart(2)
+>> Surely you have read already on the containers mailing list that
+>> for the *time being* we attempt to get as far as possible without
+>> requiring root privileges, to identify security hot-spots.
+> 
+> More or less everything is hotspot.
+
+Going back to my example of a subtree above: what sort of security
+issues you would have here, assuming all restart operations go via
+the usual security checks just like syscalls, and we take special
+care about values we allow as input, e.g. cpu debug registers etc ?
+
+BTW, the checks for cpu registers and other values for sanity is
+needed anyway to ensure that the kernel freak out if wrong input
+is fed (maliciously or by mistake).
+
+> 
+>> And surely you have read there the observation that for the general
+>> case root privileges will probably be inevitable.
+>>
+>> And surely you don't seriously think that adding this check changes
+>> the "design"...
+> 
+> This is not about design now, this is about if you allow restart(2) for
+> everyone, you open kernel to very very high number of holes of all
+> types. I wrote about it in reply to your code.
+> 
+
+And there are many examples where this is not the case. The current
+patchset (v14-rc3), for example, to the best of my knowledge, does
+not have such issues (well, need to add checks for validity of regs
+but there is a FIXME comment :)
+
+> Numbers of states described by any valid image as described by header
+> files is very much higher than number of states that can validly end up
+> in an image. Reducing set of states to only valid ones will require
+> many checks.
+> 
+> For example, just one structure: struct cr_hdr_cpu.
+> 
+> Segments are directly loaded regardless of RPL.
+> 
+> Debug registers are directly loaded regardless of to where breakpoint
+> points to.
+> 
+> If you don't understand scale of problem and insist on restart(2) not
+> having CAP_SYS_ADMIN, we'll just drop from discussion and write email
+> to bugtraq to warn sysadmins at least.
+
+I humbly suggest that for many useful use-cases restart(2) can succeed
+and work well without requiring CAP_SYS_ADMIN. I'm also citing Serge
+saying that it's a good exercise to identify all those specific points
+where CAP_SYS_ADMIN is needed and make sure we understand them well.
+
+For this purpose, _starting_ with not requiring CAP_SYS_ADMIN is
+actually a good idea.  Then we can isolate where it's strictly needed,
+what are the security implications, and add the requirement there.
+
+> 
+> restart(2) for everyone sounds like excellent feature and is excellent
+> feature but simultaneusly is completely unrealistic for Unix-like kernel.
+> 
+>>> * having small (TASK_COMM_LEN) and bigger (objref[1]) image format
+>>>   misdesigns.
+>> Eh ?
+> 
+> TASK_COMM_LEN is 16 bytes and is not going to change, so you do
+> 
+> 	__u8 cr_comm[16];
+> 
+> and forget. If TASK_COMM_LEN changes you'll just bump size of
+> task_struct image and image version.
+
+That's an extra safety check. So that kernel doesn't _crash_ if a new
+image is fed to an older kernel (and for some reason the image altered).
+
+And also needed when you support non-CAP_SYS_ADMIN restart(2) (yeah,
+yeah, I got the point, limited version only).
+
+Oren.
+
+> 
+> Saving ->comm as variable-sized string is complication out of nowhere.
+> 
+> As for objref, my apoligies, objection dropped, I understood how it can be useful.
+> 
+>>> * doing fork(2)+restart(2) per restarted task and whole orchestration
+>>>   done from userspace/future init task.
+>> Why is it "incorrect" ?
+>> What makes it "better" to do it in the kernel ?
+>> Only because you say so is not convincing.
+>>
+>> (also see my other post in this matter).
+>>
+>>> * not seeing bigger picture (note, this is not equivalent to supporting
+>>>   everything at once, nobody is asking for everything at once) wrt shared
+>>>   objects and format and code changes because of that (note again, image
+>>>   format will change, but it's easy to design high level structure which
+>>>   won't change)
+>> Why don't you describe the bigger picture so that the rest of can
+>> finally see it, too ?!
+>> (what a waste to have spent all this effort in vain...)
+> 
+> Sit and graph down all structures that you will eventually checkpoint and
+> relations about them. Things like "struct cr_hdr_pids" won't even be on
+> the radar.
+> 
+>>> * checking of unsupported features done at wrong place and wrong time
+>>>   and runtime overhead because of that on CR=y kernels.
+>> Eh ?   Did you follow the code recently ?
+> 
+> Checks during dup_fd() were dropped? Good.
+> 
+>>> There are also low-level things, but it's cumulative effect.
+>>>
+>>> [1] Do I inderstand correctly that cookie for shared object is an
+>>> address on kernel stack? This is obviously unreliable, if yes :-)
+>> Ah... I see... you didn't look at it that hard, not even read the
+>> documentation with the code.
+>>
+>>> 	int objref;
+>>> 		...
+>>> 	/* adding 'file' to the hash will keep a reference to it */
+>>> 	new = cr_obj_add_ptr(ctx, file, &objref, CR_OBJ_FILE, 0);
+>>> 					^^^^^^^
+>> That said, there are more similarities than differences between your
+>> suggested template and the current patchset. With your expertise you
+>> can contribute tremendously if you decide to work together.
+> 
+> OK, totally misread code.
+> 
