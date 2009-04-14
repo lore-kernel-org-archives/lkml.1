@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbZDNSTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757775AbZDNSUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758303AbZDNSTV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZDNSTH
+	id S1757775AbZDNSUE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbZDNSTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:19:07 -0400
-Received: from doppler.zen.co.uk ([212.23.3.27]:54534 "EHLO doppler.zen.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756197AbZDNSTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:19:05 -0400
-Message-ID: <49E4D2FF.8090906@csr.com>
-Date: Tue, 14 Apr 2009 19:16:31 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-References: <49E4BFD0.2020302@csr.com> <20090414165905.GA25645@kroah.com>
-In-Reply-To: <20090414165905.GA25645@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 14 Apr 2009 14:19:53 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4429 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbZDNSTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:19:52 -0400
+Subject: [PATCH] MAINTAINERS - Remove include/asm-*/suspend* file patterns
+From: Joe Perches <joe@perches.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 11:19:47 -0700
+Message-Id: <1239733187.7994.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 82.70.146.43
-X-SA-Exim-Mail-From: david.vrabel@csr.com
-Subject: Re: device_for_each_child() before device_add() doesn't work
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:07 +0000)
-X-SA-Exim-Scanned: Yes (on localhost)
-X-Originating-Smarthost02-IP: [82.70.146.41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Apr 14, 2009 at 05:54:40PM +0100, David Vrabel wrote:
->> Calling device_for_each_child() on a device that has yet to be added
->> (with device_add()) used to work.  UWB subsystem currently tries to do this.
->>
->> Since "driver core: move klist_children into private structure"[1] this
->> no longer works (an oops occurs in device_for_each_chid()).  Is it
->> something that ought to work? Or should the UWB subsystem be changed to
->> not do this?
-> 
-> Why would you call device_for_each_child() if you have never added it to
-> the bus?  How would you expect that to work, as there will never be any
-> children for it?
+There are no more arches with suspend support using these directories.
+    
+Signed-off-by: Joe Perches <joe@perches.com>
 
-The children of a UWB radio controller (RC) are it's neighbors.  When 
-assigning a random DevAddr to an RC we need to check that the address is 
-  unique within the beacon group.  We use device_for_each_child() here 
-to check that the generated DevAddr is not used by any of its neighbors.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0cb20d8..5b4f1dd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2490,7 +2490,6 @@ F:	kernel/power/
+ F:	include/linux/suspend.h
+ F:	include/linux/freezer.h
+ F:	include/linux/pm.h
+-F:	include/asm-*/suspend*.h
+ F:	arch/*/include/asm/suspend*.h
+ 
+ HID CORE LAYER
+@@ -5334,7 +5333,6 @@ F:	kernel/power/
+ F:	include/linux/suspend.h
+ F:	include/linux/freezer.h
+ F:	include/linux/pm.h
+-F:	include/asm-*/suspend.h
+ 
+ SVGA HANDLING
+ P:	Martin Mares
 
-This address must be assigned during initialization and during normal 
-operation and in the past we didn't need to special case the address 
-assignment during initialization.
 
-David
