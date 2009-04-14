@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbZDNQH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZDNQIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757077AbZDNQH5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZDNQHs
+	id S1756933AbZDNQIX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZDNQIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:07:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46379 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbZDNQHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:07:47 -0400
-Subject: [PATCH -tip] x86: cpu_debug.c prepare report if files are
- inappropriate or CPU is not supported
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 21:37:20 +0530
-Message-Id: <1239725240.2966.4.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Tue, 14 Apr 2009 12:08:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51964 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752504AbZDNQIE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:08:04 -0400
+Message-ID: <49E4B4D4.1020903@zytor.com>
+Date: Tue, 14 Apr 2009 09:07:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
+References: <1239653210-10422-1-git-send-email-glommer@redhat.com> <49E45894.7090700@redhat.com>
+In-Reply-To: <49E45894.7090700@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will prepare the report to update cpu_debug.
-If files are inappropriate or CPU is not supported.
+Avi Kivity wrote:
+> 
+> The comment about repeating 'mov ss' in the manual has that wonderful
+> word in it, May.  That means we're perfectly allowed to ignore it and
+> just set the flag unconditionally.
+> 
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/cpu_debug.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+Realistically, though, this should only be done for a limited number of
+sequential instructions.
 
-diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-index 46e29ab..33fde75 100644
---- a/arch/x86/kernel/cpu/cpu_debug.c
-+++ b/arch/x86/kernel/cpu/cpu_debug.c
-@@ -30,6 +30,8 @@
- #include <asm/apic.h>
- #include <asm/desc.h>
- 
-+#define EMAIL	"<linux-kernel@vger.kernel.org>, <jaswinderrajput@gmail.com>"
-+
- static DEFINE_PER_CPU(struct cpu_cpuX_base, cpu_arr[CPU_REG_ALL_BIT]);
- static DEFINE_PER_CPU(struct cpu_private *, priv_arr[MAX_CPU_FILES]);
- static DEFINE_PER_CPU(unsigned, cpu_modelflag);
-@@ -838,6 +840,17 @@ static int cpu_init_allreg(unsigned cpu, struct dentry *dentry)
- 	return err;
- }
- 
-+/*
-+ * Prepare report for LKML and maintainer if files count are inappropriate
-+ * Or CPU is not supported
-+ */
-+static void send_report(int files, struct cpuinfo_x86 *cpui)
-+{
-+	WARN_ONCE(1, "Please report \"cpu_debug files %d for %x:%x:%x:%x\" to"
-+		  " %s\n", files, cpui->x86_vendor, cpui->x86, cpui->x86_model,
-+		  cpui->x86_mask, EMAIL);
-+}
-+
- static int cpu_init_cpu(void)
- {
- 	struct dentry *cpu_dentry = NULL;
-@@ -861,9 +874,13 @@ static int cpu_init_cpu(void)
- 
- 		pr_info("cpu%d(%d) debug files %d\n",
- 			cpu, nr_cpu_ids, per_cpu(cpu_priv_count, cpu));
-+		if (!per_cpu(cpu_modelflag, cpu))
-+			send_report(per_cpu(cpu_priv_count, cpu), cpui);
-+
- 		if (per_cpu(cpu_priv_count, cpu) > MAX_CPU_FILES) {
- 			pr_err("Register files count %d exceeds limit %d\n",
- 				per_cpu(cpu_priv_count, cpu), MAX_CPU_FILES);
-+			send_report(per_cpu(cpu_priv_count, cpu), cpui);
- 			per_cpu(cpu_priv_count, cpu) = MAX_CPU_FILES;
- 			err = -ENFILE;
- 		}
+> I doubt we'll ever see a repeated 'mov ss', once is more than enough.
+
+True enough, except maliciously.
+
+	-hpa
+
 -- 
-1.6.0.6
-
-
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
