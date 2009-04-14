@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbZDNM7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZDNM7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755680AbZDNM7Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZDNM66
+	id S1756080AbZDNM7r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZDNM7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:58:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32938 "EHLO
+	Tue, 14 Apr 2009 08:59:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32939 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751835AbZDNM65 (ORCPT
+	with ESMTP id S1751427AbZDNM7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:58:57 -0400
+	Tue, 14 Apr 2009 08:59:36 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/4] tty: Fix leak in ti-usb
+Subject: [PATCH 3/4] parport: Fix various uses of parport_pc
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Tue, 14 Apr 2009 14:58:11 +0100
-Message-ID: <20090414135741.13935.99227.stgit@t61.ukuu.org.uk>
+Date: Tue, 14 Apr 2009 14:58:23 +0100
+Message-ID: <20090414135817.13935.89225.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090414135501.13935.13500.stgit@t61.ukuu.org.uk>
 References: <20090414135501.13935.13500.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,56 +25,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the ti-usb adapter returns an zero data length frame (which happens) then
-we leak a kref. Found by Christoph Mair <christoph.mair@gmail.com> who proposed
-a patch. The patch here is different as Christoph's patch didn't work
-for the case where tty = NULL and data arrived but Christoph did all the
-hard work chasing it down.
+These got overlooked first time around.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/usb/serial/ti_usb_3410_5052.c |   26 ++++++++++++++------------
- 1 files changed, 14 insertions(+), 12 deletions(-)
+ arch/sparc/include/asm/parport.h |    5 +++--
+ drivers/parisc/superio.c         |    3 ++-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
 
-diff --git a/drivers/usb/serial/ti_usb_3410_5052.c b/drivers/usb/serial/ti_usb_3410_5052.c
-index 2620bf6..9c4c700 100644
---- a/drivers/usb/serial/ti_usb_3410_5052.c
-+++ b/drivers/usb/serial/ti_usb_3410_5052.c
-@@ -1215,20 +1215,22 @@ static void ti_bulk_in_callback(struct urb *urb)
- 	}
+diff --git a/arch/sparc/include/asm/parport.h b/arch/sparc/include/asm/parport.h
+index dff3f02..ff9ead6 100644
+--- a/arch/sparc/include/asm/parport.h
++++ b/arch/sparc/include/asm/parport.h
+@@ -117,7 +117,7 @@ static int __devinit ecpp_probe(struct of_device *op, const struct of_device_id
+ 	if (!strcmp(parent->name, "dma")) {
+ 		p = parport_pc_probe_port(base, base + 0x400,
+ 					  op->irqs[0], PARPORT_DMA_NOFIFO,
+-					  op->dev.parent->parent);
++					  op->dev.parent->parent, 0);
+ 		if (!p)
+ 			return -ENOMEM;
+ 		dev_set_drvdata(&op->dev, p);
+@@ -168,7 +168,8 @@ static int __devinit ecpp_probe(struct of_device *op, const struct of_device_id
+ 	p = parport_pc_probe_port(base, base + 0x400,
+ 				  op->irqs[0],
+ 				  slot,
+-				  op->dev.parent);
++				  op->dev.parent,
++				  0);
+ 	err = -ENOMEM;
+ 	if (!p)
+ 		goto out_disable_irq;
+diff --git a/drivers/parisc/superio.c b/drivers/parisc/superio.c
+index 4fa3bb2..33e5ade 100644
+--- a/drivers/parisc/superio.c
++++ b/drivers/parisc/superio.c
+@@ -434,7 +434,8 @@ static void __init superio_parport_init(void)
+ 			0 /*base_hi*/,
+ 			PAR_IRQ, 
+ 			PARPORT_DMA_NONE /* dma */,
+-			NULL /*struct pci_dev* */) )
++			NULL /*struct pci_dev* */),
++			0 /* shared irq flags */ )
  
- 	tty = tty_port_tty_get(&port->port);
--	if (tty && urb->actual_length) {
--		usb_serial_debug_data(debug, dev, __func__,
--			urb->actual_length, urb->transfer_buffer);
--
--		if (!tport->tp_is_open)
--			dbg("%s - port closed, dropping data", __func__);
--		else
--			ti_recv(&urb->dev->dev, tty,
-+	if (tty) {
-+		if (urb->actual_length) {
-+			usb_serial_debug_data(debug, dev, __func__,
-+				urb->actual_length, urb->transfer_buffer);
-+
-+			if (!tport->tp_is_open)
-+				dbg("%s - port closed, dropping data",
-+					__func__);
-+			else
-+				ti_recv(&urb->dev->dev, tty,
- 						urb->transfer_buffer,
- 						urb->actual_length);
--
--		spin_lock(&tport->tp_lock);
--		tport->tp_icount.rx += urb->actual_length;
--		spin_unlock(&tport->tp_lock);
-+			spin_lock(&tport->tp_lock);
-+			tport->tp_icount.rx += urb->actual_length;
-+			spin_unlock(&tport->tp_lock);
-+		}
- 		tty_kref_put(tty);
- 	}
- 
+ 		printk(KERN_WARNING PFX "Probing parallel port failed.\n");
+ #endif	/* CONFIG_PARPORT_PC */
 
