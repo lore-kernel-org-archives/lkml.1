@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbZDNPzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZDNP4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbZDNPzn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZDNPvy
+	id S1757161AbZDNP4j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZDNPv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:51:54 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46002 "EHLO
+	Tue, 14 Apr 2009 11:51:57 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46015 "EHLO
 	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755462AbZDNPvu (ORCPT
+	by vger.kernel.org with ESMTP id S1755500AbZDNPvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:51:50 -0400
+	Tue, 14 Apr 2009 11:51:52 -0400
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
        James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 10/14] [VOYAGER] x86: make disabling the apics functional instead of a flag
-Date: Tue, 14 Apr 2009 10:51:36 -0500
-Message-Id: <1239724300-16371-11-git-send-email-James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 13/14] [VOYAGER] x86/voyager: remove direct use of pg0 in favour of early_ioremap()
+Date: Tue, 14 Apr 2009 10:51:39 -0500
+Message-Id: <1239724300-16371-14-git-send-email-James.Bottomley@HansenPartnership.com>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1239724300-16371-10-git-send-email-James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1239724300-16371-13-git-send-email-James.Bottomley@HansenPartnership.com>
 References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-3-git-send-email-James.Bottomley@HansenPartnership.com>
@@ -30,87 +30,60 @@ References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership
  <1239724300-16371-8-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-9-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-10-git-send-email-James.Bottomley@HansenPartnership.com>
+ <1239724300-16371-11-git-send-email-James.Bottomley@HansenPartnership.com>
+ <1239724300-16371-12-git-send-email-James.Bottomley@HansenPartnership.com>
+ <1239724300-16371-13-git-send-email-James.Bottomley@HansenPartnership.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows the elimination of some ifdef guards in setup.c.
-Additionally probe_32.c doesn't need to run through the apics in
-generic_apic_probe() if they're disabled.
+This was a hold over from the days when we didn't actually have an
+early_ioremap() and we had to fiddle with the kernel page table
+directly to read voyager cmos clickmap entries.
 
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- arch/x86/include/asm/apic.h     |    6 ++++++
- arch/x86/kernel/apic/apic.c     |    3 +++
- arch/x86/kernel/apic/probe_32.c |    3 +++
- arch/x86/kernel/setup.c         |    4 +---
- 4 files changed, 13 insertions(+), 3 deletions(-)
+ arch/x86/mach-voyager/voyager_basic.c |   13 ++-----------
+ 1 files changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 42f2f83..391c464 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -246,12 +246,18 @@ static inline int apic_is_clustered_box(void)
- extern u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask);
- extern u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask);
+diff --git a/arch/x86/mach-voyager/voyager_basic.c b/arch/x86/mach-voyager/voyager_basic.c
+index 7c97c9a..5d37967 100644
+--- a/arch/x86/mach-voyager/voyager_basic.c
++++ b/arch/x86/mach-voyager/voyager_basic.c
+@@ -123,7 +123,6 @@ int __init voyager_memory_detect(int region, __u32 * start, __u32 * length)
+ 	__u8 cmos[4];
+ 	ClickMap_t *map;
+ 	unsigned long map_addr;
+-	unsigned long old;
  
-+static inline void disable_APIC(void)
-+{
-+	disable_local_APIC();
-+	disable_apic = 1;
-+}
+ 	if (region >= CLICK_ENTRIES) {
+ 		printk("Voyager: Illegal ClickMap region %d\n", region);
+@@ -135,13 +134,7 @@ int __init voyager_memory_detect(int region, __u32 * start, __u32 * length)
+ 		    voyager_extended_cmos_read(VOYAGER_MEMORY_CLICKMAP + i);
  
- #else /* !CONFIG_X86_LOCAL_APIC */
- static inline void lapic_shutdown(void) { }
- #define local_apic_timer_c2_ok		1
- static inline void init_apic_mappings(void) { }
- static inline void disable_local_APIC(void) { }
-+static inline void disable_APIC(void) { }
+ 	map_addr = *(unsigned long *)cmos;
+-
+-	/* steal page 0 for this */
+-	old = pg0[0];
+-	pg0[0] = ((map_addr & PAGE_MASK) | _PAGE_RW | _PAGE_PRESENT);
+-	local_flush_tlb();
+-	/* now clear everything out but page 0 */
+-	map = (ClickMap_t *) (map_addr & (~PAGE_MASK));
++	map = (ClickMap_t *)early_ioremap(map_addr, sizeof(*map));
  
- #endif /* !CONFIG_X86_LOCAL_APIC */
- 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index f9e830e..aa96dbe 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -1539,6 +1539,9 @@ void __init early_init_lapic_mapping(void)
-  */
- void __init init_apic_mappings(void)
- {
-+	if (disable_apic)
-+		return;
-+
- 	if (x2apic) {
- 		boot_cpu_physical_apicid = read_apic_id();
- 		return;
-diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
-index 01eda2a..049d7a0 100644
---- a/arch/x86/kernel/apic/probe_32.c
-+++ b/arch/x86/kernel/apic/probe_32.c
-@@ -226,6 +226,9 @@ void __init generic_bigsmp_probe(void)
- 
- void __init generic_apic_probe(void)
- {
-+	if (disable_apic)
-+		return;
-+
- 	if (!cmdline_apic) {
- 		int i;
- 		for (i = 0; apic_probe[i]; i++) {
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index bee0914..13779e2 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -770,9 +770,7 @@ void __init setup_arch(char **cmdline_p)
- 	reserve_early_setup_data();
- 
- 	if (acpi_mps_check()) {
--#ifdef CONFIG_X86_LOCAL_APIC
--		disable_apic = 1;
--#endif
-+		disable_APIC();
- 		setup_clear_cpu_cap(X86_FEATURE_APIC);
+ 	/* zero length is the end of the clickmap */
+ 	if (map->Entry[region].Length != 0) {
+@@ -149,10 +142,8 @@ int __init voyager_memory_detect(int region, __u32 * start, __u32 * length)
+ 		*start = map->Entry[region].Address;
+ 		retval = 1;
  	}
++	early_iounmap(map, sizeof(*map));
+ 
+-	/* replace the mapping */
+-	pg0[0] = old;
+-	local_flush_tlb();
+ 	return retval;
+ }
  
 -- 
 1.6.2.1
