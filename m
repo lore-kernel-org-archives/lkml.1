@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZDNK3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZDNKek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbZDNK3z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZDNK3o
+	id S1752907AbZDNKek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZDNKeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:29:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50418 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753059AbZDNK3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:29:44 -0400
-Date: Tue, 14 Apr 2009 20:29:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] lockdep: warn about lockdep disabling after kernel
- taint, fix
-Message-Id: <20090414202937.b3af431f.sfr@canb.auug.org.au>
-In-Reply-To: <20090414091538.GI27003@elte.hu>
-References: <20090414144317.026498df.sfr@canb.auug.org.au>
-	<20090414091538.GI27003@elte.hu>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris"
+	Tue, 14 Apr 2009 06:34:31 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:54107 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbZDNKeb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:34:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=Dsnm4O6OOwCfsdl/8ouUQYHBaOyfZFO2dD8U8ahz1sjYhrvFmuyzi342GPPhRHdk+d
+         r6Mq6Pe9r9LPoJBB8yHOM1WnESzpb5GrFWxg9Dw8zhhBIIBRm+gpyeDmYg+i5mYCBhsi
+         IRYtHXjYPOL2GrBYgvkMDjyswKn8fsCM9Q0eo=
+From: Alessio Igor Bogani <abogani@texware.it>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Trivial <trivial@kernel.org>,
+       Alessio Igor Bogani <abogani@texware.it>
+Subject: [PATCH] misc: Fix typo in Kconfig
+Date: Tue, 14 Apr 2009 12:34:22 +0200
+Message-Id: <1239705262-6415-1-git-send-email-abogani@texware.it>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
+---
+ drivers/input/misc/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Hi Ingo,
+diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+index 203abac..674f755 100644
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -232,7 +232,7 @@ config INPUT_GPIO_ROTARY_ENCODER
+ 	depends on GPIOLIB && GENERIC_GPIO
+ 	help
+ 	  Say Y here to add support for rotary encoders connected to GPIO lines.
+-	  Check file:Documentation/incput/rotary_encoder.txt for more
++	  Check file:Documentation/input/rotary_encoder.txt for more
+ 	  information.
+ 
+ 	  To compile this driver as a module, choose M here: the
+-- 
+1.6.0.4
 
-On Tue, 14 Apr 2009 11:15:38 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
-> This opened up the path for someone eventually only including=20
-> asm/atomic.h from generic code and breaking the architectures that=20
-> only provide it via system.h. So i've queued up the fix below - this=20
-> should address the problem on Sparc and s390.
-
-Thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknkZZEACgkQjjKRsyhoI8wskgCghiF0uovgeY5ZRxHxwALFHynd
-d80An36LDimcBloHzJMZcsp+da0BbJF6
-=4TAL
------END PGP SIGNATURE-----
-
---Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris--
