@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZDNK1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZDNK2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZDNK1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZDNK1G
+	id S1754447AbZDNK2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZDNK2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:27:06 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50338 "EHLO smtps.tip.net.au"
+	Tue, 14 Apr 2009 06:28:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57866 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbZDNK1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:27:05 -0400
-Date: Tue, 14 Apr 2009 20:26:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, linux-next@vger.kernel.org,
-       fweisbec@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: linux-next: origin tree build failure
-Message-Id: <20090414202657.8f355e7c.sfr@canb.auug.org.au>
-In-Reply-To: <20090414.020818.174886786.davem@davemloft.net>
-References: <20090414144317.026498df.sfr@canb.auug.org.au>
-	<20090414.020818.174886786.davem@davemloft.net>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__14_Apr_2009_20_26_57_+1000_ZKI.WXkSg6wDe5H4"
+	id S1751153AbZDNK2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:28:10 -0400
+Date: Tue, 14 Apr 2009 12:27:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/lockdep: turn lock->name into an array
+Message-ID: <20090414102754.GH3558@elte.hu>
+References: <1239662166-13208-1-git-send-email-fweisbec@gmail.com> <20090413224219.GK5977@nowhere> <1239695296.21985.6725.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239695296.21985.6725.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__14_Apr_2009_20_26_57_+1000_ZKI.WXkSg6wDe5H4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Dave,
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-On Tue, 14 Apr 2009 02:08:18 -0700 (PDT) David Miller <davem@davemloft.net>=
- wrote:
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 14 Apr 2009 14:43:17 +1000
->=20
-> > sparc: asm/atomic.h on 32bit should include asm/system.h for xchg
-> >=20
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
->=20
-> Just in case it wasn't clear, I'm applying this :)
+> On Tue, 2009-04-14 at 00:42 +0200, Frederic Weisbecker wrote:
+> > > +#define LOCK_NAME_SIZE       25
+> > 
+> > 
+> > 
+> > This constant may look a bit weird.
+> > I just started with the assumption that a full lock name
+> > will rarely exceed this length.
+> > 
+> > If you agree with it, I will expand the conversion of lockdep
+> > TRACE_FORMAT to TRACE_EVENTS with the same assumption.
+> > So that we will be able to use filters with locks events.
+> 
+> I really really hate this.
+> 
+> if you pick a size on the top end so that all lock->name's fit in, 
+> you're wasting heaps of space, if you pick a median length, 
+> everything will get truncated.
+> 
+> If you're going to do a copy, just do the print into the buffer by 
+> using _FORMAT and be done with it.
 
-Ah, ok, thanks :-)
+what i suggested was a variable length field. That solves the size 
+issue. The ring-buffer supports variable size records anyway.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__14_Apr_2009_20_26_57_+1000_ZKI.WXkSg6wDe5H4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknkZPEACgkQjjKRsyhoI8yF+QCgv4DXdMBFD3Djv1AMiWRbqre9
-CUkAnA0zm/YGWjVIv3zdBTahhEtJlOqx
-=+hIc
------END PGP SIGNATURE-----
-
---Signature=_Tue__14_Apr_2009_20_26_57_+1000_ZKI.WXkSg6wDe5H4--
+	Ingo
