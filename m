@@ -1,168 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZDNUjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbZDNUnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZDNUjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 16:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZDNUjP
+	id S1753855AbZDNUnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 16:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZDNUno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 16:39:15 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:50199 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbZDNUjO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 16:39:14 -0400
-Date: Tue, 14 Apr 2009 22:39:09 +0200
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Patrick McHardy <kaber@trash.net>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>, Eric Leblond <eric@inl.fr>
-Subject: Re: panic on rmmod of nf_conntrack_irc
-Message-ID: <20090414223909.17a54260@mako-desktop>
-In-Reply-To: <49E4EE9C.7040509@cosmosbay.com>
-References: <20090410191736.21efab8c@mako-desktop>
-	<49E4744D.5090205@trash.net>
-	<49E47C2D.1050508@cosmosbay.com>
-	<49E47EA5.3060706@trash.net>
-	<20090414211946.4ea0455e@mako-desktop>
-	<49E4EE9C.7040509@cosmosbay.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 14 Apr 2009 16:43:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33473 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752288AbZDNUnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 16:43:43 -0400
+Message-ID: <49E4F513.1060709@kernel.org>
+Date: Tue, 14 Apr 2009 13:41:55 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Gary Hade <garyhade@us.ibm.com>, lcm@us.ibm.com,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/4] irq: correct CPUMASKS_OFFSTACK typo -v2
+References: <200903231757.53709.rusty@rustcorp.com.au> <20090323165921.GA7559@us.ibm.com> <200903241553.58209.rusty@rustcorp.com.au> <20090402013108.GB7103@us.ibm.com> <20090404003520.GA8847@us.ibm.com> <20090410215515.GC7242@us.ibm.com> <20090411065510.GA11799@elte.hu> <20090413220321.GA11098@us.ibm.com> <49E4146C.7060507@kernel.org> <49E4162A.3060701@kernel.org> <20090414131711.GA4403@elte.hu>
+In-Reply-To: <20090414131711.GA4403@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 22:14:20 +0200
-Eric Dumazet <dada1@cosmosbay.com> wrote:
-
-> Mariusz Kozlowski a écrit :
-> > On Tue, 14 Apr 2009 14:16:37 +0200
-> > Patrick McHardy <kaber@trash.net> wrote:
-> > 
-> >> Eric Dumazet wrote:
-> >>> Patrick McHardy a écrit :
-> >>>> Mariusz Kozlowski wrote:
-> >>>>>     netfilter: nf_conntrack: use SLAB_DESTROY_BY_RCU and get rid of
-> >>>>> call_rcu()
-> >>>> Thanks for the report. Does this patch fix it?
-> >>>>
-> >>> Hi Patrick, sorry for the delay, I was in holidays.
-> >> No problem, me too :)
-> >>
-> >>> I should have used different fields names (from "next", "first", ...) to catch this
-> >>> kind of errors at compile time :(
-> >>  >
-> >>> Something like :
-> >> Thanks Eric. I guess at this point it doesn't really matter anymore
-> >> for the upstream kernel, but I'll apply your patch after getting
-> >> confirmation from Mariusz to make sure that people maintaining
-> >> external patches will notice the change (and won't send me broken
-> >> patches :)).
-> > 
-> > Ok good. It doesn't panic now on nf_conntrack_irc rmmod but I found another bug.
-> > Now it's NULL pointer dereference I when doing rmmod of ebt_log. To reproduce simply:
-> > 
-> > # modprobe ebt_log && rmmod ebt_log
-> > 
-> > This is from the mainline kernel + your (Erics) patch:
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-> > IP: [<ffffffff8048490a>] nf_log_unregister+0x2a/0x90
-> > PGD 6f0e8067 PUD 6a2e0067 PMD 0 
-> > Oops: 0002 [#1] PREEMPT SMP 
-> > last sysfs file: /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:01/PNP0C09:00/PNP0C0A:00/power_supply/BAT0/energy_full
-> > CPU 0 
-> > Modules linked in: ebt_log(-) nfs lockd auth_rpcgss sunrpc netconsole af_packet i915 drm i2c_algo_bit i2c_core kvm_intel kvm ppdev acpi_cpufreq cpufreq_stats cpufreq_powersave cpufreq_userspace cpufreq_conservative cpufreq_ondemand freq_table fan sbs sbshc container pci_slot iptable_filter ip_tables x_tables sbp2 lp fuse snd_hda_codec_analog arc4 ecb snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss iwl3945 iwlcore thinkpad_acpi sr_mod cdrom pcmcia mac80211 snd_pcm rfkill led_class snd_seq_dummy snd_seq_oss snd_seq_midi_event evdev thermal uhci_hcd ehci_hcd parport_pc ohci1394 nvram yenta_socket rsrc_nonstatic pcmcia_core snd_seq pcspkr psmouse serio_raw usbcore cfg80211 e1000e ieee1394 sg parport battery ac button processor snd_timer snd_seq_device intel_agp snd soundcore snd_page_alloc
-> > Pid: 10249, comm: rmmod Not tainted 2.6.30-rc1-00204-gb0cbc86-dirty #33 7667Y24
-> > RIP: 0010:[<ffffffff8048490a>]  [<ffffffff8048490a>] nf_log_unregister+0x2a/0x90
-> > RSP: 0018:ffff88006a331ec8  EFLAGS: 00010207
-> > RAX: 0000000000000000 RBX: ffffffffa02d1d00 RCX: 0000000000000000
-> > RDX: 0000000000000000 RSI: 0000000000000002 RDI: ffffffff8065bb80
-> > RBP: ffff88006a331ed8 R08: 0000000000000002 R09: ffffffff80676600
-> > R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-> > R13: 0000000000000880 R14: 0000000000000000 R15: 0000000000000000
-> > FS:  0000000000000000(0000) GS:ffff880001010000(0063) knlGS:00000000f7fc46b0
-> > CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-> > CR2: 0000000000000008 CR3: 000000006f9f9000 CR4: 00000000000026a0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process rmmod (pid: 10249, threadinfo ffff88006a330000, task ffff88006f3c8000)
-> > Stack:
-> >  ffffffffa02d1e80 ffffffffa02d1e80 ffff88006a331ee8 ffffffffa02d1518
-> >  ffff88006a331f78 ffffffff8026ddbb 00676f6c5f746265 ffffffff80229e77
-> >  0000000000000282 ffff88006a331f58 ffff88006f3c8000 0000000000000000
-> > Call Trace:
-> >  [<ffffffffa02d1518>] ebt_log_fini+0x10/0x1e [ebt_log]
-> >  [<ffffffff8026ddbb>] sys_delete_module+0x18b/0x240
-> >  [<ffffffff80229e77>] ? do_page_fault+0x187/0x2a0
-> >  [<ffffffff8022f08b>] sysenter_dispatch+0x7/0x32
-> > Code: 90 55 48 89 e5 53 48 89 fb 48 83 ec 08 48 c7 c7 80 bb 65 80 e8 78 a9 06 00 31 c9 eb 31 0f 1f 40 00 48 8b 54 4b 18 48 8b 44 4b 20 <48> 89 42 08 48 89 10 48 c7 44 4b 20 00 02 20 00 48 c7 44 4b 18 
-> > RIP  [<ffffffff8048490a>] nf_log_unregister+0x2a/0x90
-> >  RSP <ffff88006a331ec8>
-> > CR2: 0000000000000008
-> > 
-> > If this is not related or you don't have a clue I can bisect it.
-> > 
-> 
-> Thanks a lot for this report Mariusz
-> 
-> Not related to my RCU patch IMHO (as it only touches conntrack)
-> 
-> Check commit ca735b3aaa945626ba65a3e51145bfe4ecd9e222
-> 
-> netfilter: use a linked list of loggers
-> 
-> This patch modifies nf_log to use a linked list of loggers for each
-> protocol. This list of loggers is read and write protected with a
-> mutex.
-> 
-> This patch separates registration and binding. To be used as
-> logging module, a module has to register calling nf_log_register()
-> and to bind to a protocol it has to call nf_log_bind_pf().
-> This patch also converts the logging modules to the new API. For nfnetlink_log,
-> it simply switchs call to register functions to call to bind function and
-> adds a call to nf_log_register() during init. For other modules, it just
-> remove a const flag from the logger structure and replace it with a
-> __read_mostly.
-> 
-> Signed-off-by: Eric Leblond <eric@inl.fr>
-> Signed-off-by: Patrick McHardy <kaber@trash.net>
-> 
-> It seems "struct list_head        list[NFPROTO_NUMPROTO];" is not initialized in "struct nf_logger" ?
-> 
-> Please try following patch ?
-
-Bingo! Your patch fixes it. BTW this was happening for a few more modules - ebt_log, ebt_ulog, ipt_LOG,
-and probably others using nf_log_register/nf_log_unregister.
-
-> Thank you
-
-Thanks,
-
-	Mariusz
 
 
-> diff --git a/net/netfilter/nf_log.c b/net/netfilter/nf_log.c
-> index 8bb998f..d8b85ab 100644
-> --- a/net/netfilter/nf_log.c
-> +++ b/net/netfilter/nf_log.c
-> @@ -36,10 +36,14 @@ static struct nf_logger *__find_logger(int pf, const char *str_logger)
->  int nf_log_register(u_int8_t pf, struct nf_logger *logger)
->  {
->  	const struct nf_logger *llog;
-> +	int i;
->  
->  	if (pf >= ARRAY_SIZE(nf_loggers))
->  		return -EINVAL;
->  
-> +	for (i = 0; i < NFPROTO_NUMPROTO; i++)
-> +		INIT_LIST_HEAD(&logger->list[i]);
-> +
->  	mutex_lock(&nf_log_mutex);
->  
->  	if (pf == NFPROTO_UNSPEC) {
-> 
+Impact: fix smp_affinity copying when moving irq_desc
+
+CPUMASKS_OFFSTACK is not defined anywhere. it is a typo
+and init_allocate_desc_masks called before it set affinity to all cpus...
+
+split init_alloc_desc_masks() into all_desc_masks() and init_desc_masks()
+so in the init_copy_desc_masks could use CPUMASK_OFFSTACK there.
+aka copy path will not calling init_desc_masks anymore.
+
+also could use that CPUMASK_OFFSTACK in alloc_desc_masks()
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+---
+ include/linux/irq.h       |   27 ++++++++++++++++++---------
+ kernel/irq/handle.c       |    9 ++++++---
+ kernel/irq/numa_migrate.c |    2 +-
+ 3 files changed, 25 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/include/linux/irq.h
+===================================================================
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -424,27 +424,25 @@ extern int set_irq_msi(unsigned int irq,
+ 
+ #ifdef CONFIG_SMP
+ /**
+- * init_alloc_desc_masks - allocate cpumasks for irq_desc
++ * alloc_desc_masks - allocate cpumasks for irq_desc
+  * @desc:	pointer to irq_desc struct
+  * @cpu:	cpu which will be handling the cpumasks
+  * @boot:	true if need bootmem
+  *
+  * Allocates affinity and pending_mask cpumask if required.
+  * Returns true if successful (or not required).
+- * Side effect: affinity has all bits set, pending_mask has all bits clear.
+  */
+-static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
++static inline bool alloc_desc_masks(struct irq_desc *desc, int cpu,
+ 								bool boot)
+ {
++#ifdef CONFIG_CPUMASK_OFFSTACK
+ 	int node;
+ 
+ 	if (boot) {
+ 		alloc_bootmem_cpumask_var(&desc->affinity);
+-		cpumask_setall(desc->affinity);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 		alloc_bootmem_cpumask_var(&desc->pending_mask);
+-		cpumask_clear(desc->pending_mask);
+ #endif
+ 		return true;
+ 	}
+@@ -453,18 +451,25 @@ static inline bool init_alloc_desc_masks
+ 
+ 	if (!alloc_cpumask_var_node(&desc->affinity, GFP_ATOMIC, node))
+ 		return false;
+-	cpumask_setall(desc->affinity);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	if (!alloc_cpumask_var_node(&desc->pending_mask, GFP_ATOMIC, node)) {
+ 		free_cpumask_var(desc->affinity);
+ 		return false;
+ 	}
+-	cpumask_clear(desc->pending_mask);
++#endif
+ #endif
+ 	return true;
+ }
+ 
++static inline void init_desc_masks(struct irq_desc *desc)
++{
++	cpumask_setall(desc->affinity);
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	cpumask_clear(desc->pending_mask);
++#endif
++}
++
+ /**
+  * init_copy_desc_masks - copy cpumasks for irq_desc
+  * @old_desc:	pointer to old irq_desc struct
+@@ -478,7 +483,7 @@ static inline bool init_alloc_desc_masks
+ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ 					struct irq_desc *new_desc)
+ {
+-#ifdef CONFIG_CPUMASKS_OFFSTACK
++#ifdef CONFIG_CPUMASK_OFFSTACK
+ 	cpumask_copy(new_desc->affinity, old_desc->affinity);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+@@ -499,12 +504,16 @@ static inline void free_desc_masks(struc
+ 
+ #else /* !CONFIG_SMP */
+ 
+-static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
++static inline bool alloc_desc_masks(struct irq_desc *desc, int cpu,
+ 								bool boot)
+ {
+ 	return true;
+ }
+ 
++static inline void init_desc_masks(struct irq_desc *desc)
++{
++}
++
+ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ 					struct irq_desc *new_desc)
+ {
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -115,10 +115,11 @@ static void init_one_irq_desc(int irq, s
+ 		printk(KERN_ERR "can not alloc kstat_irqs\n");
+ 		BUG_ON(1);
+ 	}
+-	if (!init_alloc_desc_masks(desc, cpu, false)) {
++	if (!alloc_desc_masks(desc, cpu, false)) {
+ 		printk(KERN_ERR "can not alloc irq_desc cpumasks\n");
+ 		BUG_ON(1);
+ 	}
++	init_desc_masks(desc);
+ 	arch_init_chip_data(desc, cpu);
+ }
+ 
+@@ -169,7 +170,8 @@ int __init early_irq_init(void)
+ 		desc[i].irq = i;
+ 		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+-		init_alloc_desc_masks(&desc[i], 0, true);
++		alloc_desc_masks(&desc[i], 0, true);
++		init_desc_masks(&desc[i]);
+ 		irq_desc_ptrs[i] = desc + i;
+ 	}
+ 
+@@ -256,7 +258,8 @@ int __init early_irq_init(void)
+ 
+ 	for (i = 0; i < count; i++) {
+ 		desc[i].irq = i;
+-		init_alloc_desc_masks(&desc[i], 0, true);
++		alloc_desc_masks(&desc[i], 0, true);
++		init_desc_masks(&desc[i]);
+ 		desc[i].kstat_irqs = kstat_irqs_all[i];
+ 	}
+ 	return arch_early_irq_init();
+Index: linux-2.6/kernel/irq/numa_migrate.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/numa_migrate.c
++++ linux-2.6/kernel/irq/numa_migrate.c
+@@ -37,7 +37,7 @@ static bool init_copy_one_irq_desc(int i
+ 		 struct irq_desc *desc, int cpu)
+ {
+ 	memcpy(desc, old_desc, sizeof(struct irq_desc));
+-	if (!init_alloc_desc_masks(desc, cpu, false)) {
++	if (!alloc_desc_masks(desc, cpu, false)) {
+ 		printk(KERN_ERR "irq %d: can not get new irq_desc cpumask "
+ 				"for migration.\n", irq);
+ 		return false;
