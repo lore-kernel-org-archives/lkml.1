@@ -1,35 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZDNRQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbZDNRSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZDNRQH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:16:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZDNRPv
+	id S1756461AbZDNRSl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZDNRSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:15:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51611 "EHLO mx2.mail.elte.hu"
+	Tue, 14 Apr 2009 13:18:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52854 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167AbZDNRPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:15:50 -0400
-Date: Tue, 14 Apr 2009 19:12:42 +0200
+	id S1751560AbZDNRSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 13:18:31 -0400
+Date: Tue, 14 Apr 2009 19:17:56 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
-       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
-	default percpu allocator
-Message-ID: <20090414171242.GA4241@elte.hu>
-References: <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain> <20090401223241.GA28168@elte.hu> <alpine.DEB.1.10.0904012216370.32656@qirst.com> <20090402034223.GA25791@elte.hu> <alpine.DEB.1.10.0904020948570.31756@qirst.com> <20090408162651.GA14449@elte.hu> <alpine.DEB.1.10.0904131409510.13756@qirst.com> <20090414140416.GE27163@elte.hu> <alpine.DEB.1.10.0904141233420.15948@qirst.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>
+Subject: Re: [PATCH -tip] x86: k8.h reference to node in node_to_k8_nb_misc
+	for !CONFIG_K8_NB
+Message-ID: <20090414171756.GA18510@elte.hu>
+References: <1239727500.2966.16.camel@ht.satnam> <20090414165241.GB2089@elte.hu> <1239728876.2966.23.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904141233420.15948@qirst.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1239728876.2966.23.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -44,88 +39,86 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <cl@linux.com> wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> On Tue, 14 Apr 2009, Ingo Molnar wrote:
+> On Tue, 2009-04-14 at 18:52 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > > Add reference to node in node_to_k8_nb_misc for !CONFIG_K8_NB to make compiler happy.
+> > > 
+> > > So fixes compiler warnings:
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> > > 
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  arch/x86/include/asm/k8.h |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
+> > > index c23b3d1..c81e4ee 100644
+> > > --- a/arch/x86/include/asm/k8.h
+> > > +++ b/arch/x86/include/asm/k8.h
+> > > @@ -16,7 +16,7 @@ extern int k8_scan_nodes(unsigned long start, unsigned long end);
+> > >  #define node_to_k8_nb_misc(node) \
+> > >  	(node < num_k8_northbridges) ? k8_northbridges[node] : NULL
+> > >  #else
+> > > -#define node_to_k8_nb_misc(node) NULL
+> > > +#define node_to_k8_nb_misc(node) (node) ? NULL : NULL
+> > >  #endif
+> > 
+> > Ugh, that's very ugly. I gave you a proper solution:
+> > 
+> > >> The typical way to solve this is to add a dummy:
+> > >> 
+> > >> 	(void)(cpu)
+> > >> 
+> > >> use to the 'cpu' parameter to the macro definition - or, 
+> > >> (which is a much better solution), to convert it to an 
+> > >> inline function.
+> > 
 > 
-> > The thing is, i spent well in excess of an hour analyzing your
-> > patch, counting cachelines, looking at effects and interactions,
-> > thinking about the various implications. I came up with a good deal
-> > of factoids, a handful of suggestions and a few summary paragraphs:
-> >
-> >   http://marc.info/?l=linux-kernel&m=123862536011780&w=2
+> Subject: [PATCH] x86: cpu/cacheinfo.c reference to node for node_to_k8_nb_misc for !CONFIG_K8_NB
 > 
-> Good work.
+> Add reference to node for node_to_k8_nb_misc for !CONFIG_K8_NB to make compiler happy.
 > 
-> > A proper reply to that work would be one of several responses:
-> >
+> And fixes:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+>   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
 > 
-> ...
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/kernel/cpu/intel_cacheinfo.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> >
-> >   3) agree with the factoids and disagree with my opinion.
-> 
-> Yep I thought that what I did...
+> diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> index 789efe2..4414c92 100644
+> --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
+> +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> @@ -719,6 +719,7 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
+>  	if (!dev)
+>  		return -EINVAL;
+>  
+> +	(void)(node);
 
-Ok, thanks ... since i never saw a reply from you on that 
-mail so i couldnt assume you did so.
+No, we should fix the node_to_k8_nb_misc() primitive.
 
-There's really 3 key observations in that mail - let me sum 
-them up in order of importance.
+I.e. convert node_to_k8_nb_misc() from a macro to an inline 
+function. Same end result in terms of emitted instructions, 
+but the compiler now knows that 'node' is really used.
 
-1)
+With a macro the preprocessor hid this fact from the 
+compiler, so the compiler only saw this in essence:
 
-I'm wondering what your take on the bss+data suggestion is. 
-To me it appears it's tempting to merge them into a single 
-per .o section: it clearly wins us locality of reference.
+        int node = 0;
+        struct pci_dev *dev;
 
-It seems so obvious to do to me on a modern SMP kernel - has 
-anyone tried that in the past?
-
-Instead of:
-
-  .data1 .data2 .data3   .... .bss1 .bss2 .bss3
-
-we'd have:
-
-  .databss1 .databss2 .databss3
-
-This is clearly better compressed, and the layout is easier 
-to control in the .c file. We could also do tricks to 
-further compress data here: we could put variables right 
-after their __aligned__ locks - while currently they are in 
-the .bss wasting a full cache-line.
-
-In the example i analyzed it would reduce the cache 
-footprint by one cacheline. This would apply to most .o's so 
-the combined effect on cache locality would be significant.
-
-[ Another (sub-)advantage would be that it 'linearizes' and 
-  hence properly colors the per .o module variable layout. 
-  With an artificially split .data1 .bss1 the offset between 
-  them is random, and it's harder to control the cache port
-  positions of closely related variables. ]
-
-2)
-
-Aligning (the now merged) data+bss per .o section on 
-cacheline boundary [up to 64 byte cacheline sizes or so] 
-sounds tempting as well - it eliminates accidental "tail 
-bites the next head" type of cross-object-file interactions. 
-
-The price is an estimated 3% blow-up in combined .data+bss 
-size. A suspect a patch and measurements would settle this 
-pretty neatly.
-
-3)
-
-The free_percpu() collateral-damage argument i made was 
-pretty speculative (and artificial as well - the allocation 
-of percpu resources is very global in nature so a 
-kfree(NULL)-alike fastpath is harder to imagine) - i tried 
-at all costs demonstrate my point based on that narrow 
-example alone.
-
-Thanks,
+and thought that 'node' was unused. Hence it emitted a 
+warning. This is one reason why macros are bad - they hide 
+program logic from the compiler.
 
 	Ingo
