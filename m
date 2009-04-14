@@ -1,149 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbZDNJ63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZDNJ6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754543AbZDNJ63 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZDNJ6T
+	id S1754496AbZDNJ6p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZDNJ6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:58:19 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:44684 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbZDNJ6S (ORCPT
+	Tue, 14 Apr 2009 05:58:20 -0400
+Received: from smtpfb2-g21.free.fr ([212.27.42.10]:50161 "EHLO
+	smtpfb2-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751215AbZDNJ6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Apr 2009 05:58:18 -0400
-Date: Tue, 14 Apr 2009 15:28:03 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC PATCH v2 0/2] sched: Nominate a power-efficient ILB
-Message-ID: <20090414095803.GA11553@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090414045356.7645.33369.stgit@sofia.in.ibm.com> <1239702484.21985.6857.camel@twins>
+Date: Tue, 14 Apr 2009 11:57:00 +0200 (CEST)
+From: Cedric Roux <sed@free.fr>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       mtk manpages <mtk.manpages@gmail.com>, linux-api@vger.kernel.org
+Message-ID: <24571169.5910431239703020222.JavaMail.root@spooler2-g27.priv.proxad.net>
+In-Reply-To: <427911.793301236157128303.JavaMail.root@spooler2-g27.priv.proxad.net>
+Subject: [PATCH] [try 3] vt: add ioctl commands to /dev/vcsaN to get/put the
+ current palette of the given tty
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239702484.21985.6857.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [172.20.243.42]
+X-Mailer: Zimbra 5.0.11_GA_2627.UBUNTU8 (ZimbraWebClient - FF2.0 (Win)/5.0.11_GA_2627.UBUNTU8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 11:48:04AM +0200, Peter Zijlstra wrote:
-> On Tue, 2009-04-14 at 10:25 +0530, Gautham R Shenoy wrote:
-> > Hi,
-> > 
-> > This is the second iteration of the patchset which aims at improving
-> > the idle-load balancer nomination logic, by taking the system topology
-> > into consideration.
-> > 
-> > Changes from v1 (found here: http://lkml.org/lkml/2009/4/2/246)
-> > o Fixed the kernel-doc style comments.
-> > o Renamed a variable to better reflect it's usage.
-> > 
-> > Background
-> > ======================================
-> > An idle-load balancer is an idle-cpu which does not turn off it's sched_ticks
-> > and performs load-balancing on behalf of the other idle CPUs. Currently,
-> > this idle load balancer is nominated as the first_cpu(nohz.cpu_mask)
-> > 
-> > The drawback of the current method is that the CPU numbering in the
-> > cores/packages need not necessarily be sequential. For example, on a
-> > two-socket, Quad core system, the CPU numbering can be as follows:
-> > 
-> > |-------------------------------|  |-------------------------------|
-> > |               |               |  |               |               |
-> > |     0         |      2        |  |     1         |      3        |
-> > |-------------------------------|  |-------------------------------|
-> > |               |               |  |               |               |
-> > |     4         |      6        |  |     5         |      7        |
-> > |-------------------------------|  |-------------------------------|
-> > 
-> > Now, the other power-savings settings such as the sched_mc/smt_power_savings
-> > and the power-aware IRQ balancer try to balance tasks/IRQs by taking
-> > the system topology into consideration, with the intention of keeping
-> > as many "power-domains" (cores/packages) in the low-power state.
-> > 
-> > The current idle-load-balancer nomination does not necessarily align towards
-> > this policy. For eg, we could be having tasks and interrupts largely running
-> > on the first package with the intention of keeping the second package idle.
-> > Hence, CPU 0 may be busy. The first_cpu in the nohz.cpu_mask happens to be CPU1,
-> > which in-turn becomes nominated as the idle-load balancer. CPU1 being from
-> > the 2nd package, would in turn prevent the 2nd package from going into a
-> > deeper sleep state.
-> > 
-> > Instead the role of the idle-load balancer could have been assumed by an
-> > idle CPU from the first package, thereby helping the second package go
-> > completely idle.
-> > 
-> > This patchset has been tested with 2.6.30-rc1 on a Two-Socket
-> > Quad core system with the topology as mentioned above.
-> > 
-> > |----------------------------------------------------------------------------|
-> > |       With Patchset + sched_mc_power_savings = 1                           |
-> > |----------------------------------------------------------------------------|
-> > |make -j2 options| time taken |  LOC timer interrupts |  LOC timer interrupts|
-> > |                |            |  on Package 0         |  on Package 1        |
-> > |----------------------------------------------------------------------------|
-> > |taskset -c 0,2  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> > |                | 227.234s   |  56969    | 57080     | 1003      |  588     |
-> > |                |            |----------------------------------------------|
-> > |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> > |                |            |  55995    | 703       | 583       |  600     |
-> > |----------------------------------------------------------------------------|
-> > |taskset -c 1,3  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> > |                | 227.136s   |  1109     | 611       | 57074     |  57091   |
-> > |                |            |----------------------------------------------|
-> > |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> > |                |            |  709      | 637       | 56133     |  587     |
-> > |----------------------------------------------------------------------------|
-> > 
-> > We see here that the idle load balancer is chosen from the package which is
-> > busy. In the first case, it's CPU4 and in the second case it's CPU5.
-> > 
-> > |----------------------------------------------------------------------------|
-> > |       With Patchset + sched_mc_power_savings = 1                           |
-            ^^^^
-	    Without
-> > |----------------------------------------------------------------------------|
-> > |make -j2 options| time taken |  LOC timer interrupts |  LOC timer interrupts|
-> > |                |            |  on Package 0         |  on Package 1        |
-> > |----------------------------------------------------------------------------|
-> > |taskset -c 0,2  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> > |                | 228.786s   |  59094    | 61994     | 13984     |  43652   |
-> > |                |            |----------------------------------------------|
-> > |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> > |                |            |  1827     | 734       | 748       |  760     |
-> > |----------------------------------------------------------------------------|
-> > |taskset -c 1,3  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> > |                | 228.435s   |  57013    | 876       | 58596     |  61633   |
-> > |                |            |----------------------------------------------|
-> > |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> > |                |            |  772      | 1133      | 850       |  910     |
-> > |----------------------------------------------------------------------------|
-> > 
-> > Here, we see that the idle load balancer is chosen from the other package,
-> > despite choosing sched_mc_power_savings = 1. In the first case, we have
-> > CPU1 and CPU3 sharing the responsibility among themselves. In the second case,
-> > it's CPU0 and CPU6, which assume that role.
-> 
-> Both tables above claim to be _with_ the pathes :-), from the
-> accompanying text one can deduce its the bottom one that is without.
+From: Cedric Roux <sed@free.fr>
 
-Sorry, copy pasted the 2nd table from the first, and updated only the
-values.
+A ioctl interface and two ioctl commands added to /dev/vcsaN
+to get/put the current palette of the given tty.
 
+Signed-off-by: Cedric Roux <sed@free.fr>
+---
+This patch exists because there is no way to get the current
+installed palette of a given tty. The PIO_CMAP and GIO_CMAP
+in vt_ioctl.c:vt_ioctl play with the global default colormap.
+And /dev/vcsaN don't dump the palette through their read
+interface. And since a user may change colors of a given
+tty by escape sequences, one should be able to retrieve
+the palette through /dev/vcsaN, leading to this patch.
 
-> 
-> Patches look straight-forward enough, seems good stuff.
+Some points I am not fully confident with:
+- vt.c:set_colormap is now used in vc_screen.c so cannot be static
+  anymore.
+  The goal of this patch is to allow read access to the palette,
+  I can remove the PIO_CMAP case and make set_colormap static again.
+  This case is there because /dev/vcsaN is read/write so the access
+  to the palette should also be read/write. (Or I can do it
+  differently, no problem, just tell me how.)
+- the palette is returned as it is stored in the kernel, without
+  taking into account color_table. So if a userland program
+  gets an attribute for a given character, it won't match
+  with the palette information. Say the user reads 0xXY through
+  /dev/vcsa and takes Y as an index in the palette, it will return
+  a bad color. One should do palette[color_table[Y]] to get the real
+  color.
+  Two "solutions" to this "problem" (it might be an non-issue):
+    + export the palette by indexing with color_table:
+      I don't like it.
+    + let the userland program deal with that:
+      the program may open a tty, send escape sequences to
+      set the current color, write a character at a given position
+      (through the tty, not /dev/vcs) and read back the attribute
+      through /dev/vcsa this time. She will see what attribute
+      corresponds to what color she sets by using escape sequences.
+  If the color_table is non-mutable, all this is a non-issue.
+  Userland programs just store the color_table and live with that.
+  I've seen no code that modifies the color_table, so I bet it's
+  non-mutable. (May it change in the future?)
+- lock_kernel() is called. Maybe it's not necessary? I'm not
+  confident enough. You decide.
 
-Thanks for the review!
-> 
-> Thanks!
-
--- 
-Thanks and Regards
-gautham
+diff -uprN -X linux-2.6.29.1/Documentation/dontdiff linux-2.6.29.1-vanilla/drivers/char/vc_screen.c linux-2.6.29.1/drivers/char/vc_screen.c
+--- linux-2.6.29.1-vanilla/drivers/char/vc_screen.c	2009-04-02 22:55:27.000000000 +0200
++++ linux-2.6.29.1/drivers/char/vc_screen.c	2009-04-14 10:16:33.000000000 +0200
+@@ -19,6 +19,8 @@
+  * machek@k332.feld.cvut.cz - modified not to send characters to wrong console
+  *	 - fixed some fatal off-by-one bugs (0-- no longer == -1 -> looping and looping and looping...)
+  *	 - making it shorter - scr_readw are macros which expand in PRETTY long code
++ *
++ * Colormap put/get for /dev/vcsaN, Cedric Roux <sed@free.fr>, March 2009.
+  */
+ 
+ #include <linux/kernel.h>
+@@ -470,11 +472,67 @@ vcs_open(struct inode *inode, struct fil
+ 	return ret;
+ }
+ 
++static long
++vcs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	unsigned int currcons = iminor(file->f_path.dentry->d_inode);
++	struct vc_data *vc;
++	unsigned char pal[16*3];
++	long ret = 0;
++
++	/* access only defined for /dev/vcsaN, not /dev/vcsN */
++	if (currcons < 128)
++		return -ENOTTY;
++
++	lock_kernel();
++
++	acquire_console_sem();
++
++	currcons &= 127;
++	if (currcons == 0)
++		currcons = fg_console;
++	else
++		currcons--;
++	if (!vc_cons_allocated(currcons)) {
++		ret = -ENXIO;
++		goto unlock_out;
++	}
++	vc = vc_cons[currcons].d;
++
++	switch (cmd) {
++	case PIO_CMAP:
++		if (copy_from_user(pal, (void __user *)arg, 16*3)) {
++			ret = -EFAULT;
++			goto unlock_out;
++		}
++		memcpy(vc->vc_palette, pal, 16*3);
++		set_palette(vc);
++		break;
++	case GIO_CMAP:
++		if (copy_to_user((void __user *)arg, vc->vc_palette, 16*3)) {
++			ret = -EFAULT;
++			goto unlock_out;
++		}
++		break;
++	default:
++		ret = -ENOIOCTLCMD;
++		break;
++	}
++
++unlock_out:
++	release_console_sem();
++
++	unlock_kernel();
++
++	return ret;
++}
++
+ static const struct file_operations vcs_fops = {
+ 	.llseek		= vcs_lseek,
+ 	.read		= vcs_read,
+ 	.write		= vcs_write,
+ 	.open		= vcs_open,
++	.unlocked_ioctl	= vcs_ioctl,
+ };
+ 
+ static struct class *vc_class;
+diff -uprN -X linux-2.6.29.1/Documentation/dontdiff linux-2.6.29.1-vanilla/drivers/char/vt.c linux-2.6.29.1/drivers/char/vt.c
+--- linux-2.6.29.1-vanilla/drivers/char/vt.c	2009-04-02 22:55:27.000000000 +0200
++++ linux-2.6.29.1/drivers/char/vt.c	2009-04-14 10:17:20.000000000 +0200
+@@ -156,7 +156,6 @@ static void set_cursor(struct vc_data *v
+ static void hide_cursor(struct vc_data *vc);
+ static void console_callback(struct work_struct *ignored);
+ static void blank_screen_t(unsigned long dummy);
+-static void set_palette(struct vc_data *vc);
+ 
+ static int printable;		/* Is console ready for printing? */
+ int default_utf8 = true;
+@@ -3753,7 +3752,7 @@ void poke_blanked_console(void)
+  *	Palettes
+  */
+ 
+-static void set_palette(struct vc_data *vc)
++void set_palette(struct vc_data *vc)
+ {
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+diff -uprN -X linux-2.6.29.1/Documentation/dontdiff linux-2.6.29.1-vanilla/include/linux/vt_kern.h linux-2.6.29.1/include/linux/vt_kern.h
+--- linux-2.6.29.1-vanilla/include/linux/vt_kern.h	2009-04-02 22:55:27.000000000 +0200
++++ linux-2.6.29.1/include/linux/vt_kern.h	2009-04-14 10:17:59.000000000 +0200
+@@ -97,6 +97,7 @@ void reset_vc(struct vc_data *vc);
+ extern int unbind_con_driver(const struct consw *csw, int first, int last,
+ 			     int deflt);
+ int vty_init(const struct file_operations *console_fops);
++void set_palette(struct vc_data *vc);
+ 
+ /*
+  * vc_screen.c shares this temporary buffer with the console write code so that
