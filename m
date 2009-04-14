@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZDNBQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbZDNB1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbZDNBQd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 21:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZDNBQY
+	id S1753888AbZDNB1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 21:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZDNB1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 21:16:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53226 "EHLO mx1.redhat.com"
+	Mon, 13 Apr 2009 21:27:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52630 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbZDNBQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 21:16:23 -0400
+	id S1751531AbZDNB1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 21:27:43 -0400
+Date: Tue, 14 Apr 2009 03:22:29 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@lst.de>, torvalds@osdl.org, roland@redhat.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] add ptrace entry to MAINTAINERS
+Message-ID: <20090414012229.GA10678@redhat.com>
+References: <20090413152010.GA16682@lst.de> <20090414004231.GA17288@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: Christoph Hellwig <hch@lst.de>, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] add ptrace entry to MAINTAINERS
-In-Reply-To: Ingo Molnar's message of  Tuesday, 14 April 2009 02:42:31 +0200 <20090414004231.GA17288@elte.hu>
-References: <20090413152010.GA16682@lst.de>
-	<20090414004231.GA17288@elte.hu>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20090414011428.4745DFC299@magilla.sf.frob.com>
-Date: Mon, 13 Apr 2009 18:14:28 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090414004231.GA17288@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg and I certainly consistently work together on this stuff, always CC
-each other, and will continue to stay in constant contact wrt all this
-code.  Since we work happily together, I don't think either of us is
-especially interested in defining who is most "active" or "authoritative"
-in the space.  (Of course Oleg can speak for himself.)  The recent Linux
-Foundation event was the place where Christoph and I were together to
-discuss what might be on the horizon for all this stuff.  Christoph
-suggested the MAINTAINERS addition there, and I did not object.  (I
-already feel obliged to review all the patches in practice and have long
-since given up any plausible deniability on that, so being explicitly
-named for it is not a whole lot worse.)
+I'd be happy to be counted as a co-maintainer. I mean, I'd like to see
+the emails about the ptrace-related problems.
 
+But, the "real" maintainer is Roland. Not only he knows indefinitely more
+about ptrace. He knows _why_ the code does this and that, and how it should
+evolve.
 
-Thanks,
-Roland
+Sometimes I am able to reply faster, but I always rely on his final verdict.
+
+Oleg.
+
