@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbZDNKLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZDNKRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751744AbZDNKLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZDNKLb
+	id S1753872AbZDNKRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZDNKRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:11:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36673 "EHLO mx2.redhat.com"
+	Tue, 14 Apr 2009 06:17:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33626 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864AbZDNKLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:11:30 -0400
-Message-ID: <49E46057.6000506@redhat.com>
-Date: Tue, 14 Apr 2009 13:07:19 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751965AbZDNKRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:17:10 -0400
+Date: Tue, 14 Apr 2009 12:15:13 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH 3/4] net: bridge: use device address list instead of
+	dev_addr
+Message-ID: <20090414101512.GA3999@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090413083729.GA23734@psychotron.englab.brq.redhat.com> <20090413084407.GD23734@psychotron.englab.brq.redhat.com> <20090413075400.34604e72@nehalam>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Szabolcs Szakacsits <szaka@ntfs-3g.com>,
-       Grant Grundler <grundler@google.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Implementing NVMHCI...
-References: <20090412091228.GA29937@elte.hu>	<Pine.LNX.4.62.0904121806060.9521@tamago.serverit.net>	<20090412162018.6c1507b4@lxorguk.ukuu.org.uk>	<49E213AE.4060506@redhat.com>	<alpine.LFD.2.00.0904120950050.4583@localhost.localdomain>	<49E2DC96.6090407@redhat.com>	<alpine.LFD.2.00.0904130747440.4583@localhost.localdomain> <874owr8ztm.fsf@basil.nowhere.org>
-In-Reply-To: <874owr8ztm.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413075400.34604e72@nehalam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
->   
->> You absolutely do _not_ want to manage memory in 16kB chunks (or 64kB for 
->> your example!).
->>     
+Mon, Apr 13, 2009 at 04:54:00PM CEST, shemminger@vyatta.com wrote:
+>> +static int another_port_has_addr(const struct net_bridge_port *p,
+>> +				 struct net_bridge_fdb_entry *f)
+>> +{
+>> +	struct net_bridge *br = p->br;
+>> +	struct net_bridge_port *op;
+>> +
+>> +	list_for_each_entry(op, &br->port_list, list) {
+>> +		if (op != p && is_dev_addr(op->dev, f->addr.addr)) {
+>> +			f->dst = op;
+>> +			return 1;
+>> +		}
+>> +	}
+>> +	return 0;
+>> +}
 >
-> AFAIK at least for user visible anonymous memory Windows uses 64k 
-> chunks. At least that is what Cygwin's mmap exposes. I don't know
-> if it does the same for disk cache.
->   
-
-I think that's just the region address and size granularity (as in 
-vmas).  For paging they still use the mmu page size.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+>Forwarding database is hot path, people sometimes run lots of devices
+>on single bridge, doesn't this scale worse?
+>
+This only puts the original loop code to the function, so if compiler decides to
+inline this there might be no difference.
