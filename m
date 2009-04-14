@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751711AbZDNGmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750761AbZDNGwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751711AbZDNGmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 02:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZDNGmO
+	id S1750761AbZDNGwf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 02:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZDNGw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 02:42:14 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26211 "EHLO mga03.intel.com"
+	Tue, 14 Apr 2009 02:52:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41438 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750982AbZDNGmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 02:42:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,183,1239001200"; 
-   d="scan'208";a="131157541"
-Date: Tue, 14 Apr 2009 14:41:32 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090414064132.GB5746@localhost>
-References: <20090414042231.GA4341@localhost> <20090414133448.C645.A69D9226@jp.fujitsu.com>
+	id S1750747AbZDNGwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 02:52:25 -0400
+Message-ID: <49E43282.1090607@kernel.org>
+Date: Mon, 13 Apr 2009 23:51:46 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Content-Disposition: inline
-In-Reply-To: <20090414133448.C645.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: remove (null) in /sys kernel_page_tables
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
-> > Export the following page flags in /proc/kpageflags,
-> > just in case they will be useful to someone:
-> > 
-> > - PG_swapcache
-> > - PG_swapbacked
-> > - PG_mappedtodisk
-> > - PG_reserved
-> > - PG_private
-> > - PG_private_2
-> > - PG_owner_priv_1
-> > 
-> > - PG_head
-> > - PG_tail
-> > - PG_compound
-> > 
-> > - PG_unevictable
-> > - PG_mlocked
-> > 
-> > - PG_poison
-> 
-> Sorry, NAK this.
-> We shouldn't expose internal flags. please choice useful flags only.
 
-OK. So are there anyone interested in any of these flags? Thanks!
+Impact: clearnup
 
-My rational to export most page flags is that hopefully they could
-help debugging kernel at some random situations..
+%p prints out 0x000000000000000 as (null)
+so use %lx instead.
 
-> > Also add the following two pseudo page flags:
-> > 
-> > - PG_MMAP:   whether the page is memory mapped
-> > - PG_NOPAGE: whether the page is present
-> > 
-> > This increases the total number of exported page flags to 25.
-> > 
-> > Cc: Andi Kleen <andi@firstfloor.org>
-> > Cc: Matt Mackall <mpm@selenic.com>
-> > Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  fs/proc/page.c |  112 +++++++++++++++++++++++++++++++++--------------
-> >  1 file changed, 81 insertions(+), 31 deletions(-)
-> > 
-> > --- mm.orig/fs/proc/page.c
-> > +++ mm/fs/proc/page.c
-> > @@ -68,20 +68,86 @@ static const struct file_operations proc
-> >  
-> >  /* These macros are used to decouple internal flags from exported ones */
-> >  
-> > -#define KPF_LOCKED     0
-> > -#define KPF_ERROR      1
-> > -#define KPF_REFERENCED 2
-> > -#define KPF_UPTODATE   3
-> > -#define KPF_DIRTY      4
-> > -#define KPF_LRU        5
-> > -#define KPF_ACTIVE     6
-> > -#define KPF_SLAB       7
-> > -#define KPF_WRITEBACK  8
-> > -#define KPF_RECLAIM    9
-> > -#define KPF_BUDDY     10
-> > +enum {
-> > +	KPF_LOCKED,		/*  0 */
-> > +	KPF_ERROR,		/*  1 */
-> > +	KPF_REFERENCED,		/*  2 */
-> > +	KPF_UPTODATE,		/*  3 */
-> > +	KPF_DIRTY,		/*  4 */
-> > +	KPF_LRU,		/*  5 */
-> > +	KPF_ACTIVE,		/*  6 */
-> > +	KPF_SLAB,		/*  7 */
-> > +	KPF_WRITEBACK,		/*  8 */
-> > +	KPF_RECLAIM,		/*  9 */
-> > +	KPF_BUDDY,		/* 10 */
-> > +	KPF_MMAP,		/* 11 */
-> > +	KPF_SWAPCACHE,		/* 12 */
-> > +	KPF_SWAPBACKED,		/* 13 */
-> > +	KPF_MAPPEDTODISK,	/* 14 */
-> > +	KPF_RESERVED,		/* 15 */
-> > +	KPF_PRIVATE,		/* 16 */
-> > +	KPF_PRIVATE2,		/* 17 */
-> > +	KPF_OWNER_PRIVATE,	/* 18 */
-> > +	KPF_COMPOUND_HEAD,	/* 19 */
-> > +	KPF_COMPOUND_TAIL,	/* 20 */
-> > +	KPF_UNEVICTABLE,	/* 21 */
-> > +	KPF_MLOCKED,		/* 22 */
-> > +	KPF_POISON,		/* 23 */
-> > +	KPF_NOPAGE,		/* 24 */
-> > +	KPF_NUM
-> > +};
-> 
-> this is userland export value. then enum is wrong idea.
-> explicit name-number relationship is better. it prevent unintetional
-> ABI break.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Right, that's the reason I add the /* number */ comments.
-Anyway, it would be better to use explicit #defines.
+---
+ arch/x86/mm/dump_pagetables.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Thanks,
-Fengguang
-
+Index: linux-2.6/arch/x86/mm/dump_pagetables.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/dump_pagetables.c
++++ linux-2.6/arch/x86/mm/dump_pagetables.c
+@@ -161,13 +161,14 @@ static void note_page(struct seq_file *m
+ 		   st->current_address >= st->marker[1].start_address) {
+ 		const char *unit = units;
+ 		unsigned long delta;
++		int width = sizeof(unsigned long) * 2;
+ 
+ 		/*
+ 		 * Now print the actual finished series
+ 		 */
+-		seq_printf(m, "0x%p-0x%p   ",
+-			   (void *)st->start_address,
+-			   (void *)st->current_address);
++		seq_printf(m, "0x%0*lx-0x%0*lx   ",
++			   width, st->start_address,
++			   width, st->current_address);
+ 
+ 		delta = (st->current_address - st->start_address) >> 10;
+ 		while (!(delta & 1023) && unit[1]) {
