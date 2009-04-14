@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZDNV7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZDNWAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbZDNV7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZDNV7G
+	id S1756193AbZDNWAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZDNWAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:59:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47152 "EHLO
+	Tue, 14 Apr 2009 18:00:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48743 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbZDNV7E (ORCPT
+	with ESMTP id S1752315AbZDNWAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:59:04 -0400
-Date: Tue, 14 Apr 2009 17:59:01 -0400 (EDT)
+	Tue, 14 Apr 2009 18:00:31 -0400
+Date: Tue, 14 Apr 2009 18:00:26 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Theodore Tso <tytso@mit.edu>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: "Frank Ch. Eigler" <fche@elastic.org>
+cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
@@ -26,13 +26,12 @@ cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Li Zefan <lizf@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
+       Tom Zanussi <tzanussi@gmail.com>, Jiaying Zhang <jiayingz@google.com>,
+       Michael Rubin <mrubin@google.com>, Martin Bligh <mbligh@google.com>
 Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
-In-Reply-To: <alpine.DEB.2.00.0904141716300.31421@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0904141758260.31421@gandalf.stny.rr.com>
-References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu> <alpine.DEB.2.00.0904141716300.31421@gandalf.stny.rr.com>
+In-Reply-To: <20090414212917.GA19933@elastic.org>
+Message-ID: <alpine.DEB.2.00.0904141800010.31421@gandalf.stny.rr.com>
+References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu> <20090414212917.GA19933@elastic.org>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -41,32 +40,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 14 Apr 2009, Steven Rostedt wrote:
-> 
-> Yes, at the bottom of your header file, before including define_trace.h, 
-> you can simply add:
-> 
-> #undef TRACE_INCLUDE_PATH
-> #define TRACE_INCLUDE_PATH ../../fs/ext4
-> 
-> #include <trace/define_trace.h>
-> 
-> the TRACE_INCLUDE_PATH is a reference from where trace/define_trace.h is 
-> located. It may even be cleaner to do:
-> 
-> 
-> #undef TRACE_INCLUDE_PATH
-> #define TRACE_INCLUDE_PATH EXT4_PATH
-> 
-> and in the Makefile have:
-> 
-> CFLAGS_ext4_jbd2.o := -DEXT4_PATH=$(PWD)
-> 
-> That's something like what I did for my external module test.
+On Tue, 14 Apr 2009, Frank Ch. Eigler wrote:
 
-Note, you only need to add the CFLAGS for the object that performs the:
+> Hi -
+> 
+> On Tue, Apr 14, 2009 at 05:04:45PM -0400, Theodore Tso wrote:
+> > [...]
+> > One thing which I would really like is to avoid needing to drop the
+> > header file in include/trace/<subsystem.h>.
+> > 
+> > The problem that I have with this is that for ext4, we need to access
+> > private data structures which are defined in header files in
+> > fs/ext4/*.h --- which we moved into fs/ext4 a long time ago [...]
+> 
+> If the tracepoints/events expand to code that exposes those private
+> structures, then those structures are perhaps not quite so private any
+> more.  That argues for moving those headers back under include/..., or
+> at least those type decls made reachable from the tracepoints.
 
-#define CREATE_TRACE_POINTS
+I think those headers are fine. This must also work when ext4 is a module.
 
 -- Steve
 
