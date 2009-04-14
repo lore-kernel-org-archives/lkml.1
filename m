@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbZDNQcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZDNQeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbZDNQcH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZDNQby
+	id S1756226AbZDNQeG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZDNQdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:31:54 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:31166 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbZDNQbx (ORCPT
+	Tue, 14 Apr 2009 12:33:53 -0400
+Received: from a4.complang.tuwien.ac.at ([128.130.173.65]:48001 "EHLO
+	a4.complang.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbZDNQdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:31:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=u8mvPKAVEoxIWK9tOFgub9N2Hw8LgvyYETG4hNLhZnRx1HjphOc4xUu8zueIBy4ehE
-         IzgZiAJakMfBw5o6PvRmTMJMN/GqZAI1Nf9lqZIEKmKgZf8L6l/mLdJ1JXKmusRDr9Wz
-         pnXOabmXBupYB2z76O89fSVvojHz+I/DXeu8w=
-Date: Tue, 14 Apr 2009 20:31:43 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 01/14] [VOYAGER] x86: add {safe,hard}_smp_processor_id
-	to smp_ops
-Message-ID: <20090414163143.GB12888@lenovo>
-References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
+	Tue, 14 Apr 2009 12:33:53 -0400
+Subject: Re: Out-of-order writing by disk drives
+To: andi@firstfloor.org (Andi Kleen)
+Date: Tue, 14 Apr 2009 18:33:50 +0200 (CEST)
+From: "Anton Ertl" <anton@mips.complang.tuwien.ac.at>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87r5zv72cl.fsf@basil.nowhere.org>
+Reply-To: anton@mips.complang.tuwien.ac.at
+X-Info: DVR-Nummer der TU Wien: 0005886
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-Id: <E1Ltla2-0000bS-5j@a4.complang.tuwien.ac.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[James Bottomley - Tue, Apr 14, 2009 at 10:51:27AM -0500]
-| Not having apics, Voyager can't use the default apic implementation of
-| these, it has to read from a special port in the VIC to get the
-| processor ID, so abstract these functions in smp_ops to allow voyager
-| to live simultaneously with the apic code.
-| 
-| Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-| ---
-|  arch/x86/include/asm/smp.h  |   13 +++++++++++--
-|  arch/x86/kernel/apic/apic.c |    5 -----
-|  arch/x86/kernel/apic/ipi.c  |    2 +-
-|  arch/x86/kernel/smp.c       |    7 +++++++
-|  arch/x86/xen/smp.c          |    7 +++++++
-|  5 files changed, 26 insertions(+), 8 deletions(-)
-| 
-| diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-| index 19e0d88..aac866f 100644
-| --- a/arch/x86/include/asm/smp.h
-| +++ b/arch/x86/include/asm/smp.h
-| @@ -60,6 +60,8 @@ struct smp_ops {
-|  
-|  	void (*send_call_func_ipi)(const struct cpumask *mask);
-|  	void (*send_call_func_single_ipi)(int cpu);
-| +	int (*hard_smp_processor_id)(void);
-| +	int (*safe_smp_processor_id)(void);
-|  };
-|  
-|  /* Globals due to paravirt */
-| @@ -159,7 +161,11 @@ extern unsigned disabled_cpus __cpuinitdata;
-|   * so this is correct in the x86 case.
-|   */
-|  #define raw_smp_processor_id() (percpu_read(cpu_number))
-| -extern int safe_smp_processor_id(void);
-| +int apic_safe_smp_processor_id(void);
-| +static inline int safe_smp_processor_id(void)
-| +{
-| +	return smp_ops.safe_smp_processor_id();
-| +}
-|  
-|  #elif defined(CONFIG_X86_64_SMP)
-|  #define raw_smp_processor_id() (percpu_read(cpu_number))
-| @@ -185,7 +191,10 @@ static inline int logical_smp_processor_id(void)
-|  
-|  #endif
-|  
-| -extern int hard_smp_processor_id(void);
-| +static inline int hard_smp_processor_id(void)
-| +{
-| +	return smp_ops.hard_smp_processor_id();
-| +}
-|  
+Andi Kleen wrote:
+> 
+> "Anton Ertl" <anton@mips.complang.tuwien.ac.at> writes:
+> >
+> > /dev/md2        /home           ext3    defaults,barrier=1      1	2
+> 
+> Just make sure /dev/md2 is a RAID1, MD RAID0/5/10 don't support barriers.
 
-Hi James, wouldn't it break summit32 platform?
-This snippet from summit_32.c
+Thank you.  I added the following to the README:
 
-static void summit_init_apic_ldr(void)
-{
-	unsigned long val, id;
-	int count = 0;
---->	u8 my_id = (u8)hard_smp_processor_id();
-	u8 my_cluster = APIC_CLUSTER(my_id);
+|Note that, as of this writing (2009-04), not all Linux devices support
+|barriers, in particular md devices only support them in RAID 1 mode;
+|the kernel will reportedly warn about the lack of barriers if you try
+|to use ext3 with barriers on a device that does not support barriers
+|(look in, e.g., dmesg).
 
-if we have CONFIG_SMP _not_ set smp_ops.hard_smp_processor_id
-would be plain NULL deref (or linker warning)? I could be missing something...
- 
-        Cyrill
+> See also my general treatise of multiple device barriers earlier today.
+
+I guess you mean <878wm3903h.fsf@basil.nowhere.org> in the
+"dm-multipath and write request ordering" thread.  Thank you for the
+pointer.
+
+- anton
+
