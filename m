@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZDNNrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbZDNNvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbZDNNrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZDNNrB
+	id S1755633AbZDNNvB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZDNNuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:47:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51283 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbZDNNrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:47:00 -0400
-Date: Tue, 14 Apr 2009 15:46:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are less
-	or more then expected
-Message-ID: <20090414134655.GD27163@elte.hu>
-References: <1239711444.3079.13.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239711444.3079.13.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 14 Apr 2009 09:50:50 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:53153 "EHLO
+	teyla.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752783AbZDNNut (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 09:50:49 -0400
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: [PATCH] i2c: Fix warnings from I2C_BOARD_INFO()
+Date: Tue, 14 Apr 2009 14:47:02 +0100
+Message-Id: <1239716822-29143-1-git-send-email-ben-linux@fluff.org>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The first argument for this macro is a string, and
+thus having (arg) in the macro is causing gcc 4.2.4
+to produce warnings about strings of the form ("str").
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Remove the brackets from the first argument.
 
-> This will prepare the report to update cpu_debug
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/include/asm/cpu_debug.h |    1 +
->  arch/x86/kernel/cpu/cpu_debug.c  |   12 ++++++++++++
->  2 files changed, 13 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
-> index 2228020..b64da5d 100644
-> --- a/arch/x86/include/asm/cpu_debug.h
-> +++ b/arch/x86/include/asm/cpu_debug.h
-> @@ -187,6 +187,7 @@ enum cpu_processor_bit {
->  #define	CPU_ALL			(CPU_INTEL_ALL | CPU_AMD_ALL)
->  
->  #define MAX_CPU_FILES		512
-> +#define MIN_CPU_FILES		10
->  
->  struct cpu_private {
->  	unsigned		cpu;
-> diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-> index 46e29ab..1c3ebd4 100644
-> --- a/arch/x86/kernel/cpu/cpu_debug.c
-> +++ b/arch/x86/kernel/cpu/cpu_debug.c
-> @@ -838,6 +838,14 @@ static int cpu_init_allreg(unsigned cpu, struct dentry *dentry)
->  	return err;
->  }
->  
-> +/* Send Report to maintainer if files are less or more then expected */ 
-> +static void send_report(int files, struct cpuinfo_x86 *cpui)
-> +{
-> +	pr_info("Please report \"cpu_debug files %d for %x:%x:%x:%x\" to"
-> +		" jaswinderrajput@gmail.com\n", files, cpui->x86_vendor,
-> +		cpui->x86, cpui->x86_model, cpui->x86_mask);
+example warning:
 
-i'd rather see this reported to linux-kernel@vger.kernel.org, plus 
-please use a WARN_ONCE() instead of a pr_info(). Hitting this is a 
-bug we want to fix.
+mach-bast.c:545:3: warning: array initialized from parenthesized string constant
 
-	Ingo
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+---
+ include/linux/i2c.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 00ee11e..ad25805 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -274,7 +274,7 @@ struct i2c_board_info {
+  * are provided using conventional syntax.
+  */
+ #define I2C_BOARD_INFO(dev_type, dev_addr) \
+-	.type = (dev_type), .addr = (dev_addr)
++	.type = dev_type, .addr = (dev_addr)
+ 
+ 
+ /* Add-on boards should register/unregister their devices; e.g. a board
+-- 
+1.5.6.5
+
