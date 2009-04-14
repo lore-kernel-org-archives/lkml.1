@@ -1,231 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZDNKDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbZDNKD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbZDNKDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZDNKCR
+	id S1756465AbZDNKD6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZDNKCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:02:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45799 "EHLO hera.kernel.org"
+	Tue, 14 Apr 2009 06:02:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45811 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755956AbZDNKCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:02:15 -0400
-Date: Tue, 14 Apr 2009 10:01:33 GMT
+	id S1756023AbZDNKCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:02:30 -0400
+Date: Tue, 14 Apr 2009 10:01:10 GMT
 From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       jaswinderrajput@gmail.com
+       penberg@cs.helsinki.fi, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, tglx@linutronix.de, jaswinderrajput@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <1239698023.3033.37.camel@ht.satnam>
-References: <1239698023.3033.37.camel@ht.satnam>
-Subject: [tip:x86/urgent] x86, documentation: kernel-parameters replace X86-32,X86-64 with X86
-Message-ID: <tip-6cececfcece2b072d29886ed7140495f3af17153@git.kernel.org>
-Git-Commit-ID: 6cececfcece2b072d29886ed7140495f3af17153
+       penberg@cs.helsinki.fi, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1239693869.3033.31.camel@ht.satnam>
+References: <1239693869.3033.31.camel@ht.satnam>
+Subject: [tip:x86/mm] x86: page_types.h unification of declarations
+Message-ID: <tip-66aa230e437d89ca56224135f617e2d8e391a3ef@git.kernel.org>
+Git-Commit-ID: 66aa230e437d89ca56224135f617e2d8e391a3ef
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 10:01:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 10:01:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6cececfcece2b072d29886ed7140495f3af17153
-Gitweb:     http://git.kernel.org/tip/6cececfcece2b072d29886ed7140495f3af17153
+Commit-ID:  66aa230e437d89ca56224135f617e2d8e391a3ef
+Gitweb:     http://git.kernel.org/tip/66aa230e437d89ca56224135f617e2d8e391a3ef
 Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Tue, 14 Apr 2009 14:03:43 +0530
+AuthorDate: Tue, 14 Apr 2009 12:54:29 +0530
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 14 Apr 2009 11:46:38 +0200
+CommitDate: Tue, 14 Apr 2009 11:44:45 +0200
 
-x86, documentation: kernel-parameters replace X86-32,X86-64 with X86
+x86: page_types.h unification of declarations
 
-X86 is same as X86-32+X86-64 so replace X86-32,X86-64 with X86.
+Impact: unification of declarations, cleanup
+
+Unification of declarations:
+ moved init_memory_mapping, initmem_init and free_initmem from
+page_XX_types.h to page_types.h
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-LKML-Reference: <1239698023.3033.37.camel@ht.satnam>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1239693869.3033.31.camel@ht.satnam>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/kernel-parameters.txt |   40 +++++++++++++++++-----------------
- 1 files changed, 20 insertions(+), 20 deletions(-)
+ arch/x86/include/asm/page_32_types.h |    4 ----
+ arch/x86/include/asm/page_64_types.h |    6 ------
+ arch/x86/include/asm/page_types.h    |    6 ++++++
+ 3 files changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 6172e43..a19f021 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -134,7 +134,7 @@ and is between 256 and 4096 characters. It is defined in the file
- ./include/asm/setup.h as COMMAND_LINE_SIZE.
+diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
+index 0f915ae..6f1b733 100644
+--- a/arch/x86/include/asm/page_32_types.h
++++ b/arch/x86/include/asm/page_32_types.h
+@@ -54,10 +54,6 @@ extern unsigned int __VMALLOC_RESERVE;
+ extern int sysctl_legacy_va_layout;
  
+ extern void find_low_pfn_range(void);
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-extern void initmem_init(unsigned long, unsigned long);
+-extern void free_initmem(void);
+ extern void setup_bootmem_allocator(void);
  
--	acpi=		[HW,ACPI,X86-64,i386]
-+	acpi=		[HW,ACPI,X86]
- 			Advanced Configuration and Power Interface
- 			Format: { force | off | ht | strict | noirq | rsdt }
- 			force -- enable ACPI if default was off
-@@ -218,7 +218,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			acpi_osi="!string2"	# remove built-in string2
- 			acpi_osi=		# disable all strings
+ #endif	/* !__ASSEMBLY__ */
+diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
+index d38c91b..3f58718 100644
+--- a/arch/x86/include/asm/page_64_types.h
++++ b/arch/x86/include/asm/page_64_types.h
+@@ -71,12 +71,6 @@ extern unsigned long __phys_addr(unsigned long);
  
--	acpi_pm_good	[X86-32,X86-64]
-+	acpi_pm_good	[X86]
- 			Override the pmtimer bug detection: force the kernel
- 			to assume that this machine's pmtimer latches its value
- 			and always returns good values.
-@@ -459,7 +459,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Also note the kernel might malfunction if you disable
- 			some critical bits.
+ #define vmemmap ((struct page *)VMEMMAP_START)
  
--	code_bytes	[IA32/X86_64] How many bytes of object code to print
-+	code_bytes	[X86] How many bytes of object code to print
- 			in an oops report.
- 			Range: 0 - 8192
- 			Default: 64
-@@ -592,7 +592,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			MTRR settings.  This parameter disables that behavior,
- 			possibly causing your machine to run very slowly.
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-
+-extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
+-extern void free_initmem(void);
+-
+ extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
+ extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
  
--	disable_timer_pin_1 [i386,x86-64]
-+	disable_timer_pin_1 [X86]
- 			Disable PIN 1 of APIC timer
- 			Can be useful to work around chipset bugs.
+diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+index 826ad37..6473f5c 100644
+--- a/arch/x86/include/asm/page_types.h
++++ b/arch/x86/include/asm/page_types.h
+@@ -46,6 +46,12 @@ extern int devmem_is_allowed(unsigned long pagenr);
+ extern unsigned long max_low_pfn_mapped;
+ extern unsigned long max_pfn_mapped;
  
-@@ -624,7 +624,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			UART at the specified I/O port or MMIO address.
- 			The options are the same as for ttyS, above.
++extern unsigned long init_memory_mapping(unsigned long start,
++					 unsigned long end);
++
++extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
++extern void free_initmem(void);
++
+ #endif	/* !__ASSEMBLY__ */
  
--	earlyprintk=	[X86-32,X86-64,SH,BLACKFIN]
-+	earlyprintk=	[X86,SH,BLACKFIN]
- 			earlyprintk=vga
- 			earlyprintk=serial[,ttySn[,baudrate]]
- 			earlyprintk=dbgp
-@@ -659,7 +659,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			See Documentation/block/as-iosched.txt and
- 			Documentation/block/deadline-iosched.txt for details.
- 
--	elfcorehdr=	[IA64,PPC,SH,X86-32,X86_64]
-+	elfcorehdr=	[IA64,PPC,SH,X86]
- 			Specifies physical address of start of kernel core
- 			image elf header. Generally kexec loader will
- 			pass this option to capture kernel.
-@@ -938,7 +938,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			See comment before marvel_specify_io7 in
- 			arch/alpha/kernel/core_marvel.c.
- 
--	io_delay=	[X86-32,X86-64] I/O delay method
-+	io_delay=	[X86] I/O delay method
- 		0x80
- 			Standard port 0x80 based delay
- 		0xed
-@@ -1000,7 +1000,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 
- 	keepinitrd	[HW,ARM]
- 
--	kernelcore=nn[KMG]	[KNL,X86-32,IA-64,PPC,X86-64] This parameter
-+	kernelcore=nn[KMG]	[KNL,X86,IA-64,PPC] This parameter
- 			specifies the amount of memory usable by the kernel
- 			for non-movable allocations.  The requested amount is
- 			spread evenly throughout all nodes in the system. The
-@@ -1034,7 +1034,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Configure the RouterBoard 532 series on-chip
- 			Ethernet adapter MAC address.
- 
--	kstack=N	[X86-32,X86-64] Print N words from the kernel stack
-+	kstack=N	[X86] Print N words from the kernel stack
- 			in oops dumps.
- 
- 	l2cr=		[PPC]
-@@ -1044,7 +1044,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 	lapic		[X86-32,APIC] Enable the local APIC even if BIOS
- 			disabled it.
- 
--	lapic_timer_c2_ok	[X86-32,x86-64,APIC] trust the local apic timer
-+	lapic_timer_c2_ok	[X86,APIC] trust the local apic timer
- 			in C2 power state.
- 
- 	libata.dma=	[LIBATA] DMA control
-@@ -1229,7 +1229,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			[KNL,SH] Allow user to override the default size for
- 			per-device physically contiguous DMA buffers.
- 
--	memmap=exactmap	[KNL,X86-32,X86_64] Enable setting of an exact
-+	memmap=exactmap	[KNL,X86] Enable setting of an exact
- 			E820 memory map, as specified by the user.
- 			Such memmap=exactmap lines can be constructed based on
- 			BIOS output or other requirements. See the memmap=nn@ss
-@@ -1320,7 +1320,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 	mousedev.yres=	[MOUSE] Vertical screen resolution, used for devices
- 			reporting absolute coordinates, such as tablets
- 
--	movablecore=nn[KMG]	[KNL,X86-32,IA-64,PPC,X86-64] This parameter
-+	movablecore=nn[KMG]	[KNL,X86,IA-64,PPC] This parameter
- 			is similar to kernelcore except it specifies the
- 			amount of memory used for migratable allocations.
- 			If both kernelcore and movablecore is specified,
-@@ -1422,7 +1422,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			when a NMI is triggered.
- 			Format: [state][,regs][,debounce][,die]
- 
--	nmi_watchdog=	[KNL,BUGS=X86-32,X86-64] Debugging features for SMP kernels
-+	nmi_watchdog=	[KNL,BUGS=X86] Debugging features for SMP kernels
- 			Format: [panic,][num]
- 			Valid num: 0,1,2
- 			0 - turn nmi_watchdog off
-@@ -1475,11 +1475,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 
- 	nodsp		[SH] Disable hardware DSP at boot time.
- 
--	noefi		[X86-32,X86-64] Disable EFI runtime services support.
-+	noefi		[X86] Disable EFI runtime services support.
- 
- 	noexec		[IA-64]
- 
--	noexec		[X86-32,X86-64]
-+	noexec		[X86]
- 			On X86-32 available only on PAE configured kernels.
- 			noexec=on: enable non-executable mappings (default)
- 			noexec=off: disable non-executable mappings
-@@ -1525,7 +1525,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 	noirqdebug	[X86-32] Disables the code which attempts to detect and
- 			disable unhandled interrupt sources.
- 
--	no_timer_check	[X86-32,X86_64,APIC] Disables the code which tests for
-+	no_timer_check	[X86,APIC] Disables the code which tests for
- 			broken timer IRQ sources.
- 
- 	noisapnp	[ISAPNP] Disables ISA PnP code.
-@@ -1689,7 +1689,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 				disable the use of PCIE advanced error reporting.
- 		nodomains	[PCI] Disable support for multiple PCI
- 				root domains (aka PCI segments, in ACPI-speak).
--		nommconf	[X86-32,X86_64] Disable use of MMCONFIG for PCI
-+		nommconf	[X86] Disable use of MMCONFIG for PCI
- 				Configuration
- 		nomsi		[MSI] If the PCI_MSI kernel config parameter is
- 				enabled, this kernel boot option can be used to
-@@ -2380,7 +2380,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			reported either.
- 
- 	unknown_nmi_panic
--			[X86-32,X86-64]
-+			[X86]
- 			Set unknown_nmi_panic=1 early on boot.
- 
- 	usbcore.autosuspend=
-@@ -2447,12 +2447,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 					medium is write-protected).
- 			Example: quirks=0419:aaf5:rl,0421:0433:rc
- 
--	vdso=		[X86-32,SH,x86-64]
-+	vdso=		[X86,SH]
- 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
- 			vdso=1: enable VDSO (default)
- 			vdso=0: disable VDSO mapping
- 
--	vdso32=		[X86-32,X86-64]
-+	vdso32=		[X86]
- 			vdso32=2: enable compat VDSO (default with COMPAT_VDSO)
- 			vdso32=1: enable 32-bit VDSO (default)
- 			vdso32=0: disable 32-bit VDSO mapping
+ #endif	/* _ASM_X86_PAGE_DEFS_H */
