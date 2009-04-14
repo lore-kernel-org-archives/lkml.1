@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZDNUYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZDNUXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbZDNUYB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 16:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbZDNUVu
+	id S1755500AbZDNUXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 16:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZDNUVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 16:21:50 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:41193 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754725AbZDNUVs (ORCPT
+	Tue, 14 Apr 2009 16:21:47 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:48643 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754095AbZDNUVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 16:21:48 -0400
+	Tue, 14 Apr 2009 16:21:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=vMGB1PTxxZNVOJA0DpZqrIqlsoEsoghyN/NHeKFLlNV7MSSwgiizyr+XM9QMVDV5T0
-         /NcYUcPBA0EhCeUBdfxSEWqpqEyxmTxzLmHA8mKw4fjKW15zsuSSYXv/6Nlvu+9WQxh3
-         VxT6LlEmOZ3LQzWdZVBI/IehguBYBPCShfTPY=
+        b=YHPESaDc9sDneK5Ni0Exrot+IHB7/y9DWIsO/EU8iFP5tY8qTvYBYuC0eOGFGsYfHj
+         yfsOWt4rb3mUXi6RNuZgehgJydiSlvquugwhZ/HzNpdyoKlBMyiUexnfh93WROf7SUxR
+         4ZqmTQu1dq55dHiyOxVmWYJOUPzSwz/KqivX0=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Paul Menage <menage@google.com>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -30,10 +30,10 @@ Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
        Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
        yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH 7/9] io-throttle instrumentation
-Date: Tue, 14 Apr 2009 22:21:18 +0200
-Message-Id: <1239740480-28125-8-git-send-email-righi.andrea@gmail.com>
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 4/9] support checking of cgroup subsystem dependencies
+Date: Tue, 14 Apr 2009 22:21:15 +0200
+Message-Id: <1239740480-28125-5-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
 References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
@@ -41,169 +41,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply the io-throttle controller to the opportune kernel functions.
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+From: Li Zefan <lizf@cn.fujitsu.com>
+
+This allows one subsystem to require to be mounted only when some other
+subsystems are also present in or not in the proposed hierarchy.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- block/blk-core.c      |    8 ++++++++
- fs/aio.c              |   12 ++++++++++++
- include/linux/sched.h |    7 +++++++
- kernel/fork.c         |    7 +++++++
- mm/readahead.c        |    3 +++
- 5 files changed, 37 insertions(+), 0 deletions(-)
+ Documentation/cgroups/cgroups.txt |    5 +++++
+ include/linux/cgroup.h            |    2 ++
+ kernel/cgroup.c                   |   19 ++++++++++++++++++-
+ 3 files changed, 25 insertions(+), 1 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 07ab754..4d7f9f6 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -26,6 +26,7 @@
- #include <linux/swap.h>
- #include <linux/writeback.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/blktrace_api.h>
- #include <linux/fault-inject.h>
- #include <trace/block.h>
-@@ -1547,11 +1548,16 @@ void submit_bio(int rw, struct bio *bio)
- 	 * go through the normal accounting stuff before submission.
- 	 */
- 	if (bio_has_data(bio)) {
-+		unsigned long sleep = 0;
+diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+index 6eb1a97..6938025 100644
+--- a/Documentation/cgroups/cgroups.txt
++++ b/Documentation/cgroups/cgroups.txt
+@@ -552,6 +552,11 @@ and root cgroup. Currently this will only involve movement between
+ the default hierarchy (which never has sub-cgroups) and a hierarchy
+ that is being created/destroyed (and hence has no sub-cgroups).
+ 
++int subsys_depend(struct cgroup_subsys *ss, unsigned long subsys_bits)
++Called when a cgroup subsystem wants to check if some other subsystems
++are also present in the proposed hierarchy. If this method returns error,
++the mount of the cgroup filesystem will fail.
 +
- 		if (rw & WRITE) {
- 			count_vm_events(PGPGOUT, count);
-+			sleep = cgroup_io_throttle(bio,
-+					bio->bi_bdev, bio->bi_size);
- 		} else {
- 			task_io_account_read(bio->bi_size);
- 			count_vm_events(PGPGIN, count);
-+			cgroup_io_throttle(NULL, bio->bi_bdev, bio->bi_size);
- 		}
+ 4. Questions
+ ============
  
- 		if (unlikely(block_dump)) {
-@@ -1562,6 +1568,8 @@ void submit_bio(int rw, struct bio *bio)
- 				(unsigned long long)bio->bi_sector,
- 				bdevname(bio->bi_bdev, b));
- 		}
-+		if (sleep && !iothrottle_make_request(bio, jiffies + sleep))
-+			return;
- 	}
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 665fa70..37ace23 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -385,6 +385,8 @@ struct cgroup_subsys {
+ 			struct cgroup *cgrp);
+ 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
++	int (*subsys_depend)(struct cgroup_subsys *ss,
++			     unsigned long subsys_bits);
  
- 	generic_make_request(bio);
-diff --git a/fs/aio.c b/fs/aio.c
-index 76da125..ab6c457 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -22,6 +22,7 @@
- #include <linux/sched.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
- #include <linux/slab.h>
-@@ -1587,6 +1588,7 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- {
- 	struct kiocb *req;
- 	struct file *file;
-+	struct block_device *bdev;
- 	ssize_t ret;
- 
- 	/* enforce forwards compatibility on users */
-@@ -1609,6 +1611,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 	if (unlikely(!file))
- 		return -EBADF;
- 
-+	/* check if we're exceeding the IO throttling limits */
-+	bdev = as_to_bdev(file->f_mapping);
-+	ret = cgroup_io_throttle(NULL, bdev, 0);
-+	if (unlikely(ret)) {
-+		fput(file);
-+		return -EAGAIN;
-+	}
-+
- 	req = aio_get_req(ctx);		/* returns with 2 references to req */
- 	if (unlikely(!req)) {
- 		fput(file);
-@@ -1652,12 +1662,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 		goto out_put_req;
- 
- 	spin_lock_irq(&ctx->ctx_lock);
-+	set_in_aio();
- 	aio_run_iocb(req);
- 	if (!list_empty(&ctx->run_list)) {
- 		/* drain the run list */
- 		while (__aio_run_iocbs(ctx))
- 			;
- 	}
-+	unset_in_aio();
- 	spin_unlock_irq(&ctx->ctx_lock);
- 	aio_put_req(req);	/* drop extra ref to req */
+ 	int subsys_id;
+ 	int active;
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 382109b..fad3f08 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -830,6 +830,23 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
  	return 0;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b4c38bc..e0cd710 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1356,6 +1356,13 @@ struct task_struct {
- 	unsigned long ptrace_message;
- 	siginfo_t *last_siginfo; /* For ptrace use.  */
- 	struct task_io_accounting ioac;
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	atomic_t in_aio;
-+	unsigned long long io_throttle_bw_cnt;
-+	unsigned long long io_throttle_bw_sleep;
-+	unsigned long long io_throttle_iops_cnt;
-+	unsigned long long io_throttle_iops_sleep;
-+#endif
- #if defined(CONFIG_TASK_XACCT)
- 	u64 acct_rss_mem1;	/* accumulated rss usage */
- 	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index b9e2edd..272c461 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1043,6 +1043,13 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	task_io_accounting_init(&p->ioac);
- 	acct_clear_integrals(p);
- 
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	atomic_set(&p->in_aio, 0);
-+	p->io_throttle_bw_cnt = 0;
-+	p->io_throttle_bw_sleep = 0;
-+	p->io_throttle_iops_cnt = 0;
-+	p->io_throttle_iops_sleep = 0;
-+#endif
- 	posix_cpu_timers_init(p);
- 
- 	p->lock_depth = -1;		/* -1 = no lock */
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 133b6d5..25cae4c 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -14,6 +14,7 @@
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-@@ -81,6 +82,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			int (*filler)(void *, struct page *), void *data)
- {
- 	struct page *page;
-+	struct block_device *bdev = as_to_bdev(mapping);
- 	int ret = 0;
- 
- 	while (!list_empty(pages)) {
-@@ -99,6 +101,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			break;
- 		}
- 		task_io_account_read(PAGE_CACHE_SIZE);
-+		cgroup_io_throttle(NULL, bdev, PAGE_CACHE_SIZE);
- 	}
- 	return ret;
  }
+ 
++static int check_subsys_dependency(unsigned long subsys_bits)
++{
++	int i;
++	int ret;
++	struct cgroup_subsys *ss;
++
++	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
++		ss = subsys[i];
++		if (test_bit(i, &subsys_bits) && ss->subsys_depend) {
++			ret = ss->subsys_depend(ss, subsys_bits);
++			if (ret)
++				return ret;
++		}
++	}
++	return 0;
++}
++
+ struct cgroup_sb_opts {
+ 	unsigned long subsys_bits;
+ 	unsigned long flags;
+@@ -890,7 +907,7 @@ static int parse_cgroupfs_options(char *data,
+ 	if (!opts->subsys_bits)
+ 		return -EINVAL;
+ 
+-	return 0;
++	return check_subsys_dependency(opts->subsys_bits);
+ }
+ 
+ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
 -- 
 1.5.6.3
 
