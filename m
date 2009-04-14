@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZDNXzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbZDNX7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610AbZDNXzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 19:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZDNXzh
+	id S1755055AbZDNX7s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 19:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZDNX7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 19:55:37 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36287 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbZDNXzg (ORCPT
+	Tue, 14 Apr 2009 19:59:38 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:64910 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbZDNX7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 19:55:36 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH v2 5/4] ftrace, workqueuetrace: display work name
-Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090414211620.GB5968@nowhere>
-References: <20090414125142.C63D.A69D9226@jp.fujitsu.com> <20090414211620.GB5968@nowhere>
-Message-Id: <20090415085310.AC0D.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 19:59:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=u2+2TDplTcBtWiNlOlOYysTw5w8BJvl2x6qahIxPQNe4W4K88PfmYFg+1rLd/u29VE
+         gI6DYrNv9F80dfrYgjBd5lY3hqx1s/YifbJH3uRFxyKHBsX4YuHtIy3QeU3ZXygDyjlc
+         F9ip4rhjiGbLh9B+idg1JQfJ7awVcF8IzpPfY=
+Message-ID: <49E5234E.5070303@gmail.com>
+Date: Wed, 15 Apr 2009 01:59:10 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, mjg59@srcf.ucam.org
+CC: yakui_zhao <yakui.zhao@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control brightness
+ with hotkeys (BISECTED)
+References: <49E10684.5090101@gmail.com> <20090411150555.8b13ed18.akpm@linux-foundation.org> <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com> <1239585695.5564.5.camel@localhost.localdomain> <49E3575A.60204@gmail.com> <20090413203450.GC16152@khazad-dum.debian.net>
+In-Reply-To: <20090413203450.GC16152@khazad-dum.debian.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 15 Apr 2009 08:55:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > ------------------------------
-> > # tracer: nop
-> > #
-> > #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> > #              | |       |          |         |
-> >           <idle>-0     [003]  1540.844960: workqueue_insertion: thread=events/3:30 func=e1000_watchdog_task+0x0/0x6ae [e1000e] work=&adapter->watchdog_task
-> >           <idle>-0     [003]  1540.844964: workqueue_insertion: thread=events/3:30 func=vmstat_update+0x0/0x3f work=vmstat_work
-> >            <...>-30    [003]  1540.844969: workqueue_handler_entry: thread=events/3:30 latency=0ms func=e1000_watchdog_task+0x0/0x6ae [e1000e] work=&adapter-
-> > >watchdog_task
-> >            <...>-30    [003]  1540.845003: workqueue_handler_exit: thread=events/3:30 func=e1000_watchdog_task+0x0/0x6ae [e1000e] work=&adapter->watchdog_tas
-> > k
-> >            <...>-30    [003]  1540.845004: workqueue_handler_entry: thread=events/3:30 latency=0ms func=vmstat_update+0x0/0x3f work=vmstat_work
-> >            <...>-30    [003]  1540.845007: workqueue_handler_exit: thread=events/3:30 func=vmstat_update+0x0/0x3f work=vmstat_work
-> > 
-> > This patch increase kernel-size for work name string table.
-> > But actually, lockdep already have work name string table. then if you already use lockdep,
-> > you don't get kernel-size increasing by this patch.
-> 
-> I don't know. Does it happen that frequently for a function to be used
-> by several works?
-> If so, this feature may be indeed interesting.
+On 04/13/2009 10:34 PM, Henrique de Moraes Holschuh wrote:
+> On Mon, 13 Apr 2009, Niel Lambrechts wrote:
+>   
+>>>> In 2.6.29.1:
+>>>> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
+>>>> -> ../../devices/virtual/backlight/acpi_video0
+>>>>         
+>
+> Well, that at least confirms that thinkpad-acpi doesn't have anything to
+> do with your troubles, you were using acpi video.
+>   
 
-No, it's really rare.
-in last discuttion, "per work" tracing is one of the key-word.
-then, I add this.
+Okay, I've bisected it to:
 
-but, if frequency is important, I can drop it.
+74a365b3f354fafc537efa5867deb7a9fadbfe27 is first bad commit
+commit 74a365b3f354fafc537efa5867deb7a9fadbfe27
+Author: Matthew Garrett <mjg59@srcf.ucam.org>
+Date:   Thu Mar 19 21:35:39 2009 +0000
 
+    ACPI: Populate DIDL before registering ACPI video device on Intel
 
+---
 
+Matthew, can you help?
+
+Regards,
+Niel
