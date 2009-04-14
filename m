@@ -1,237 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbZDNTyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbZDNT7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbZDNTyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 15:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZDNTyE
+	id S1754646AbZDNT7J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 15:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZDNT67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 15:54:04 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39221 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754291AbZDNTyD (ORCPT
+	Tue, 14 Apr 2009 15:58:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:19641 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbZDNT67 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 15:54:03 -0400
-X-Sasl-enc: q1Z+1o6pYB0xjM1/ReQMfCD4E1vM/y5fPi0DyWuG5+gQ 1239738838
-Message-ID: <49E4E9CA.8000802@imap.cc>
-Date: Tue, 14 Apr 2009 21:53:46 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 14 Apr 2009 15:58:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hHGlRJZczZCOrSiAFbIzed64vnH548gP9OpMkwnyqZvSQp1irY9jccaarv01+zPKzf
+         XA8+goBNjMW+1E7Ozp0iK/roIo/EGx8EDIqMQfI9Pp/ww/LcQA+KlrNJ+RlgJmqtPIfy
+         h7XfSR9eakOHy5nqj3HsmjiXrRGc+ldBtZ0z8=
+Date: Tue, 14 Apr 2009 23:59:09 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.osdl.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Creating tasks on restart: userspace vs kernel
+Message-ID: <20090414195909.GA28353@x200.localdomain>
+References: <49E40662.2040508@cs.columbia.edu> <20090414163633.GE27461@x200.localdomain> <49E4D89D.9060903@cs.columbia.edu>
 MIME-Version: 1.0
-To: isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC] Documentation/isdn/INTERFACE.CAPI
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig51C1999B5067435E4DB258CB"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E4D89D.9060903@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig51C1999B5067435E4DB258CB
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+> > In the end correctness of chopping will be equal to how good user
+> > understands that two task_struct's are independent of each other.
+> > 
+> >> But it will still be a useful tool for many use cases, like batch cpu jobs,
+> >> some servers, vnc sessions (if you want graphics) etc. Imagine you run
+> >> 'octave' for a week and must reboot now - 'octave' wouldn't care if
+> >> you checkpointed it and then restart with a different pid !
+> >>
+> >> <3> Clone with pid:
+> >>
+> >> To restart processes from userspace, there needs to be a way to
+> >> request a specific pid--in the current pid_ns--for the child process
+> >> (clearly, if it isn't in use).
+> >>
+> >> Why is it a disadvantage ?  to Linus, a syscall clone_with_pid()
+> >> "sounds like a _wonderful_ attack vector against badly written
+> >> user-land software...".  Actually, getting a specific pid is possible
+> >> without this syscall.  But the point is that it's undesirable to have
+> >> this functionality unrestricted.
+> >>
+> >> So one option is to require root privileges. Another option is to
+> >> restrict such action in pid_ns created by the same user. Even more so,
+> >> restrict to only containers that are being restarted.
+> > 
+> > You want to do small part in userspace and consequently end up with hacks
+> > both userspace-visible and in-kernel.
+> 
+> I want to extend existing kernel interface to leverage fork/clone
+> from user space, AND to allow the flexibility mentioned above (which
+> you conveniently ignored).
+> 
+> All hacks are in-kernel, aren't they ?
 
-In the course of my efforts to deduce the kernel CAPI hardware driver
-interface from the existing driver sources in drivers/isdn/hardware,
-I started to collect what I found out into a document INTERFACE.CAPI
-analogous to the existing INTERFACE documents for the old isdn4linux
-subsystem. I include the current state below and would welcome any
-comments and corrections.
+mktree.c can be vieved as hack, why not?
 
-Open questions so far:
+The whole existence of these requirements. You want new syscall or SET_NEX_PID
+or /proc file or something.
 
-- Is there any rule or convention for the contents and format of the
-  entries in /proc/capi/controller and /proc/capi/controllers/*?
+> As for asking for a specific pid from user space, it can be done by:
+> * a new syscall (restricted to user-owned-namespace or CAP_SYS_ADMIN)
+> * a sys_restart(... SET_NEXT_PID) interface specific for restart (ugh)
+> * setting a special /proc/PID/next_id  file which is consulted by fork
 
-- What is the benefit of registering/unregistering the driver itself
-  with register_capi_driver()/unregister_capi_driver()? In particular,
-  when and to what purpose is the add_card() callback used?
+/proc/*/next_id was disscussed and hopefully died, but no.
 
-More questions are sure to follow once I get on with figuring out the
-workings of the callback functions register_appl()/release_appl(). :-)
+> and in all cases, limit this so it can only allowed in a restarting
+> container, under the proper security model (again, e.g., Serge's
+> suggestion).
+> 
+> > 
+> > Pids aren't special, they are struct pid, dynamically allocated and
+> > refcounted just like any other structtures.
+> > 
+> > They _become_ special for you intended method of restart.
+> 
+> They are special. And I allow them not to be restored, as well, if
+> the use case so wishes.
 
-Thanks,
-Tilman
+The use case is to restore as much as possible to the same state as
+equal as possible. Not going with fork_with_pid() in any form helps
+kernel to ensure correctness of restore and helps to avoid surprise
+failure modes from user POV.
 
-diff --git a/Documentation/isdn/00-INDEX b/Documentation/isdn/00-INDEX
-index 33543ac..f33110a 100644
---- a/Documentation/isdn/00-INDEX
-+++ b/Documentation/isdn/00-INDEX
-@@ -8,6 +8,8 @@ INTERFACE
-        - description of isdn4linux Link Level and Hardware Level interfa=
-ces.
- INTERFACE.fax
-        - description of the fax subinterface of isdn4linux.
-+INTERFACE.CAPI
-+       - description of kernel CAPI Link Level to Hardware Level interfa=
-ce.
- README
-        - general info on what you need and what to do for Linux ISDN.
- README.FAQ
-diff --git a/Documentation/isdn/INTERFACE.CAPI b/Documentation/isdn/INTER=
-FACE.CAPI
-new file mode 100644
-index 0000000..d7112ac
---- /dev/null
-+++ b/Documentation/isdn/INTERFACE.CAPI
-@@ -0,0 +1,111 @@
-+Kernel CAPI Interface to Hardware Drivers
-+-----------------------------------------
-+
-+1. Overview
-+
-+Kernel CAPI operates as a dispatching layer between CAPI applications an=
-d CAPI
-+hardware drivers. Hardware drivers register ISDN devices (controllers, i=
-n CAPI
-+lingo) with Kernel CAPI to indicate their readiness to provide their ser=
-vice
-+to CAPI applications. CAPI applications also register with Kernel CAPI,
-+requesting association with a CAPI device. Kernel CAPI then dispatches t=
-he
-+application registration to an available device, forwarding it to the
-+corresponding hardware driver.
-+
-+
-+2. Driver and Device Registration
-+
-+CAPI drivers optionally register themselves with Kernel CAPI by calling =
-the
-+Kernel CAPI function register_capi_driver() with a pointer to a struct
-+capi_driver. This structure must be filled with the name and revision of=
- the
-+driver, and optionally a pointer to a callback function, add_card(). The=
+> > You also have flags in nsproxy image (or where?) like "do clone with
+> > CLONE_NEWUTS".
+> 
+> Nope. Read the code.
 
-+registration can be revoked by calling the function unregister_capi_driv=
-er()
-+with a pointer to the same struct capi_driver.
-+
-+CAPI drivers must register each of the ISDN devices they control with Ke=
-rnel
-+CAPI by calling the Kernel CAPI function attach_capi_ctr() with a pointe=
-r to a
-+struct capi_ctr before they can be used. This structure must be filled w=
-ith
-+the names of the driver and controller, and a number of callback functio=
-n
-+pointers which are subsequently used by Kernel CAPI for communicating wi=
-th the
-+driver. The registration can be revoked by calling the function
-+detach_capi_ctr() with a pointer to the same struct capi_ctr.
-+
-+
-+3. Data Structures
-+
-+3.1 struct capi_driver
-+
-+This structure describes a Kernel CAPI driver itself. It is used in the
-+register_capi_driver() and unregister_capi_driver() functions, and conta=
-ins
-+the following non-private fields, all to be set by the driver before cal=
-ling
-+register_capi_driver():
-+
-+char name[32]
-+       the name of the driver, as a zero terminated ASCII string
-+char revision[32]
-+       the revision number of the driver, as a zero terminated ASCII str=
-ing
-+int (*add_card)(struct capi_driver *driver, capicardparams *data)
-+       a callback function pointer (may be NULL)
-+
-+
-+3.2 struct capi_ctr
-+
-+This structure describes an ISDN device (controller) handled by a Kernel=
- CAPI
-+driver. It is used in the attach_capi_ctr() and detach_capi_ctr() functi=
-ons,
-+and contains the following non-private fields:
-+
-+- to be set by the driver before calling attach_capi_ctr():
-+
-+struct module *owner
-+       pointer to the driver module owning the device
-+
-+void *driverdata
-+       an opaque pointer to driver specific data, not touched by Kernel =
-CAPI
-+
-+char name[32]
-+       the name of the controller, as a zero terminated ASCII string
-+
-+char *driver_name
-+       the name of the driver, as a zero terminated ASCII string
-+
-+int (*load_firmware)(struct capi_ctr *card, capiloaddata *ldata)
-+       (optional) pointer to a callback function for loading firmware in=
-to
-+       the device
-+
-+void (*reset_ctr)(struct capi_ctr *card)
-+       pointer to a callback function for performing a reset on the devi=
-ce,
-+       releasing all registered applications
-+
-+void (*register_appl)(struct capi_ctr *card, u16 applid,
-+                       capi_register_params *rparam)
-+void (*release_appl)(struct capi_ctr *card, u16 applid)
-+u16  (*send_message)(struct capi_ctr *card, struct sk_buff *skb)
-+       callback function pointers for driver operation
-+
-+char *(*procinfo)(struct capi_ctr *card)
-+       pointer to a callback function returning the entry for the device=
- in
-+       the CAPI controller info table, /proc/capi/controller
-+
-+read_proc_t *ctr_read_proc
-+       pointer to the read_proc callback function for the device's proc =
-file
-+       system entry, /proc/capi/controllers/<n>; will be called with a
-+       pointer to the device's capi_ctr structure as the last (data) arg=
-ument
-+
-+- to be filled in before calling the ready callback (whatever that means=
-):
-+
-+u8 manu[CAPI_MANUFACTURER_LEN]
-+       value to return for CAPI_GET_MANUFACTURER
-+
-+capi_version version
-+       value to return for CAPI_GET_VERSION
-+
-+capi_profile profile
-+       value to return for CAPI_GET_PROFILE
-+
-+u8 serial[CAPI_SERIAL_LEN]
-+       value to return for CAPI_GET_SERIAL
-+
-+
-+4. Functions
-+
-+tbc
-+
+Which code?
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+	static int cr_write_namespaces(struct cr_ctx *ctx, struct task_struct *t)
+	{
+		...
 
+		new_uts = cr_obj_add_ptr(ctx, nsproxy->uts_ns,
+					&hh->uts_ref, CR_OBJ_UTSNS, 0);
+		if (new_uts < 0) {
+			ret = new_uts;
+			goto out;
+		}
 
---------------enig51C1999B5067435E4DB258CB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+		hh->flags = 0;
+		if (new_uts)
+	===>		hh->flags |= CLONE_NEWUTS;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+		ret = cr_write_obj(ctx, &h, hh);
+			...
 
-iD8DBQFJ5OnTQ3+did9BuFsRAvXnAJ43KbSGgiBfiqzHdFiyVAoV0lENmACfZB7q
-2dNapaqF5o2VkKR2Y878lTQ=
-=qUuE
------END PGP SIGNATURE-----
+> > This is unneeded!
+> > 
+> > nsproxy (or task_struct) image have reference (objref/position) to uts_ns image.
+> > 
+> > On restart, one lookups object by reference or restore it if needed,
+> > takes refcount and glue. Just like with every other two structures.
+> 
+> That's exactly how it's done.
 
---------------enig51C1999B5067435E4DB258CB--
+Not for uts_ns and future namespaces.
+
+	ret = cr_restore_utsns(ctx, hh->uts_ref, hh->flags);
+						 ^^^^^^^^^
+						 comes from disk
+
+> > No "what to do, what to do" logic.
