@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZDNIxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZDNI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZDNIxK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 04:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZDNIwz
+	id S1753584AbZDNI4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 04:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZDNI4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 04:52:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59744 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427AbZDNIwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 04:52:54 -0400
-Message-ID: <49E44F15.9030906@cn.fujitsu.com>
-Date: Tue, 14 Apr 2009 16:53:41 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Shawn Du <duyuyang@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-btrace@vger.kernel.org
-Subject: Re: PATCH 1/3] blktrace: support per-partition tracing
-References: <49E42620.4050701@cn.fujitsu.com> <20090414080919.GB27003@elte.hu> <49E448F6.5010506@cn.fujitsu.com> <20090414083856.GF27003@elte.hu>
-In-Reply-To: <20090414083856.GF27003@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 14 Apr 2009 04:56:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36012
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751035AbZDNI4A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 04:56:00 -0400
+Date: Tue, 14 Apr 2009 01:55:51 -0700 (PDT)
+Message-Id: <20090414.015551.220726058.davem@davemloft.net>
+To: sachinp@in.ibm.com
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       linux-s390@vger.kernel.org
+Subject: Re: Next 14: s390x defconfig build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49E44C15.4050208@in.ibm.com>
+References: <20090414160809.e92d9d3e.sfr@canb.auug.org.au>
+	<49E44C15.4050208@in.ibm.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Lets note that this approach still has the (long existing) 
->>> limitation that only one device can be block-traced at a time.
->>>
->> No, both userspace blktrace and ftrace-plugin trace can trace
->> more than one device at a time.
->>
->>  # btrace /dev/sda /dev/dm-0
->>
->> or
->>
->>  # echo 1 > /sys/block/sda/trace/enable
->>  # echo 1 > /sys/block/dm-0/trace/enable
+From: Sachin Sant <sachinp@in.ibm.com>
+Date: Tue, 14 Apr 2009 14:10:53 +0530
+
+> Today's next tree build (defconfig s390x ) failed with following
+> error.
 > 
-> When they are independent - but not multiple partitions at a time:
+> In file included from kernel/panic.c:11:
+> include/linux/debug_locks.h: In function __debug_locks_off:
+> include/linux/debug_locks.h:15: error: implicit declaration of
+> function xchg
 > 
+> Probably because of commit 9eeba6138cefc0435695463ddadb0d95e0a6bcd2.
 
-The only way to trace multipl partitions is to trace the whole
-sda, or set trace/start_lsa and trace/end_lsa properly.
+I see that Stephen fixed this by adding a asm/system.h include
+to asm/atomic.h on sparc.
 
->  [root@aldebaran ~]# echo 1 > /sys/block/sda/sda1/trace/enable 
->  [root@aldebaran ~]# echo 1 > /sys/block/sda/sda2/trace/enable 
->  -bash: echo: write error: Device or resource busy
+I don't agree with this, and now we have yet another platform
+broken in the same way.
 
-That's because struct blk_trace is attached to struct request_queue,
-sda1 and sda2 share the same rq:
+If debug_locks.h needs xchg() I think it should include asm/system.h
+which was always the traditional location from which to include that
+declaration.
 
-  # echo 1 > /sys/block/sda/sda1/trace/enable 
-  # cat /sys/block/sda/sda1/trace/enable 
-  1
-  # cat /sys/block/sda/sda2/trace/enable 
-  1
+It is even the case on x86.
 
->  [root@aldebaran ~]#
-> 
-> Nor did i see any "trace all block IO in the system" kind of 
-> functionality in blktrace. (or maybe there's one that i missed?)
-> 
-
-Right, and the only way to do this is 'blktrace sda sdb sdc ...'
+We get it via asm/atomic.h by accident on x86 and other platforms, not
+because that's the canonical location from which to get xchg().
