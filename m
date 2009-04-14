@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZDNNxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbZDNNyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbZDNNxh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZDNNx1
+	id S1756315AbZDNNyJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbZDNNxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:53:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45985 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755255AbZDNNx1 (ORCPT
+	Tue, 14 Apr 2009 09:53:49 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:49974 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbZDNNxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:53:27 -0400
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: Fast testing
-From: Andi Kleen <andi@firstfloor.org>
-References: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com>
-Date: Tue, 14 Apr 2009 15:53:20 +0200
-In-Reply-To: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com> (Dragoslav Zaric's message of "Tue, 14 Apr 2009 11:55:10 +0200")
-Message-ID: <87vdp7735b.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Apr 2009 09:53:48 -0400
+Message-Id: <20090414135327.576111185@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 14 Apr 2009 15:53:27 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 00/14] s390 patches for 2.6.30-rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dragoslav Zaric <dragoslav.zaric.kd@gmail.com> writes:
+Greetings,
+the usual bug fixes for an -rc release and some cpu time accouting
+improvements. Nothing major, the shortlog:
 
-As others pointed out vmlinux is not demand paged.
+Christian Ehrhardt (1):
+      [S390] s390: move machine flags to lowcore
 
-> Since rebooting is a long process,
+Cornelia Huck (1):
+      [S390] dasd: Use the new async framework for autoonlining.
 
-The trick is to not make it a long process. Some ways to do that:
+Gerald Schaefer (1):
+      [S390] appldata: Use new mod_virt_timer_periodic() function.
 
-- Test simple changes in emulation. Emulators tend to boot faster
-than real systems.
-- Use a stripped down Linux distribution that boots fast. I found
-that just using a old Linux distribution (without udev with static /dev) 
-and minimal services boots dramatically faster. I use opensuse 10.0 for that.
-- When you need to test on a real system use nfsroot with kernel
-boot through PXE. First that saves you one iteration of rebooting/copying
-to update a kernel. And then the NFS server can keep the small nfsroot cached
-in memory and then deliver it immediately.
+Heiko Carstens (3):
+      [S390] wire up preadv/pwritev system calls
+      [S390] call nmi_enter/nmi_exit on machine checks
+      [S390] smp: fix cpu_possible_map initialization
 
--Andi
+Jan Glauber (2):
+      [S390] extend virtual timer interface by mod_virt_timer_periodic
+      [S390] qdio: remove dead timeout handler
 
+Martin Schwidefsky (5):
+      [S390] stp synchronization retry timer
+      [S390] fix idle time accounting
+      [S390] cpu hotplug and accounting values
+      [S390] add read_persistent_clock
+      [S390] boot cputime accounting
+
+Stefan Weinhuber (1):
+      [S390] dasd: fix idaw boundary checking for track based ccw
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
