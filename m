@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZDNCTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZDNC1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbZDNCTZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 22:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZDNCTQ
+	id S1754482AbZDNC1A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 22:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZDNC0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 22:19:16 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3362 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZDNCTQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 22:19:16 -0400
-Subject: Re: [PATCH] add ptrace entry to MAINTAINERS
-From: Joe Perches <joe@perches.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@lst.de>, torvalds@osdl.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <20090414004231.GA17288@elte.hu>
-References: <20090413152010.GA16682@lst.de> <20090414004231.GA17288@elte.hu>
-Content-Type: text/plain
-Date: Mon, 13 Apr 2009 19:17:10 -0700
-Message-Id: <1239675430.32203.116.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Apr 2009 22:26:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39460 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751195AbZDNC0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 22:26:51 -0400
+Date: Mon, 13 Apr 2009 19:24:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: Re: [PATCH 0/3] Fix rt28{6,7}0sta to use firmware loader
+Message-ID: <20090414022418.GA17760@suse.de>
+References: <1239589992.18110.117.camel@deadeye.i.decadent.org.uk> <20090413024445.GA12860@suse.de> <1239667961.18110.166.camel@deadeye.i.decadent.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239667961.18110.166.camel@deadeye.i.decadent.org.uk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 02:42 +0200, Ingo Molnar wrote:
-> * Christoph Hellwig <hch@lst.de> wrote:
-> 
-> > At the LF collab summit we decided to make Roland official ptrace
-> > maintainer not just the defacto one he has been for a couple of years
-> > now.
+On Tue, Apr 14, 2009 at 01:12:41AM +0100, Ben Hutchings wrote:
+> On Sun, 2009-04-12 at 19:44 -0700, Greg KH wrote:
+> > On Mon, Apr 13, 2009 at 03:33:12AM +0100, Ben Hutchings wrote:
+> > > Greg,
+> > > 
+> > > The Ralink drivers rt2860sta, rt2870sta and rt3070sta contain non-free
+> > > firmware which should be distributed separately.
 > > 
-> > Signed-off-by: Christoph Hellwig <hch@lst.de>
+> > Where is it now distributed?  I don't want to break people's machines
+> > that were working before this patch is applied.
 > 
-> Hm, what is this "LF collab summit" that makes decisions in terms of 
-> who maintains what? Some new buerocracy on top of Linux i have not 
-> heard about yet? :)
+> The canonical source is
+> <http://www.ralinktech.com/ralink/Home/Support/Linux.html>
 
-I think the MAINTAINERS file could
-use a new status type.
+Yes, and that is where I got the code that is in the driver tree that
+you are objecting to now :)
 
-These are the status types today:
+> The files are now also in the Debian repository for our firmware-nonfree
+> package and in <http://git.decadent.org.uk/git/linux-firmware.git>.
+> I've asked David Woodhouse to pull from that into his linux-firmware.git
+> so that they get into other distros.
 
-	Supported:	Someone is actually paid to look after this.
-	Maintained:	Someone actually looks after it.
-	Odd Fixes:	It has a maintainer but they don't have time to do
-			much other than throw the odd patch in. See below..
-	Orphan:		No current maintainer [but maybe you could take the
-			role as you write your new code].
-	Obsolete:	Old code. Something tagged obsolete generally means
-			it has been replaced by a better system and you
-			should be using that.
+When David pulls it into his tree, and does a release, please let me
+know and I'll be glad to accept your patch.  Until then, I can't accept
+this patch as it would break people's machines that were previously
+working.
 
-Maybe it'd be useful to have a defined
-aggregator/overseer/gatekeeper role.
+thanks,
 
-Basically what Greg Kroah-Hartman does for staging
-and David Miller does for driver/net
-
-
+greg k-h
