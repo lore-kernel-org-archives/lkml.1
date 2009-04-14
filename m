@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZDNNwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZDNNxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbZDNNwi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZDNNw2
+	id S1756146AbZDNNxh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZDNNx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:52:28 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:48835 "EHLO
-	teyla.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753059AbZDNNw1 (ORCPT
+	Tue, 14 Apr 2009 09:53:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45985 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755255AbZDNNx1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:52:27 -0400
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: [PATCH] fs/super.c: Fix cast of 0 to pointer.
-Date: Tue, 14 Apr 2009 14:48:49 +0100
-Message-Id: <1239716929-29202-1-git-send-email-ben-linux@fluff.org>
-X-Mailer: git-send-email 1.5.6.5
+	Tue, 14 Apr 2009 09:53:27 -0400
+To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: Fast testing
+From: Andi Kleen <andi@firstfloor.org>
+References: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com>
+Date: Tue, 14 Apr 2009 15:53:20 +0200
+In-Reply-To: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com> (Dragoslav Zaric's message of "Tue, 14 Apr 2009 11:55:10 +0200")
+Message-ID: <87vdp7735b.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following warning in fs/super.c:
+Dragoslav Zaric <dragoslav.zaric.kd@gmail.com> writes:
 
-900:19: warning: Using plain integer as NULL pointer.
+As others pointed out vmlinux is not demand paged.
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
----
- fs/super.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Since rebooting is a long process,
 
-diff --git a/fs/super.c b/fs/super.c
-index 786fe7d..14e59bc 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -897,7 +897,7 @@ void kill_block_super(struct super_block *sb)
- 	struct block_device *bdev = sb->s_bdev;
- 	fmode_t mode = sb->s_mode;
- 
--	bdev->bd_super = 0;
-+	bdev->bd_super = NULL;
- 	generic_shutdown_super(sb);
- 	sync_blockdev(bdev);
- 	close_bdev_exclusive(bdev, mode);
+The trick is to not make it a long process. Some ways to do that:
+
+- Test simple changes in emulation. Emulators tend to boot faster
+than real systems.
+- Use a stripped down Linux distribution that boots fast. I found
+that just using a old Linux distribution (without udev with static /dev) 
+and minimal services boots dramatically faster. I use opensuse 10.0 for that.
+- When you need to test on a real system use nfsroot with kernel
+boot through PXE. First that saves you one iteration of rebooting/copying
+to update a kernel. And then the NFS server can keep the small nfsroot cached
+in memory and then deliver it immediately.
+
+-Andi
+
+
 -- 
-1.5.6.5
-
+ak@linux.intel.com -- Speaking for myself only.
