@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZDNNao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755622AbZDNNdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755750AbZDNNao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZDNNae
+	id S1755622AbZDNNdO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZDNNc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:30:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58429 "EHLO mx2.mail.elte.hu"
+	Tue, 14 Apr 2009 09:32:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35553 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753791AbZDNNad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:30:33 -0400
-Date: Tue, 14 Apr 2009 15:28:58 +0200
+	id S1753102AbZDNNc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 09:32:57 -0400
+Date: Tue, 14 Apr 2009 15:32:42 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andreas.herrmann3@amd.com, akpm@linux-foundation.org,
-       mark.langsdorf@amd.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/cpu] x86: cacheinfo: replace sysfs interface for
-	cache_disable feature
-Message-ID: <20090414132858.GA27163@elte.hu>
-References: <20090409131849.GJ31527@alberich.amd.com> <tip-f8b201fc7110c3673437254e8ba02451461ece0b@git.kernel.org> <1239598324.2983.2.camel@ht.satnam> <1239598612.2983.4.camel@ht.satnam> <20090414115805.GW3558@elte.hu> <1239713300.3079.22.camel@ht.satnam>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [PATCH -tip] x86: cpu/intel_cacheinfo.c fix compilation
+	warnings
+Message-ID: <20090414133242.GB27163@elte.hu>
+References: <1239712990.3079.17.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1239713300.3079.22.camel@ht.satnam>
+In-Reply-To: <1239712990.3079.17.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,115 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> On Tue, 2009-04-14 at 13:58 +0200, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > 
-> > > On Mon, 2009-04-13 at 10:22 +0530, Jaswinder Singh Rajput wrote:
-> > > > Hello Mark,
-> > > > 
-> > > > On Fri, 2009-04-10 at 12:37 +0000, Mark Langsdorf wrote:
-> > > > > Commit-ID:  f8b201fc7110c3673437254e8ba02451461ece0b
-> > > > > Gitweb:     http://git.kernel.org/tip/f8b201fc7110c3673437254e8ba02451461ece0b
-> > > > > Author:     Mark Langsdorf <mark.langsdorf@amd.com>
-> > > > > AuthorDate: Thu, 9 Apr 2009 15:18:49 +0200
-> > > > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > > > CommitDate: Fri, 10 Apr 2009 14:21:53 +0200
-> > > > > 
-> > > > > x86: cacheinfo: replace sysfs interface for cache_disable feature
-> > > > > 
-> > > > > Impact: replace sysfs attribute
-> > > > > 
-> > > > > Current interface violates against "one-value-per-sysfs-attribute
-> > > > > rule". This patch replaces current attribute with two attributes --
-> > > > > one for each L3 Cache Index Disable register.
-> > > > > 
-> > > > > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> > > > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > > > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > > > > LKML-Reference: <20090409131849.GJ31527@alberich.amd.com>
-> > > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > > > 
-> > > > > 
-> > > > > ---
-> > > > >  arch/x86/kernel/cpu/intel_cacheinfo.c |   90 ++++++++++++++++----------------
-> > > > >  1 files changed, 45 insertions(+), 45 deletions(-)
-> > > > > 
-> > > > > diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> > > > > index 0cde071..fc28291 100644
-> > > > > --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-> > > > > +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> > > > > @@ -697,73 +697,69 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
-> > > > >  #define to_object(k)	container_of(k, struct _index_kobject, kobj)
-> > > > >  #define to_attr(a)	container_of(a, struct _cache_attr, attr)
-> > > > >  
-> > > > > -static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
-> > > > > +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
-> > > > > +				  unsigned int index)
-> > > > >  {
-> > > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
-> > > > > -	int node = cpu_to_node(cpumask_first(mask));
-> > > > > -	struct pci_dev *dev = NULL;
-> > > > > -	ssize_t ret = 0;
-> > > > > -	int i;
-> > > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-> > > > > +	int node = cpu_to_node(cpu);
-> > > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
-> > > > > +	unsigned int reg = 0;
-> > > > 
-> > > > This leads to compilation warnings:
-> > > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
-> > > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
-> > > > arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
-> > > > 
-> > > > >  
-> > > > > -static ssize_t
-> > > > > -store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
-> > > > > -		    size_t count)
-> > > > > +static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
-> > > > > +	const char *buf, size_t count, unsigned int index)
-> > > > >  {
-> > > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
-> > > > > -	int node = cpu_to_node(cpumask_first(mask));
-> > > > > -	struct pci_dev *dev = NULL;
-> > > > > -	unsigned int ret, index, val;
-> > > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-> > > > > +	int node = cpu_to_node(cpu);
-> > > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
-> > > > > +	unsigned long val = 0;
-> > > > >  
-> > > > 
-> > > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
-> > > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
-> > > > arch/x86/kernel/cpu/intel_cacheinfo.c:737: warning: unused variable ‘cpu’
-> > > 
-> > > Oops it is also pointing to node:
-> > > 
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
-> > > arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
-> > 
-> > Mind sending a fix? We really dont want warnings noise in the x86 
-> > tree.
-> > 
-> 
-> Ok I send it.
-> 
-> when I fixed node then it gives warnings for :
+> fix:
 >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
->   arch/x86/kernel/cpu/intel_cacheinfo.c:713: warning: unused variable ‘cpu’
-> 
-> So I also fixed it.
-> 
-> 
-> > I was also thinking about adopting the Sparc trick: adding -Werror 
-> > to arch/x86/ files only, fixing all the fallout and ensuring no new 
-> > warnings from a flag day on. Anyone interested in doing that?
-> > 
-> 
-> Yes, this will be nice idea. Should I send patch for:
-> "adding -Werror to arch/x86/ files only"
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+>   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
 
-Yes, that would be nice. Perhaps also first fix all remaining 
-warnings on 32-bit and 64-bit defconfig and allnoconfig. (i'll check 
-allyesconfig - that takes a lot of time to build)
+you again 'fixed' a warning.
+
+this made you fail to analyze and miss the real reason for this for 
+example:
+
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+
+> -	int node = cpu_to_node(cpu);
+
+the local variable is clearly initialized.
+
+The problem is not with that variable - the problem is most likely 
+with the cpu_to_node() macro not creating a reference to the 'cpu' 
+variable in a compiler-visible way, in the !NUMA case.
+
+The typical way to solve this is to add a dummy:
+
+	(void)(cpu)
+
+use to the 'cpu' parameter to the macro definition - or, (which is a 
+much better solution), to convert it to an inline function.
 
 	Ingo
