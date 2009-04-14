@@ -1,114 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZDNDkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbZDNDqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbZDNDkB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 23:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZDNDjv
+	id S1752693AbZDNDqq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 23:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZDNDqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 23:39:51 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:45588 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635AbZDNDju (ORCPT
+	Mon, 13 Apr 2009 23:46:37 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:48081 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbZDNDqg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 23:39:50 -0400
-Date: Tue, 14 Apr 2009 09:09:36 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tony Luck <tony.luck@intel.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/urgent] sched: Print sched_group::__cpu_power in
-	sched_domain_debug
-Message-ID: <20090414033936.GA534@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090330045520.2869.24777.stgit@sofia.in.ibm.com> <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org> <12c511ca0904131153g39b99ec6n6c6ec2e7de3f7ea6@mail.gmail.com> <20090414000934.GN817@elte.hu>
+	Mon, 13 Apr 2009 23:46:36 -0400
+Message-ID: <49E40662.2040508@cs.columbia.edu>
+Date: Mon, 13 Apr 2009 23:43:30 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090414000934.GN817@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: containers@lists.osdl.org, Alexey Dobriyan <adobriyan@gmail.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Creating tasks on restart: userspace vs kernel
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 02:09:34AM +0200, Ingo Molnar wrote:
-> 
-> * Tony Luck <tony.luck@intel.com> wrote:
-> 
-> > > --- a/kernel/sched.c
-> > > +++ b/kernel/sched.c
-> > > @@ -6963,7 +6963,8 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
-> > >                cpumask_or(groupmask, groupmask, sched_group_cpus(group));
-> > >
-> > >                cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
-> > > -               printk(KERN_CONT " %s", str);
-> > > +               printk(KERN_CONT " %s (__cpu_power = %d)", str,
-> > > +                                               group->__cpu_power);
-> > 
-> > This has added a lot of clutter to the console log during boot
-> > (especially on large systems).
-> > 
-> > Here is the start of the diff output comparing old and new console
-> > messages on a 16 cpu machine:
-> > 
-> > 77c77
-> > <   groups: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> > ---
-> > >   groups: 0 (__cpu_power = 1024) 1 (__cpu_power = 1024) 2 (__cpu_power = 1024) 3 (__cpu_power = 1024) 4 (__cpu_power = 1024) 5 (__cpu_power = 1024) 6 (__cpu_power = 1024) 7 (__cpu_power = 1024) 8 (
-> > __cpu_power = 1024) 9 (__cpu_power = 1024) 10 (__cpu_power = 1024) 11
-> > (__cpu_power = 1024) 12 (__cpu_power = 1024) 13 (__cpu_power = 1024)
-> > 14 (__cpu_power = 1024) 15 (__cpu_power = 1024)
-> > 80c80
-> 
-> indeed ...
-> 
-> I think we should skip the printout in the default (power==1024) 
-> case. Gautham?
 
-Makes sense. Patch appended.
-> 
-> 	Ingo
--->
+For checkpoint/restart (c/r) we need a method to (re)create the tasks
+tree during restart. There are basically two approaches: in userspace
+(zap approach) or in the kernel (openvz approach).
 
-sched: Avoid printing sched_group::__cpu_power for default case.
+Once tasks have been created both approaches are similar in that all
+restarting tasks end up calling the equivalent of "do_restart()" in
+the kernel to perform the gory details of restoring its state.
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+In terms of performance, both approaches are similar, and both can
+optimize to avoid duplicating resources unnecessarily during the
+clone (e.g. mm, etc) knowing that they will be reconstructed soon
+after.
 
-The following commit produces a messy dmesg output while attempting to print
-the sched_group::__cpu_power for each group in the sched_domain hierarchy.
+So the question is what's better - user-space or kernel ?
 
-commit 46e0bb9c12f4bab539736f1714cbf16600f681ec
-Author: Gautham R Shenoy <ego@in.ibm.com>
-Date:   Mon Mar 30 10:25:20 2009 +0530
-sched: Print sched_group::__cpu_power in sched_domain_debug
+Too bad that Alexey chose to ignore what's been discussed in
+linux-containers mailing list in his recent post.  Here is my take on
+cons/pros.
 
-Fix this by avoid printing the __cpu_power for default cases.
-(i.e, __cpu_power == SCHED_LOAD_SCALE).
+Task creation in the kernel
+---------------------------
+* how: the user program calls sys_restart() which, for each task to
+  restore, creates a kernel thread which is demoted to a regular
+  process manually.
 
-Reported-by: Tony Luck <tony.luck@intel.com>
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+* pro: a single task that calls sys_restart()
+* pro: restarting tasks are in full control of kernel at all times
+
+* con: arch-dependent, harder to port across architectures
+* con: can only restart a full container
+
+Task creation in user space
+---------------------------
+* how: the user programs calls fork/clone to recreate a suitable
+  task tree in userspace, and each task calls sys_restart() to restore
+  its state; some kernel glue is necessary to synchronize restarting
+  tasks when in the kernel.
+
+* pro: allows important flexibility during restart (see <1>)
+* pro: code leverages existing well-understood syscalls (fork, clone)
+* pro: allows restart of a only subtree (see <2>)
+
+* con: requires a way to creates tasks with specific pid (see <3>)
+
+<1> Flexibility:
+
+In the spirit of madvise() that lets tasks advise the kernel because
+they know better, there should be cradvise() for checkpoint/restart
+purposes. During checkpoint it can tell the kernel "don't save this
+piece of memory, it's scratch", or "ignore this file-descriptor" etc.
+During restart, it will can tell the kernel "use this file-descriptor"
+or "use this network namespace" (instead of trying to restore).
+
+Offering cradvise() capability during restart is especially important
+in cases where the kernel (inevitably) won't know how to restore a
+resource (e.g. think special devices), when the application wants to
+override (e.g. think of a c/r aware server that would like to change
+the port on which it is listening), or when it's that much simpler to
+do it in userspace (e.g. think setting up network namespaces).
+
+Another important example is distributed checkpoint, where the
+restarting tasks could (re)create all their network connections in
+user space, before invoking sys_restart() and tell the kernel, via
+cradvise(), to use the newly created sockets.
+
+The need for this sort of flexibility has been stressed multiple times
+and by multiple stake-holders interested in checkpoint/restart.
+
+<2> Restarting a subtree:
+
+The primary c/r effort is directed towards providing c/r functionality
+for containers.
+
+Wouldn't it be nice if, while doing so and at minimal added effort, we
+also gain a method to checkpoint and restart an arbitrary subtree of
+tasks, which isn't necessarily an entire container ?
+
+Sure, it will be more constrained (e.g. resulting pid in restart won't
+match the original pids), and won't work for all applications. But it
+will still be a useful tool for many use cases, like batch cpu jobs,
+some servers, vnc sessions (if you want graphics) etc. Imagine you run
+'octave' for a week and must reboot now - 'octave' wouldn't care if
+you checkpointed it and then restart with a different pid !
+
+<3> Clone with pid:
+
+To restart processes from userspace, there needs to be a way to
+request a specific pid--in the current pid_ns--for the child process
+(clearly, if it isn't in use).
+
+Why is it a disadvantage ?  to Linus, a syscall clone_with_pid()
+"sounds like a _wonderful_ attack vector against badly written
+user-land software...".  Actually, getting a specific pid is possible
+without this syscall.  But the point is that it's undesirable to have
+this functionality unrestricted.
+
+So one option is to require root privileges. Another option is to
+restrict such action in pid_ns created by the same user. Even more so,
+restrict to only containers that are being restarted.
+
 ---
 
- kernel/sched.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Either way we go, it should be fairly easy to switch from one method
+to the other, should we need to.
 
+All in all, there isn't a strong reason in favor of kernel method.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 681d4ae..0584e04 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7467,8 +7467,9 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 		cpumask_or(groupmask, groupmask, sched_group_cpus(group));
- 
- 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
--		printk(KERN_CONT " %s (__cpu_power = %d)", str,
--						group->__cpu_power);
-+		if (group->__cpu_power != SCHED_LOAD_SCALE)
-+			printk(KERN_CONT " %s (__cpu_power = %d)", str,
-+							group->__cpu_power);
- 
- 		group = group->next;
- 	} while (group != sd->groups);
--- 
-Thanks and Regards
-gautham
+In contrast, it's at least as simple in userspace (reusing existing
+syscalls). More importantly, the flexibility that we gain with restart
+of tasks in userspace, no cost incurred (in terms of implementation or
+runtime overhead).
+
+Oren.
