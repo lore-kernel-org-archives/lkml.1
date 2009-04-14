@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZDNCuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZDNCu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbZDNCuQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 22:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZDNCuB
+	id S1754645AbZDNCu7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 22:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZDNCuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 22:50:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43531 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZDNCuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 22:50:00 -0400
-Date: Mon, 13 Apr 2009 22:49:43 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: dm-ioband: Test results.
-Message-ID: <20090414024943.GA976@redhat.com>
-References: <20090413.130552.226792299.ryov@valinux.co.jp> <20090413144626.GF18007@redhat.com>
+	Mon, 13 Apr 2009 22:50:51 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47539 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbZDNCuu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 22:50:50 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH v2 4/4] ftrace: add latecy mesurement feature to workqueue tracer
+Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090413145335.6E10.A69D9226@jp.fujitsu.com>
+References: <20090413145105.6E07.A69D9226@jp.fujitsu.com> <20090413145335.6E10.A69D9226@jp.fujitsu.com>
+Message-Id: <20090414114908.C63A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413144626.GF18007@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 14 Apr 2009 11:50:45 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 10:46:26AM -0400, Vivek Goyal wrote:
-> On Mon, Apr 13, 2009 at 01:05:52PM +0900, Ryo Tsuruta wrote:
-> > Hi Alasdair and all,
-> > 
-> > I did more tests on dm-ioband and I've posted the test items and
-> > results on my website. The results are very good.
-> > http://people.valinux.co.jp/~ryov/dm-ioband/test/test-items.xls
-> > 
-> 
-> Hi Ryo,
-> 
-> I quickly looked at the xls sheet. Most of the test cases seem to be
-> direct IO. Have you done testing with buffered writes/async writes and
-> been able to provide service differentiation between cgroups?
-> 
-> For example, two "dd" threads running in two cgroups doing writes.
-> 
+> Index: b/include/trace/workqueue_event_types.h
+> ===================================================================
+> --- a/include/trace/workqueue_event_types.h	2009-04-13 13:58:21.000000000 +0900
+> +++ b/include/trace/workqueue_event_types.h	2009-04-13 14:07:14.000000000 +0900
+> @@ -43,6 +43,8 @@ TRACE_EVENT(workqueue_handler_entry,
+>  		__field(pid_t,			thread_pid)
+>  		__field(struct work_struct *,	work)
+>  		__field(work_func_t,		func)
+> +		__field(unsigned long,		expected_time)
+> +		__field(unsigned long,		actual_time)
+>  	),
+>  
+>  	TP_fast_assign(
+> @@ -50,10 +52,14 @@ TRACE_EVENT(workqueue_handler_entry,
+>  		__entry->thread_pid	= wq_thread->pid;
+>  		__entry->work		= work;
+>  		__entry->func		= work->func;
+> +		__entry->expected_time	= work->expected_time;
+> +		__entry->actual_time	= jiffies;
+>  	),
 
-Just realized that last time I replied to wrong mail id. Ryo, this time
-you should get the mail. This is reply to my original reply.
+Oops, that's my fault.
+There is work->expected_time only if CONFIG_WORKQUEUE_TRACER is on.
 
-Also I wanted to test run your patches. How do I do that? I see that your
-patches are based on dm quilt tree. I downloaded the dm-patches and tried
-to apply on top of 2.6.30-rc1 but it failed. So can't apply your patches
-now.
 
-So what's the simplest way of testing your changes on latest kernels?
+>  
+> -	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
+> -		__entry->thread_pid, __entry->func)
+> +	TP_printk("thread=%s:%d latency=%lums func=%pF", __entry->thread_comm,
+> +		  __entry->thread_pid,
+> +		  jiffies_to_msecs(__entry->actual_time-__entry->expected_time),
+> +		  __entry->func)
+>  );
 
-Thanks
-Vivek
 
-Applying patch dm-add-request-based-facility.patch
-patching file drivers/md/dm-table.c
-Hunk #1 succeeded at 1021 (offset 29 lines).
-patching file drivers/md/dm.c
-Hunk #1 succeeded at 90 (offset 6 lines).
-Hunk #2 succeeded at 175 (offset -1 lines).
-Hunk #3 succeeded at 427 (offset 6 lines).
-Hunk #4 succeeded at 648 (offset 10 lines).
-Hunk #5 succeeded at 1246 with fuzz 2 (offset 20 lines).
-Hunk #6 succeeded at 1273 (offset 3 lines).
-Hunk #7 succeeded at 1615 with fuzz 1 (offset 20 lines).
-Hunk #8 succeeded at 2016 with fuzz 1 (offset 14 lines).
-Hunk #9 succeeded at 2141 (offset 33 lines).
-Hunk #10 FAILED at 2321.
-Hunk #11 FAILED at 2336.
-Hunk #12 succeeded at 2388 with fuzz 2 (offset 29 lines).
-2 out of 12 hunks FAILED -- rejects in file drivers/md/dm.c
-patching file drivers/md/dm.h
-patching file include/linux/device-mapper.h
-Hunk #1 succeeded at 230 (offset -1 lines).
-Patch dm-add-request-based-facility.patch does not apply (enforce with -f)
 
-> Thanks
-> Vivek
