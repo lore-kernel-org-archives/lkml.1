@@ -1,35 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbZDNOPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZDNORx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbZDNOPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 10:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZDNOPf
+	id S1756483AbZDNORx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 10:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZDNORn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 10:15:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59106 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754596AbZDNOPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 10:15:34 -0400
-Date: Tue, 14 Apr 2009 16:12:09 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Message-ID: <20090414141209.GB31644@random.random>
-References: <20090414151204.C647.A69D9226@jp.fujitsu.com> <200904141925.46012.nickpiggin@yahoo.com.au> <2f11576a0904140502h295faf33qcea9a39ff7f230a5@mail.gmail.com> <200904142225.10788.nickpiggin@yahoo.com.au> <2f11576a0904140639l426e137ewdc46296cdb377dd@mail.gmail.com>
+	Tue, 14 Apr 2009 10:17:43 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:35718 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753262AbZDNORm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 10:17:42 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/4] cdc-acm: Fix long standing abuse of tty->low_latency
+Date: Tue, 14 Apr 2009 16:18:04 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090414135501.13935.13500.stgit@t61.ukuu.org.uk> <20090414135728.13935.47954.stgit@t61.ukuu.org.uk>
+In-Reply-To: <20090414135728.13935.47954.stgit@t61.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2f11576a0904140639l426e137ewdc46296cdb377dd@mail.gmail.com>
+Message-Id: <200904141618.05824.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 10:39:54PM +0900, KOSAKI Motohiro wrote:
-> I guess you dislike get_user_page_fast() grab pte_lock too, right?
+Am Dienstag 14 April 2009 15:57:36 schrieb Alan Cox:
+> ACM sets the low latency flag but calls the flip buffer routines from IRQ
+> context which isn't permitted (and as of 2.6.29 causes a warning hence this
+> one was caught)
+>
+> Fortunatelt ACM doesn't need to set this flag in the first place as it only
+> set it to work around problems in ancient (pre tty flip rewrite) kernels.
 
-If get_user_page_fast is vetoed to run a set_bit on the already cache
-hot and exclusive struct page, I doubt taking a potentially cache
-cold, mm-wide or pmd-wide pte_lock is ok.
+Very well, I am going to kill these in the USB serial drivers.
+
+	Regards
+		Oliver
+
