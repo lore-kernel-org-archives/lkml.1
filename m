@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZDNPyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZDNPzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbZDNPyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbZDNPvw
+	id S1756543AbZDNPzZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZDNPvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:51:52 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45967 "EHLO
+	Tue, 14 Apr 2009 11:51:53 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45993 "EHLO
 	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755288AbZDNPvt (ORCPT
+	by vger.kernel.org with ESMTP id S1755415AbZDNPvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:51:49 -0400
+	Tue, 14 Apr 2009 11:51:48 -0400
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
        James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 09/14] [VOYAGER] x86: redo irq2 cascade setup
-Date: Tue, 14 Apr 2009 10:51:35 -0500
-Message-Id: <1239724300-16371-10-git-send-email-James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 08/14] [VOYAGER] x86: eliminate subarchitecture file do_timer.h
+Date: Tue, 14 Apr 2009 10:51:34 -0500
+Message-Id: <1239724300-16371-9-git-send-email-James.Bottomley@HansenPartnership.com>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1239724300-16371-9-git-send-email-James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1239724300-16371-8-git-send-email-James.Bottomley@HansenPartnership.com>
 References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-3-git-send-email-James.Bottomley@HansenPartnership.com>
@@ -28,147 +28,164 @@ References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership
  <1239724300-16371-6-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-7-git-send-email-James.Bottomley@HansenPartnership.com>
  <1239724300-16371-8-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-9-git-send-email-James.Bottomley@HansenPartnership.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cascade setup really needs to be done as part of the
-arch_intr_init() because you might need the machine vectors all
-plumbed in before you set up the cascade.
+This one's a bit complex: voyager still needs a timer interrupt hook
+because it doesn't have local apic timers and the scheduler relies on
+each CPU ticking, so voyager must rebroadcast the pit clock.
 
-Fix this by moving the current check in irqinit_32.c to the correct
-place and also directly calling the x86_quirk hook from there.  Tidy
-up visws (and eventually voyager) which do their own irq2
-initialisation but which could quite easily use the generic one.
+Pull in the standard do_timer.h to time_32.c: all it was doing was
+calling the global_clock_event event_handler.  However, also add a
+specific voyager hook: voyager_timer_interrupt().
+
+Hedge the asm/voyager.h file around with proper include guards and
+make sure voyager_timer_interrupt() is inline empty if
+CONFIG_X86_VOYAGER isn't defined.  Also add an is_voyager() check to
+terminate the voyager_timer_interrupt() hook in case voyager is
+compiled in but booted on a non-voayger architecture.
 
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- arch/x86/include/asm/setup.h   |    1 -
- arch/x86/kernel/irqinit_32.c   |   15 +++++++++------
- arch/x86/kernel/setup.c        |   17 -----------------
- arch/x86/kernel/visws_quirks.c |    7 -------
- arch/x86/mach-voyager/setup.c  |   11 -----------
- 5 files changed, 9 insertions(+), 42 deletions(-)
+ arch/x86/include/asm/do_timer.h              |   16 ----------------
+ arch/x86/include/asm/mach-voyager/do_timer.h |   17 -----------------
+ arch/x86/include/asm/voyager.h               |   14 ++++++++++++++
+ arch/x86/kernel/time_32.c                    |   11 +++++++----
+ arch/x86/mach-voyager/voyager_basic.c        |    3 +++
+ 5 files changed, 24 insertions(+), 37 deletions(-)
+ delete mode 100644 arch/x86/include/asm/do_timer.h
+ delete mode 100644 arch/x86/include/asm/mach-voyager/do_timer.h
 
-diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-index c4ff4ff..2b149d6 100644
---- a/arch/x86/include/asm/setup.h
-+++ b/arch/x86/include/asm/setup.h
-@@ -35,7 +35,6 @@ struct x86_quirks {
- };
- 
- extern void x86_quirk_pre_intr_init(void);
--extern void x86_quirk_intr_init(void);
- 
- extern void x86_quirk_trap_init(void);
- 
-diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
-index 368b0a8..bc8d528 100644
---- a/arch/x86/kernel/irqinit_32.c
-+++ b/arch/x86/kernel/irqinit_32.c
-@@ -186,14 +186,17 @@ void __init native_init_IRQ(void)
- 	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
- #endif
- 
--	if (!acpi_ioapic)
--		setup_irq(2, &irq2);
+diff --git a/arch/x86/include/asm/do_timer.h b/arch/x86/include/asm/do_timer.h
+deleted file mode 100644
+index 23ecda0..0000000
+--- a/arch/x86/include/asm/do_timer.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* defines for inline arch setup functions */
+-#include <linux/clockchips.h>
 -
- 	/*
--	 * Call quirks after call gates are initialised (usually add in
--	 * the architecture specific gates):
-+	 * setup after call gates are initialised (usually add in the
-+	 * architecture specific gates).  Populating the
-+	 * arch_intr_init x86_quirk allows final gate setup.  If the
-+	 * quirk returns true, the cascade interrupt will not be setup
-+	 * unless acpi_ioapic is zero
- 	 */
--	x86_quirk_intr_init();
-+
-+	if ((x86_quirks->arch_intr_init && !x86_quirks->arch_intr_init()) ||
-+	    (!x86_quirks->arch_intr_init && !acpi_ioapic))
-+		setup_irq(2, &irq2);
- 
- 	/*
- 	 * External FPU? Set up irq13 if so, for
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 43f81f0..bee0914 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -1011,23 +1011,6 @@ void __init x86_quirk_pre_intr_init(void)
- }
- 
- /**
-- * x86_quirk_intr_init - post gate setup interrupt initialisation
-- *
-- * Description:
-- *	Fill in any interrupts that may have been left out by the general
-- *	init_IRQ() routine.  interrupts having to do with the machine rather
-- *	than the devices on the I/O bus (like APIC interrupts in intel MP
-- *	systems) are started here.
-- **/
--void __init x86_quirk_intr_init(void)
--{
--	if (x86_quirks->arch_intr_init) {
--		if (x86_quirks->arch_intr_init())
--			return;
--	}
--}
+-#include <asm/i8259.h>
+-#include <asm/i8253.h>
 -
 -/**
-  * x86_quirk_trap_init - initialise system specific traps
+- * do_timer_interrupt_hook - hook into timer tick
+- *
+- * Call the pit clock event handler. see asm/i8253.h
+- **/
+-
+-static inline void do_timer_interrupt_hook(void)
+-{
+-	global_clock_event->event_handler(global_clock_event);
+-}
+diff --git a/arch/x86/include/asm/mach-voyager/do_timer.h b/arch/x86/include/asm/mach-voyager/do_timer.h
+deleted file mode 100644
+index 9e5a459..0000000
+--- a/arch/x86/include/asm/mach-voyager/do_timer.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* defines for inline arch setup functions */
+-#include <linux/clockchips.h>
+-
+-#include <asm/voyager.h>
+-#include <asm/i8253.h>
+-
+-/**
+- * do_timer_interrupt_hook - hook into timer tick
+- *
+- * Call the pit clock event handler. see asm/i8253.h
+- **/
+-static inline void do_timer_interrupt_hook(void)
+-{
+-	global_clock_event->event_handler(global_clock_event);
+-	voyager_timer_interrupt();
+-}
+-
+diff --git a/arch/x86/include/asm/voyager.h b/arch/x86/include/asm/voyager.h
+index c03a6aa..b38a241 100644
+--- a/arch/x86/include/asm/voyager.h
++++ b/arch/x86/include/asm/voyager.h
+@@ -3,11 +3,15 @@
+  * Author: J.E.J.Bottomley@HansenPartnership.com
   *
-  * Description:
-diff --git a/arch/x86/kernel/visws_quirks.c b/arch/x86/kernel/visws_quirks.c
-index 31ffc24..42de9eb 100644
---- a/arch/x86/kernel/visws_quirks.c
-+++ b/arch/x86/kernel/visws_quirks.c
-@@ -645,12 +645,6 @@ static struct irqaction master_action = {
- 	.name =		"PIIX4-8259",
- };
+  * Standard include definitions for the NCR Voyager system */
++#ifndef _ASM_VOYAGER_H
++#define _ASM_VOYAGER_H
  
--static struct irqaction cascade_action = {
--	.handler = 	no_action,
--	.name =		"cascade",
--};
+ #include <asm/voyager_bios.h>
+ #include <asm/voyager_boot.h>
+ #include <asm/voyager_vectors.h>
+ 
++#ifdef CONFIG_X86_VOYAGER
++
+ #undef	VOYAGER_DEBUG
+ #undef	VOYAGER_CAT_DEBUG
+ 
+@@ -530,3 +534,13 @@ extern asmlinkage void qic_invalidate_interrupt(void);
+ extern asmlinkage void qic_reschedule_interrupt(void);
+ extern asmlinkage void qic_enable_irq_interrupt(void);
+ extern asmlinkage void qic_call_function_interrupt(void);
++
++#else /* CONFIG_X86_VOYAGER */
++
++static inline void voyager_timer_interrupt(void)
++{
++}
++
++#endif /* CONFIG_X86_VOYAGER */
++
++#endif
+diff --git a/arch/x86/kernel/time_32.c b/arch/x86/kernel/time_32.c
+index 5c5d87f..dcbe82a 100644
+--- a/arch/x86/kernel/time_32.c
++++ b/arch/x86/kernel/time_32.c
+@@ -28,6 +28,7 @@
+  *	serialize accesses to xtime/lost_ticks).
+  */
+ 
++#include <linux/clockchips.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/time.h>
+@@ -37,8 +38,9 @@
+ #include <asm/hpet.h>
+ #include <asm/time.h>
+ #include <asm/timer.h>
 -
--
- void init_VISWS_APIC_irqs(void)
- {
- 	int i;
-@@ -683,5 +677,4 @@ void init_VISWS_APIC_irqs(void)
+-#include <asm/do_timer.h>
++#include <asm/i8253.h>
++#include <asm/i8259.h>
++#include <asm/voyager.h>
+ 
+ int timer_ack;
+ 
+@@ -91,8 +93,9 @@ irqreturn_t timer_interrupt(int irq, void *dev_id)
+ 		spin_unlock(&i8259A_lock);
  	}
- 
- 	setup_irq(CO_IRQ_8259, &master_action);
--	setup_irq(2, &cascade_action);
- }
-diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
-index 88c3c55..e4516a8 100644
---- a/arch/x86/mach-voyager/setup.c
-+++ b/arch/x86/mach-voyager/setup.c
-@@ -16,22 +16,11 @@ void __init pre_intr_init_hook(void)
- 	init_ISA_irqs();
- }
- 
--/*
-- * IRQ2 is cascade interrupt to second interrupt controller
-- */
--static struct irqaction irq2 = {
--	.handler = no_action,
--	.mask = CPU_MASK_NONE,
--	.name = "cascade",
--};
--
- void __init intr_init_hook(void)
- {
- #ifdef CONFIG_SMP
- 	voyager_smp_intr_init();
  #endif
 -
--	setup_irq(2, &irq2);
- }
+-	do_timer_interrupt_hook();
++	if (global_clock_event->event_handler)
++		global_clock_event->event_handler(global_clock_event);
++	voyager_timer_interrupt();
  
- static void voyager_disable_tsc(void)
+ #ifdef CONFIG_MCA
+ 	if (MCA_bus) {
+diff --git a/arch/x86/mach-voyager/voyager_basic.c b/arch/x86/mach-voyager/voyager_basic.c
+index 7581b5f..7c97c9a 100644
+--- a/arch/x86/mach-voyager/voyager_basic.c
++++ b/arch/x86/mach-voyager/voyager_basic.c
+@@ -161,6 +161,9 @@ int __init voyager_memory_detect(int region, __u32 * start, __u32 * length)
+  * internal timer (The QIC does, but that's another story). */
+ void voyager_timer_interrupt(void)
+ {
++	if (!is_voyager())
++		return;
++
+ 	if ((jiffies & 0x3ff) == 0) {
+ 
+ 		/* There seems to be something flaky in either
 -- 
 1.6.2.1
 
