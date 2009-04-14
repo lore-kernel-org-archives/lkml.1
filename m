@@ -1,101 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZDNAeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbZDNAiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbZDNAeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 20:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbZDNAeb
+	id S1754061AbZDNAiO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 20:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZDNAh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 20:34:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42496 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888AbZDNAe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 20:34:29 -0400
-Date: Tue, 14 Apr 2009 00:33:59 GMT
-From: tip-bot for Zhaolei <zhaolei@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tzanussi@gmail.com, zhaolei@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
-       zhaolei@cn.fujitsu.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49E2F19A.3040006@cn.fujitsu.com>
-References: <49E2F19A.3040006@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing: Fix branch tracer header
-Message-ID: <tip-557055bebe9212dfa6b9f5df811dfd0dac77ec55@git.kernel.org>
-Git-Commit-ID: 557055bebe9212dfa6b9f5df811dfd0dac77ec55
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 00:34:01 +0000 (UTC)
+	Mon, 13 Apr 2009 20:37:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35843 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751848AbZDNAh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 20:37:57 -0400
+Date: Mon, 13 Apr 2009 17:31:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Valdis.Kletnieks@vt.edu,
+       Mike Travis <travis@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mm-commits@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+Message-Id: <20090413173113.24a61442.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0904131648290.26713@localhost.localdomain>
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>
+	<4609.1239456126@turing-police.cc.vt.edu>
+	<alpine.LFD.2.00.0904130847500.4583@localhost.localdomain>
+	<20090413171853.GA4601@elte.hu>
+	<20090413102749.4ca3a217.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0904131648290.26713@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  557055bebe9212dfa6b9f5df811dfd0dac77ec55
-Gitweb:     http://git.kernel.org/tip/557055bebe9212dfa6b9f5df811dfd0dac77ec55
-Author:     Zhaolei <zhaolei@cn.fujitsu.com>
-AuthorDate: Mon, 13 Apr 2009 16:02:34 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 14 Apr 2009 02:30:36 +0200
+On Mon, 13 Apr 2009 16:50:45 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-tracing: Fix branch tracer header
+> 
+> 
+> So I applied this (commit 01599fca6758d2cd133e78f87426fc851c9ea725: 
+> "cpufreq: use smp_call_function_[single|many]() in acpi-cpufreq.c"), but 
+> just realized - because of a compiler warning - that this looks 
+> suspicious:
+> 
+> On Mon, 13 Apr 2009, Andrew Morton wrote:
+> > @@ -283,7 +280,7 @@ static unsigned int get_measured_perf(st
+> >  	unsigned int perf_percent;
+> >  	unsigned int retval;
+> >  
+> > -	if (!work_on_cpu(cpu, read_measured_perf_ctrs, &readin))
+> > +	if (smp_call_function_single(cpu, read_measured_perf_ctrs, &cur, 1))
+> >  		return 0;
+> >  
+> >  	cur.aperf.whole = readin.aperf.whole -
+> 
+> How and why did that "read_measured_perf_ctrs, &readin" become 
+> "read_measured_perf_ctrs, &cur" when the work_on_cpu() was converted to 
+> "smp_call_function_single()"?
+> 
+> Looks like a bug. But such an odd one that I wonder whether there was some 
+> thought behind it? Andrew? 
+> 
 
-Before patch:
+<scratches head>
 
-  # tracer: branch
-  #
-  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-  #              | |       |          |         |
-             <...>-2981  [000] 24008.872738: [  ok  ] trace_irq_handler_exit:irq_event_types.h:41
-             <...>-2981  [000] 24008.872742: [  ok  ] note_interrupt:spurious.c:229
-  ...
+OK, the acpi tree went and had conflicting changes merged into it after
+I'd written the patch:
 
-After patch:
-
-  # tracer: branch
-  #
-  #           TASK-PID    CPU#    TIMESTAMP  CORRECT  FUNC:FILE:LINE
-  #              | |       |          |         |       |
-             <...>-2985  [000] 26329.142970: [  ok  ] slab_free:slub.c:1776
-             <...>-2985  [000] 26329.142972: [  ok  ] trace_kmem_cache_free:kmem_event_types.h:191
-  ...
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <49E2F19A.3040006@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/trace_branch.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index ad8c22e..8333715 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -155,6 +155,13 @@ static enum print_line_t trace_branch_print(struct trace_iterator *iter,
- 	return TRACE_TYPE_HANDLED;
- }
+@@ -281,52 +279,57 @@ static long read_measured_perf_ctrs(void
+ static unsigned int get_measured_perf(struct cpufreq_policy *policy,
+ 				      unsigned int cpu)
+ {
+-	struct perf_cur cur;
++	struct perf_pair readin, cur;
+ 	unsigned int perf_percent;
+ 	unsigned int retval;
  
-+static void branch_print_header(struct seq_file *s)
-+{
-+	seq_puts(s, "#           TASK-PID    CPU#    TIMESTAMP  CORRECT"
-+		"  FUNC:FILE:LINE\n");
-+	seq_puts(s, "#              | |       |          |         |   "
-+		"    |\n");
-+}
+-	if (!work_on_cpu(cpu, read_measured_perf_ctrs, &cur))
++	if (!work_on_cpu(cpu, read_measured_perf_ctrs, &readin))
+ 		return 0;
  
- static struct trace_event trace_branch_event = {
- 	.type		= TRACE_BRANCH,
-@@ -169,6 +176,7 @@ static struct tracer branch_trace __read_mostly =
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest	= trace_selftest_startup_branch,
- #endif /* CONFIG_FTRACE_SELFTEST */
-+	.print_header	= branch_print_header,
- };
- 
- __init static int init_branch_tracer(void)
++	cur.aperf.whole = readin.aperf.whole -
++				per_cpu(drv_data, cpu)->saved_aperf;
++	cur.mperf.whole = readin.mperf.whole -
++				per_cpu(drv_data, cpu)->saved_mperf;
++	per_cpu(drv_data, cpu)->saved_aperf = readin.aperf.whole;
++	per_cpu(drv_data, cpu)->saved_mperf = readin.mperf.whole;
++
+
+and it appears that I incorrectly reverted part of
+18b2646fe3babeb40b34a0c1751e0bf5adfdc64c while fixing the resulting
+rejects.
+
+Switching it to `readin' looks correct.
