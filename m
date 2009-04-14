@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZDNP6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZDNP6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbZDNP6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZDNPzw
+	id S1757168AbZDNP6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbZDNP5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:55:52 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:34684 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754834AbZDNPzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:55:51 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: UV BAU partition-relative distribution map
-Cc: mingo@elte.hu
-Message-Id: <E1Ltl0C-0004Ob-37@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Tue, 14 Apr 2009 10:56:48 -0500
+	Tue, 14 Apr 2009 11:57:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58956 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757306AbZDNP5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 11:57:47 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Make radeon_reinitialize_M10() absent if its reference is
+	#ifdef'd out
+To: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: dhowells@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Date: Tue, 14 Apr 2009 16:56:52 +0100
+Message-ID: <20090414155651.27671.36394.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Make radeon_reinitialize_M10() absent if its reference is #ifdef'd out (if
+CONFIG_PM=n or CONFIG_PPC_PMAC=n.  Otherwise a warning is given:
 
-From: Cliff Wickman <cpw@sgi.com>
+  CC      drivers/video/aty/radeon_pm.o
+drivers/video/aty/radeon_pm.c:1720: warning: 'radeon_reinitialize_M10' defined but not used
 
-This patch enables each partition's BAU distribution bit map
-to be partition-relative.
-
-The distribution bitmap had been constructed assuming 0 as the base
-node number.  That construct would not have allowed a total system of
-greater than 256 nodes.
-It also corrects an error that occurred when the first blade's nasid
-was not zero.  That nasid was stored as the base node.
-The base node number gets added by hardware to the node numbers implied
-in the distribution bitmap, resulting in invalid target nasids.
-
-Tested on the UV hardware simulator.
-
-Diffed against 2.6.29
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
- arch/x86/kernel/tlb_uv.c |   19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -25,6 +25,8 @@ static int			uv_bau_retry_limit __read_m
- 
- /* position of pnode (which is nasid>>1): */
- static int			uv_nshift __read_mostly;
-+/* base pnode in this partition */
-+static int			uv_partition_base_pnode __read_mostly;
- 
- static unsigned long		uv_mmask __read_mostly;
- 
-@@ -43,7 +45,7 @@ static int __init blade_to_first_node(in
- 		if (blade == b)
- 			return node;
- 	}
--	BUG();
-+	return -1; /* shouldn't happen */
+ drivers/video/aty/radeon_pm.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index 97a1f09..8655bbd 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -1716,6 +1716,7 @@ static void radeon_pm_m10_reconfigure_mc(struct radeonfb_info *rinfo)
+ 	OUTREG(MC_IND_INDEX, 0);
  }
  
- /*
-@@ -360,7 +362,8 @@ const struct cpumask *uv_flush_tlb_other
- 			locals++;
- 			continue;
- 		}
--		bau_node_set(pnode, &bau_desc->distribution);
-+		bau_node_set(pnode - uv_partition_base_pnode,
-+				&bau_desc->distribution);
- 		i++;
- 	}
- 	if (i == 0) {
-@@ -729,7 +732,12 @@ uv_activation_descriptor_init(int node, 
- 	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
- 		memset(ad2, 0, sizeof(struct bau_desc));
- 		ad2->header.sw_ack_flag = 1;
--		ad2->header.base_dest_nodeid = uv_cpu_to_pnode(0);
-+		/*
-+		 * base_dest_nodeid is the first node in the partition, so
-+		 * the bit map will indicate partition-relative node numbers.
-+		 * note that base_dest_nodeid is actually a nasid.
-+		 */
-+		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
- 		ad2->header.command = UV_NET_ENDPOINT_INTD;
- 		ad2->header.int_both = 1;
- 		/*
-@@ -830,6 +838,11 @@ static int __init uv_bau_init(void)
- 	    kmalloc(nblades * sizeof(struct bau_control *), GFP_KERNEL);
- 	BUG_ON(!uv_bau_table_bases);
++#if defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC)
+ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+ {
+ 	u32 tmp, i;
+@@ -1940,6 +1941,7 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+ 	 */
+ 	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
+ }
++#endif /* CONFIG_PM && CONFIG_PPC_PMAC */
  
-+	uv_partition_base_pnode = 0x7fffffff;
-+	for (blade = 0; blade < nblades; blade++)
-+		if (uv_blade_nr_possible_cpus(blade) &&
-+			(uv_blade_to_pnode(blade) < uv_partition_base_pnode))
-+			uv_partition_base_pnode = uv_blade_to_pnode(blade);
- 	for (blade = 0; blade < nblades; blade++)
- 		if (uv_blade_nr_possible_cpus(blade))
- 			uv_init_blade(blade);
+ #ifdef CONFIG_PPC_OF
+ 
+
