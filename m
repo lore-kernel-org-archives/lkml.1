@@ -1,167 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZDNBne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbZDNBnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbZDNBne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 21:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZDNBn0
+	id S1754732AbZDNBnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 21:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZDNBnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 21:43:26 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44460 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbZDNBnZ (ORCPT
+	Mon, 13 Apr 2009 21:43:45 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:18048 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbZDNBno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 21:43:25 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH v2 3/4] ftrace: add max execution time mesurement to workqueue tracer
-Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090413161649.GH5977@nowhere>
-References: <20090413145254.6E0D.A69D9226@jp.fujitsu.com> <20090413161649.GH5977@nowhere>
-Message-Id: <20090414102802.C637.A69D9226@jp.fujitsu.com>
+	Mon, 13 Apr 2009 21:43:44 -0400
+Message-ID: <49E3E944.2040505@oracle.com>
+Date: Tue, 14 Apr 2009 09:39:16 +0800
+From: Wenji Huang <wenji.huang@oracle.com>
+Reply-To: wenji.huang@oracle.com
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux-kbuild@vger.kernel.org
+CC: tytso@MIT.EDU, Elena Zannoni <elena.zannoni@oracle.com>,
+       Roland McGrath <roland@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [Fwd: [PATCH 1/1] Separate the debuginfo out from kbuild]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 10:43:21 +0900 (JST)
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010201.49E3EA3A.0173:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frederic,
+Add Roland to cc
 
-very thanks for good reviewing.
+-------- Original Message --------
+Subject: [PATCH 1/1] Separate the debuginfo out from kbuild
+Date: Wed,  8 Apr 2009 22:06:21 -0400
+From: Wenji Huang <wenji.huang@oracle.com>
+To: linux-kbuild@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, tytso@MIT.EDU, 
+elena.zannoni@oracle.com, Wenji Huang <wenji.huang@oracle.com>
 
+This patch will add "make debug_info" to split debuginfo files. The
+separate debug files are under debug directory of building tree.
 
-> > @@ -85,6 +90,29 @@ found:
-> >  	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-> >  }
-> >  
-> > +static void probe_workqueue_exit(struct task_struct *wq_thread,
-> > +				 struct work_struct *work)
-> > +{
-> > +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> > +	struct cpu_workqueue_stats *node, *next;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> > +	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
-> > +							list) {
-> 
-> 
-> Do you need the safe version here? You don't seem to remove any entry.
+It is based on two considerations:
+    * The debuginfo extracting machinery could be integrated into the
+      kbuild system. This way it's not just done via RPM macros. So
+      generating debuginfo RPMS or something alike can be simplified
+      and standardized, also distribution independent.
+    * Reduce the size of current file which mixes executable and
+      debug sections. For example, 7% off for vmlinux.
 
-Yes, this is just stupid cut&paste mistake ;)
-Will fix.
+Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+---
+  Makefile                 |   14 ++++++++++++++
+  scripts/Makefile.modpost |   12 ++++++++++++
+  2 files changed, 26 insertions(+), 0 deletions(-)
 
-> Sidenote: only the workqueue destruction handler might need it if I'm
-> not wrong.
-> I placed some of them in other places in this file because I misunderstood the
-> kernel list concepts in the past :)
-> (Heh, and probably still today).
-> 
-> 
-> 
-> > +		if (node->pid == wq_thread->pid) {
-> > +			u64 start = node->handler_start_time;
-> > +			u64 executed_time = trace_clock_global() - start;
-> > +
-> > +			if (node->max_executed_time < executed_time)
-> > +				node->max_executed_time = executed_time;
-> > +			goto found;
-> > +		}
-> > +	}
-> > +found:
-> > +	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-> > +}
-> > +
-> >  /* Creation of a cpu workqueue thread */
-> >  static void probe_workqueue_creation(struct task_struct *wq_thread, int cpu)
-> >  {
-> > @@ -195,6 +223,9 @@ static int workqueue_stat_show(struct se
-> >  	int cpu = cws->cpu;
-> >  	struct pid *pid;
-> >  	struct task_struct *tsk;
-> > +	unsigned long long exec_time = ns2usecs(cws->max_executed_time);
-> > +	unsigned long exec_usec_rem = do_div(exec_time, USEC_PER_SEC);
-> > +	unsigned long exec_secs = (unsigned long)exec_time;
-> >  
-> >  	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> >  	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
-> > @@ -205,8 +236,11 @@ static int workqueue_stat_show(struct se
-> >  	if (pid) {
-> >  		tsk = get_pid_task(pid, PIDTYPE_PID);
-> >  		if (tsk) {
-> > -			seq_printf(s, "%3d %6d     %6u       %s\n", cws->cpu,
-> > +			seq_printf(s, "%3d %6d     %6u     %5lu.%06lu"
-> > +				   "  %s\n",
-> > +				   cws->cpu,
-> >  				   atomic_read(&cws->inserted), cws->executed,
-> > +				   exec_secs, exec_usec_rem,
-> 
-> You are measuring the latency from a workqueue thread point of view.
-> While I find the work latency measurement very interesting,
-> I think this patch does it in the wrong place. The _work_ latency point of view
-> seems to me much more rich as an information source.
-> 
-> There are several reasons for that.
-> 
-> Indeed this patch is useful for workqueues that receive always the same work
-> to perform so that you can find very easily the guilty worklet.
-> But the sense of this design is lost once we consider the workqueue threads
-> that receive random works. Of course the best example is events/%d
-> One will observe the max latency that happened on event/0 as an exemple but
-> he will only be able to feel a silent FUD because he has no way to find
-> which work caused this max latency.
+diff --git a/Makefile b/Makefile
+index e5ad5fd..0df7581 100644
+--- a/Makefile
++++ b/Makefile
+@@ -832,6 +832,19 @@ define rule_vmlinux-modpost
+  	$(Q)echo 'cmd_$@ := $(cmd_vmlinux-modpost)' > $(dot-target).cmd
+  endef
 
-May I explain my expected usage scenario?
++quiet_cmd_vmlinux_debug = GEN     $<.debug
++      cmd_vmlinux_debug = mkdir -p debug;         \
++                          $(OBJCOPY) --only-keep-debug         \
++                                     $< debug/$<.debug
++targets += vmlinux.debug
++
++PHONY += debug_info
++debug_info: vmlinux FORCE
++ifdef CONFIG_DEBUG_INFO
++	$(call if_changed,vmlinux_debug)
++	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
++endif
++
+  # vmlinux image - including updated kernel symbols
+  vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o 
+$(kallsyms.o) FORCE
+  ifdef CONFIG_HEADERS_CHECK
+@@ -1278,6 +1291,7 @@ help:
+  	@echo  '  all		  - Build all targets marked with [*]'
+  	@echo  '* vmlinux	  - Build the bare kernel'
+  	@echo  '* modules	  - Build all modules'
++	@echo  '  debug_info      - Extract debug info to debug directory'
+  	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH 
+(default: /)'
+  	@echo  '  firmware_install- Install all firmware to INSTALL_FW_PATH'
+  	@echo  '                    (default: $$(INSTALL_MOD_PATH)/lib/firmware)'
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index f4053dc..c120261 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -137,6 +137,18 @@ $(modules): %.ko :%.o %.mod.o FORCE
 
-firstly, the developer check this stastics and nortice strage result. secondly
-the developer monitor workqueue activety by event-tracer.
-(it provide per work activety, maybe event filter feature is useful)
+  targets += $(modules)
 
-Yes, I have to agree my last patch description is too poor.
-but I think my expected scenario is't so insane.
++modules-debug := $(modules:.ko=.ko.debug)
++quiet_cmd_debug_ko = GEN     $@
++      cmd_debug_ko = mkdir -p debug/$(dir $@);                         \
++                    $(OBJCOPY) --only-keep-debug $< debug/$@
++targets += $(modules-debug)
++
++debug_info: $(modules-debug) FORCE
++
++ifdef CONFIG_DEBUG_INFO
++$(modules-debug): $(modules) FORCE
++	$(call if_changed,debug_ko)
++endif
 
-Next, I hope to explain why I don't choice adding per work stastics.
-struct work can put in stack and it's short lived object.
-then, it isn't proper "stastics" target.
-
-I like my approach or histogram approach (suggested by ingo).
-
-
-May I ask your feeling to my usage scenario?
-
-> 
-> 
-> Especially the events/%d latency measurement seems to me very important
-> because a single work from a random driver can propagate its latency
-> all over the system.
-> 
-> A single work that consumes too much cpu time, waits for long coming
-> events, sleeps too much, tries to take too often contended locks, or
-> whatever... such single work may delay all pending works in the queue
-> and the only max latency for a given workqueue is not helpful to find
-> these culprits.
-> 
-> Having this max latency snapshot per work and not per workqueue thread
-> would be useful for every kind of workqueue latency instrumentation:
-> 
-> - workqueues with single works
-> - workqueue with random works
-> 
-> A developer will also be able to measure its own worklet action and
-> find if it takes too much time, even if it isn't the worst worklet in
-> the workqueue to cause latencies.
-> 
-> The end result would be to have a descending latency sort of works
-> per cpu workqueue threads (or better: per workqueue group).
-> 
-> What do you think?
-
-
-
-
+  # Add FORCE to the prequisites of a target to force it to be always 
+rebuilt.
+  # 
+---------------------------------------------------------------------------
+-- 
+1.5.6
 
