@@ -1,116 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757009AbZDNP4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZDNP5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757009AbZDNP4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZDNPv4
+	id S1757233AbZDNP5X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbZDNPxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:51:56 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46011 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755376AbZDNPvw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:51:52 -0400
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 12/14] [VOYAGER] x86/Voyager: replace inline io area reads with readX accessors
-Date: Tue, 14 Apr 2009 10:51:38 -0500
-Message-Id: <1239724300-16371-13-git-send-email-James.Bottomley@HansenPartnership.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1239724300-16371-12-git-send-email-James.Bottomley@HansenPartnership.com>
-References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-3-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-4-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-5-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-6-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-7-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-8-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-9-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-10-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-11-git-send-email-James.Bottomley@HansenPartnership.com>
- <1239724300-16371-12-git-send-email-James.Bottomley@HansenPartnership.com>
+	Tue, 14 Apr 2009 11:53:50 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:42196 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756569AbZDNPxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 11:53:48 -0400
+Date: Tue, 14 Apr 2009 08:53:27 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, dipankar@in.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH] rculist.h: introduce list_entry_rcu and
+	list_first_entry_rcu
+Message-ID: <20090414155327.GG6753@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090414153356.GC3999@psychotron.englab.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414153356.GC3999@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some of the memory manipulations done to reset QIC CPIs and to check
-on booted processors rely on the read actually being issued.  With
-newer versions of gcc this is no longer happening (presumably it sees
-the read with no effect and optimises it away).  Replace the reads
-with readX to assure volatile semantics for issuing the access.  This
-fixes a bug where QIC based voyagers won't boot with certain versions
-of gcc.
+On Tue, Apr 14, 2009 at 05:33:57PM +0200, Jiri Pirko wrote:
+> I've run into the situation where I need to use list_first_entry with
+> rcu-guarded list. This patch introduces this. Also changed
+> list_for_each_entry_rcu to use new list_entry_rcu instead of list_entry.
+> 
+> Jirka
 
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- arch/x86/mach-voyager/voyager_smp.c |   22 ++++++----------------
- 1 files changed, 6 insertions(+), 16 deletions(-)
+Looks good -- and very nice list_entry_rcu() primitive!
 
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index 84d1d7f..d7c2a6a 100644
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -70,7 +70,7 @@ cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
- /* The internal functions */
- static void send_CPI(__u32 cpuset, __u8 cpi);
- static void ack_CPI(__u8 cpi);
--static int ack_QIC_CPI(__u8 cpi);
-+static inline void ack_QIC_CPI(__u8 cpi);
- static void ack_special_QIC_CPI(__u8 cpi);
- static void ack_VIC_CPI(__u8 cpi);
- static void send_CPI_allbutself(__u8 cpi);
-@@ -433,14 +433,9 @@ static void __init start_secondary(void *unused)
- 
- 	qic_setup();
- 
--	if (is_cpu_quad() && !is_cpu_vic_boot()) {
-+	if (is_cpu_quad() && !is_cpu_vic_boot())
- 		/* clear the boot CPI */
--		__u8 dummy;
--
--		dummy =
--		    voyager_quad_cpi_addr[cpuid]->qic_cpi[VIC_CPU_BOOT_CPI].cpi;
--		printk("read dummy %d\n", dummy);
--	}
-+		readw(&voyager_quad_cpi_addr[cpuid]->qic_cpi[VIC_CPU_BOOT_CPI].cpi);
- 
- 	/* lower the mask to receive CPIs */
- 	vic_enable_cpi();
-@@ -603,9 +598,7 @@ static void __init do_boot_cpu(__u8 cpu)
- 		cpu_set(cpu, cpu_present_map);
- 	} else {
- 		printk("CPU%d FAILED TO BOOT: ", cpu);
--		if (*
--		    ((volatile unsigned char *)phys_to_virt(start_phys_address))
--		    == 0xA5)
-+		if (readb(phys_to_virt(start_phys_address)) == 0xA5)
- 			printk("Stuck.\n");
- 		else
- 			printk("Not responding.\n");
-@@ -1306,18 +1299,15 @@ static void send_CPI(__u32 cpuset, __u8 cpi)
- 
- /* Acknowledge receipt of CPI in the QIC, clear in QIC hardware and
-  * set the cache line to shared by reading it.
-- *
-- * DON'T make this inline otherwise the cache line read will be
-- * optimised away
-  * */
--static int ack_QIC_CPI(__u8 cpi)
-+static inline void ack_QIC_CPI(__u8 cpi)
- {
- 	__u8 cpu = hard_smp_processor_id();
- 
- 	cpi &= 7;
- 
- 	outb(1 << cpi, QIC_INTERRUPT_CLEAR1);
--	return voyager_quad_cpi_addr[cpu]->qic_cpi[cpi].cpi;
-+	readw(&voyager_quad_cpi_addr[cpu]->qic_cpi[cpi].cpi);
- }
- 
- static void ack_special_QIC_CPI(__u8 cpi)
--- 
-1.6.2.1
+There are a couple more places where this primitive could be applied.
+I would welcome a patch for these as well.
 
+include/linux/sched.h next_task 1986 #define next_task(p) list_entry(rcu_dereference((p)->tasks.next), struct task_struct, tasks)
+include/linux/sched.h next_thread 2025 return list_entry(rcu_dereference(p->thread_group.next),
+ipc/sem.c exit_sem 1293 un = list_entry(rcu_dereference(ulp->list_proc.next),
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> ---
+>  include/linux/rculist.h |   30 ++++++++++++++++++++++++++++--
+>  1 files changed, 28 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+> index e649bd3..5710f43 100644
+> --- a/include/linux/rculist.h
+> +++ b/include/linux/rculist.h
+> @@ -198,6 +198,32 @@ static inline void list_splice_init_rcu(struct list_head *list,
+>  	at->prev = last;
+>  }
+> 
+> +/**
+> + * list_entry_rcu - get the struct for this entry
+> + * @ptr:        the &struct list_head pointer.
+> + * @type:       the type of the struct this is embedded in.
+> + * @member:     the name of the list_struct within the struct.
+> + *
+> + * This primitive may safely run concurrently with the _rcu list-mutation
+> + * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+> + */
+> +#define list_entry_rcu(ptr, type, member) \
+> +	container_of(rcu_dereference(ptr), type, member)
+> +
+> +/**
+> + * list_first_entry_rcu - get the first element from a list
+> + * @ptr:        the list head to take the element from.
+> + * @type:       the type of the struct this is embedded in.
+> + * @member:     the name of the list_struct within the struct.
+> + *
+> + * Note, that list is expected to be not empty.
+> + *
+> + * This primitive may safely run concurrently with the _rcu list-mutation
+> + * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+> + */
+> +#define list_first_entry_rcu(ptr, type, member) \
+> +	list_entry_rcu((ptr)->next, type, member)
+> +
+>  #define __list_for_each_rcu(pos, head) \
+>  	for (pos = rcu_dereference((head)->next); \
+>  		pos != (head); \
+> @@ -214,9 +240,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+>   * as long as the traversal is guarded by rcu_read_lock().
+>   */
+>  #define list_for_each_entry_rcu(pos, head, member) \
+> -	for (pos = list_entry(rcu_dereference((head)->next), typeof(*pos), member); \
+> +	for (pos = list_entry_rcu((head)->next, typeof(*pos), member); \
+>  		prefetch(pos->member.next), &pos->member != (head); \
+> -		pos = list_entry(rcu_dereference(pos->member.next), typeof(*pos), member))
+> +		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
+> 
+> 
+>  /**
+> -- 
+> 1.6.0.6
+> 
