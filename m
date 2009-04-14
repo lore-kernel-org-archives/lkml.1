@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZDNAMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZDNAM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbZDNAMZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 20:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZDNAMO
+	id S1754656AbZDNAM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 20:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZDNAMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 20:12:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42970 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbZDNAMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 20:12:14 -0400
-Date: Tue, 14 Apr 2009 02:11:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: mark get_parent_ip() notrace
-Message-ID: <20090414001155.GO817@elte.hu>
-References: <49D458B1.5000703@cn.fujitsu.com> <20090402122612.GB5965@nowhere> <49E2D8E3.4060708@cn.fujitsu.com> <1239633813.21121.27.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239633813.21121.27.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 13 Apr 2009 20:12:46 -0400
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:47398 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752257AbZDNAMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 20:12:45 -0400
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <20090413024445.GA12860@suse.de>
+References: <1239589992.18110.117.camel@deadeye.i.decadent.org.uk>
+	 <20090413024445.GA12860@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0Z67h2ckltUNE6OVeoEV"
+Date: Tue, 14 Apr 2009 01:12:41 +0100
+Message-Id: <1239667961.18110.166.camel@deadeye.i.decadent.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.4.182
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Re: [PATCH 0/3] Fix rt28{6,7}0sta to use firmware loader
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <srostedt@redhat.com> wrote:
+--=-0Z67h2ckltUNE6OVeoEV
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> On Mon, 2009-04-13 at 14:17 +0800, Lai Jiangshan wrote:
-> > Frederic Weisbecker wrote:
-> > > On Thu, Apr 02, 2009 at 02:18:25PM +0800, Lai Jiangshan wrote:
-> > >> Impact: remove redundancy tracing log
-> > >>
-> > >> When tracer is "function" or "function_graph", too much
-> > >> "get_parent_ip" are recorded in ring_buffer.
-> > > 
-> > > 
-> > > Thanks, indeed this get_parent_ip was a bit harrassing
-> > > in the traces, though I still don't understand why it is
-> > > called so often.
-> > > 
-> > > Anyway, tracing it seems to me not useful.
-> > > 
-> > > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > 
-> > > 
-> > 
-> > Hi, Ingo,
-> > 	Could you apply this fix?
-> > 
-> > get_parent_ip() is a helper function for ftace, and it is called
-> > by preempt_disable() and preempt_enable(), so it is occurred very
-> > often.
-> 
-> I can pull it in too, if Ingo is busy.
+On Sun, 2009-04-12 at 19:44 -0700, Greg KH wrote:
+> On Mon, Apr 13, 2009 at 03:33:12AM +0100, Ben Hutchings wrote:
+> > Greg,
+> >=20
+> > The Ralink drivers rt2860sta, rt2870sta and rt3070sta contain non-free
+> > firmware which should be distributed separately.
+>=20
+> Where is it now distributed?  I don't want to break people's machines
+> that were working before this patch is applied.
 
-I have put it into tip:sched/urgent - it belongs there file-wise. 
-Will go upstream after -rc2 most likely.
+The canonical source is
+<http://www.ralinktech.com/ralink/Home/Support/Linux.html>
 
-	Ingo
+The files are now also in the Debian repository for our firmware-nonfree
+package and in <http://git.decadent.org.uk/git/linux-firmware.git>.
+I've asked David Woodhouse to pull from that into his linux-firmware.git
+so that they get into other distros.
+
+Ben.
+
+
+--=-0Z67h2ckltUNE6OVeoEV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBJ49T479ZNCRIGYgcRAifDAJ95YRovOgmmH7VmxWr9T5UtDB097wCdFqop
+x4y9OwyoXESY3osT66/9TTE=
+=y3Q5
+-----END PGP SIGNATURE-----
+
+--=-0Z67h2ckltUNE6OVeoEV--
