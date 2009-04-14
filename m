@@ -1,83 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbZDNRcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZDNRdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbZDNRcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZDNRcF
+	id S1756112AbZDNRdd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZDNRdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:32:05 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:52342 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752353AbZDNRcE (ORCPT
+	Tue, 14 Apr 2009 13:33:20 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36406 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752504AbZDNRdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:32:04 -0400
-Message-ID: <49E4C898.9080003@oracle.com>
-Date: Tue, 14 Apr 2009 10:32:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 14 Apr 2009 13:33:20 -0400
+Message-ID: <49E4C8C8.9060109@zytor.com>
+Date: Tue, 14 Apr 2009 10:32:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Gautham R Shenoy <ego@in.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC PATCH 2 1/2] sched: Nominate idle load balancer from a semi-idle
- package.
-References: <20090414045356.7645.33369.stgit@sofia.in.ibm.com> <20090414045530.7645.12175.stgit@sofia.in.ibm.com>
-In-Reply-To: <20090414045530.7645.12175.stgit@sofia.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Avi Kivity <avi@redhat.com>, Glauber Costa <glommer@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
+References: <1239653210-10422-1-git-send-email-glommer@redhat.com>	<49E45894.7090700@redhat.com>	<49E4B4D4.1020903@zytor.com>	<49E4B654.6060101@redhat.com> <20090414183111.0243408e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090414183111.0243408e@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49E4C87B.000E:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gautham R Shenoy wrote:
->  kernel/sched.c |  127 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
->  1 files changed, 118 insertions(+), 9 deletions(-)
+Alan Cox wrote:
+>> Why?  Do you see a guest filling all of memory with 'mov ss' and 
+>> expecting to break out of it via an interrupt?
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 6cc1fd5..d702be7 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
->  
-> +/**
-> + * is_semi_idle_group - Checks if the given sched_group is semi-idle.
-> + * @ilb_group:	group to be checked for semi-idleness
-> + *
-> + * Returns:	1 if the group is semi-idle. 0 otherwise.
-> + *
-> + * We define a sched_group to be semi idle if it has atleast one idle-CPU
-> + * and atleast one non-idle CPU. This helper function checks if the given
+> Well I did try mapping a page of move ss all through memory on real
+> hardware long ago and seeing what happened on a 386 in real mode with
+> DOSEMU. I was disappointed ;)
+> 
 
-"at least" (2x)
+Heheheheh....
 
-> + * sched_group is semi-idle or not.
-> + */
-> +static inline int is_semi_idle_group(struct sched_group *ilb_group)
-> +{
-> +	cpumask_and(nohz.ilb_grp_nohz_mask, nohz.cpu_mask,
-> +					sched_group_cpus(ilb_group));
-> +
-> +	/*
-> +	 * A sched_group is semi-idle when it has atleast one busy cpu
-> +	 * and atleast one idle cpu.
-
-"at least" (2x)
-
-> +	 */
-> +	if (cpumask_empty(nohz.ilb_grp_nohz_mask))
-> +		return 0;
-> +
-> +	if (cpumask_equal(nohz.ilb_grp_nohz_mask, sched_group_cpus(ilb_group)))
-> +		return 0;
-> +
-> +	return 1;
-> +}
-
-
--- 
-~Randy
+	-hpa
