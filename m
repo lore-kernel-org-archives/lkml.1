@@ -1,209 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZDNEW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZDNEa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbZDNEW6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 00:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZDNEWt
+	id S1753242AbZDNEa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 00:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZDNEaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 00:22:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:41350 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbZDNEWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 00:22:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,183,1239001200"; 
-   d="scan'208";a="131126295"
-Date: Tue, 14 Apr 2009 12:22:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090414042231.GA4341@localhost>
+	Tue, 14 Apr 2009 00:30:15 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:49430 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbZDNEaO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 00:30:14 -0400
+Message-ID: <49E4108A.8050201@cs.columbia.edu>
+Date: Tue, 14 Apr 2009 00:26:50 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       serue@us.ibm.com, mingo@elte.hu, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz> <20090413091423.GA19236@x200.localdomain>
+In-Reply-To: <20090413091423.GA19236@x200.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export the following page flags in /proc/kpageflags,
-just in case they will be useful to someone:
 
-- PG_swapcache
-- PG_swapbacked
-- PG_mappedtodisk
-- PG_reserved
-- PG_private
-- PG_private_2
-- PG_owner_priv_1
 
-- PG_head
-- PG_tail
-- PG_compound
+Alexey Dobriyan wrote:
+> On Thu, Apr 09, 2009 at 10:07:11PM -0700, Dave Hansen wrote:
+>> I'm curious how you see these fitting in with the work that we've been
+>> doing with Oren.  Do you mean to just start a discussion or are you
+>> really proposing these as an alternative to what Oren has been posting?
+> 
+> Yes, this is posted as alternative.
+> 
+> Some design decisions are seen as incorrect from here like:
 
-- PG_unevictable
-- PG_mlocked
+A definition of "design" would help; I find most of your comments
+below either vague, cryptic, or technical nits...
 
-- PG_poison
+> * not rejecting checkpoint with possible "leaks" from container
 
-Also add the following two pseudo page flags:
+...like this, for example.
+Anything in the current design makes it impossible ?
 
-- PG_MMAP:   whether the page is memory mapped
-- PG_NOPAGE: whether the page is present
+Anything prohibiting your from adding this feature to the current
+patch-set ?
 
-This increases the total number of exported page flags to 25.
+> * not having CAP_SYS_ADMIN on restart(2)
 
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/proc/page.c |  112 +++++++++++++++++++++++++++++++++--------------
- 1 file changed, 81 insertions(+), 31 deletions(-)
+Surely you have read already on the containers mailing list that
+for the *time being* we attempt to get as far as possible without
+requiring root privileges, to identify security hot-spots.
 
---- mm.orig/fs/proc/page.c
-+++ mm/fs/proc/page.c
-@@ -68,20 +68,86 @@ static const struct file_operations proc
- 
- /* These macros are used to decouple internal flags from exported ones */
- 
--#define KPF_LOCKED     0
--#define KPF_ERROR      1
--#define KPF_REFERENCED 2
--#define KPF_UPTODATE   3
--#define KPF_DIRTY      4
--#define KPF_LRU        5
--#define KPF_ACTIVE     6
--#define KPF_SLAB       7
--#define KPF_WRITEBACK  8
--#define KPF_RECLAIM    9
--#define KPF_BUDDY     10
-+enum {
-+	KPF_LOCKED,		/*  0 */
-+	KPF_ERROR,		/*  1 */
-+	KPF_REFERENCED,		/*  2 */
-+	KPF_UPTODATE,		/*  3 */
-+	KPF_DIRTY,		/*  4 */
-+	KPF_LRU,		/*  5 */
-+	KPF_ACTIVE,		/*  6 */
-+	KPF_SLAB,		/*  7 */
-+	KPF_WRITEBACK,		/*  8 */
-+	KPF_RECLAIM,		/*  9 */
-+	KPF_BUDDY,		/* 10 */
-+	KPF_MMAP,		/* 11 */
-+	KPF_SWAPCACHE,		/* 12 */
-+	KPF_SWAPBACKED,		/* 13 */
-+	KPF_MAPPEDTODISK,	/* 14 */
-+	KPF_RESERVED,		/* 15 */
-+	KPF_PRIVATE,		/* 16 */
-+	KPF_PRIVATE2,		/* 17 */
-+	KPF_OWNER_PRIVATE,	/* 18 */
-+	KPF_COMPOUND_HEAD,	/* 19 */
-+	KPF_COMPOUND_TAIL,	/* 20 */
-+	KPF_UNEVICTABLE,	/* 21 */
-+	KPF_MLOCKED,		/* 22 */
-+	KPF_POISON,		/* 23 */
-+	KPF_NOPAGE,		/* 24 */
-+	KPF_NUM
-+};
- 
- #define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
- 
-+u64 get_uflags(struct page *page)
-+{
-+	unsigned long kflags; /* todo: use u64 when KPF_NUM grows beyond 32 */
-+	u64 uflags;
-+
-+	if (!page)
-+		return 1 << KPF_NOPAGE;
-+
-+	kflags = page->flags;
-+	uflags = 0;
-+
-+	if (page_mapped(page))
-+		uflags |= 1 << KPF_MMAP;
-+
-+	uflags |= kpf_copy_bit(kflags, KPF_LOCKED,	PG_locked);
-+	uflags |= kpf_copy_bit(kflags, KPF_ERROR,	PG_error);
-+	uflags |= kpf_copy_bit(kflags, KPF_REFERENCED,	PG_referenced);
-+	uflags |= kpf_copy_bit(kflags, KPF_UPTODATE,	PG_uptodate);
-+	uflags |= kpf_copy_bit(kflags, KPF_DIRTY,	PG_dirty);
-+	uflags |= kpf_copy_bit(kflags, KPF_LRU,		PG_lru)	;
-+	uflags |= kpf_copy_bit(kflags, KPF_ACTIVE,	PG_active);
-+	uflags |= kpf_copy_bit(kflags, KPF_SLAB,	PG_slab);
-+	uflags |= kpf_copy_bit(kflags, KPF_WRITEBACK,	PG_writeback);
-+	uflags |= kpf_copy_bit(kflags, KPF_RECLAIM,	PG_reclaim);
-+	uflags |= kpf_copy_bit(kflags, KPF_BUDDY,	PG_buddy);
-+	uflags |= kpf_copy_bit(kflags, KPF_SWAPCACHE,	PG_swapcache);
-+	uflags |= kpf_copy_bit(kflags, KPF_SWAPBACKED,	PG_swapbacked);
-+	uflags |= kpf_copy_bit(kflags, KPF_MAPPEDTODISK, PG_mappedtodisk);
-+	uflags |= kpf_copy_bit(kflags, KPF_RESERVED,	PG_reserved);
-+	uflags |= kpf_copy_bit(kflags, KPF_PRIVATE,	PG_private);
-+	uflags |= kpf_copy_bit(kflags, KPF_PRIVATE2,	PG_private_2);
-+	uflags |= kpf_copy_bit(kflags, KPF_OWNER_PRIVATE, PG_owner_priv_1);
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND_HEAD, PG_head);
-+	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND_TAIL, PG_tail);
-+#else
-+	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND_HEAD, PG_compound);
-+#endif
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	uflags |= kpf_copy_bit(kflags, KPF_UNEVICTABLE,	PG_unevictable);
-+	uflags |= kpf_copy_bit(kflags, KPF_MLOCKED,	PG_mlocked);
-+#endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	uflags |= kpf_copy_bit(kflags, KPF_POISON,	PG_poison);
-+#endif
-+
-+	return uflags;
-+};
-+
- static ssize_t kpageflags_read(struct file *file, char __user *buf,
- 			     size_t count, loff_t *ppos)
- {
-@@ -90,7 +156,6 @@ static ssize_t kpageflags_read(struct fi
- 	unsigned long src = *ppos;
- 	unsigned long pfn;
- 	ssize_t ret = 0;
--	u64 kflags, uflags;
- 
- 	pfn = src / KPMSIZE;
- 	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
-@@ -98,32 +163,17 @@ static ssize_t kpageflags_read(struct fi
- 		return -EINVAL;
- 
- 	while (count > 0) {
--		ppage = NULL;
- 		if (pfn_valid(pfn))
- 			ppage = pfn_to_page(pfn);
--		pfn++;
--		if (!ppage)
--			kflags = 0;
- 		else
--			kflags = ppage->flags;
-+			ppage = NULL;
- 
--		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
--			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
--			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
--			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
--			kpf_copy_bit(kflags, KPF_DIRTY, PG_dirty) |
--			kpf_copy_bit(kflags, KPF_LRU, PG_lru) |
--			kpf_copy_bit(kflags, KPF_ACTIVE, PG_active) |
--			kpf_copy_bit(kflags, KPF_SLAB, PG_slab) |
--			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
--			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
--			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
--
--		if (put_user(uflags, out++)) {
-+		if (put_user(get_uflags(ppage), out)) {
- 			ret = -EFAULT;
- 			break;
- 		}
--
-+		out++;
-+		pfn++;
- 		count -= KPMSIZE;
- 	}
- 
+And surely you have read there the observation that for the general
+case root privileges will probably be inevitable.
+
+And surely you don't seriously think that adding this check changes
+the "design"...
+
+> * having small (TASK_COMM_LEN) and bigger (objref[1]) image format
+>   misdesigns.
+
+Eh ?
+
+> * doing fork(2)+restart(2) per restarted task and whole orchestration
+>   done from userspace/future init task.
+
+Why is it "incorrect" ?
+What makes it "better" to do it in the kernel ?
+Only because you say so is not convincing.
+
+(also see my other post in this matter).
+
+> * not seeing bigger picture (note, this is not equivalent to supporting
+>   everything at once, nobody is asking for everything at once) wrt shared
+>   objects and format and code changes because of that (note again, image
+>   format will change, but it's easy to design high level structure which
+>   won't change)
+
+Why don't you describe the bigger picture so that the rest of can
+finally see it, too ?!
+(what a waste to have spent all this effort in vain...)
+
+> * checking of unsupported features done at wrong place and wrong time
+>   and runtime overhead because of that on CR=y kernels.
+
+Eh ?   Did you follow the code recently ?
+
+> 
+> There are also low-level things, but it's cumulative effect.
+> 
+> [1] Do I inderstand correctly that cookie for shared object is an
+> address on kernel stack? This is obviously unreliable, if yes :-)
+
+Ah... I see... you didn't look at it that hard, not even read the
+documentation with the code.
+
+> 
+> 	int objref;
+> 		...
+> 	/* adding 'file' to the hash will keep a reference to it */
+> 	new = cr_obj_add_ptr(ctx, file, &objref, CR_OBJ_FILE, 0);
+> 					^^^^^^^
+
+That said, there are more similarities than differences between your
+suggested template and the current patchset. With your expertise you
+can contribute tremendously if you decide to work together.
+
+Oren.
