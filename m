@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZDNI7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZDNJB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbZDNI7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 04:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbZDNI7n
+	id S1752797AbZDNJB0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbZDNJBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 04:59:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53607 "EHLO hera.kernel.org"
+	Tue, 14 Apr 2009 05:01:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54585 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbZDNI7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 04:59:42 -0400
-Message-ID: <49E45020.9020901@kernel.org>
-Date: Tue, 14 Apr 2009 17:58:08 +0900
+	id S1750856AbZDNJBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 05:01:16 -0400
+Message-ID: <49E45079.8070508@kernel.org>
+Date: Tue, 14 Apr 2009 17:59:37 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -19,13 +19,13 @@ To: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>
 CC: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: 2.6.28 /proc/diskstats
+Subject: [PATCH] block: include empty disks in /proc/diskstats
 References: <49E13D18.2090805@solemnwarning.net> <49E440D9.4020803@kernel.org>
 In-Reply-To: <49E440D9.4020803@kernel.org>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 08:58:13 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 08:59:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -45,6 +45,8 @@ Reported-by: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>
 ---
 It was my bad.  I missed that diskstats showed empty disks too.  This
 fixes the problem.
+
+(Oops, forgot to write SUBJECT, resending...)
 
  block/genhd.c         |   12 ++++++++----
  include/linux/genhd.h |    1 +
