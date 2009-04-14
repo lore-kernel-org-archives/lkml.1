@@ -1,75 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZDNJZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZDNJ0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZDNJZf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZDNJZ0
+	id S1755094AbZDNJ0Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZDNJZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:25:26 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56547 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbZDNJZY (ORCPT
+	Tue, 14 Apr 2009 05:25:56 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:26489 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750883AbZDNJZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 05:25:24 -0400
-Date: Tue, 14 Apr 2009 18:20:30 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.30-rc2
-Message-ID: <20090414092029.GB30402@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 14 Apr 2009 05:25:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=Zet67QhwITRLSV60vhVDPqznzGj8TF7QYIjx+O9L0F6uPOOe19t3ETnN+egSOCFhiph31oGBQvX5E3ZbxaxzzWMB5vTt89GWv9l57n3vWdFyzXzFOn1szhe41T22c7jfw5lU4/NosoZziv8LsJFLtpOeXH/9xdZeyozWrwHK3tk=  ;
+X-YMail-OSG: ueFRm1oVM1mxgfRVRqklkei14h4ps6J3K3luMYMPtwKS0clu7jQSw0zaJqd7cfotklZN12xGcUzA6Mvt3tG98jFl_qZ32B1Xwqgf2EgVVCtrXKfzkEoI8YxXlE.4PoRqiSYknfoPA8W2kR4rs0XgMYIeoCpL9Bc9pfiD5JH_CX8xnf7JD5mNUfKNmZ95YFwWcKbM9KFEfinUTUbEHH_gjBhobWsKlInYhS9VCSEuzq4VWPUhmlZKuieO0b9BRfC.Xh6oyyTxtY9e2vYnZpViSCyxE3wgjFcHYin7cA9Jkg9LXLs9pmAXSUuew5J_nLzT36LBGHsoOWZygqyfNbo-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
+Date: Tue, 14 Apr 2009 19:25:44 +1000
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Andrea Arcangeli <aarcange@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+References: <20090414151204.C647.A69D9226@jp.fujitsu.com> <20090414151554.C64A.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090414151554.C64A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200904141925.46012.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Tuesday 14 April 2009 16:16:52 KOSAKI Motohiro wrote:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Sugessted-by: Linus Torvalds <torvalds@osdl.org>
 
-Which contains:
+"Suggested-by:" ;)
 
-Francesco VIRLINZI (1):
-      sh: intc: Added resume from hibernation support to the intc
+> Cc: Hugh Dickins <hugh@veritas.com>
+> Cc: Andrew Morton <akpm@osdl.org>
+> Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+> Cc: Andrea Arcangeli <aarcange@redhat.com>
+> Cc: Jeff Moyer <jmoyer@redhat.com>
+> Cc: linux-mm@kvack.org
+> ---
+>  mm/rmap.c     |   21 +++++++++++++++++++++
+>  mm/swapfile.c |   10 +++++++++-
+>  2 files changed, 30 insertions(+), 1 deletion(-)
+> 
+> Index: b/mm/swapfile.c
+> ===================================================================
+> --- a/mm/swapfile.c	2009-04-11 21:38:33.000000000 +0900
+> +++ b/mm/swapfile.c	2009-04-11 21:38:45.000000000 +0900
+> @@ -533,6 +533,8 @@ static inline int page_swapcount(struct 
+>   * to it.  And as a side-effect, free up its swap: because the old content
+>   * on disk will never be read, and seeking back there to write new content
+>   * later would only waste time away from clustering.
+> + * Caller must hold pte_lock. try_to_unmap() decrement page::_mapcount
+> + * and get_user_pages() increment page::_count under pte_lock.
+>   */
+>  int reuse_swap_page(struct page *page)
+>  {
+> @@ -547,7 +549,13 @@ int reuse_swap_page(struct page *page)
+>  			SetPageDirty(page);
+>  		}
+>  	}
+> -	return count == 1;
+> +
+> +	/*
+> +	 * If we can re-use the swap page _and_ the end
+> +	 * result has only one user (the mapping), then
+> +	 * we reuse the whole page
+> +	 */
+> +	return count + page_count(page) == 2;
+>  }
 
-Kuninori Morimoto (4):
-      sh: urquell: Add board comment
-      sh: urquell: Fix up address mapping in board comments.
-      sh: ap325: use edge control for ov772x camera
-      sh: sh7786: modify usb setup timeout judgment bug.
+I guess this patch does work to close the read-side race, but I slightly don't
+like using page_count for things like this. page_count can be temporarily
+raised for reasons other than access through their user mapping. Swapcache,
+page reclaim, LRU pagevecs, concurrent do_wp_page, etc.
 
-Paul Mundt (7):
-      sh: wire up sys_preadv/sys_pwritev() syscalls.
-      sh: Provide cpumask_of_pcibus() to fix NUMA build.
-      sh: Add support for DMA API debugging.
-      sh: Plug in support for ARCH=sh64 using sh SRCARCH.
-      MAINTAINERS: Update sh architecture file patterns.
-      sh: Pre-allocate a reasonable number of DMA debug entries.
-      sh: Add in PCI bus for DMA API debugging.
 
-Yoshihiro Shimoda (1):
-      sh: sh7785lcr: fix PCI address map for 32-bit mode
+>  /*
+> Index: b/mm/rmap.c
+> ===================================================================
+> --- a/mm/rmap.c	2009-04-11 21:38:33.000000000 +0900
+> +++ b/mm/rmap.c	2009-04-12 00:58:58.000000000 +0900
+> @@ -773,6 +773,27 @@ static int try_to_unmap_one(struct page 
+>  		goto out;
+>  
+>  	/*
+> +	 * Don't pull an anonymous page out from under get_user_pages.
+> +	 * GUP carefully breaks COW and raises page count (while holding
+> +	 * pte_lock, as we have here) to make sure that the page
+> +	 * cannot be freed.  If we unmap that page here, a user write
+> +	 * access to the virtual address will bring back the page, but
+> +	 * its raised count will (ironically) be taken to mean it's not
+> +	 * an exclusive swap page, do_wp_page will replace it by a copy
+> +	 * page, and the user never get to see the data GUP was holding
+> +	 * the original page for.
+> +	 *
+> +	 * This test is also useful for when swapoff (unuse_process) has
+> +	 * to drop page lock: its reference to the page stops existing
+> +	 * ptes from being unmapped, so swapoff can make progress.
+> +	 */
+> +	if (PageSwapCache(page) &&
+> +	    page_count(page) != page_mapcount(page) + 2) {
+> +		ret = SWAP_FAIL;
+> +		goto out_unmap;
+> +	}
 
- MAINTAINERS                            |    2 +
- Makefile                               |    7 +++++-
- arch/sh/Kconfig                        |   18 ++++++++++++++-
- arch/sh/boards/board-ap325rxa.c        |    1 +
- arch/sh/boards/board-urquell.c         |   30 ++++++++++++++++++++++++++
- arch/sh/drivers/pci/ops-sh7785lcr.c    |    5 ++++
- arch/sh/drivers/pci/pci-sh7780.h       |    2 +
- arch/sh/drivers/pci/pci.c              |    3 ++
- arch/sh/include/asm/dma-mapping.h      |   36 +++++++++++++++++++++++++++----
- arch/sh/include/asm/scatterlist.h      |   11 +++++----
- arch/sh/include/asm/topology.h         |    7 ++++-
- arch/sh/include/asm/unistd_32.h        |    4 ++-
- arch/sh/include/asm/unistd_64.h        |    4 ++-
- arch/sh/kernel/cpu/sh4a/setup-sh7786.c |   14 ++++++------
- arch/sh/kernel/syscalls_32.S           |    2 +
- arch/sh/kernel/syscalls_64.S           |    2 +
- arch/sh/mm/consistent.c                |   31 +++++++++++++++++++++------
- drivers/sh/intc.c                      |   35 +++++++++++++++++++++++++++---
- 18 files changed, 179 insertions(+), 35 deletions(-)
+I guess it does add another constraint to the VM, ie. not allowed to
+unmap an anonymous page with elevated refcount. Maybe not a big deal
+now, but I think it is enough that it should be noted. If you squint,
+this could actually be more complex/intrusive to the wider VM than my
+copy on fork (which is basically exactly like a manual do_wp_page at
+fork time).
+
+And.... I don't think this is safe against a concurrent gup_fast()
+(which helps my point).
