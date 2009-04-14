@@ -1,98 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZDNOGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZDNOHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbZDNOGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 10:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZDNOGe
+	id S1755162AbZDNOHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 10:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZDNOHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 10:06:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56999 "EHLO mx2.mail.elte.hu"
+	Tue, 14 Apr 2009 10:07:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39292 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752561AbZDNOGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 10:06:33 -0400
-Date: Tue, 14 Apr 2009 16:04:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
-       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
-	default percpu allocator
-Message-ID: <20090414140416.GE27163@elte.hu>
-References: <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain> <20090401223241.GA28168@elte.hu> <alpine.DEB.1.10.0904012216370.32656@qirst.com> <20090402034223.GA25791@elte.hu> <alpine.DEB.1.10.0904020948570.31756@qirst.com> <20090408162651.GA14449@elte.hu> <alpine.DEB.1.10.0904131409510.13756@qirst.com>
+	id S1752564AbZDNOHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 10:07:23 -0400
+Date: Tue, 14 Apr 2009 14:06:34 GMT
+From: "tip-bot for Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       venkatesh.pallipadi@intel.com, lcm@us.ibm.com, shaohua.li@intel.com,
+       ebiederm@xmission.com, garyhade@us.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, lcm@us.ibm.com, shaohua.li@intel.com,
+       ebiederm@xmission.com, garyhade@us.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090413222058.GB8211@linux-os.sc.intel.com>
+References: <20090413222058.GB8211@linux-os.sc.intel.com>
+Subject: [tip:irq/urgent] x86, irq: Remove IRQ_DISABLED check in process context IRQ move
+Message-ID: <tip-6ec3cfeca04622e3d80c9270191cd7f5f88214af@git.kernel.org>
+Git-Commit-ID: 6ec3cfeca04622e3d80c9270191cd7f5f88214af
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904131409510.13756@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 14:06:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  6ec3cfeca04622e3d80c9270191cd7f5f88214af
+Gitweb:     http://git.kernel.org/tip/6ec3cfeca04622e3d80c9270191cd7f5f88214af
+Author:     Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+AuthorDate: Mon, 13 Apr 2009 15:20:58 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 14 Apr 2009 15:21:13 +0200
 
-* Christoph Lameter <cl@linux.com> wrote:
+x86, irq: Remove IRQ_DISABLED check in process context IRQ move
 
-> On Wed, 8 Apr 2009, Ingo Molnar wrote:
-> 
-> > Dude, this is a new facility freshly modernized and freshly made
-> > usable. What did you expect, for a thousand usecases pop up in the
-> > kernel overnight? _None_ of this code is "common" today per se. (the
-> > networking folks are working on making it more and more common
-> > though)
-> 
-> ?? kfree(NULL) has been allowed for years. None of this is new.
+As discussed in the thread here:
 
-[ This reply if yours is completely inapposite. It does not fit into 
-  the logical stream of arguments at all. Of course kfree(NULL) has 
-  been allowed for years. Did i claim otherwise? I dont think you
-  understand my arguments - and i get the impression that you dont
-  even _try_ to understand them. ]
+  http://marc.info/?l=linux-kernel&m=123964468521142&w=2
 
-The thing is, i spent well in excess of an hour analyzing your 
-patch, counting cachelines, looking at effects and interactions, 
-thinking about the various implications. I came up with a good deal 
-of factoids, a handful of suggestions and a few summary paragraphs:
+Eric W. Biederman observed:
 
-  http://marc.info/?l=linux-kernel&m=123862536011780&w=2
+> It looks like some additional bugs have slipped in since last I looked.
+>
+> set_irq_affinity does this:
+> ifdef CONFIG_GENERIC_PENDING_IRQ
+>        if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
+>                cpumask_copy(desc->affinity, cpumask);
+>                desc->chip->set_affinity(irq, cpumask);
+>        } else {
+>                desc->status |= IRQ_MOVE_PENDING;
+>                cpumask_copy(desc->pending_mask, cpumask);
+>        }
+> #else
+>
+> That IRQ_DISABLED case is a software state and as such it has nothing to
+> do with how safe it is to move an irq in process context.
 
-A proper reply to that work would be one of several responses:
+[...]
 
-  1) to ignore it. (you can always do that, you dont have to react
-     to everything on lkml - especially if you think it's bull.)
+>
+> The only reason we migrate MSIs in interrupt context today is that there
+> wasn't infrastructure for support migration both in interrupt context
+> and outside of it.
 
-  2) disagree with the factoids - preferably in a specific way.
+Yes. The idea here was to force the MSI migration to happen in process
+context. One of the patches in the series did
 
-  3) agree with the factoids and disagree with my opinion.
+        disable_irq(dev->irq);
+        irq_set_affinity(dev->irq, cpumask_of(dev->cpu));
+        enable_irq(dev->irq);
 
-  4) agree with it all.
+with the above patch adding irq/manage code check for interrupt disabled
+and moving the interrupt in process context.
 
-You did neither of these: you never replied to my detailed analysis, 
-you only replied to my followup summary - disagreeing with my 
-opinion based not on a fair deconstruction of my factoids but on a 
-mere repetition of your arguments.
+IIRC, there was no IRQ_MOVE_PCNTXT when we were developing this HPET
+code and we ended up having this ugly hack. IRQ_MOVE_PCNTXT was there
+when we eventually submitted the patch upstream. But, looks like I did a
+blind rebasing instead of using IRQ_MOVE_PCNTXT in hpet MSI code.
 
-Furthermore, you also tried to 'win' this argument by increasing the 
-volume of shouting, by injecting unprovoked insults and by using a 
-patronizing and irritated tone.
+Below patch fixes this. i.e., revert commit 932775a4ab622e3c99bd59f14cc
+and add PCNTXT to HPET MSI setup. Also removes copying of desc->affinity
+in generic code as set_affinity routines are doing it internally.
 
-You might be completely right in the end technically (i fully submit 
-that the discussion is open-ended), but this kind of generic 
-handwaving and your asocial behavior in this thread does not really 
-do your technical arguments any service. It can only really end in 
-me starting to ignore you.
+Reported-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Li Shaohua" <shaohua.li@intel.com>
+Cc: Gary Hade <garyhade@us.ibm.com>
+Cc: "lcm@us.ibm.com" <lcm@us.ibm.com>
+Cc: suresh.b.siddha@intel.com
+LKML-Reference: <20090413222058.GB8211@linux-os.sc.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ arch/x86/kernel/apic/io_apic.c |    2 ++
+ kernel/irq/manage.c            |    5 ++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index a2789e4..30da617 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3670,12 +3670,14 @@ int arch_setup_hpet_msi(unsigned int irq)
+ {
+ 	int ret;
+ 	struct msi_msg msg;
++	struct irq_desc *desc = irq_to_desc(irq);
+ 
+ 	ret = msi_compose_msg(NULL, irq, &msg);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	hpet_msi_write(irq, &msg);
++	desc->status |= IRQ_MOVE_PCNTXT;
+ 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
+ 		"edge");
+ 
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 7e2e7dd..2734eca 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -109,10 +109,9 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
+ 	spin_lock_irqsave(&desc->lock, flags);
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+-	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
+-		cpumask_copy(desc->affinity, cpumask);
++	if (desc->status & IRQ_MOVE_PCNTXT)
+ 		desc->chip->set_affinity(irq, cpumask);
+-	} else {
++	else {
+ 		desc->status |= IRQ_MOVE_PENDING;
+ 		cpumask_copy(desc->pending_mask, cpumask);
+ 	}
