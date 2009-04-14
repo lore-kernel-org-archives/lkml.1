@@ -1,130 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZDNRGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZDNRIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbZDNRGr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZDNRGh
+	id S1756764AbZDNRIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbZDNRIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:06:37 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36786 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbZDNRGg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:06:36 -0400
-Date: Tue, 14 Apr 2009 22:36:21 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "mingo@redhat.com" <mingo@redhat.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Subject: Re: [tip:sched/urgent] sched: Print sched_group::__cpu_power in
-	sched_domain_debug
-Message-ID: <20090414170621.GA1733@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090330045520.2869.24777.stgit@sofia.in.ibm.com> <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org> <12c511ca0904131153g39b99ec6n6c6ec2e7de3f7ea6@mail.gmail.com> <20090414000934.GN817@elte.hu> <20090414033936.GA534@in.ibm.com> <57C9024A16AD2D4C97DC78E552063EA39B3CF29A@orsmsx505.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA39B3CF29A@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 14 Apr 2009 13:08:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43668 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751132AbZDNRIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 13:08:24 -0400
+Subject: Re: [PATCH -tip] x86: k8.h reference to node in node_to_k8_nb_misc
+ for !CONFIG_K8_NB
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>
+In-Reply-To: <20090414165241.GB2089@elte.hu>
+References: <1239727500.2966.16.camel@ht.satnam>
+	 <20090414165241.GB2089@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 14 Apr 2009 22:37:56 +0530
+Message-Id: <1239728876.2966.23.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 09:29:53AM -0700, Luck, Tony wrote:
-> -               printk(KERN_CONT " %s (__cpu_power = %d)", str,
-> -                                               group->__cpu_power);
-> +               if (group->__cpu_power != SCHED_LOAD_SCALE)
-> +                       printk(KERN_CONT " %s (__cpu_power = %d)", str,
-> +                                                       group->__cpu_power);
+On Tue, 2009-04-14 at 18:52 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> Much quieter ... but perhaps a little too quiet?
-> Is this what you want?  Now the console output looks like this:
+> > Add reference to node in node_to_k8_nb_misc for !CONFIG_K8_NB to make compiler happy.
+> > 
+> > So fixes compiler warnings:
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/include/asm/k8.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
+> > index c23b3d1..c81e4ee 100644
+> > --- a/arch/x86/include/asm/k8.h
+> > +++ b/arch/x86/include/asm/k8.h
+> > @@ -16,7 +16,7 @@ extern int k8_scan_nodes(unsigned long start, unsigned long end);
+> >  #define node_to_k8_nb_misc(node) \
+> >  	(node < num_k8_northbridges) ? k8_northbridges[node] : NULL
+> >  #else
+> > -#define node_to_k8_nb_misc(node) NULL
+> > +#define node_to_k8_nb_misc(node) (node) ? NULL : NULL
+> >  #endif
 > 
-> CPU0 attaching sched-domain:
->  domain 0: span 0-15 level CPU
->   groups:
-> CPU1 attaching sched-domain:
->  domain 0: span 0-15 level CPU
->   groups:
-> CPU2 attaching sched-domain:
->  domain 0: span 0-15 level CPU
->   groups:
->  ...
+> Ugh, that's very ugly. I gave you a proper solution:
 > 
-> instead of the original:
+> >> The typical way to solve this is to add a dummy:
+> >> 
+> >> 	(void)(cpu)
+> >> 
+> >> use to the 'cpu' parameter to the macro definition - or, 
+> >> (which is a much better solution), to convert it to an 
+> >> inline function.
 > 
-> CPU0 attaching sched-domain:
->  domain 0: span 0-15 level CPU
->   groups: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> CPU1 attaching sched-domain:
->  domain 0: span 0-15 level CPU
->   groups: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 0
-> CPU2 attaching sched-domain:
->  domain 0: span 0-15 level CPU
->   groups: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 0 1
->  ...
-> 
-> Either we don't need the empty "groups:" line, or we should
-> still list the cpus in the group?  I'm not really sure what
-> information you are trying to convey here.
 
-We should be listing the cpus in the group. We should not be listing the
-__cpu_power of the group, if the __cpu_power has the default value. In
-the patch that I sent this morning, I made a mistake by making dependent
-the printing of both cpus as well as __cpu_power, on the if
-condition which checks if __cpu_power is default or not.
+Subject: [PATCH] x86: cpu/cacheinfo.c reference to node for node_to_k8_nb_misc for !CONFIG_K8_NB
 
-               if (group->__cpu_power != SCHED_LOAD_SCALE)
-                       printk(KERN_CONT " %s (__cpu_power = %d)", str,
-                                                       group->__cpu_power);
+Add reference to node for node_to_k8_nb_misc for !CONFIG_K8_NB to make compiler happy.
 
-Unfortunately for me, it's not the first goof up I've been involved in
-today. Please find the updated patch below.
+And fixes:
+  arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+  arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+  arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+  arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
 
----->
-sched: Avoid printing sched_group::__cpu_power for default case.
-
-From: Gautham R Shenoy <ego@in.ibm.com>
-
-The following commit produces a messy dmesg output while attempting to print
-the sched_group::__cpu_power for each group in the sched_domain hierarchy.
-
-	commit 46e0bb9c12f4bab539736f1714cbf16600f681ec
-	Author: Gautham R Shenoy <ego@in.ibm.com>
-	Date:   Mon Mar 30 10:25:20 2009 +0530
-	sched: Print sched_group::__cpu_power in sched_domain_debug
-
-Fix this by avoid printing the __cpu_power for default cases.
-(i.e, __cpu_power == SCHED_LOAD_SCALE).
-
-Reported-by: Tony Luck <tony.luck@intel.com>
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
- kernel/sched.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 681d4ae..db2df70 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7467,7 +7467,9 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 		cpumask_or(groupmask, groupmask, sched_group_cpus(group));
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 789efe2..4414c92 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -719,6 +719,7 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
+ 	if (!dev)
+ 		return -EINVAL;
  
- 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
--		printk(KERN_CONT " %s (__cpu_power = %d)", str,
-+		printk(KERN_CONT " %s", str);
-+		if (group->__cpu_power != SCHED_LOAD_SCALE)
-+			printk(KERN_CONT " (__cpu_power = %d)",
- 						group->__cpu_power);
++	(void)(node);
+ 	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
+ 	return sprintf(buf, "%x\n", reg);
+ }
+@@ -755,6 +756,7 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
  
- 		group = group->next;
-
+ 	val |= 0xc0000000;
+ 
++	(void)(node);
+ 	pci_read_config_dword(dev, 0x58, &scrubber);
+ 	scrubber &= ~0x1f000000;
+ 	pci_write_config_dword(dev, 0x58, scrubber);
 -- 
-Thanks and Regards
-gautham
+1.6.0.6
+
+
+
