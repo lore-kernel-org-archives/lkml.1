@@ -1,43 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759744AbZDNSg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZDNSkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759744AbZDNSg5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759665AbZDNSgm
+	id S1757884AbZDNSkd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZDNSkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:36:42 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4455 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759642AbZDNSgl (ORCPT
+	Tue, 14 Apr 2009 14:40:07 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:36847 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbZDNSkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:36:41 -0400
-Subject: [PATCH] MAINTAINERS - Update KMEMTRACE pattern after file rename
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 11:36:37 -0700
-Message-Id: <1239734197.7994.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 14:40:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=geAwXihpJt/0T4Iy+3CZ3xeobb8bF9gQUOBomrj75dAL50tYlt/az9FTAoM5zZ/KN/
+         zs/311Ilr39ZNVdLop7NtkQgS0q6NkxdT1r0dSJuYvPx7BsnoicTw2N9Eke0rKUo8lqc
+         o7UiztBf7FYG9B0nRTvFxpkoO5tEW1obNS0m4=
+Date: Tue, 14 Apr 2009 22:39:38 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Subrata Modak <subrata@linux.vnet.ibm.com>
+Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, Julia Lawall <julia@diku.dk>,
+       Jeff Garzik <jgarzik@pobox.com>, Mel Gorman <mel@skynet.ie>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-net <linux-net@vger.kernel.org>
+Subject: Re: [BUILD FAILURE 06/12] Next April 14 : PPC64 randconfig
+	[drivers/net/ehea/ehea_main.c]
+Message-ID: <20090414183938.GA17134@orion>
+References: <1239733747.5344.78.camel@subratamodak.linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239733747.5344.78.camel@subratamodak.linux.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
+On Tue, Apr 14, 2009 at 11:59:07PM +0530, Subrata Modak wrote:
+> Observed the following build error:
+> CC      drivers/net/ehea/ehea_main.o
+> drivers/net/ehea/ehea_main.c: In function ???ehea_setup_single_port???:
+> drivers/net/ehea/ehea_main.c:3145: error: ???struct net_device??? has no
+> member named ???tx_timeout???
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5b4f1dd..d8fe7eb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3267,7 +3267,7 @@ P:	Eduard - Gabriel Munteanu
- M:	eduard.munteanu@linux360.ro
- L:	linux-kernel@vger.kernel.org
- S:	Maintained
--F:	Documentation/vm/kmemtrace.txt
-+F:	Documentation/trace/kmemtrace.txt
- F:	include/trace/kmemtrace.h
- F:	kernel/trace/kmemtrace.c
+>From 56142fa2ed992aeee3f2635990ac37807379a310 Mon Sep 17 00:00:00 2001
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Tue, 14 Apr 2009 22:35:32 +0400
+Subject: [PATCH] ehea: Fix incomplete conversion to net_device_ops
+
+
+Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ drivers/net/ehea/ehea_main.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index ac0c5b4..604c844 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -3080,7 +3080,8 @@ static const struct net_device_ops ehea_netdev_ops = {
+ 	.ndo_change_mtu		= ehea_change_mtu,
+ 	.ndo_vlan_rx_register	= ehea_vlan_rx_register,
+ 	.ndo_vlan_rx_add_vid	= ehea_vlan_rx_add_vid,
+-	.ndo_vlan_rx_kill_vid	= ehea_vlan_rx_kill_vid
++	.ndo_vlan_rx_kill_vid	= ehea_vlan_rx_kill_vid,
++	.ndo_tx_timeout		= ehea_tx_watchdog,
+ };
  
-
+ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+@@ -3142,7 +3143,6 @@ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+ 		      | NETIF_F_HIGHDMA | NETIF_F_IP_CSUM | NETIF_F_HW_VLAN_TX
+ 		      | NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_FILTER
+ 		      | NETIF_F_LLTX;
+-	dev->tx_timeout = &ehea_tx_watchdog;
+ 	dev->watchdog_timeo = EHEA_WATCH_DOG_TIMEOUT;
+ 
+ 	INIT_WORK(&port->reset_task, ehea_reset_port);
+-- 
+1.6.2.3
 
