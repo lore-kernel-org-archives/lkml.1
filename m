@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZDOJIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZDOJIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZDOJIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZDOJIM
+	id S1756637AbZDOJIl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZDOJI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:08:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51055 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751886AbZDOJIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:08:11 -0400
-Date: Wed, 15 Apr 2009 11:08:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] brd: support barriers
-Message-ID: <20090415090810.GU5178@kernel.dk>
-References: <20090415082707.GA7685@wotan.suse.de>
+	Wed, 15 Apr 2009 05:08:27 -0400
+Received: from solcza.etanetas.lt ([82.135.221.82]:60182 "EHLO
+	solcza.etanetas.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbZDOJIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 05:08:23 -0400
+Message-ID: <000b01c9bd29$4980b3d0$52dd8752@namai-1y7vmhgjn>
+From: Shafer <marcia@force4.net>
+To: linux-wireless@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: =?iso-8859-1?b?U3RvcCBkcmVhbWluZyBhYm91dCBsb3Npbmcgd2VpZ2h0ICwgQWNhaSA=?=
+ =?iso-8859-1?b?QmVycnkgbWFrZXMgaXQgaGFwcGVuIHJpZ2h0IGJlZm9yZSB5b3VyIGU=?=
+ =?iso-8859-1?b?eWVzIA==?=
+Date: Tue, 14 Apr 2009 20:48:58 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415082707.GA7685@wotan.suse.de>
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+Content-Transfer-Encoding: 7bit
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15 2009, Nick Piggin wrote:
-> Hi Jens,
-> Do you have a tree I can send this though? Is this the right way to
-> do what I want?
+hi
 
-It'll let the barriers through, so I think it does what you want :-)
-I can put it in the block tree.
+Acai Power berry is your key to losing weight. This Amazon forest secret has been around hollywood circles for years now . Take advantage of our free trial and start losing weight now 
+visit site http://igsmhmsi6.blogspot.com
 
-> 
-> --
-> 
-> brd is always ordered (not that it matters, as it is defined not to
-> survive when the system goes down). So tell the block layer it is
-> ordered, which might be of help with testing filesystems.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
->  drivers/block/brd.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux-2.6/drivers/block/brd.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/block/brd.c
-> +++ linux-2.6/drivers/block/brd.c
-> @@ -436,6 +436,7 @@ static struct brd_device *brd_alloc(int
->  	if (!brd->brd_queue)
->  		goto out_free_dev;
->  	blk_queue_make_request(brd->brd_queue, brd_make_request);
-> +	blk_queue_ordered(brd->brd_queue, QUEUE_ORDERED_TAG, NULL);
->  	blk_queue_max_sectors(brd->brd_queue, 1024);
->  	blk_queue_bounce_limit(brd->brd_queue, BLK_BOUNCE_ANY);
->  
-
--- 
-Jens Axboe
-
+code msg ugj,kjdfghse
+id 908
