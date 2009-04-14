@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZDNHma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbZDNHne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753364AbZDNHma (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZDNHmV
+	id S1755001AbZDNHne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZDNHnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:42:21 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59914 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbZDNHmU (ORCPT
+	Tue, 14 Apr 2009 03:43:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:59594 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbZDNHnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:42:20 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <20090414072231.GA7001@localhost>
-References: <20090414154606.C665.A69D9226@jp.fujitsu.com> <20090414072231.GA7001@localhost>
-Message-Id: <20090414163312.C674.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 03:43:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=MNEijnhft7sBkBlB9CFvEG4lB3LnlCTF0DH1WTKxWbz8BRzJSLN9vM2qJFGbzBlOQs
+         XRzyZInpbnCA7EFSJuse/SvAS4dE4b5ANhGzqjP2uRQBQA7SqchcqnAxCEi7Icbr8GGd
+         CmYcnH1vxEaLWI4OuGF1lbtJhD8yzOmcUzWxg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <20090413.162248.60285999.davem@davemloft.net>
+References: <20090404.170539.148727646.davem@davemloft.net>
+	 <cb0375e10904042100o1a203512l593021ee66cb591d@mail.gmail.com>
+	 <alpine.WNT.2.00.0904091128270.6048@jbrandeb-desk1.amr.corp.intel.com>
+	 <20090413.162248.60285999.davem@davemloft.net>
+Date: Tue, 14 Apr 2009 00:43:19 -0700
+X-Google-Sender-Auth: ff0741fc8eaf7331
+Message-ID: <9929d2390904140043v4fa34f6cj2c9ebad3ce1f9894@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Tell linkwatch about new interfaces
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: jesse.brandeburg@intel.com, amluto@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 16:42:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 13, 2009 at 4:22 PM, David Miller <davem@davemloft.net> wrote:
+> From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+> Date: Thu, 9 Apr 2009 17:48:04 -0700 (Pacific Daylight Time)
+>
+>> Dave, if we move the netif_carrier_off call to our dev->open like tg3 has,
+>> do you think this is sufficient?
+>
+> Yes.
+>
+>> e1000e: indicate link down at load
+>>
+>> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>>
+>> same kind of patch as e1000, let driver explicitly push link state
+>> once link comes up.
+>>
+>> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>
+> I'll wait to get this via Jeff Kirsher.
+>
+> Thanks.
+> --
 
-> > > > > - PG_unevictable
-> > > > > - PG_mlocked
->  
-> How about including PG_unevictable/PG_mlocked?
-> They shall be meaningful to administrators.
+I have added this to my queue and will be sent out with the other
+e1000 patch I have,in the next day or two.
 
-I explained another mail. please see it.
-
-
-> > this 9 flags shouldn't exported.
-> > I can't imazine administrator use what purpose those flags.
-> 
-> > > > > - PG_swapcache
-> > > > > - PG_swapbacked
-> > > > > - PG_poison
-> > > > > - PG_compound
-> >
-> > I can agree this 4 flags.
-> > However pagemap lack's hugepage considering.
-> > if PG_compound exporting, we need more work.
-> 
-> You mean to fold PG_head/PG_tail into PG_COMPOUND?
-> Yes, that's a good simplification for end users.
-
-Yes, I agree.
-
-
-> > > > > - PG_NOPAGE: whether the page is present
-> > 
-> > PM_NOT_PRESENT isn't enough?
-> 
-> That would not be usable if you are going to do a system wide scan.
-> PG_NOPAGE could help differentiate the 'no page' case from 'no flags'
-> case.
-> 
-> However PG_NOPAGE is more about the last resort. The system wide scan
-> can be made much more efficient if we know the exact memory layouts.
-
-Yup :)
-
-
+-- 
+Cheers,
+Jeff
