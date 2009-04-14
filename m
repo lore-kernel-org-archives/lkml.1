@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZDNJEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZDNJGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZDNJEQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbZDNJD6
+	id S1753491AbZDNJGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZDNJFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:03:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:53577 "EHLO mail.goop.org"
+	Tue, 14 Apr 2009 05:05:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:57052 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbZDNJD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 05:03:57 -0400
-Message-ID: <49E4517B.4020301@goop.org>
-Date: Tue, 14 Apr 2009 02:03:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751305AbZDNJFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 05:05:51 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 1/7] use smp_call_function_single() in arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+Date: Tue, 14 Apr 2009 18:35:41 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20090413000630.21C09DE12A@ozlabs.org> <20090413001657.GA24946@redhat.com>
+In-Reply-To: <20090413001657.GA24946@redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@linux.intel.com>,
-       alan-jenkins@tuffmail.co.uk, Avi Kivity <avi@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, rjw@sisk.pl,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/setup] x86, setup: "glove box" BIOS calls --	infrastructure
-References: <49E0C1AB.2050608@redhat.com> <49E17A6E.5000104@zytor.com> <alpine.LFD.2.00.0904120754240.4583@localhost.localdomain> <20090412163356.GA2392@elte.hu> <49E2398A.3050405@redhat.com> <20090413041625.GF11652@elte.hu> <20090413042459.GA6479@elte.hu> <49E367E8.7080202@zytor.com> <9b2b86520904131134y26f508ffr2bc0303eff203a25@mail.gmail.com> <49E38DBD.8040303@linux.intel.com> <20090414000627.GL817@elte.hu> <49E41447.2060400@zytor.com>
-In-Reply-To: <49E41447.2060400@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904141835.41961.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Ingo Molnar wrote:
->   
->> ... looks like an x86 descriptor table. Does the pattern below make 
->> any sense to anyone? I've attached the relevant bits of one of the 
->> reports below.
->>
->>     
->
-> It's weird... it's clearly not random, but the pattern is shifting all
-> over the place.  Almost makes me want to guess some kind of bitmask (the
-> 0xaaaaaa00 bit and the stretches of 00 and ff kind of hint that way) but
-> even then it doesn't really seem to make a whole lot of sense.  Perhaps
-> it's a data segment of some code which is barfing on memory.
->
-> 960 bytes at 0xc000 (48K)... almost makes one wonder if someone confused
-> address 0xc000 with segment 0xc000 (the VGA BIOS)...
->   
+On Mon, 13 Apr 2009 09:46:57 am Dave Jones wrote:
+> On Mon, Apr 13, 2009 at 09:30:02AM +0930, Rusty Russell wrote:
+>  > From: Andrew Morton <akpm@linux-foundation.org>
+>  > 
+>  > Impact: fix sysbench(oltp)+mysql 10% regression with 2.6.30-rc1
+>  > 
+> 
+> This, and the other cpufreq related patches in this series look sound to me.
+> Given the other non-cpufreq bits in the series, do you want to just
+> have these go through Andrew and onto Linus?
 
-(I wonder if its a bunch of super-secret HDMI crypto keys ;)
+Sure, that's certainly easiest for me.   I'd assumed Ingo would snarf them,
+but as he's suggested -mm, Andrew?
 
-    J
+Thanks!
+Rusty.
