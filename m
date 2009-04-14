@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZDNPh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZDNPiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZDNPh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZDNPhs
+	id S1756100AbZDNPiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZDNPht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:37:48 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:57432 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbZDNPhq (ORCPT
+	Tue, 14 Apr 2009 11:37:49 -0400
+Received: from web65513.mail.ac4.yahoo.com ([76.13.9.57]:29335 "HELO
+	web65513.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752178AbZDNPhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:37:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=QUyBK4FsdqCu/m3A0yBk3VPzM7ULBk/kpPIY4yOfOLAepIbDPyCqhw7rGl5jFG5LXR
-         4EUUoEbALaieOaziXaVRlcL+EUoTfwu31M3UZHG0aCx4Dpw6xTZuHJH+oi8tjf2CZdxZ
-         QSQORFZ9vy7dqcpEschPzsHR7WFNjGjY0EzNs=
-Message-ID: <49E4ADC1.7010503@tuffmail.co.uk>
-Date: Tue, 14 Apr 2009 16:37:37 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 14 Apr 2009 11:37:47 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Apr 2009 11:37:47 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=Yt/RrPHp3f7NDAG3XPpBLfTgPpvymJVMg5iOwlUHqE6ov9J6kSooxrmfnaP1uOQaf72nDiIDEl9EZg1U/agbxZye2sbrteumycFCcIk88i9UDfBiwXuOTRa4Bk47KVhbq1THOpDQ7YXn7a3ftrnsMw66c+gFM67jJ86H6B9mw4M=;
+Message-ID: <360384.56425.qm@web65513.mail.ac4.yahoo.com>
+X-YMail-OSG: R89pDu0VM1k1g6KMiI82ErX0RgGNKicyBtYdnVoBp_8LECbIUoH9ILBTqndgzcOegaxOkZxaRpmUdF9ygTWWh_w_UX4Xxzf61gt9wFS0ORrTlN8iETNaaNRNIM_CNoOX7v8FmQ1fQYxgfcppONgHmgdlH8pvwuRPC98VmXgOMbiK7nB_oEavyB99Eum67GwAaLVnY.F_m5Z2QhKiJD5njDc4rX7httygNoterIx3sTV1d7YVuu51Ig9pI8rATfABrvhono0KDQ14Z5mVbqty04z8
+X-Mailer: YahooMailWebService/0.7.289.1
+Date: Tue, 14 Apr 2009 08:31:05 -0700 (PDT)
+From: Jerry Wang <jerry18th@yahoo.com>
+Reply-To: jerry18th@yahoo.com
+Subject: linux 2.6.11.1 kernel cross-compiling errors
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [BISECTED] EEE PC hangs when booting off battery
-References: <49E065CF.6040408@tuffmail.co.uk>	<49E44415.1040500@tuffmail.co.uk>	<49E456B5.6030006@tuffmail.co.uk>	<200904140859.02188.bjorn.helgaas@hp.com> <20090414081728.10de978a@infradead.org>
-In-Reply-To: <20090414081728.10de978a@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 14 Apr 2009 08:59:01 -0600
-> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
->
->   
->> I can't help with the real problem of why the asynchronous battery
->> init causes the hang.
->>     
->
-> that got fixed already for the module case.
->   
 
-Are you not thinking of the BUG due to calling __init functions from async?
+Hi,
 
-I have a distinct _hang_ which occurs in v2.6.30-rc1-205-g08f4416.  Do
-you have a fix for that I can try?
+I am trying to cross-compile the linux 2.6.11.1 kernel on
+i686 vm for ppc, and I've been getting the following
+errors. Has anyone had this issue before?
 
-Thanks
-Alan
+Thanks,
+Jerry 
 
+> In file included from arch/ppc/kernel/asm-offsets.c:13:
+> include/linux/sched.h: In function
+> `arch_pick_mmap_layout':
+> include/linux/sched.h:1174: error: `CONFIG_TASK_SIZE'
+> undeclared (first use in this function)
+> include/linux/sched.h:1174: error: (Each undeclared
+> identifier is reported only once
+> include/linux/sched.h:1174: error: for each function it
+> appears in.)
+> In file included from include/linux/mman.h:5,
+>                  from arch/ppc/kernel/asm-offsets.c:19:
+> include/linux/mm.h: In function `lowmem_page_address':
+> include/linux/mm.h:437: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> In file included from arch/ppc/kernel/asm-offsets.c:21:
+> include/asm/io.h: In function `virt_to_bus':
+> include/asm/io.h:396: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> include/asm/io.h: In function `bus_to_virt':
+> include/asm/io.h:407: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> include/asm/io.h: In function `virt_to_phys':
+> include/asm/io.h:420: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> include/asm/io.h: In function `phys_to_virt':
+> include/asm/io.h:429: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> arch/ppc/kernel/asm-offsets.c: In function `main':
+> arch/ppc/kernel/asm-offsets.c:139: error:
+> `CONFIG_TASK_SIZE' undeclared (first use in this
+> function)
+> make[1]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
+> make: *** [arch/ppc/kernel/asm-offsets.s] Error 2
+
+
+      
