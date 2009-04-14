@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZDNGLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752352AbZDNGP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbZDNGLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 02:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZDNGLI
+	id S1752352AbZDNGP7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 02:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZDNGPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 02:11:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49768 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750983AbZDNGLH (ORCPT
+	Tue, 14 Apr 2009 02:15:48 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40767 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047AbZDNGPr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 02:11:07 -0400
-Date: Tue, 14 Apr 2009 07:12:04 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: Scheduling while atomic in tty code with cdc-acm driver, kernel
- 2.6.29.1
-Message-ID: <20090414071204.2450b6a0@lxorguk.ukuu.org.uk>
-In-Reply-To: <200904140150.10790.oliver@neukum.org>
-References: <20090413193633.33ce0710@dhcp-100-2-144.bos.redhat.com>
-	<200904140150.10790.oliver@neukum.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 14 Apr 2009 02:15:47 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <aarcange@redhat.com>, Jeff Moyer <jmoyer@redhat.com>,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH 0/6] IO pinning(get_user_pages()) vs fork race fix
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090414151204.C647.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 14 Apr 2009 15:15:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 01:50:10 +0200
-Oliver Neukum <oliver@neukum.org> wrote:
 
-> Am Dienstag 14 April 2009 01:36:33 schrieb Chuck Ebbert:
-> > BUG: sleeping function called from invalid context at kernel/mutex.c:88
-> > in_atomic(): 1, irqs_disabled(): 0, pid: 0, name: swapper
-> > Pid: 0, comm: swapper Not tainted 2.6.29.1-54.fc11.x86_64 #1
-> 
-> Is this specific to 2.6.29.1? It looks like setting low_latency, as cdc-acm,
-> does for legacy reasons, is harmful now. Please remove these lines:
+Linux Device Drivers, Third Edition, Chapter 15: Memory Mapping and DMA says
 
-The only thing that has changed is that this incorrect behaviour (setting
-low_latency and doing a flip_buffer_push() in IRQ context) now causes a
-warn rather than random failure.
+	get_user_pages is a low-level memory management function, with a suitably complex
+	interface. It also requires that the mmap reader/writer semaphore for the address
+	space be obtained in read mode before the call. As a result, calls to get_user_pages
+	usually look something like:
 
-The hack setting of it for high data rate devices was obsolete when the
-tty buffer changes went in so it can definitely go in those cases.
+		down_read(&current->mm->mmap_sem);
+		result = get_user_pages(current, current->mm, ...);
+		up_read(&current->mm->mmap_sem);
+
+	The return value is the number of pages actually mapped, which could be fewer than
+	the number requested (but greater than zero).
+
+but, it isn't true. mmap_sem isn't only used for vma traversal, but also prevent vs-fork race.
+up_read(mmap_sem) mean end of critical section, IOW after up_read() code is fork unsafe.
+(access_process_vm() explain proper get_user_pages() usage)
+
+Oh well, We have many wrong caller now. What is the best fix method?
+
+Nick Piggin and Andrea Arcangeli proposed to change get_user_pages() semantics as caller expected.
+  see "[PATCH] fork vs gup(-fast) fix" thead in linux-mm
+but Linus NACKed it.
+
+Thus I made caller change approach patch series. it is made for discuss to compare Nick's approach.
+I don't hope submit it yet.
+
+Nick, This version fixed vmsplice and aio issue (you pointed). I hope to hear your opiniton ;)
+
+
+
+ChangeLog:
+  V2 -> V3
+   o remove early decow logic
+   o introduce prevent unmap logic
+   o fix nfs-directio
+   o fix aio
+   o fix bio (only bandaid fix)
+
+  V1 -> V2
+   o fix aio+dio case
+
+TODO
+  o implement down_write_killable()
+  o fix kvm (need?)
+  o fix get_arg_page() (Why this function don't use mmap_sem?)
+
+
