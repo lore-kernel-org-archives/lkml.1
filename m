@@ -1,173 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZDNUQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZDNUVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbZDNUQQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 16:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZDNUQA
+	id S1754040AbZDNUVi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 16:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZDNUV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 16:16:00 -0400
-Received: from mail-gx0-f208.google.com ([209.85.217.208]:33173 "EHLO
-	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZDNUP7 (ORCPT
+	Tue, 14 Apr 2009 16:21:28 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:41193 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbZDNUV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 16:15:59 -0400
+	Tue, 14 Apr 2009 16:21:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=GiH0lt9SMn3Nt7MF6MZ2hipWlnqAVse+QpEoqjW8rqwe1eeGxPxfTNcGndXa9erzSN
-         jnId5m2IN7PSmbbGbc03XAV9G/CKLH2cPPZRkdVg6P7ugMiGtGWWDBJvO7DPWic502WF
-         oxAWIZp6q6UJOr5yxJLZpHTFCtdPecxlyO/oQ=
-MIME-Version: 1.0
-Date: Tue, 14 Apr 2009 16:15:57 -0400
-Message-ID: <b4198de60904141315x14d898e5x89fc334dd977b7a1@mail.gmail.com>
-Subject: Radeon kernel-modesetting on Alpha. Problem reading PCI ROM
-From: Matt Turner <mattst88@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-Cc: Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jay Estabrook <jay.estabrook@hp.com>,
-       Oliver Falk <oliver@linux-kernel.at>, glisse@freedesktop.org
-Content-Type: multipart/mixed; boundary=00151750e184b1e2c10467897f61
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=xOdljDLM3HPHwKqBnNLm/7LGvQfSvd3Tsmk5Fz+gk29ihHOXDhXf0hVuZZ0S+Lpepn
+         xTUCfiTBjQr80xnYTpuaYoYoDqqr+Nktb5gLUCDI6fAcN3JZNzqL6i9tjDGZL1u1JqGo
+         lxT86eXN8TM/3KxHXaTgEGmVzCB6Zh5X94nbM=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Paul Menage <menage@google.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/9] cgroup: io-throttle controller (v13)
+Date: Tue, 14 Apr 2009 22:21:11 +0200
+Message-Id: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---00151750e184b1e2c10467897f61
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Objective
+~~~~~~~~~
+The objective of the io-throttle controller is to improve IO performance
+predictability of different cgroups that share the same block devices.
 
-Hi,
+State of the art (quick overview)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A recent work made by Vivek propose a weighted BW solution introducing
+fair queuing support in the elevator layer and modifying the existent IO
+schedulers to use that functionality
+(https://lists.linux-foundation.org/pipermail/containers/2009-March/016129.html).
 
-I'm testing Jerome Glisse's drm-next-radeon branch which provides
-Radeon Kernel-modesetting support on a Samsung UP1500 with a PCI
-Radeon X1550.
+For the fair queuing part Vivek's IO controller makes use of the BFQ
+code as posted by Paolo and Fabio (http://lkml.org/lkml/2008/11/11/148).
 
-See http://cgit.freedesktop.org/~glisse/drm-next/log/?h=drm-next-radeon
+The dm-ioband controller by the valinux guys is also proposing a
+proportional ticket-based solution fully implemented at the device
+mapper level (http://people.valinux.co.jp/~ryov/dm-ioband/).
 
-While doing so, I've hit a few snags, and placed DRM_INFOs and printks
-throughout code in question. On Alpha, it hangs after calling
-fb_notifier_call_chain in register_framebuffer.
+The bio-cgroup patch (http://people.valinux.co.jp/~ryov/bio-cgroup/) is
+a BIO tracking mechanism for cgroups, implemented in the cgroup memory
+subsystem. It is maintained by Ryo and it allows dm-ioband to track
+writeback requests issued by kernel threads (pdflush).
 
-Jerome and I think that the hang may be caused by being unable to read
-the PCI ROM.
+Another work by Satoshi implements the cgroup awareness in CFQ, mapping
+per-cgroup priority to CFQ IO priorities and this also provide only the
+proportional BW support (http://lwn.net/Articles/306772/).
 
-The radeon_read_bios function makes use of pci_map_rom, which calls
-pci_get_rom_size. In pci_get_rom_size, readb(image) doesn't return
-0x55. It falls back to read_disabled functions which appear to
-succeed.
+Please correct me or integrate if I missed someone or something. :)
 
-Why would the ROM not be able to be read by readb? Is this a general
-problem, or Alpha-specific?
+Proposed solution
+~~~~~~~~~~~~~~~~~
+Respect to other priority/weight-based solutions the approach used by
+this controller is to explicitly choke applications' requests that
+directly or indirectly generate IO activity in the system (this
+controller addresses both synchronous IO and writeback/buffered IO).
 
-Attached are relevant dmesg logs and printk patches (against commit
-7582b4332602dcf03bb0c79f17e0cf89eeec6623) to give context.
+The bandwidth and iops limiting method has the advantage of improving
+the performance predictability at the cost of reducing, in general, the
+overall performance of the system in terms of throughput.
 
-Thanks,
+IO throttling and accounting is performed during the submission of IO
+requests and it is independent of the particular IO scheduler.
 
-Matt Turner
+Detailed informations about design, goal and usage are described in the
+documentation (see [PATCH 1/9]).
 
---00151750e184b1e2c10467897f61
-Content-Type: application/octet-stream; name="radeon-kms.log"
-Content-Disposition: attachment; filename="radeon-kms.log"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ftj0wyfk0
+Implementation
+~~~~~~~~~~~~~~
+Patchset against latest Linus' git:
 
-W2RybV0gSW5pdGlhbGl6ZWQgZHJtIDEuMS4wIDIwMDYwODEwCltkcm1dIHJhZGVvbiBrZXJuZWwg
-bW9kZXNldHRpbmcgZW5hYmxlZC4KUENJOiBTZXR0aW5nIGxhdGVuY3kgdGltZXIgb2YgZGV2aWNl
-IDAwMDA6MDI6MDAuMCB0byA2NApbZHJtXSByYWRlb246IEluaXRpYWxpemluZyBrZXJuZWwgbW9k
-ZXNldHRpbmcuCltkcm1dIHJlZ2lzdGVyIG1taW8gYmFzZTogMHhFNDAwMDAwMApbZHJtXSByZWdp
-c3RlciBtbWlvIHNpemU6IDY1NTM2Cltkcm1dIHJhZGVvbjogMSBwaXBlKHMpCltkcm1dIHJhZGVv
-bl9yZWFkX2Jpb3M6IGNhbGxpbmcgcGNpX21hcF9yb20KcGNpX21hcF9yb206IGlvcmVtYXAgcmV0
-dXJuZWQgIT0gTlVMTApwY2lfZ2V0X3JvbV9zaXplOiBzaXplIGFzIHBhc3NlZCB0aHJvdWdoIGFy
-Z3VtZW50IGxpc3QgPSAxMzEwNzIKcGNpX2dldF9yb21fc2l6ZTogcm9tIGFzIHBhc3NlZCB0aHJv
-dWdoIGFyZ3VtZW50IGxpc3QgPSAwWEU4MDAwMDAwCnBjaV9nZXRfcm9tX3NpemU6IGltYWdlID0g
-MFhFODAwMDAwMApwY2lfZ2V0X3JvbV9zaXplOiByZWFkYiByZXR1cm5lZCAwWDAKcmFkZW9uIDAw
-MDA6MDI6MDAuMDogSW52YWxpZCBST00gY29udGVudHMKKGltYWdlIC0gcm9tKSA9IDAsIHNpemUg
-PSAxMzEwNzIKW2RybV0gcmFkZW9uX3JlYWRfYmlvczogcGNpX21hcF9yb20gcmV0dXJuICE9IE5V
-TEwKW2RybV0gcmFkZW9uX3JlYWRfYmlvczogc2l6ZSA9IDAsIGJpb3NbMF0gPSAwWDAsIGJpb3Nb
-MV0gPSAwWDAKW2RybV0gcmFkZW9uX2dldF9iaW9zOiByYWRlb25fcmVhZF9iaW9zIHJldHVybmVk
-IGZhbHNlCltkcm1dIHJhZGVvbl9yZWFkX2Rpc2FibGVkX2Jpb3M6IHVzaW5nIGF2aXZvX3JlYWRf
-ZGlzYWJsZWRfYmlvcwpbZHJtXSByYWRlb25fcmVhZF9iaW9zOiBjYWxsaW5nIHBjaV9tYXBfcm9t
-CnBjaV9tYXBfcm9tOiBpb3JlbWFwIHJldHVybmVkICE9IE5VTEwKcGNpX2dldF9yb21fc2l6ZTog
-c2l6ZSBhcyBwYXNzZWQgdGhyb3VnaCBhcmd1bWVudCBsaXN0ID0gMTMxMDcyCnBjaV9nZXRfcm9t
-X3NpemU6IHJvbSBhcyBwYXNzZWQgdGhyb3VnaCBhcmd1bWVudCBsaXN0ID0gMFhFODAwMDAwMApw
-Y2lfZ2V0X3JvbV9zaXplOiBpbWFnZSA9IDBYRTgwMDAwMDAKcGNpX2dldF9yb21fc2l6ZTogMFg1
-NQooaW1hZ2UgLSByb20pID0gNjI0NjQsIHNpemUgPSAxMzEwNzIKW2RybV0gcmFkZW9uX3JlYWRf
-YmlvczogcGNpX21hcF9yb20gcmV0dXJuICE9IE5VTEwKW2RybV0gcmFkZW9uX3JlYWRfYmlvczog
-c2l6ZSA9IDYyNDY0LCBiaW9zWzBdID0gMFg1NSwgYmlvc1sxXSA9IDBYQUEKW2RybV0gcmFkZW9u
-X3JlYWRfYmlvczoga21hbGxvYyByZXR1cm4gIT0gTlVMTApbZHJtXSByYWRlb25fZ2V0X2Jpb3M6
-IHJhZGVvbl9yZWFkX2Rpc2FibGVkX2Jpb3MgcmV0dXJuZWQgdHJ1ZQpbZHJtXSByZGV2LT5iaW9z
-ICE9IE5VTEwKW2RybV0gcmFkZW9uX2dldF9iaW9zOiByZGV2LT5iaW9zWzBdID09IDBYNTUKW2Ry
-bV0gQVRPTUJJT1MgZGV0ZWN0ZWQKQVRPTSBCSU9TOiBETS0KW2RybV0gR1BVIHJlc2V0IHN1Y2Nl
-ZWQgKFJCQk1fU1RBVFVTPTB4MTAwMDAxNDApCltkcm1dIERldGVjdGVkIFZSQU0gUkFNPTI1Nk0s
-IEJBUj0yNTZNCltkcm1dIFJBTSB3aWR0aCA2NGJpdHMgRERSCltkcm1dIHJhZGVvbjogVlJBTSAy
-NTZNCltkcm1dIHJhZGVvbjogVlJBTSBmcm9tIDB4MDAwMDAwMDAgdG8gMHgwRkZGRkZGRgpbZHJt
-XSByYWRlb246IEdUVCAzMk0KW2RybV0gcmFkZW9uOiBHVFQgZnJvbSAweDEwMDAwMDAwIHRvIDB4
-MTFGRkZGRkYKW2RybV0gR0FSVDogbnVtIGNwdSBwYWdlcyA0MDk2LCBudW0gZ3B1IHBhZ2VzIDgx
-OTIKW2RybV0gQ2xvY2tzIGluaXRpYWxpemVkICEKW2RybV0gcmFkZW9uOiBpcnEgaW5pdGlhbGl6
-ZWQuClRUTSBhdmFpbGFibGUgZ3JhcGhpY3MgbWVtb3J5OiAxODAyIE1pQgpUVE0gYXZhaWxhYmxl
-IG9iamVjdCBtZW1vcnk6IDE4MDIgTWlCCltkcm1dIHJhZGVvbjogMjU2TSBvZiBWUkFNIG1lbW9y
-eSByZWFkeQpbZHJtXSByYWRlb246IDMyTSBvZiBHVFQgbWVtb3J5IHJlYWR5LgpbZHJtXSBQQ0lF
-IEdBUlQgb2YgMzJNIGVuYWJsZWQgKHRhYmxlIGF0IDB4MDAwNDAwMDApLgpbZHJtXSByYWRlb246
-IGNwIGlkbGUgKDB4MTAwMDBDMDMpCltkcm1dIExvYWRpbmcgUjUwMCBNaWNyb2NvZGUKW2RybV0g
-cmFkZW9uOiByaW5nIGF0IDB4MDAwMDAwMDAxMDAwMDAwMApbZHJtXSByaW5nIHRlc3Qgc3VjY2Vl
-ZGVkIGluIDEgdXNlY3MKW2RybV0gcmFkZW9uOiBpYiBwb29sIHJlYWR5LgpbZHJtXSBpYiB0ZXN0
-IHN1Y2NlZWRlZCBpbiAwIHVzZWNzCmkyYy1hZGFwdGVyIGkyYy0xOiB1bmFibGUgdG8gcmVhZCBF
-RElEIGJsb2NrLgpyYWRlb24gMDAwMDowMjowMC4wOiBWR0EtMTogbm8gRURJRCBkYXRhCltkcm1d
-IGZiIG1hcHBhYmxlIGF0IDB4RjAwNDgwMDAKW2RybV0gdnJhbSBhcHBlciBhdCAweEYwMDAwMDAw
-Cltkcm1dIHNpemUgNTI0Mjg4MApbZHJtXSBmYiBkZXB0aCBpcyAyNApbZHJtXSAgICBwaXRjaCBp
-cyA1MTIwCnJlZ2lzdGVyX2ZyYW1lYnVmZmVyOiBhYm91dCB0byBjYWxsIGZiX25vdGlmaWVyX2Nh
-bGxfY2hhaW4K
---00151750e184b1e2c10467897f61
-Content-Type: application/octet-stream; name="radeon-kms-debugging.patch"
-Content-Disposition: attachment; filename="radeon-kms-debugging.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ftj0x4vz1
+  [PATCH 0/9] cgroup: block device IO controller (v13)
+  [PATCH 1/9] io-throttle documentation
+  [PATCH 2/9] res_counter: introduce ratelimiting attributes
+  [PATCH 3/9] bio-cgroup controller
+  [PATCH 4/9] support checking of cgroup subsystem dependencies
+  [PATCH 5/9] io-throttle controller infrastructure
+  [PATCH 6/9] kiothrottled: throttle buffered (writeback) IO
+  [PATCH 7/9] io-throttle instrumentation
+  [PATCH 8/9] export per-task io-throttle statistics to userspace
+  [PATCH 9/9] ext3: do not throttle metadata and journal IO
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9yYWRlb24vcmFkZW9uX2Jpb3MuYyBiL2RyaXZl
-cnMvZ3B1L2RybS9yYWRlb24vcmFkZW9uX2Jpb3MuYwppbmRleCAxZjE5MmViLi5mMzVmMGM3IDEw
-MDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9iaW9zLmMKKysrIGIvZHJp
-dmVycy9ncHUvZHJtL3JhZGVvbi9yYWRlb25fYmlvcy5jCkBAIC0zOSwxNiArMzksMjAgQEAgc3Rh
-dGljIGJvb2wgcmFkZW9uX3JlYWRfYmlvcyhzdHJ1Y3QgcmFkZW9uX2RldmljZSAqcmRldikKIAlz
-aXplX3Qgc2l6ZTsKIAogCXJkZXYtPmJpb3MgPSBOVUxMOworCURSTV9JTkZPKCJyYWRlb25fcmVh
-ZF9iaW9zOiBjYWxsaW5nIHBjaV9tYXBfcm9tXG4iKTsKIAliaW9zID0gcGNpX21hcF9yb20ocmRl
-di0+cGRldiwgJnNpemUpOworCURSTV9JTkZPKCJyYWRlb25fcmVhZF9iaW9zOiBwY2lfbWFwX3Jv
-bSByZXR1cm4gJWM9IE5VTExcbiIsIGJpb3MgPT0gTlVMTCA/ICc9JyA6ICchJyk7CiAJaWYgKCFi
-aW9zKSB7CiAJCXJldHVybiBmYWxzZTsKIAl9CiAKKwlEUk1fSU5GTygicmFkZW9uX3JlYWRfYmlv
-czogc2l6ZSA9ICVsdSwgYmlvc1swXSA9ICUjWCwgYmlvc1sxXSA9ICUjWFxuIiwgc2l6ZSwgYmlv
-c1swXSwgYmlvc1sxXSk7CiAJaWYgKHNpemUgPT0gMCB8fCBiaW9zWzBdICE9IDB4NTUgfHwgYmlv
-c1sxXSAhPSAweGFhKSB7CiAJCXBjaV91bm1hcF9yb20ocmRldi0+cGRldiwgYmlvcyk7CiAJCXJl
-dHVybiBmYWxzZTsKIAl9CiAJcmRldi0+YmlvcyA9IGttYWxsb2Moc2l6ZSwgR0ZQX0tFUk5FTCk7
-CisJRFJNX0lORk8oInJhZGVvbl9yZWFkX2Jpb3M6IGttYWxsb2MgcmV0dXJuICVjPSBOVUxMXG4i
-LCByZGV2LT5iaW9zID09IE5VTEwgPyAnPScgOiAnIScpOwogCWlmIChyZGV2LT5iaW9zID09IE5V
-TEwpIHsKIAkJcGNpX3VubWFwX3JvbShyZGV2LT5wZGV2LCBiaW9zKTsKIAkJcmV0dXJuIGZhbHNl
-OwpAQCAtMjczLDEwICsyNzcsMTMgQEAgc3RhdGljIGJvb2wgbGVnYWN5X3JlYWRfZGlzYWJsZWRf
-YmlvcyhzdHJ1Y3QgcmFkZW9uX2RldmljZSAqcmRldikKIHN0YXRpYyBib29sIHJhZGVvbl9yZWFk
-X2Rpc2FibGVkX2Jpb3Moc3RydWN0IHJhZGVvbl9kZXZpY2UgKnJkZXYpCiB7CiAJaWYgKHJkZXYt
-PmZhbWlseSA+PSBDSElQX1I2MDApIHsKKwkJRFJNX0lORk8oInJhZGVvbl9yZWFkX2Rpc2FibGVk
-X2Jpb3M6IHVzaW5nIHI2MDBfcmVhZF9kaXNhYmxlZF9iaW9zXG4iKTsKIAkJcmV0dXJuIHI2MDBf
-cmVhZF9kaXNhYmxlZF9iaW9zKHJkZXYpOwogCX0gZWxzZSBpZiAocmRldi0+ZmFtaWx5ID49IENI
-SVBfUlM2MDApIHsKKwkJRFJNX0lORk8oInJhZGVvbl9yZWFkX2Rpc2FibGVkX2Jpb3M6IHVzaW5n
-IGF2aXZvX3JlYWRfZGlzYWJsZWRfYmlvc1xuIik7CiAJCXJldHVybiBhdml2b19yZWFkX2Rpc2Fi
-bGVkX2Jpb3MocmRldik7CiAJfQorCURSTV9JTkZPKCJyYWRlb25fcmVhZF9kaXNhYmxlZF9iaW9z
-OiB1c2luZyBsZWdhY3lfcmVhZF9kaXNhYmxlZF9iaW9zXG4iKTsKIAlyZXR1cm4gbGVnYWN5X3Jl
-YWRfZGlzYWJsZWRfYmlvcyhyZGV2KTsKIH0KIApAQCAtMjg2LDEzICsyOTMsMTcgQEAgYm9vbCBy
-YWRlb25fZ2V0X2Jpb3Moc3RydWN0IHJhZGVvbl9kZXZpY2UgKnJkZXYpCiAJdWludDE2X3QgdG1w
-OwogCiAJciA9IHJhZGVvbl9yZWFkX2Jpb3MocmRldik7CisJRFJNX0lORk8oInJhZGVvbl9nZXRf
-YmlvczogcmFkZW9uX3JlYWRfYmlvcyByZXR1cm5lZCAlc1xuIiwgciA/ICJ0cnVlIiA6ICJmYWxz
-ZSIpOwogCWlmIChyID09IGZhbHNlKSB7CiAJCXIgPSByYWRlb25fcmVhZF9kaXNhYmxlZF9iaW9z
-KHJkZXYpOworCQlEUk1fSU5GTygicmFkZW9uX2dldF9iaW9zOiByYWRlb25fcmVhZF9kaXNhYmxl
-ZF9iaW9zIHJldHVybmVkICVzXG4iLCByID8gInRydWUiIDogImZhbHNlIik7CiAJfQorCURSTV9J
-TkZPKCJyZGV2LT5iaW9zICVjPSBOVUxMXG4iLCByZGV2LT5iaW9zID09IE5VTEwgPyAnPScgOiAn
-IScpOwogCWlmIChyID09IGZhbHNlIHx8IHJkZXYtPmJpb3MgPT0gTlVMTCkgewotCQlEUk1fRVJS
-T1IoIlVuYWJsZSB0byBsb2NhdGUgYSBCSU9TIFJPTVxuIik7CisJCURSTV9FUlJPUigicmFkZW9u
-X2dldF9iaW9zOiBVbmFibGUgdG8gbG9jYXRlIGEgQklPUyBST01cbiIpOwogCQlyZXR1cm4gZmFs
-c2U7CiAJfQorCURSTV9JTkZPKCJyYWRlb25fZ2V0X2Jpb3M6IHJkZXYtPmJpb3NbMF0gPT0gJSNY
-XG4iLCByZGV2LT5iaW9zWzBdKTsKIAlpZiAocmRldi0+Ymlvc1swXSAhPSAweDU1IHx8IHJkZXYt
-PmJpb3NbMV0gIT0gMHhhYSkgewogCQlnb3RvIGZyZWVfYmlvczsKIAl9CkBAIC0zMDksNyArMzIw
-LDcgQEAgYm9vbCByYWRlb25fZ2V0X2Jpb3Moc3RydWN0IHJhZGVvbl9kZXZpY2UgKnJkZXYpCiAJ
-CXJkZXYtPmlzX2F0b21fYmlvcyA9IGZhbHNlOwogCX0KIAotCURSTV9ERUJVRygiJXNCSU9TIGRl
-dGVjdGVkXG4iLCByZGV2LT5pc19hdG9tX2Jpb3MgPyAiQVRPTSIgOiAiQ09NIik7CisJRFJNX0lO
-Rk8oIiVzQklPUyBkZXRlY3RlZFxuIiwgcmRldi0+aXNfYXRvbV9iaW9zID8gIkFUT00iIDogIkNP
-TSIpOwogCXJldHVybiB0cnVlOwogZnJlZV9iaW9zOgogCWtmcmVlKHJkZXYtPmJpb3MpOwo=
---00151750e184b1e2c10467897f61--
+The v13 all-in-one patch (and previous versions) can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
+
+There are some consistent changes in this patchset respect to the
+previous version.
+
+Thanks to the Gui Jianfeng's contribution the io-throttle controller now
+uses bio-cgroup to track buffered (writeback) IO, instead of the memory
+cgroup controller, and it is also possible to mount the memcg,
+bio-cgroup and io-throttle in different mount points (see also
+http://lwn.net/Articles/308108/).
+
+Moreover, a kernel thread (kiothrottled) has been introduced to schedule
+throttled writeback requests asynchronously. This allow to smooth the
+bursty IO generated by the buch of pdflush's writeback requests. All
+those requests are added into a rbtree and dispatched asynchronously by
+kiothrottled using a deadline-based policy.
+
+The kiothrottled scheduler can be improved in future versions to
+implement a proportional/weighted IO scheduling, preferably with the
+feedback of the existent IO schedulers.
+
+Experimental results
+~~~~~~~~~~~~~~~~~~~~
+Following few quick experimental results with writeback IO. Results with
+synchronous IO (read and write) are more or less the same obtained with
+the previous io-throttle version.
+
+Two cgroups:
+
+cgroup-a: 4MB BW limit on /dev/sda
+cgroup-b: 2MB BW limit on /dev/sda
+
+Run 2 concurrent "dd"s (1 in cgroup-a, 1 in cgroup-b) to simulate a
+large write stream and generate many writeback IO requests.
+
+Expected results: 6MB/s from the disk's point of view, 4MB/s and 2MB/s
+from the application's point of view.
+
+Experimental results:
+
+* From the disk's point of view (dstat -d -D sda1):
+
+with kiothrottled	without kiothrottled
+--dsk/sda1-		--dsk/sda1-
+ read  writ		 read  writ
+   0  6252k		   0  9688k
+   0  6904k		   0  6488k
+   0  6320k		   0  2320k
+   0  6144k		   0  8192k
+   0  6220k		   0    10M
+   0  6212k		   0  5208k
+   0  6228k		   0  1940k
+   0  6212k		   0  1300k
+   0  6312k		   0  8100k
+   0  6216k		   0  8640k
+   0  6228k		   0  6584k
+   0  6648k		   0  2440k
+       ...		      ...
+      -----		      ----
+ avg: 6325k		 avg: 5928k
+
+* From the application's point of view:
+
+- with kiothrottled -
+cgroup-a)
+$ dd if=/dev/zero of=4m-bw.out bs=1M
+196+0 records in
+196+0 records out
+205520896 bytes (206 MB) copied, 40.762 s, 5.0 MB/s
+
+cgroup-b)
+$ dd if=/dev/zero of=2m-bw.out bs=1M
+97+0 records in
+97+0 records out
+101711872 bytes (102 MB) copied, 37.3826 s, 2.7 MB/s
+
+- without kiothrottled -
+cgroup-a)
+$ dd if=/dev/zero of=4m-bw.out bs=1M
+133+0 records in
+133+0 records out
+139460608 bytes (139 MB) copied, 39.1345 s, 3.6 MB/s
+
+cgroup-b)
+$ dd if=/dev/zero of=2m-bw.out bs=1M
+70+0 records in
+70+0 records out
+73400320 bytes (73 MB) copied, 39.0422 s, 1.9 MB/s
+
+Changelog (v12 -> v13)
+~~~~~~~~~~~~~~~~~~~~~~
+* rewritten on top of bio-cgroup to track writeback IO
+* now it is possible to mount memory, bio-cgroup and io-throttle cgroups in
+  different mount points
+* introduce a dedicated kernel thread (kiothrottled) to throttle writeback IO
+* updated documentation
+
+-Andrea
