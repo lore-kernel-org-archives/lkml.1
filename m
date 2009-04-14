@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300AbZDNFdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752509AbZDNFrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752300AbZDNFdu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 01:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZDNFdm
+	id S1752509AbZDNFrY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 01:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZDNFrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 01:33:42 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:40012 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbZDNFdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 01:33:41 -0400
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-Id: <aea82416ed6c6805412a2631fe8a8be6420c5c9d.1239687192.git.tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/1] Fix build failure drivers/parport/parport_pc.c for powerpc
-Date: Tue, 14 Apr 2009 15:33:40 +1000 (EST)
+	Tue, 14 Apr 2009 01:47:16 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:60153
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751833AbZDNFrP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 01:47:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkYCADLA40l8qNo9/2dsb2JhbAAIzSaDfAY
+X-IronPort-AV: E=Sophos;i="4.40,183,1238947200"; 
+   d="scan'208";a="466392438"
+Subject: [REGRESSION] threaded interrupt handler support breaks (some) irq
+	handling on AVR32
+From: Ben Nizette <bn@niasdigital.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 14 Apr 2009 15:46:48 +1000
+Message-Id: <1239688008.29831.2.camel@linux-51e8.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 51dcdfec6a274afc1c6fce180d582add9ff512c0 (parport: Use the PCI
-IRQ if offered) parport_pc_probe_port() gained an irqflags arg.  This
-isn't being supplied on powerpc.  This patch make powerpc fallback to
-the old behaviour, that is using "0" for irqflags.
+[cc'ing *correct* lkml address]
 
-Fixes build failure:
-In file included from drivers/parport/parport_pc.c:68:
-arch/powerpc/include/asm/parport.h: In function 'parport_pc_find_nonpci_ports':
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-make[3]: *** [drivers/parport/parport_pc.o] Error 1
+After pulling in Linus' latest this morning, a tap on the touchscreen of
+my AVR32-based board caused the system to hang hard.  It's an ads7843
+touchscreen controller driven by drivers/input/touchscreen/ads7846.c -
+the tap triggers a pen-down IRQ.  Note that I made a small mod to that
+driver; due to limitations of the AVR32's gpio interrupt controller I
+have to do
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Resend due to MUA badness
+@@ -1129,7 +1129,7 @@ static int __devinit ads7846_probe(struct spi_device
+*spi)
 
- arch/powerpc/include/asm/parport.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+        ts->last_msg = m;
 
-diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
-index 414c50e..94942d6 100644
---- a/arch/powerpc/include/asm/parport.h
-+++ b/arch/powerpc/include/asm/parport.h
-@@ -29,7 +29,7 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 		prop = of_get_property(np, "interrupts", NULL);
- 		if (!prop)
- 			continue;
--		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL) != NULL)
-+		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
- 			count++;
- 	}
- 	return count;
--- 
-1.6.0.6
+-       if (request_irq(spi->irq, ads7846_irq, IRQF_TRIGGER_FALLING,
++       if (request_irq(spi->irq, ads7846_irq, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
+                        spi->dev.driver->name, ts)) {
+                dev_dbg(&spi->dev, "irq %d busy?\n", spi->irq);
+                err = -EBUSY;
+
+This doesn't effect the driver operation as the irq handler checks the
+logic level of the line anyway.
+
+I've bisected the problem to
+
+commit 3aa551c9b4c40018f0e261a178e3d25478dc04a9
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Mon Mar 23 18:28:15 2009 +0100
+
+    genirq: add threaded interrupt handler support
+
+    Add support for threaded interrupt handlers:
+
+
+Because this doesn't revert cleanly I did the bisection again just to be
+sure and it came out the same.
+
+Just before the hang,
+~ # cat /proc/interrupts
+           CPU0
+  0:         42      intc  avr32_comparator
+  1:          0      intc  atmel_lcdfb
+  2:          1      intc  dw_dmac
+  4:          4      intc  atmel_spi.1
+  9:        555      intc  ttyS0
+ 21:          0      intc  rtc
+ 22:      34037      intc  tc_clkevt
+ 24:          0      intc  atmel_pwm
+ 25:       2439      intc  eth0
+ 28:        156      intc  atmel_mci.0
+ 31:          0      intc  atmel_usba_udc
+131:          0      gpio  ads7846
+
+Note it's that very last line which, when triggered, causes the hang.
+As you can see, it's the only one connected through the gpio interrupt
+chip.
+
+﻿No sysrq action is possible because of the limited kinds of terminals I
+can attach to this board.
+
+Given the limited scope for debug (no logs or sysrq output available) I
+can't think exactly what more I can tell you to help you get to the
+bottom of it.  I'll do whatever I can though, it's perfectly repeatable.
+
+Thanks,
+	--Ben.
+
+
 
