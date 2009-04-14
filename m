@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbZDNR4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZDNSAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbZDNR4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZDNRz7
+	id S1756807AbZDNSAr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZDNSAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:55:59 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:56967 "EHLO mail.vyatta.com"
+	Tue, 14 Apr 2009 14:00:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42260 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZDNRz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:55:58 -0400
-Date: Tue, 14 Apr 2009 10:55:39 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Michal Schmidt <mschmidt@redhat.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] skge: fix occasional BUG during MTU change
-Message-ID: <20090414105539.6388f677@nehalam>
-In-Reply-To: <20090407183623.7545bb0b@leela>
-References: <20090407183623.7545bb0b@leela>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753031AbZDNSAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:00:37 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain>
+References: <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain> <20090414161053.28145.1209.stgit@warthog.procyon.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dhowells@redhat.com, tj@kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
+Date: Tue, 14 Apr 2009 18:57:45 +0100
+Message-ID: <15312.1239731865@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 18:36:23 +0200
-Michal Schmidt <mschmidt@redhat.com> wrote:
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> The BUG_ON(skge->tx_ring.to_use != skge->tx_ring.to_clean) in skge_up()
-> was sometimes observed when setting MTU.
+> We should have the DECLARE_PER_CPU() #defines next to the DEFINE_PER_CPU 
+> ones, rather than somewhere else.
 > 
-> skge_down() disables the TX queue, but then reenables it by mistake via
-> skge_tx_clean().
-> Fix it by moving the waking of the queue from skge_tx_clean() to the
-> other caller. And to make sure start_xmit is not in progress on another
-> CPU, skge_down() should call netif_tx_disable().
-> 
-> The bug was reported to me by Jiri Jilek whose Debian system sometimes
-> failed to boot. He tested the patch and the bug did not happen anymore.
-> 
-> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
-> ---
->  drivers/net/skge.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> So moving the logic to <asm-generic/percpu.h> is wrong - make it all be in 
+> <linux/percpu.h> so that they can be maintained together.
 
-Tested fine. This should go to stable as well.
+Agreed, it would be nice.  However, x86 requires it to be declared in the
+middle of asm/percpu.h (ie: in asm-generic/percpu.h).  I'm trying to sort it
+out, but it's like trying to juggle hyperdimensional spaghetti:-/ How much
+header file overhaul do you wish to indulge in?  And can I split some headers
+into separate headers for declarations and inline functions?
 
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+David
