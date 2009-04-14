@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZDNKFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbZDNKEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbZDNKFU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbZDNKC5
+	id S1756594AbZDNKEl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbZDNKCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:02:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60388 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbZDNKC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:02:56 -0400
-Message-ID: <49E45F7B.7060709@cn.fujitsu.com>
-Date: Tue, 14 Apr 2009 18:03:39 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 14 Apr 2009 06:02:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45819 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753873AbZDNKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:02:41 -0400
+Date: Tue, 14 Apr 2009 10:01:56 GMT
+From: tip-bot for Gautham R Shenoy <ego@in.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, ego@in.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090414045535.7645.31641.stgit@sofia.in.ibm.com>
+References: <20090414045535.7645.31641.stgit@sofia.in.ibm.com>
+Subject: [tip:sched/core] sched: Nominate a power-efficient ilb in select_nohz_balancer()
+Message-ID: <tip-e790fb0ba64bfec158e1219d899cb588275d12ab@git.kernel.org>
+Git-Commit-ID: e790fb0ba64bfec158e1219d899cb588275d12ab
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "Theodore Ts'o" <tytso@mit.edu>
-CC: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: blktrace: event traces displayed wrong while ftrace blktrace
- is active
-References: <E1LtUBT-0007kq-HU@closure.thunk.org>
-In-Reply-To: <E1LtUBT-0007kq-HU@closure.thunk.org>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 10:01:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Ts'o wrote:
-> Hi Li,
-> 
-> Thanks for working on the ftrace blktrace code; I was wondering if you
-> could take a look at something.   While the nop or syscall tracer is
-> selected ("echo nop > /sys/kernel/debug/tracing/current_tracer"), the
-> event traces display like this:
-> 
->            <...>-4491  [001]  9556.305696: jbd2_start_commit: dev dm-0:8 transaction 335442
->            <...>-4491  [001]  9556.305700: jbd2_commit_locking: dev dm-0:8 transaction 335442
->            <...>-4491  [001]  9556.305713: jbd2_commit_flushing: dev dm-0:8 transaction 335442
->            <...>-4491  [001]  9556.305720: jbd2_submit_inode_data: dev dm-0 transaction ino 3807454
->            <...>-4491  [001]  9556.305833: jbd2_commit_logging: dev dm-0:8 transaction 335442
->            <...>-4491  [000]  9556.307241: jbd2_end_commit: dev dm-0:8 transaction 335442 head 334303
-> 
-> That is, the timestamp information what CPU, what pid, etc., is present.
-> 
-> However, if the blk tracer is active, this information is missing:
-> 
-> jbd2_start_commit: dev dm-0:8 transaction 333227
-> jbd2_commit_locking: dev dm-0:8 transaction 333227
-> jbd2_commit_flushing: dev dm-0:8 transaction 333227
-> jbd2_submit_inode_data: dev dm-0 transaction ino 1466869
-> jbd2_submit_inode_data: dev dm-0 transaction ino 1310793
-> jbd2_commit_logging: dev dm-0:8 transaction 333227
-> jbd2_end_commit: dev dm-0:8 transaction 333227 head 332814
-> 
+Commit-ID:  e790fb0ba64bfec158e1219d899cb588275d12ab
+Gitweb:     http://git.kernel.org/tip/e790fb0ba64bfec158e1219d899cb588275d12ab
+Author:     Gautham R Shenoy <ego@in.ibm.com>
+AuthorDate: Tue, 14 Apr 2009 10:25:35 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 14 Apr 2009 11:49:19 +0200
 
-The cause is:
+sched: Nominate a power-efficient ilb in select_nohz_balancer()
 
-static void blk_tracer_start(struct trace_array *tr)
-{
-	blk_tracer_enabled = true;
-	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;  <--- !!
-}
+The CPU that first goes idle becomes the idle-load-balancer and remains
+that until either it picks up a task or till all the CPUs of the system
+goes idle.
 
-If TRACE_ITER_CONTEXT_INFO is set, 'comm-pid [cpu] ts' will be
-printed, and vise versa.
+Optimize this further to allow it to relinquish it's post
+once all it's siblings in the power-aware sched_domain go idle, thereby
+allowing the whole package-core to go idle. While relinquising the post,
+nominate another an idle-load balancer from a semi-idle core/package.
 
-The purpose to unset this flag is to make binary output can be
-parsed by blkparse.
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090414045535.7645.31641.stgit@sofia.in.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> The context information for the blktrace is present:
-> 
->               rm-25433 [001]  9578.307485:   8,18   m   N cfq25433 slice expired t=0
->               rm-25433 [001]  9578.307486:   8,18   m   N cfq25433 put_queue
->       kjournald2-14059 [001]  9579.032457:   8,18   A   W 5631242 + 8 <- (8,18) 3671312
->       kjournald2-14059 [001]  9579.032462:   8,18   Q   W 5631242 + 8 [kjournald2]
->       kjournald2-14059 [001]  9579.032470:   8,18   G   W 5631242 + 8 [kjournald2]
-> 
-> It's just the context information for the event traces which are
-> missing.
-> 
-> Anyway, if you could take a look at this, it would be much appreciated.
-> Usually I can interpolate the the timestamps from the surrounding
-> blktrace lines, but it would be nice if I didn't have to do that.
-> 
 
+---
+ kernel/sched.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b0fefa3..36d213b 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4414,8 +4414,24 @@ int select_nohz_load_balancer(int stop_tick)
+ 			/* make me the ilb owner */
+ 			if (atomic_cmpxchg(&nohz.load_balancer, -1, cpu) == -1)
+ 				return 1;
+-		} else if (atomic_read(&nohz.load_balancer) == cpu)
++		} else if (atomic_read(&nohz.load_balancer) == cpu) {
++			int new_ilb;
++
++			if (!(sched_smt_power_savings ||
++						sched_mc_power_savings))
++				return 1;
++			/*
++			 * Check to see if there is a more power-efficient
++			 * ilb.
++			 */
++			new_ilb = find_new_ilb(cpu);
++			if (new_ilb < nr_cpu_ids && new_ilb != cpu) {
++				atomic_set(&nohz.load_balancer, -1);
++				resched_cpu(new_ilb);
++				return 0;
++			}
+ 			return 1;
++		}
+ 	} else {
+ 		if (!cpumask_test_cpu(cpu, nohz.cpu_mask))
+ 			return 0;
