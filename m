@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZDOIfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbZDOIfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZDOIfM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 04:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbZDOIed
+	id S1759200AbZDOIfk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 04:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759387AbZDOIfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 04:34:33 -0400
-Received: from relay.atmel.no ([80.232.32.139]:62020 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759339AbZDOIea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 04:34:30 -0400
-Date: Wed, 15 Apr 2009 10:33:52 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: tglx@linutronix.de, David Brownell <david-b@pacbell.net>,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       imre.deak@nokia.com, mingo@elte.hu
-Subject: Re: [REGRESSION] threaded interrupt handler support breaks (some)
- irq handling on AVR32
-Message-ID: <20090415103352.5ee43824@hskinnemoen-d830>
-In-Reply-To: <20090415095710.5c853a7f@hskinnemoen-d830>
-References: <1239685153.19815.12.camel@linux-51e8.site>
-	<1239698225.29831.14.camel@linux-51e8.site>
-	<1239759053.29831.37.camel@linux-51e8.site>
-	<20090415095710.5c853a7f@hskinnemoen-d830>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 15 Apr 2009 04:35:03 -0400
+Received: from solcza.etanetas.lt ([82.135.221.82]:46151 "EHLO
+	solcza.etanetas.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759376AbZDOIe7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 04:34:59 -0400
+Message-ID: <000601c9bd32$249ca570$52dd8752@namai-1y7vmhgjn>
+From: Shafer <shafer@10199.com>
+To: kvm-ppc@vger.kernel.org, kvm-ia64@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+CC: linux-security-module@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: =?iso-8859-1?b?U3RvcCBkcmVhbWluZyBhYm91dCBsb3Npbmcgd2VpZ2h0ICwgQWNhaSA=?=
+ =?iso-8859-1?b?QmVycnkgbWFrZXMgaXQgaGFwcGVuIHJpZ2h0IGJlZm9yZSB5b3VyIGU=?=
+ =?iso-8859-1?b?eWVzIA==?=
+Date: Tue, 14 Apr 2009 21:52:28 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
 Content-Transfer-Encoding: 7bit
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
-> Ben Nizette wrote:
-> > static irqreturn_t ads7846_irq(int irq, void *handle)
-> > {
-> > 	struct ads7846 *ts = handle;
-> > 	unsigned long flags;
-> > 
-> > 	spin_lock_irqsave(&ts->lock, flags);
-> > 	if (likely(get_pendown_state(ts))) {
-> > 		if (!ts->irq_disabled) {
-> > 			/* The ARM do_simple_IRQ() dispatcher doesn't act
-> > 			 * like the other dispatchers:  it will report IRQs
-> > 			 * even after they've been disabled.  We work around
-> > 			 * that here.  (The "generic irq" framework may help...)
-> > 			 */
-> > 			ts->irq_disabled = 1;
-> > 			disable_irq(ts->spi->irq);  
-> 
-> Shouldn't that be disable_irq_nosync()?
+good afterno0n
 
-Ok, simply stating that without providing an explanation was probably
-not so helpful...
+this unique blend of Acair Berry is the only diet pill you will ever need. You will lose weight and burn unwanted fat , feel healthier and more vibrant. Start your free trial now ! 
+visit site http://groups.yahoo.com/group/lumucejogymaz36/message/1
 
-I think the problem is that disable_irq() calls synchronize_irq(),
-which waits until the corresponding interrupt handler is no longer
-running on any CPU. And since we're calling it from the interrupt
-handler, we'll have a deadlock because the interrupt handler won't
-return until synchronize_irq() returns, and that won't happen until the
-interrupt handler returns and so on.
-
-So I think changing disable_irq() into disable_irq_nosync() (which
-doesn't call synchronize_irq()) will fix it, though I'm not sure what
-difference the threaded interrupt handling code makes -- AFAICT, this
-code has always been dangerous.
-
-Haavard
+code msg fgnjbvjk
+id 809
