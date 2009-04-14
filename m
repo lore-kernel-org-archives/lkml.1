@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZDNGWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZDNGX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260AbZDNGWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 02:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZDNGV4
+	id S1754391AbZDNGX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 02:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZDNGXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 02:21:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43296 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbZDNGVz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 02:21:55 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH v3 5/6] don't use bio-map in read() path
-Cc: kosaki.motohiro@jp.fujitsu.com, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <aarcange@redhat.com>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-In-Reply-To: <20090414151204.C647.A69D9226@jp.fujitsu.com>
-References: <20090414151204.C647.A69D9226@jp.fujitsu.com>
-Message-Id: <20090414152020.C656.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 02:23:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54393 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbZDNGXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 02:23:14 -0400
+Message-ID: <49E42C04.3020304@cn.fujitsu.com>
+Date: Tue, 14 Apr 2009 14:24:04 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Tom Zanussi <tzanussi@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/filters: allow user-input to be integer-like
+ string
+References: <49E2A594.4060306@cn.fujitsu.com>	 <20090413144513.GF5977@nowhere>  <20090413222951.GG8514@elte.hu> <1239682887.7011.54.camel@tropicana>
+In-Reply-To: <1239682887.7011.54.camel@tropicana>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 15:21:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Who know proper fixing way?
+>> This also conflicts with Tom's rewrite of the filter engine to make 
+>> it on-the-fly modifiable.
+>>
+>> Li, mind reworking your series against latest -tip? (it has Tom's 
+>> patch included already)
+>>
+>> Also, it would be nice to hear Tom's opinion about this series as 
+>> well. I know there's new parsing features planned - if it's better 
+>> that way then Tom you might want to pick up Li's patches and submit 
+>> them together with any pending or upcoming changes? We can apply 
+>> them directly too if that's easier to you.
+>>
+> 
+> I had started on the new parser a couple weeks ago, but got sidetracked
+> by other things.  I'll be getting back to it this week, but until it's
+> ready it wouldn't hurt for you to pick up Li's patches, and I'll make
+> any changes I need to in the new code.
+> 
 
-=================
-Subject: [Untested][RFC][PATCH] don't use bio-map in read() path
+Ok, I'll rebase those patches and send to Ingo.
 
-__bio_map_user_iov() has wrong usage of get_user_pages_fast().
-it doesn't have prevent fork mechanism.
-
-then, it sould be used read-side (memory to device transfer) gup only.
-
-This patch is obviously temporally fix. we can implement fork safe bio_map_user()
-the future...
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- block/blk-map.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: b/block/blk-map.c
-===================================================================
---- a/block/blk-map.c	2009-02-21 16:53:21.000000000 +0900
-+++ b/block/blk-map.c	2009-04-12 23:36:32.000000000 +0900
-@@ -55,7 +55,7 @@ static int __blk_rq_map_user(struct requ
- 	 * direct dma. else, set up kernel bounce buffers
- 	 */
- 	uaddr = (unsigned long) ubuf;
--	if (blk_rq_aligned(q, ubuf, len) && !map_data)
-+	if (blk_rq_aligned(q, ubuf, len) && !map_data && !reading)
- 		bio = bio_map_user(q, NULL, uaddr, len, reading, gfp_mask);
- 	else
- 		bio = bio_copy_user(q, map_data, uaddr, len, reading, gfp_mask);
-@@ -208,7 +208,7 @@ int blk_rq_map_user_iov(struct request_q
- 		}
- 	}
- 
--	if (unaligned || (q->dma_pad_mask & len) || map_data)
-+	if (unaligned || (q->dma_pad_mask & len) || map_data || read)
- 		bio = bio_copy_user_iov(q, map_data, iov, iov_count, read,
- 					gfp_mask);
- 	else
-
-
+> What this patch does will be needed by the new code too, so it would be
+> good to have it, though it might get moved around.  Patch 2 won't hurt
+> either, though everything in filter_parse() will probably change.  And
+> patch 3 fixes a bug that needs to be fixed regardless...
+> 
