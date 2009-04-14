@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbZDNQx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZDNQyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757722AbZDNQx3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbZDNQxR
+	id S1757123AbZDNQyz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZDNQyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:53:17 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:42553 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757546AbZDNQxQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:53:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fw/Fz4foPz5qBExAusgajGE+2Pg4J/ALiCTbz1fLR76SvsP3yWgNd7+WmHoXUIxTkS
-         MQTbqLJrold+a84yULCmdqORIYgqyts5l3C3/at6mjV87JEJptMgoCD6t3IbMcpK1Qy9
-         ejBwqPHbkPK1UbBa8E0m+I7oGvw3z7o6XiIos=
-Date: Tue, 14 Apr 2009 20:53:25 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       serue@us.ibm.com, dave@linux.vnet.ibm.com, orenl@cs.columbia.edu,
-       hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
-Message-ID: <20090414165325.GA27923@x200.localdomain>
-References: <20090410023207.GA27788@x200.localdomain> <alpine.LFD.2.00.0904100758410.4583@localhost.localdomain> <20090413073925.GB7085@x200.localdomain> <alpine.LFD.2.00.0904131137520.26713@localhost.localdomain> <20090414122906.GA20201@x200.localdomain> <20090414134420.GC27163@elte.hu>
+	Tue, 14 Apr 2009 12:54:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41996 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751751AbZDNQyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:54:45 -0400
+Date: Tue, 14 Apr 2009 18:54:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [PATCH -tip] x86: cpu/intel_cacheinfo.c fix compilation
+	warnings
+Message-ID: <20090414165433.GC2089@elte.hu>
+References: <1239712990.3079.17.camel@ht.satnam> <20090414133242.GB27163@elte.hu> <1239727581.2966.17.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090414134420.GC27163@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1239727581.2966.17.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 03:44:20PM +0200, Ingo Molnar wrote:
-> 
-> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > On Mon, Apr 13, 2009 at 11:39:51AM -0700, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Mon, 13 Apr 2009, Alexey Dobriyan wrote:
-> > > > 
-> > > > Well, in OpenVZ everything is in kernel/cpt/ and prefixed with "cpt_"
-> > > > and "rst_".
-> > > 
-> > > So?
-> > > 
-> > > We're not merging OpenVZ code _either_.
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Tue, 2009-04-14 at 15:32 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > > 
-> > This is to give example of other prefixes: cpt_ and rst_
-> > Are they fine?
+> > > fix:
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> > 
+> > you again 'fixed' a warning.
+> > 
+> > this made you fail to analyze and miss the real reason for this for 
+> > example:
+> > 
+> > >   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> > 
+> > > -	int node = cpu_to_node(cpu);
+> > 
+> > the local variable is clearly initialized.
+> > 
+> > The problem is not with that variable - the problem is most likely 
+> > with the cpu_to_node() macro not creating a reference to the 'cpu' 
+> > variable in a compiler-visible way, in the !NUMA case.
+> > 
+> > The typical way to solve this is to add a dummy:
+> > 
+> > 	(void)(cpu)
+> > 
+> > use to the 'cpu' parameter to the macro definition - or, (which is a 
+> > much better solution), to convert it to an inline function.
+> > 
 > 
-> Not really. 'rst' can be easily mistaken for 'reset' and neither 
-> really tells me at a glance what they do. They are also quite 
-> tongue-twisters.
-> 
-> See my namespace analysis and suggestions from yesterday for a 
-> proper naming scheme.
-> 
-> The key i believe is to move away from this singular 'the world is 
-> all about checkpoint and restore', and move it to a IMHO clearer 
-> state_*() type of naming which really isolates all these kernel 
-> state save/restore management APIs from other kernel APIs. (See my 
-> mail from yesterday for details.)
-> 
-> kstate_*() would be another, perhaps even clearer naming scheme. 
-> I.e.:
-> 
->   kstate_checkpoint_XYZ()
->   kstate_restore_XYZ()
->   kstate_collect_XYZ()
->   kstate_dump_XYZ()
->   kstate_image_XYZ()
->   ...
-> 
-> Just _look_ at them - they are expressive at a glance, and 
-> reasonably short. That is the kind of first-time impression
-> we need, not a 'wtf?' moment.
-> 
-> I just checked, there's zero hits on "git grep \<kstate_" in the 
-> kernel, so it's a pristine namespace. IMHO, go wild ...
+> OK send patch:
+> [PATCH -tip] x86: k8.h reference to node in node_to_k8_nb_misc for !CONFIG_K8_NB
 
-Need to try it for real.
+You sent a patch, but did you read+understand the 
+suggestions i made above?
 
-One minor nit. This kstate_ doesn't include quite a noticable of
-in-kernel state. For example, task readahead state isn't relevant
-to C/R at all. It's state but irrelevant state.
+	Ingo
