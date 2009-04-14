@@ -1,110 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbZDNWEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZDNWFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbZDNWEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZDNWEJ
+	id S1756135AbZDNWFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZDNWFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:04:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47796 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753717AbZDNWEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:04:08 -0400
-Date: Tue, 14 Apr 2009 18:04:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Tue, 14 Apr 2009 18:05:01 -0400
+Received: from mga03.intel.com ([143.182.124.21]:63666 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752582AbZDNWFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 18:05:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,187,1239001200"; 
+   d="scan'208";a="131469339"
+Subject: Re: [PATCH 4/4] irq: move move_irq_desc calling to set_affinity
+ directly -v4
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 1/8] tracing: consolidate trace and trace_event headers
-In-Reply-To: <20090414215102.GG5968@nowhere>
-Message-ID: <alpine.DEB.2.00.0904141801370.31421@gandalf.stny.rr.com>
-References: <20090414172337.280621613@goodmis.org> <20090414172640.556670154@goodmis.org> <20090414215102.GG5968@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Gary Hade <garyhade@us.ibm.com>, "lcm@us.ibm.com" <lcm@us.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49E4F5A3.9050802@kernel.org>
+References: <200903231757.53709.rusty@rustcorp.com.au>
+	 <20090323165921.GA7559@us.ibm.com>
+	 <200903241553.58209.rusty@rustcorp.com.au>
+	 <20090402013108.GB7103@us.ibm.com> <20090404003520.GA8847@us.ibm.com>
+	 <20090410215515.GC7242@us.ibm.com> <20090411065510.GA11799@elte.hu>
+	 <20090413220321.GA11098@us.ibm.com> <49E4146C.7060507@kernel.org>
+	 <49E4162A.3060701@kernel.org> <20090414131711.GA4403@elte.hu>
+	 <49E4F513.1060709@kernel.org>  <49E4F5A3.9050802@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 14 Apr 2009 15:03:49 -0700
+Message-Id: <1239746629.27006.8328.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nack.
 
-On Tue, 14 Apr 2009, Frederic Weisbecker wrote:
+This patch and the existing code in Linus's git is wrong.
 
-> On Tue, Apr 14, 2009 at 01:23:38PM -0400, Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Impact: clean up
-> > 
-> > Neil Horman (et. al.) criticized the way the trace events were broken up
-> > into two files. The reason for that was that ftrace needed to separate out
-> > the declarations from where the #include <linux/tracepoint.h> was used.
-> > It then dawned on me that the tracepoint.h header only needs to define the
-> > TRACE_EVENT macro if it is not already defined.
-> > 
-> > The solution is simply to test if TRACE_EVENT is defined, and if it is not
-> > then the linux/tracepoint.h header can define it. This change consolidates
-> > all the <traces>.h and <traces>_event_types.h into the <traces>.h file.
-> > 
-> > Reported-by: Neil Horman <nhorman@tuxdriver.com>
-> > Reported-by: Theodore Tso <tytso@mit.edu>
-> > Reported-by: Jiaying Zhang <jiayingz@google.com>
-> > Cc: Zhaolei <zhaolei@cn.fujitsu.com>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Jason Baron <jbaron@redhat.com>
-> > Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > ---
-> >  include/linux/tracepoint.h          |    9 +-
-> >  include/trace/irq.h                 |   51 +++++-
-> >  include/trace/irq_event_types.h     |   55 ------
-> >  include/trace/kmem.h                |  189 +++++++++++++++++++-
-> >  include/trace/lockdep.h             |   52 +++++-
-> >  include/trace/lockdep_event_types.h |   57 ------
-> >  include/trace/sched.h               |  333 ++++++++++++++++++++++++++++++++++-
-> >  include/trace/sched_event_types.h   |  337 -----------------------------------
-> >  include/trace/skb.h                 |   36 ++++-
-> >  include/trace/skb_event_types.h     |   38 ----
-> >  include/trace/trace_event_types.h   |    7 -
-> >  kernel/trace/events.c               |    1 +
-> >  kernel/trace/trace_events_stage_1.h |    4 +-
-> >  kernel/trace/trace_events_stage_2.h |    8 +-
-> >  kernel/trace/trace_events_stage_3.h |    4 +-
-> >  15 files changed, 663 insertions(+), 518 deletions(-)
-> >  delete mode 100644 include/trace/irq_event_types.h
-> >  delete mode 100644 include/trace/lockdep_event_types.h
-> >  delete mode 100644 include/trace/sched_event_types.h
-> >  delete mode 100644 include/trace/skb_event_types.h
-> >  delete mode 100644 include/trace/trace_event_types.h
+In mainline:
+
+static void ack_apic_edge(unsigned int irq)
+{
+        struct irq_desc *desc = irq_to_desc(irq);
+
+        irq_complete_move(&desc);
+...
+
+And
+
+static void irq_complete_move(struct irq_desc **descp)
+{
+...
+	*descp = desc = move_irq_desc(desc, me);
+...
+}
+
+So, we end up modifying the stack pointer in the stack frame of
+ack_apic_edge() but not really achieving the actual irq desc migration.
+
+hmm.. We should be seeing crashes/memory leaks etc when this code is
+turned on with the appropriate config options (apart from the code not
+achieving its actual intentions).
+
+As far as I can see, this patch also has the same issue.
+Please fix both mainline and this patch.
+
+And also, please see below:
+
+On Tue, 2009-04-14 at 13:44 -0700, Yinghai Lu wrote:
+> Impact: fix panic
 > 
-> 
-> 
-> I don't know if you use git-format-patch without -M or
-> something else specific to git pull request. But it looks
-> like the renames are not detected here, so it's a bit
-> hard to know what have been actually happened or deleted
-> in the end result.
-> 
+> so could move_masked_irq call move_irq_desc directly.
+> also we still don't support IRQ_MOVE_PCNTXT aka intr_remapped path
 
-Hmm, good point. I use git format-patch with no options and then use quilt 
-to send the emair. I always want the patches to work with quilt, thus I 
-avoid anything git specific.
+As you added the original bits and also modifying these bits now, it
+will be good if you can post a patch for this too. And if you can't test
+particular paths, please copy the interested folks and get an ack from
+their test results, before pushing the patch to upstream.
 
-My repo is public, so anyone can still look at it and run any git command 
-they want.
-
--- Steve
+thanks,
+suresh
 
