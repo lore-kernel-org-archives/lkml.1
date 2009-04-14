@@ -1,80 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZDNRWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbZDNRXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZDNRWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbZDNRW1
+	id S1757423AbZDNRXN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757255AbZDNRWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:22:27 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59302 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756869AbZDNRWZ (ORCPT
+	Tue, 14 Apr 2009 13:22:30 -0400
+Received: from mga02.intel.com ([134.134.136.20]:44215 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757168AbZDNRW2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:22:25 -0400
-Date: Tue, 14 Apr 2009 18:11:54 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, jmorris@namei.org,
-       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
-In-Reply-To: <200904130048.n3D0mw1f077050@www262.sakura.ne.jp>
-Message-ID: <Pine.LNX.4.64.0904141801300.24679@blonde.anvils>
-References: <200904080057.n380vZAH051872@www262.sakura.ne.jp>
- <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk>
- <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp>
- <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk>
- <200904130048.n3D0mw1f077050@www262.sakura.ne.jp>
+	Tue, 14 Apr 2009 13:22:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,186,1239001200"; 
+   d="scan'208";a="403075914"
+From: "Moore, Robert" <robert.moore@intel.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Date: Tue, 14 Apr 2009 10:22:25 -0700
+Subject: RE: [BISECTED] EEE PC hangs when booting off battery
+Thread-Topic: [BISECTED] EEE PC hangs when booting off battery
+Thread-Index: Acm9Ig7D+PNI7gjwRm2m6dlamw/tngAAwPpQ
+Message-ID: <4911F71203A09E4D9981D27F9D8308581D372489@orsmsx503.amr.corp.intel.com>
+References: <49E065CF.6040408@tuffmail.co.uk>
+ <200904140948.37633.bjorn.helgaas@hp.com>
+ <4911F71203A09E4D9981D27F9D8308581D3722EB@orsmsx503.amr.corp.intel.com>
+ <200904141056.14159.bjorn.helgaas@hp.com>
+In-Reply-To: <200904141056.14159.bjorn.helgaas@hp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009, Tetsuo Handa wrote:
-> Paul E. McKenney wrote:
-> > Is this reproducible?
-> Not always, but it is reproducible.
-> 
-> Al Viro wrote:
-> > I'd really love to see results of repeated alt-sysrq-p/alt-sysrq-l, just
-> > to see where was it actually spinning.
-> Below is sysrq message.
-> Maybe something related to khelper's current->mm == NULL warning problem.
+Your understanding is correct. 
 
-Maybe, up to a point, and I'll post separately on those warnings.
+The only interesting thing that happens when executing the battery methods like _STA, _BIF, and _BST is that the EC is usually involved - and this can be slow. Note that the AML interpreter is unlocked before accessing an EC operation region.
 
-> Full log is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc1-200904130930.txt .
-> 
-> [   47.412519] SysRq : Show Regs
-> [   47.413986] 
-> [   47.414584] Pid: 3655, comm: khelper Tainted: G        W  (2.6.30-rc1 #1) VMware Virtual Platform
-> [   47.415804] EIP: 0060:[<c0379c3d>] EFLAGS: 00000293 CPU: 0
-> [   47.415804] EIP is at __get_user_4+0x11/0x17
-> [   47.415804] EAX: f7150003 EBX: f7150000 ECX: 00000000 EDX: f6744000
-> [   47.415804] ESI: 000007b8 EDI: 7fffffff EBP: f6744f20 ESP: f6744f10
-> [   47.415804]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [   47.415804] CR0: 8005003b CR2: f7150000 CR3: 3599a000 CR4: 000006d0
-> [   47.415804] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> [   47.415804] DR6: ffff0ff0 DR7: 00000400
-> [   47.415804] Call Trace:
-> [   47.415804]  [<c0225f4e>] ? count+0x3e/0xb0
-> [   47.415804]  [<c0228581>] do_execve+0x621/0x890
-> [   47.415804]  [<c022bd8b>] ? getname+0x6b/0xa0
-> [   47.415804]  [<c010237e>] sys_execve+0x5e/0xb0
-> [   47.415804]  [<c0103d19>] syscall_call+0x7/0xb
-> [   47.415804]  [<c010aee4>] ? kernel_execve+0x24/0x30
-> [   47.415804]  [<c0172b6f>] ? ____call_usermodehelper+0xff/0x170
-> [   47.415804]  [<c0172a70>] ? ____call_usermodehelper+0x0/0x170
-> [   47.415804]  [<c0104707>] ? kernel_thread_helper+0x7/0x10
-
-I'm now thinking that this really is hitting in count(), despite
-the ? on that in the backtrace, and is entirely unrelated to the
-recent check_unsafe_exec() changes.  Stuck in a loop scanning the
-the kernelspace exec args without an mm.
-
-But my compiler on your config gives quite different function
-sizes: please would you post to the list or send me privately
-the output of "objdump -trd fs/exec.o", so we can check that.
-
-Thanks,
-Hugh
+>-----Original Message-----
+>From: Bjorn Helgaas [mailto:bjorn.helgaas@hp.com]
+>Sent: Tuesday, April 14, 2009 9:56 AM
+>To: Moore, Robert
+>Cc: Arjan van de Ven; Alan Jenkins; linux-acpi@vger.kernel.org; linux-
+>kernel; Kernel Testers List; Pallipadi, Venkatesh
+>Subject: Re: [BISECTED] EEE PC hangs when booting off battery
+>
+>On Tuesday 14 April 2009 09:55:58 am Moore, Robert wrote:
+>> In fact, ACPI methods can execute concurrently -- constrained by the ACPI
+>specification itself. The "big lock" is released before anything that will
+>block for a significant amount of time, allowing other methods to run.
+>
+>We had a discussion about this a couple years ago:
+>  http://www.mail-archive.com/linux-acpi%40vger.kernel.org/msg06976.html
+>
+>Here's my understanding (please correct me if I'm wrong):
+>
+>- The ACPI CA holds a mutex while executing an AML method (see
+>  acpi_ex_enter_interpreter()).
+>
+>- When an AML method blocks, the ACPI CA releases the mutex, which
+>  allows another AML method to run while the first is blocked.
+>
+>- Because of the mutex, at most one AML method can be executing at
+>  any given time.  Others may have started, but they are blocked
+>  until the current method completes or blocks itself.
+>
+>- The undocumented "acpi_serialize" option makes the ACPI CA hold
+>  the mutex for the entire duration of a method, even while a method
+>  is blocked.
+>
+>Based on that, my guess about the battery init being slow because of
+>a long-running AML method might be incorrect, although I suppose
+>it's still possible to write AML busy-loops that never block.
+>
+>I'd really like to understand what's making it slow.  The only
+>thing that looks at all unusual in acpi_battery_add() is
+>acpi_battery_update(), and that evaluates _STA and _BIF and
+>not much else.
+>
+>Arjan, do you have any more information?  Is the battery driver
+>slow on all laptops?  If not, where did you see the problem?  Do
+>you have a DSDT for them?
+>
+>Bjorn
+>
+>> >-----Original Message-----
+>> >From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+>> >owner@vger.kernel.org] On Behalf Of Bjorn Helgaas
+>> >Sent: Tuesday, April 14, 2009 8:49 AM
+>> >To: Arjan van de Ven
+>> >Cc: Alan Jenkins; linux-acpi@vger.kernel.org; linux-kernel; Kernel
+>Testers
+>> >List; Pallipadi, Venkatesh
+>> >Subject: Re: [BISECTED] EEE PC hangs when booting off battery
+>> >
+>> >On Tuesday 14 April 2009 09:17:28 am Arjan van de Ven wrote:
+>> >> On Tue, 14 Apr 2009 08:59:01 -0600
+>> >> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+>> >>
+>> >> > I can't help with the real problem of why the asynchronous battery
+>> >> > init causes the hang.
+>> >>
+>> >> that got fixed already for the module case.
+>> >
+>> >But apparently still broken for the builtin case?  I think Alan is
+>> >running pretty new bits -- he said "latest git" on April 11.
+>> >
+>> >> > But I do object to the magic makefile ordering change in that
+>commit.
+>> >> > Nobody reading the makefile can tell why battery is down at the end,
+>> >> > and moving it apparently slows down boot significantly.
+>> >>
+>> >> for all cases I've seen it actually speeds it up, because the battery
+>> >> now runs concurrently with the disk probe.
+>> >
+>> >I understand; I just meant that if somebody moves it back where it
+>> >was, we'll mysteriously lose the speedup you got.  Maybe a comment
+>> >in the makefile would be a short-term solution.
+>> >
+>> >> > So the
+>> >> > ordering change just feels like a band-aid that covers up a place
+>> >> > where ACPI could be improved.
+>> >>
+>> >> the reason for the move is that both the battery and other pieces take
+>> >> the big acpi lock; which defeats the parallelism. So the battery needs
+>> >> to happen at the end instead.
+>> >
+>> >Yep.  But I don't think it's anything about the Linux battery driver
+>> >itself that makes it slow.  I think it's more likely that some of the
+>> >ACPI methods it executes happen to be slow.  And that could afflict
+>> >*any* driver, depending on the whim of a BIOS writer.
+>> >
+>> >My guess is that if we could run ACPI methods concurrently and avoid
+>> >that big lock, the ordering wouldn't matter.  I know we probably can't
+>> >do that any time soon, but I think it's good to make the problem
+>> >visible at least with a "we need this magic order because ACPI doesn't
+>> >support concurrent method execution" sort of comment.
+>> >
+>> >Bjorn
