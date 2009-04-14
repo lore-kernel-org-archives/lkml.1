@@ -1,135 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZDNOhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZDNOk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756467AbZDNOhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 10:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbZDNOgt
+	id S1756146AbZDNOk2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 10:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZDNOkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 10:36:49 -0400
-Received: from flatoutfitness.com ([66.178.130.209]:51509 "EHLO selene"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755040AbZDNOgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 10:36:48 -0400
-Message-ID: <49E49F46.8030509@seiner.com>
-Date: Tue, 14 Apr 2009 07:35:50 -0700
-From: Yan Seiner <yan@seiner.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 14 Apr 2009 10:40:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45212 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751496AbZDNOkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 10:40:09 -0400
+Date: Tue, 14 Apr 2009 16:38:29 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
+Message-ID: <20090414143829.GG28265@random.random>
+References: <20090414151204.C647.A69D9226@jp.fujitsu.com> <20090414151554.C64A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@verizon.net>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, aabdulla@nvidia.com
-Subject: Re: mcp55 forcedeth woes
-References: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us> <200904132100.58056.gene.heskett@verizon.net> <49E3EF9F.6090600@seiner.com> <200904132224.13716.gene.heskett@verizon.net>
-In-Reply-To: <200904132224.13716.gene.heskett@verizon.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414151554.C64A.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> On Monday 13 April 2009, Yan Seiner wrote:
->   
->> Gene Heskett wrote:
->>     
->>> On Monday 13 April 2009, Yan Seiner wrote:
->>>       
->>>> I have a few Asus M2N-SLI deluxe mobos.  These mobos have the MCP55
->>>> chipset and two 1gb ethernet ports.  Occasionally, and for no reason that
->>>> I can figure out, these ports will die.  There are various ways to try
->>>> and fix these; they seem to be about 50% effective, and approach
->>>> something akin to voodoo.
->>>>
->>>> Based on this discussion here:
->>>>
->>>> http://patchwork.kernel.org/patch/16212/
->>>>
->>>> I've gotten the ability to turn the ports on and off somewhat.
->>>>
->>>> For port 0,
->>>>
->>>> ethtool -s eth0 autoneg off speed 10 duplex full
->>>>
->>>> turns on the link, and gets me half-duplex, 10mb/sec. Not much, granted.
->>>>
->>>> ethtool -s eth0 autoneg off speed 100 duplex full
->>>>
->>>> causes the link to go up and down on about a 2 second cycle.
->>>>
->>>> ethtool -s eth0 autoneg on
->>>>
->>>> causes the link to drop.
->>>>
->>>> For port 1, the behavior is similar, except that I can get a stable 100
->>>> mbit connection.
->>>>
->>>> So the problem is in the autoneg code. It's a driver issue as this is
->>>> reported widely to work under windows of various flavors.
->>>>
->>>> I'm running 2.6.29.1; I'm ok with patching and building kernels, but I'm
->>>> not a kernel hacker.
->>>>
->>>> What, if anything, can I provide and do to fix this?
->>>>         
->>> It was in 2.6.29-rc8 or 9 that they finally got the ability to turn them
->>> back on on my identical mobo.  Through most of the 29-rcx series we had
->>> the choice of rebooting with the reset button, or powering everything
->>> associated with the ports down for about 2 minutes so they would forget
->>> they were turned off by a graceful shutdown.  Now they are turned off (and
->>> I've still NDI why) and back on like they are supposed to be.   I called
->>> that a PIMA.
->>>       
->> Yeah, I've been fighting this for a while....  The boards are rock-solid
->> under load, which is why I like them.... But this is a PITA.
->>
->> This board worked fine, then I shutdown and the ports have not come back
->> since.  I'm running 2.6.29.1 - no joy on the ports.
->>
->>     
->
-> Shut it down, including removing the power cord, and unplug all ethernet 
-> cables attached, give it time to fully discharge all stored power in the caps, 
-> at least 30 secs, I usually go make a cup of tea in the microwave, so its 
-> about 3 minutes.  Plug everything back in and power it up, they should work 
-> again.
->
-> However, I've been running 2.6.29.1-rc2, and that has not been a problem, I 
-> can see the leds on the ports go plumb dark at it runs the shutdown, and come 
-> back on about 15 seconds before the init.d/network script runs as it boots up.
->  
->   
->> I'm building forcedeth from .30-rc1 - we'll see if that helps.
->> Something like 15% of the driver changed, so it's still in very heavy
->> development.
->>     
->
-> Wow!  Like you, I'm using forcedeth. 2.6.29.1-rc1 did have a short uptime for 
-> forcedeth bug IIRC, but so far, -rc2 has lasted longer than KDE-4.2.1 on this 
-> F10 system will, I had an 8 day uptime at first, and I'm in the 5th day again.  
-> I killed it the first time screwing with some worthless bluetooth dongles I 
-> got from USBGear.  Locked it up tighter than a Nebraska bulls ass in flytime.  
-> Had to use the reset button. :(
->   
-I followed Gene's advice and got some progress....
+On Tue, Apr 14, 2009 at 03:16:52PM +0900, KOSAKI Motohiro wrote:
+> +	if (PageSwapCache(page) &&
+> +	    page_count(page) != page_mapcount(page) + 2) {
+> +		ret = SWAP_FAIL;
+> +		goto out_unmap;
+> +	}
+> +
 
-port 0 is now fully functional.  Port 1, however, remains in its 
-semi-zombie state.  Maybe I'll take the machine off-line longer next 
-time.   Maybe I'll sacrifice a black and white chicken at the same time.
-
-I also back-ported 2.9.30-rc1 forcedeth.c to my 2.6.29.1 kernel; no 
-difference whatsoever.
-
-One other observation:
-
-On the switch, the status LEDs glow with half-brightness when I enable 
-port 1 using ethtool...  This leads me to suspect that the voltage 
-levels on the port aren't normal.  Not being a hardware engineer, I have 
-no idea what importance this has; I am offering this as an observation.
-
---Yan
-
--- 
-Yan Seiner 
-
-Support my bid for the 4J School Board.
-Visit http://www.seiner.com/schoolboard
-
-
+Besides the race pointed out by Nick, this also would break KVM
+swapping with mmu notifier. mmu_notifier_invalidate_page must be
+invoked before reading page_count for this to work. However the
+invalidate has to be moved below the
+mlock/ptep_clear_flush_young_notify, no point to get rid of sptes if
+any of the spte or the pte is still young.
