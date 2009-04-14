@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZDNQsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZDNQtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbZDNQsy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbZDNQs3
+	id S1756206AbZDNQtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbZDNQsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:48:29 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55868 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757338AbZDNQs2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:48:28 -0400
-Subject: Re: [PATCH 10/30] cr: core stuff
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090414154139.GA8085@us.ibm.com>
-References: <20090410023539.GK27788@x200.localdomain>
-	 <20090413214701.GA24509@us.ibm.com>
-	 <20090414152752.GC27461@x200.localdomain>
-	 <20090414154139.GA8085@us.ibm.com>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 09:48:24 -0700
-Message-Id: <1239727704.32604.80.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 12:48:41 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41616 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757391AbZDNQsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:48:40 -0400
+Date: Tue, 14 Apr 2009 09:48:39 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jan Blunck <jblunck@suse.de>,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] atomic: Only take lock when the counter drops to zero
+	on UP as well
+Message-ID: <20090414164839.GI6753@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090411141754.45F7B16080@e179.suse.de> <20090414065239.GA20951@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414065239.GA20951@wotan.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 10:41 -0500, Serge E. Hallyn wrote:
-> > Module can legally support C/R for its files.
-> > In the end it most certainly will end up with module registering restart
+On Tue, Apr 14, 2009 at 08:52:39AM +0200, Nick Piggin wrote:
+> On Fri, Apr 10, 2009 at 06:13:57PM +0200, Jan Blunck wrote:
+> > I think it is wrong to unconditionally take the lock before calling
+> > atomic_dec_and_test() in _atomic_dec_and_lock(). This will deadlock in
+> > situation where it is known that the counter will not reach zero (e.g. holding
+> > another reference to the same object) but the lock is already taken.
+> > 
+> > Signed-off-by: Jan Blunck <jblunck@suse.de>
 > 
-> Which module?  The module defining a filesystem?
+> Paul's worry about callers aside, I think it is probably a good idea
+> to reduce ifdefs and share more code.
+
+I am also OK with this patch.
+
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> So for this patch,
 > 
-> In that case I'm just not clear on how the restart code will know which
-> fs's file_operations to use to pick a fops->restart() fn.
-
-There's not an f_op on the restart side -- there can't be.  The problem
-is that we get a CR_FD_FOO object and need to call off into the "foo"
-code to recreate the 'struct file'.  To me, that screams of a nice list
-of function handlers indexed be CR_FD_FOO.
-
-So, we have a list of these sitting around somewhere:
-
-int restore_fd_func(struct cr_ctx *ctx, struct cr_fd_hdr *fd, void *private)
-
-and when we see a CR_FD_HDR object, we look up its type and call the
-respective handler.  The handler will get enough data to go and restore
-the fd.  The fd number and other things common to all fds should be
-present in the cr_fd_hdr.
-
--- Dave
-
+> Acked-by: Nick Piggin <npiggin@suse.de>
+> 
+> > ---
+> >  lib/dec_and_lock.c |    3 +--
+> >  1 files changed, 1 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/lib/dec_and_lock.c b/lib/dec_and_lock.c
+> > index a65c314..e73822a 100644
+> > --- a/lib/dec_and_lock.c
+> > +++ b/lib/dec_and_lock.c
+> > @@ -19,11 +19,10 @@
+> >   */
+> >  int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
+> >  {
+> > -#ifdef CONFIG_SMP
+> >  	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
+> >  	if (atomic_add_unless(atomic, -1, 1))
+> >  		return 0;
+> > -#endif
+> > +
+> >  	/* Otherwise do it the slow way */
+> >  	spin_lock(lock);
+> >  	if (atomic_dec_and_test(atomic))
+> > -- 
+> > 1.6.0.2
