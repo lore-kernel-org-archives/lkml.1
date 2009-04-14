@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZDNQXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZDNQZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbZDNQXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZDNQXG
+	id S1755769AbZDNQZn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZDNQZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:23:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37849 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbZDNQXF (ORCPT
+	Tue, 14 Apr 2009 12:25:33 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37180 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbZDNQZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:23:05 -0400
-Date: Tue, 14 Apr 2009 12:23:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: xfs-masters@oss.sgi.com, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: [PATCH 5/6] Handle possible bio_alloc failure in xfs
-Message-ID: <20090414162301.GA24967@infradead.org>
-References: <200904141636.45463.knikanth@suse.de>
+	Tue, 14 Apr 2009 12:25:32 -0400
+Message-ID: <49E4B8E9.7050703@zytor.com>
+Date: Tue, 14 Apr 2009 09:25:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904141636.45463.knikanth@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Avi Kivity <avi@redhat.com>
+CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
+References: <1239653210-10422-1-git-send-email-glommer@redhat.com> <49E45894.7090700@redhat.com> <49E4B4D4.1020903@zytor.com> <49E4B654.6060101@redhat.com>
+In-Reply-To: <49E4B654.6060101@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 04:36:45PM +0530, Nikanth Karthikesan wrote:
-> Handle bio_alloc failure in xfs.
+Avi Kivity wrote:
 > 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> Why do we care?  The guest can only harm itself, and if it wants to
+> disable interrupts, it would be a lot easier for it to run a plain 'cli'.
+> 
+> I guess it would be a problem if we emulated 'mov ss' for ordinary
+> userspace or vm86 mode, but we don't.
+> 
 
-NAK, as already explained by Jens.
+Well, the answer is that mov ss is an unprivileged instruction.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
