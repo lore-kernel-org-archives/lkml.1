@@ -1,24 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbZDNWRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZDNWSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbZDNWRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZDNWRP
+	id S1756710AbZDNWSo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZDNWS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:17:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55980
+	Tue, 14 Apr 2009 18:18:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55985
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754932AbZDNWRO (ORCPT
+	by vger.kernel.org with ESMTP id S1752120AbZDNWS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:17:14 -0400
-Date: Tue, 14 Apr 2009 15:17:05 -0700 (PDT)
-Message-Id: <20090414.151705.43540582.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: mschmidt@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] skge: fix occasional BUG during MTU change
+	Tue, 14 Apr 2009 18:18:28 -0400
+Date: Tue, 14 Apr 2009 15:18:19 -0700 (PDT)
+Message-Id: <20090414.151819.88596256.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: netdev@vger.kernel.org, subrata@linux.vnet.ibm.com,
+       Linuxppc-dev@ozlabs.org, greg@kroah.com, raisch@de.ibm.com,
+       themann@de.ibm.com, tklein@de.ibm.com, julia@diku.dk, jgarzik@pobox.com,
+       mel@skynet.ie, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       sachinp@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       linux-net@vger.kernel.org
+Subject: Re: [BUILD FAILURE 06/12] Next April 14 : PPC64 randconfig
+ [drivers/net/ehea/ehea_main.c]
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090414105539.6388f677@nehalam>
-References: <20090407183623.7545bb0b@leela>
-	<20090414105539.6388f677@nehalam>
+In-Reply-To: <20090414183938.GA17134@orion>
+References: <1239733747.5344.78.camel@subratamodak.linux.ibm.com>
+	<20090414183938.GA17134@orion>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,31 +33,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Tue, 14 Apr 2009 10:55:39 -0700
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Tue, 14 Apr 2009 22:39:38 +0400
 
-> On Tue, 7 Apr 2009 18:36:23 +0200
-> Michal Schmidt <mschmidt@redhat.com> wrote:
+> ehea: Fix incomplete conversion to net_device_ops
 > 
->> The BUG_ON(skge->tx_ring.to_use != skge->tx_ring.to_clean) in skge_up()
->> was sometimes observed when setting MTU.
->> 
->> skge_down() disables the TX queue, but then reenables it by mistake via
->> skge_tx_clean().
->> Fix it by moving the waking of the queue from skge_tx_clean() to the
->> other caller. And to make sure start_xmit is not in progress on another
->> CPU, skge_down() should call netif_tx_disable().
->> 
->> The bug was reported to me by Jiri Jilek whose Debian system sometimes
->> failed to boot. He tested the patch and the bug did not happen anymore.
->> 
->> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
->> ---
->>  drivers/net/skge.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Tested fine. This should go to stable as well.
-> 
-> Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+> Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-Applied, thanks everyone.
+Applied, thanks Alexander.
