@@ -1,76 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755640AbZDNMpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbZDNMtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755640AbZDNMpy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZDNMpo
+	id S1755726AbZDNMtq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZDNMth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:45:44 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:2898 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753062AbZDNMpn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:45:43 -0400
-Message-ID: <49E48573.5010604@petalogix.com>
-Date: Tue, 14 Apr 2009 14:45:39 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       lkml <linux-arch@vger.kernel.org>, microblaze-uclinux@itee.uq.edu.au,
-       Arnd Bergmann <arnd@arndb.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       John Williams <john.williams@petalogix.com>,
-       John Linn <John.Linn@xilinx.com>,
-       Stephen Neuendorffer <stephenn@xilinx.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [GIT PULL, v3] Microblaze architecture (arch/microblaze/) support
-References: <49DC4024.6090800@petalogix.com> <alpine.LFD.2.00.0904131818050.26713@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904131818050.26713@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 08:49:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40985 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753190AbZDNMtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 08:49:36 -0400
+Subject: Re: [tip:x86/cpu] x86: cacheinfo: replace sysfs interface for
+ cache_disable feature
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, akpm@linux-foundation.org,
+       mark.langsdorf@amd.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090414115805.GW3558@elte.hu>
+References: <20090409131849.GJ31527@alberich.amd.com>
+	 <tip-f8b201fc7110c3673437254e8ba02451461ece0b@git.kernel.org>
+	 <1239598324.2983.2.camel@ht.satnam> <1239598612.2983.4.camel@ht.satnam>
+	 <20090414115805.GW3558@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 14 Apr 2009 18:18:20 +0530
+Message-Id: <1239713300.3079.22.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Wed, 8 Apr 2009, Michal Simek wrote:
->   
->> This repository contains Linux support for Xilinx Microblaze CPU.
->>
->> Please pull
->>     git://git.monstr.eu/linux-2.6-microblaze.git for-linus
->>     
->
-> So I pulled, but I notice that there's a few empty header files.
->   
-Thanks.
-> That looks intentional (they came in through a commit that says "headers 
-> simple files - empty or redirect to asm-generic"), but it means that "make 
-> distclean" will remove them. So if you really want an empty header file, 
-> you should really make it not _completely_ empty - add a comment to it or 
-> something.
->   
-I have just sent you request with Microblaze fixes. As Ingo wrote in
-LKML is the patch which fixed problem
-with some empty header files (this patch is in include in my request
-too). In my request pull are another simple changes
-which solve some compilation bugs for Microblaze which comes from merge
-windows.
+On Tue, 2009-04-14 at 13:58 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > On Mon, 2009-04-13 at 10:22 +0530, Jaswinder Singh Rajput wrote:
+> > > Hello Mark,
+> > > 
+> > > On Fri, 2009-04-10 at 12:37 +0000, Mark Langsdorf wrote:
+> > > > Commit-ID:  f8b201fc7110c3673437254e8ba02451461ece0b
+> > > > Gitweb:     http://git.kernel.org/tip/f8b201fc7110c3673437254e8ba02451461ece0b
+> > > > Author:     Mark Langsdorf <mark.langsdorf@amd.com>
+> > > > AuthorDate: Thu, 9 Apr 2009 15:18:49 +0200
+> > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > CommitDate: Fri, 10 Apr 2009 14:21:53 +0200
+> > > > 
+> > > > x86: cacheinfo: replace sysfs interface for cache_disable feature
+> > > > 
+> > > > Impact: replace sysfs attribute
+> > > > 
+> > > > Current interface violates against "one-value-per-sysfs-attribute
+> > > > rule". This patch replaces current attribute with two attributes --
+> > > > one for each L3 Cache Index Disable register.
+> > > > 
+> > > > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> > > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > > > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > > > LKML-Reference: <20090409131849.GJ31527@alberich.amd.com>
+> > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > > 
+> > > > 
+> > > > ---
+> > > >  arch/x86/kernel/cpu/intel_cacheinfo.c |   90 ++++++++++++++++----------------
+> > > >  1 files changed, 45 insertions(+), 45 deletions(-)
+> > > > 
+> > > > diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> > > > index 0cde071..fc28291 100644
+> > > > --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
+> > > > +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> > > > @@ -697,73 +697,69 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
+> > > >  #define to_object(k)	container_of(k, struct _index_kobject, kobj)
+> > > >  #define to_attr(a)	container_of(a, struct _cache_attr, attr)
+> > > >  
+> > > > -static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+> > > > +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
+> > > > +				  unsigned int index)
+> > > >  {
+> > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+> > > > -	int node = cpu_to_node(cpumask_first(mask));
+> > > > -	struct pci_dev *dev = NULL;
+> > > > -	ssize_t ret = 0;
+> > > > -	int i;
+> > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
+> > > > +	int node = cpu_to_node(cpu);
+> > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
+> > > > +	unsigned int reg = 0;
+> > > 
+> > > This leads to compilation warnings:
+> > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
+> > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+> > > arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+> > > 
+> > > >  
+> > > > -static ssize_t
+> > > > -store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+> > > > -		    size_t count)
+> > > > +static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
+> > > > +	const char *buf, size_t count, unsigned int index)
+> > > >  {
+> > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+> > > > -	int node = cpu_to_node(cpumask_first(mask));
+> > > > -	struct pci_dev *dev = NULL;
+> > > > -	unsigned int ret, index, val;
+> > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
+> > > > +	int node = cpu_to_node(cpu);
+> > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
+> > > > +	unsigned long val = 0;
+> > > >  
+> > > 
+> > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
+> > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> > > arch/x86/kernel/cpu/intel_cacheinfo.c:737: warning: unused variable ‘cpu’
+> > 
+> > Oops it is also pointing to node:
+> > 
+> > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> > arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> 
+> Mind sending a fix? We really dont want warnings noise in the x86 
+> tree.
+> 
+
+Ok I send it.
+
+when I fixed node then it gives warnings for :
+  arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+  arch/x86/kernel/cpu/intel_cacheinfo.c:713: warning: unused variable ‘cpu’
+
+So I also fixed it.
+
+
+> I was also thinking about adopting the Sparc trick: adding -Werror 
+> to arch/x86/ files only, fixing all the fallout and ensuring no new 
+> warnings from a flag day on. Anyone interested in doing that?
+> 
+
+Yes, this will be nice idea. Should I send patch for:
+"adding -Werror to arch/x86/ files only"
 
 Thanks,
-Michal
-
-> 		Linus
->   
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+--
+JSR
 
