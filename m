@@ -1,66 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZDNVxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbZDNVxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZDNVxM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZDNVwv
+	id S1756974AbZDNVxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 17:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZDNVxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:52:51 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:44299 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbZDNVwu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:52:50 -0400
-Message-ID: <49E505B3.5070005@ovro.caltech.edu>
-Date: Tue, 14 Apr 2009 14:52:51 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 14 Apr 2009 17:53:06 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38909 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756750AbZDNVxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 17:53:05 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix RTC-CMOS message, now with SOB
+References: <m3vdpnvvzt.fsf@intrepid.localdomain>
+	<m3r60bvvrg.fsf@intrepid.localdomain>
+	<200904041102.07751.david-b@pacbell.net>
+	<m3bprcusdw.fsf@intrepid.localdomain>
+	<20090409131556.07c8eed9.akpm@linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 14 Apr 2009 23:53:01 +0200
+In-Reply-To: <20090409131556.07c8eed9.akpm@linux-foundation.org> (Andrew Morton's message of "Thu\, 9 Apr 2009 13\:15\:56 -0700")
+Message-ID: <m3prfeucle.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-CC: Ira Snyder <iws@ovro.caltech.edu>, Arnd Bergmann <arnd@arndb.de>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-References: <20090224000002.GA578@ovro.caltech.edu> <fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com> 	<49E4FED0.1020003@ovro.caltech.edu> <fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com>
-In-Reply-To: <fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 14 Apr 2009 14:52:50 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Grant,
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> Thanks David.  I haven't looked closely at the xilinx pci data sheet
-> yet, but I don't expect too many issues in this area.  As you say, it
-> won't take much to code it up.  I'll be poking my VHDL engineer to
-> make it do what I want it to.  :-)
+> The patch doesn't apply to current kernels (the driver core guys have
+> been running rampant again, methinks).  Please redo, retest, resend?
 
-The key aspects of the core will be that it is Master/Target
-so that it can take over the PCI bus, and that it has a
-DMA engine that can take care of most of the work. In
-your case, since you have a DMA controller on the host
-(MPC5200) and the target (Xilinx), your driver might end
-up having nicer symmetry than our application. The
-most efficient implementation will be the one that
-uses PCI writes, i.e., MPC5200 DMAs to the Xilinx core,
-and the Xilinx core DMAs to the MPC5200. If you use
-a PCI Target only core, then the MPC5200 DMA controller
-will have to do all the work, and read transfers might
-be slightly less efficient.
-
-Our target boards (PowerPC) live in compactPCI backplanes
-and talk to x86 boards that do not have DMA controllers.
-So the PCI target board DMA controllers are used to
-transfer data efficiently to the x86 host (writes)
-and less efficiently from the host to the boards
-(reads). Our bandwidth requirements are 'to the host',
-so we can live with the asymmetry in performance.
-
-> I'll keep you up to date on my progress.
-
-Sounds good.
-
-Cheers,
-Dave
+Sure, will do.
+-- 
+Krzysztof Halasa
