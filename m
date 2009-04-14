@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZDNQtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZDNQtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbZDNQtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbZDNQsl
+	id S1757365AbZDNQtu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZDNQti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:48:41 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:41616 "EHLO e6.ny.us.ibm.com"
+	Tue, 14 Apr 2009 12:49:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51387 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757391AbZDNQsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:48:40 -0400
-Date: Tue, 14 Apr 2009 09:48:39 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jan Blunck <jblunck@suse.de>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] atomic: Only take lock when the counter drops to zero
-	on UP as well
-Message-ID: <20090414164839.GI6753@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090411141754.45F7B16080@e179.suse.de> <20090414065239.GA20951@wotan.suse.de>
+	id S1756487AbZDNQth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:49:37 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC][PATCH v3 3/6] nfs, direct-io: fix fork vs direct-io race on nfs
+References: <20090414151204.C647.A69D9226@jp.fujitsu.com>
+	<20090414151806.C650.A69D9226@jp.fujitsu.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 14 Apr 2009 12:48:01 -0400
+In-Reply-To: <20090414151806.C650.A69D9226@jp.fujitsu.com> (KOSAKI Motohiro's
+	message of "Tue, 14 Apr 2009 15:19:24 +0900 (JST)")
+Message-ID: <x4963h7yyf2.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090414065239.GA20951@wotan.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 08:52:39AM +0200, Nick Piggin wrote:
-> On Fri, Apr 10, 2009 at 06:13:57PM +0200, Jan Blunck wrote:
-> > I think it is wrong to unconditionally take the lock before calling
-> > atomic_dec_and_test() in _atomic_dec_and_lock(). This will deadlock in
-> > situation where it is known that the counter will not reach zero (e.g. holding
-> > another reference to the same object) but the lock is already taken.
-> > 
-> > Signed-off-by: Jan Blunck <jblunck@suse.de>
-> 
-> Paul's worry about callers aside, I think it is probably a good idea
-> to reduce ifdefs and share more code.
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
 
-I am also OK with this patch.
+> Subject: [PATCH] nfs, direct-io: fix fork vs direct-io race on nfs
+>
+> After fs/diorect-io.c fix, following testcase still fail on nfs running.
+> it's because nfs has own specific diorct-io implementation.
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Same issue as 2/6.
 
-> So for this patch,
-> 
-> Acked-by: Nick Piggin <npiggin@suse.de>
-> 
-> > ---
-> >  lib/dec_and_lock.c |    3 +--
-> >  1 files changed, 1 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/lib/dec_and_lock.c b/lib/dec_and_lock.c
-> > index a65c314..e73822a 100644
-> > --- a/lib/dec_and_lock.c
-> > +++ b/lib/dec_and_lock.c
-> > @@ -19,11 +19,10 @@
-> >   */
-> >  int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
-> >  {
-> > -#ifdef CONFIG_SMP
-> >  	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
-> >  	if (atomic_add_unless(atomic, -1, 1))
-> >  		return 0;
-> > -#endif
-> > +
-> >  	/* Otherwise do it the slow way */
-> >  	spin_lock(lock);
-> >  	if (atomic_dec_and_test(atomic))
-> > -- 
-> > 1.6.0.2
+Cheers,
+Jeff
