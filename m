@@ -1,183 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZDNN6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZDNN66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbZDNN6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbZDNNyI
+	id S1757118AbZDNN66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbZDNNy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:54:08 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:50000 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756237AbZDNNxv (ORCPT
+	Tue, 14 Apr 2009 09:54:27 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:60300 "EHLO
+	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756444AbZDNNy0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:53:51 -0400
-Message-Id: <20090414135349.911958793@de.ibm.com>
-References: <20090414135327.576111185@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 14 Apr 2009 15:53:41 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 14/14] boot cputime accounting
-Content-Disposition: inline; filename=014-boot-cputime.diff
+	Tue, 14 Apr 2009 09:54:26 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 07/14] DRBD: internal_data_structures
+Date: Tue, 14 Apr 2009 15:53:27 +0200
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
+       "Lars Marowsky-Bree" <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com> <1239365545-10356-8-git-send-email-philipp.reisner@linbit.com> <e2e108260904110018y74f39f1et39006ef9cd8f28d7@mail.gmail.com>
+In-Reply-To: <e2e108260904110018y74f39f1et39006ef9cd8f28d7@mail.gmail.com>
+X-OTRS-FollowUp-SenderType: agent
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904141553.28542.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Saturday 11 April 2009 09:18:21 Bart Van Assche wrote:
+> > +static inline void drbd_kobject_uevent(struct drbd_conf *mdev)
+> > +{
+> > +#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,10)
+[...]
+> There exist scripts which accept a kernel patch and a kernel version
+> and remove all code that does not apply to the specified kernel
+> version. Maybe it's a good idea to run the DRBD code through such a
+> script before posting it for review.
 
-Start the cpu time accounting very early to catch the cpu time spent
-for the initial kernel setup. To make the output of /proc/uptime
-match the sum of all cpu accounting values of the boot cpu reset
-xtime and wall_to_monotonic to sane values based on the TOD clock.
-The values set by timekeeping_init are off by up to a second.
+Right, that was not intended for the LKML post. We are maintaining
+it as out-of-tree module for our users. Sometimes it happens that this
+compatibility cruft leaks into the for-linux branch.
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Here are the changes triggered by your Friday and Saturday mails:
+http://git.drbd.org/?p=linux-2.6-drbd.git;a=commit;h=b2a1682a0fd195f941a73e1ffb4e4198fe4c28ef
 
- arch/s390/kernel/head.S  |    8 +++++++-
- arch/s390/kernel/setup.c |    8 ++++++++
- arch/s390/kernel/time.c  |   36 ++++++++++++++++++++++++++++--------
- arch/s390/kernel/vtime.c |    8 --------
- 4 files changed, 43 insertions(+), 17 deletions(-)
+Probably it takes until tomorrow to answer the other mails...
 
-Index: quilt-2.6/arch/s390/kernel/head.S
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/head.S
-+++ quilt-2.6/arch/s390/kernel/head.S
-@@ -473,7 +473,10 @@ startup:basr	%r13,0			# get base
- 	xc	0x300(256),0x300
- 	l	%r1,5f-.LPG0(%r13)
- 	stck	0(%r1)
--
-+	spt	6f-.LPG0(%r13)
-+	mvc	__LC_LAST_UPDATE_CLOCK(8),0(%r1)
-+	mvc	__LC_LAST_UPDATE_TIMER(8),6f-.LPG0(%r13)
-+	mvc	__LC_EXIT_TIMER(8),5f-.LPG0(%r13)
- #ifndef CONFIG_MARCH_G5
- 	# check processor version against MARCH_{G5,Z900,Z990,Z9_109,Z10}
- 	stidp	__LC_CPUID		# store cpuid
-@@ -500,8 +503,11 @@ startup:basr	%r13,0			# get base
- 
- 	l	%r13,4f-.LPG0(%r13)
- 	b	0(%r13)
-+	.align	4
- 4:	.long	startup_continue
- 5:	.long	sched_clock_base_cc
-+	.align	8
-+6:	.long	0x7fffffff,0xffffffff
- 
- #
- # params at 10400 (setup.h)
-Index: quilt-2.6/arch/s390/kernel/setup.c
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/setup.c
-+++ quilt-2.6/arch/s390/kernel/setup.c
-@@ -434,6 +434,14 @@ setup_lowcore(void)
- #else
- 	lc->vdso_per_cpu_data = (unsigned long) &lc->paste[0];
- #endif
-+	lc->sync_enter_timer = S390_lowcore.sync_enter_timer;
-+	lc->async_enter_timer = S390_lowcore.async_enter_timer;
-+	lc->exit_timer = S390_lowcore.exit_timer;
-+	lc->user_timer = S390_lowcore.user_timer;
-+	lc->system_timer = S390_lowcore.system_timer;
-+	lc->steal_timer = S390_lowcore.steal_timer;
-+	lc->last_update_timer = S390_lowcore.last_update_timer;
-+	lc->last_update_clock = S390_lowcore.last_update_clock;
- 	set_prefix((u32)(unsigned long) lc);
- 	lowcore_ptr[0] = lc;
- }
-Index: quilt-2.6/arch/s390/kernel/time.c
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/time.c
-+++ quilt-2.6/arch/s390/kernel/time.c
-@@ -253,32 +253,52 @@ void update_vsyscall_tz(void)
-  */
- void __init time_init(void)
- {
-+	struct timespec ts;
-+	unsigned long flags;
-+	cycle_t now;
-+
- 	/* Reset time synchronization interfaces. */
- 	etr_reset();
- 	stp_reset();
- 
--	/* set xtime */
--	tod_to_timeval(sched_clock_base_cc - TOD_UNIX_EPOCH, &xtime);
--        set_normalized_timespec(&wall_to_monotonic,
--                                -xtime.tv_sec, -xtime.tv_nsec);
--
- 	/* request the clock comparator external interrupt */
- 	if (register_early_external_interrupt(0x1004,
- 					      clock_comparator_interrupt,
- 					      &ext_int_info_cc) != 0)
-                 panic("Couldn't request external interrupt 0x1004");
- 
--	if (clocksource_register(&clocksource_tod) != 0)
--		panic("Could not register TOD clock source");
--
- 	/* request the timing alert external interrupt */
- 	if (register_early_external_interrupt(0x1406,
- 					      timing_alert_interrupt,
- 					      &ext_int_etr_cc) != 0)
- 		panic("Couldn't request external interrupt 0x1406");
- 
-+	if (clocksource_register(&clocksource_tod) != 0)
-+		panic("Could not register TOD clock source");
-+
-+	/*
-+	 * The TOD clock is an accurate clock. The xtime should be
-+	 * initialized in a way that the difference between TOD and
-+	 * xtime is reasonably small. Too bad that timekeeping_init
-+	 * sets xtime.tv_nsec to zero. In addition the clock source
-+	 * change from the jiffies clock source to the TOD clock
-+	 * source add another error of up to 1/HZ second. The same
-+	 * function sets wall_to_monotonic to a value that is too
-+	 * small for /proc/uptime to be accurate.
-+	 * Reset xtime and wall_to_monotonic to sane values.
-+	 */
-+	write_seqlock_irqsave(&xtime_lock, flags);
-+	now = get_clock();
-+	tod_to_timeval(now - TOD_UNIX_EPOCH, &xtime);
-+	clocksource_tod.cycle_last = now;
-+	clocksource_tod.raw_time = xtime;
-+	tod_to_timeval(sched_clock_base_cc - TOD_UNIX_EPOCH, &ts);
-+	set_normalized_timespec(&wall_to_monotonic, -ts.tv_sec, -ts.tv_nsec);
-+	write_sequnlock_irqrestore(&xtime_lock, flags);
-+
- 	/* Enable TOD clock interrupts on the boot cpu. */
- 	init_cpu_timer();
-+
- 	/* Enable cpu timer interrupts on the boot cpu. */
- 	vtime_init();
- }
-Index: quilt-2.6/arch/s390/kernel/vtime.c
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/vtime.c
-+++ quilt-2.6/arch/s390/kernel/vtime.c
-@@ -527,16 +527,8 @@ EXPORT_SYMBOL(del_virt_timer);
-  */
- void init_cpu_vtimer(void)
- {
--	struct thread_info *ti = current_thread_info();
- 	struct vtimer_queue *vq;
- 
--	S390_lowcore.user_timer = ti->user_timer;
--	S390_lowcore.system_timer = ti->system_timer;
--
--	/* kick the virtual timer */
--	asm volatile ("STCK %0" : "=m" (S390_lowcore.last_update_clock));
--	asm volatile ("STPT %0" : "=m" (S390_lowcore.last_update_timer));
--
- 	/* initialize per cpu vtimer structure */
- 	vq = &__get_cpu_var(virt_cpu_timer);
- 	INIT_LIST_HEAD(&vq->list);
+Thanks!
 
+-Phil
 -- 
-blue skies,
-   Martin.
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
 
-"Reality continues to ruin my life." - Calvin.
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
 
