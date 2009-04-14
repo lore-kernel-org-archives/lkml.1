@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZDNO1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZDNO14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbZDNO1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 10:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZDNO0q
+	id S1756224AbZDNO14 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 10:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZDNO1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 10:26:46 -0400
-Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:35636 "HELO
-	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756144AbZDNO0o (ORCPT
+	Tue, 14 Apr 2009 10:27:45 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:65153 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751744AbZDNO1p convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 10:26:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=izz9uJEMO0ksKwH/0zcNWMtZTvhZrg5d42cFWyYSy+8oPJpkCS2Gl9gtrgMOK40z4iYBf660Z5kvt8qkWUl0CfoxGhfutAMbwgtEfq20RLaJ9KXswUi4KXBNVpNtjaSbTuUMsDpvcvtyhKyTni9lbPYqTGbrkOA0KXDbz+wnqi4=  ;
-X-YMail-OSG: nJKjqhkVM1nSngXiQrl054wOzhZbYAXMAXj1_9J4zTapc2gJShsBDm4nF2HZga7qpeqcF46K4EycLKVjOaA3noKFh_MbCMKMcnFrXqRB_oTou1PluOPcjznKDz2oH.CQJSKP.MkF4FxwvUibsEoJiCTcj1eWjL1QLzkqpyPy0wWcWvGhiqtfNEV1cS977qMcUbiqZ8dWbfvWu7K9Ka0s9LAuXKKan22U6qMs4QQ_Tf1XAudYX4lmqJlRnnWuZKG2_6zRBjbXvKY6Tt4mG_pohp.DqZNjb3Dffuz2J.u4gqD7Fu3J4bHs
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Date: Wed, 15 Apr 2009 00:26:34 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
-References: <20090414151204.C647.A69D9226@jp.fujitsu.com> <2f11576a0904140639l426e137ewdc46296cdb377dd@mail.gmail.com> <20090414141209.GB31644@random.random>
-In-Reply-To: <20090414141209.GB31644@random.random>
+	Tue, 14 Apr 2009 10:27:45 -0400
+From: Wolfgang =?utf-8?q?M=C3=BCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH] mmc_spi: do propper retry managment in the block layer
+Date: Tue, 14 Apr 2009 16:27:26 +0200
+User-Agent: KMail/1.9.10
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <200904081155.53173.wolfgang.mues@auerswald.de> <20090411001030.56e247c4@mjolnir.ossman.eu>
+In-Reply-To: <20090411001030.56e247c4@mjolnir.ossman.eu>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904150026.36142.nickpiggin@yahoo.com.au>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904141627.26276.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 April 2009 00:12:09 Andrea Arcangeli wrote:
-> On Tue, Apr 14, 2009 at 10:39:54PM +0900, KOSAKI Motohiro wrote:
-> > I guess you dislike get_user_page_fast() grab pte_lock too, right?
-> 
-> If get_user_page_fast is vetoed to run a set_bit on the already cache
-> hot and exclusive struct page, I doubt taking a potentially cache
-> cold, mm-wide or pmd-wide pte_lock is ok.
+Hello Pierre,
 
-Yes, I'd *really* rather not. I actually implemented gup_fast in
-response to problem reported with DB2 workload hitting the ptl
-(and not the more obvious mmap_sem, although certainly they had
-some gain from removing that cacheline as well).
+Am Samstag, 11. April 2009 schrieb Pierre Ossman:
+> NAK. Writes cannot be retried safely as upper layers rely on the fact
+> that writes fail in a linear manner (a stupid assumption IMO, but
+> that's the way things are).
 
-gup_fast iirc is worth nearly 10% on a 4 socket x86 system with
-DB2. That's the same order of magnitude as the speedups quoted
-to justify the addition of hugepages, or O_DIRECT itself.
+Hmmm.... so this patch has to be improved. I think the (original) code in 
+mmc_blk_issue_rq() is somewhat questionable. As far as I understand the code, 
+in the case of an error, brq.data.bytes_xfered is not examined, so the code 
+starts over from the very first sector of the request, and rereads all 
+sectors (one after the another).
 
-Andrea: I didn't veto that set_bit change of yours as such. I just
-noted there could be more atomic operations. Actually I would
-welcome more comparison between our two approaches, but they seem
-to be stuck with Linus refusing (I think) to copy the page at
-fork() time :(
+So if there is a non-recoverable write error, this code must stop and do not 
+continue to write, right?
+
+But if there is a read error, it is OK and advisable to try to read the rest 
+of the sectors?
+
+If there is a write error in the middle of a request, is it OK to do
+__blk_end_request(req, 0, brq.data.bytes_xfered);
+and try to retry from this point, and stop if there is a non-recoverable write 
+error?
+
+> > +		/* Invalid response. This is most likely a transmission
+> > +		 * error from card to host.
+> > +		 */
+> > +		case -EINVAL:
+>
+> EINVAL is actually "host controller driver/hardware does not support
+> this type of request".
+
+"Hardware" is including the hardware of the SD card. This should NEVER happen, 
+because block.c issues only valid requests, which are translated to mandatory 
+commands for the mmc/sd card.
+
+So if there is an EINVAL result from the lower layers, it comes from 
+transmission errors (card has not understand the command, or host has not 
+understand the response).
+
+If EINVAL is coming from the HOST CONTROLER, a retry will not harm anyone.
+
+I have seen EINVAL results due to spikes on the SD lines.
+
+Please correct me if I am wrong.
+
+best regards
+ 
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
