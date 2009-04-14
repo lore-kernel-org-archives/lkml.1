@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbZDNHgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZDNHhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178AbZDNHgt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZDNHgi
+	id S1754040AbZDNHhJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZDNHgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:36:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:22249 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbZDNHgh (ORCPT
+	Tue, 14 Apr 2009 03:36:46 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:51047 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbZDNHgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:36:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=tdOAc7mBsfyfEpVTLpMb5gXE1vPTI9QmsIuh1P8OnB0MNUImjyfWWDZ/3xOlO/LppG
-         +fpGmILEi/WQICeg0d8fS2GEESRXFViF8OhVnp3iGzbArRBG6y1h+flUZXtthW/DpPzM
-         9CbYf3X6hbF/i8iIYa3u+3xP8wEc/nVV8Zk7Y=
-Date: Tue, 14 Apr 2009 16:36:31 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ext2: fix missing mutex_unlock in error path
-Message-ID: <20090414073631.GA4145@localhost.localdomain>
-MIME-Version: 1.0
+	Tue, 14 Apr 2009 03:36:45 -0400
+Date: Tue, 14 Apr 2009 09:38:50 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
+Message-ID: <20090414073850.GA11577@uranus.ravnborg.org>
+References: <1239654768.6542.10.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1239654768.6542.10.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add missing mutex_unlock in error path in ext2_quota_write()
+Hi Adrian.
 
-Cc: Jan Kara <jack@suse.cz>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index f983225..5c4afe6 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -1395,8 +1395,10 @@ static ssize_t ext2_quota_write(struct super_block *sb, int type,
- 		blk++;
- 	}
- out:
--	if (len == towrite)
-+	if (len == towrite) {
-+		mutex_unlock(&inode->i_mutex);
- 		return err;
-+	}
- 	if (inode->i_size < off+len-towrite)
- 		i_size_write(inode, off+len-towrite);
- 	inode->i_version++;
+I see that most of the point raised in last round has been addressed.
+An incremental changelog would be nice during this RFC phase
+so we know what has been changed from one version to the next.
+
+> +/*
+> + * write out the date in bcd format
+> + * in the appropriate part of the 
+> + * directory entry
+> + */
+> +static unsigned long vmufat_save_bcd(char *bh, int z)
+> +{
+> +	unsigned char day, year, century, nl_day, month;
+> +	unsigned char u8year;
+> +	unsigned long unix_date = CURRENT_TIME.tv_sec;
+> +
+> +	day = unix_date / 86400 - 3652;
+> +	year = day / 365;
+> +
+> +	if ((year + 3) / 4 + 365 * year > day)
+> +		year--;
+> +
+> +	day -= (year + 3) / 4 + 365 * year;
+> +	if (day == 59 && !(year & 3)) {
+> +		nl_day = day;
+> +		month = 2;
+> +	} else {
+> +		nl_day = (year & 3) || day <= 59 ? day : day - 1;
+> +		for (month = 0; month < 12; month++)
+> +			if (day_n[month] > nl_day)
+> +				break;
+> +	}
+> +
+> +	century = 19;
+> +	if (year > 19)
+> +		century = 20;
+> +
+> +	bh[z + 0x10] = bin2bcd(century);
+> +	u8year = year + 80;
+> +	if (u8year > 99)
+> +		u8year = u8year - 100;
+> +
+> +	bh[z + 0x11] = bin2bcd(u8year);
+> +	bh[z + 0x12] = bin2bcd(month);
+> +	bh[z + 0x13] =
+> +	    bin2bcd(day - day_n[month - 1] + 1);
+> +	bh[z + 0x14] =
+> +	    bin2bcd((unix_date / 3600) % 24);
+> +	bh[z + 0x15] = bin2bcd((unix_date / 60) % 60);
+> +	bh[z + 0x16] = bin2bcd(unix_date % 60);
+> +	return unix_date;
+> +}
+
+Can we get all these numbers replaced by a set of descriptive constants?
+You can then use the definition of the constants to more-or-less document
+the on-disk format.
+
+You have it in several places - the above is just one of them.
+
+I did not look into the rest of the filesystem this time,
+I may do so later.
+
+Please ntoe that this part of the excercise is to make the filesystem
+ready to be reviewed by someone who knows how to write a filesystem.
+What I provide to you is only the janitorial level..
+
+	Sam
