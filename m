@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZDNWM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZDNWOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbZDNWM4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZDNWMo
+	id S1753534AbZDNWOc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZDNWOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:12:44 -0400
-Received: from vena.lwn.net ([206.168.112.25]:54734 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbZDNWMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:12:43 -0400
-Date: Tue, 14 Apr 2009 16:12:40 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <linux-pci@vger.kernel.org>, <linux-mm@kvack.org>,
-       <linux-fsdevel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [RFC][PATCH 5/9] vfs: Introduce basic infrastructure for
- revoking a file
-Message-ID: <20090414161240.73fe6bcd@bike.lwn.net>
-In-Reply-To: <m163hb75ph.fsf@fess.ebiederm.org>
-References: <m1skkf761y.fsf@fess.ebiederm.org>
-	<m163hb75ph.fsf@fess.ebiederm.org>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
+	Tue, 14 Apr 2009 18:14:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42880
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750839AbZDNWOX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 18:14:23 -0400
+Date: Tue, 14 Apr 2009 15:14:15 -0700 (PDT)
+Message-Id: <20090414.151415.267444590.davem@davemloft.net>
+To: arnd@arndb.de
+Cc: michal.simek@petalogix.com, linux-kernel@vger.kernel.org
+Subject: Re: struct exception_table_entry
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200904141636.11676.arnd@arndb.de>
+References: <49DE0EC4.4010409@petalogix.com>
+	<200904141636.11676.arnd@arndb.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Eric,
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 14 Apr 2009 16:36:11 +0200
 
-One little thing I noticed as I was looking at this...
+> On Thursday 09 April 2009, Michal Simek wrote:
+> 
+>> I am doing some cleanup things in MB MMU kernel and I looked at
+>> exception_table_entry structure.
+>> Only alpha use different types among others. Some arch use only
+>> different names and types int/long.
+>> I think that this structure could be moved to any generic location ->
+>> asm-generic/uaccess.h folder.
+>> 
+>> I think that this structure types should be acceptable for every archs?
+>> 
+>> #ifndef exception_table_entry
+>> struct exception_table_entry {
+>>     unsigned long insn;
+>>     unsigned long fixup;
+>> };
+>> #endif
+>> 
+>> What do you think?
+> 
+> Yes, sounds good to me. Have you tried using my generic version of
+> uaccess.h on microblaze? It already contains a definition like this,
+> though most of the header doesn't apply for MMU-based architectures.
+> 
+> I suppose it can be improved a bit, but should do the basic job.
 
-> +int fops_substitute(struct file *file, const struct file_operations *f_op,
-> +			struct vm_operations_struct *vm_ops)
-> +{
+Note that for space saving several 64-bit architectures use plain
+"int" here when they know that all kernel addresses are in the low
+32-bits of the address space.
 
- [...]
-
-> +	/*
-> +	 * Wait until there are no more callers in the original
-> +	 * file_operations methods.
-> +	 */
-> +	while (atomic_long_read(&file->f_use) > 0)
-> +		schedule_timeout_interruptible(1);
-
-You use an interruptible sleep here, but there's no signal check to get you
-out of the loop.  So it's not really interruptible.  If f_use never goes to
-zero (a distressingly likely possibility, I fear), this code will create
-the equivalent of an unkillable D-wait state without ever actually showing
-up that way in "ps".
-
-Actually, now that I look, once you've got a signal pending you'll stay
-in TASK_RUNNING, so the above could turn into a busy-wait.
-
-Unless I've missed something...?
-
-I have no idea what the right thing to do in the face of a signal would
-be.  Perhaps the wait-for-zero and release() call stuff should be dumped
-into a workqueue and done asynchronously?  OTOH, I can see a need to know
-when the revoke operation is really done...
-
-jon
+sparc64 is one such architecture and I'd prefer if the size of these
+tables does not bloat up when you guys try to make this thing generic.
