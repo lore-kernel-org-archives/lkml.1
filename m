@@ -1,128 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZDNBk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZDNBne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbZDNBk7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 21:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZDNBko
+	id S1754673AbZDNBne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 21:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZDNBn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 21:40:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51780 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZDNBkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 21:40:43 -0400
-Date: Tue, 14 Apr 2009 03:39:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michal Simek <michal.simek@petalogix.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       lkml <linux-arch@vger.kernel.org>, microblaze-uclinux@itee.uq.edu.au,
-       Arnd Bergmann <arnd@arndb.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       John Williams <john.williams@petalogix.com>,
-       John Linn <John.Linn@xilinx.com>,
-       Stephen Neuendorffer <stephenn@xilinx.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [GIT PULL, v3] Microblaze architecture (arch/microblaze/)
-	support
-Message-ID: <20090414013948.GA30336@elte.hu>
-References: <49DC4024.6090800@petalogix.com> <alpine.LFD.2.00.0904131818050.26713@localhost.localdomain>
+	Mon, 13 Apr 2009 21:43:26 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44460 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752104AbZDNBnZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 21:43:25 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH v2 3/4] ftrace: add max execution time mesurement to workqueue tracer
+Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090413161649.GH5977@nowhere>
+References: <20090413145254.6E0D.A69D9226@jp.fujitsu.com> <20090413161649.GH5977@nowhere>
+Message-Id: <20090414102802.C637.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904131818050.26713@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 14 Apr 2009 10:43:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Frederic,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+very thanks for good reviewing.
 
-> On Wed, 8 Apr 2009, Michal Simek wrote:
-> > 
-> > This repository contains Linux support for Xilinx Microblaze CPU.
-> > 
-> > Please pull
-> >     git://git.monstr.eu/linux-2.6-microblaze.git for-linus
+
+> > @@ -85,6 +90,29 @@ found:
+> >  	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+> >  }
+> >  
+> > +static void probe_workqueue_exit(struct task_struct *wq_thread,
+> > +				 struct work_struct *work)
+> > +{
+> > +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
+> > +	struct cpu_workqueue_stats *node, *next;
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+> > +	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
+> > +							list) {
 > 
-> So I pulled, but I notice that there's a few empty header files.
 > 
-> That looks intentional (they came in through a commit that says 
-> "headers simple files - empty or redirect to asm-generic"), but it 
-> means that "make distclean" will remove them. So if you really 
-> want an empty header file, you should really make it not 
-> _completely_ empty - add a comment to it or something.
+> Do you need the safe version here? You don't seem to remove any entry.
 
-FYI, there's a patch queued up by Michal for this - see below. It's 
-Tested-by Jeff as well. You might want to apply this from email if 
-you want a distclean-correct -rc2 ?
+Yes, this is just stupid cut&paste mistake ;)
+Will fix.
 
-	Ingo
+> Sidenote: only the workqueue destruction handler might need it if I'm
+> not wrong.
+> I placed some of them in other places in this file because I misunderstood the
+> kernel list concepts in the past :)
+> (Heh, and probably still today).
+> 
+> 
+> 
+> > +		if (node->pid == wq_thread->pid) {
+> > +			u64 start = node->handler_start_time;
+> > +			u64 executed_time = trace_clock_global() - start;
+> > +
+> > +			if (node->max_executed_time < executed_time)
+> > +				node->max_executed_time = executed_time;
+> > +			goto found;
+> > +		}
+> > +	}
+> > +found:
+> > +	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+> > +}
+> > +
+> >  /* Creation of a cpu workqueue thread */
+> >  static void probe_workqueue_creation(struct task_struct *wq_thread, int cpu)
+> >  {
+> > @@ -195,6 +223,9 @@ static int workqueue_stat_show(struct se
+> >  	int cpu = cws->cpu;
+> >  	struct pid *pid;
+> >  	struct task_struct *tsk;
+> > +	unsigned long long exec_time = ns2usecs(cws->max_executed_time);
+> > +	unsigned long exec_usec_rem = do_div(exec_time, USEC_PER_SEC);
+> > +	unsigned long exec_secs = (unsigned long)exec_time;
+> >  
+> >  	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+> >  	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
+> > @@ -205,8 +236,11 @@ static int workqueue_stat_show(struct se
+> >  	if (pid) {
+> >  		tsk = get_pid_task(pid, PIDTYPE_PID);
+> >  		if (tsk) {
+> > -			seq_printf(s, "%3d %6d     %6u       %s\n", cws->cpu,
+> > +			seq_printf(s, "%3d %6d     %6u     %5lu.%06lu"
+> > +				   "  %s\n",
+> > +				   cws->cpu,
+> >  				   atomic_read(&cws->inserted), cws->executed,
+> > +				   exec_secs, exec_usec_rem,
+> 
+> You are measuring the latency from a workqueue thread point of view.
+> While I find the work latency measurement very interesting,
+> I think this patch does it in the wrong place. The _work_ latency point of view
+> seems to me much more rich as an information source.
+> 
+> There are several reasons for that.
+> 
+> Indeed this patch is useful for workqueues that receive always the same work
+> to perform so that you can find very easily the guilty worklet.
+> But the sense of this design is lost once we consider the workqueue threads
+> that receive random works. Of course the best example is events/%d
+> One will observe the max latency that happened on event/0 as an exemple but
+> he will only be able to feel a silent FUD because he has no way to find
+> which work caused this max latency.
 
------ Forwarded message from monstr@monstr.eu -----
+May I explain my expected usage scenario?
 
-Date: Mon, 13 Apr 2009 20:56:57 +0200
-From: monstr@monstr.eu
-To: jeff@garzik.org
-Subject: [PATCH 1/1] microblaze: Fix problem with removing zero length files
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-	Michal Simek <monstr@monstr.eu>
+firstly, the developer check this stastics and nortice strage result. secondly
+the developer monitor workqueue activety by event-tracer.
+(it provide per work activety, maybe event filter feature is useful)
 
-From: Michal Simek <monstr@monstr.eu>
+Yes, I have to agree my last patch description is too poor.
+but I think my expected scenario is't so insane.
 
-Adding one new line was recommended solution.
-Test with make distclean
+Next, I hope to explain why I don't choice adding per work stastics.
+struct work can put in stack and it's short lived object.
+then, it isn't proper "stastics" target.
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/include/asm/auxvec.h   |    1 +
- arch/microblaze/include/asm/cputable.h |    1 +
- arch/microblaze/include/asm/hw_irq.h   |    1 +
- arch/microblaze/include/asm/user.h     |    1 +
- arch/microblaze/include/asm/vga.h      |    1 +
- 5 files changed, 5 insertions(+), 0 deletions(-)
+I like my approach or histogram approach (suggested by ingo).
 
-diff --git a/arch/microblaze/include/asm/auxvec.h b/arch/microblaze/include/asm/auxvec.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/auxvec.h
-+++ b/arch/microblaze/include/asm/auxvec.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/cputable.h b/arch/microblaze/include/asm/cputable.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/cputable.h
-+++ b/arch/microblaze/include/asm/cputable.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/hw_irq.h b/arch/microblaze/include/asm/hw_irq.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/hw_irq.h
-+++ b/arch/microblaze/include/asm/hw_irq.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/user.h b/arch/microblaze/include/asm/user.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/user.h
-+++ b/arch/microblaze/include/asm/user.h
-@@ -0,0 +1 @@
-+
-diff --git a/arch/microblaze/include/asm/vga.h b/arch/microblaze/include/asm/vga.h
-index e69de29..8b13789 100644
---- a/arch/microblaze/include/asm/vga.h
-+++ b/arch/microblaze/include/asm/vga.h
-@@ -0,0 +1 @@
-+
--- 
-1.5.5.1
 
------ End forwarded message -----
+May I ask your feeling to my usage scenario?
+
+> 
+> 
+> Especially the events/%d latency measurement seems to me very important
+> because a single work from a random driver can propagate its latency
+> all over the system.
+> 
+> A single work that consumes too much cpu time, waits for long coming
+> events, sleeps too much, tries to take too often contended locks, or
+> whatever... such single work may delay all pending works in the queue
+> and the only max latency for a given workqueue is not helpful to find
+> these culprits.
+> 
+> Having this max latency snapshot per work and not per workqueue thread
+> would be useful for every kind of workqueue latency instrumentation:
+> 
+> - workqueues with single works
+> - workqueue with random works
+> 
+> A developer will also be able to measure its own worklet action and
+> find if it takes too much time, even if it isn't the worst worklet in
+> the workqueue to cause latencies.
+> 
+> The end result would be to have a descending latency sort of works
+> per cpu workqueue threads (or better: per workqueue group).
+> 
+> What do you think?
+
+
+
+
+
