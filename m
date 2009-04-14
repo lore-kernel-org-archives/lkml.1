@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZDNKRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZDNKWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbZDNKRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZDNKRL
+	id S1752565AbZDNKWu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZDNKWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:17:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33626 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751965AbZDNKRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:17:10 -0400
-Date: Tue, 14 Apr 2009 12:15:13 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       davem@davemloft.net, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
-Subject: Re: [PATCH 3/4] net: bridge: use device address list instead of
-	dev_addr
-Message-ID: <20090414101512.GA3999@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090413083729.GA23734@psychotron.englab.brq.redhat.com> <20090413084407.GD23734@psychotron.englab.brq.redhat.com> <20090413075400.34604e72@nehalam>
+	Tue, 14 Apr 2009 06:22:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39868 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750746AbZDNKWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:22:41 -0400
+X-Authenticated: #3373616
+X-Provags-ID: V01U2FsdGVkX1+Vkrdo2lOV6n6ZO6CutbSeA3Ogag9/Iuc40TZoVU
+	hL/Gfv4Oyl7t3T
+Message-ID: <49E463EA.7070407@gmx.de>
+Date: Tue, 14 Apr 2009 12:22:34 +0200
+From: =?ISO-8859-15?Q?Simon_K=E4mpflein?= <s.kaempflein@gmx.de>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413075400.34604e72@nehalam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: Question: IO priorities for disk writes?
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mon, Apr 13, 2009 at 04:54:00PM CEST, shemminger@vyatta.com wrote:
->> +static int another_port_has_addr(const struct net_bridge_port *p,
->> +				 struct net_bridge_fdb_entry *f)
->> +{
->> +	struct net_bridge *br = p->br;
->> +	struct net_bridge_port *op;
->> +
->> +	list_for_each_entry(op, &br->port_list, list) {
->> +		if (op != p && is_dev_addr(op->dev, f->addr.addr)) {
->> +			f->dst = op;
->> +			return 1;
->> +		}
->> +	}
->> +	return 0;
->> +}
->
->Forwarding database is hot path, people sometimes run lots of devices
->on single bridge, doesn't this scale worse?
->
-This only puts the original loop code to the function, so if compiler decides to
-inline this there might be no difference.
+Hello,
+
+is there a possibility to prioritize disk writes? I tried ionice with
+cfq scheduler, but as far as I understand and tested it only works for
+reading.
+
+Background:
+I have one block device (SATA drive) and a data stream of about 6 MB/s
+written by a process to files on the device (fs: reiserfs, fp opened
+with O_DIRECT). The data is generated externally and processed and
+buffered in memory by the process. So an average bandwidth of 6 MB/s for
+writing is required. Another process reads the data in parallel, also
+with about 6 MB/s.
+
+So generally this is no problem when the system has nothing else to do.
+But when other heavy disk writes occur, e.g. data written to the disk
+via network (another extreme case: dd if=/dev/zero of=tmpfile), the
+writing speed drops far below 6 MB/s.
+
+So far I tried with no luck (io scheduler cfq):
+- "ionice -c0 -n0" for the writer and reader
+- "ionice -c3" for all pdflush threads
+
+Is there any possibility to get this working with the current kernel
+version? The performance of the other processes besides the
+reader/writer is unimportant. Alternatively I'm thinking about using a
+second block device for the writing/reading (maybe an USB-Stick?).
+
+Best regards,
+Simon
+
