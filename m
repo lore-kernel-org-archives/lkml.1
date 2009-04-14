@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbZDNB1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZDNB2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbZDNB1w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 21:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZDNB1o
+	id S1753468AbZDNB2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 21:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZDNB2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 21:27:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52630 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751531AbZDNB1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 21:27:43 -0400
-Date: Tue, 14 Apr 2009 03:22:29 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@lst.de>, torvalds@osdl.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] add ptrace entry to MAINTAINERS
-Message-ID: <20090414012229.GA10678@redhat.com>
-References: <20090413152010.GA16682@lst.de> <20090414004231.GA17288@elte.hu>
+	Mon, 13 Apr 2009 21:28:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57755 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751705AbZDNB2b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 21:28:31 -0400
+Date: Mon, 13 Apr 2009 18:19:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Michal Simek <michal.simek@petalogix.com>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       lkml <linux-arch@vger.kernel.org>, microblaze-uclinux@itee.uq.edu.au,
+       Arnd Bergmann <arnd@arndb.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Williams <john.williams@petalogix.com>,
+       John Linn <John.Linn@xilinx.com>,
+       Stephen Neuendorffer <stephenn@xilinx.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Korsgaard <jacmet@sunsite.dk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [GIT PULL, v3] Microblaze architecture (arch/microblaze/)
+ support
+In-Reply-To: <49DC4024.6090800@petalogix.com>
+Message-ID: <alpine.LFD.2.00.0904131818050.26713@localhost.localdomain>
+References: <49DC4024.6090800@petalogix.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090414004231.GA17288@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd be happy to be counted as a co-maintainer. I mean, I'd like to see
-the emails about the ptrace-related problems.
 
-But, the "real" maintainer is Roland. Not only he knows indefinitely more
-about ptrace. He knows _why_ the code does this and that, and how it should
-evolve.
 
-Sometimes I am able to reply faster, but I always rely on his final verdict.
+On Wed, 8 Apr 2009, Michal Simek wrote:
+> 
+> This repository contains Linux support for Xilinx Microblaze CPU.
+> 
+> Please pull
+>     git://git.monstr.eu/linux-2.6-microblaze.git for-linus
 
-Oleg.
+So I pulled, but I notice that there's a few empty header files.
 
+That looks intentional (they came in through a commit that says "headers 
+simple files - empty or redirect to asm-generic"), but it means that "make 
+distclean" will remove them. So if you really want an empty header file, 
+you should really make it not _completely_ empty - add a comment to it or 
+something.
+
+		Linus
