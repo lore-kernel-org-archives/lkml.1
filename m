@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbZDNQQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZDNQQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757772AbZDNQQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbZDNQQK
+	id S1757834AbZDNQQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbZDNQQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:16:10 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45647 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756137AbZDNQQJ (ORCPT
+	Tue, 14 Apr 2009 12:16:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56489 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757675AbZDNQQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:16:09 -0400
-Date: Tue, 14 Apr 2009 11:16:01 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, containers@lists.osdl.org,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Creating tasks on restart: userspace vs kernel
-Message-ID: <20090414161601.GB8085@us.ibm.com>
-References: <49E40662.2040508@cs.columbia.edu> <20090414095904.GD3558@elte.hu> <49E4A380.4070503@cs.columbia.edu>
+	Tue, 14 Apr 2009 12:16:17 -0400
+Message-ID: <49E4B6D5.9060007@vlnb.net>
+Date: Tue, 14 Apr 2009 20:16:21 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E4A380.4070503@cs.columbia.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-scsi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org,
+       scst-devel <scst-devel@lists.sourceforge.net>,
+       Andy Yan <ayan@marvell.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [ANNOUNCE]: A target driver for Marvell 88SE64xx(3G) and 88SE94xx(6G)
+ SAS cards
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+jmmrGHe8PV2BkdSqDvRYtG0y2MObg4VEqaVR
+ 6arNHoImOuA7RtHjZsenaM9Fi80yVVZo6XZUrrtyY4xFXtT+5D
+ 05Grqnd7zeGbGrRBeOK5w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> For #1, we need to create a new container to begin with. This already
-> requires CAP_SYS_ADMIN. Yes, for now we can use some setuid() to create
-> a new pid_ns and then do the restart.
+Hi All,
 
-This is why I like tagging a pidns with a userid, and requiring that
-current->euid==pidns->uid in order to be allowed to set pid in that
-pidns.
+I'm glad to announce that a target driver for Marvell 88SE64xx(3G) and 
+88SE94xx(6G) SAS cards has been just added in the SCST SVN repository. A 
+lot of thanks to Marvell and Andy Yan!
 
-We require cap_sys_admin wil doing clone(CLONE_NEWPID).  So if we do
-that while uid=500, then drop cap_sys_admin, then we can proceed to
-create new tasks with specified pids in that pidns.
+This driver allows to use a SAS controller based on Marvell 88SE64xx or 
+88SE94xx chips as a SAN storage server (target). More info you can find 
+on the SCST page http://scst.sourceforge.net.
 
--serge
+You can download the driver from SCST SVN by running a command:
+
+$ svn co https://scst.svn.sourceforge.net/svnroot/scst
+
+Vlad
