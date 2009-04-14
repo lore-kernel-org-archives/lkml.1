@@ -1,197 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZDNLkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbZDNLnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbZDNLkw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 07:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZDNLkm
+	id S1754939AbZDNLnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 07:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZDNLno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 07:40:42 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:17712 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbZDNLkl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 07:40:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OaiqDBhZ8U0NNwaXJRqdQjCcjkDsP+DiQoOQtiyPJCFAWfFATaNFw7kRmMPegq60fO
-         lnaTGjxljFob0ZN6qctCHRqKNUp1Zm1x7T+wf6F5/E4jPtEdz7SWC6bUd3j2tR7x+QWO
-         3l5AWGCiENsavkKjNrvkFS7sFINX8Ul9EcWEY=
-Date: Tue, 14 Apr 2009 13:40:34 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2 3/4] ftrace: add max execution time mesurement to
-	workqueue tracer
-Message-ID: <20090414114032.GA5994@nowhere>
-References: <20090413145254.6E0D.A69D9226@jp.fujitsu.com> <20090413161649.GH5977@nowhere> <20090414102802.C637.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 07:43:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52447 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750746AbZDNLnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 07:43:42 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/6] Handle bio_alloc failure
+Date: Tue, 14 Apr 2009 17:11:19 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Kleikamp <shaggy@austin.ibm.com>, xfs-masters@oss.sgi.com
+References: <200904141636.26557.knikanth@novell.com> <20090414111838.GG5178@kernel.dk>
+In-Reply-To: <20090414111838.GG5178@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090414102802.C637.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904141711.20378.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 10:43:21AM +0900, KOSAKI Motohiro wrote:
-> Hi Frederic,
-> 
-> very thanks for good reviewing.
-> 
-> 
-> > > @@ -85,6 +90,29 @@ found:
-> > >  	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-> > >  }
-> > >  
-> > > +static void probe_workqueue_exit(struct task_struct *wq_thread,
-> > > +				 struct work_struct *work)
-> > > +{
-> > > +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> > > +	struct cpu_workqueue_stats *node, *next;
-> > > +	unsigned long flags;
-> > > +
-> > > +	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> > > +	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
-> > > +							list) {
-> > 
-> > 
-> > Do you need the safe version here? You don't seem to remove any entry.
-> 
-> Yes, this is just stupid cut&paste mistake ;)
-> Will fix.
-> 
-> > Sidenote: only the workqueue destruction handler might need it if I'm
-> > not wrong.
-> > I placed some of them in other places in this file because I misunderstood the
-> > kernel list concepts in the past :)
-> > (Heh, and probably still today).
-> > 
-> > 
-> > 
-> > > +		if (node->pid == wq_thread->pid) {
-> > > +			u64 start = node->handler_start_time;
-> > > +			u64 executed_time = trace_clock_global() - start;
-> > > +
-> > > +			if (node->max_executed_time < executed_time)
-> > > +				node->max_executed_time = executed_time;
-> > > +			goto found;
-> > > +		}
-> > > +	}
-> > > +found:
-> > > +	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-> > > +}
-> > > +
-> > >  /* Creation of a cpu workqueue thread */
-> > >  static void probe_workqueue_creation(struct task_struct *wq_thread, int cpu)
-> > >  {
-> > > @@ -195,6 +223,9 @@ static int workqueue_stat_show(struct se
-> > >  	int cpu = cws->cpu;
-> > >  	struct pid *pid;
-> > >  	struct task_struct *tsk;
-> > > +	unsigned long long exec_time = ns2usecs(cws->max_executed_time);
-> > > +	unsigned long exec_usec_rem = do_div(exec_time, USEC_PER_SEC);
-> > > +	unsigned long exec_secs = (unsigned long)exec_time;
-> > >  
-> > >  	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> > >  	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
-> > > @@ -205,8 +236,11 @@ static int workqueue_stat_show(struct se
-> > >  	if (pid) {
-> > >  		tsk = get_pid_task(pid, PIDTYPE_PID);
-> > >  		if (tsk) {
-> > > -			seq_printf(s, "%3d %6d     %6u       %s\n", cws->cpu,
-> > > +			seq_printf(s, "%3d %6d     %6u     %5lu.%06lu"
-> > > +				   "  %s\n",
-> > > +				   cws->cpu,
-> > >  				   atomic_read(&cws->inserted), cws->executed,
-> > > +				   exec_secs, exec_usec_rem,
-> > 
-> > You are measuring the latency from a workqueue thread point of view.
-> > While I find the work latency measurement very interesting,
-> > I think this patch does it in the wrong place. The _work_ latency point of view
-> > seems to me much more rich as an information source.
-> > 
-> > There are several reasons for that.
-> > 
-> > Indeed this patch is useful for workqueues that receive always the same work
-> > to perform so that you can find very easily the guilty worklet.
-> > But the sense of this design is lost once we consider the workqueue threads
-> > that receive random works. Of course the best example is events/%d
-> > One will observe the max latency that happened on event/0 as an exemple but
-> > he will only be able to feel a silent FUD because he has no way to find
-> > which work caused this max latency.
-> 
-> May I explain my expected usage scenario?
-> 
-> firstly, the developer check this stastics and nortice strage result. secondly
-> the developer monitor workqueue activety by event-tracer.
-> (it provide per work activety, maybe event filter feature is useful)
-> 
-> Yes, I have to agree my last patch description is too poor.
-> but I think my expected scenario is't so insane.
-> 
-> Next, I hope to explain why I don't choice adding per work stastics.
-> struct work can put in stack and it's short lived object.
-> then, it isn't proper "stastics" target.
-> 
-> I like my approach or histogram approach (suggested by ingo).
-> 
-> 
-> May I ask your feeling to my usage scenario?
+On Tuesday 14 April 2009 16:48:38 Jens Axboe wrote:
+> On Tue, Apr 14 2009, Nikanth Karthikesan wrote:
+> > Hi Jens
+> >
+> > Some of the callers of bio_alloc() assume that it will never fail and
+> > always return bios. But it can fail. This patch set changes those callers
+> > to take action when bio_alloc() fails.
+>
+> It will not fail as long as __GFP_WAIT is set, which it is for all 6 of
+> your patches.
 
+I thought so, but was confused by various places where it was being handled!
+Can this be merged then?
 
+Thanks
+Nikanth
 
-Ok, I understand. This is a coupling of statistical tracing
-and batch raw event tracing.
-But a statistical view for every work per workqueue would
-be definetly more helpful.
-Beeing forced to look at the raw batch of work events involves
-more searching in the traces and more headaches.
+bio_alloc() will not fail as long as __GFP_WAIT is set. __GFP_WAIT is also set
+as part of GFP_KERNEL, GFP_NOIO and GFP_NOFS. Remove unnecessary code to
+handle bio_alloc failure in those cases.
 
-With your patch, we only see the worst time case on a workqueue while
-it would be better to find all the works which are encumbering
-a workqueue, sorted by latency importance.
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-I agree with the fact that it's not so easy though, because the works
-can be allocated on the stack as you said.
+---
 
-Thanks,
-Frederic.
-
-
-> 
-> > 
-> > 
-> > Especially the events/%d latency measurement seems to me very important
-> > because a single work from a random driver can propagate its latency
-> > all over the system.
-> > 
-> > A single work that consumes too much cpu time, waits for long coming
-> > events, sleeps too much, tries to take too often contended locks, or
-> > whatever... such single work may delay all pending works in the queue
-> > and the only max latency for a given workqueue is not helpful to find
-> > these culprits.
-> > 
-> > Having this max latency snapshot per work and not per workqueue thread
-> > would be useful for every kind of workqueue latency instrumentation:
-> > 
-> > - workqueues with single works
-> > - workqueue with random works
-> > 
-> > A developer will also be able to measure its own worklet action and
-> > find if it takes too much time, even if it isn't the worst worklet in
-> > the workqueue to cause latencies.
-> > 
-> > The end result would be to have a descending latency sort of works
-> > per cpu workqueue threads (or better: per workqueue group).
-> > 
-> > What do you think?
-> 
-> 
-> 
-> 
-> 
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index f7dae57..20b4111 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -319,9 +319,6 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+ 		return -ENXIO;
+ 
+ 	bio = bio_alloc(GFP_KERNEL, 0);
+-	if (!bio)
+-		return -ENOMEM;
+-
+ 	bio->bi_end_io = bio_end_empty_barrier;
+ 	bio->bi_private = &wait;
+ 	bio->bi_bdev = bdev;
+diff --git a/block/ioctl.c b/block/ioctl.c
+index 0f22e62..ad474d4 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -146,8 +146,6 @@ static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
+ 		struct bio *bio;
+ 
+ 		bio = bio_alloc(GFP_KERNEL, 0);
+-		if (!bio)
+-			return -ENOMEM;
+ 
+ 		bio->bi_end_io = blk_ioc_discard_endio;
+ 		bio->bi_bdev = bdev;
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index ddae808..a3659c1 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -636,8 +636,6 @@ static int loop_switch(struct loop_device *lo, struct file *file)
+ {
+ 	struct switch_request w;
+ 	struct bio *bio = bio_alloc(GFP_KERNEL, 0);
+-	if (!bio)
+-		return -ENOMEM;
+ 	init_completion(&w.wait);
+ 	w.file = file;
+ 	bio->bi_private = &w;
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index da258e7..05763bb 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -307,8 +307,6 @@ dio_bio_alloc(struct dio *dio, struct block_device *bdev,
+ 	struct bio *bio;
+ 
+ 	bio = bio_alloc(GFP_KERNEL, nr_vecs);
+-	if (bio == NULL)
+-		return -ENOMEM;
+ 
+ 	bio->bi_bdev = bdev;
+ 	bio->bi_sector = first_sector;
+diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
+index ba8d9fa..ee1f438 100644
+--- a/fs/exofs/inode.c
++++ b/fs/exofs/inode.c
+@@ -97,15 +97,10 @@ static int pcol_try_alloc(struct page_collect *pcol)
+ {
+ 	int pages = min_t(unsigned, pcol->expected_pages, BIO_MAX_PAGES);
+ 
+-	for (; pages; pages >>= 1) {
++	if (pages)
+ 		pcol->bio = bio_alloc(GFP_KERNEL, pages);
+-		if (likely(pcol->bio))
+-			return 0;
+-	}
+ 
+-	EXOFS_ERR("Failed to kcalloc expected_pages=%u\n",
+-		  pcol->expected_pages);
+-	return -ENOMEM;
++	return 0;
+ }
+ 
+ static void pcol_free(struct page_collect *pcol)
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index 6132353..2a1cb09 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -2416,8 +2416,6 @@ static int ext4_ext_zeroout(struct inode *inode, struct ext4_extent *ex)
+ 			len = ee_len;
+ 
+ 		bio = bio_alloc(GFP_NOIO, len);
+-		if (!bio)
+-			return -ENOMEM;
+ 		bio->bi_sector = ee_pblock;
+ 		bio->bi_bdev   = inode->i_sb->s_bdev;
+ 
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index 51883b3..650a730 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -272,11 +272,6 @@ static int gfs2_read_super(struct gfs2_sbd *sdp, sector_t sector)
+ 	lock_page(page);
+ 
+ 	bio = bio_alloc(GFP_NOFS, 1);
+-	if (unlikely(!bio)) {
+-		__free_page(page);
+-		return -ENOBUFS;
+-	}
+-
+ 	bio->bi_sector = sector * (sb->s_blocksize >> 9);
+ 	bio->bi_bdev = sb->s_bdev;
+ 	bio_add_page(bio, page, PAGE_SIZE, 0);
+diff --git a/fs/xfs/linux-2.6/xfs_aops.c b/fs/xfs/linux-2.6/xfs_aops.c
+index 7ec89fc..fb4f516 100644
+--- a/fs/xfs/linux-2.6/xfs_aops.c
++++ b/fs/xfs/linux-2.6/xfs_aops.c
+@@ -421,10 +421,7 @@ xfs_alloc_ioend_bio(
+ 	struct bio		*bio;
+ 	int			nvecs = bio_get_nr_vecs(bh->b_bdev);
+ 
+-	do {
+-		bio = bio_alloc(GFP_NOIO, nvecs);
+-		nvecs >>= 1;
+-	} while (!bio);
++	bio = bio_alloc(GFP_NOIO, nvecs);
+ 
+ 	ASSERT(bio->bi_private == NULL);
+ 	bio->bi_sector = bh->b_blocknr * (bh->b_size >> 9);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 505f319..8ba052c 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -64,8 +64,6 @@ static int submit(int rw, pgoff_t page_off, struct page *page,
+ 	struct bio *bio;
+ 
+ 	bio = bio_alloc(__GFP_WAIT | __GFP_HIGH, 1);
+-	if (!bio)
+-		return -ENOMEM;
+ 	bio->bi_sector = page_off * (PAGE_SIZE >> 9);
+ 	bio->bi_bdev = resume_bdev;
+ 	bio->bi_end_io = end_swap_bio_read;
 
