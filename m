@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZDNQ6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZDNRAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZDNQ6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbZDNQ5Z
+	id S1756894AbZDNRAG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZDNQ7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:57:25 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:49801 "EHLO
+	Tue, 14 Apr 2009 12:59:53 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:63440 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757913AbZDNQ5X (ORCPT
+	with ESMTP id S1751132AbZDNQ7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:57:23 -0400
+	Tue, 14 Apr 2009 12:59:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=In5H4OapI0plgKgbJJEjO78HpahM9y9qVeOOI3m4bArrA9EYp8wvgPyjUosjfAJcz4
-         p/szuJRM10iC1CmmOqY9mNQbgAioiwzR83OKG5iWrDsFRYG8KOglj/7jiBTO5K8CeB3H
-         2JzlR/wgaSGxr0+LqdJ3JsuDSod2AnOmWsTmQ=
-Date: Tue, 14 Apr 2009 20:57:34 +0400
+        b=luoM90kmtDgjcne6og/tCvZhc2bEBfjQr4x4mWS2vuSKfBuuIAJqz2CHsQeNKpSRsn
+         dtTsSYwjZ7BtvB+YlyA+Zo+6QRED6CfZjvGJcxjxF/KfvggJYwe0LJVQx6aADtQRM3HU
+         jzroJdBzshVkMezEcHuBh+/eIfNGbke1uKeiw=
+Date: Tue, 14 Apr 2009 21:00:04 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
+       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 10/30] cr: core stuff
-Message-ID: <20090414165734.GB27923@x200.localdomain>
-References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain> <1239723694.32604.62.camel@nimitz>
+Message-ID: <20090414170004.GC27923@x200.localdomain>
+References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain> <20090414154139.GA8085@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239723694.32604.62.camel@nimitz>
+In-Reply-To: <20090414154139.GA8085@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 08:41:34AM -0700, Dave Hansen wrote:
-> On Tue, 2009-04-14 at 19:27 +0400, Alexey Dobriyan wrote:
-> > > Also, since Dave introduced the fops->checkpoint(), we (or at least I)
-> > > have been struck by the ugly assymetry with checkpoint() being in fops,
-> > > and restart() not.  Do you have an idea for fixing that?
+On Tue, Apr 14, 2009 at 10:41:39AM -0500, Serge E. Hallyn wrote:
+> Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> > On Mon, Apr 13, 2009 at 04:47:01PM -0500, Serge E. Hallyn wrote:
+> > > Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> > > 
+> > > Hi Alexey,
+> > > 
+> > > as far as I can see, the main differences between this patch and the
+> > > equivalent in Oren's tree are:
+> > > 
+> > > 1. kernel auto-selects container init to freeze
 > > 
-> > Module can legally support C/R for its files.
-> > 
-> > In the end it most certainly will end up with module registering restart
-> > hook for file type N.
-> > 
-> > Or module registering hook to restart object type N.
+> > Note, auto-select part was dropped, userspace is required to pass pid of
+> > container init exactly. This was done to keep semantic of checkpoint(2)
+> > small and extendable.
 > 
-> Yeah, that was my expectation as well.  There's a point when we just
-> have too many kinds of checkpoint objects and the switch statements get
-> out of hand.  Oversimplified, of course, but:
-> 
-> 	init_restart_handler(CR_FD_GENERIC, restore_generic_fd);
-> 	init_restart_handler(CR_FD_SOCKET, restore_socket);
-> 	init_restart_handler(CR_FD_PIPE, restore_pipe);
-> 
-> The only question to me is whether we allow the handler functions to do
-> further reading of the checkpoint image or whether the higher-level code
-> should be feeding them all the data they'll need in some way.
+> sys_checkpoint() in this patch still finds the child_reaper of the
+> passed-in pid, doesn't it?  Or are you saying that a later patch in
+> this set removes that?
 
-It depends, but since you don't know what it's in dumped state, it's
-better to leave freedom for restart hook.
+I posted with auto-selecting?
 
-It gets restart context as cookie, position of start of an object, and
-exported functions cr_read/cr_pread/whatever which accept cooked
-context.
+Code now looks like this:
+
+	rcu_read_lock();
+        tsk = find_task_by_vpid(pid);
+        if (tsk) {
+                struct nsproxy *nsproxy;
+
+                nsproxy = task_nsproxy(tsk);
+                if (nsproxy) {
+                        init_tsk = nsproxy->pid_ns->child_reaper;
+                        if (init_tsk != tsk)
+                                init_tsk = NULL;
+                } else
+                        init_tsk = NULL;
+                if (init_tsk)
+                        get_task_struct(init_tsk);
+        }
+        rcu_read_unlock();
+
+This is to buy as little semantics on checkpoint(2) as possible.
+
+If users later will complain that it's for some reason hard to see who is
+root of container, it could be added.
