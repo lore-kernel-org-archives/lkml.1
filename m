@@ -1,149 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZDNUOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZDNUOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbZDNUOB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 16:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZDNUNw
+	id S1753863AbZDNUOq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 16:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZDNUOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 16:13:52 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:47028 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbZDNUNv (ORCPT
+	Tue, 14 Apr 2009 16:14:36 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:58840 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbZDNUOe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 16:13:51 -0400
-Message-ID: <49E4EDCD.5010406@cs.columbia.edu>
-Date: Tue, 14 Apr 2009 16:10:53 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 14 Apr 2009 16:14:34 -0400
+Message-ID: <49E4EE9C.7040509@cosmosbay.com>
+Date: Tue, 14 Apr 2009 22:14:20 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: containers@lists.osdl.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Creating tasks on restart: userspace vs kernel
-References: <49E40662.2040508@cs.columbia.edu> <20090414163633.GE27461@x200.localdomain> <49E4D89D.9060903@cs.columbia.edu> <20090414195909.GA28353@x200.localdomain>
-In-Reply-To: <20090414195909.GA28353@x200.localdomain>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+CC: Patrick McHardy <kaber@trash.net>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>, Eric Leblond <eric@inl.fr>
+Subject: Re: panic on rmmod of nf_conntrack_irc
+References: <20090410191736.21efab8c@mako-desktop>	<49E4744D.5090205@trash.net>	<49E47C2D.1050508@cosmosbay.com>	<49E47EA5.3060706@trash.net> <20090414211946.4ea0455e@mako-desktop>
+In-Reply-To: <20090414211946.4ea0455e@mako-desktop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 14 Apr 2009 22:14:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Alexey Dobriyan wrote:
->>> In the end correctness of chopping will be equal to how good user
->>> understands that two task_struct's are independent of each other.
->>>
->>>> But it will still be a useful tool for many use cases, like batch cpu jobs,
->>>> some servers, vnc sessions (if you want graphics) etc. Imagine you run
->>>> 'octave' for a week and must reboot now - 'octave' wouldn't care if
->>>> you checkpointed it and then restart with a different pid !
+Mariusz Kozlowski a écrit :
+> On Tue, 14 Apr 2009 14:16:37 +0200
+> Patrick McHardy <kaber@trash.net> wrote:
+> 
+>> Eric Dumazet wrote:
+>>> Patrick McHardy a écrit :
+>>>> Mariusz Kozlowski wrote:
+>>>>>     netfilter: nf_conntrack: use SLAB_DESTROY_BY_RCU and get rid of
+>>>>> call_rcu()
+>>>> Thanks for the report. Does this patch fix it?
 >>>>
->>>> <3> Clone with pid:
->>>>
->>>> To restart processes from userspace, there needs to be a way to
->>>> request a specific pid--in the current pid_ns--for the child process
->>>> (clearly, if it isn't in use).
->>>>
->>>> Why is it a disadvantage ?  to Linus, a syscall clone_with_pid()
->>>> "sounds like a _wonderful_ attack vector against badly written
->>>> user-land software...".  Actually, getting a specific pid is possible
->>>> without this syscall.  But the point is that it's undesirable to have
->>>> this functionality unrestricted.
->>>>
->>>> So one option is to require root privileges. Another option is to
->>>> restrict such action in pid_ns created by the same user. Even more so,
->>>> restrict to only containers that are being restarted.
->>> You want to do small part in userspace and consequently end up with hacks
->>> both userspace-visible and in-kernel.
->> I want to extend existing kernel interface to leverage fork/clone
->> from user space, AND to allow the flexibility mentioned above (which
->> you conveniently ignored).
+>>> Hi Patrick, sorry for the delay, I was in holidays.
+>> No problem, me too :)
 >>
->> All hacks are in-kernel, aren't they ?
+>>> I should have used different fields names (from "next", "first", ...) to catch this
+>>> kind of errors at compile time :(
+>>  >
+>>> Something like :
+>> Thanks Eric. I guess at this point it doesn't really matter anymore
+>> for the upstream kernel, but I'll apply your patch after getting
+>> confirmation from Mariusz to make sure that people maintaining
+>> external patches will notice the change (and won't send me broken
+>> patches :)).
 > 
-> mktree.c can be vieved as hack, why not?
+> Ok good. It doesn't panic now on nf_conntrack_irc rmmod but I found another bug.
+> Now it's NULL pointer dereference I when doing rmmod of ebt_log. To reproduce simply:
+> 
+> # modprobe ebt_log && rmmod ebt_log
+> 
+> This is from the mainline kernel + your (Erics) patch:
+> 
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+> IP: [<ffffffff8048490a>] nf_log_unregister+0x2a/0x90
+> PGD 6f0e8067 PUD 6a2e0067 PMD 0 
+> Oops: 0002 [#1] PREEMPT SMP 
+> last sysfs file: /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:01/PNP0C09:00/PNP0C0A:00/power_supply/BAT0/energy_full
+> CPU 0 
+> Modules linked in: ebt_log(-) nfs lockd auth_rpcgss sunrpc netconsole af_packet i915 drm i2c_algo_bit i2c_core kvm_intel kvm ppdev acpi_cpufreq cpufreq_stats cpufreq_powersave cpufreq_userspace cpufreq_conservative cpufreq_ondemand freq_table fan sbs sbshc container pci_slot iptable_filter ip_tables x_tables sbp2 lp fuse snd_hda_codec_analog arc4 ecb snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss iwl3945 iwlcore thinkpad_acpi sr_mod cdrom pcmcia mac80211 snd_pcm rfkill led_class snd_seq_dummy snd_seq_oss snd_seq_midi_event evdev thermal uhci_hcd ehci_hcd parport_pc ohci1394 nvram yenta_socket rsrc_nonstatic pcmcia_core snd_seq pcspkr psmouse serio_raw usbcore cfg80211 e1000e ieee1394 sg parport battery ac button processor snd_timer snd_seq_device intel_agp snd soundcore snd_page_alloc
+> Pid: 10249, comm: rmmod Not tainted 2.6.30-rc1-00204-gb0cbc86-dirty #33 7667Y24
+> RIP: 0010:[<ffffffff8048490a>]  [<ffffffff8048490a>] nf_log_unregister+0x2a/0x90
+> RSP: 0018:ffff88006a331ec8  EFLAGS: 00010207
+> RAX: 0000000000000000 RBX: ffffffffa02d1d00 RCX: 0000000000000000
+> RDX: 0000000000000000 RSI: 0000000000000002 RDI: ffffffff8065bb80
+> RBP: ffff88006a331ed8 R08: 0000000000000002 R09: ffffffff80676600
+> R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+> R13: 0000000000000880 R14: 0000000000000000 R15: 0000000000000000
+> FS:  0000000000000000(0000) GS:ffff880001010000(0063) knlGS:00000000f7fc46b0
+> CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+> CR2: 0000000000000008 CR3: 000000006f9f9000 CR4: 00000000000026a0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process rmmod (pid: 10249, threadinfo ffff88006a330000, task ffff88006f3c8000)
+> Stack:
+>  ffffffffa02d1e80 ffffffffa02d1e80 ffff88006a331ee8 ffffffffa02d1518
+>  ffff88006a331f78 ffffffff8026ddbb 00676f6c5f746265 ffffffff80229e77
+>  0000000000000282 ffff88006a331f58 ffff88006f3c8000 0000000000000000
+> Call Trace:
+>  [<ffffffffa02d1518>] ebt_log_fini+0x10/0x1e [ebt_log]
+>  [<ffffffff8026ddbb>] sys_delete_module+0x18b/0x240
+>  [<ffffffff80229e77>] ? do_page_fault+0x187/0x2a0
+>  [<ffffffff8022f08b>] sysenter_dispatch+0x7/0x32
+> Code: 90 55 48 89 e5 53 48 89 fb 48 83 ec 08 48 c7 c7 80 bb 65 80 e8 78 a9 06 00 31 c9 eb 31 0f 1f 40 00 48 8b 54 4b 18 48 8b 44 4b 20 <48> 89 42 08 48 89 10 48 c7 44 4b 20 00 02 20 00 48 c7 44 4b 18 
+> RIP  [<ffffffff8048490a>] nf_log_unregister+0x2a/0x90
+>  RSP <ffff88006a331ec8>
+> CR2: 0000000000000008
+> 
+> If this is not related or you don't have a clue I can bisect it.
+> 
 
-Lol .. I meant "all kernel hacks are in-kernel" :)
+Thanks a lot for this report Mariusz
 
-> 
-> The whole existence of these requirements. You want new syscall or SET_NEX_PID
-> or /proc file or something.
+Not related to my RCU patch IMHO (as it only touches conntrack)
 
-Or embed it into a restart(2) call with special argument.
+Check commit ca735b3aaa945626ba65a3e51145bfe4ecd9e222
 
-> 
->> As for asking for a specific pid from user space, it can be done by:
->> * a new syscall (restricted to user-owned-namespace or CAP_SYS_ADMIN)
->> * a sys_restart(... SET_NEXT_PID) interface specific for restart (ugh)
->> * setting a special /proc/PID/next_id  file which is consulted by fork
-> 
-> /proc/*/next_id was disscussed and hopefully died, but no.
-> 
->> and in all cases, limit this so it can only allowed in a restarting
->> container, under the proper security model (again, e.g., Serge's
->> suggestion).
->>
->>> Pids aren't special, they are struct pid, dynamically allocated and
->>> refcounted just like any other structtures.
->>>
->>> They _become_ special for you intended method of restart.
->> They are special. And I allow them not to be restored, as well, if
->> the use case so wishes.
-> 
-> The use case is to restore as much as possible to the same state as
-> equal as possible. Not going with fork_with_pid() in any form helps
-> kernel to ensure correctness of restore and helps to avoid surprise
-> failure modes from user POV.
-> 
->>> You also have flags in nsproxy image (or where?) like "do clone with
->>> CLONE_NEWUTS".
->> Nope. Read the code.
-> 
-> Which code?
-> 
-> 	static int cr_write_namespaces(struct cr_ctx *ctx, struct task_struct *t)
-> 	{
-> 		...
-> 
-> 		new_uts = cr_obj_add_ptr(ctx, nsproxy->uts_ns,
-> 					&hh->uts_ref, CR_OBJ_UTSNS, 0);
-> 		if (new_uts < 0) {
-> 			ret = new_uts;
-> 			goto out;
-> 		}
-> 
-> 		hh->flags = 0;
-> 		if (new_uts)
-> 	===>		hh->flags |= CLONE_NEWUTS;
-> 
-> 		ret = cr_write_obj(ctx, &h, hh);
-> 			...
-> 
->>> This is unneeded!
->>>
->>> nsproxy (or task_struct) image have reference (objref/position) to uts_ns image.
->>>
->>> On restart, one lookups object by reference or restore it if needed,
->>> takes refcount and glue. Just like with every other two structures.
->> That's exactly how it's done.
-> 
-> Not for uts_ns and future namespaces.
-> 
-> 	ret = cr_restore_utsns(ctx, hh->uts_ref, hh->flags);
-> 						 ^^^^^^^^^
-> 						 comes from disk
+netfilter: use a linked list of loggers
 
-Where else would it come from ?  that's part of the state saved during
-checkpoint.
+This patch modifies nf_log to use a linked list of loggers for each
+protocol. This list of loggers is read and write protected with a
+mutex.
 
-That's for nested UTS namespaces, where a task in container called
-unshare().
+This patch separates registration and binding. To be used as
+logging module, a module has to register calling nf_log_register()
+and to bind to a protocol it has to call nf_log_bind_pf().
+This patch also converts the logging modules to the new API. For nfnetlink_log,
+it simply switchs call to register functions to call to bind function and
+adds a call to nf_log_register() during init. For other modules, it just
+remove a const flag from the logger structure and replace it with a
+__read_mostly.
 
-Oren.
+Signed-off-by: Eric Leblond <eric@inl.fr>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+It seems "struct list_head        list[NFPROTO_NUMPROTO];" is not initialized in "struct nf_logger" ?
+
+Please try following patch ?
+
+Thank you
+
+diff --git a/net/netfilter/nf_log.c b/net/netfilter/nf_log.c
+index 8bb998f..d8b85ab 100644
+--- a/net/netfilter/nf_log.c
++++ b/net/netfilter/nf_log.c
+@@ -36,10 +36,14 @@ static struct nf_logger *__find_logger(int pf, const char *str_logger)
+ int nf_log_register(u_int8_t pf, struct nf_logger *logger)
+ {
+ 	const struct nf_logger *llog;
++	int i;
+ 
+ 	if (pf >= ARRAY_SIZE(nf_loggers))
+ 		return -EINVAL;
+ 
++	for (i = 0; i < NFPROTO_NUMPROTO; i++)
++		INIT_LIST_HEAD(&logger->list[i]);
++
+ 	mutex_lock(&nf_log_mutex);
+ 
+ 	if (pf == NFPROTO_UNSPEC) {
 
