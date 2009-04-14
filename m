@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZDNHhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZDNHjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbZDNHhJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZDNHgq
+	id S1754524AbZDNHjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZDNHjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:36:46 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:51047 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbZDNHgp (ORCPT
+	Tue, 14 Apr 2009 03:39:35 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:45989 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbZDNHje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:36:45 -0400
-Date: Tue, 14 Apr 2009 09:38:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
-Message-ID: <20090414073850.GA11577@uranus.ravnborg.org>
-References: <1239654768.6542.10.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 14 Apr 2009 03:39:34 -0400
+To: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Hugh Dickins <hugh@veritas.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [RFC][PATCH 0/9] File descriptor hot-unplug support
+References: <m1skkf761y.fsf@fess.ebiederm.org> <49E4000E.10308@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 14 Apr 2009 00:39:25 -0700
+In-Reply-To: <49E4000E.10308@kernel.org> (Tejun Heo's message of "Tue\, 14 Apr 2009 12\:16\:30 +0900")
+Message-ID: <m13acbbs5u.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239654768.6542.10.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: tj@kernel.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, hugh@veritas.com, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian.
+Tejun Heo <tj@kernel.org> writes:
 
-I see that most of the point raised in last round has been addressed.
-An incremental changelog would be nice during this RFC phase
-so we know what has been changed from one version to the next.
+> Hello, Eric.
+>
+> Eric W. Biederman wrote:
+>> A couple of weeks ago I found myself looking at the uio, seeing that
+>> it does not support pci hot-unplug, and thinking "Great yet another
+>> implementation of hotunplug logic that needs to be added".
+>> 
+>> I decided to see what it would take to add a generic implementation of
+>> the code we have for supporting hot unplugging devices in sysfs, proc,
+>> sysctl, tty_io, and now almost in the tun driver.
+>> 
+>> Not long after I touched the tun driver and made it safe to delete the
+>> network device while still holding it's file descriptor open I someone
+>> else touch the code adding a different feature and my careful work
+>> went up in flames.  Which brought home another point at the best of it
+>> this is ultimately complex tricky code that subsystems should not need
+>> to worry about.
+>
+> I like the way it's headed.  I'm trying to add similar 'revoke' or
+> 'sever' mechanism at block and char device layers so that low level
+> drivers don't have to worry about object lifetimes and so on.  Doing
+> it at the file layer makes sense and can probably replace whatever
+> mechanism at the chardev.
+>
+> The biggest obstacle was the extra in-use reference count overhead.  I
+> thought it could be solved by implementing generic percpu reference
+> count similar to the one used for module reference counting.  Hot path
+> overhead could be reduced to local_t cmpxchg (w/o LOCK prefix) on
+> per-cpu variable + one branch, which was pretty good.  The problem was
+> that space and access overhead for dynamic per-cpu variables wasn't
+> too good, so I started working on dynamic percpu allocator.
+>
+> The dynamic per-cpu allocator is pretty close to completion.  Only
+> several archs need to be converted and it's likely to happen during
+> next few months.  The plan after that was 1. add per-cpu local_t
+> accessors (might replace local_t completely) 2. add generic per-cpu
+> reference counter and move module reference counting to it
+> 3. implement block/chardev sever (or revoke) support.
+>
+> I think #3 can be merged with what you're working on.  What do you
+> think?
 
-> +/*
-> + * write out the date in bcd format
-> + * in the appropriate part of the 
-> + * directory entry
-> + */
-> +static unsigned long vmufat_save_bcd(char *bh, int z)
-> +{
-> +	unsigned char day, year, century, nl_day, month;
-> +	unsigned char u8year;
-> +	unsigned long unix_date = CURRENT_TIME.tv_sec;
-> +
-> +	day = unix_date / 86400 - 3652;
-> +	year = day / 365;
-> +
-> +	if ((year + 3) / 4 + 365 * year > day)
-> +		year--;
-> +
-> +	day -= (year + 3) / 4 + 365 * year;
-> +	if (day == 59 && !(year & 3)) {
-> +		nl_day = day;
-> +		month = 2;
-> +	} else {
-> +		nl_day = (year & 3) || day <= 59 ? day : day - 1;
-> +		for (month = 0; month < 12; month++)
-> +			if (day_n[month] > nl_day)
-> +				break;
-> +	}
-> +
-> +	century = 19;
-> +	if (year > 19)
-> +		century = 20;
-> +
-> +	bh[z + 0x10] = bin2bcd(century);
-> +	u8year = year + 80;
-> +	if (u8year > 99)
-> +		u8year = u8year - 100;
-> +
-> +	bh[z + 0x11] = bin2bcd(u8year);
-> +	bh[z + 0x12] = bin2bcd(month);
-> +	bh[z + 0x13] =
-> +	    bin2bcd(day - day_n[month - 1] + 1);
-> +	bh[z + 0x14] =
-> +	    bin2bcd((unix_date / 3600) % 24);
-> +	bh[z + 0x15] = bin2bcd((unix_date / 60) % 60);
-> +	bh[z + 0x16] = bin2bcd(unix_date % 60);
-> +	return unix_date;
-> +}
+Sounds reasonable.
 
-Can we get all these numbers replaced by a set of descriptive constants?
-You can then use the definition of the constants to more-or-less document
-the on-disk format.
+Do you know of a case where we actually have multiple tasks accessing
+a file simultaneously?
 
-You have it in several places - the above is just one of them.
+I just instrumented up my patch an so far the only case I have found
+are multiple processes closing the same file.  Some weird part of
+bash forking extra processes.
 
-I did not look into the rest of the filesystem this time,
-I may do so later.
-
-Please ntoe that this part of the excercise is to make the filesystem
-ready to be reviewed by someone who knows how to write a filesystem.
-What I provide to you is only the janitorial level..
-
-	Sam
+Eric
