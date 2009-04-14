@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbZDNHJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZDNHQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754280AbZDNHJg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZDNHJP
+	id S1753975AbZDNHQe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZDNHQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:09:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44512 "EHLO
+	Tue, 14 Apr 2009 03:16:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41328 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbZDNHJO (ORCPT
+	with ESMTP id S1751925AbZDNHQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:09:14 -0400
-Date: Tue, 14 Apr 2009 09:11:59 +0200
+	Tue, 14 Apr 2009 03:16:22 -0400
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: dm-multipath and write request ordering
 From: Andi Kleen <andi@firstfloor.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090414071159.GV14687@one.firstfloor.org>
-References: <20090414133448.C645.A69D9226@jp.fujitsu.com> <20090414064132.GB5746@localhost> <20090414154606.C665.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
+References: <e2e108260904130422k2ac92e64jb5aff1cc2adc8da0@mail.gmail.com>
+Date: Tue, 14 Apr 2009 09:16:18 +0200
+In-Reply-To: <e2e108260904130422k2ac92e64jb5aff1cc2adc8da0@mail.gmail.com> (Bart Van Assche's message of "Mon, 13 Apr 2009 13:22:49 +0200")
+Message-ID: <878wm3903h.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090414154606.C665.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 03:54:40PM +0900, KOSAKI Motohiro wrote:
-> Hi
+Bart Van Assche <bart.vanassche@gmail.com> writes:
 
-There are two use cases here:
+> - Is it correct that round-robin load balancing can only work
+> correctly in such a setup with proper support for write barriers in
+> the device mapper ?
 
-First what is useful for the administrator as a general abstraction.
-And what is useful for the kernel hacker for debugging.
+No opinion on that one.
 
-The kernel hacker wants everything even if it's subject to change,
-the administrator wants a higher level abstraction they can make
-sense of and that doesn't change too often.
+> - Did I understand it correctly that the current dm implementation
+> only supports barriers when remapping a single underlying device ?
 
-I think there's a case for both usages, but perhaps they 
-should be separated (in a public and a internal interface perhaps?)
+And also only for dm_linear, so probably it doesn't work on dm_mp (haven't
+tested) even if it has only a single device.
 
-My comments below are about abstractions for the first case.
+Barriers over multiple devices are very difficult, at least as long as
+the underlying protocol doesn't support shared barriers or the Linux
+barrier concept be extended.  The problem is that you cannot express
+to the underlying device that some of its requests are dependent on
+requests going to other devices.
 
+> - Are there any plans to add barrier support to dm-multipath ?
 
-> 
-> > On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
-> > > > Export the following page flags in /proc/kpageflags,
-> > > > just in case they will be useful to someone:
-> > > > 
-> > > > - PG_swapcache
-> > > > - PG_swapbacked
-> > > > - PG_mappedtodisk
-> > > > - PG_reserved
+[note I'm not very familiar with Linux's dm_mp finer details, some 
+details here might be wrong]
 
-PG_reserved should be exported as PG_KERNEL or somesuch.
-
-> > > > - PG_private
-> > > > - PG_private_2
-> > > > - PG_owner_priv_1
-> > > > 
-> > > > - PG_head
-> > > > - PG_tail
-> > > > - PG_compound
-
-I would combine these three into a pseudo "large page" flag.
-
-> > > > 
-> > > > - PG_unevictable
-> > > > - PG_mlocked
-> > > > 
-> > > > - PG_poison
-
-PG_poison is also useful to export. But since it depends on my
-patchkit I will pull a patch for that into the HWPOISON series.
-
-> > > > - PG_unevictable
-> > > > - PG_mlocked
-> 
-> this 9 flags shouldn't exported.
-> I can't imazine administrator use what purpose those flags.
-
-I think an abstraced "PG_pinned" or somesuch flag that combines
-page lock, unevictable, mlocked would be useful for the administrator.
+I doubt it's really doable with RR. It might be possible if you
+do the IO primary on one device and only on error fall back to another
+device. Then during the fallback you could just synchronize all
+IO and solve the barrier problem this way and otherwise do barriers
+on the single active device only. But with multiple devices you
+would have the problem described above.
 
 -Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
