@@ -1,103 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZDNVYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZDNVZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbZDNVYO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZDNVXq
+	id S1756516AbZDNVZs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 17:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZDNVZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:23:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41301 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755294AbZDNVXq (ORCPT
+	Tue, 14 Apr 2009 17:25:38 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:46837 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbZDNVZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:23:46 -0400
-Date: Tue, 14 Apr 2009 17:23:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Theodore Tso <tytso@mit.edu>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
-In-Reply-To: <20090414210445.GM955@mit.edu>
-Message-ID: <alpine.DEB.2.00.0904141716300.31421@gandalf.stny.rr.com>
-References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 14 Apr 2009 17:25:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=v4guqJ8XHwBELURfnFZu8mgrSAL83GrOeTc2KtdVgPGxrSCGraJbbCYmHp9rfqcVvl
+         FMjlf0tmOEm/1ukGErBVEcBVqq7pt8K9bgoA7sfUjU4jkDF604xDe1jQgMremqzqx9WM
+         ECBvc/X2V0rMEQjfEKe/KS3U/z59kq2agsUxY=
+Date: Tue, 14 Apr 2009 23:25:33 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: blktrace: event traces displayed wrong while ftrace blktrace
+	is active
+Message-ID: <20090414212532.GD5968@nowhere>
+References: <E1LtUBT-0007kq-HU@closure.thunk.org> <49E45F7B.7060709@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E45F7B.7060709@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 14 Apr 2009, Theodore Tso wrote:
-
-> On Tue, Apr 14, 2009 at 01:23:37PM -0400, Steven Rostedt wrote:
+On Tue, Apr 14, 2009 at 06:03:39PM +0800, Li Zefan wrote:
+> Theodore Ts'o wrote:
+> > Hi Li,
 > > 
-> > Removal of the two headers per trace system. No need to have
-> > include/trace/sched.h and include/linux/sched_event_types.h
-> > All the changes go into include/trace/sched.h. But note that how that
-> > file is made is important. One could look at the sched.h file, or
-> > skb.h, lockdep.h and kmem.h as an example.
+> > Thanks for working on the ftrace blktrace code; I was wondering if you
+> > could take a look at something.   While the nop or syscall tracer is
+> > selected ("echo nop > /sys/kernel/debug/tracing/current_tracer"), the
+> > event traces display like this:
+> > 
+> >            <...>-4491  [001]  9556.305696: jbd2_start_commit: dev dm-0:8 transaction 335442
+> >            <...>-4491  [001]  9556.305700: jbd2_commit_locking: dev dm-0:8 transaction 335442
+> >            <...>-4491  [001]  9556.305713: jbd2_commit_flushing: dev dm-0:8 transaction 335442
+> >            <...>-4491  [001]  9556.305720: jbd2_submit_inode_data: dev dm-0 transaction ino 3807454
+> >            <...>-4491  [001]  9556.305833: jbd2_commit_logging: dev dm-0:8 transaction 335442
+> >            <...>-4491  [000]  9556.307241: jbd2_end_commit: dev dm-0:8 transaction 335442 head 334303
+> > 
+> > That is, the timestamp information what CPU, what pid, etc., is present.
+> > 
+> > However, if the blk tracer is active, this information is missing:
+> > 
+> > jbd2_start_commit: dev dm-0:8 transaction 333227
+> > jbd2_commit_locking: dev dm-0:8 transaction 333227
+> > jbd2_commit_flushing: dev dm-0:8 transaction 333227
+> > jbd2_submit_inode_data: dev dm-0 transaction ino 1466869
+> > jbd2_submit_inode_data: dev dm-0 transaction ino 1310793
+> > jbd2_commit_logging: dev dm-0:8 transaction 333227
+> > jbd2_end_commit: dev dm-0:8 transaction 333227 head 332814
+> > 
 > 
-> Hi Steven,
+> The cause is:
 > 
-> One thing which I would really like is to avoid needing to drop the
-> header file in include/trace/<subsystem.h>.
+> static void blk_tracer_start(struct trace_array *tr)
+> {
+> 	blk_tracer_enabled = true;
+> 	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;  <--- !!
+> }
 > 
-> The problem that I have with this is that for ext4, we need to access
-> private data structures which are defined in header files in
-> fs/ext4/*.h --- which we moved into fs/ext4 a long time ago at the
-> request of those who felt include/linux/* was getting rather
-> cluttered, and if a subsystem had header files which were only needed
-> by files for that particular subsystems, they should be moved out of
-> include/linux.  
+> If TRACE_ITER_CONTEXT_INFO is set, 'comm-pid [cpu] ts' will be
+> printed, and vise versa.
 > 
-> I supported the above-mentioned cleanup, but it's causing problems
-> given that include/trace/ext4_events_types.h (or include/trace/ext4.h
-> in the new world order) needs access to various structure definitions
-> in fs/ext4/*.h.  I could move the required header files into
-> include/linux/ext4_tracing_types.h --- which has the downside that it
-> is a very random collection of data structures --- or I could entirely
-> revert the cleanup we did long ago and move all of the ext4 header
-> files back into include/linux.  But better yet would be if there was
-> some way we could tell the tracing subsystem that tracing header file
-> for ext4 could be found in fs/ext4/ext4_trace.h.
+> The purpose to unset this flag is to make binary output can be
+> parsed by blkparse.
+
+
+Indeed. Note that you can overwrite this default by typing:
+
+echo context-info > trace_option
+
+after setting bkltrace as the current tracer.
+
+Frederic.
+
+
+
 > 
-> Any chance you could support something like this?
-
-Yes, at the bottom of your header file, before including define_trace.h, 
-you can simply add:
-
-#undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH ../../fs/ext4
-
-#include <trace/define_trace.h>
-
-the TRACE_INCLUDE_PATH is a reference from where trace/define_trace.h is 
-located. It may even be cleaner to do:
-
-
-#undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH EXT4_PATH
-
-and in the Makefile have:
-
-CFLAGS_ext4_jbd2.o := -DEXT4_PATH=$(PWD)
-
-That's something like what I did for my external module test.
-
--- Steve
-
+> > The context information for the blktrace is present:
+> > 
+> >               rm-25433 [001]  9578.307485:   8,18   m   N cfq25433 slice expired t=0
+> >               rm-25433 [001]  9578.307486:   8,18   m   N cfq25433 put_queue
+> >       kjournald2-14059 [001]  9579.032457:   8,18   A   W 5631242 + 8 <- (8,18) 3671312
+> >       kjournald2-14059 [001]  9579.032462:   8,18   Q   W 5631242 + 8 [kjournald2]
+> >       kjournald2-14059 [001]  9579.032470:   8,18   G   W 5631242 + 8 [kjournald2]
+> > 
+> > It's just the context information for the event traces which are
+> > missing.
+> > 
+> > Anyway, if you could take a look at this, it would be much appreciated.
+> > Usually I can interpolate the the timestamps from the surrounding
+> > blktrace lines, but it would be nice if I didn't have to do that.
+> > 
+> 
 
