@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbZDNIev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbZDNIf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755136AbZDNIev (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 04:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZDNIe2
+	id S1755079AbZDNIf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 04:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZDNIfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 04:34:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59634 "EHLO hera.kernel.org"
+	Tue, 14 Apr 2009 04:35:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37670 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZDNIeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 04:34:25 -0400
-Date: Tue, 14 Apr 2009 08:33:54 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, jeremy@goop.org, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49E4413F.7070700@goop.org>
-References: <49E4413F.7070700@goop.org>
-Subject: [tip:tracing/core] tracing: make the trace clocks available generally
-Message-ID: <tip-f071f5f3ca9dc29062bf1c3ad6ec8bf136f0087c@git.kernel.org>
-Git-Commit-ID: f071f5f3ca9dc29062bf1c3ad6ec8bf136f0087c
-X-Mailer: tip-git-log-daemon
+	id S1752169AbZDNIfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 04:35:07 -0400
+Date: Tue, 14 Apr 2009 10:34:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, Shawn Du <duyuyang@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-btrace@vger.kernel.org
+Subject: Re: PATCH 1/3] blktrace: support per-partition tracing
+Message-ID: <20090414083453.GE27003@elte.hu>
+References: <49E42620.4050701@cn.fujitsu.com> <20090414075947.GA27003@elte.hu> <49E445CB.4030001@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 08:33:57 +0000 (UTC)
+In-Reply-To: <49E445CB.4030001@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.5
+	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f071f5f3ca9dc29062bf1c3ad6ec8bf136f0087c
-Gitweb:     http://git.kernel.org/tip/f071f5f3ca9dc29062bf1c3ad6ec8bf136f0087c
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 14 Apr 2009 11:24:36 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 14 Apr 2009 11:31:07 +0200
 
-tracing: make the trace clocks available generally
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Jeremy Fitzhardinge reported this build failure:
+> >> @@ -193,6 +194,7 @@ extern void __trace_note_message(struct blk_trace *, const char *fmt, ...);
+> >>  extern void blk_add_driver_data(struct request_queue *q, struct request *rq,
+> >>  				void *data, size_t len);
+> >>  extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+> >> +			   struct block_device *bdev,
+> >>  			   char __user *arg);
+> >>  extern int blk_trace_startstop(struct request_queue *q, int start);
+> >>  extern int blk_trace_remove(struct request_queue *q);
+> > 
+> > Small detail: you forgot about the !CONFIG_BLK_DEV_IO_TRACE case 
+> > here, the wrapper macros there need to be updated.
+> > 
+> 
+> Ah, sorry..
+> 
+> > (no need to resend - i fixed this up in the 1/3 and 3/3 patches)
+> > 
+> 
+> and thanks! (But I think only 1/3 patch needs to be fixed)
 
- LD	 .tmp_vmlinux1
- arch/x86/kernel/built-in.o: In function `ds_take_timestamp':
- git/linux/arch/x86/kernel/ds.c:1380: undefined reference to `trace_clock_global'
- git/linux/arch/x86/kernel/ds.c:1380: undefined reference to `trace_clock_global'
+3/3 had context dependencies - no functionality dependency.
 
-Which is due to !CONFIG_TRACING && CONFIG_X86_DS=y.
+> The 3rd patch can be for 2.6.30, if Ted or somene else wants to 
+> use ftrace-plugin blktrace to trace dm devices in 2.6.30.
 
-Librarize the tracing clock code.
+ok, good point - we can cherry-pick it over into tracing/urgent 
+after Ted reports back his experiences with these changes.
 
-Reported-by: Jeremy Fitzhardinge <jeremy@goop.org>
-LKML-Reference: <49E4413F.7070700@goop.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/Makefile       |    1 +
- kernel/trace/Makefile |    7 ++++++-
- 2 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 4242366..f341f35 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -93,6 +93,7 @@ obj-$(CONFIG_LATENCYTOP) += latencytop.o
- obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace/
- obj-$(CONFIG_TRACING) += trace/
-+obj-y += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
- obj-$(CONFIG_SLOW_WORK) += slow-work.o
- 
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 3ad367e..674d790 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -15,11 +15,16 @@ ifdef CONFIG_TRACING_BRANCHES
- KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
- endif
- 
-+#
-+# Make the trace clocks available generally: it's infrastructure
-+# relied on by ptrace for example:
-+#
-+obj-y += trace_clock.o
-+
- obj-$(CONFIG_FUNCTION_TRACER) += libftrace.o
- obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
- 
- obj-$(CONFIG_TRACING) += trace.o
--obj-$(CONFIG_TRACING) += trace_clock.o
- obj-$(CONFIG_TRACING) += trace_output.o
- obj-$(CONFIG_TRACING) += trace_stat.o
- obj-$(CONFIG_TRACING) += trace_printk.o
+	Ingo
