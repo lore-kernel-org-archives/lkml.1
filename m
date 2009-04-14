@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbZDNQa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbZDNQcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756059AbZDNQa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZDNQaL
+	id S1755327AbZDNQcH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZDNQby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:30:11 -0400
-Received: from mga11.intel.com ([192.55.52.93]:24766 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178AbZDNQaK convert rfc822-to-8bit (ORCPT
+	Tue, 14 Apr 2009 12:31:54 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:31166 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752307AbZDNQbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:30:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,186,1239001200"; 
-   d="scan'208";a="681465738"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "ego@in.ibm.com" <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
-CC: "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Date: Tue, 14 Apr 2009 09:29:53 -0700
-Subject: RE: [tip:sched/urgent] sched: Print sched_group::__cpu_power in
-	sched_domain_debug
-Thread-Topic: [tip:sched/urgent] sched: Print sched_group::__cpu_power in
-	sched_domain_debug
-Thread-Index: Acm8srZ38v4hx1OwQ6KOHe9oVScXzgAaUHlg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA39B3CF29A@orsmsx505.amr.corp.intel.com>
-References: <20090330045520.2869.24777.stgit@sofia.in.ibm.com>
- <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org>
- <12c511ca0904131153g39b99ec6n6c6ec2e7de3f7ea6@mail.gmail.com>
- <20090414000934.GN817@elte.hu> <20090414033936.GA534@in.ibm.com>
-In-Reply-To: <20090414033936.GA534@in.ibm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 14 Apr 2009 12:31:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=u8mvPKAVEoxIWK9tOFgub9N2Hw8LgvyYETG4hNLhZnRx1HjphOc4xUu8zueIBy4ehE
+         IzgZiAJakMfBw5o6PvRmTMJMN/GqZAI1Nf9lqZIEKmKgZf8L6l/mLdJ1JXKmusRDr9Wz
+         pnXOabmXBupYB2z76O89fSVvojHz+I/DXeu8w=
+Date: Tue, 14 Apr 2009 20:31:43 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 01/14] [VOYAGER] x86: add {safe,hard}_smp_processor_id
+	to smp_ops
+Message-ID: <20090414163143.GB12888@lenovo>
+References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239724300-16371-2-git-send-email-James.Bottomley@HansenPartnership.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--               printk(KERN_CONT " %s (__cpu_power = %d)", str,
--                                               group->__cpu_power);
-+               if (group->__cpu_power != SCHED_LOAD_SCALE)
-+                       printk(KERN_CONT " %s (__cpu_power = %d)", str,
-+                                                       group->__cpu_power);
+[James Bottomley - Tue, Apr 14, 2009 at 10:51:27AM -0500]
+| Not having apics, Voyager can't use the default apic implementation of
+| these, it has to read from a special port in the VIC to get the
+| processor ID, so abstract these functions in smp_ops to allow voyager
+| to live simultaneously with the apic code.
+| 
+| Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+| ---
+|  arch/x86/include/asm/smp.h  |   13 +++++++++++--
+|  arch/x86/kernel/apic/apic.c |    5 -----
+|  arch/x86/kernel/apic/ipi.c  |    2 +-
+|  arch/x86/kernel/smp.c       |    7 +++++++
+|  arch/x86/xen/smp.c          |    7 +++++++
+|  5 files changed, 26 insertions(+), 8 deletions(-)
+| 
+| diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+| index 19e0d88..aac866f 100644
+| --- a/arch/x86/include/asm/smp.h
+| +++ b/arch/x86/include/asm/smp.h
+| @@ -60,6 +60,8 @@ struct smp_ops {
+|  
+|  	void (*send_call_func_ipi)(const struct cpumask *mask);
+|  	void (*send_call_func_single_ipi)(int cpu);
+| +	int (*hard_smp_processor_id)(void);
+| +	int (*safe_smp_processor_id)(void);
+|  };
+|  
+|  /* Globals due to paravirt */
+| @@ -159,7 +161,11 @@ extern unsigned disabled_cpus __cpuinitdata;
+|   * so this is correct in the x86 case.
+|   */
+|  #define raw_smp_processor_id() (percpu_read(cpu_number))
+| -extern int safe_smp_processor_id(void);
+| +int apic_safe_smp_processor_id(void);
+| +static inline int safe_smp_processor_id(void)
+| +{
+| +	return smp_ops.safe_smp_processor_id();
+| +}
+|  
+|  #elif defined(CONFIG_X86_64_SMP)
+|  #define raw_smp_processor_id() (percpu_read(cpu_number))
+| @@ -185,7 +191,10 @@ static inline int logical_smp_processor_id(void)
+|  
+|  #endif
+|  
+| -extern int hard_smp_processor_id(void);
+| +static inline int hard_smp_processor_id(void)
+| +{
+| +	return smp_ops.hard_smp_processor_id();
+| +}
+|  
 
-Much quieter ... but perhaps a little too quiet?
-Is this what you want?  Now the console output looks like this:
+Hi James, wouldn't it break summit32 platform?
+This snippet from summit_32.c
 
-CPU0 attaching sched-domain:
- domain 0: span 0-15 level CPU
-  groups:
-CPU1 attaching sched-domain:
- domain 0: span 0-15 level CPU
-  groups:
-CPU2 attaching sched-domain:
- domain 0: span 0-15 level CPU
-  groups:
- ...
+static void summit_init_apic_ldr(void)
+{
+	unsigned long val, id;
+	int count = 0;
+--->	u8 my_id = (u8)hard_smp_processor_id();
+	u8 my_cluster = APIC_CLUSTER(my_id);
 
-instead of the original:
-
-CPU0 attaching sched-domain:
- domain 0: span 0-15 level CPU
-  groups: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-CPU1 attaching sched-domain:
- domain 0: span 0-15 level CPU
-  groups: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 0
-CPU2 attaching sched-domain:
- domain 0: span 0-15 level CPU
-  groups: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 0 1
- ...
-
-Either we don't need the empty "groups:" line, or we should
-still list the cpus in the group?  I'm not really sure what
-information you are trying to convey here.
-
--Tony
-
+if we have CONFIG_SMP _not_ set smp_ops.hard_smp_processor_id
+would be plain NULL deref (or linker warning)? I could be missing something...
+ 
+        Cyrill
