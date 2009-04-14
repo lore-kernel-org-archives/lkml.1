@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZDNWUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbZDNW1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbZDNWUk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZDNWUa
+	id S1754671AbZDNW1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZDNW1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:20:30 -0400
-Received: from mx7.orcon.net.nz ([219.88.242.57]:47054 "EHLO mx7.orcon.net.nz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790AbZDNWU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:20:29 -0400
-X-Greylist: delayed 3026 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Apr 2009 18:20:29 EDT
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jay Estabrook <jay.estabrook@hp.com>,
-       Oliver Falk <oliver@linux-kernel.at>, glisse@freedesktop.org
-Message-Id: <1CAA6FF2-8C1C-4E6D-812A-5677E8313539@orcon.net.nz>
-From: Michael Cree <mcree@orcon.net.nz>
-To: Matt Turner <mattst88@gmail.com>
-In-Reply-To: <b4198de60904141315x14d898e5x89fc334dd977b7a1@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 14 Apr 2009 18:27:11 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57896 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751686AbZDNW1K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 18:27:10 -0400
+Subject: [PATCH] Avoid possible endless loop when using jiffies clocksource
+ and ONESHOT mode clockevent
+From: john stultz <johnstul@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200903230111.08814.elendil@planet.nl>
+References: <200903080230.10099.elendil@planet.nl>
+	 <200903181307.44867.elendil@planet.nl>
+	 <1237391338.32698.9.camel@jstultz-laptop>
+	 <200903230111.08814.elendil@planet.nl>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 15:27:07 -0700
+Message-Id: <1239748027.6064.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Radeon kernel-modesetting on Alpha. Problem reading PCI ROM
-Date: Wed, 15 Apr 2009 09:29:59 +1200
-References: <b4198de60904141315x14d898e5x89fc334dd977b7a1@mail.gmail.com>
-X-Mailer: Apple Mail (2.930.3)
-X-DSPAM-Check: by mx7.orcon.net.nz on Wed, 15 Apr 2009 09:30:00 +1200
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Wed Apr 15 09:30:01 2009
-X-DSPAM-Confidence: 0.7003
-X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt
+Hey Thomas,
 
-> Jerome and I think that the hang may be caused by being unable to read
-> the PCI ROM.
+I think this might have flown past your radar, so I'm resending. Not
+super critical, but probably a good thing to have, so its fine for
+2.6.31.
 
-I have been taking a little bit of a look at reading the PCI ROM on a  
-radeon video card to try to get the radeonhd xserver video driver  
-going on Alpha.  On one of my Alphas the SRM can't post the card so  
-xserver/radeonhd have to do all the dirty work.  I discovered that the  
-r[567]xx radeon cards need quite a bit of setting up to enable the PCI  
-ROM.  In short, writing to the enable and rom files in the PCI card's  
-sysfs directory in the prescribed manner isn't sufficient to enable  
-the ROM.
+Here's the fix to the tick_handle_periodic() tripping into an infinite
+loop. This was originally seen on s390 emulator. Again, this was only
+triggered because the divide error that caused jiffies to be skewed
+enough that the clock-steering code increased the ns per jiffy
+conversion value enough that any slack we had in the loop before was
+lost.
 
-I wrote a patch to the rhd_dump and rhd_conntest utils of the radeonhd  
-project, so that they would use libpciaccess to access the registers  
-and PCI ROM of the radeon r[567]xx cards.  Unfortunately my patches  
-got mangled in posting to the radeonhd list, and I have been  
-travelling for the last couple of weeks, so they didn't make the  
-release of radeonhd last week.
+Fixing the divide issue (already upstream) avoids the problem, but the
+underlying issue that we allow ONESHOT clockevent mode to be used while
+the jiffies clocksource is in use is still a concern.
 
-The upshot is that I can read the PCI ROM of a Radeon HD2400 card with  
-my patches applied to rhd_conntest, and I have had Xserver 1.5.3 up  
-and running with the HD2400 card on a PWS600au.
+Thomas had pointed out that ppc and other arches that do not have
+PERIODIC mode clockevents don't trip over this, but I believe this has
+been just luck so far, as we do not enable clocksource switching till
+bootup is almost finished (to avoid clocksource churn), so after
+interrupts are enabled, but before clocksource switching is allowed,
+there is a chance (albeit very very small) that clock steering could
+cause a similar problem on other arches.
 
-I can send you the patches to rhd_dump and rhd_conntest if you would  
-like to try them out.
+Thomas, what do you think about this?  With the s390 emulator that
+originally tripped over this issue, this patch makes it runs fine even
+without the do_div() fix.
 
-Cheers
-Michael.
+thanks
+-john
+
+
+
+The following patch avoids and endless loop issue by requiring that a
+highres valid clocksource be installed before we call tick_periodic() in
+a loop when using ONESHOT mode. The result is we will only increment
+jiffies once per interrupt until a continuous hardware clocksource is
+available.
+
+Without this, we can run into a endless loop, where each cycle through
+the loop, jiffies is updated which increments time by tick_period or
+more (due to clock steering), which can cause the event programming to
+think the next event was before the newly incremented time and fail
+causing tick_periodic() to be called again and the whole process loops
+forever.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+index 21a5ca8..83c4417 100644
+--- a/kernel/time/tick-common.c
++++ b/kernel/time/tick-common.c
+@@ -93,7 +93,17 @@ void tick_handle_periodic(struct clock_event_device *dev)
+ 	for (;;) {
+ 		if (!clockevents_program_event(dev, next, ktime_get()))
+ 			return;
+-		tick_periodic(cpu);
++		/*
++		 * Have to be careful here. If we're in oneshot mode,
++		 * before we call tick_periodic() in a loop, we need
++		 * to be sure we're using a real hardware clocksource.
++		 * Otherwise we could get trapped in an infinite
++		 * loop, as the tick_periodic() increments jiffies,
++		 * when then will increment time, posibly causing
++		 * the loop to trigger again and again.
++		 */
++		if (timekeeping_valid_for_hres())
++			tick_periodic(cpu);
+ 		next = ktime_add(next, tick_period);
+ 	}
+ }
+
+
+
+
 
