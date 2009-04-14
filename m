@@ -1,113 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbZDNW1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZDNW1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbZDNW1V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZDNW1L
+	id S1755459AbZDNW1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZDNW1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:27:11 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57896 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbZDNW1K (ORCPT
+	Tue, 14 Apr 2009 18:27:17 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:37289 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbZDNW1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:27:10 -0400
-Subject: [PATCH] Avoid possible endless loop when using jiffies clocksource
- and ONESHOT mode clockevent
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200903230111.08814.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
-	 <200903181307.44867.elendil@planet.nl>
-	 <1237391338.32698.9.camel@jstultz-laptop>
-	 <200903230111.08814.elendil@planet.nl>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 15:27:07 -0700
-Message-Id: <1239748027.6064.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Tue, 14 Apr 2009 18:27:15 -0400
+Message-ID: <49E50DC4.3080108@ovro.caltech.edu>
+Date: Tue, 14 Apr 2009 15:27:16 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+CC: Ira Snyder <iws@ovro.caltech.edu>, Arnd Bergmann <arnd@arndb.de>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+References: <20090224000002.GA578@ovro.caltech.edu> <fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com> 	<49E4FED0.1020003@ovro.caltech.edu> <fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com> 	<49E505B3.5070005@ovro.caltech.edu> <fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
+In-Reply-To: <fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 14 Apr 2009 15:27:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Thomas,
+Hi Grant,
 
-I think this might have flown past your radar, so I'm resending. Not
-super critical, but probably a good thing to have, so its fine for
-2.6.31.
+> Hmmm, I hadn't thought about this.  I was intending to use the
+> Virtex's memory region for all virtio, but if I can allocate memory
+> regions on both sides of the PCI bus, then that may be best.
 
-Here's the fix to the tick_handle_periodic() tripping into an infinite
-loop. This was originally seen on s390 emulator. Again, this was only
-triggered because the divide error that caused jiffies to be skewed
-enough that the clock-steering code increased the ns per jiffy
-conversion value enough that any slack we had in the loop before was
-lost.
+Sounds like you can experiment and see what works best :)
 
-Fixing the divide issue (already upstream) avoids the problem, but the
-underlying issue that we allow ONESHOT clockevent mode to be used while
-the jiffies clocksource is in use is still a concern.
+>> If you use
+>> a PCI Target only core, then the MPC5200 DMA controller
+>> will have to do all the work, and read transfers might
+>> be slightly less efficient.
+> 
+> I'll definitely intend to enable master mode on the Xilinx PCI controller.
 
-Thomas had pointed out that ppc and other arches that do not have
-PERIODIC mode clockevents don't trip over this, but I believe this has
-been just luck so far, as we do not enable clocksource switching till
-bootup is almost finished (to avoid clocksource churn), so after
-interrupts are enabled, but before clocksource switching is allowed,
-there is a chance (albeit very very small) that clock steering could
-cause a similar problem on other arches.
+Since you understand the lingo, you clearly understand
+there are core differences :)
 
-Thomas, what do you think about this?  With the s390 emulator that
-originally tripped over this issue, this patch makes it runs fine even
-without the do_div() fix.
+>> Our target boards (PowerPC) live in compactPCI backplanes
+>> and talk to x86 boards that do not have DMA controllers.
+>> So the PCI target board DMA controllers are used to
+>> transfer data efficiently to the x86 host (writes)
+>> and less efficiently from the host to the boards
+>> (reads). Our bandwidth requirements are 'to the host',
+>> so we can live with the asymmetry in performance.
+> 
+> Fortunately I don't have very high bandwidth requirements for the
+> first spin, so I have some room to experiment.  :-)
 
-thanks
--john
+Yes, in theory you have enough bandwidth ... then a
+few features are added, the PCI core is not quite as
+fast as advertised, etc etc :)
 
-
-
-The following patch avoids and endless loop issue by requiring that a
-highres valid clocksource be installed before we call tick_periodic() in
-a loop when using ONESHOT mode. The result is we will only increment
-jiffies once per interrupt until a continuous hardware clocksource is
-available.
-
-Without this, we can run into a endless loop, where each cycle through
-the loop, jiffies is updated which increments time by tick_period or
-more (due to clock steering), which can cause the event programming to
-think the next event was before the newly incremented time and fail
-causing tick_periodic() to be called again and the whole process loops
-forever.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
-index 21a5ca8..83c4417 100644
---- a/kernel/time/tick-common.c
-+++ b/kernel/time/tick-common.c
-@@ -93,7 +93,17 @@ void tick_handle_periodic(struct clock_event_device *dev)
- 	for (;;) {
- 		if (!clockevents_program_event(dev, next, ktime_get()))
- 			return;
--		tick_periodic(cpu);
-+		/*
-+		 * Have to be careful here. If we're in oneshot mode,
-+		 * before we call tick_periodic() in a loop, we need
-+		 * to be sure we're using a real hardware clocksource.
-+		 * Otherwise we could get trapped in an infinite
-+		 * loop, as the tick_periodic() increments jiffies,
-+		 * when then will increment time, posibly causing
-+		 * the loop to trigger again and again.
-+		 */
-+		if (timekeeping_valid_for_hres())
-+			tick_periodic(cpu);
- 		next = ktime_add(next, tick_period);
- 	}
- }
-
-
-
-
-
+Cheers,
+Dave
