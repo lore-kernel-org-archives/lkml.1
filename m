@@ -1,133 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbZDNEVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZDNEW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753068AbZDNEVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 00:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZDNEVb
+	id S1753949AbZDNEW6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 00:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZDNEWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 00:21:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:28042 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750746AbZDNEVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 00:21:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NSbAT56qWA7yIw9YaQRnRNc4EeYDdtdp6NYv03Teb7351hThPXfsbL4VxUtmNK9f3O
-         wOJAI3KJ3Sa66OlmiKVGHtkOH+edhZiNnODS0rZIuulfZskVyOXH796nN6iZJxU3XQRG
-         5JrXR5ZXXXc9NcurnfPXaYM3r+oVoNGCZeOhU=
-Subject: Re: [PATCH 1/3] tracing/filters: allow user-input to be
- integer-like string
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090413222951.GG8514@elte.hu>
-References: <49E2A594.4060306@cn.fujitsu.com>
-	 <20090413144513.GF5977@nowhere>  <20090413222951.GG8514@elte.hu>
-Content-Type: text/plain
-Date: Mon, 13 Apr 2009 23:21:27 -0500
-Message-Id: <1239682887.7011.54.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 00:22:49 -0400
+Received: from mga03.intel.com ([143.182.124.21]:41350 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750746AbZDNEWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 00:22:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,183,1239001200"; 
+   d="scan'208";a="131126295"
+Date: Tue, 14 Apr 2009 12:22:31 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090414042231.GA4341@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 00:29 +0200, Ingo Molnar wrote:
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > On Mon, Apr 13, 2009 at 10:38:12AM +0800, Li Zefan wrote:
-> > > Suppose we would like to trace all tasks named '123', but this
-> > > will fail:
-> > >  # echo 'parent_comm == 123' > events/sched/sched_process_fork/filter
-> > >  bash: echo: write error: Invalid argument
-> > > 
-> > > Don't guess the type of the filter pred in filter_parse(), but instead
-> > > we check it in filter_add_pred().
-> > > 
-> > > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > > ---
-> > >  kernel/trace/trace_events_filter.c |   26 +++++++++++++-------------
-> > >  1 files changed, 13 insertions(+), 13 deletions(-)
-> > > 
-> > > diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> > > index 9f8ecca..a63f965 100644
-> > > --- a/kernel/trace/trace_events_filter.c
-> > > +++ b/kernel/trace/trace_events_filter.c
-> > > @@ -229,6 +229,7 @@ static int is_string_field(const char *type)
-> > >  int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
-> > >  {
-> > >  	struct ftrace_event_field *field;
-> > > +	unsigned long long val;
-> > >  
-> > >  	field = find_event_field(call, pred->field_name);
-> > >  	if (!field)
-> > > @@ -237,14 +238,14 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
-> > >  	pred->offset = field->offset;
-> > >  
-> > >  	if (is_string_field(field->type)) {
-> > > -		if (!pred->str_val)
-> > > -			return -EINVAL;
-> > >  		pred->fn = filter_pred_string;
-> > >  		pred->str_len = field->size;
-> > >  		return __filter_add_pred(call, pred);
-> > >  	} else {
-> > > -		if (pred->str_val)
-> > > +		if (strict_strtoull(pred->str_val, 0, &val))
-> > >  			return -EINVAL;
-> > > +		pred->val = val;
-> > > +		kfree(pred->str_val);
-> > 
-> > 
-> > And you might also want to do
-> > pred->str_val = NULL;
-> > Otherwise filter_free_pred() may crash later:
-> > 
-> > void filter_free_pred(struct filter_pred *pred)
-> > {
-> > 	if (!pred)
-> > 		return;
-> > 
-> > 	kfree(pred->field_name);
-> > 	kfree(pred->str_val);
-> > 	kfree(pred);
-> > }
-> > 
-> > 
-> > Other than that, it looks good.
-> 
-> This also conflicts with Tom's rewrite of the filter engine to make 
-> it on-the-fly modifiable.
-> 
-> Li, mind reworking your series against latest -tip? (it has Tom's 
-> patch included already)
-> 
-> Also, it would be nice to hear Tom's opinion about this series as 
-> well. I know there's new parsing features planned - if it's better 
-> that way then Tom you might want to pick up Li's patches and submit 
-> them together with any pending or upcoming changes? We can apply 
-> them directly too if that's easier to you.
-> 
+Export the following page flags in /proc/kpageflags,
+just in case they will be useful to someone:
 
-I had started on the new parser a couple weeks ago, but got sidetracked
-by other things.  I'll be getting back to it this week, but until it's
-ready it wouldn't hurt for you to pick up Li's patches, and I'll make
-any changes I need to in the new code.
+- PG_swapcache
+- PG_swapbacked
+- PG_mappedtodisk
+- PG_reserved
+- PG_private
+- PG_private_2
+- PG_owner_priv_1
 
-What this patch does will be needed by the new code too, so it would be
-good to have it, though it might get moved around.  Patch 2 won't hurt
-either, though everything in filter_parse() will probably change.  And
-patch 3 fixes a bug that needs to be fixed regardless...
+- PG_head
+- PG_tail
+- PG_compound
 
-Thanks,
+- PG_unevictable
+- PG_mlocked
 
-Tom
+- PG_poison
 
-> Thanks,
-> 
-> 	Ingo
+Also add the following two pseudo page flags:
 
+- PG_MMAP:   whether the page is memory mapped
+- PG_NOPAGE: whether the page is present
+
+This increases the total number of exported page flags to 25.
+
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/proc/page.c |  112 +++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 81 insertions(+), 31 deletions(-)
+
+--- mm.orig/fs/proc/page.c
++++ mm/fs/proc/page.c
+@@ -68,20 +68,86 @@ static const struct file_operations proc
+ 
+ /* These macros are used to decouple internal flags from exported ones */
+ 
+-#define KPF_LOCKED     0
+-#define KPF_ERROR      1
+-#define KPF_REFERENCED 2
+-#define KPF_UPTODATE   3
+-#define KPF_DIRTY      4
+-#define KPF_LRU        5
+-#define KPF_ACTIVE     6
+-#define KPF_SLAB       7
+-#define KPF_WRITEBACK  8
+-#define KPF_RECLAIM    9
+-#define KPF_BUDDY     10
++enum {
++	KPF_LOCKED,		/*  0 */
++	KPF_ERROR,		/*  1 */
++	KPF_REFERENCED,		/*  2 */
++	KPF_UPTODATE,		/*  3 */
++	KPF_DIRTY,		/*  4 */
++	KPF_LRU,		/*  5 */
++	KPF_ACTIVE,		/*  6 */
++	KPF_SLAB,		/*  7 */
++	KPF_WRITEBACK,		/*  8 */
++	KPF_RECLAIM,		/*  9 */
++	KPF_BUDDY,		/* 10 */
++	KPF_MMAP,		/* 11 */
++	KPF_SWAPCACHE,		/* 12 */
++	KPF_SWAPBACKED,		/* 13 */
++	KPF_MAPPEDTODISK,	/* 14 */
++	KPF_RESERVED,		/* 15 */
++	KPF_PRIVATE,		/* 16 */
++	KPF_PRIVATE2,		/* 17 */
++	KPF_OWNER_PRIVATE,	/* 18 */
++	KPF_COMPOUND_HEAD,	/* 19 */
++	KPF_COMPOUND_TAIL,	/* 20 */
++	KPF_UNEVICTABLE,	/* 21 */
++	KPF_MLOCKED,		/* 22 */
++	KPF_POISON,		/* 23 */
++	KPF_NOPAGE,		/* 24 */
++	KPF_NUM
++};
+ 
+ #define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
+ 
++u64 get_uflags(struct page *page)
++{
++	unsigned long kflags; /* todo: use u64 when KPF_NUM grows beyond 32 */
++	u64 uflags;
++
++	if (!page)
++		return 1 << KPF_NOPAGE;
++
++	kflags = page->flags;
++	uflags = 0;
++
++	if (page_mapped(page))
++		uflags |= 1 << KPF_MMAP;
++
++	uflags |= kpf_copy_bit(kflags, KPF_LOCKED,	PG_locked);
++	uflags |= kpf_copy_bit(kflags, KPF_ERROR,	PG_error);
++	uflags |= kpf_copy_bit(kflags, KPF_REFERENCED,	PG_referenced);
++	uflags |= kpf_copy_bit(kflags, KPF_UPTODATE,	PG_uptodate);
++	uflags |= kpf_copy_bit(kflags, KPF_DIRTY,	PG_dirty);
++	uflags |= kpf_copy_bit(kflags, KPF_LRU,		PG_lru)	;
++	uflags |= kpf_copy_bit(kflags, KPF_ACTIVE,	PG_active);
++	uflags |= kpf_copy_bit(kflags, KPF_SLAB,	PG_slab);
++	uflags |= kpf_copy_bit(kflags, KPF_WRITEBACK,	PG_writeback);
++	uflags |= kpf_copy_bit(kflags, KPF_RECLAIM,	PG_reclaim);
++	uflags |= kpf_copy_bit(kflags, KPF_BUDDY,	PG_buddy);
++	uflags |= kpf_copy_bit(kflags, KPF_SWAPCACHE,	PG_swapcache);
++	uflags |= kpf_copy_bit(kflags, KPF_SWAPBACKED,	PG_swapbacked);
++	uflags |= kpf_copy_bit(kflags, KPF_MAPPEDTODISK, PG_mappedtodisk);
++	uflags |= kpf_copy_bit(kflags, KPF_RESERVED,	PG_reserved);
++	uflags |= kpf_copy_bit(kflags, KPF_PRIVATE,	PG_private);
++	uflags |= kpf_copy_bit(kflags, KPF_PRIVATE2,	PG_private_2);
++	uflags |= kpf_copy_bit(kflags, KPF_OWNER_PRIVATE, PG_owner_priv_1);
++#ifdef CONFIG_PAGEFLAGS_EXTENDED
++	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND_HEAD, PG_head);
++	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND_TAIL, PG_tail);
++#else
++	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND_HEAD, PG_compound);
++#endif
++#ifdef CONFIG_UNEVICTABLE_LRU
++	uflags |= kpf_copy_bit(kflags, KPF_UNEVICTABLE,	PG_unevictable);
++	uflags |= kpf_copy_bit(kflags, KPF_MLOCKED,	PG_mlocked);
++#endif
++#ifdef CONFIG_MEMORY_FAILURE
++	uflags |= kpf_copy_bit(kflags, KPF_POISON,	PG_poison);
++#endif
++
++	return uflags;
++};
++
+ static ssize_t kpageflags_read(struct file *file, char __user *buf,
+ 			     size_t count, loff_t *ppos)
+ {
+@@ -90,7 +156,6 @@ static ssize_t kpageflags_read(struct fi
+ 	unsigned long src = *ppos;
+ 	unsigned long pfn;
+ 	ssize_t ret = 0;
+-	u64 kflags, uflags;
+ 
+ 	pfn = src / KPMSIZE;
+ 	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
+@@ -98,32 +163,17 @@ static ssize_t kpageflags_read(struct fi
+ 		return -EINVAL;
+ 
+ 	while (count > 0) {
+-		ppage = NULL;
+ 		if (pfn_valid(pfn))
+ 			ppage = pfn_to_page(pfn);
+-		pfn++;
+-		if (!ppage)
+-			kflags = 0;
+ 		else
+-			kflags = ppage->flags;
++			ppage = NULL;
+ 
+-		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
+-			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
+-			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
+-			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
+-			kpf_copy_bit(kflags, KPF_DIRTY, PG_dirty) |
+-			kpf_copy_bit(kflags, KPF_LRU, PG_lru) |
+-			kpf_copy_bit(kflags, KPF_ACTIVE, PG_active) |
+-			kpf_copy_bit(kflags, KPF_SLAB, PG_slab) |
+-			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
+-			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
+-			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
+-
+-		if (put_user(uflags, out++)) {
++		if (put_user(get_uflags(ppage), out)) {
+ 			ret = -EFAULT;
+ 			break;
+ 		}
+-
++		out++;
++		pfn++;
+ 		count -= KPMSIZE;
+ 	}
+ 
