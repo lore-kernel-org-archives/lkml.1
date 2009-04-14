@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZDNTay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZDNTdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbZDNTay (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 15:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZDNTan
+	id S1754656AbZDNTdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 15:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZDNTdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 15:30:43 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:51714 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbZDNTam convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 15:30:42 -0400
-Message-ID: <49E4E3E8.5090201@cosmosbay.com>
-Date: Tue, 14 Apr 2009 21:28:40 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Jeff Chua <jeff.chua.linux@gmail.com>, Patrick McHardy <kaber@trash.net>,
-       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       paulus@samba.org, mingo@elte.hu, torvalds@linux-foundation.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v2)
-References: <20090411174801.GG6822@linux.vnet.ibm.com>	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>	<20090412173108.GO6822@linux.vnet.ibm.com>	<20090412.181330.23529546.davem@davemloft.net>	<20090413040413.GQ6822@linux.vnet.ibm.com>	<20090413095309.631cf395@nehalam>	<49E48136.5060700@trash.net>	<49E49C65.8060808@cosmosbay.com>	<20090414074554.7fa73e2f@nehalam>	<49E4B0A5.70404@cosmosbay.com>	<b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com> <20090414111716.28585806@nehalam>
-In-Reply-To: <20090414111716.28585806@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 14 Apr 2009 21:28:42 +0200 (CEST)
+	Tue, 14 Apr 2009 15:33:45 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:32809 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbZDNTdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 15:33:44 -0400
+Subject: meminfo Committed_AS underflows
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: linux-mm <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Eric B Munson <ebmunson@us.ibm.com>,
+       Mel Gorman <mel@linux.vnet.ibm.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 12:33:39 -0700
+Message-Id: <1239737619.32604.118.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger a écrit :
-> Subject: iptables: 
-> 
-> This is an alternative version of ip/ip6/arp tables locking using
-> per-cpu locks.  This avoids the overhead of synchronize_net() during
-> update but still removes the expensive rwlock in earlier versions.
-> 
-> The idea for this came from an earlier version done by Eric Duzamet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  The slow case involves acquiring the locks on
-> all cpu's.
-> 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> ---
->  include/linux/netfilter/x_tables.h |    5 -
->  net/ipv4/netfilter/arp_tables.c    |  112 +++++++++------------------------
->  net/ipv4/netfilter/ip_tables.c     |  123 +++++++++++--------------------------
->  net/ipv6/netfilter/ip6_tables.c    |  119 +++++++++++------------------------
->  net/netfilter/x_tables.c           |   28 --------
->  5 files changed, 110 insertions(+), 277 deletions(-)
+I have a set of ppc64 machines that seem to spontaneously get underflows
+in /proc/meminfo's Committed_AS field:
+        
+        # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
+              1 Committed_AS: 18446744073709323392 kB
+             11 Committed_AS: 18446744073709455488 kB
+              6 Committed_AS:    35136 kB
+              5 Committed_AS: 18446744073709454400 kB
+              7 Committed_AS:    35904 kB
+              3 Committed_AS: 18446744073709453248 kB
+              2 Committed_AS:    34752 kB
+              9 Committed_AS: 18446744073709453248 kB
+              8 Committed_AS:    34752 kB
+              3 Committed_AS: 18446744073709320960 kB
+              7 Committed_AS: 18446744073709454080 kB
+              3 Committed_AS: 18446744073709320960 kB
+              5 Committed_AS: 18446744073709454080 kB
+              6 Committed_AS: 18446744073709320960 kB
 
-Oh well, it seems factorization of this stuff is not what you want, so
-I'll stop arguing.
+As you can see, it bounces in and out of it.  I think the problem is
+here:
+        
+        #define ACCT_THRESHOLD  max(16, NR_CPUS * 2)
+        ...
+        void vm_acct_memory(long pages)
+        {
+                long *local;
+        
+                preempt_disable();
+                local = &__get_cpu_var(committed_space);
+                *local += pages;
+                if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
+                        atomic_long_add(*local, &vm_committed_space);
+                        *local = 0;
+                }
+                preempt_enable();
+        }
 
-Please check spelling of my name in ChangeLog, and more importantly :
-initialize arp_tables_lock that is missing in V1/2
+Plus, some joker set CONFIG_NR_CPUS=1024.
 
-	for_each_possible_cpu(cpu)
-		spin_lock_init(&per_cpu(arp_tables_lock, cpu));
+nr_cpus (1024) * 2 * page_size (64k) = 128MB.  That means each cpu can
+skew the counter by 128MB.  With 1024 CPUs that means that we can have
+~128GB of outstanding percpu accounting that meminfo doesn't see.  Let's
+say we do vm_acct_memory(128MB-1) on 1023 of the CPUs, then on the other
+CPU, we do  vm_acct_memory(-128GB).
 
-Then please add my :
+The 1023 cpus won't ever hit the ACCT_THRESHOLD.  The 1 CPU that did
+will decrement the global 'vm_committed_space'  by ~128 GB.  Underflow.
+Yay.  This happens on a much smaller scale now.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Should we be protecting meminfo so that it spits slightly more sane
+numbers out to the user?
 
-Thanks
-
+-- Dave
 
