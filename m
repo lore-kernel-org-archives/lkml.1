@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZDNINk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZDNISP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbZDNINk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 04:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZDNINX
+	id S1754967AbZDNISP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 04:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZDNISB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 04:13:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53178 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751890AbZDNINV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 04:13:21 -0400
-Message-ID: <49E445CB.4030001@cn.fujitsu.com>
-Date: Tue, 14 Apr 2009 16:14:03 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 14 Apr 2009 04:18:01 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:37848 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbZDNISA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 04:18:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bplpS3BN9x1If/kPN2NE183yuvLA+ECdmYMJigiVQPyhJ0MSkxl1PUeQpLzme6O3FO
+         JAXkVkedBq6/evqlPAbeWcvY8YWerfd8ldJbfck6me89vVGXFRR9U0Bgmw3kUh31wCGt
+         yb5YCrSHBsDlreFnR3wOvm9IJNKMmSKWFSoxo=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Shawn Du <duyuyang@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-btrace@vger.kernel.org
-Subject: Re: PATCH 1/3] blktrace: support per-partition tracing
-References: <49E42620.4050701@cn.fujitsu.com> <20090414075947.GA27003@elte.hu>
-In-Reply-To: <20090414075947.GA27003@elte.hu>
+In-Reply-To: <878wm3903h.fsf@basil.nowhere.org>
+References: <e2e108260904130422k2ac92e64jb5aff1cc2adc8da0@mail.gmail.com>
+	 <878wm3903h.fsf@basil.nowhere.org>
+Date: Tue, 14 Apr 2009 10:17:58 +0200
+Message-ID: <e2e108260904140117t274815c6uebe5438ba2bf17b6@mail.gmail.com>
+Subject: Re: dm-multipath and write request ordering
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> @@ -193,6 +194,7 @@ extern void __trace_note_message(struct blk_trace *, const char *fmt, ...);
->>  extern void blk_add_driver_data(struct request_queue *q, struct request *rq,
->>  				void *data, size_t len);
->>  extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
->> +			   struct block_device *bdev,
->>  			   char __user *arg);
->>  extern int blk_trace_startstop(struct request_queue *q, int start);
->>  extern int blk_trace_remove(struct request_queue *q);
-> 
-> Small detail: you forgot about the !CONFIG_BLK_DEV_IO_TRACE case 
-> here, the wrapper macros there need to be updated.
-> 
+On Tue, Apr 14, 2009 at 9:16 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> Bart Van Assche <bart.vanassche@gmail.com> writes:
+>> - Is it correct that round-robin load balancing can only work
+>> correctly in such a setup with proper support for write barriers in
+>> the device mapper ?
+>
+> No opinion on that one.
 
-Ah, sorry..
+What I'm worried about is that write requests that have been passed to
+dm_mp could arrive in another order at the target because of the
+variable transport time of protocols like TCP/IP. This could cause
+newer data to be overwritten by older data. Separating those write
+requests by a barrier won't help because dm_mp ignores barriers.
 
-> (no need to resend - i fixed this up in the 1/3 and 3/3 patches)
-> 
-
-and thanks! (But I think only 1/3 patch needs to be fixed)
-
-The 3rd patch can be for 2.6.30, if Ted or somene else wants to use
-ftrace-plugin blktrace to trace dm devices in 2.6.30.
-
---
-Zefan
+Bart.
