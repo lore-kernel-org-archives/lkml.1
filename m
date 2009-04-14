@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZDNIJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZDNINk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbZDNIJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 04:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZDNIJm
+	id S1752062AbZDNINk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 04:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZDNINX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 04:09:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36074 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbZDNIJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 04:09:40 -0400
-Date: Tue, 14 Apr 2009 10:09:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
+	Tue, 14 Apr 2009 04:13:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53178 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751890AbZDNINV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 04:13:21 -0400
+Message-ID: <49E445CB.4030001@cn.fujitsu.com>
+Date: Tue, 14 Apr 2009 16:14:03 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        "Theodore Ts'o" <tytso@mit.edu>, Shawn Du <duyuyang@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>, linux-btrace@vger.kernel.org
 Subject: Re: PATCH 1/3] blktrace: support per-partition tracing
-Message-ID: <20090414080919.GB27003@elte.hu>
-References: <49E42620.4050701@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E42620.4050701@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <49E42620.4050701@cn.fujitsu.com> <20090414075947.GA27003@elte.hu>
+In-Reply-To: <20090414075947.GA27003@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> From: Shawn Du <duyuyang@gmail.com>
+>> @@ -193,6 +194,7 @@ extern void __trace_note_message(struct blk_trace *, const char *fmt, ...);
+>>  extern void blk_add_driver_data(struct request_queue *q, struct request *rq,
+>>  				void *data, size_t len);
+>>  extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+>> +			   struct block_device *bdev,
+>>  			   char __user *arg);
+>>  extern int blk_trace_startstop(struct request_queue *q, int start);
+>>  extern int blk_trace_remove(struct request_queue *q);
 > 
-> Though one can specify '-d /dev/sda1' when using blktrace, it 
-> still traces the whole sda.
+> Small detail: you forgot about the !CONFIG_BLK_DEV_IO_TRACE case 
+> here, the wrapper macros there need to be updated.
 > 
-> To support per-partition tracing, when we start tracing, we 
-> initialize bt->start_lba and bt->end_lba to the start and end 
-> sector of that partition.
+
+Ah, sorry..
+
+> (no need to resend - i fixed this up in the 1/3 and 3/3 patches)
 > 
-> Note some actions are per device, thus we don't filter 0-sector 
-> events.
-> 
-> The original patch and discussion can be found here:
-> 	http://marc.info/?l=linux-btrace&m=122949374214540&w=2
-> 
-> Signed-off-by: Shawn Du <duyuyang@gmail.com>
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Thanks - beyond the small detail i mailed about a few minutes ago 
-the series looks good: i'll queue this up in tracing/blktrace unless 
-Jens has second thoughts.
+and thanks! (But I think only 1/3 patch needs to be fixed)
 
-Lets note that this approach still has the (long existing) 
-limitation that only one device can be block-traced at a time.
+The 3rd patch can be for 2.6.30, if Ted or somene else wants to use
+ftrace-plugin blktrace to trace dm devices in 2.6.30.
 
-Furthermore, various other aspects of act_log_check() itself could 
-be expressed in terms of per tracepoint filters as well: the PID 
-filter field for example - which is supported in the ioctl ABI but 
-currently not exposed in the user-space blktrace utility. Same goes 
-for the action mask which is frequently used.
-
-But before we can lift all these limitations and can have equivalent 
-functionality in the generic event tracer we still need more filter 
-engine infrastructure work (range operators and dev_t field 
-support). Plus TRACE_EVENT() based blk tracepoints.
-
-Once we have that, the conversion will be straightforward: all 
-existing filter functionality of blktrace is static, so it will map 
-directly to new-style filter expressions. That will give us block 
-tracing for an arbitrary number of block devices (including the 
-basic mode of 'trace all block IO in the system') and a much wider 
-range of filtering capabilities.
-
-Thanks,
-
-	Ingo
+--
+Zefan
