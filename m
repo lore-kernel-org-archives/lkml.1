@@ -1,97 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZDNJmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZDNJlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZDNJmG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZDNJjr
+	id S1755662AbZDNJlt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZDNJjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:39:47 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:54193 "EHLO mx1.emlix.com"
+	Tue, 14 Apr 2009 05:39:46 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:53026 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751720AbZDNJjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753337AbZDNJjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Apr 2009 05:39:42 -0400
 From: Johannes Weiner <jw@emlix.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org,
-       Oskar Schirmer <os@emlix.com>
-Subject: [patch 04/12] xtensa: implement ccount calibration for s6000
-Date: Tue, 14 Apr 2009 11:41:12 +0200
-Message-Id: <1239702080-14355-5-git-send-email-jw@emlix.com>
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [patch 07/12] xtensa: implement PTRACE_PEEKUSER addresses for nommu
+Date: Tue, 14 Apr 2009 11:41:15 +0200
+Message-Id: <1239702080-14355-8-git-send-email-jw@emlix.com>
 In-Reply-To: <1239702080-14355-1-git-send-email-jw@emlix.com>
 References: <1239702080-14355-1-git-send-email-jw@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oskar Schirmer <os@emlix.com>
+From: Daniel Glöckner <dg@emlix.com>
 
-Calculate core frequency from timers at boot time
-instead of assuming a fixed frequency. This is
-useful as the true frequency is set up by the
-boot loader, thus variable.
+On nommu gdbserver needs to be able to look up where the currently
+debugged application has been relocated. Based on the Blackfin
+implementation, this introduces three "addresses" PT_TEXT_ADDR,
+PT_DATA_ADDR, and PT_TEXT_END_ADDR for PTRACE_PEEKUSER.
 
-Signed-off-by: Oskar Schirmer <os@emlix.com>
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
 ---
- arch/xtensa/Kconfig                 |    1 +
- arch/xtensa/variants/s6000/Makefile |    1 +
- arch/xtensa/variants/s6000/delay.c  |   27 +++++++++++++++++++++++++++
- 3 files changed, 29 insertions(+), 0 deletions(-)
- create mode 100644 arch/xtensa/variants/s6000/delay.c
+ arch/xtensa/include/asm/ptrace.h |    4 ++++
+ arch/xtensa/kernel/ptrace.c      |   12 ++++++++++++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index fa6dc4d..ac02f3c 100644
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -80,6 +80,7 @@ config XTENSA_VARIANT_S6000
- 	bool "s6000 - Stretch software configurable processor"
- 	select VARIANT_IRQ_SWITCH
- 	select ARCH_REQUIRE_GPIOLIB
-+	select XTENSA_CALIBRATE_CCOUNT
- endchoice
+diff --git a/arch/xtensa/include/asm/ptrace.h b/arch/xtensa/include/asm/ptrace.h
+index 905e1e6..8f4fbf3 100644
+--- a/arch/xtensa/include/asm/ptrace.h
++++ b/arch/xtensa/include/asm/ptrace.h
+@@ -66,6 +66,10 @@
  
- config XTENSA_UNALIGNED_USER
-diff --git a/arch/xtensa/variants/s6000/Makefile b/arch/xtensa/variants/s6000/Makefile
-index 03b3975..d83f380 100644
---- a/arch/xtensa/variants/s6000/Makefile
-+++ b/arch/xtensa/variants/s6000/Makefile
-@@ -1,3 +1,4 @@
- # s6000 Makefile
+ #define SYSCALL_NR	0x00ff
  
- obj-y		+= irq.o gpio.o
-+obj-$(CONFIG_XTENSA_CALIBRATE_CCOUNT)	+= delay.o
-diff --git a/arch/xtensa/variants/s6000/delay.c b/arch/xtensa/variants/s6000/delay.c
-new file mode 100644
-index 0000000..54b2b57
---- /dev/null
-+++ b/arch/xtensa/variants/s6000/delay.c
-@@ -0,0 +1,27 @@
-+#include <asm/delay.h>
-+#include <asm/timex.h>
-+#include <asm/io.h>
-+#include <variant/hardware.h>
++#define PT_TEXT_ADDR	0x0300
++#define PT_DATA_ADDR	0x0301
++#define PT_TEXT_END_ADDR	0x0302
 +
-+#define LOOPS 10
-+void platform_calibrate_ccount(void)
-+{
-+	u32 uninitialized_var(a);
-+	u32 uninitialized_var(u);
-+	u32 b;
-+	u32 tstamp = S6_REG_GREG1 + S6_GREG1_GLOBAL_TIMER;
-+	int i = LOOPS+1;
-+	do {
-+		u32 t = u;
-+		asm volatile(
-+		"1:	l32i %0, %2, 0 ;"
-+		"	beq %0, %1, 1b ;"
-+		: "=&a"(u) : "a"(t), "a"(tstamp));
-+		b = xtensa_get_ccount();
-+		if (i == LOOPS)
-+			a = b;
-+	} while (--i >= 0);
-+	b -= a;
-+	nsec_per_ccount = (LOOPS * 10000) / b;
-+	ccount_per_jiffy = b * (100000UL / (LOOPS * HZ));
-+}
+ /* Other PTRACE_ values defined in <linux/ptrace.h> using values 0-9,16,17,24 */
+ 
+ #define PTRACE_GETREGS		12
+diff --git a/arch/xtensa/kernel/ptrace.c b/arch/xtensa/kernel/ptrace.c
+index 9486882..82f3620 100644
+--- a/arch/xtensa/kernel/ptrace.c
++++ b/arch/xtensa/kernel/ptrace.c
+@@ -211,6 +211,18 @@ int ptrace_peekusr(struct task_struct *child, long regno, long __user *ret)
+ 			tmp = regs->syscall;
+ 			break;
+ 
++		case PT_TEXT_ADDR:
++			tmp = child->mm->start_code;
++			break;
++
++		case PT_DATA_ADDR:
++			tmp = child->mm->start_data;
++			break;
++
++		case PT_TEXT_END_ADDR:
++			tmp = child->mm->end_code;
++			break;
++
+ 		default:
+ 			return -EIO;
+ 	}
 -- 
 1.6.2.107.ge47ee
 
