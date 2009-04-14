@@ -1,22 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZDNMHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZDNMKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbZDNMHE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZDNMGy
+	id S1754967AbZDNMKN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZDNMJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:06:54 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41446 "EHLO mx1.suse.de"
+	Tue, 14 Apr 2009 08:09:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41518 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752911AbZDNMGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:06:53 -0400
-Date: Tue, 14 Apr 2009 14:06:51 +0200
-Message-ID: <s5h1vrv4exw.wl%tiwai@suse.de>
+	id S1752816AbZDNMJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 08:09:59 -0400
+Date: Tue, 14 Apr 2009 14:09:57 +0200
+Message-ID: <s5hzlej308a.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: perex@perex.cz, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] sound: use memdup_user()
-In-Reply-To: <49DEA405.3070900@cn.fujitsu.com>
-References: <49DEA405.3070900@cn.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
+In-Reply-To: <200904100057.43827.rjw@sisk.pl>
+References: <200904100057.43827.rjw@sisk.pl>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,18 +30,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 10 Apr 2009 09:42:29 +0800,
-Li Zefan wrote:
+At Fri, 10 Apr 2009 00:57:41 +0200,
+Rafael J. Wysocki wrote:
 > 
-> Remove open-coded memdup_user() in sound/
-> 
->    text    data     bss     dec     hex filename
-> 5206937  929788 5320496 11457221         aed2c5 vmlinux.o.orig
->    text    data     bss     dec     hex filename
-> 5205277  929788 5320496 11455561         aecc49 vmlinux.o
+> Second, KDE4 on openSUSE 11.1 sometimes fails to handle audio correctly after
+> a fresh boot.  Everything seems to work, but there's no sound at all.  It is
+> sufficient to close the X session and start the desktop environment again to
+> make it work, though (may that be async too? ;-)).  The hardware in question is
+> Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller
+> (rev 02) and the driver is snd_hda_intel.
 
-Thanks, looks good.
-Applied now to sound git tree.
+Is this problem still there?
 
+If restarting the X session fixes the problem, it could be a
+pulseaudio problem.  But, then it doesn't sound like a kernel update
+issue.
+
+Could you check whether non-PA environment (e.g. linux console) works
+reliably?
+
+
+thanks,
 
 Takashi
