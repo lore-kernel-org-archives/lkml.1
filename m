@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZDNM30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZDNMcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbZDNM30 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZDNM3R
+	id S1755977AbZDNMcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZDNMce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:29:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:2557 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753968AbZDNM3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:29:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V7tNRs4QDIN+A45QiedTBYH06HB0TLs+3G1vd9+ThrID9QiuOTYfB/5tnU2cTXooN8
-         CjzHCopUmXEbhtlTC1T6JKa+08cdoscXSawrc0kbCwO5jxrh8z8eYzyhJUwsvJXOmVEN
-         /D9mHtcvdRvwkUxDj9P9s5PslbrCiAkA3X0Xw=
-Date: Tue, 14 Apr 2009 16:29:06 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
-       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
-Message-ID: <20090414122906.GA20201@x200.localdomain>
-References: <20090410023207.GA27788@x200.localdomain> <alpine.LFD.2.00.0904100758410.4583@localhost.localdomain> <20090413073925.GB7085@x200.localdomain> <alpine.LFD.2.00.0904131137520.26713@localhost.localdomain>
+	Tue, 14 Apr 2009 08:32:34 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:37207 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753826AbZDNMcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 08:32:33 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: 2.6.30-rc1 A few issues and a stall
+Date: Tue, 14 Apr 2009 08:32:24 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-crc; KDE/4.2.2; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <200904121124.07193.edt@aei.ca> <49E45F8E.9080803@redhat.com>
+In-Reply-To: <49E45F8E.9080803@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904131137520.26713@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904140832.25057.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 11:39:51AM -0700, Linus Torvalds wrote:
+On Tuesday 14 April 2009 06:03:58 Avi Kivity wrote:
+> Ed Tomlinson wrote:
+> > Once the above networking stuff is setup I start kvm with the command below
+> >
+> > QEMU_AUDIO_DRV=alsa kvm -m 1024 -cdrom /mnt/sdc4/divx/archlinux-2009.02-ftp-i686.iso -boot c -smp 3 -usb -usbdevice tablet -vga std -drive file=arch.img -net nic,macaddr=52:54:00:12:34:23 -net tap,ifname=qtap0,script=no -soundhw all -mem-path /hugepages
+> >
+> > which works and the kvm session boots just fine.  
+> >
+> > Issue 2.  When I attempt to ping outside the kvm session the pc (not just the kvm session) hangs.
+> > Its impossible to kill the kvm session and there are numerious info messages from RCU (tree RCU enabled)
+> > about stalls.  
+> >   
 > 
+> The rcu messages are likely because a processor has died.
 > 
-> On Mon, 13 Apr 2009, Alexey Dobriyan wrote:
-> > 
-> > Well, in OpenVZ everything is in kernel/cpt/ and prefixed with "cpt_"
-> > and "rst_".
-> 
-> So?
-> 
-> We're not merging OpenVZ code _either_.
+> Do things work if you drop -mem-path?
 
-This is to give example of other prefixes: cpt_ and rst_
-Are they fine?
+It makes no difference.  I did notice that one cpu is peged at 100% though.  I'll be trying
+CONFIG_PROVE_LOCKING tonight for another problem - might give interesting results.
 
-> > And I think "cr_" is super nice prefix: it's short, it's C-like,
-> > it reminds about restart part
-> 
-> It does no such thing. THAT'S THE POINT. "cr" means _nothing_ to anybody 
-> else than some CR-specific people, and those people don't even need it!
-> 
-> Look around you. We try to use nicer names. We spell out "cpufreq", we 
-> don't call it "cf".
+Ed
