@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZDNHZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZDNHen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbZDNHZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZDNHZe
+	id S1752921AbZDNHen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbZDNHee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:25:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51375 "EHLO hera.kernel.org"
+	Tue, 14 Apr 2009 03:34:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44730 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbZDNHZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:25:33 -0400
-Subject: [PATCH -tip] x86: page_types.h unification of declarations
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
+	id S1751401AbZDNHed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 03:34:33 -0400
+Date: Tue, 14 Apr 2009 17:34:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jesper Nilsson <jesper.nilsson@axis.com>,
        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 12:54:29 +0530
-Message-Id: <1239693869.3033.31.camel@ht.satnam>
+Subject: linux-next: origin tree build failure
+Message-Id: <20090414173423.2b9ab235.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__14_Apr_2009_17_34_23_+1000_zMlsWEn.s1bcE2=P"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: unification of declarations, cleanup
+--Signature=_Tue__14_Apr_2009_17_34_23_+1000_zMlsWEn.s1bcE2=P
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Unification of declarations:
- moved init_memory_mapping, initmem_init and free_initmem from
-page_XX_types.h to page_types.h
+Hi all,
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/page_32_types.h |    4 ----
- arch/x86/include/asm/page_64_types.h |    6 ------
- arch/x86/include/asm/page_types.h    |    6 ++++++
- 3 files changed, 6 insertions(+), 10 deletions(-)
+Today's linux-next build (cris etrax-100lx_defconfig) failed like this:
 
-diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
-index 0f915ae..6f1b733 100644
---- a/arch/x86/include/asm/page_32_types.h
-+++ b/arch/x86/include/asm/page_32_types.h
-@@ -54,10 +54,6 @@ extern unsigned int __VMALLOC_RESERVE;
- extern int sysctl_legacy_va_layout;
- 
- extern void find_low_pfn_range(void);
--extern unsigned long init_memory_mapping(unsigned long start,
--					 unsigned long end);
--extern void initmem_init(unsigned long, unsigned long);
--extern void free_initmem(void);
- extern void setup_bootmem_allocator(void);
- 
- #endif	/* !__ASSEMBLY__ */
-diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
-index d38c91b..3f58718 100644
---- a/arch/x86/include/asm/page_64_types.h
-+++ b/arch/x86/include/asm/page_64_types.h
-@@ -71,12 +71,6 @@ extern unsigned long __phys_addr(unsigned long);
- 
- #define vmemmap ((struct page *)VMEMMAP_START)
- 
--extern unsigned long init_memory_mapping(unsigned long start,
--					 unsigned long end);
--
--extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
--extern void free_initmem(void);
--
- extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
- extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
- 
-diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
-index f8b9c88..25e94a4 100644
---- a/arch/x86/include/asm/page_types.h
-+++ b/arch/x86/include/asm/page_types.h
-@@ -54,6 +54,12 @@ extern int devmem_is_allowed(unsigned long pagenr);
- extern unsigned long max_low_pfn_mapped;
- extern unsigned long max_pfn_mapped;
- 
-+extern unsigned long init_memory_mapping(unsigned long start,
-+					 unsigned long end);
-+
-+extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
-+extern void free_initmem(void);
-+
- #endif	/* !__ASSEMBLY__ */
- 
- #endif	/* _ASM_X86_PAGE_DEFS_H */
--- 
-1.6.0.6
+drivers/serial/crisv10.c:4428: error: unknown field 'read_proc' specified i=
+n initializer
 
+Caused by commit 0f043a81ebe84be3576667f04fdda481609e3816 ("proc tty:
+remove struct tty_operations::read_proc").
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__14_Apr_2009_17_34_23_+1000_zMlsWEn.s1bcE2=P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknkPH8ACgkQjjKRsyhoI8xpPwCgjPx+BF+dQZ0HOr7ZGSvtHFLG
+4hsAn1waZxCbt0+W0pmb0wSy+AUVYh0m
+=tv7e
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__14_Apr_2009_17_34_23_+1000_zMlsWEn.s1bcE2=P--
