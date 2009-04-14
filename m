@@ -1,63 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752224AbZDNGgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751711AbZDNGmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752224AbZDNGgL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 02:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZDNGf4
+	id S1751711AbZDNGmZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 02:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZDNGmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 02:35:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43877 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZDNGfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 02:35:55 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] tracing/lockdep: turn lock->name into an array
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1239662166-13208-1-git-send-email-fweisbec@gmail.com>
-References: <1239662166-13208-1-git-send-email-fweisbec@gmail.com>
-Message-Id: <20090414153035.C662.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 02:42:14 -0400
+Received: from mga03.intel.com ([143.182.124.21]:26211 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750982AbZDNGmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 02:42:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,183,1239001200"; 
+   d="scan'208";a="131157541"
+Date: Tue, 14 Apr 2009 14:41:32 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090414064132.GB5746@localhost>
+References: <20090414042231.GA4341@localhost> <20090414133448.C645.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 15:35:51 +0900 (JST)
+Content-Type: text/plain; charset=gb2312
+Content-Disposition: inline
+In-Reply-To: <20090414133448.C645.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> Impact: allow filtering by lock name / fix module tracing
+On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
+> > Export the following page flags in /proc/kpageflags,
+> > just in case they will be useful to someone:
+> > 
+> > - PG_swapcache
+> > - PG_swapbacked
+> > - PG_mappedtodisk
+> > - PG_reserved
+> > - PG_private
+> > - PG_private_2
+> > - PG_owner_priv_1
+> > 
+> > - PG_head
+> > - PG_tail
+> > - PG_compound
+> > 
+> > - PG_unevictable
+> > - PG_mlocked
+> > 
+> > - PG_poison
 > 
-> Currently, the "lock acquired" event is traced using a TRACE_EVENT.
-> But we can't use the char * type for the name without risking to
-> dereference a freed pointer. A lock name can come from a module
-> towards lockdep and it is risky to only store its address because we
-> defer its name printing.
+> Sorry, NAK this.
+> We shouldn't expose internal flags. please choice useful flags only.
 
-When released lockdep string table?
-I guess it only happend at module unloading. if so, we should consider to
-make delayed string table freeing at module unloading.
+OK. So are there anyone interested in any of these flags? Thanks!
 
-My point is, module unloading is rare event. thus meking pointer safe mechanism
-widely avoid string copy.
+My rational to export most page flags is that hopefully they could
+help debugging kernel at some random situations..
 
-IOW, if not, ringbuffer is filled tons string. it kill the merit of binary
-buffer and current design.
-
-
-> That's why this patch uses a fixed array size and copy the name.
-> Also it lets us filter the lock name because the event filtering
-> doesn't handle the char pointers. Such support is not needed yet since
-> the events don't use it for now because it is rarely easy to keep track
-> of a string while we defer its output.
+> > Also add the following two pseudo page flags:
+> > 
+> > - PG_MMAP:   whether the page is memory mapped
+> > - PG_NOPAGE: whether the page is present
+> > 
+> > This increases the total number of exported page flags to 25.
+> > 
+> > Cc: Andi Kleen <andi@firstfloor.org>
+> > Cc: Matt Mackall <mpm@selenic.com>
+> > Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  fs/proc/page.c |  112 +++++++++++++++++++++++++++++++++--------------
+> >  1 file changed, 81 insertions(+), 31 deletions(-)
+> > 
+> > --- mm.orig/fs/proc/page.c
+> > +++ mm/fs/proc/page.c
+> > @@ -68,20 +68,86 @@ static const struct file_operations proc
+> >  
+> >  /* These macros are used to decouple internal flags from exported ones */
+> >  
+> > -#define KPF_LOCKED     0
+> > -#define KPF_ERROR      1
+> > -#define KPF_REFERENCED 2
+> > -#define KPF_UPTODATE   3
+> > -#define KPF_DIRTY      4
+> > -#define KPF_LRU        5
+> > -#define KPF_ACTIVE     6
+> > -#define KPF_SLAB       7
+> > -#define KPF_WRITEBACK  8
+> > -#define KPF_RECLAIM    9
+> > -#define KPF_BUDDY     10
+> > +enum {
+> > +	KPF_LOCKED,		/*  0 */
+> > +	KPF_ERROR,		/*  1 */
+> > +	KPF_REFERENCED,		/*  2 */
+> > +	KPF_UPTODATE,		/*  3 */
+> > +	KPF_DIRTY,		/*  4 */
+> > +	KPF_LRU,		/*  5 */
+> > +	KPF_ACTIVE,		/*  6 */
+> > +	KPF_SLAB,		/*  7 */
+> > +	KPF_WRITEBACK,		/*  8 */
+> > +	KPF_RECLAIM,		/*  9 */
+> > +	KPF_BUDDY,		/* 10 */
+> > +	KPF_MMAP,		/* 11 */
+> > +	KPF_SWAPCACHE,		/* 12 */
+> > +	KPF_SWAPBACKED,		/* 13 */
+> > +	KPF_MAPPEDTODISK,	/* 14 */
+> > +	KPF_RESERVED,		/* 15 */
+> > +	KPF_PRIVATE,		/* 16 */
+> > +	KPF_PRIVATE2,		/* 17 */
+> > +	KPF_OWNER_PRIVATE,	/* 18 */
+> > +	KPF_COMPOUND_HEAD,	/* 19 */
+> > +	KPF_COMPOUND_TAIL,	/* 20 */
+> > +	KPF_UNEVICTABLE,	/* 21 */
+> > +	KPF_MLOCKED,		/* 22 */
+> > +	KPF_POISON,		/* 23 */
+> > +	KPF_NOPAGE,		/* 24 */
+> > +	KPF_NUM
+> > +};
 > 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> this is userland export value. then enum is wrong idea.
+> explicit name-number relationship is better. it prevent unintetional
+> ABI break.
 
+Right, that's the reason I add the /* number */ comments.
+Anyway, it would be better to use explicit #defines.
 
+Thanks,
+Fengguang
 
