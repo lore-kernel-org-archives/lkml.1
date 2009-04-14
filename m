@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZDNGUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZDNGWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbZDNGUg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 02:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZDNGU0
+	id S1752260AbZDNGWN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 02:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZDNGV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 02:20:26 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43223 "EHLO
+	Tue, 14 Apr 2009 02:21:56 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43296 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbZDNGUY (ORCPT
+	with ESMTP id S1751263AbZDNGVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 02:20:24 -0400
+	Tue, 14 Apr 2009 02:21:55 -0400
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-api@vger.kernel.org
-Subject: [RFC][PATCH v3 4/6] aio: Don't inherit aio ring memory at fork
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH v3 5/6] don't use bio-map in read() path
 Cc: kosaki.motohiro@jp.fujitsu.com, Linus Torvalds <torvalds@osdl.org>,
        Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrea Arcangeli <aarcange@redhat.com>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
 In-Reply-To: <20090414151204.C647.A69D9226@jp.fujitsu.com>
 References: <20090414151204.C647.A69D9226@jp.fujitsu.com>
-Message-Id: <20090414151924.C653.A69D9226@jp.fujitsu.com>
+Message-Id: <20090414152020.C656.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 15:20:20 +0900 (JST)
+Date: Tue, 14 Apr 2009 15:21:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AIO folks, Am I missing anything?
+Who know proper fixing way?
 
-===============
-Subject: [RFC][PATCH] aio: Don't inherit aio ring memory at fork
+=================
+Subject: [Untested][RFC][PATCH] don't use bio-map in read() path
 
-Currently, mm_struct::ioctx_list member isn't copyed at fork. IOW aio context don't inherit at fork.
-but only ring memory inherited. that's strange.
+__bio_map_user_iov() has wrong usage of get_user_pages_fast().
+it doesn't have prevent fork mechanism.
 
-This patch mark DONTFORK to ring-memory too.
-In addition, This patch has good side effect. it also fix "get_user_pages() vs fork" problem.
+then, it sould be used read-side (memory to device transfer) gup only.
 
-I think "man fork" also sould be changed. it only say
-
-       *  The child does not inherit outstanding asynchronous I/O operations from
-          its parent (aio_read(3), aio_write(3)).
-
-but aio_context_t (return value of io_setup(2)) also don't inherit in current implementaion.
+This patch is obviously temporally fix. we can implement fork safe bio_map_user()
+the future...
 
 
-Cc: Jeff Moyer <jmoyer@redhat.com>
-Cc: Zach Brown <zach.brown@oracle.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-fsdevel@vger.kernel.org
-Cc: linux-api@vger.kernel.org,
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- fs/aio.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ block/blk-map.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: b/fs/aio.c
+Index: b/block/blk-map.c
 ===================================================================
---- a/fs/aio.c	2009-04-12 23:33:59.000000000 +0900
-+++ b/fs/aio.c	2009-04-13 02:56:05.000000000 +0900
-@@ -106,6 +106,7 @@ static int aio_setup_ring(struct kioctx 
- 	unsigned nr_events = ctx->max_reqs;
- 	unsigned long size;
- 	int nr_pages;
-+	int ret;
- 
- 	/* Compensate for the ring buffer's head/tail overlap entry */
- 	nr_events += 2;	/* 1 is required, 2 for good luck */
-@@ -140,6 +141,13 @@ static int aio_setup_ring(struct kioctx 
- 		return -EAGAIN;
+--- a/block/blk-map.c	2009-02-21 16:53:21.000000000 +0900
++++ b/block/blk-map.c	2009-04-12 23:36:32.000000000 +0900
+@@ -55,7 +55,7 @@ static int __blk_rq_map_user(struct requ
+ 	 * direct dma. else, set up kernel bounce buffers
+ 	 */
+ 	uaddr = (unsigned long) ubuf;
+-	if (blk_rq_aligned(q, ubuf, len) && !map_data)
++	if (blk_rq_aligned(q, ubuf, len) && !map_data && !reading)
+ 		bio = bio_map_user(q, NULL, uaddr, len, reading, gfp_mask);
+ 	else
+ 		bio = bio_copy_user(q, map_data, uaddr, len, reading, gfp_mask);
+@@ -208,7 +208,7 @@ int blk_rq_map_user_iov(struct request_q
+ 		}
  	}
  
-+	/*
-+	 * aio context doesn't inherit while fork. (see mm_init())
-+	 * Then, aio ring also mark DONTFORK.
-+	 */
-+	ret = sys_madvise(info->mmap_base, info->mmap_size, MADV_DONTFORK);
-+	BUG_ON(ret);
-+
- 	dprintk("mmap address: 0x%08lx\n", info->mmap_base);
- 	info->nr_pages = get_user_pages(current, ctx->mm,
- 					info->mmap_base, nr_pages, 
+-	if (unaligned || (q->dma_pad_mask & len) || map_data)
++	if (unaligned || (q->dma_pad_mask & len) || map_data || read)
+ 		bio = bio_copy_user_iov(q, map_data, iov, iov_count, read,
+ 					gfp_mask);
+ 	else
 
 
