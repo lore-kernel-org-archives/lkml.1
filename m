@@ -1,147 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbZDNDqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZDND63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752693AbZDNDqq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 23:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZDNDqh
+	id S1754858AbZDND63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 23:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZDND6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 23:46:37 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:48081 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbZDNDqg (ORCPT
+	Mon, 13 Apr 2009 23:58:20 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:25785 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbZDND6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 23:46:36 -0400
-Message-ID: <49E40662.2040508@cs.columbia.edu>
-Date: Mon, 13 Apr 2009 23:43:30 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 13 Apr 2009 23:58:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=YQggrFGthhJXvP6RYUNr6FKdSvBTvEw1Xv61a8Mkk9z+HWyefPu1+qVnmWif9ezPFo
+         NT7Um3oA1h7NHAyqWuybrqq06PAbpDGkuzGpss3uGdWBRtBJ3lhF4REdLcJtGvH0XTmY
+         y3zQLeuIPm/oB/ryQRpYOonDRS/3av9FVr1Eo=
+Message-ID: <49E40A07.6010905@gmail.com>
+Date: Tue, 14 Apr 2009 12:59:03 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: containers@lists.osdl.org, Alexey Dobriyan <adobriyan@gmail.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Creating tasks on restart: userspace vs kernel
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH #upstream-fixes] pata_legacy: fix no device fail path
+References: <19f34abd0804200329j3308b081vc0732c3ec5c0b721@mail.gmail.com> <1208782090.7115.179.camel@twins> <480FF821.9050208@gmail.com> <49E0C102.4020705@pobox.com> <49E22ED9.40100@gmail.com>
+In-Reply-To: <49E22ED9.40100@gmail.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When pata_legacy can't detect any device, it unregisters the
+platform_device and fails detection.  However, it forgets to detach
+ata host triggering weird failures as the host later gets freed by
+devres while still attached.  Fix it.
 
-For checkpoint/restart (c/r) we need a method to (re)create the tasks
-tree during restart. There are basically two approaches: in userspace
-(zap approach) or in the kernel (openvz approach).
-
-Once tasks have been created both approaches are similar in that all
-restarting tasks end up calling the equivalent of "do_restart()" in
-the kernel to perform the gory details of restoring its state.
-
-In terms of performance, both approaches are similar, and both can
-optimize to avoid duplicating resources unnecessarily during the
-clone (e.g. mm, etc) knowing that they will be reconstructed soon
-after.
-
-So the question is what's better - user-space or kernel ?
-
-Too bad that Alexey chose to ignore what's been discussed in
-linux-containers mailing list in his recent post.  Here is my take on
-cons/pros.
-
-Task creation in the kernel
----------------------------
-* how: the user program calls sys_restart() which, for each task to
-  restore, creates a kernel thread which is demoted to a regular
-  process manually.
-
-* pro: a single task that calls sys_restart()
-* pro: restarting tasks are in full control of kernel at all times
-
-* con: arch-dependent, harder to port across architectures
-* con: can only restart a full container
-
-Task creation in user space
----------------------------
-* how: the user programs calls fork/clone to recreate a suitable
-  task tree in userspace, and each task calls sys_restart() to restore
-  its state; some kernel glue is necessary to synchronize restarting
-  tasks when in the kernel.
-
-* pro: allows important flexibility during restart (see <1>)
-* pro: code leverages existing well-understood syscalls (fork, clone)
-* pro: allows restart of a only subtree (see <2>)
-
-* con: requires a way to creates tasks with specific pid (see <3>)
-
-<1> Flexibility:
-
-In the spirit of madvise() that lets tasks advise the kernel because
-they know better, there should be cradvise() for checkpoint/restart
-purposes. During checkpoint it can tell the kernel "don't save this
-piece of memory, it's scratch", or "ignore this file-descriptor" etc.
-During restart, it will can tell the kernel "use this file-descriptor"
-or "use this network namespace" (instead of trying to restore).
-
-Offering cradvise() capability during restart is especially important
-in cases where the kernel (inevitably) won't know how to restore a
-resource (e.g. think special devices), when the application wants to
-override (e.g. think of a c/r aware server that would like to change
-the port on which it is listening), or when it's that much simpler to
-do it in userspace (e.g. think setting up network namespaces).
-
-Another important example is distributed checkpoint, where the
-restarting tasks could (re)create all their network connections in
-user space, before invoking sys_restart() and tell the kernel, via
-cradvise(), to use the newly created sockets.
-
-The need for this sort of flexibility has been stressed multiple times
-and by multiple stake-holders interested in checkpoint/restart.
-
-<2> Restarting a subtree:
-
-The primary c/r effort is directed towards providing c/r functionality
-for containers.
-
-Wouldn't it be nice if, while doing so and at minimal added effort, we
-also gain a method to checkpoint and restart an arbitrary subtree of
-tasks, which isn't necessarily an entire container ?
-
-Sure, it will be more constrained (e.g. resulting pid in restart won't
-match the original pids), and won't work for all applications. But it
-will still be a useful tool for many use cases, like batch cpu jobs,
-some servers, vnc sessions (if you want graphics) etc. Imagine you run
-'octave' for a week and must reboot now - 'octave' wouldn't care if
-you checkpointed it and then restart with a different pid !
-
-<3> Clone with pid:
-
-To restart processes from userspace, there needs to be a way to
-request a specific pid--in the current pid_ns--for the child process
-(clearly, if it isn't in use).
-
-Why is it a disadvantage ?  to Linus, a syscall clone_with_pid()
-"sounds like a _wonderful_ attack vector against badly written
-user-land software...".  Actually, getting a specific pid is possible
-without this syscall.  But the point is that it's undesirable to have
-this functionality unrestricted.
-
-So one option is to require root privileges. Another option is to
-restrict such action in pid_ns created by the same user. Even more so,
-restrict to only containers that are being restarted.
-
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Peter Zijlstra <peterz@infradead.org>
 ---
+Well, with or without test verification, this patch is correct.  Thanks.
 
-Either way we go, it should be fairly easy to switch from one method
-to the other, should we need to.
+ drivers/ata/pata_legacy.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-All in all, there isn't a strong reason in favor of kernel method.
-
-In contrast, it's at least as simple in userspace (reusing existing
-syscalls). More importantly, the flexibility that we gain with restart
-of tasks in userspace, no cost incurred (in terms of implementation or
-runtime overhead).
-
-Oren.
+diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
+index 3f830f0..0c6dde8 100644
+--- a/drivers/ata/pata_legacy.c
++++ b/drivers/ata/pata_legacy.c
+@@ -1032,6 +1032,7 @@ static __init int legacy_init_one(struct legacy_probe *probe)
+ 			return 0;
+ 		}
+ 	}
++	ata_host_detach(host);
+ fail:
+ 	platform_device_unregister(pdev);
+ 	return ret;
