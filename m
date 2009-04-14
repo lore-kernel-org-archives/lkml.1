@@ -1,192 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZDNHWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbZDNHXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753292AbZDNHWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZDNHWp
+	id S1755144AbZDNHXf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZDNHXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:22:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:60660 "EHLO mga03.intel.com"
+	Tue, 14 Apr 2009 03:23:24 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:55481 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZDNHWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:22:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,183,1239001200"; 
-   d="scan'208";a="131167565"
-Date: Tue, 14 Apr 2009 15:22:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090414072231.GA7001@localhost>
-References: <20090414133448.C645.A69D9226@jp.fujitsu.com> <20090414064132.GB5746@localhost> <20090414154606.C665.A69D9226@jp.fujitsu.com>
+	id S1752767AbZDNHXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 03:23:22 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
+Date: Tue, 14 Apr 2009 03:23:15 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.28; KDE/4.2.1; x86_64; ; )
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       Sam Ravnborg <sam@ravnborg.org>
+References: <1239654768.6542.10.camel@localhost.localdomain> <20090414070314.GB29075@linux-sh.org> <1239693375.6538.5.camel@localhost.localdomain>
+In-Reply-To: <1239693375.6538.5.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090414154606.C665.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed;
+  boundary="nextPart24798497.qPfQ16toom";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200904140323.19062.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 02:54:40PM +0800, KOSAKI Motohiro wrote:
-> Hi
-> 
-> > On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
-> > > > Export the following page flags in /proc/kpageflags,
-> > > > just in case they will be useful to someone:
-> > > > 
-> > > > - PG_swapcache
-> > > > - PG_swapbacked
-> > > > - PG_mappedtodisk
-> > > > - PG_reserved
-> > > > - PG_private
-> > > > - PG_private_2
-> > > > - PG_owner_priv_1
-> > > > 
-> > > > - PG_head
-> > > > - PG_tail
-> > > > - PG_compound
-> > > > 
-> > > > - PG_unevictable
-> > > > - PG_mlocked
-> > > > 
-> > > > - PG_poison
-> > > 
-> > > Sorry, NAK this.
-> > > We shouldn't expose internal flags. please choice useful flags only.
-> > 
-> > OK. So are there anyone interested in any of these flags? Thanks!
-> > 
-> > My rational to export most page flags is that hopefully they could
-> > help debugging kernel at some random situations..
-> 
-> I think,
-> 
-> > > > - PG_mappedtodisk
-> > > > - PG_reserved
-> > > > - PG_private
-> > > > - PG_private_2
-> > > > - PG_owner_priv_1
-> > > > 
-> > > > - PG_head
-> > > > - PG_tail
+--nextPart24798497.qPfQ16toom
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > > > - PG_unevictable
-> > > > - PG_mlocked
- 
-How about including PG_unevictable/PG_mlocked?
-They shall be meaningful to administrators.
-
-> this 9 flags shouldn't exported.
-> I can't imazine administrator use what purpose those flags.
-
-> > > > - PG_swapcache
-> > > > - PG_swapbacked
-> > > > - PG_poison
-> > > > - PG_compound
+On Tuesday 14 April 2009 03:16:15 Adrian McMenamin wrote:
+> On Tue, 2009-04-14 at 16:03 +0900, Paul Mundt wrote:
+> > Everything about the on-disk format is tied to the VMU. Until that sinks
+> > in, don't bother sending me email, thanks.
 >
-> I can agree this 4 flags.
-> However pagemap lack's hugepage considering.
-> if PG_compound exporting, we need more work.
+> No, everything in the file system is dependent on the specification. The
+> specification is not dependent on the hardware. Those are the facts.
 
-You mean to fold PG_head/PG_tail into PG_COMPOUND?
-Yes, that's a good simplification for end users.
+i must be slow because i tend to agree with Adrian here.  if the VMU is a=20
+simple block device, then while the filesystem format may have been tailore=
+d=20
+to the exact hardware layout of the VMU, it doesnt mean that the resulting=
+=20
+filesystem spec will only work on that hardware.  then again, i didnt read =
+the=20
+entire source code from top to bottom ...
+=2Dmike
 
-> > 
-> > > > Also add the following two pseudo page flags:
-> > > > 
-> > > > - PG_MMAP:   whether the page is memory mapped
-> 
-> hm, I can agree it.
-> 
-> 
-> > > > - PG_NOPAGE: whether the page is present
-> 
-> PM_NOT_PRESENT isn't enough?
+--nextPart24798497.qPfQ16toom
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-That would not be usable if you are going to do a system wide scan.
-PG_NOPAGE could help differentiate the 'no page' case from 'no flags'
-case.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-However PG_NOPAGE is more about the last resort. The system wide scan
-can be made much more efficient if we know the exact memory layouts.
+iQIcBAABAgAGBQJJ5DnmAAoJEEFjO5/oN/WBtDYQAI3zGHtHtrY44jtSHUzn6no4
+1EtSZvwJTcChf9dzguxlgsutfKg4QXHEcY7IHoFwx8LoGg84RiYpnsOMl1Wag5UG
+v3jA2xz9YTj0Vr6m6HuEEscWECww/VxlT+5p8WKBuPyL3maSoZMPrYXs9mJgBl1b
+HMc7X9KLMpOBs2lLzbJloYPWVO9O3SfrInzr7YnACVDvr/FKk6iGIFQ73dEhJrRN
+NrtQs9Qqp6RqNoJx0lPZ3Ry0HyAI0pGFch/60nIw5ZX7/K86YZn4y2XdYZDGt19F
+424XMdsoZ+8d5bQKOI50+aG/h5xr/Y9X2BzgxZJAOE5qJBzBvB/e0O1wLM3/1JrI
+5B+0QSSvi7XC0CJYW81D9gsC9SyCpFDvRnPAV8pjbN+NcTcfDtmQi89XmmnSqZqN
+Kfef5jbXBH6/oOo+cQr2eohsEL+6uXPUuA60ny32VtQvb4DMBHRPPFXZK5GoAo+E
+CpuZi8BrL7WG2Wl295+2KXVg4AGyieFSXeAxFOofnBw/h9ctdsHc4OSwk1jyC7Jm
+cWy24gd+I6tdWr73ghMxj96k2IAKvxYHvJvEwavEHUa99KKz7Ihf8setqlDMIsQj
+CKI/m9hxQ5MwRVIdPr89MmgbIAZs4WRCx/2rzY7BbdKmjPtw5+RGiR0dcofvza06
+rMll75elNXVGHV6+Lo9H
+=Itxl
+-----END PGP SIGNATURE-----
 
-Thanks,
-Fengguang
-
-> > > > 
-> > > > This increases the total number of exported page flags to 25.
-> > > > 
-> > > > Cc: Andi Kleen <andi@firstfloor.org>
-> > > > Cc: Matt Mackall <mpm@selenic.com>
-> > > > Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > ---
-> > > >  fs/proc/page.c |  112 +++++++++++++++++++++++++++++++++--------------
-> > > >  1 file changed, 81 insertions(+), 31 deletions(-)
-> > > > 
-> > > > --- mm.orig/fs/proc/page.c
-> > > > +++ mm/fs/proc/page.c
-> > > > @@ -68,20 +68,86 @@ static const struct file_operations proc
-> > > >  
-> > > >  /* These macros are used to decouple internal flags from exported ones */
-> > > >  
-> > > > -#define KPF_LOCKED     0
-> > > > -#define KPF_ERROR      1
-> > > > -#define KPF_REFERENCED 2
-> > > > -#define KPF_UPTODATE   3
-> > > > -#define KPF_DIRTY      4
-> > > > -#define KPF_LRU        5
-> > > > -#define KPF_ACTIVE     6
-> > > > -#define KPF_SLAB       7
-> > > > -#define KPF_WRITEBACK  8
-> > > > -#define KPF_RECLAIM    9
-> > > > -#define KPF_BUDDY     10
-> > > > +enum {
-> > > > +	KPF_LOCKED,		/*  0 */
-> > > > +	KPF_ERROR,		/*  1 */
-> > > > +	KPF_REFERENCED,		/*  2 */
-> > > > +	KPF_UPTODATE,		/*  3 */
-> > > > +	KPF_DIRTY,		/*  4 */
-> > > > +	KPF_LRU,		/*  5 */
-> > > > +	KPF_ACTIVE,		/*  6 */
-> > > > +	KPF_SLAB,		/*  7 */
-> > > > +	KPF_WRITEBACK,		/*  8 */
-> > > > +	KPF_RECLAIM,		/*  9 */
-> > > > +	KPF_BUDDY,		/* 10 */
-> > > > +	KPF_MMAP,		/* 11 */
-> > > > +	KPF_SWAPCACHE,		/* 12 */
-> > > > +	KPF_SWAPBACKED,		/* 13 */
-> > > > +	KPF_MAPPEDTODISK,	/* 14 */
-> > > > +	KPF_RESERVED,		/* 15 */
-> > > > +	KPF_PRIVATE,		/* 16 */
-> > > > +	KPF_PRIVATE2,		/* 17 */
-> > > > +	KPF_OWNER_PRIVATE,	/* 18 */
-> > > > +	KPF_COMPOUND_HEAD,	/* 19 */
-> > > > +	KPF_COMPOUND_TAIL,	/* 20 */
-> > > > +	KPF_UNEVICTABLE,	/* 21 */
-> > > > +	KPF_MLOCKED,		/* 22 */
-> > > > +	KPF_POISON,		/* 23 */
-> > > > +	KPF_NOPAGE,		/* 24 */
-> > > > +	KPF_NUM
-> > > > +};
-> > > 
-> > > this is userland export value. then enum is wrong idea.
-> > > explicit name-number relationship is better. it prevent unintetional
-> > > ABI break.
-> > 
-> > Right, that's the reason I add the /* number */ comments.
-> > Anyway, it would be better to use explicit #defines.
-> > 
-> > Thanks,
-> > Fengguang
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+--nextPart24798497.qPfQ16toom--
