@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZDNNXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZDNNao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbZDNNXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZDNNXf
+	id S1755750AbZDNNao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZDNNae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:23:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45040 "EHLO mx2.mail.elte.hu"
+	Tue, 14 Apr 2009 09:30:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58429 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754429AbZDNNXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:23:34 -0400
-Date: Tue, 14 Apr 2009 15:23:19 +0200
+	id S1753791AbZDNNad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 09:30:33 -0400
+Date: Tue, 14 Apr 2009 15:28:58 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.30-rc1 - nmi_watchdog broken?
-Message-ID: <20090414132319.GB4403@elte.hu>
-References: <200904140000.30155.edt@aei.ca> <20090414084232.GG27003@elte.hu> <200904140829.21493.edt@aei.ca>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, akpm@linux-foundation.org,
+       mark.langsdorf@amd.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/cpu] x86: cacheinfo: replace sysfs interface for
+	cache_disable feature
+Message-ID: <20090414132858.GA27163@elte.hu>
+References: <20090409131849.GJ31527@alberich.amd.com> <tip-f8b201fc7110c3673437254e8ba02451461ece0b@git.kernel.org> <1239598324.2983.2.camel@ht.satnam> <1239598612.2983.4.camel@ht.satnam> <20090414115805.GW3558@elte.hu> <1239713300.3079.22.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200904140829.21493.edt@aei.ca>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1239713300.3079.22.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,45 +39,117 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ed Tomlinson <edt@aei.ca> wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> On Tuesday 14 April 2009 04:42:32 Ingo Molnar wrote:
+> On Tue, 2009-04-14 at 13:58 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > > 
-> > * Ed Tomlinson <edt@aei.ca> wrote:
-> > 
-> > > Hi,
+> > > On Mon, 2009-04-13 at 10:22 +0530, Jaswinder Singh Rajput wrote:
+> > > > Hello Mark,
+> > > > 
+> > > > On Fri, 2009-04-10 at 12:37 +0000, Mark Langsdorf wrote:
+> > > > > Commit-ID:  f8b201fc7110c3673437254e8ba02451461ece0b
+> > > > > Gitweb:     http://git.kernel.org/tip/f8b201fc7110c3673437254e8ba02451461ece0b
+> > > > > Author:     Mark Langsdorf <mark.langsdorf@amd.com>
+> > > > > AuthorDate: Thu, 9 Apr 2009 15:18:49 +0200
+> > > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > > CommitDate: Fri, 10 Apr 2009 14:21:53 +0200
+> > > > > 
+> > > > > x86: cacheinfo: replace sysfs interface for cache_disable feature
+> > > > > 
+> > > > > Impact: replace sysfs attribute
+> > > > > 
+> > > > > Current interface violates against "one-value-per-sysfs-attribute
+> > > > > rule". This patch replaces current attribute with two attributes --
+> > > > > one for each L3 Cache Index Disable register.
+> > > > > 
+> > > > > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> > > > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > > > > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > > > > LKML-Reference: <20090409131849.GJ31527@alberich.amd.com>
+> > > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > > > 
+> > > > > 
+> > > > > ---
+> > > > >  arch/x86/kernel/cpu/intel_cacheinfo.c |   90 ++++++++++++++++----------------
+> > > > >  1 files changed, 45 insertions(+), 45 deletions(-)
+> > > > > 
+> > > > > diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> > > > > index 0cde071..fc28291 100644
+> > > > > --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
+> > > > > +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> > > > > @@ -697,73 +697,69 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
+> > > > >  #define to_object(k)	container_of(k, struct _index_kobject, kobj)
+> > > > >  #define to_attr(a)	container_of(a, struct _cache_attr, attr)
+> > > > >  
+> > > > > -static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+> > > > > +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
+> > > > > +				  unsigned int index)
+> > > > >  {
+> > > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+> > > > > -	int node = cpu_to_node(cpumask_first(mask));
+> > > > > -	struct pci_dev *dev = NULL;
+> > > > > -	ssize_t ret = 0;
+> > > > > -	int i;
+> > > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
+> > > > > +	int node = cpu_to_node(cpu);
+> > > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
+> > > > > +	unsigned int reg = 0;
+> > > > 
+> > > > This leads to compilation warnings:
+> > > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
+> > > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+> > > > arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+> > > > 
+> > > > >  
+> > > > > -static ssize_t
+> > > > > -store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+> > > > > -		    size_t count)
+> > > > > +static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
+> > > > > +	const char *buf, size_t count, unsigned int index)
+> > > > >  {
+> > > > > -	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+> > > > > -	int node = cpu_to_node(cpumask_first(mask));
+> > > > > -	struct pci_dev *dev = NULL;
+> > > > > -	unsigned int ret, index, val;
+> > > > > +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
+> > > > > +	int node = cpu_to_node(cpu);
+> > > > > +	struct pci_dev *dev = node_to_k8_nb_misc(node);
+> > > > > +	unsigned long val = 0;
+> > > > >  
+> > > > 
+> > > >   CC      arch/x86/kernel/cpu/intel_cacheinfo.o
+> > > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> > > > arch/x86/kernel/cpu/intel_cacheinfo.c:737: warning: unused variable ‘cpu’
 > > > 
-> > > I've been having fun finding bugs in 30-rc1.  One of them is a 
-> > > hard freeze.  I've not seen this type of problem on this hardware 
-> > > before 30-rc1 - so I doubt if its hardware.  The best way I know 
-> > > to debug a hard hang is with the nmi_watchdog.  I just cannot get 
-> > > it to work.
-> > 
-> > [ Btw., have you tried CONFIG_PROVE_LOCKING=y - does it produce
-> >   anything before or at the hard lockup point? ]
-> > 
-> > > The system is a 3 core amd cpu on a 790gx chipset.
+> > > Oops it is also pointing to node:
 > > > 
-> > > If I boot the nmi_watchdog=1 it complains that lapci is not 
-> > > available and the boot stops.  Same problem if I change the 
-> > > clocksource to tsc, If I disable highres timers it panics.  If I 
-> > > use nmi_watchdog=2 it panics. Am I doing something wrong or have I 
-> > > hit a bug?
-> > > 
-> > > Logs of boots with and without highres timers inlined below.
+> > > arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> > > arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
 > > 
-> > hm, nmi_watchdog=1 acting funny is not unheard of. But 
-> > nmi_watchdog=2 should really work. How does it panic, do
-> > you have a capture of that?
+> > Mind sending a fix? We really dont want warnings noise in the x86 
+> > tree.
+> > 
 > 
-> I had not tried nmi_watchdog=2 highres=off.  This works.  Looks 
-> like there is a conflict between highres timers and nmi_watchdog 
-> here.
+> Ok I send it.
+> 
+> when I fixed node then it gives warnings for :
+>   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:713: warning: unused variable ‘cpu’
+> 
+> So I also fixed it.
+> 
+> 
+> > I was also thinking about adopting the Sparc trick: adding -Werror 
+> > to arch/x86/ files only, fixing all the fallout and ensuring no new 
+> > warnings from a flag day on. Anyone interested in doing that?
+> > 
+> 
+> Yes, this will be nice idea. Should I send patch for:
+> "adding -Werror to arch/x86/ files only"
 
-yes. Both use a limited resource of the lapic so we get one or the 
-other.
-
-( Might be fixable once we migrate the NMI watchdog code over to 
-  perfcounters. )
+Yes, that would be nice. Perhaps also first fix all remaining 
+warnings on 32-bit and 64-bit defconfig and allnoconfig. (i'll check 
+allyesconfig - that takes a lot of time to build)
 
 	Ingo
