@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZDNPmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZDNPt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbZDNPmI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZDNPlx
+	id S1754055AbZDNPt1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZDNPtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:41:53 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:56024 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755093AbZDNPlw (ORCPT
+	Tue, 14 Apr 2009 11:49:17 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:20496 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbZDNPtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:41:52 -0400
-Date: Tue, 14 Apr 2009 10:41:39 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
-       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/30] cr: core stuff
-Message-ID: <20090414154139.GA8085@us.ibm.com>
-References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain>
+	Tue, 14 Apr 2009 11:49:15 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [BISECTED] EEE PC hangs when booting off battery
+Date: Tue, 14 Apr 2009 09:48:36 -0600
+User-Agent: KMail/1.9.10
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-acpi@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <49E065CF.6040408@tuffmail.co.uk> <200904140859.02188.bjorn.helgaas@hp.com> <20090414081728.10de978a@infradead.org>
+In-Reply-To: <20090414081728.10de978a@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090414152752.GC27461@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904140948.37633.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> On Mon, Apr 13, 2009 at 04:47:01PM -0500, Serge E. Hallyn wrote:
-> > Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> > 
-> > Hi Alexey,
-> > 
-> > as far as I can see, the main differences between this patch and the
-> > equivalent in Oren's tree are:
-> > 
-> > 1. kernel auto-selects container init to freeze
+On Tuesday 14 April 2009 09:17:28 am Arjan van de Ven wrote:
+> On Tue, 14 Apr 2009 08:59:01 -0600
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 > 
-> Note, auto-select part was dropped, userspace is required to pass pid of
-> container init exactly. This was done to keep semantic of checkpoint(2)
-> small and extendable.
-
-sys_checkpoint() in this patch still finds the child_reaper of the
-passed-in pid, doesn't it?  Or are you saying that a later patch in
-this set removes that?
-
-> > 2. kernel freezes tasks
-> > 3. no objhash taking references
+> > I can't help with the real problem of why the asynchronous battery
+> > init causes the hang.
 > 
-> That's because none needed.
+> that got fixed already for the module case.
 
-Right while I have opinions on some things in this list, I didn't
-mean to imply positions on these items.  My question was:  are
-there are differences you want to call out?
+But apparently still broken for the builtin case?  I think Alan is
+running pretty new bits -- he said "latest git" on April 11.
 
-> > 4. no hbuf
+> > But I do object to the magic makefile ordering change in that commit.
+> > Nobody reading the makefile can tell why battery is down at the end,
+> > and moving it apparently slows down boot significantly. 
 > 
-> hbuf is an optimization to not allocate/free memory for every image.
-> For a start it's unnecessary complication, I just kzalloc/dump/kfree.
+> for all cases I've seen it actually speeds it up, because the battery
+> now runs concurrently with the disk probe.
+
+I understand; I just meant that if somebody moves it back where it
+was, we'll mysteriously lose the speedup you got.  Maybe a comment
+in the makefile would be a short-term solution.
+
+> > So the
+> > ordering change just feels like a band-aid that covers up a place
+> > where ACPI could be improved.
 > 
-> > 5. always require CAP_SYS_ADMIN
-> > 
-> > Are there other differences which you would consider meaningful?  Which
-> > do you consider the most important?
-> > 
-> > Also, since Dave introduced the fops->checkpoint(), we (or at least I)
-> > have been struck by the ugly assymetry with checkpoint() being in fops,
-> > and restart() not.  Do you have an idea for fixing that?
-> 
-> Module can legally support C/R for its files.
-> In the end it most certainly will end up with module registering restart
+> the reason for the move is that both the battery and other pieces take
+> the big acpi lock; which defeats the parallelism. So the battery needs
+> to happen at the end instead.
 
-Which module?  The module defining a filesystem?
+Yep.  But I don't think it's anything about the Linux battery driver
+itself that makes it slow.  I think it's more likely that some of the
+ACPI methods it executes happen to be slow.  And that could afflict
+*any* driver, depending on the whim of a BIOS writer.
 
-In that case I'm just not clear on how the restart code will know which
-fs's file_operations to use to pick a fops->restart() fn.
+My guess is that if we could run ACPI methods concurrently and avoid
+that big lock, the ordering wouldn't matter.  I know we probably can't
+do that any time soon, but I think it's good to make the problem
+visible at least with a "we need this magic order because ACPI doesn't
+support concurrent method execution" sort of comment.
 
-> hook for file type N.
-> 
-> Or module registering hook to restart object type N.
-> 
-> This is for discussion.
-
-Ok, it's just something I've wondered (with both patchsets).
-
-thanks,
--serge
+Bjorn
