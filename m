@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZDNUV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZDNUWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZDNUV6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 16:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZDNUVb
+	id S1755257AbZDNUWg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 16:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZDNUVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 16:21:31 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:44175 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbZDNUV2 (ORCPT
+	Tue, 14 Apr 2009 16:21:37 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:41193 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753626AbZDNUVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 16:21:28 -0400
+	Tue, 14 Apr 2009 16:21:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=hWszajpBBzDijgROQCLUPAIZFnGmw8cndThcYHO0c/QxfE5njb++ltf2aE5DP1un3o
-         znHfrzL6dflEKMfnHeoo9EEJ4aGH6b9tizJEZ2pwyxJiD9XhWadmtSfAOAAFz+GuhCIi
-         odtWHEc83ZYUUyv7/+T/XYG0LgEZZILOF9fk0=
+        b=FwWoyeQarG5HVQcZ1yDQgRmXoUK047hP/2Lrx2NtHCWv1zlSQuLxfmCkiZhq6bX9t1
+         xNX2n/N8i5dNAdq8UDdjexcOurDKIV8XJnOFaASn54DTZE5ArdOXlNcgnWxTv2vQr2AX
+         E9RrHGZzU4SZknv1UDLQFnpUXRgr9c/5tAB2Q=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Paul Menage <menage@google.com>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -30,10 +30,10 @@ Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
        Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
        yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH 1/9] io-throttle documentation
-Date: Tue, 14 Apr 2009 22:21:12 +0200
-Message-Id: <1239740480-28125-2-git-send-email-righi.andrea@gmail.com>
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 3/9] bio-cgroup controller
+Date: Tue, 14 Apr 2009 22:21:14 +0200
+Message-Id: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
 References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
@@ -41,472 +41,953 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation of the block device I/O controller: description, usage,
-advantages and design.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+
+With writeback IO processed asynchronously by kernel threads (pdflush)
+the real writes to the underlying block devices can occur in a different
+IO context respect to the task that originally generated the dirty
+pages involved in the IO operation.
+
+The controller bio-cgroup is used by io-throttle to track writeback IO
+and for properly apply throttling.
+
+Also apply a patch by Gui Jianfeng to announce tasks moving in
+bio-cgroup groups.
+
+See also: http://people.valinux.co.jp/~ryov/bio-cgroup
+
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
 ---
- Documentation/cgroups/io-throttle.txt |  451 +++++++++++++++++++++++++++++++++
- 1 files changed, 451 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/cgroups/io-throttle.txt
+ block/blk-ioc.c               |   30 ++--
+ fs/buffer.c                   |    2 +
+ fs/direct-io.c                |    2 +
+ include/linux/biotrack.h      |   95 +++++++++++
+ include/linux/cgroup_subsys.h |    6 +
+ include/linux/iocontext.h     |    1 +
+ include/linux/memcontrol.h    |    6 +
+ include/linux/mmzone.h        |    4 +-
+ include/linux/page_cgroup.h   |   13 ++-
+ init/Kconfig                  |   15 ++
+ mm/Makefile                   |    4 +-
+ mm/biotrack.c                 |  349 +++++++++++++++++++++++++++++++++++++++++
+ mm/bounce.c                   |    2 +
+ mm/filemap.c                  |    2 +
+ mm/memcontrol.c               |    5 +
+ mm/memory.c                   |    5 +
+ mm/page-writeback.c           |    2 +
+ mm/page_cgroup.c              |   17 ++-
+ mm/swap_state.c               |    2 +
+ 19 files changed, 536 insertions(+), 26 deletions(-)
+ create mode 100644 include/linux/biotrack.h
+ create mode 100644 mm/biotrack.c
 
-diff --git a/Documentation/cgroups/io-throttle.txt b/Documentation/cgroups/io-throttle.txt
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index 012f065..ef8cac0 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -84,24 +84,28 @@ void exit_io_context(void)
+ 	}
+ }
+ 
++void init_io_context(struct io_context *ioc)
++{
++	atomic_set(&ioc->refcount, 1);
++	atomic_set(&ioc->nr_tasks, 1);
++	spin_lock_init(&ioc->lock);
++	ioc->ioprio_changed = 0;
++	ioc->ioprio = 0;
++	ioc->last_waited = jiffies; /* doesn't matter... */
++	ioc->nr_batch_requests = 0; /* because this is 0 */
++	ioc->aic = NULL;
++	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);
++	INIT_HLIST_HEAD(&ioc->cic_list);
++	ioc->ioc_data = NULL;
++}
++
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+ {
+ 	struct io_context *ret;
+ 
+ 	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+-	if (ret) {
+-		atomic_set(&ret->refcount, 1);
+-		atomic_set(&ret->nr_tasks, 1);
+-		spin_lock_init(&ret->lock);
+-		ret->ioprio_changed = 0;
+-		ret->ioprio = 0;
+-		ret->last_waited = jiffies; /* doesn't matter... */
+-		ret->nr_batch_requests = 0; /* because this is 0 */
+-		ret->aic = NULL;
+-		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
+-		INIT_HLIST_HEAD(&ret->cic_list);
+-		ret->ioc_data = NULL;
+-	}
++	if (ret)
++		init_io_context(ret);
+ 
+ 	return ret;
+ }
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 13edf7a..bc72150 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -36,6 +36,7 @@
+ #include <linux/buffer_head.h>
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/bio.h>
++#include <linux/biotrack.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <linux/bitops.h>
+@@ -655,6 +656,7 @@ static void __set_page_dirty(struct page *page,
+ 	if (page->mapping) {	/* Race with truncate? */
+ 		WARN_ON_ONCE(warn && !PageUptodate(page));
+ 		account_page_dirtied(page, mapping);
++		bio_cgroup_reset_owner_pagedirty(page, current->mm);
+ 		radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 	}
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index da258e7..ec42362 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -33,6 +33,7 @@
+ #include <linux/err.h>
+ #include <linux/blkdev.h>
+ #include <linux/buffer_head.h>
++#include <linux/biotrack.h>
+ #include <linux/rwsem.h>
+ #include <linux/uio.h>
+ #include <asm/atomic.h>
+@@ -799,6 +800,7 @@ static int do_direct_IO(struct dio *dio)
+ 			ret = PTR_ERR(page);
+ 			goto out;
+ 		}
++		bio_cgroup_reset_owner(page, current->mm);
+ 
+ 		while (block_in_page < blocks_per_page) {
+ 			unsigned offset_in_page = block_in_page << blkbits;
+diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
 new file mode 100644
-index 0000000..7650601
+index 0000000..25b8810
 --- /dev/null
-+++ b/Documentation/cgroups/io-throttle.txt
-@@ -0,0 +1,451 @@
-+
-+               Block device I/O bandwidth controller
-+
-+----------------------------------------------------------------------
-+1. DESCRIPTION
-+
-+This controller allows to limit the I/O bandwidth of specific block devices for
-+specific process containers (cgroups [1]) imposing additional delays on I/O
-+requests for those processes that exceed the limits defined in the control
-+group filesystem.
-+
-+Bandwidth limiting rules offer better control over QoS with respect to priority
-+or weight-based solutions that only give information about applications'
-+relative performance requirements. Nevertheless, priority based solutions are
-+affected by performance bursts, when only low-priority requests are submitted
-+to a general purpose resource dispatcher.
-+
-+The goal of the I/O bandwidth controller is to improve performance
-+predictability from the applications' point of view and provide performance
-+isolation of different control groups sharing the same block devices.
-+
-+NOTE #1: If you're looking for a way to improve the overall throughput of the
-+system probably you should use a different solution.
-+
-+NOTE #2: The current implementation does not guarantee minimum bandwidth
-+levels, the QoS is implemented only slowing down I/O "traffic" that exceeds the
-+limits specified by the user; minimum I/O rate thresholds are supposed to be
-+guaranteed if the user configures a proper I/O bandwidth partitioning of the
-+block devices shared among the different cgroups (theoretically if the sum of
-+all the single limits defined for a block device doesn't exceed the total I/O
-+bandwidth of that device).
-+
-+----------------------------------------------------------------------
-+2. USER INTERFACE
-+
-+A new I/O limitation rule is described using the files:
-+- blockio.bandwidth-max
-+- blockio.iops-max
-+
-+The I/O bandwidth (blockio.bandwidth-max) can be used to limit the throughput
-+of a certain cgroup, while blockio.iops-max can be used to throttle cgroups
-+containing applications doing a sparse/seeky I/O workload. Any combination of
-+them can be used to define more complex I/O limiting rules, expressed both in
-+terms of iops/s and bandwidth.
-+
-+The same files can be used to set multiple rules for different block devices
-+relative to the same cgroup.
-+
-+The following syntax can be used to configure any limiting rule:
-+
-+# /bin/echo DEV:LIMIT:STRATEGY:BUCKET_SIZE > CGROUP/FILE
-+
-+- DEV is the name of the device the limiting rule is applied to.
-+
-+- LIMIT is the maximum I/O activity allowed on DEV by CGROUP; LIMIT can
-+  represent a bandwidth limitation (expressed in bytes/s) when writing to
-+  blockio.bandwidth-max, or a limitation to the maximum I/O operations per
-+  second (expressed in iops/s) issued by CGROUP.
-+
-+  A generic I/O limiting rule for a block device DEV can be removed setting the
-+  LIMIT to 0.
-+
-+- STRATEGY is the throttling strategy used to throttle the applications' I/O
-+  requests from/to device DEV. At the moment two different strategies can be
-+  used [2][3]:
-+
-+  0 = leaky bucket: the controller accepts at most B bytes (B = LIMIT * time)
-+		    or O operations (O = LIMIT * time); further I/O requests
-+		    are delayed scheduling a timeout for the tasks that made
-+		    those requests.
-+
-+            Different I/O flow
-+               | | |
-+               | v |
-+               |   v
-+               v
-+              .......
-+              \     /
-+               \   /  leaky-bucket
-+                ---
-+                |||
-+                vvv
-+             Smoothed I/O flow
-+
-+  1 = token bucket: LIMIT tokens are added to the bucket every seconds; the
-+		    bucket can hold at the most BUCKET_SIZE tokens; I/O
-+		    requests are accepted if there are available tokens in the
-+		    bucket; when a request of N bytes arrives N tokens are
-+		    removed from the bucket; if fewer than N tokens are
-+		    available the request is delayed until a sufficient amount
-+		    of token is available in the bucket.
-+
-+            Tokens (I/O rate)
-+                o
-+                o
-+                o
-+              ....... <--.
-+              \     /    | Bucket size (burst limit)
-+               \ooo/     |
-+                ---   <--'
-+                 |ooo
-+    Incoming --->|---> Conforming
-+    I/O          |oo   I/O
-+    requests  -->|-->  requests
-+                 |
-+            ---->|
-+
-+  Leaky bucket is more precise than token bucket to respect the limits, because
-+  bursty workloads are always smoothed. Token bucket, instead, allows a small
-+  irregularity degree in the I/O flows (burst limit), and, for this, it is
-+  better in terms of efficiency (bursty workloads are not smoothed when there
-+  are sufficient tokens in the bucket).
-+
-+- BUCKET_SIZE is used only with token bucket (STRATEGY == 1) and defines the
-+  size of the bucket in bytes (blockio.bandwidth-max) or in I/O operations
-+  (blockio.iops-max).
-+
-+- CGROUP is the name of the limited process container.
-+
-+Also the following syntaxes are allowed:
-+
-+- remove an I/O bandwidth limiting rule
-+# /bin/echo DEV:0 > CGROUP/blockio.bandwidth-max
-+
-+- configure a limiting rule using leaky bucket throttling (ignore bucket size):
-+# /bin/echo DEV:LIMIT:0 > CGROUP/blockio.bandwidth-max
-+
-+- configure a limiting rule using token bucket throttling
-+  (with bucket size == LIMIT):
-+# /bin/echo DEV:LIMIT:1 > CGROUP/blockio.bandwidth-max
-+
-+2.2. Show I/O limiting rules
-+
-+All the defined rules and statistics for a specific cgroup can be shown reading
-+the files blockio.bandwidth-max for bandwidth constraints and blockio.iops-max
-+for I/O operations per second constraints.
-+
-+The following syntax is used:
-+
-+$ cat CGROUP/blockio.bandwidth-max
-+MAJOR MINOR LIMIT STRATEGY LEAKY_STAT BUCKET_SIZE BUCKET_FILL TIME_DELTA
-+
-+- MAJOR is the major device number of DEV (defined above)
-+
-+- MINOR is the minor device number of DEV (defined above)
-+
-+- LIMIT, STRATEGY and BUCKET_SIZE are the same parameters defined above
-+
-+- LEAKY_STAT is the amount of bytes (blockio.bandwidth-max) or I/O operations
-+  (blockio.iops-max) currently allowed by the I/O controller (only used with
-+  leaky bucket strategy - STRATEGY == 0)
-+
-+- BUCKET_FILL represents the amount of tokens present in the bucket (only used
-+  with token bucket strategy - STRATEGY == 1)
-+
-+- TIME_DELTA can be one of the following:
-+  - the amount of jiffies elapsed from the last I/O request (token bucket)
-+  - the amount of jiffies during which the bytes or the number of I/O
-+    operations given by LEAKY_STAT have been accumulated (leaky bucket)
-+
-+Multiple per-block device rules are reported in multiple rows
-+(DEVi, i = 1 ..  n):
-+
-+$ cat CGROUP/blockio.bandwidth-max
-+MAJOR1 MINOR1 BW1 STRATEGY1 LEAKY_STAT1 BUCKET_SIZE1 BUCKET_FILL1 TIME_DELTA1
-+MAJOR1 MINOR1 BW2 STRATEGY2 LEAKY_STAT2 BUCKET_SIZE2 BUCKET_FILL2 TIME_DELTA2
-+...
-+MAJORn MINORn BWn STRATEGYn LEAKY_STATn BUCKET_SIZEn BUCKET_FILLn TIME_DELTAn
-+
-+The same fields are used to describe I/O operations/sec rules. The only
-+difference is that the cost of each I/O operation is scaled up by a factor of
-+1000. This allows to apply better fine grained sleeps and provide a more
-+precise throttling.
-+
-+$ cat CGROUP/blockio.iops-max
-+MAJOR MINOR LIMITx1000 STRATEGY LEAKY_STATx1000 BUCKET_SIZEx1000 BUCKET_FILLx1000 TIME_DELTA
-+...
-+
-+2.3. Additional I/O statistics
-+
-+Additional cgroup I/O throttling statistics are reported in
-+blockio.throttlecnt:
-+
-+$ cat CGROUP/blockio.throttlecnt
-+MAJOR MINOR BW_COUNTER BW_SLEEP IOPS_COUNTER IOPS_SLEEP
-+
-+ - MAJOR, MINOR are respectively the major and the minor number of the device
-+   the following statistics refer to
-+ - BW_COUNTER gives the number of times that the cgroup bandwidth limit of
-+   this particular device was exceeded
-+ - BW_SLEEP is the amount of sleep time measured in clock ticks (divide
-+   by sysconf(_SC_CLK_TCK)) imposed to the processes of this cgroup that
-+   exceeded the bandwidth limit for this particular device
-+ - IOPS_COUNTER gives the number of times that the cgroup I/O operation per
-+   second limit of this particular device was exceeded
-+ - IOPS_SLEEP is the amount of sleep time measured in clock ticks (divide
-+   by sysconf(_SC_CLK_TCK)) imposed to the processes of this cgroup that
-+   exceeded the I/O operations per second limit for this particular device
-+
-+Example:
-+$ cat CGROUP/blockio.throttlecnt
-+8 0 0 0 0 0
-+^ ^ ^ ^ ^ ^
-+ \ \ \ \ \ \___iops sleep (in clock ticks)
-+  \ \ \ \ \____iops throttle counter
-+   \ \ \ \_____bandwidth sleep (in clock ticks)
-+    \ \ \______bandwidth throttle counter
-+     \ \_______minor dev. number
-+      \________major dev. number
-+
-+Distinct statistics for each process are reported in
-+/proc/PID/io-throttle-stat:
-+
-+$ cat /proc/PID/io-throttle-stat
-+BW_COUNTER BW_SLEEP IOPS_COUNTER IOPS_SLEEP
-+
-+Example:
-+$ cat /proc/$$/io-throttle-stat
-+0 0 0 0
-+^ ^ ^ ^
-+ \ \ \ \_____global iops sleep (in clock ticks)
-+  \ \ \______global iops counter
-+   \ \_______global bandwidth sleep (clock ticks)
-+    \________global bandwidth counter
-+
-+2.5. Generic usage examples
-+
-+* Mount the cgroup filesystem (blockio subsystem):
-+  # mkdir /mnt/cgroup
-+  # mount -t cgroup -oblockio blockio /mnt/cgroup
-+
-+* Instantiate the new cgroup "foo":
-+  # mkdir /mnt/cgroup/foo
-+  --> the cgroup foo has been created
-+
-+* Add the current shell process to the cgroup "foo":
-+  # /bin/echo $$ > /mnt/cgroup/foo/tasks
-+  --> the current shell has been added to the cgroup "foo"
-+
-+* Give maximum 1MiB/s of I/O bandwidth on /dev/sda for the cgroup "foo", using
-+  leaky bucket throttling strategy:
-+  # /bin/echo /dev/sda:$((1024 * 1024)):0:0 > \
-+  > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # sh
-+  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-+      bandwidth of 1MiB/s on /dev/sda
-+
-+* Give maximum 8MiB/s of I/O bandwidth on /dev/sdb for the cgroup "foo", using
-+  token bucket throttling strategy, bucket size = 8MiB:
-+  # /bin/echo /dev/sdb:$((8 * 1024 * 1024)):1:$((8 * 1024 * 1024)) > \
-+  > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # sh
-+  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-+      bandwidth of 1MiB/s on /dev/sda (controlled by leaky bucket throttling)
-+      and 8MiB/s on /dev/sdb (controlled by token bucket throttling)
-+
-+* Run a benchmark doing I/O on /dev/sda and /dev/sdb; I/O limits and usage
-+  defined for cgroup "foo" can be shown as following:
-+  # cat /mnt/cgroup/foo/blockio.bandwidth-max
-+  8 16 8388608 1 0 8388608 -522560 48
-+  8 0 1048576 0 737280 0 0 216
-+
-+* Extend the maximum I/O bandwidth for the cgroup "foo" to 16MiB/s on /dev/sda:
-+  # /bin/echo /dev/sda:$((16 * 1024 * 1024)):0:0 > \
-+  > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # cat /mnt/cgroup/foo/blockio.bandwidth-max
-+  8 16 8388608 1 0 8388608 -84432 206436
-+  8 0 16777216 0 0 0 0 15212
-+
-+* Remove limiting rule on /dev/sdb for cgroup "foo":
-+  # /bin/echo /dev/sdb:0:0:0 > /mnt/cgroup/foo/blockio.bandwidth-max
-+  # cat /mnt/cgroup/foo/blockio.bandwidth-max
-+  8 0 16777216 0 0 0 0 110388
-+
-+* Set a maximum of 100 I/O operations/sec (leaky bucket strategy) to /dev/sdc
-+  for cgroup "foo":
-+  # /bin/echo /dev/sdc:100:0 > /mnt/cgroup/foo/blockio.iops-max
-+  # cat /mnt/cgroup/foo/blockio.iops-max
-+  8 32 100000 0 846000 0 2113
-+          ^        ^
-+         /________/
-+        /
-+  Remember: these values are scaled up by a factor of 1000 to apply a fine
-+  grained throttling (i.e. LIMIT == 100000 means a maximum of 100 I/O operation
-+  per second)
-+
-+* Remove limiting rule for I/O operations from /dev/sdc for cgroup "foo":
-+  # /bin/echo /dev/sdc:0 > /mnt/cgroup/foo/blockio.iops-max
-+
-+----------------------------------------------------------------------
-+3. ADVANTAGES OF PROVIDING THIS FEATURE
-+
-+* Allow I/O traffic shaping for block device shared among different cgroups
-+* Improve I/O performance predictability on block devices shared between
-+  different cgroups
-+* Limiting rules do not depend of the particular I/O scheduler (anticipatory,
-+  deadline, CFQ, noop) and/or the type of the underlying block devices
-+* The bandwidth limitations are guaranteed both for synchronous and
-+  asynchronous operations, even the I/O passing through the page cache or
-+  buffers and not only direct I/O (see below for details)
-+* It is possible to implement a simple user-space application to dynamically
-+  adjust the I/O workload of different process containers at run-time,
-+  according to the particular users' requirements and applications' performance
-+  constraints
-+
-+----------------------------------------------------------------------
-+4. DESIGN
-+
-+The I/O throttling is performed imposing an explicit timeout on the processes
-+that exceed the I/O limits dedicated to the cgroup they belong to. I/O
-+accounting happens per cgroup.
-+
-+Only the actual I/O that flows in the block devices is considered. Multiple
-+re-reads of pages already present in the page cache as well as re-writes of
-+dirty pages are not considered to account and throttle the I/O activity, since
-+they don't actually generate any real I/O operation.
-+
-+This means that a process that re-reads or re-writes multiple times the same
-+blocks of a file is affected by the I/O limitations only for the actual I/O
-+performed from/to the underlying block devices.
-+
-+4.1. Synchronous I/O tracking and throttling
-+
-+The io-throttle controller just works as expected for synchronous (read and
-+write) operations: the real I/O activity is reduced synchronously according to
-+the defined limitations.
-+
-+If the operation is synchronous we automatically know that the context of the
-+request is the current task and so we can charge the cgroup the current task
-+belongs to. And throttle the current task as well, if it exceeded the cgroup
-+limitations.
-+
-+4.2. Buffered I/O (write-back) tracking
-+
-+For buffered writes the scenario is a bit more complex, because the writes in
-+the page cache are processed asynchronously by kernel threads (pdflush), using
-+a write-back policy. So the real writes to the underlying block devices occur
-+in a different I/O context respect to the task that originally generated the
-+dirty pages.
-+
-+The I/O bandwidth controller uses the following solution to resolve this
-+problem.
-+
-+If the operation is a buffered write, we can charge the right cgroup looking at
-+the owner of the first page involved in the I/O operation, that gives the
-+context that generated the I/O activity at the source. This information can be
-+retrieved using the page_cgroup functionality originally provided by the cgroup
-+memory controller [4], and now provided specifically by the bio-cgroup
-+controller [5].
-+
-+In this way we can correctly account the I/O cost to the right cgroup, but we
-+cannot throttle the current task in this stage, because, in general, it is a
-+different task (e.g., pdflush that is processing asynchronously the dirty
-+page).
-+
-+For this reason, all the write-back requests that are not directly submitted by
-+the real owner and that need to be throttled are not dispatched immediately in
-+submit_bio(). Instead, they are added into an rbtree and processed
-+asynchronously by a dedicated kernel thread: kiothrottled.
-+
-+A deadline is associated to each throttled write-back request depending on the
-+bandwidth usage of the cgroup it belongs. When a request is inserted into the
-+rbtree kiothrottled is awakened. This thread periodically selects all the
-+requests with an expired deadline and submit the bunch of selected requests to
-+the underlying block devices using generic_make_request().
-+
-+4.3. Usage of bio-cgroup controller
-+
-+The controller bio-cgroup can be used to track buffered-io (in delay-write
-+condition) and for properly apply throttling. The simplest way is to mount
-+io-throttle (blockio) and bio-cgroup (bio) together to track buffered-io.
-+That's it.
-+
-+An alternative way is making the use of bio-cgroup id. An association between a
-+given io-throttle cgroup and a given bio-cgroup can be built by writing a
-+bio-cgroup id to the file blockio.bio_id.
-+
-+This file is exported for the purpose of associating io-throttle and bio-cgroup
-+groups. If you'd like to create an association, you must ensure the io-throttle
-+group is empty, that is, there are no tasks in this group. Otherwise,
-+association creating will fail. If an association is successfully built, task
-+moving in this group will be denied. Of course, you can remove an association,
-+just echo an negative number into blockio.bio_id.
-+
-+In this way, we don't have to necessarily mount io-throttle and bio-cgroup
-+together. It's more gentle to the other subsystems who also want to use
-+bio-cgroup.
-+
-+Example:
-+* Create an association between an io-throttle group and a bio-cgroup group
-+  with "bio" and "blockio" subsystems mounted in different mount points:
-+  # mount -t cgroup -o bio bio-cgroup /mnt/bio-cgroup/
-+  # cd /mnt/bio-cgroup/
-+  # mkdir bio-grp
-+  # cat bio-grp/bio.id
-+  1
-+  # mount -t cgroup -o blockio blockio /mnt/io-throttle
-+  # cd /mnt/io-throttle
-+  # mkdir foo
-+  # echo 1 > foo/blockio.bio_id
-+
-+* Now move the current shell in the new io-throttle/bio-cgroup group:
-+  # echo $$ > /mnt/bio-cgroup/bio-grp/tasks
-+
-+The task will be also present in /mnt/io-throttle/foo/tasks, due to the
-+previous blockio/bio association.
-+
-+4.4. Per-block device IO limiting rules
-+
-+Multiple rules for different block devices are stored in a linked list, using
-+the dev_t number of each block device as key to uniquely identify each element
-+of the list. RCU synchronization is used to protect the whole list structure,
-+since the elements in the list are not supposed to change frequently (they
-+change only when a new rule is defined or an old rule is removed or updated),
-+while the reads in the list occur at each operation that generates I/O. This
-+allows to provide zero overhead for cgroups that do not use any limitation.
-+
-+WARNING: per-block device limiting rules always refer to the dev_t device
-+number. If a block device is unplugged (i.e. a USB device) the limiting rules
-+defined for that device persist and they are still valid if a new device is
-+plugged in the system and it uses the same major and minor numbers.
-+
-+4.5. Asynchronous I/O (AIO) handling
-+
-+Explicit sleeps are *not* imposed on tasks doing asynchronous I/O (AIO)
-+operations; AIO throttling is performed returning -EAGAIN from sys_io_submit().
-+Userspace applications must be able to handle this error code opportunely.
-+
-+----------------------------------------------------------------------
-+5. TODO
-+
-+* Support proportional I/O bandwidth for an optimal bandwidth usage. For
-+  example use the kiothrottled rbtree: all the requests queued to the I/O
-+  subsystem first will go into the rbtree; then based on a per-cgroup I/O
-+  priority and feedback from I/O schedulers dispatch the requests to the
-+  elevator. This would allow to provide both bandwidth limiting and
-+  proportional bandwidth functionalities using a generic approach.
-+
-+* Implement a fair throttling policy: distribute the time to sleep equally
-+  among all the tasks of a cgroup that exceeded the I/O limits, e.g., depending
-+  of the amount of I/O activity previously generated in the past by each task
-+  (see task_io_accounting).
-+
-+----------------------------------------------------------------------
-+6. REFERENCES
-+
-+[1] Documentation/cgroups/cgroups.txt
-+[2] http://en.wikipedia.org/wiki/Leaky_bucket
-+[3] http://en.wikipedia.org/wiki/Token_bucket
-+[4] Documentation/controllers/memory.txt
-+[5] http://people.valinux.co.jp/~ryov/bio-cgroup
++++ b/include/linux/biotrack.h
+@@ -0,0 +1,95 @@
++#include <linux/cgroup.h>
++#include <linux/mm.h>
++#include <linux/page_cgroup.h>
++
++#ifndef _LINUX_BIOTRACK_H
++#define _LINUX_BIOTRACK_H
++
++#ifdef	CONFIG_CGROUP_BIO
++
++struct tsk_move_msg {
++	int old_id;
++	int new_id;
++	struct task_struct *tsk;
++};
++
++extern int register_biocgroup_notifier(struct notifier_block *nb);
++extern int unregister_biocgroup_notifier(struct notifier_block *nb);
++
++struct io_context;
++struct block_device;
++
++struct bio_cgroup {
++	struct cgroup_subsys_state css;
++	int id;
++	struct io_context *io_context;	/* default io_context */
++/*	struct radix_tree_root io_context_root; per device io_context */
++};
++
++static inline void __init_bio_page_cgroup(struct page_cgroup *pc)
++{
++	pc->bio_cgroup_id = 0;
++}
++
++extern struct cgroup *get_cgroup_from_page(struct page *page);
++extern void put_cgroup_from_page(struct page *page);
++extern struct cgroup *bio_id_to_cgroup(int id);
++
++static inline int bio_cgroup_disabled(void)
++{
++	return bio_cgroup_subsys.disabled;
++}
++
++extern void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm);
++extern void bio_cgroup_reset_owner(struct page *page, struct mm_struct *mm);
++extern void bio_cgroup_reset_owner_pagedirty(struct page *page,
++						 struct mm_struct *mm);
++extern void bio_cgroup_copy_owner(struct page *page, struct page *opage);
++
++extern struct io_context *get_bio_cgroup_iocontext(struct bio *bio);
++extern int get_bio_cgroup_id(struct bio *bio);
++
++#else	/* CONFIG_CGROUP_BIO */
++
++struct bio_cgroup;
++
++static inline void __init_bio_page_cgroup(struct page_cgroup *pc)
++{
++}
++
++static inline int bio_cgroup_disabled(void)
++{
++	return 1;
++}
++
++static inline void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
++{
++}
++
++static inline void bio_cgroup_reset_owner(struct page *page,
++						struct mm_struct *mm)
++{
++}
++
++static inline void bio_cgroup_reset_owner_pagedirty(struct page *page,
++						struct mm_struct *mm)
++{
++}
++
++static inline void bio_cgroup_copy_owner(struct page *page, struct page *opage)
++{
++}
++
++static inline struct io_context *get_bio_cgroup_iocontext(struct bio *bio)
++{
++	return NULL;
++}
++
++static inline int get_bio_cgroup_id(struct bio *bio)
++{
++	return 0;
++}
++
++#endif	/* CONFIG_CGROUP_BIO */
++
++#endif /* _LINUX_BIOTRACK_H */
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index 9c8d31b..5df23f8 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -43,6 +43,12 @@ SUBSYS(mem_cgroup)
+ 
+ /* */
+ 
++#ifdef CONFIG_CGROUP_BIO
++SUBSYS(bio_cgroup)
++#endif
++
++/* */
++
+ #ifdef CONFIG_CGROUP_DEVICE
+ SUBSYS(devices)
+ #endif
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index 08b987b..be37c27 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -104,6 +104,7 @@ int put_io_context(struct io_context *ioc);
+ void exit_io_context(void);
+ struct io_context *get_io_context(gfp_t gfp_flags, int node);
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node);
++void init_io_context(struct io_context *ioc);
+ void copy_io_context(struct io_context **pdst, struct io_context **psrc);
+ #else
+ static inline void exit_io_context(void)
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 18146c9..f3e0e64 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -37,6 +37,8 @@ struct mm_struct;
+  * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
+  */
+ 
++extern void __init_mem_page_cgroup(struct page_cgroup *pc);
++
+ extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ /* for swap handling */
+@@ -120,6 +122,10 @@ extern bool mem_cgroup_oom_called(struct task_struct *task);
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
++static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++}
++
+ static inline int mem_cgroup_newpage_charge(struct page *page,
+ 					struct mm_struct *mm, gfp_t gfp_mask)
+ {
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 186ec6a..47a6f55 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -607,7 +607,7 @@ typedef struct pglist_data {
+ 	int nr_zones;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+ 	struct page *node_mem_map;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	struct page_cgroup *node_page_cgroup;
+ #endif
+ #endif
+@@ -958,7 +958,7 @@ struct mem_section {
+ 
+ 	/* See declaration of similar field in struct zone */
+ 	unsigned long *pageblock_flags;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	/*
+ 	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
+ 	 * section. (see memcontrol.h/page_cgroup.h about this.)
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 7339c7b..a7249bb 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -1,7 +1,7 @@
+ #ifndef __LINUX_PAGE_CGROUP_H
+ #define __LINUX_PAGE_CGROUP_H
+ 
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ #include <linux/bit_spinlock.h>
+ /*
+  * Page Cgroup can be considered as an extended mem_map.
+@@ -12,9 +12,16 @@
+  */
+ struct page_cgroup {
+ 	unsigned long flags;
+-	struct mem_cgroup *mem_cgroup;
+ 	struct page *page;
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++	struct mem_cgroup *mem_cgroup;
++#endif
++#ifdef CONFIG_CGROUP_BIO
++	int bio_cgroup_id;
++#endif
++#if defined(CONFIG_CGROUP_MEM_RES_CTLR) || defined(CONFIG_CGROUP_BIO)
+ 	struct list_head lru;		/* per cgroup LRU list */
++#endif
+ };
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
+@@ -71,7 +78,7 @@ static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
+-#else /* CONFIG_CGROUP_MEM_RES_CTLR */
++#else /* CONFIG_CGROUP_PAGE */
+ struct page_cgroup;
+ 
+ static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+diff --git a/init/Kconfig b/init/Kconfig
+index 7be4d38..8f7b23c 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -606,8 +606,23 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 	  Now, memory usage of swap_cgroup is 2 bytes per entry. If swap page
+ 	  size is 4096bytes, 512k per 1Gbytes of swap.
+ 
++config CGROUP_BIO
++	bool "Block I/O cgroup subsystem"
++	depends on CGROUPS && BLOCK
++	select MM_OWNER
++	help
++	  Provides a Resource Controller which enables to track the onwner
++	  of every Block I/O requests.
++	  The information this subsystem provides can be used from any
++	  kind of module such as dm-ioband device mapper modules or
++	  the cfq-scheduler.
++
+ endif # CGROUPS
+ 
++config CGROUP_PAGE
++	def_bool y
++	depends on CGROUP_MEM_RES_CTLR || CGROUP_BIO
++
+ config MM_OWNER
+ 	bool
+ 
+diff --git a/mm/Makefile b/mm/Makefile
+index ec73c68..a78a437 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -37,4 +37,6 @@ else
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+-obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_CGROUP_PAGE) += page_cgroup.o
++obj-$(CONFIG_CGROUP_BIO) += biotrack.o
+diff --git a/mm/biotrack.c b/mm/biotrack.c
+new file mode 100644
+index 0000000..d3a35f1
+--- /dev/null
++++ b/mm/biotrack.c
+@@ -0,0 +1,349 @@
++/* biotrack.c - Block I/O Tracking
++ *
++ * Copyright (C) VA Linux Systems Japan, 2008
++ * Developed by Hirokazu Takahashi <taka@valinux.co.jp>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/smp.h>
++#include <linux/bit_spinlock.h>
++#include <linux/idr.h>
++#include <linux/blkdev.h>
++#include <linux/biotrack.h>
++
++#define MOVETASK 0
++static BLOCKING_NOTIFIER_HEAD(biocgroup_chain);
++
++int register_biocgroup_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&biocgroup_chain, nb);
++}
++EXPORT_SYMBOL(register_biocgroup_notifier);
++
++int unregister_biocgroup_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&biocgroup_chain, nb);
++}
++EXPORT_SYMBOL(unregister_biocgroup_notifier);
++
++/*
++ * The block I/O tracking mechanism is implemented on the cgroup memory
++ * controller framework. It helps to find the the owner of an I/O request
++ * because every I/O request has a target page and the owner of the page
++ * can be easily determined on the framework.
++ */
++
++/* Return the bio_cgroup that associates with a cgroup. */
++static inline struct bio_cgroup *cgroup_bio(struct cgroup *cgrp)
++{
++	return container_of(cgroup_subsys_state(cgrp, bio_cgroup_subsys_id),
++					struct bio_cgroup, css);
++}
++
++/* Return the bio_cgroup that associates with a process. */
++static inline struct bio_cgroup *bio_cgroup_from_task(struct task_struct *p)
++{
++	return container_of(task_subsys_state(p, bio_cgroup_subsys_id),
++					struct bio_cgroup, css);
++}
++
++static struct idr bio_cgroup_id;
++static DEFINE_SPINLOCK(bio_cgroup_idr_lock);
++static struct io_context default_bio_io_context;
++static struct bio_cgroup default_bio_cgroup = {
++	.id		= 0,
++	.io_context	= &default_bio_io_context,
++};
++
++/*
++ * This function is used to make a given page have the bio-cgroup id of
++ * the owner of this page.
++ */
++void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
++{
++	struct bio_cgroup *biog;
++	struct page_cgroup *pc;
++
++	if (bio_cgroup_disabled())
++		return;
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
++		return;
++
++	pc->bio_cgroup_id = 0;	/* 0: default bio_cgroup id */
++	if (!mm)
++		return;
++	/*
++	 * Locking "pc" isn't necessary here since the current process is
++	 * the only one that can access the members related to bio_cgroup.
++	 */
++	rcu_read_lock();
++	biog = bio_cgroup_from_task(rcu_dereference(mm->owner));
++	if (unlikely(!biog))
++		goto out;
++	/*
++	 * css_get(&bio->css) isn't called to increment the reference
++	 * count of this bio_cgroup "biog" so pc->bio_cgroup_id might turn
++	 * invalid even if this page is still active.
++	 * This approach is chosen to minimize the overhead.
++	 */
++	pc->bio_cgroup_id = biog->id;
++out:
++	rcu_read_unlock();
++}
++
++/*
++ * Change the owner of a given page if necessary.
++ */
++void bio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
++{
++	/*
++	 * A little trick:
++	 * Just call bio_cgroup_set_owner() for pages which are already
++	 * active since the bio_cgroup_id member of page_cgroup can be
++	 * updated without any locks. This is because an integer type of
++	 * variable can be set a new value at once on modern cpus.
++	 */
++	bio_cgroup_set_owner(page, mm);
++}
++
++/*
++ * Change the owner of a given page. This function is only effective for
++ * pages in the pagecache.
++ */
++void bio_cgroup_reset_owner_pagedirty(struct page *page, struct mm_struct *mm)
++{
++	if (PageSwapCache(page) || PageAnon(page))
++		return;
++	if (current->flags & PF_MEMALLOC)
++		return;
++
++	bio_cgroup_reset_owner(page, mm);
++}
++
++/*
++ * Assign "page" the same owner as "opage."
++ */
++void bio_cgroup_copy_owner(struct page *npage, struct page *opage)
++{
++	struct page_cgroup *npc, *opc;
++
++	if (bio_cgroup_disabled())
++		return;
++	npc = lookup_page_cgroup(npage);
++	if (unlikely(!npc))
++		return;
++	opc = lookup_page_cgroup(opage);
++	if (unlikely(!opc))
++		return;
++
++	/*
++	 * Do this without any locks. The reason is the same as
++	 * bio_cgroup_reset_owner().
++	 */
++	npc->bio_cgroup_id = opc->bio_cgroup_id;
++}
++
++/* Create a new bio-cgroup. */
++static struct cgroup_subsys_state *
++bio_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	struct bio_cgroup *biog;
++	struct io_context *ioc;
++	int ret;
++
++	if (!cgrp->parent) {
++		biog = &default_bio_cgroup;
++		init_io_context(biog->io_context);
++		/* Increment the referrence count not to be released ever. */
++		atomic_inc(&biog->io_context->refcount);
++		idr_init(&bio_cgroup_id);
++		return &biog->css;
++	}
++
++	biog = kzalloc(sizeof(*biog), GFP_KERNEL);
++	ioc = alloc_io_context(GFP_KERNEL, -1);
++	if (!ioc || !biog) {
++		ret = -ENOMEM;
++		goto out_err;
++	}
++	biog->io_context = ioc;
++retry:
++	if (!idr_pre_get(&bio_cgroup_id, GFP_KERNEL)) {
++		ret = -EAGAIN;
++		goto out_err;
++	}
++	spin_lock_irq(&bio_cgroup_idr_lock);
++	ret = idr_get_new_above(&bio_cgroup_id, (void *)biog, 1, &biog->id);
++	spin_unlock_irq(&bio_cgroup_idr_lock);
++	if (ret == -EAGAIN)
++		goto retry;
++	else if (ret)
++		goto out_err;
++
++	return &biog->css;
++out_err:
++	kfree(biog);
++	if (ioc)
++		put_io_context(ioc);
++	return ERR_PTR(ret);
++}
++
++/* Delete the bio-cgroup. */
++static void bio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	struct bio_cgroup *biog = cgroup_bio(cgrp);
++
++	put_io_context(biog->io_context);
++
++	spin_lock_irq(&bio_cgroup_idr_lock);
++	idr_remove(&bio_cgroup_id, biog->id);
++	spin_unlock_irq(&bio_cgroup_idr_lock);
++
++	kfree(biog);
++}
++
++static struct bio_cgroup *find_bio_cgroup(int id)
++{
++	struct bio_cgroup *biog;
++	spin_lock_irq(&bio_cgroup_idr_lock);
++	/*
++	 * It might fail to find A bio-group associated with "id" since it
++	 * is allowed to remove the bio-cgroup even when some of I/O requests
++	 * this group issued haven't completed yet.
++	 */
++	biog = (struct bio_cgroup *)idr_find(&bio_cgroup_id, id);
++	spin_unlock_irq(&bio_cgroup_idr_lock);
++	return biog;
++}
++
++struct cgroup *bio_id_to_cgroup(int id)
++{
++	struct bio_cgroup *biog;
++
++	biog = find_bio_cgroup(id);
++	if (biog)
++		return biog->css.cgroup;
++
++	return NULL;
++}
++
++struct cgroup *get_cgroup_from_page(struct page *page)
++{
++	struct page_cgroup *pc;
++	struct bio_cgroup *biog;
++	struct cgroup *cgrp = NULL;
++
++	pc = lookup_page_cgroup(page);
++	if (!pc)
++		return NULL;
++	lock_page_cgroup(pc);
++	biog = find_bio_cgroup(pc->bio_cgroup_id);
++	if (biog) {
++		css_get(&biog->css);
++		cgrp = biog->css.cgroup;
++	}
++	unlock_page_cgroup(pc);
++	return cgrp;
++}
++
++void put_cgroup_from_page(struct page *page)
++{
++	struct bio_cgroup *biog;
++	struct page_cgroup *pc;
++
++	pc = lookup_page_cgroup(page);
++	if (!pc)
++		return;
++	lock_page_cgroup(pc);
++	biog = find_bio_cgroup(pc->bio_cgroup_id);
++	if (biog)
++		css_put(&biog->css);
++	unlock_page_cgroup(pc);
++}
++
++/* Determine the bio-cgroup id of a given bio. */
++int get_bio_cgroup_id(struct bio *bio)
++{
++	struct page_cgroup *pc;
++	struct page *page = bio_iovec_idx(bio, 0)->bv_page;
++	int	id = 0;
++
++	pc = lookup_page_cgroup(page);
++	if (pc)
++		id = pc->bio_cgroup_id;
++	return id;
++}
++EXPORT_SYMBOL(get_bio_cgroup_id);
++
++/* Determine the iocontext of the bio-cgroup that issued a given bio. */
++struct io_context *get_bio_cgroup_iocontext(struct bio *bio)
++{
++	struct bio_cgroup *biog = NULL;
++	struct io_context *ioc;
++	int	id = 0;
++
++	id = get_bio_cgroup_id(bio);
++	if (id)
++		biog = find_bio_cgroup(id);
++	if (!biog)
++		biog = &default_bio_cgroup;
++	ioc = biog->io_context;	/* default io_context for this cgroup */
++	atomic_inc(&ioc->refcount);
++	return ioc;
++}
++EXPORT_SYMBOL(get_bio_cgroup_iocontext);
++
++static u64 bio_id_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct bio_cgroup *biog = cgroup_bio(cgrp);
++	return (u64) biog->id;
++}
++
++
++static struct cftype bio_files[] = {
++	{
++		.name = "id",
++		.read_u64 = bio_id_read,
++	},
++};
++
++static int bio_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	return cgroup_add_files(cgrp, ss, bio_files, ARRAY_SIZE(bio_files));
++}
++
++static void bio_cgroup_attach(struct cgroup_subsys *ss,
++			      struct cgroup *cont, struct cgroup *oldcont,
++			      struct task_struct *tsk)
++{
++	struct tsk_move_msg tmm;
++	struct bio_cgroup *old_biog, *new_biog;
++
++	old_biog = cgroup_bio(oldcont);
++	new_biog = cgroup_bio(cont);
++	tmm.old_id = old_biog->id;
++	tmm.new_id = new_biog->id;
++	tmm.tsk = tsk;
++	blocking_notifier_call_chain(&biocgroup_chain, MOVETASK, &tmm);
++}
++
++struct cgroup_subsys bio_cgroup_subsys = {
++	.name		= "bio",
++	.create		= bio_cgroup_create,
++	.destroy	= bio_cgroup_destroy,
++	.populate	= bio_cgroup_populate,
++	.attach         = bio_cgroup_attach,
++	.subsys_id	= bio_cgroup_subsys_id,
++};
++
+diff --git a/mm/bounce.c b/mm/bounce.c
+index e590272..1a01905 100644
+--- a/mm/bounce.c
++++ b/mm/bounce.c
+@@ -14,6 +14,7 @@
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+ #include <linux/blktrace_api.h>
++#include <linux/biotrack.h>
+ #include <trace/block.h>
+ #include <asm/tlbflush.h>
+ 
+@@ -212,6 +213,7 @@ static void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig,
+ 		to->bv_len = from->bv_len;
+ 		to->bv_offset = from->bv_offset;
+ 		inc_zone_page_state(to->bv_page, NR_BOUNCE);
++		bio_cgroup_copy_owner(to->bv_page, page);
+ 
+ 		if (rw == WRITE) {
+ 			char *vto, *vfrom;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 8bd4980..1ab32a2 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -33,6 +33,7 @@
+ #include <linux/cpuset.h>
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
+ #include "internal.h"
+ 
+@@ -463,6 +464,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+ 					gfp_mask & GFP_RECLAIM_MASK);
+ 	if (error)
+ 		goto out;
++	bio_cgroup_set_owner(page, current->mm);
+ 
+ 	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
+ 	if (error == 0) {
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e44fb0f..c25eb63 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2524,6 +2524,11 @@ struct cgroup_subsys mem_cgroup_subsys = {
+ 	.use_id = 1,
+ };
+ 
++void __meminit __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++	pc->mem_cgroup = NULL;
++}
++
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ 
+ static int __init disable_swap_account(char *s)
+diff --git a/mm/memory.c b/mm/memory.c
+index cf6873e..7779e12 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -51,6 +51,7 @@
+ #include <linux/init.h>
+ #include <linux/writeback.h>
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/mmu_notifier.h>
+ #include <linux/kallsyms.h>
+ #include <linux/swapops.h>
+@@ -2052,6 +2053,7 @@ gotten:
+ 		 * thread doing COW.
+ 		 */
+ 		ptep_clear_flush_notify(vma, address, page_table);
++		bio_cgroup_set_owner(new_page, mm);
+ 		page_add_new_anon_rmap(new_page, vma, address);
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+@@ -2497,6 +2499,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, pte);
+ 	page_add_anon_rmap(page, vma, address);
++	bio_cgroup_reset_owner(page, mm);
+ 	/* It's better to call commit-charge after rmap is established */
+ 	mem_cgroup_commit_charge_swapin(page, ptr);
+ 
+@@ -2559,6 +2562,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	if (!pte_none(*page_table))
+ 		goto release;
+ 	inc_mm_counter(mm, anon_rss);
++	bio_cgroup_set_owner(page, mm);
+ 	page_add_new_anon_rmap(page, vma, address);
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+@@ -2711,6 +2715,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+ 		if (anon) {
+ 			inc_mm_counter(mm, anon_rss);
++			bio_cgroup_set_owner(page, mm);
+ 			page_add_new_anon_rmap(page, vma, address);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 30351f0..1379eb0 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -26,6 +26,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/mpage.h>
+ #include <linux/rmap.h>
++#include <linux/biotrack.h>
+ #include <linux/percpu.h>
+ #include <linux/notifier.h>
+ #include <linux/smp.h>
+@@ -1243,6 +1244,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			BUG_ON(mapping2 != mapping);
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			account_page_dirtied(page, mapping);
++			bio_cgroup_reset_owner_pagedirty(page, current->mm);
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 		}
+diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
+index 791905c..f692ee2 100644
+--- a/mm/page_cgroup.c
++++ b/mm/page_cgroup.c
+@@ -9,13 +9,16 @@
+ #include <linux/vmalloc.h>
+ #include <linux/cgroup.h>
+ #include <linux/swapops.h>
++#include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ 
+ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+ {
+ 	pc->flags = 0;
+-	pc->mem_cgroup = NULL;
+ 	pc->page = pfn_to_page(pfn);
++	__init_mem_page_cgroup(pc);
++	__init_bio_page_cgroup(pc);
+ 	INIT_LIST_HEAD(&pc->lru);
+ }
+ static unsigned long total_usage;
+@@ -74,7 +77,7 @@ void __init page_cgroup_init(void)
+ 
+ 	int nid, fail;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && bio_cgroup_disabled())
+ 		return;
+ 
+ 	for_each_online_node(nid)  {
+@@ -83,12 +86,12 @@ void __init page_cgroup_init(void)
+ 			goto fail;
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try cgroup_disable=memory option if you"
++	printk(KERN_INFO "please try cgroup_disable=memory,bio option if you"
+ 	" don't want\n");
+ 	return;
+ fail:
+ 	printk(KERN_CRIT "allocation of page_cgroup was failed.\n");
+-	printk(KERN_CRIT "please try cgroup_disable=memory boot option\n");
++	printk(KERN_CRIT "please try cgroup_disable=memory,bio boot options\n");
+ 	panic("Out of memory");
+ }
+ 
+@@ -248,7 +251,7 @@ void __init page_cgroup_init(void)
+ 	unsigned long pfn;
+ 	int fail = 0;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && bio_cgroup_disabled())
+ 		return;
+ 
+ 	for (pfn = 0; !fail && pfn < max_pfn; pfn += PAGES_PER_SECTION) {
+@@ -263,8 +266,8 @@ void __init page_cgroup_init(void)
+ 		hotplug_memory_notifier(page_cgroup_callback, 0);
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try cgroup_disable=memory option if you don't"
+-	" want\n");
++	printk(KERN_INFO
++		"try cgroup_disable=memory,bio option if you don't want\n");
+ }
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 3ecea98..c7ad256 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -17,6 +17,7 @@
+ #include <linux/backing-dev.h>
+ #include <linux/pagevec.h>
+ #include <linux/migrate.h>
++#include <linux/biotrack.h>
+ #include <linux/page_cgroup.h>
+ 
+ #include <asm/pgtable.h>
+@@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+ 		 */
+ 		__set_page_locked(new_page);
+ 		SetPageSwapBacked(new_page);
++		bio_cgroup_set_owner(new_page, current->mm);
+ 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (likely(!err)) {
+ 			/*
 -- 
 1.5.6.3
 
