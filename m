@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZDNLNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZDNLSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbZDNLNq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 07:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZDNLNg
+	id S1754110AbZDNLSt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 07:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZDNLSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 07:13:36 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:48152 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbZDNLNf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 07:13:35 -0400
-Date: Tue, 14 Apr 2009 07:13:25 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Herbert Xu <herbert.xu@redhat.com>
-Subject: Re: [PATCH v2] crypto: add self-tests for rfc4309(ccm(aes))
-Message-ID: <20090414111325.GA14305@hmsreliant.think-freely.org>
-References: <200904091434.59639.jarod@redhat.com> <20090410023108.GA7933@localhost.localdomain> <200904131703.50196.jarod@redhat.com> <200904131911.01596.jarod@redhat.com>
+	Tue, 14 Apr 2009 07:18:40 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58848 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750915AbZDNLSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 07:18:39 -0400
+Date: Tue, 14 Apr 2009 13:18:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@novell.com>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Kleikamp <shaggy@austin.ibm.com>, xfs-masters@oss.sgi.com
+Subject: Re: [PATCH 0/6] Handle bio_alloc failure
+Message-ID: <20090414111838.GG5178@kernel.dk>
+References: <200904141636.26557.knikanth@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904131911.01596.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+In-Reply-To: <200904141636.26557.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 07:11:00PM -0400, Jarod Wilson wrote:
-> One more time, with feeling. Investigated using test vectors from rfc3610, but
-> they all use a 13-byte nonce, we only support 11-byte, so I'm sticking with
-> using the samples from a fips cavs example file I have on hand.
+On Tue, Apr 14 2009, Nikanth Karthikesan wrote:
+> Hi Jens
 > 
-> I swear I tested the first version of the patch before submitting last time,
-> but upon further testing, don't know how it actually managed to run
-> correctly w/o some of the additional changes in this version.
-> 
-> This version contains the same vectors, but some of them had incorrect klen's
-> in them last time. Additionally, null input and associated data should be
-> handled more appropriately, as well as the expected decryption verification
-> failure vectors.
-> 
-> This version of the patch has been tested on both 2.6.30-rc1-git5 +
-> cryptodev-2.6 and a Red Hat Enterprise Linux 5.x kernel, with some
-> extra debugging spew added to verify it really *is* working.
-> 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> 
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+> Some of the callers of bio_alloc() assume that it will never fail and always 
+> return bios. But it can fail. This patch set changes those callers to take 
+> action when bio_alloc() fails.
 
-> 
+It will not fail as long as __GFP_WAIT is set, which it is for all 6 of
+your patches.
+
+-- 
+Jens Axboe
+
