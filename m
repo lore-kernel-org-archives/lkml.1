@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZDNG6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZDNHAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbZDNG6Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 02:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZDNG6H
+	id S1753859AbZDNHAx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZDNHAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 02:58:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42808 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbZDNG6E (ORCPT
+	Tue, 14 Apr 2009 03:00:42 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:24114 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZDNHAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 02:58:04 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH v3 6/6] fix wrong get_user_pages usage in iovlock.c
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Andrea Arcangeli <aarcange@redhat.com>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Chris Leech <christopher.leech@intel.com>, netdev@vger.kernel.org
-In-Reply-To: <200904141656.14191.nickpiggin@yahoo.com.au>
-References: <20090414152151.C659.A69D9226@jp.fujitsu.com> <200904141656.14191.nickpiggin@yahoo.com.au>
-Message-Id: <20090414155719.C66B.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 14 Apr 2009 03:00:40 -0400
+X-Trace: 181206302/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.21.180/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 79.69.21.180
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiAFAIvR40lPRRW0/2dsb2JhbACBUsttg3wG
+X-IronPort-AV: E=Sophos;i="4.40,183,1238972400"; 
+   d="scan'208";a="181206302"
+Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090413215949.GD14847@linux-sh.org>
+References: <1239654768.6542.10.camel@localhost.localdomain>
+	 <20090413210030.GA14847@linux-sh.org>
+	 <1239658604.6542.28.camel@localhost.localdomain>
+	 <20090413215949.GD14847@linux-sh.org>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 08:00:29 +0100
+Message-Id: <1239692429.6538.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 14 Apr 2009 15:58:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tuesday 14 April 2009 16:23:13 KOSAKI Motohiro wrote:
-> > I don't have NET-DMA usable device. I hope to get expert review.
-> > 
-> > =========================
-> > Subject: [Untested][RFC][PATCH] fix wrong get_user_pages usage in iovlock.c
-> > 
-> > 	down_read(mmap_sem)
-> > 	get_user_pages()
-> > 	up_read(mmap_sem)
-> > 
-> > is fork unsafe.
-> > fix it.
-> > 
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
-> > Cc: David S. Miller <davem@davemloft.net>
-> > Cc: Chris Leech <christopher.leech@intel.com>
-> > Cc: netdev@vger.kernel.org
-> > ---
-> >  drivers/dma/iovlock.c |   18 ++++++------------
-> >  1 file changed, 6 insertions(+), 12 deletions(-)
-> > 
-> > Index: b/drivers/dma/iovlock.c
-> > ===================================================================
-> > --- a/drivers/dma/iovlock.c	2009-02-21 16:53:23.000000000 +0900
-> > +++ b/drivers/dma/iovlock.c	2009-04-13 04:46:02.000000000 +0900
-> > @@ -94,18 +94,10 @@ struct dma_pinned_list *dma_pin_iovec_pa
-> >  		pages += page_list->nr_pages;
-> >  
-> >  		/* pin pages down */
-> > -		down_read(&current->mm->mmap_sem);
-> > -		ret = get_user_pages(
-> > -			current,
-> > -			current->mm,
-> > -			(unsigned long) iov[i].iov_base,
-> > -			page_list->nr_pages,
-> > -			1,	/* write */
-> > -			0,	/* force */
-> > -			page_list->pages,
-> > -			NULL);
-> > -		up_read(&current->mm->mmap_sem);
-> > -
-> > +		down_read(&current->mm->mm_pinned_sem);
-> > +		ret = get_user_pages_fast((unsigned long) iov[i].iov_base,
-> > +					  page_list->nr_pages, 1,
-> > +					  page_list->pages);
+On Tue, 2009-04-14 at 06:59 +0900, Paul Mundt wrote:
+
+> This file system is tied directly to the VMU. Assumptions about the
+> on-disk format, block numbering limitations, etc. are all VMU
+> constraints, and papering over that in the Kconfig text is not
+> sufficient. This file system is and always will be tied to the VMU, and
+> you really do not want to decouple the two. What you do in loopback mode
+> for testing is your own business, but this will not work in the way
+> people expect on a fixed disk. You are only making things harder on
+> yourself by insisting that this is somehow generic.
 > 
-> I would perhaps not fold gup_fast conversions into the same patch as
-> the fix.
+> The file system at least wants a dependency on the VMU (and I suppose
+> mtdblock) itself.
 
-OK. I'll fix.
-
+Why won't it work on a fixed disk "in the way people expect"? Granted
+they'd be eccentric to format a disk in this way but there is no
+inherent reason why this file system *has* to be tied to a VMU.
 
