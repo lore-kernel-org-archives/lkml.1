@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbZDNP5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZDNP6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbZDNP5j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZDNPyv
+	id S1756342AbZDNP6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZDNPzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:54:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41146 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756749AbZDNPyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:54:49 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix velocity_intr() in the VIA Velocity driver to have the
-	right return type
-To: romieu@fr.zoreil.com, netdev@vger.kernel.org
-Cc: dhowells@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Date: Tue, 14 Apr 2009 16:53:25 +0100
-Message-ID: <20090414155325.27548.90325.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 11:55:52 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:34684 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754834AbZDNPzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 11:55:51 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: UV BAU partition-relative distribution map
+Cc: mingo@elte.hu
+Message-Id: <E1Ltl0C-0004Ob-37@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Tue, 14 Apr 2009 10:56:48 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix velocity_intr() in the VIA Velocity driver to have the right return type.
-As it stands, it returns the right values, but as type int, not type
-irqreturn_t.  This leads to the following compiler warning:
 
-  CC      drivers/net/via-velocity.o
-drivers/net/via-velocity.c: In function 'velocity_open':
-drivers/net/via-velocity.c:1924: warning: passing argument 2 of 'request_irq' from incompatible pointer type
+From: Cliff Wickman <cpw@sgi.com>
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+This patch enables each partition's BAU distribution bit map
+to be partition-relative.
+
+The distribution bitmap had been constructed assuming 0 as the base
+node number.  That construct would not have allowed a total system of
+greater than 256 nodes.
+It also corrects an error that occurred when the first blade's nasid
+was not zero.  That nasid was stored as the base node.
+The base node number gets added by hardware to the node numbers implied
+in the distribution bitmap, resulting in invalid target nasids.
+
+Tested on the UV hardware simulator.
+
+Diffed against 2.6.29
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
 ---
+ arch/x86/kernel/tlb_uv.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
- drivers/net/via-velocity.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/net/via-velocity.c b/drivers/net/via-velocity.c
-index fb53ef8..754a4b1 100644
---- a/drivers/net/via-velocity.c
-+++ b/drivers/net/via-velocity.c
-@@ -377,7 +377,7 @@ static void velocity_print_info(struct velocity_info *vptr);
- static int velocity_open(struct net_device *dev);
- static int velocity_change_mtu(struct net_device *dev, int mtu);
- static int velocity_xmit(struct sk_buff *skb, struct net_device *dev);
--static int velocity_intr(int irq, void *dev_instance);
-+static irqreturn_t velocity_intr(int irq, void *dev_instance);
- static void velocity_set_multi(struct net_device *dev);
- static struct net_device_stats *velocity_get_stats(struct net_device *dev);
- static int velocity_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
-@@ -2215,7 +2215,7 @@ out:
-  *	efficiently as possible.
-  */
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c
++++ linux/arch/x86/kernel/tlb_uv.c
+@@ -25,6 +25,8 @@ static int			uv_bau_retry_limit __read_m
  
--static int velocity_intr(int irq, void *dev_instance)
-+static irqreturn_t velocity_intr(int irq, void *dev_instance)
- {
- 	struct net_device *dev = dev_instance;
- 	struct velocity_info *vptr = netdev_priv(dev);
-
+ /* position of pnode (which is nasid>>1): */
+ static int			uv_nshift __read_mostly;
++/* base pnode in this partition */
++static int			uv_partition_base_pnode __read_mostly;
+ 
+ static unsigned long		uv_mmask __read_mostly;
+ 
+@@ -43,7 +45,7 @@ static int __init blade_to_first_node(in
+ 		if (blade == b)
+ 			return node;
+ 	}
+-	BUG();
++	return -1; /* shouldn't happen */
+ }
+ 
+ /*
+@@ -360,7 +362,8 @@ const struct cpumask *uv_flush_tlb_other
+ 			locals++;
+ 			continue;
+ 		}
+-		bau_node_set(pnode, &bau_desc->distribution);
++		bau_node_set(pnode - uv_partition_base_pnode,
++				&bau_desc->distribution);
+ 		i++;
+ 	}
+ 	if (i == 0) {
+@@ -729,7 +732,12 @@ uv_activation_descriptor_init(int node, 
+ 	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
+ 		memset(ad2, 0, sizeof(struct bau_desc));
+ 		ad2->header.sw_ack_flag = 1;
+-		ad2->header.base_dest_nodeid = uv_cpu_to_pnode(0);
++		/*
++		 * base_dest_nodeid is the first node in the partition, so
++		 * the bit map will indicate partition-relative node numbers.
++		 * note that base_dest_nodeid is actually a nasid.
++		 */
++		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
+ 		ad2->header.command = UV_NET_ENDPOINT_INTD;
+ 		ad2->header.int_both = 1;
+ 		/*
+@@ -830,6 +838,11 @@ static int __init uv_bau_init(void)
+ 	    kmalloc(nblades * sizeof(struct bau_control *), GFP_KERNEL);
+ 	BUG_ON(!uv_bau_table_bases);
+ 
++	uv_partition_base_pnode = 0x7fffffff;
++	for (blade = 0; blade < nblades; blade++)
++		if (uv_blade_nr_possible_cpus(blade) &&
++			(uv_blade_to_pnode(blade) < uv_partition_base_pnode))
++			uv_partition_base_pnode = uv_blade_to_pnode(blade);
+ 	for (blade = 0; blade < nblades; blade++)
+ 		if (uv_blade_nr_possible_cpus(blade))
+ 			uv_init_blade(blade);
