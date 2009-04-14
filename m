@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZDNK6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZDNLF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZDNK6z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZDNK6q
+	id S1754188AbZDNLF2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 07:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZDNLFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:58:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45806 "EHLO mx2.mail.elte.hu"
+	Tue, 14 Apr 2009 07:05:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42311 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751572AbZDNK6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:58:45 -0400
-Date: Tue, 14 Apr 2009 12:58:23 +0200
+	id S1751314AbZDNLFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 07:05:17 -0400
+Date: Tue, 14 Apr 2009 13:04:57 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, joerg.roedel@amd.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] dma-debug: add dma_debug_resize_entries() to
-	adjust the number of dma_debug_entries
-Message-ID: <20090414105823.GL3558@elte.hu>
-References: <1239669799-23579-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/filters: allow user-input to be
+	integer-like string
+Message-ID: <20090414110457.GN3558@elte.hu>
+References: <49E2A594.4060306@cn.fujitsu.com> <20090413144513.GF5977@nowhere> <20090413222951.GG8514@elte.hu> <1239682887.7011.54.camel@tropicana> <49E42C04.3020304@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239669799-23579-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49E42C04.3020304@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,45 +37,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> +int dma_debug_resize_entries(u32 num_entries)
-> +{
-> +	int i, delta, ret = 0;
-> +	unsigned long flags;
-> +	struct dma_debug_entry *entry;
-> +
-> +	spin_lock_irqsave(&free_entries_lock, flags);
-> +
-> +	if (nr_total_entries < num_entries) {
-> +		delta = num_entries - nr_total_entries;
-> +
-> +		for (i = 0; i < delta; i++) {
-> +			entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
-> +			if (!entry)
-> +				break;
+> >> This also conflicts with Tom's rewrite of the filter engine to make 
+> >> it on-the-fly modifiable.
+> >>
+> >> Li, mind reworking your series against latest -tip? (it has Tom's 
+> >> patch included already)
+> >>
+> >> Also, it would be nice to hear Tom's opinion about this series as 
+> >> well. I know there's new parsing features planned - if it's better 
+> >> that way then Tom you might want to pick up Li's patches and submit 
+> >> them together with any pending or upcoming changes? We can apply 
+> >> them directly too if that's easier to you.
+> >>
+> > 
+> > I had started on the new parser a couple weeks ago, but got sidetracked
+> > by other things.  I'll be getting back to it this week, but until it's
+> > ready it wouldn't hurt for you to pick up Li's patches, and I'll make
+> > any changes I need to in the new code.
+> > 
+> 
+> Ok, I'll rebase those patches and send to Ingo.
 
-hm, using GFP_ATOMIC within a spinlock is not a very nice thing to 
-do in general. While this is boot-only and the GFP_ATOMIC will 
-likely succeed, this could become non-boot functionality and then 
-it's exposed to the momentary VM pressure situation that might make 
-GFP_ATOMIC fail.
-
-Please fix this to be GFP_KERNEL.
-
-a small detail:
-
-> +		delta = nr_total_entries - num_entries;
-> +
-> +		for (i = 0; i < delta && !list_empty(&free_entries); i++) {
-> +			entry = __dma_entry_alloc();
-> +			kfree(entry);
-> +		}
-> +
-> +		nr_total_entries -= i;
-> +	}
-
-Can i != delta ever happen? It would suggest the list length being 
-out of sync with the nr_total_entries counter.
+Thanks!
 
 	Ingo
