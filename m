@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbZDNR3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZDNR2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754062AbZDNR3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbZDNR0x
+	id S1757931AbZDNR2k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZDNR0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:26:53 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64753 "EHLO
+	Tue, 14 Apr 2009 13:26:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62430 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177AbZDNR0p (ORCPT
+	with ESMTP id S1751132AbZDNR0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:26:45 -0400
-Message-Id: <20090414172641.694731417@goodmis.org>
+	Tue, 14 Apr 2009 13:26:44 -0400
+Message-Id: <20090414172642.137060126@goodmis.org>
 References: <20090414172337.280621613@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 14 Apr 2009 13:23:43 -0400
+Date: Tue, 14 Apr 2009 13:23:45 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -29,293 +29,322 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
        Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: [PATCH 6/8] tracing/events: convert event call sites to use a link list
-Content-Disposition: inline; filename=0006-tracing-events-convert-event-call-sites-to-use-a-li.patch
+       Martin Bligh <mbligh@google.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 8/8] tracing/events: add support for modules to TRACE_EVENT
+Content-Disposition: inline; filename=0008-tracing-events-add-support-for-modules-to-TRACE_EVE.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: makes it possible to define events in modules
+Impact: allow modules to add TRACE_EVENTS on load
 
-The events are created by reading down the section that they are linked
-in by the macros. But this is not scalable to modules. This patch converts
-the manipulations to use a global link list, and on boot up it adds
-the items in the section to the list.
+This patch adds the final hooks to allow modules to use the TRACE_EVENT
+macro. A notifier and a data structure are used to link the TRACE_EVENTs
+defined in the module to connect them with the ftrace event tracing system.
 
-This change will allow modules to add their tracing events to the list as
-well.
+It also adds the necessary automated clean ups to the trace events when a
+module is removed.
 
-Note, this change alone does not permit modules to use the TRACE_EVENT macros,
-but the change is needed for them to eventually do so.
-
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace_event.h       |    1 +
- kernel/trace/trace.h               |   13 +--------
- kernel/trace/trace_event_profile.c |    4 +-
- kernel/trace/trace_events.c        |   51 ++++++++++++++++++++++--------------
- kernel/trace/trace_events_filter.c |    8 +++---
- 5 files changed, 39 insertions(+), 38 deletions(-)
+ include/linux/ftrace_event.h |    3 +
+ include/linux/module.h       |    4 +
+ include/linux/trace_seq.h    |    2 +
+ include/trace/ftrace.h       |    1 +
+ kernel/module.c              |    7 ++
+ kernel/trace/trace_events.c  |  128 +++++++++++++++++++++++++++++++-----------
+ 6 files changed, 113 insertions(+), 32 deletions(-)
 
 diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 496b76d..1781085 100644
+index 1781085..75f3ac0 100644
 --- a/include/linux/ftrace_event.h
 +++ b/include/linux/ftrace_event.h
-@@ -83,6 +83,7 @@ void trace_current_buffer_discard_commit(struct ring_buffer_event *event);
- void tracing_record_cmdline(struct task_struct *tsk);
+@@ -7,6 +7,7 @@
  
- struct ftrace_event_call {
-+	struct list_head	list;
+ struct trace_array;
+ struct tracer;
++struct dentry;
+ 
+ /*
+  * The trace entry - the most basic unit of tracing. This is what
+@@ -87,6 +88,7 @@ struct ftrace_event_call {
  	char			*name;
  	char			*system;
  	struct dentry		*dir;
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 6bcdf4a..8817c18 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -739,11 +739,6 @@ struct event_subsystem {
++	struct trace_event	*event;
+ 	int			enabled;
+ 	int			(*regfunc)(void);
+ 	void			(*unregfunc)(void);
+@@ -97,6 +99,7 @@ struct ftrace_event_call {
+ 	struct list_head	fields;
+ 	int			n_preds;
  	struct filter_pred	**preds;
- };
++	void			*mod;
  
--#define events_for_each(event)						\
--	for (event = __start_ftrace_events;				\
--	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
--	     event++)
--
- struct filter_pred;
+ #ifdef CONFIG_EVENT_PROFILE
+ 	atomic_t	profile_count;
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 627ac08..6155fa4 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -337,6 +337,10 @@ struct module
+ 	const char **trace_bprintk_fmt_start;
+ 	unsigned int num_trace_bprintk_fmt;
+ #endif
++#ifdef CONFIG_EVENT_TRACING
++	struct ftrace_event_call *trace_events;
++	unsigned int num_trace_events;
++#endif
  
- typedef int (*filter_pred_fn_t) (struct filter_pred *pred, void *event);
-@@ -785,13 +780,7 @@ filter_check_discard(struct ftrace_event_call *call, void *rec,
+ #ifdef CONFIG_MODULE_UNLOAD
+ 	/* What modules depend on me? */
+diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
+index 28051da..15ca2c7 100644
+--- a/include/linux/trace_seq.h
++++ b/include/linux/trace_seq.h
+@@ -1,6 +1,8 @@
+ #ifndef _LINUX_TRACE_SEQ_H
+ #define _LINUX_TRACE_SEQ_H
+ 
++#include <linux/fs.h>
++
+ /*
+  * Trace sequences are used to allow a function to call several other functions
+  * to create a string of data to use (up to a max of PAGE_SIZE.
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 955b967..60c5323 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -477,6 +477,7 @@ __attribute__((__aligned__(4)))						\
+ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name			= #call,				\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
++	.event			= &ftrace_event_type_##call,		\
+ 	.raw_init		= ftrace_raw_init_event_##call,		\
+ 	.regfunc		= ftrace_raw_reg_event_##call,		\
+ 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
+diff --git a/kernel/module.c b/kernel/module.c
+index e797812..a039470 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -18,6 +18,7 @@
+ */
+ #include <linux/module.h>
+ #include <linux/moduleloader.h>
++#include <linux/ftrace_event.h>
+ #include <linux/init.h>
+ #include <linux/kallsyms.h>
+ #include <linux/fs.h>
+@@ -2172,6 +2173,12 @@ static noinline struct module *load_module(void __user *umod,
+ 					sizeof(*mod->tracepoints),
+ 					&mod->num_tracepoints);
+ #endif
++#ifdef CONFIG_EVENT_TRACING
++	mod->trace_events = section_objs(hdr, sechdrs, secstrings,
++					 "_ftrace_events",
++					 sizeof(*mod->trace_events),
++					 &mod->num_trace_events);
++#endif
+ 
+ #ifdef CONFIG_MODVERSIONS
+ 	if ((mod->num_syms && !mod->crcs)
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 8b9e621..a4b1777 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -713,7 +713,13 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+ 		return d_events;
+ 	}
+ 
+-	system->name = name;
++	system->name = kstrdup(name, GFP_KERNEL);
++	if (!system->name) {
++		debugfs_remove(system->entry);
++		kfree(system);
++		return d_events;
++	}
++
+ 	list_add(&system->list, &event_subsystems);
+ 
+ 	system->preds = NULL;
+@@ -738,7 +744,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 	 * If the trace point header did not define TRACE_SYSTEM
+ 	 * then the system would be called "TRACE_SYSTEM".
+ 	 */
+-	if (strcmp(call->system, "TRACE_SYSTEM") != 0)
++	if (strcmp(call->system, TRACE_SYSTEM) != 0)
+ 		d_events = event_subsystem_dir(call->system, d_events);
+ 
+ 	if (call->raw_init) {
+@@ -757,21 +763,13 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 		return -1;
+ 	}
+ 
+-	if (call->regfunc) {
+-		entry = debugfs_create_file("enable", 0644, call->dir, call,
+-					    &ftrace_enable_fops);
+-		if (!entry)
+-			pr_warning("Could not create debugfs "
+-				   "'%s/enable' entry\n", call->name);
+-	}
++	if (call->regfunc)
++		entry = trace_create_file("enable", 0644, call->dir, call,
++					  &ftrace_enable_fops);
+ 
+-	if (call->id) {
+-		entry = debugfs_create_file("id", 0444, call->dir, call,
+-				&ftrace_event_id_fops);
+-		if (!entry)
+-			pr_warning("Could not create debugfs '%s/id' entry\n",
+-					call->name);
+-	}
++	if (call->id)
++		entry = trace_create_file("id", 0444, call->dir, call,
++					  &ftrace_event_id_fops);
+ 
+ 	if (call->define_fields) {
+ 		ret = call->define_fields();
+@@ -780,40 +778,102 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 				   " events/%s\n", call->name);
+ 			return ret;
+ 		}
+-		entry = debugfs_create_file("filter", 0644, call->dir, call,
+-					    &ftrace_event_filter_fops);
+-		if (!entry)
+-			pr_warning("Could not create debugfs "
+-				   "'%s/filter' entry\n", call->name);
++		entry = trace_create_file("filter", 0644, call->dir, call,
++					  &ftrace_event_filter_fops);
+ 	}
+ 
+ 	/* A trace may not want to export its format */
+ 	if (!call->show_format)
+ 		return 0;
+ 
+-	entry = debugfs_create_file("format", 0444, call->dir, call,
+-				    &ftrace_event_format_fops);
+-	if (!entry)
+-		pr_warning("Could not create debugfs "
+-			   "'%s/format' entry\n", call->name);
++	entry = trace_create_file("format", 0444, call->dir, call,
++				  &ftrace_event_format_fops);
++
++	return 0;
++}
++
++#define for_each_event(event, start, end)			\
++	for (event = start;					\
++	     (unsigned long)event < (unsigned long)end;		\
++	     event++)
++
++static void trace_module_add_events(struct module *mod)
++{
++	struct ftrace_event_call *call, *start, *end;
++	struct dentry *d_events;
++
++	start = mod->trace_events;
++	end = mod->trace_events + mod->num_trace_events;
++
++	if (start == end)
++		return;
++
++	d_events = event_trace_events_dir();
++	if (!d_events)
++		return;
++
++	for_each_event(call, start, end) {
++		/* The linker may leave blanks */
++		if (!call->name)
++			continue;
++		call->mod = mod;
++		list_add(&call->list, &ftrace_events);
++		event_create_dir(call, d_events);
++	}
++}
++
++static void trace_module_remove_events(struct module *mod)
++{
++	struct ftrace_event_call *call, *p;
++
++	list_for_each_entry_safe(call, p, &ftrace_events, list) {
++		if (call->mod == mod) {
++			if (call->enabled) {
++				call->enabled = 0;
++				call->unregfunc();
++			}
++			if (call->event)
++				unregister_ftrace_event(call->event);
++			debugfs_remove_recursive(call->dir);
++			list_del(&call->list);
++		}
++	}
++}
++
++int trace_module_notify(struct notifier_block *self,
++			unsigned long val, void *data)
++{
++	struct module *mod = data;
++
++	mutex_lock(&event_mutex);
++	switch (val) {
++	case MODULE_STATE_COMING:
++		trace_module_add_events(mod);
++		break;
++	case MODULE_STATE_GOING:
++		trace_module_remove_events(mod);
++		break;
++	}
++	mutex_unlock(&event_mutex);
+ 
  	return 0;
  }
  
--extern struct ftrace_event_call __start_ftrace_events[];
--extern struct ftrace_event_call __stop_ftrace_events[];
--
++struct notifier_block trace_module_nb = {
++	.notifier_call = trace_module_notify,
++	.priority = 0,
++};
++
+ extern struct ftrace_event_call __start_ftrace_events[];
+ extern struct ftrace_event_call __stop_ftrace_events[];
+ 
 -#define for_each_event(event)						\
 -	for (event = __start_ftrace_events;				\
 -	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
 -	     event++)
-+extern struct list_head ftrace_events;
- 
- extern const char *__start___trace_bprintk_fmt[];
- extern const char *__stop___trace_bprintk_fmt[];
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index 199de9c..7bf2ad6 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -11,7 +11,7 @@ int ftrace_profile_enable(int event_id)
- {
- 	struct ftrace_event_call *event;
- 
--	for_each_event(event) {
-+	list_for_each_entry(event, &ftrace_events, list) {
- 		if (event->id == event_id)
- 			return event->profile_enable(event);
- 	}
-@@ -23,7 +23,7 @@ void ftrace_profile_disable(int event_id)
- {
- 	struct ftrace_event_call *event;
- 
--	for_each_event(event) {
-+	list_for_each_entry(event, &ftrace_events, list) {
- 		if (event->id == event_id)
- 			return event->profile_disable(event);
- 	}
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index ead68ac..5c66aaf 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -19,6 +19,8 @@
- 
- static DEFINE_MUTEX(event_mutex);
- 
-+LIST_HEAD(ftrace_events);
-+
- int trace_define_field(struct ftrace_event_call *call, char *type,
- 		       char *name, int offset, int size)
- {
-@@ -54,16 +56,14 @@ err:
- 
- static void ftrace_clear_events(void)
- {
--	struct ftrace_event_call *call = (void *)__start_ftrace_events;
 -
-+	struct ftrace_event_call *call;
- 
--	while ((unsigned long)call < (unsigned long)__stop_ftrace_events) {
-+	list_for_each_entry(call, &ftrace_events, list) {
- 
- 		if (call->enabled) {
- 			call->enabled = 0;
- 			call->unregfunc();
- 		}
--		call++;
- 	}
- }
- 
-@@ -89,7 +89,7 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 
- static int ftrace_set_clr_event(char *buf, int set)
- {
--	struct ftrace_event_call *call = __start_ftrace_events;
-+	struct ftrace_event_call *call;
- 	char *event = NULL, *sub = NULL, *match;
- 	int ret = -EINVAL;
- 
-@@ -118,7 +118,7 @@ static int ftrace_set_clr_event(char *buf, int set)
- 	}
- 
- 	mutex_lock(&event_mutex);
--	for_each_event(call) {
-+	list_for_each_entry(call, &ftrace_events, list) {
- 
- 		if (!call->name || !call->regfunc)
- 			continue;
-@@ -224,15 +224,17 @@ ftrace_event_write(struct file *file, const char __user *ubuf,
- static void *
- t_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct ftrace_event_call *call = m->private;
--	struct ftrace_event_call *next = call;
-+	struct list_head *list = m->private;
-+	struct ftrace_event_call *call;
- 
- 	(*pos)++;
- 
- 	for (;;) {
--		if ((unsigned long)call >= (unsigned long)__stop_ftrace_events)
-+		if (list == &ftrace_events)
- 			return NULL;
- 
-+		call = list_entry(list, struct ftrace_event_call, list);
-+
- 		/*
- 		 * The ftrace subsystem is for showing formats only.
- 		 * They can not be enabled or disabled via the event files.
-@@ -240,11 +242,10 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 		if (call->regfunc)
- 			break;
- 
--		call++;
--		next = call;
-+		list = list->next;
- 	}
- 
--	m->private = ++next;
-+	m->private = list->next;
- 
- 	return call;
- }
-@@ -257,22 +258,23 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- static void *
- s_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct ftrace_event_call *call = m->private;
--	struct ftrace_event_call *next;
-+	struct list_head *list = m->private;
-+	struct ftrace_event_call *call;
- 
- 	(*pos)++;
- 
-  retry:
--	if ((unsigned long)call >= (unsigned long)__stop_ftrace_events)
-+	if (list == &ftrace_events)
- 		return NULL;
- 
-+	call = list_entry(list, struct ftrace_event_call, list);
-+
- 	if (!call->enabled) {
--		call++;
-+		list = list->next;
- 		goto retry;
- 	}
- 
--	next = call;
--	m->private = ++next;
-+	m->private = list->next;
- 
- 	return call;
- }
-@@ -312,7 +314,7 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
- 	if (!ret) {
- 		struct seq_file *m = file->private_data;
- 
--		m->private = __start_ftrace_events;
-+		m->private = ftrace_events.next;
- 	}
- 	return ret;
- }
-@@ -797,9 +799,17 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
- 	return 0;
- }
- 
-+extern struct ftrace_event_call __start_ftrace_events[];
-+extern struct ftrace_event_call __stop_ftrace_events[];
-+
-+#define for_each_event(event)						\
-+	for (event = __start_ftrace_events;				\
-+	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
-+	     event++)
-+
  static __init int event_trace_init(void)
  {
--	struct ftrace_event_call *call = __start_ftrace_events;
-+	struct ftrace_event_call *call;
+ 	struct ftrace_event_call *call;
  	struct dentry *d_tracer;
  	struct dentry *entry;
  	struct dentry *d_events;
-@@ -830,6 +840,7 @@ static __init int event_trace_init(void)
++	int ret;
+ 
+ 	d_tracer = tracing_init_dentry();
+ 	if (!d_tracer)
+@@ -837,7 +897,7 @@ static __init int event_trace_init(void)
+ 	if (!d_events)
+ 		return 0;
+ 
+-	for_each_event(call) {
++	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
  		/* The linker may leave blanks */
  		if (!call->name)
  			continue;
-+		list_add(&call->list, &ftrace_events);
+@@ -845,6 +905,10 @@ static __init int event_trace_init(void)
  		event_create_dir(call, d_events);
  	}
  
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index de42dad..d30b06b 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -223,7 +223,7 @@ oom:
- 
- void filter_free_subsystem_preds(struct event_subsystem *system)
- {
--	struct ftrace_event_call *call = __start_ftrace_events;
-+	struct ftrace_event_call *call;
- 	int i;
- 
- 	if (system->n_preds) {
-@@ -234,7 +234,7 @@ void filter_free_subsystem_preds(struct event_subsystem *system)
- 		system->n_preds = 0;
- 	}
- 
--	events_for_each(call) {
-+	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->define_fields)
- 			continue;
- 
-@@ -320,7 +320,7 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
- int filter_add_subsystem_pred(struct event_subsystem *system,
- 			      struct filter_pred *pred)
- {
--	struct ftrace_event_call *call = __start_ftrace_events;
-+	struct ftrace_event_call *call;
- 
- 	if (system->n_preds && !pred->compound)
- 		filter_free_subsystem_preds(system);
-@@ -337,7 +337,7 @@ int filter_add_subsystem_pred(struct event_subsystem *system,
- 
- 	system->preds[system->n_preds] = pred;
- 
--	events_for_each(call) {
-+	list_for_each_entry(call, &ftrace_events, list) {
- 		int err;
- 
- 		if (!call->define_fields)
++	ret = register_module_notifier(&trace_module_nb);
++	if (!ret)
++		pr_warning("Failed to register trace events module notifier\n");
++
+ 	return 0;
+ }
+ fs_initcall(event_trace_init);
 -- 
 1.6.2.1
 
