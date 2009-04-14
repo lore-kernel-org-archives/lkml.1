@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbZDNHXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZDNHZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755144AbZDNHXf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZDNHXY
+	id S1754925AbZDNHZm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZDNHZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:23:24 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:55481 "EHLO smtp.gentoo.org"
+	Tue, 14 Apr 2009 03:25:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51375 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752767AbZDNHXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:23:22 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
-Date: Tue, 14 Apr 2009 03:23:15 -0400
-User-Agent: KMail/1.11.1 (Linux/2.6.28; KDE/4.2.1; x86_64; ; )
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-sh" <linux-sh@vger.kernel.org>,
-       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <1239654768.6542.10.camel@localhost.localdomain> <20090414070314.GB29075@linux-sh.org> <1239693375.6538.5.camel@localhost.localdomain>
-In-Reply-To: <1239693375.6538.5.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart24798497.qPfQ16toom";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	id S1751327AbZDNHZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 03:25:33 -0400
+Subject: [PATCH -tip] x86: page_types.h unification of declarations
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 12:54:29 +0530
+Message-Id: <1239693869.3033.31.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200904140323.19062.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart24798497.qPfQ16toom
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Impact: unification of declarations, cleanup
 
-On Tuesday 14 April 2009 03:16:15 Adrian McMenamin wrote:
-> On Tue, 2009-04-14 at 16:03 +0900, Paul Mundt wrote:
-> > Everything about the on-disk format is tied to the VMU. Until that sinks
-> > in, don't bother sending me email, thanks.
->
-> No, everything in the file system is dependent on the specification. The
-> specification is not dependent on the hardware. Those are the facts.
+Unification of declarations:
+ moved init_memory_mapping, initmem_init and free_initmem from
+page_XX_types.h to page_types.h
 
-i must be slow because i tend to agree with Adrian here.  if the VMU is a=20
-simple block device, then while the filesystem format may have been tailore=
-d=20
-to the exact hardware layout of the VMU, it doesnt mean that the resulting=
-=20
-filesystem spec will only work on that hardware.  then again, i didnt read =
-the=20
-entire source code from top to bottom ...
-=2Dmike
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/page_32_types.h |    4 ----
+ arch/x86/include/asm/page_64_types.h |    6 ------
+ arch/x86/include/asm/page_types.h    |    6 ++++++
+ 3 files changed, 6 insertions(+), 10 deletions(-)
 
---nextPart24798497.qPfQ16toom
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
+index 0f915ae..6f1b733 100644
+--- a/arch/x86/include/asm/page_32_types.h
++++ b/arch/x86/include/asm/page_32_types.h
+@@ -54,10 +54,6 @@ extern unsigned int __VMALLOC_RESERVE;
+ extern int sysctl_legacy_va_layout;
+ 
+ extern void find_low_pfn_range(void);
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-extern void initmem_init(unsigned long, unsigned long);
+-extern void free_initmem(void);
+ extern void setup_bootmem_allocator(void);
+ 
+ #endif	/* !__ASSEMBLY__ */
+diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
+index d38c91b..3f58718 100644
+--- a/arch/x86/include/asm/page_64_types.h
++++ b/arch/x86/include/asm/page_64_types.h
+@@ -71,12 +71,6 @@ extern unsigned long __phys_addr(unsigned long);
+ 
+ #define vmemmap ((struct page *)VMEMMAP_START)
+ 
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-
+-extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
+-extern void free_initmem(void);
+-
+ extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
+ extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
+ 
+diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+index f8b9c88..25e94a4 100644
+--- a/arch/x86/include/asm/page_types.h
++++ b/arch/x86/include/asm/page_types.h
+@@ -54,6 +54,12 @@ extern int devmem_is_allowed(unsigned long pagenr);
+ extern unsigned long max_low_pfn_mapped;
+ extern unsigned long max_pfn_mapped;
+ 
++extern unsigned long init_memory_mapping(unsigned long start,
++					 unsigned long end);
++
++extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
++extern void free_initmem(void);
++
+ #endif	/* !__ASSEMBLY__ */
+ 
+ #endif	/* _ASM_X86_PAGE_DEFS_H */
+-- 
+1.6.0.6
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJJ5DnmAAoJEEFjO5/oN/WBtDYQAI3zGHtHtrY44jtSHUzn6no4
-1EtSZvwJTcChf9dzguxlgsutfKg4QXHEcY7IHoFwx8LoGg84RiYpnsOMl1Wag5UG
-v3jA2xz9YTj0Vr6m6HuEEscWECww/VxlT+5p8WKBuPyL3maSoZMPrYXs9mJgBl1b
-HMc7X9KLMpOBs2lLzbJloYPWVO9O3SfrInzr7YnACVDvr/FKk6iGIFQ73dEhJrRN
-NrtQs9Qqp6RqNoJx0lPZ3Ry0HyAI0pGFch/60nIw5ZX7/K86YZn4y2XdYZDGt19F
-424XMdsoZ+8d5bQKOI50+aG/h5xr/Y9X2BzgxZJAOE5qJBzBvB/e0O1wLM3/1JrI
-5B+0QSSvi7XC0CJYW81D9gsC9SyCpFDvRnPAV8pjbN+NcTcfDtmQi89XmmnSqZqN
-Kfef5jbXBH6/oOo+cQr2eohsEL+6uXPUuA60ny32VtQvb4DMBHRPPFXZK5GoAo+E
-CpuZi8BrL7WG2Wl295+2KXVg4AGyieFSXeAxFOofnBw/h9ctdsHc4OSwk1jyC7Jm
-cWy24gd+I6tdWr73ghMxj96k2IAKvxYHvJvEwavEHUa99KKz7Ihf8setqlDMIsQj
-CKI/m9hxQ5MwRVIdPr89MmgbIAZs4WRCx/2rzY7BbdKmjPtw5+RGiR0dcofvza06
-rMll75elNXVGHV6+Lo9H
-=Itxl
------END PGP SIGNATURE-----
 
---nextPart24798497.qPfQ16toom--
