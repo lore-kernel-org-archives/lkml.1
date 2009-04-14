@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZDNVLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZDNVL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbZDNVLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZDNVLb
+	id S1756651AbZDNVL6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 17:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZDNVLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:11:31 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:33357 "EHLO e6.ny.us.ibm.com"
+	Tue, 14 Apr 2009 17:11:34 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:37875 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbZDNVLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:11:31 -0400
-Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       hch@infradead.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, mingo@elte.hu
-In-Reply-To: <20090414204912.GA28458@x200.localdomain>
-References: <20090410023207.GA27788@x200.localdomain>
-	 <1239340031.24083.21.camel@nimitz>
-	 <20090413091423.GA19236@x200.localdomain>
-	 <49E4108A.8050201@cs.columbia.edu>
-	 <20090414145830.GA27461@x200.localdomain>
-	 <49E4D115.5080601@cs.columbia.edu>
-	 <20090414204912.GA28458@x200.localdomain>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 14:11:26 -0700
-Message-Id: <1239743486.32604.132.camel@nimitz>
+	id S1753016AbZDNVLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 17:11:32 -0400
+Date: Tue, 14 Apr 2009 14:11:25 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Patrick McHardy <kaber@trash.net>,
+       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
+       paulus@samba.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v2)
+Message-ID: <20090414141125.53af6fdc@nehalam>
+In-Reply-To: <49E4E3E8.5090201@cosmosbay.com>
+References: <20090411174801.GG6822@linux.vnet.ibm.com>
+	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>
+	<20090412173108.GO6822@linux.vnet.ibm.com>
+	<20090412.181330.23529546.davem@davemloft.net>
+	<20090413040413.GQ6822@linux.vnet.ibm.com>
+	<20090413095309.631cf395@nehalam>
+	<49E48136.5060700@trash.net>
+	<49E49C65.8060808@cosmosbay.com>
+	<20090414074554.7fa73e2f@nehalam>
+	<49E4B0A5.70404@cosmosbay.com>
+	<b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com>
+	<20090414111716.28585806@nehalam>
+	<49E4E3E8.5090201@cosmosbay.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 00:49 +0400, Alexey Dobriyan wrote:
-> > Going back to my example of a subtree above: what sort of security
-> > issues you would have here, assuming all restart operations go via
-> > the usual security checks just like syscalls, and we take special
-> > care about values we allow as input, e.g. cpu debug registers etc ?
-> 
-> This is like asking if everything goes through correct security checks
-> how will you screw something up. Everything won't go via usual security
-> checks.
-> 
-> Just for giggles, writing exploit for localhost hole becomes easier --
-> you very effectively turn off all randomization kernel does because VMA
-> boundaries comes from disk.
+> Oh well, it seems factorization of this stuff is not what you want, so
+> I'll stop arguing.
 
-Alexey, I think there's a bit of a misunderstanding here.  We're
-proposing that whatever gets done during the restart would not be able
-to elevate above the privilege level of the user doing the restart.  For
-instance, a user would not be able to restart a suid application -- that
-would require privilege.
-
-In the same way, at checkpoint time, we should deny users the ability to
-checkpoint things that are privileged.  We need to pay very close
-attention to the kernel interfaces that we use to ensure that all the
-normal security checks are observed, of course.  
-
-There's no new hole.  A restore operation is just a pieced-together set
-of operations that the user would have already been able to perform.
-
-Again, I think this stems from some of us that think that c/r should be
-used outside exclusively checkpointing whole containers.  I think we'll
-find some expanded use for c/r on things that aren't strict system
-containers.
-
--- Dave
-
+That's no fun..  I didn't mind the refactorizing, but was concerned
+that it caused the locking to be out of line in fast path. 
