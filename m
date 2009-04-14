@@ -1,107 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZDNXMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZDNXRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZDNXMu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 19:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZDNXM2
+	id S1756000AbZDNXRW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 19:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZDNXRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 19:12:28 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34371 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754760AbZDNXM1 (ORCPT
+	Tue, 14 Apr 2009 19:17:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44917 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751307AbZDNXRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 19:12:27 -0400
-Subject: Re: [PATCH 00/14] convert voyager over to the x86 quirks model
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-In-Reply-To: <20090414180832.GA25692@elte.hu>
-References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com>
-	 <20090414165722.GD2089@elte.hu>  <20090414180832.GA25692@elte.hu>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 18:12:22 -0500
-Message-Id: <1239750743.3638.12.camel@mulgrave>
+	Tue, 14 Apr 2009 19:17:13 -0400
+Date: Tue, 14 Apr 2009 16:13:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org, john@johnmccutchan.com, rlove@rlove.org,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH] Fix inconsistent lock state in inotify
+Message-Id: <20090414161329.094b977c.akpm@linux-foundation.org>
+In-Reply-To: <20090410192533.GA24345@dreamland.darkstar.lan>
+References: <20090410192533.GA24345@dreamland.darkstar.lan>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 20:08 +0200, Ingo Molnar wrote: 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 10 Apr 2009 21:25:33 +0200
+Luca Tettamanti <kronos.it@gmail.com> wrote:
+
+> Hello,
+> in current -git lockdep generates the following warning:
 > 
-> > 
-> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > >  39 files changed, 554 insertions(+), 726 deletions(-)
-> > 
-> > That diffstat is not against current mainline, is it? 
-> > Would you mind to send a proper diffstat with the revert 
-> > included as well? That will give us a complete picture.
-> 
-> ok, i did the calculations, and the effect of adding back 
-> x86/Voyager is roughly:
-> 
->    48 files changed, 5226 insertions(+), 142 deletions(-)
-> 
-> That's quite a lot, and lets put this into perspective.
-
-Hardly ... you're conflating two issues:  one is what is the burden to
-mainline, which the patch series is about, although only patch 1 (and
-possibly patch 5) is truly critical to that, the rest are assorted code
-moves.
-
-
-
-> You are talking about moving ~5000 lines of legacy code back into 
-> arch/x86/, for a total of *four* Voyager/Linux systems, which are 
-> using _ancient_ 486/P5 era CPUs.
-
-That's factually incorrect on both counts.  But the real point is that
-kernel development isn't a popularity contest, it's about the technical
-merits of the code ... something you've been conspicuously avoiding.
-
-> Two of these systems are in your house, two are somewhere unknown: 
-> their owners certainly never sent bugreports against recent mainline 
-> kernels (Voyager didnt even _build_ for a couple of straight kernel 
-> releases), and i suspect those boxes are probably decommissioned 
-> already.
-> 
-> A single core on my run-of-the-mill x86 laptop has more computing 
-> power than all Voyager/Linux systems on the planet, combined. And 
-> you now want to add back support to the mainline arch/x86 code, 
-> which we are trying hard to keep running on millions of x86 Linux 
-> systems?
-
-Well, what can I say, if your laptop is the speed standard for
-acceptable architectures, then I suppose you'll be removing all of the
-embedded architectures as well?
-
-In spite of your disdain for older processors, just remember that the
-highest x86 processor with a military spec rating is the 486DX, and one
-of the things the US department of defence likes about us is that we
-still support it.
-
-Actually, there are a lot of quiet projects using linux because we're
-happy to support them on older hardware ... it's one of the things that
-makes Linux different from, say, windows.
-
-> You still have not given proper justification for doing that ...
-
-The justification is that I'm prepared to maintain it.
-
-> Sorry to be the one to say 'no', but the reasons you gave so far 
-> were not very convincing to me.
+>  =================================
+>  [ INFO: inconsistent lock state ]
+>  2.6.30-rc1-kgdb #182
+>  ---------------------------------
+>  inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
+>  kswapd0/419 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>   (&inode->inotify_mutex){+.+.?.}, at: [<ffffffff802c7036>] inotify_inode_is_dead+0x30/0x94
+>  {RECLAIM_FS-ON-W} state was registered at:
+>    [<ffffffff80259621>] mark_held_locks+0x4d/0x6b
+>    [<ffffffff802596e3>] lockdep_trace_alloc+0xa4/0xbd
+>    [<ffffffff8029ac2e>] __kmalloc+0x51/0xe6
+>    [<ffffffff802c7ea2>] kernel_event+0xa7/0x10e
+>    [<ffffffff802c7fdc>] inotify_dev_queue_event+0xd3/0x14b
+>    [<ffffffff802c6f56>] inotify_inode_queue_event+0xab/0xe0
+>    [<ffffffff802a6d83>] vfs_create+0xb1/0xc0
+>    [<ffffffff802a975a>] do_filp_open+0x240/0x842
+>    [<ffffffff8029cb1e>] do_sys_open+0x53/0xda
+>    [<ffffffff802d0a62>] compat_sys_open+0x15/0x17
+>    [<ffffffff80228e14>] sysenter_dispatch+0x7/0x30
+>    [<ffffffffffffffff>] 0xffffffffffffffff
+>  irq event stamp: 30075
+>  hardirqs last  enabled at (30075): [<ffffffff802712cf>] call_rcu+0x5d/0x6a
+>  hardirqs last disabled at (30074): [<ffffffff80271296>] call_rcu+0x24/0x6a
+>  softirqs last  enabled at (27584): [<ffffffff8023d151>] __do_softirq+0x115/0x124
+>  softirqs last disabled at (27573): [<ffffffff8020c13c>] call_softirq+0x1c/0x28
 >  
-> Anyway, you seem to be willing to maintain this code it out of tree. 
-> If someone owns such an ancient Voyager box and wants to test a new 
-> kernel then your tree is a good starting point for doing that. 
-> There's really no pressing need to have this in mainline.
+>  other info that might help us debug this:
+>  2 locks held by kswapd0/419:
+>   #0:  (shrinker_rwsem){++++..}, at: [<ffffffff8027dd86>] shrink_slab+0x38/0x188
+>   #1:  (&type->s_umount_key#16){++++..}, at: [<ffffffff802ad8c9>] shrink_dcache_memory+0xb9/0x193
+>  
+>  stack backtrace:
+>  Pid: 419, comm: kswapd0 Not tainted 2.6.30-rc1-kgdb #182
+>  Call Trace:
+>   [<ffffffff8025906c>] print_usage_bug+0x1b6/0x1c7
+>   [<ffffffff80259c54>] ? check_usage_forwards+0x0/0xa1
+>   [<ffffffff8025938f>] mark_lock+0x312/0x557
+>   [<ffffffff8025ad03>] __lock_acquire+0x7b7/0x1668
+>   [<ffffffff802c7036>] ? inotify_inode_is_dead+0x30/0x94
+>   [<ffffffff8025bc09>] lock_acquire+0x55/0x71
+>   [<ffffffff802c7036>] ? inotify_inode_is_dead+0x30/0x94
+>   [<ffffffff80442ec8>] mutex_lock_nested+0x5a/0x2fa
+>   [<ffffffff802c7036>] ? inotify_inode_is_dead+0x30/0x94
+>   [<ffffffff80259621>] ? mark_held_locks+0x4d/0x6b
+>   [<ffffffff802712cf>] ? call_rcu+0x5d/0x6a
+>   [<ffffffff802c7036>] inotify_inode_is_dead+0x30/0x94
+>   [<ffffffff802ad3f1>] dentry_iput+0x82/0xc1
+>   [<ffffffff802ad4f9>] d_kill+0x24/0x45
+>   [<ffffffff802ad778>] __shrink_dcache_sb+0x25e/0x2f6
+>   [<ffffffff802ad901>] shrink_dcache_memory+0xf1/0x193
+>   [<ffffffff8027de2d>] shrink_slab+0xdf/0x188
+>   [<ffffffff8027e3be>] kswapd+0x4e8/0x6a3
+>   [<ffffffff80232d0c>] ? finish_task_switch+0x3b/0x10c
+>   [<ffffffff8027bec4>] ? isolate_pages_global+0x0/0x26f
+>   [<ffffffff8024becf>] ? autoremove_wake_function+0x0/0x38
+>   [<ffffffff802598d6>] ? trace_hardirqs_on+0xd/0xf
+>   [<ffffffff80444a41>] ? _spin_unlock_irqrestore+0x4c/0x68
+>   [<ffffffff8027ded6>] ? kswapd+0x0/0x6a3
+>   [<ffffffff8027ded6>] ? kswapd+0x0/0x6a3
+>   [<ffffffff8024bb80>] kthread+0x49/0x76
+>   [<ffffffff8020c03a>] child_rip+0xa/0x20
+>   [<ffffffff8020ba00>] ? restore_args+0x0/0x30
+>   [<ffffffff8024bb37>] ? kthread+0x0/0x76
+>   [<ffffffff8020c030>] ? child_rip+0x0/0x20
+> 
+> The cause is a call to kmalloc with GFP_KERNEL; the following patch
+> changes the flag to GFP_NOFS, which is also consistent with an earlier
+> call to kmem_cache_alloc in the same function.
+> 
+> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+> ---
+> 
+>  fs/notify/inotify/inotify_user.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+> index bed766e..1634319 100644
+> --- a/fs/notify/inotify/inotify_user.c
+> +++ b/fs/notify/inotify/inotify_user.c
+> @@ -220,7 +220,7 @@ static struct inotify_kernel_event * kernel_event(s32 wd, u32 mask, u32 cookie,
+>  				rem = 0;
+>  		}
+>  
+> -		kevent->name = kmalloc(len + rem, GFP_KERNEL);
+> +		kevent->name = kmalloc(len + rem, GFP_NOFS);
+>  		if (unlikely(!kevent->name)) {
+>  			kmem_cache_free(event_cachep, kevent);
+>  			return NULL;
 
-So the message you want to be giving out as a maintainer is that
-everything should be developed upstream, except when it's x86?
+Thanks.
 
-James
+This is in fact a false positive and we plan to fix it via lockdep
+annotation.
 
-
+(where "we" == eparis@redhat.com ;))
