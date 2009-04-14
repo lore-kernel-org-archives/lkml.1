@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZDNWAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZDNWDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbZDNWAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZDNWAb
+	id S1754840AbZDNWDc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZDNWDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:00:31 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48743 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbZDNWAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:00:31 -0400
-Date: Tue, 14 Apr 2009 18:00:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@elastic.org>
-cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Jiaying Zhang <jiayingz@google.com>,
-       Michael Rubin <mrubin@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
-In-Reply-To: <20090414212917.GA19933@elastic.org>
-Message-ID: <alpine.DEB.2.00.0904141800010.31421@gandalf.stny.rr.com>
-References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu> <20090414212917.GA19933@elastic.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 14 Apr 2009 18:03:19 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:49982 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751496AbZDNWDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 18:03:18 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: 2.6.30-rc1 A few issues and a stall
+Date: Tue, 14 Apr 2009 18:03:14 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-crc; KDE/4.2.2; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <200904121124.07193.edt@aei.ca> <200904140832.25057.edt@aei.ca> <49E4840E.6010300@redhat.com>
+In-Reply-To: <49E4840E.6010300@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904141803.14660.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 14 Apr 2009, Frank Ch. Eigler wrote:
-
-> Hi -
+On Tuesday 14 April 2009 08:39:42 Avi Kivity wrote:
+> Ed Tomlinson wrote:
+> > On Tuesday 14 April 2009 06:03:58 Avi Kivity wrote:
+> >   
+> >> Ed Tomlinson wrote:
+> >>     
+> >>> Once the above networking stuff is setup I start kvm with the command below
+> >>>
+> >>> QEMU_AUDIO_DRV=alsa kvm -m 1024 -cdrom /mnt/sdc4/divx/archlinux-2009.02-ftp-i686.iso -boot c -smp 3 -usb -usbdevice tablet -vga std -drive file=arch.img -net nic,macaddr=52:54:00:12:34:23 -net tap,ifname=qtap0,script=no -soundhw all -mem-path /hugepages
+> >>>
+> >>> which works and the kvm session boots just fine.  
+> >>>
+> >>> Issue 2.  When I attempt to ping outside the kvm session the pc (not just the kvm session) hangs.
+> >>> Its impossible to kill the kvm session and there are numerious info messages from RCU (tree RCU enabled)
+> >>> about stalls.  
+> >>>   
+> >>>       
+> >> The rcu messages are likely because a processor has died.
+> >>
+> >> Do things work if you drop -mem-path?
+> >>     
+> >
+> > It makes no difference.  I did notice that one cpu is peged at 100% though.  I'll be trying
+> > CONFIG_PROVE_LOCKING tonight for another problem - might give interesting results.
+> >   
 > 
-> On Tue, Apr 14, 2009 at 05:04:45PM -0400, Theodore Tso wrote:
-> > [...]
-> > One thing which I would really like is to avoid needing to drop the
-> > header file in include/trace/<subsystem.h>.
-> > 
-> > The problem that I have with this is that for ext4, we need to access
-> > private data structures which are defined in header files in
-> > fs/ext4/*.h --- which we moved into fs/ext4 a long time ago [...]
-> 
-> If the tracepoints/events expand to code that exposes those private
-> structures, then those structures are perhaps not quite so private any
-> more.  That argues for moving those headers back under include/..., or
-> at least those type decls made reachable from the tracepoints.
+> Oh, so this goes away without CONFIG_PROVE_LOCKING?
 
-I think those headers are fine. This must also work when ext4 is a module.
+Nothing goes away.  This happens without CONFIG_PROVE_LOCKING active in the kernel.  Given 
+that one CPU is running at 100% I suspect that a spinlock is stuck...
 
--- Steve
-
+Ed
