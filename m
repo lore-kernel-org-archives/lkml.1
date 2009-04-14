@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbZDNS1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZDNS2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757431AbZDNS1n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbZDNS1a
+	id S1758601AbZDNS2E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbZDNS1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:27:30 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:38134 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753210AbZDNS12 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:27:28 -0400
-Subject: [BUILD FAILURE 01/04] Next April 14 : x86 randconfig
-	[kernel/module.c]
+	Tue, 14 Apr 2009 14:27:35 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45644 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757936AbZDNS1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:27:33 -0400
+Subject: [BUILD FAILURE 02/04] Next April 14 : x86 randconfig
+	[drivers/built-in.o cx231xx-audio.c]
 From: Subrata Modak <subrata@linux.vnet.ibm.com>
 Reply-To: subrata@linux.vnet.ibm.com
-To: Ingo Molnar <mingo@elte.hu>, Richard Henderson <rth@twiddle.net>,
-       Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>, srinivasa.deevi@conexant.com,
+       Greg KH <greg@kroah.com>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
        linux-next <linux-next@vger.kernel.org>,
        sachinp <sachinp@linux.vnet.ibm.com>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Alexander Beregalov <a.beregalov@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=utf-8
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
+Content-Type: text/plain
 Organization: IBM
-Date: Tue, 14 Apr 2009 23:57:07 +0530
-Message-Id: <1239733627.5344.69.camel@subratamodak.linux.ibm.com>
+Date: Tue, 14 Apr 2009 23:57:21 +0530
+Message-Id: <1239733641.5344.70.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Observed the following build error:
 ---
-kernel/module.c: In function ‘sys_init_module’:
-kernel/module.c:2398: error: ‘modules_disabled’ undeclared (first use in
-this function)
-kernel/module.c:2398: error: (Each undeclared identifier is reported
-only once
-kernel/module.c:2398: error: for each function it appears in.)
-make[1]: *** [kernel/module.o] Error 1
-make: *** [kernel] Error 2
+LD      .tmp_vmlinux1
+drivers/built-in.o: In function `cx231xx_audio_fini':
+cx231xx-audio.c:(.text+0x1eec59): undefined reference to `snd_card_free'
+drivers/built-in.o: In function `cx231xx_audio_isocirq':
+cx231xx-audio.c:(.text+0x1eeecc): undefined reference to
+`snd_pcm_link_rwlock'
+cx231xx-audio.c:(.text+0x1eef59): undefined reference to
+`snd_pcm_link_rwlock'
+cx231xx-audio.c:(.text+0x1eef8e): undefined reference to
+`snd_pcm_period_elapsed'
+drivers/built-in.o: In function `snd_cx231xx_capture_open':
+cx231xx-audio.c:(.text+0x1ef338): undefined reference to
+`snd_pcm_hw_constraint_integer'
+drivers/built-in.o: In function `cx231xx_audio_init':
+cx231xx-audio.c:(.text+0x1ef476): undefined reference to
+`snd_card_create'
+cx231xx-audio.c:(.text+0x1ef4c3): undefined reference to `snd_pcm_new'
+cx231xx-audio.c:(.text+0x1ef4fa): undefined reference to
+`snd_pcm_set_ops'
+cx231xx-audio.c:(.text+0x1ef555): undefined reference to
+`snd_card_register'
+cx231xx-audio.c:(.text+0x1ef577): undefined reference to `snd_card_free'
+drivers/built-in.o:(.data+0x24354): undefined reference to
+`snd_pcm_lib_ioctl'
+make: *** [.tmp_vmlinux1] Error 1
 ---
 
-Occurs also on x86_64 and PPC64. Fix is available:
-http://patchwork.kernel.org/patch/16535/,
-
-Probably till to make into this tree.
+Patch was already provided. Still to get into this tree:
+http://lkml.org/lkml/2009/4/7/400,
 
 Regards--
 Subrata
