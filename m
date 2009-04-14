@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZDNM17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZDNM30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbZDNM17 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZDNM1q
+	id S1754054AbZDNM30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZDNM3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:27:46 -0400
-Received: from stinky.trash.net ([213.144.137.162]:62076 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbZDNM1p (ORCPT
+	Tue, 14 Apr 2009 08:29:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:2557 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbZDNM3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:27:45 -0400
-Message-ID: <49E48136.5060700@trash.net>
-Date: Tue, 14 Apr 2009 14:27:34 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 14 Apr 2009 08:29:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V7tNRs4QDIN+A45QiedTBYH06HB0TLs+3G1vd9+ThrID9QiuOTYfB/5tnU2cTXooN8
+         CjzHCopUmXEbhtlTC1T6JKa+08cdoscXSawrc0kbCwO5jxrh8z8eYzyhJUwsvJXOmVEN
+         /D9mHtcvdRvwkUxDj9P9s5PslbrCiAkA3X0Xw=
+Date: Tue, 14 Apr 2009 16:29:06 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
+       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+Message-ID: <20090414122906.GA20201@x200.localdomain>
+References: <20090410023207.GA27788@x200.localdomain> <alpine.LFD.2.00.0904100758410.4583@localhost.localdomain> <20090413073925.GB7085@x200.localdomain> <alpine.LFD.2.00.0904131137520.26713@localhost.localdomain>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       paulus@samba.org, mingo@elte.hu, torvalds@linux-foundation.org,
-       laijs@cn.fujitsu.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
-References: <20090411174801.GG6822@linux.vnet.ibm.com>	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>	<20090412173108.GO6822@linux.vnet.ibm.com>	<20090412.181330.23529546.davem@davemloft.net>	<20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam>
-In-Reply-To: <20090413095309.631cf395@nehalam>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904131137520.26713@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> This is an alternative version of ip/ip6/arp tables locking using
-> per-cpu locks.  This avoids the overhead of synchronize_net() during
-> update but still removes the expensive rwlock in earlier versions.
+On Mon, Apr 13, 2009 at 11:39:51AM -0700, Linus Torvalds wrote:
 > 
-> The idea for this came from an earlier version done by Eric Duzamet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  The slow case involves acquiring the locks on
-> all cpu's.
 > 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
+> On Mon, 13 Apr 2009, Alexey Dobriyan wrote:
+> > 
+> > Well, in OpenVZ everything is in kernel/cpt/ and prefixed with "cpt_"
+> > and "rst_".
 > 
-> Tested basic functionality (add/remove/list), but don't have test cases
-> for stress, ip6tables or arptables.
+> So?
+> 
+> We're not merging OpenVZ code _either_.
 
-Thanks Stephen, I'll do some testing with ip6tables.
+This is to give example of other prefixes: cpt_ and rst_
+Are they fine?
 
+> > And I think "cr_" is super nice prefix: it's short, it's C-like,
+> > it reminds about restart part
+> 
+> It does no such thing. THAT'S THE POINT. "cr" means _nothing_ to anybody 
+> else than some CR-specific people, and those people don't even need it!
+> 
+> Look around you. We try to use nicer names. We spell out "cpufreq", we 
+> don't call it "cf".
