@@ -1,77 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZDNPiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZDNPig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbZDNPiU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZDNPht
+	id S1756177AbZDNPig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZDNPhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:37:49 -0400
-Received: from web65513.mail.ac4.yahoo.com ([76.13.9.57]:29335 "HELO
-	web65513.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752178AbZDNPhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:37:47 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Apr 2009 11:37:47 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=Yt/RrPHp3f7NDAG3XPpBLfTgPpvymJVMg5iOwlUHqE6ov9J6kSooxrmfnaP1uOQaf72nDiIDEl9EZg1U/agbxZye2sbrteumycFCcIk88i9UDfBiwXuOTRa4Bk47KVhbq1THOpDQ7YXn7a3ftrnsMw66c+gFM67jJ86H6B9mw4M=;
-Message-ID: <360384.56425.qm@web65513.mail.ac4.yahoo.com>
-X-YMail-OSG: R89pDu0VM1k1g6KMiI82ErX0RgGNKicyBtYdnVoBp_8LECbIUoH9ILBTqndgzcOegaxOkZxaRpmUdF9ygTWWh_w_UX4Xxzf61gt9wFS0ORrTlN8iETNaaNRNIM_CNoOX7v8FmQ1fQYxgfcppONgHmgdlH8pvwuRPC98VmXgOMbiK7nB_oEavyB99Eum67GwAaLVnY.F_m5Z2QhKiJD5njDc4rX7httygNoterIx3sTV1d7YVuu51Ig9pI8rATfABrvhono0KDQ14Z5mVbqty04z8
-X-Mailer: YahooMailWebService/0.7.289.1
-Date: Tue, 14 Apr 2009 08:31:05 -0700 (PDT)
-From: Jerry Wang <jerry18th@yahoo.com>
-Reply-To: jerry18th@yahoo.com
-Subject: linux 2.6.11.1 kernel cross-compiling errors
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Apr 2009 11:37:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41363 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755267AbZDNPhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 11:37:53 -0400
+Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are less
+ or more then expected
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090414134655.GD27163@elte.hu>
+References: <1239711444.3079.13.camel@ht.satnam>
+	 <20090414134655.GD27163@elte.hu>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 21:07:34 +0530
+Message-Id: <1239723454.2966.1.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-04-14 at 15:46 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > This will prepare the report to update cpu_debug
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/include/asm/cpu_debug.h |    1 +
+> >  arch/x86/kernel/cpu/cpu_debug.c  |   12 ++++++++++++
+> >  2 files changed, 13 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
+> > index 2228020..b64da5d 100644
+> > --- a/arch/x86/include/asm/cpu_debug.h
+> > +++ b/arch/x86/include/asm/cpu_debug.h
+> > @@ -187,6 +187,7 @@ enum cpu_processor_bit {
+> >  #define	CPU_ALL			(CPU_INTEL_ALL | CPU_AMD_ALL)
+> >  
+> >  #define MAX_CPU_FILES		512
+> > +#define MIN_CPU_FILES		10
+> >  
+> >  struct cpu_private {
+> >  	unsigned		cpu;
+> > diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+> > index 46e29ab..1c3ebd4 100644
+> > --- a/arch/x86/kernel/cpu/cpu_debug.c
+> > +++ b/arch/x86/kernel/cpu/cpu_debug.c
+> > @@ -838,6 +838,14 @@ static int cpu_init_allreg(unsigned cpu, struct dentry *dentry)
+> >  	return err;
+> >  }
+> >  
+> > +/* Send Report to maintainer if files are less or more then expected */ 
+> > +static void send_report(int files, struct cpuinfo_x86 *cpui)
+> > +{
+> > +	pr_info("Please report \"cpu_debug files %d for %x:%x:%x:%x\" to"
+> > +		" jaswinderrajput@gmail.com\n", files, cpui->x86_vendor,
+> > +		cpui->x86, cpui->x86_model, cpui->x86_mask);
+> 
+> i'd rather see this reported to linux-kernel@vger.kernel.org, plus 
+> please use a WARN_ONCE() instead of a pr_info(). Hitting this is a 
+> bug we want to fix.
+> 
 
-Hi,
+Subject: [PATCH] x86: cpu_debug.c prepare report if files are less or more then expected
 
-I am trying to cross-compile the linux 2.6.11.1 kernel on
-i686 vm for ppc, and I've been getting the following
-errors. Has anyone had this issue before?
+This will prepare the report to update cpu_debug
 
-Thanks,
-Jerry 
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/cpu_debug.h |    1 +
+ arch/x86/kernel/cpu/cpu_debug.c  |   14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
-> In file included from arch/ppc/kernel/asm-offsets.c:13:
-> include/linux/sched.h: In function
-> `arch_pick_mmap_layout':
-> include/linux/sched.h:1174: error: `CONFIG_TASK_SIZE'
-> undeclared (first use in this function)
-> include/linux/sched.h:1174: error: (Each undeclared
-> identifier is reported only once
-> include/linux/sched.h:1174: error: for each function it
-> appears in.)
-> In file included from include/linux/mman.h:5,
->                  from arch/ppc/kernel/asm-offsets.c:19:
-> include/linux/mm.h: In function `lowmem_page_address':
-> include/linux/mm.h:437: error: `CONFIG_KERNEL_START'
-> undeclared (first use in this function)
-> In file included from arch/ppc/kernel/asm-offsets.c:21:
-> include/asm/io.h: In function `virt_to_bus':
-> include/asm/io.h:396: error: `CONFIG_KERNEL_START'
-> undeclared (first use in this function)
-> include/asm/io.h: In function `bus_to_virt':
-> include/asm/io.h:407: error: `CONFIG_KERNEL_START'
-> undeclared (first use in this function)
-> include/asm/io.h: In function `virt_to_phys':
-> include/asm/io.h:420: error: `CONFIG_KERNEL_START'
-> undeclared (first use in this function)
-> include/asm/io.h: In function `phys_to_virt':
-> include/asm/io.h:429: error: `CONFIG_KERNEL_START'
-> undeclared (first use in this function)
-> arch/ppc/kernel/asm-offsets.c: In function `main':
-> arch/ppc/kernel/asm-offsets.c:139: error:
-> `CONFIG_TASK_SIZE' undeclared (first use in this
-> function)
-> make[1]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
-> make: *** [arch/ppc/kernel/asm-offsets.s] Error 2
+diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
+index 2228020..b64da5d 100644
+--- a/arch/x86/include/asm/cpu_debug.h
++++ b/arch/x86/include/asm/cpu_debug.h
+@@ -187,6 +187,7 @@ enum cpu_processor_bit {
+ #define	CPU_ALL			(CPU_INTEL_ALL | CPU_AMD_ALL)
+ 
+ #define MAX_CPU_FILES		512
++#define MIN_CPU_FILES		10
+ 
+ struct cpu_private {
+ 	unsigned		cpu;
+diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+index 46e29ab..71e7f57 100644
+--- a/arch/x86/kernel/cpu/cpu_debug.c
++++ b/arch/x86/kernel/cpu/cpu_debug.c
+@@ -30,6 +30,8 @@
+ #include <asm/apic.h>
+ #include <asm/desc.h>
+ 
++#define EMAIL	"<linux-kernel@vger.kernel.org>, <jaswinderrajput@gmail.com>"
++
+ static DEFINE_PER_CPU(struct cpu_cpuX_base, cpu_arr[CPU_REG_ALL_BIT]);
+ static DEFINE_PER_CPU(struct cpu_private *, priv_arr[MAX_CPU_FILES]);
+ static DEFINE_PER_CPU(unsigned, cpu_modelflag);
+@@ -838,6 +840,14 @@ static int cpu_init_allreg(unsigned cpu, struct dentry *dentry)
+ 	return err;
+ }
+ 
++/* Prepare report for LKML and maintainer if files count are inappropriate */
++static void send_report(int files, struct cpuinfo_x86 *cpui)
++{
++	WARN_ONCE(1, "Please report \"cpu_debug files %d for %x:%x:%x:%x\" to"
++		  " %s\n", files, cpui->x86_vendor, cpui->x86, cpui->x86_model,
++		  cpui->x86_mask, EMAIL);
++}
++
+ static int cpu_init_cpu(void)
+ {
+ 	struct dentry *cpu_dentry = NULL;
+@@ -861,9 +871,13 @@ static int cpu_init_cpu(void)
+ 
+ 		pr_info("cpu%d(%d) debug files %d\n",
+ 			cpu, nr_cpu_ids, per_cpu(cpu_priv_count, cpu));
++		if ((per_cpu(cpu_priv_count, cpu) < MIN_CPU_FILES))
++			send_report(per_cpu(cpu_priv_count, cpu), cpui);
++
+ 		if (per_cpu(cpu_priv_count, cpu) > MAX_CPU_FILES) {
+ 			pr_err("Register files count %d exceeds limit %d\n",
+ 				per_cpu(cpu_priv_count, cpu), MAX_CPU_FILES);
++			send_report(per_cpu(cpu_priv_count, cpu), cpui);
+ 			per_cpu(cpu_priv_count, cpu) = MAX_CPU_FILES;
+ 			err = -ENFILE;
+ 		}
+-- 
+1.6.0.6
 
 
-      
+
