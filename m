@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbZDNSsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbZDNSvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbZDNSsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbZDNSsQ
+	id S1759050AbZDNSvm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbZDNSvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:48:16 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55718 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757307AbZDNSsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:48:15 -0400
-Subject: Re: [PATCH 26/30] cr: mount namespace
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, serue@us.ibm.com, mingo@elte.hu,
-       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090410024004.GA27788@x200.localdomain>
-References: <20090410024004.GA27788@x200.localdomain>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 11:48:10 -0700
-Message-Id: <1239734890.32604.102.camel@nimitz>
+	Tue, 14 Apr 2009 14:51:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49754 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752359AbZDNSvc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:51:32 -0400
+Date: Tue, 14 Apr 2009 11:46:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: knikanth@suse.de, jens.axboe@oracle.com, neilb@suse.de,
+       linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       shaggy@austin.ibm.com, xfs-masters@oss.sgi.com
+Subject: Re: [PATCH 0/6] Handle bio_alloc failure
+Message-Id: <20090414114604.2d552cbb.akpm@linux-foundation.org>
+In-Reply-To: <20090414181632.GI955@mit.edu>
+References: <200904141636.26557.knikanth@novell.com>
+	<20090414111838.GG5178@kernel.dk>
+	<200904141711.20378.knikanth@suse.de>
+	<20090414181632.GI955@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-10 at 06:40 +0400, Alexey Dobriyan wrote:
-> 
-> +struct mnt_namespace *alloc_mnt_ns(void)
-> +{
-> +       struct mnt_namespace *mnt_ns;
-> +
-> +       mnt_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
-> +       if (mnt_ns) {
-> +               atomic_set(&mnt_ns->count, 1);
-> +               mnt_ns->root = NULL;
-> +               INIT_LIST_HEAD(&mnt_ns->list);
-> +               init_waitqueue_head(&mnt_ns->poll);
-> +               mnt_ns->event = 0;
-> +       }
-> +       return mnt_ns;
-> +}
-> +
->  /*
->   * Allocate a new namespace structure and populate it with contents
->   * copied from the namespace of the passed in task structure.
-> @@ -1981,15 +1996,10 @@ static struct mnt_namespace *dup_mnt_ns(struct
-> mnt_namespace *mnt_ns,
->         struct vfsmount *rootmnt = NULL, *pwdmnt = NULL;
->         struct vfsmount *p, *q;
-> 
-> -       new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
-> +       new_ns = alloc_mnt_ns();
->         if (!new_ns)
->                 return ERR_PTR(-ENOMEM);
-> 
-> -       atomic_set(&new_ns->count, 1);
-> -       INIT_LIST_HEAD(&new_ns->list);
-> -       init_waitqueue_head(&new_ns->poll);
-> -       new_ns->event = 0;
-> -
->         down_write(&namespace_sem);
->         /* First pass: copy the tree topology */
->         new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
-> --- a/include/linux/cr.h
+On Tue, 14 Apr 2009 14:16:32 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-This bit should be broken out, and stuck at the beginning of the series.
+> In include/linux/page_alloc.h,
+> __GFP_NOFAIL is documented as "will never fail", but it says
+> absolutely nothing about __GFP_WAIT.
 
--- Dave
+In the present implementation, a __GFP_WAIT allocation for order <=3
+will only fail if the caller was oom-killed.
+
+Which raises the question "what happens when a mempool_alloc() caller
+gets oom-killed?".
+
+Seems that it will loop around in mempool_alloc() doing weak attempts
+to allocate memory, not doing direct reclaim while waiting for someone
+else to free something up.  hm.  I guess it'll recover eventually.
 
