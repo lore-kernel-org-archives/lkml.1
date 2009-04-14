@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbZDNQwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZDNQxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757655AbZDNQwV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZDNQwE
+	id S1757433AbZDNQxJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZDNQwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:52:04 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:9855 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbZDNQwB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:52:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ei63GrtCBZAWsT16RCeNkK0JifI2F6nxFcwEpMsgSaiZkXDMaJ3VpvErM/QPh+bOEh
-         A/jjt87iuhogqOFmdlJU9TZ940lyJqCe1dRjtAAJeqik6OWVj/eYE/sk9mqmQCYaJE8k
-         LgpBhDDTSI2xxWso2g4zR7KaSmJvzkVaefvi0=
+	Tue, 14 Apr 2009 12:52:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41729 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbZDNQwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:52:53 -0400
+Date: Tue, 14 Apr 2009 18:52:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>
+Subject: Re: [PATCH -tip] x86: k8.h reference to node in node_to_k8_nb_misc
+	for !CONFIG_K8_NB
+Message-ID: <20090414165241.GB2089@elte.hu>
+References: <1239727500.2966.16.camel@ht.satnam>
 MIME-Version: 1.0
-In-Reply-To: <49E4B0A5.70404@cosmosbay.com>
-References: <20090411174801.GG6822@linux.vnet.ibm.com>
-	 <18913.53699.544083.320542@cargo.ozlabs.ibm.com>
-	 <20090412173108.GO6822@linux.vnet.ibm.com>
-	 <20090412.181330.23529546.davem@davemloft.net>
-	 <20090413040413.GQ6822@linux.vnet.ibm.com>
-	 <20090413095309.631cf395@nehalam> <49E48136.5060700@trash.net>
-	 <49E49C65.8060808@cosmosbay.com> <20090414074554.7fa73e2f@nehalam>
-	 <49E4B0A5.70404@cosmosbay.com>
-Date: Wed, 15 Apr 2009 00:51:59 +0800
-Message-ID: <b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com>
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       Patrick McHardy <kaber@trash.net>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, paulus@samba.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1239727500.2966.16.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 11:49 PM, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Stephen Hemminger a �crit :
->> On Tue, 14 Apr 2009 16:23:33 +0200
->> Eric Dumazet <dada1@cosmosbay.com> wrote:
->>
->>> Patrick McHardy a �crit :
->>>> Stephen Hemminger wrote:
->>>>> This is an alternative version of ip/ip6/arp tables locking using
->>>>> per-cpu locks. �This avoids the overhead of synchronize_net() during
->>>>> update but still removes the expensive rwlock in earlier versions.
 
-Tested. Loaded as fast as 2.6.29.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> Here is an updated patch ontop of yours, with the smp_wmb() in xt_replace_table() :
+> Add reference to node in node_to_k8_nb_misc for !CONFIG_K8_NB to make compiler happy.
+> 
+> So fixes compiler warnings:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+>   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+>   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/include/asm/k8.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
+> index c23b3d1..c81e4ee 100644
+> --- a/arch/x86/include/asm/k8.h
+> +++ b/arch/x86/include/asm/k8.h
+> @@ -16,7 +16,7 @@ extern int k8_scan_nodes(unsigned long start, unsigned long end);
+>  #define node_to_k8_nb_misc(node) \
+>  	(node < num_k8_northbridges) ? k8_northbridges[node] : NULL
+>  #else
+> -#define node_to_k8_nb_misc(node) NULL
+> +#define node_to_k8_nb_misc(node) (node) ? NULL : NULL
+>  #endif
 
-Tested as well. Loaded as fast as 2.6.29.
+Ugh, that's very ugly. I gave you a proper solution:
 
-Thanks,
-Jeff.
+>> The typical way to solve this is to add a dummy:
+>> 
+>> 	(void)(cpu)
+>> 
+>> use to the 'cpu' parameter to the macro definition - or, 
+>> (which is a much better solution), to convert it to an 
+>> inline function.
+
+	Ingo
