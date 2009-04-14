@@ -1,138 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbZDNEva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbZDNEzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751949AbZDNEva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 00:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZDNEvW
+	id S1753741AbZDNEzo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 00:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbZDNEzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 00:51:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:61176 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbZDNEvU (ORCPT
+	Tue, 14 Apr 2009 00:55:35 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:36169 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbZDNEzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 00:51:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=H7H8oFaf3EeYc06nT8w3BRYbSbfzW1oFDd1SlljWg+yI0EeKO0AkqqkyWv04YfFr3S
-         sceNqz3Po6ygV8USPPvz15tzh+S42hbxHqB2Y+9++aJMztrhUgSu589MIhA1i3LB8sDv
-         yG+e3mJADFHsirkpTKYrbJv57F9CB5LNPBpAI=
-Date: Tue, 14 Apr 2009 08:51:09 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Alessio Igor Bogani <abogani@texware.it>, Jeff Mahoney <jeffm@suse.com>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/3] kill-the-BKL/reiserfs: reiserfs fixes
-Message-ID: <20090414045109.GA26908@orion>
-References: <1239680065-25013-1-git-send-email-fweisbec@gmail.com>
+	Tue, 14 Apr 2009 00:55:35 -0400
+From: Gautham R Shenoy <ego@in.ibm.com>
+Subject: [RFC PATCH v2 0/2] sched: Nominate a power-efficient ILB
+To: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, "Balbir Singh" <balbir@in.ibm.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Date: Tue, 14 Apr 2009 10:25:25 +0530
+Message-ID: <20090414045356.7645.33369.stgit@sofia.in.ibm.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239680065-25013-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 05:34:22AM +0200, Frederic Weisbecker wrote:
-> Ingo,
-> 
-> This small patchset fixes some deadlocks I've faced after trying
-> some pressures with dbench on a reiserfs partition.
-> 
-> There is still some work pending such as adding some checks to ensure we
-> _always_ release the lock before sleeping, as you suggested.
-> Also I have to fix a lockdep warning reported by Alessio Igor Bogani.
-> And also some optimizations....
-> 
-> Thanks,
-> Frederic.
-> 
-> Frederic Weisbecker (3):
->   kill-the-BKL/reiserfs: provide a tool to lock only once the write lock
->   kill-the-BKL/reiserfs: lock only once in reiserfs_truncate_file
->   kill-the-BKL/reiserfs: only acquire the write lock once in
->     reiserfs_dirty_inode
-> 
->  fs/reiserfs/inode.c         |   10 +++++++---
->  fs/reiserfs/lock.c          |   26 ++++++++++++++++++++++++++
->  fs/reiserfs/super.c         |   15 +++++++++------
->  include/linux/reiserfs_fs.h |    2 ++
->  4 files changed, 44 insertions(+), 9 deletions(-)
-> 
+Hi,
 
-Hi
+This is the second iteration of the patchset which aims at improving
+the idle-load balancer nomination logic, by taking the system topology
+into consideration.
 
-The same test - dbench on reiserfs on loop on sparc64.
+Changes from v1 (found here: http://lkml.org/lkml/2009/4/2/246)
+o Fixed the kernel-doc style comments.
+o Renamed a variable to better reflect it's usage.
 
-[ INFO: possible circular locking dependency detected ]
-2.6.30-rc1-00457-gb21597d-dirty #2
--------------------------------------------------------
-dbench/2493 is trying to acquire lock:
- (&REISERFS_SB(s)->lock){+.+.+.}, at: [<000000001003f7a8>] reiserfs_write_lock+0x24/0x44 [reiserfs]
+Background
+======================================
+An idle-load balancer is an idle-cpu which does not turn off it's sched_ticks
+and performs load-balancing on behalf of the other idle CPUs. Currently,
+this idle load balancer is nominated as the first_cpu(nohz.cpu_mask)
 
-but task is already holding lock:
- (&journal->j_flush_mutex){+.+...}, at: [<0000000010036770>] flush_journal_list+0xa0/0x830 [reiserfs]
+The drawback of the current method is that the CPU numbering in the
+cores/packages need not necessarily be sequential. For example, on a
+two-socket, Quad core system, the CPU numbering can be as follows:
 
-which lock already depends on the new lock.
+|-------------------------------|  |-------------------------------|
+|               |               |  |               |               |
+|     0         |      2        |  |     1         |      3        |
+|-------------------------------|  |-------------------------------|
+|               |               |  |               |               |
+|     4         |      6        |  |     5         |      7        |
+|-------------------------------|  |-------------------------------|
+
+Now, the other power-savings settings such as the sched_mc/smt_power_savings
+and the power-aware IRQ balancer try to balance tasks/IRQs by taking
+the system topology into consideration, with the intention of keeping
+as many "power-domains" (cores/packages) in the low-power state.
+
+The current idle-load-balancer nomination does not necessarily align towards
+this policy. For eg, we could be having tasks and interrupts largely running
+on the first package with the intention of keeping the second package idle.
+Hence, CPU 0 may be busy. The first_cpu in the nohz.cpu_mask happens to be CPU1,
+which in-turn becomes nominated as the idle-load balancer. CPU1 being from
+the 2nd package, would in turn prevent the 2nd package from going into a
+deeper sleep state.
+
+Instead the role of the idle-load balancer could have been assumed by an
+idle CPU from the first package, thereby helping the second package go
+completely idle.
+
+This patchset has been tested with 2.6.30-rc1 on a Two-Socket
+Quad core system with the topology as mentioned above.
+
+|----------------------------------------------------------------------------|
+|       With Patchset + sched_mc_power_savings = 1                           |
+|----------------------------------------------------------------------------|
+|make -j2 options| time taken |  LOC timer interrupts |  LOC timer interrupts|
+|                |            |  on Package 0         |  on Package 1        |
+|----------------------------------------------------------------------------|
+|taskset -c 0,2  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
+|                | 227.234s   |  56969    | 57080     | 1003      |  588     |
+|                |            |----------------------------------------------|
+|                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
+|                |            |  55995    | 703       | 583       |  600     |
+|----------------------------------------------------------------------------|
+|taskset -c 1,3  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
+|                | 227.136s   |  1109     | 611       | 57074     |  57091   |
+|                |            |----------------------------------------------|
+|                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
+|                |            |  709      | 637       | 56133     |  587     |
+|----------------------------------------------------------------------------|
+
+We see here that the idle load balancer is chosen from the package which is
+busy. In the first case, it's CPU4 and in the second case it's CPU5.
+
+|----------------------------------------------------------------------------|
+|       With Patchset + sched_mc_power_savings = 1                           |
+|----------------------------------------------------------------------------|
+|make -j2 options| time taken |  LOC timer interrupts |  LOC timer interrupts|
+|                |            |  on Package 0         |  on Package 1        |
+|----------------------------------------------------------------------------|
+|taskset -c 0,2  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
+|                | 228.786s   |  59094    | 61994     | 13984     |  43652   |
+|                |            |----------------------------------------------|
+|                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
+|                |            |  1827     | 734       | 748       |  760     |
+|----------------------------------------------------------------------------|
+|taskset -c 1,3  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
+|                | 228.435s   |  57013    | 876       | 58596     |  61633   |
+|                |            |----------------------------------------------|
+|                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
+|                |            |  772      | 1133      | 850       |  910     |
+|----------------------------------------------------------------------------|
+
+Here, we see that the idle load balancer is chosen from the other package,
+despite choosing sched_mc_power_savings = 1. In the first case, we have
+CPU1 and CPU3 sharing the responsibility among themselves. In the second case,
+it's CPU0 and CPU6, which assume that role.
+
+---
+
+Gautham R Shenoy (2):
+      sched: Nominate a power-efficient ilb in select_nohz_balancer()
+      sched: Nominate idle load balancer from a semi-idle package.
 
 
-the existing dependency chain (in reverse order) is:
+ kernel/sched.c |  145 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 135 insertions(+), 10 deletions(-)
 
--> #1 (&journal->j_flush_mutex){+.+...}:
-       [<00000000004775c8>] lock_acquire+0x5c/0x74
-       [<00000000006fa73c>] mutex_lock_nested+0x48/0x380
-       [<0000000010037314>] kupdate_transactions+0x30/0x328 [reiserfs]
-       [<00000000100376d8>] flush_used_journal_lists+0xcc/0xf0 [reiserfs]
-       [<0000000010038508>] do_journal_end+0xe0c/0x127c [reiserfs]
-       [<0000000010038a00>] journal_end_sync+0x88/0x9c [reiserfs]
-       [<0000000010039370>] reiserfs_commit_for_inode+0x180/0x208 [reiserfs]
-       [<0000000010013d2c>] reiserfs_sync_file+0x54/0xb8 [reiserfs]
-       [<00000000004d5d64>] vfs_fsync+0x6c/0xa0
-       [<00000000004d5dc0>] do_fsync+0x28/0x44
-       [<00000000004d5e18>] SyS_fsync+0x14/0x28
-       [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
-
--> #0 (&REISERFS_SB(s)->lock){+.+.+.}:
-       [<00000000004775c8>] lock_acquire+0x5c/0x74
-       [<00000000006fa73c>] mutex_lock_nested+0x48/0x380
-       [<000000001003f7a8>] reiserfs_write_lock+0x24/0x44 [reiserfs]
-       [<0000000010036b10>] flush_journal_list+0x440/0x830 [reiserfs]
-       [<0000000010036c1c>] flush_journal_list+0x54c/0x830 [reiserfs]
-       [<00000000100376ec>] flush_used_journal_lists+0xe0/0xf0 [reiserfs]
-       [<0000000010038508>] do_journal_end+0xe0c/0x127c [reiserfs]
-       [<0000000010038a00>] journal_end_sync+0x88/0x9c [reiserfs]
-       [<0000000010039370>] reiserfs_commit_for_inode+0x180/0x208 [reiserfs]
-       [<0000000010013d2c>] reiserfs_sync_file+0x54/0xb8 [reiserfs]
-       [<00000000004d5d64>] vfs_fsync+0x6c/0xa0
-       [<00000000004d5dc0>] do_fsync+0x28/0x44
-       [<00000000004d5e18>] SyS_fsync+0x14/0x28
-       [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
-
-other info that might help us debug this:
-
-3 locks held by dbench/2493:
- #0:  (&sb->s_type->i_mutex_key#12){+.+.+.}, at: [<00000000004d5d50>] vfs_fsync+0x58/0xa0
- #1:  (&journal->j_mutex){+.+...}, at: [<00000000100377d4>] do_journal_end+0xd8/0x127c [reiserfs]
- #2:  (&journal->j_flush_mutex){+.+...}, at: [<0000000010036770>] flush_journal_list+0xa0/0x830 [reiserfs]
-
-stack backtrace:
-Call Trace:
- [00000000004754a4] print_circular_bug_tail+0xfc/0x10c
- [0000000000476d1c] __lock_acquire+0x12f0/0x1b40
- [00000000004775c8] lock_acquire+0x5c/0x74
- [00000000006fa73c] mutex_lock_nested+0x48/0x380
- [000000001003f7a8] reiserfs_write_lock+0x24/0x44 [reiserfs]
- [0000000010036b10] flush_journal_list+0x440/0x830 [reiserfs]
- [0000000010036c1c] flush_journal_list+0x54c/0x830 [reiserfs]
- [00000000100376ec] flush_used_journal_lists+0xe0/0xf0 [reiserfs]
- [0000000010038508] do_journal_end+0xe0c/0x127c [reiserfs]
- [0000000010038a00] journal_end_sync+0x88/0x9c [reiserfs]
- [0000000010039370] reiserfs_commit_for_inode+0x180/0x208 [reiserfs]
- [0000000010013d2c] reiserfs_sync_file+0x54/0xb8 [reiserfs]
- [00000000004d5d64] vfs_fsync+0x6c/0xa0
- [00000000004d5dc0] do_fsync+0x28/0x44
- [00000000004d5e18] SyS_fsync+0x14/0x28
- [0000000000406154] linux_sparc_syscall32+0x34/0x40
+-- 
+Thanks and Regards
+gautham.
