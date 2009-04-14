@@ -1,65 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZDNPP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZDNPTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbZDNPP4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 11:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZDNPPq
+	id S1756128AbZDNPTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 11:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZDNPTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 11:15:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46659 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbZDNPPp (ORCPT
+	Tue, 14 Apr 2009 11:19:03 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:60174 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbZDNPTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 11:15:45 -0400
-Date: Tue, 14 Apr 2009 08:17:28 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-acpi@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [BISECTED] EEE PC hangs when booting off battery
-Message-ID: <20090414081728.10de978a@infradead.org>
-In-Reply-To: <200904140859.02188.bjorn.helgaas@hp.com>
-References: <49E065CF.6040408@tuffmail.co.uk>
-	<49E44415.1040500@tuffmail.co.uk>
-	<49E456B5.6030006@tuffmail.co.uk>
-	<200904140859.02188.bjorn.helgaas@hp.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 14 Apr 2009 11:19:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xsKaJHqiuNmEy2/92aXXUpvKL16QfRmviASHX04GJqUCyDCdNMwpRuldfcEpEklKWg
+         CKnorbVLFBcs5KpSNasU8v4UJN9sat7pmew9NWQ8Fs6Yyl6KVfIgMVCEo6z0XUyiEZWl
+         wjhWnSdeXBURNNiprusQjjun0ys7aV7ZvC6xU=
+Date: Tue, 14 Apr 2009 19:19:12 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
+       mingo@elte.hu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+Message-ID: <20090414151912.GB27461@x200.localdomain>
+References: <20090410023207.GA27788@x200.localdomain> <49E4233C.3000108@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E4233C.3000108@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 08:59:01 -0600
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-
-> I can't help with the real problem of why the asynchronous battery
-> init causes the hang.
-
-that got fixed already for the module case.
-
+On Tue, Apr 14, 2009 at 01:46:36AM -0400, Oren Laadan wrote:
+> Some meta comments about this patch set:
 > 
-> But I do object to the magic makefile ordering change in that commit.
-> Nobody reading the makefile can tell why battery is down at the end,
-> and moving it apparently slows down boot significantly. 
+> * Patches 1-9 are cleanups, unrelated to checkpoint/restart. They
+> deserve a separate thread.
 
-for all cases I've seen it actually speeds it up, because the battery
-now runs concurrently with the disk probe.
+They will be sent separatedly.
 
-> So the
-> ordering change just feels like a band-aid that covers up a place
-> where ACPI could be improved.
+> * You barely take locks or reference counts to objects that you
+> later refer to. What if something really bad happens ?
 
-the reason for the move is that both the battery and other pieces take
-the big acpi lock; which defeats the parallelism. So the battery needs
-to happen at the end instead.
+I'm thinking right now what is needed and isn't.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Tasks are frozen so unmap VMA in the middle of dump can't happen.
+
+Refcounts aren't needed  because tasks are frozen but alive and pin
+everything needed. This is during dump part.
+
+What is needed is impossibility of a task to dissapear in frozen state.
+
+On restart, I probably leak refcount to every object, but haven't
+checked just it.
+
+> * (contd) If you don't take locks, then you at the very least need
+> to rely on the container remaining frozen for the duration of the
+> operation (during checkpoint).
+
+> * (contd) Still with locks and references, during restart you can't
+> even freeze the container, so need extra logic to prevent bad things
+> (e.g. OOM killer, signal or ptrace from parent container etc).
+> 
+> * What is the rationale behind doing the freeze/unfreeze from within
+> sys_checkpoint/sys_restart ?   Instead of you let userspace do it
+> (and only verify in kernel) you gain, again, flexibility. For example,
+> you want to also snapshot the filesystem, then userspace will do
+> something like:  freeze container -> snapshot filesystem -> checkpoint
+> -> thaw container.
+
+This is incomplete part. But, yes, freeze, dump, thaw/kill as separate
+actions make sense.
+
+	checkpoint(CR_CPT_FREEZE);
+	[rsync fs]
+	checkpoint(CR_CPT_DUMP|CR_CPT_KILL);
+
+with check that CR_CPT_THAW doesn't happen during dump.
+
+> * A plethora of "FIXME" comments ...
+> 
+> Alexey Dobriyan wrote:
+> > This is to show how we see C/R and to provoke discussion on number of
+> > important issues (mounts, ...).
+> 
+> Quoting your patch:
+> ---
+> This is one big FIXME:
+> 	What to do with overmounted files?
+> 	What to do with mounts at all, who should restore them?
+> 
+> just restore something to not oops on task exit
+
+This is just a skeleton for mnt_ns checkpoint, not seriously suggested
+to merge it.
+
+> > This is small part of long-awaited to be cleanuped code.
+> > 
+> > It's able to restore busyloop on i386 and x86_64 and restore i386
+> > busyloop on x86_64. It wasn't tested much more than that.
+> 
+> Oh .. I really wish you'd sent a x86_64 patch our way, too ;)
+> 
+> > 
+> > I'm currently starting formal testsuite, otherwise it's whack-a-mole
+> > game and formal TODO list (a huge one).
+> > 
+> 
+> So I'm still struggling to see the major different in the approaches
+> that would justify throwing away our hard worked, reviewed, tested
+> and functional code, and take this - similar in design, largely
+> incomplete and unreviewed code.
