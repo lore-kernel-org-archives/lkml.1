@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbZDNNg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbZDNNji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbZDNNg7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 09:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZDNNgt
+	id S1755790AbZDNNji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 09:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZDNNj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 09:36:49 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:35435 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbZDNNgs (ORCPT
+	Tue, 14 Apr 2009 09:39:26 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:42531 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbZDNNjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 09:36:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=SqNtgjLW2zxHkzeMXKMjoAMT/sqFh4z0vSNzY7Vt6cXels3yRQS2dB/wCHbz5Wi1Tc
-         bnJ59g+f47bEOjEEOAkdgqifqX7jg6s/n0YrnxuQT7+O8n9V8JwmnLn6c7Pjywl86htU
-         PaHJLoTjO3V5ksV8lksLPb8Ook/6aq1ByNHHk=
+	Tue, 14 Apr 2009 09:39:25 -0400
 MIME-Version: 1.0
-Reply-To: alan-jenkins@tuffmail.co.uk
-In-Reply-To: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com>
-References: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com>
-Date: Tue, 14 Apr 2009 14:36:46 +0100
-Message-ID: <9b2b86520904140636x1971b44g898c29e8b0904396@mail.gmail.com>
-Subject: Re: Fast testing
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Cyrill Gorcunov <gorcunov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18916.37351.872568.757026@stoffel.org>
+Date: Tue, 14 Apr 2009 09:38:47 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: "John Stoffel" <john@stoffel.org>, Jarek Poplawski <jarkao2@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
+In-Reply-To: <20090413174105.b03a1f19.zaitcev@redhat.com>
+References: <18906.49779.243047.207639@stoffel.org>
+	<20090407120022.GA6519@ff.dom.local>
+	<18907.28788.965069.573489@stoffel.org>
+	<20090407130403.e0061a8d.zaitcev@redhat.com>
+	<18908.42166.404232.721757@stoffel.org>
+	<20090408232344.afed8103.zaitcev@redhat.com>
+	<18909.65347.234817.29689@stoffel.org>
+	<20090413174105.b03a1f19.zaitcev@redhat.com>
+X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/14/09, Dragoslav Zaric <dragoslav.zaric.kd@gmail.com> wrote:
-> Hello,
->
-> I have question regarding fast testing of some change in some kernel
-> source file. Since rebooting is a long process, there must be way to
-> test some change faster [of course only if source file is not some boot
-> connected file, but maybe this is also doable].
->
-> This is question:
->
-> When system is running, file that drives the system is "vmlinux" executable
-> and it is located in "/" or "/boot" folder.
+>>>>> "Pete" == Pete Zaitcev <zaitcev@redhat.com> writes:
 
-Nope.
+Pete> On Thu, 9 Apr 2009 09:59:31 -0400, "John Stoffel" <john@stoffel.org> wrote:
+>> Here's a dmesg of bootup:
 
-Kernel code (and data) is not demand-paged.  The kernel image is fully
-loaded into memory at boot-time.  Changing /boot/vmlinuz will have no
-effect on the running kernel.  And there are several other reasons why
-what you describe would not work.
+>> [    0.000000] Linux version 2.6.29.1 (john@sail) (gcc version 4.3.3 (Ubuntu 4.3.3-5ubuntu4) ) #24 SMP PREEMPT Tue Apr 7 11:30:52 EDT 2009
+>> [    0.000999] Checking aperture...
+>> [    0.000999] No AGP bridge found
+>> [    0.000999] Node 0: aperture @ 20000000 size 32 MB
+>> [    0.000999] Aperture pointing to e820 RAM. Ignoring.
+>> [    0.000999] Your BIOS doesn't leave a aperture memory hole
+>> [    0.000999] Please enable the IOMMU option in the BIOS setup
+>> [    0.000999] This costs you 64 MB of RAM
+>> [    0.000999] Mapping aperture over 65536 KB of RAM @ 20000000
 
-What you can do is compile some code as a module, and remove and
-re-insert it to apply changes.  This doesn't work for core code or
-your main disk driver though :-).
+>> [ 1396.271782] BUG: unable to handle kernel paging request at ffff880020a15cc0
 
-Alan
+Pete> So 20a15000 is in the aperture. Oh well, I screwed up. I meant
+Pete> to check for this back in 2006 but forgot, and miraclously it
+Pete> worked until now.
+
+Pete> Here's the problem:
+
+Pete> 	pg = phys_to_page(dma_addr);
+Pete> 	map = kmap_atomic(pg, KM_IRQ0);
+Pete> 	offset = mon_copy_to_buff(rp, offset, map + page_off, step_len);
+Pete> 	kunmap_atomic(map, KM_IRQ0);
+
+Pete> Obviously we don't want the page that's overlayed by the
+Pete> aperture, but the page where IOMMU is pointing.
+
+Thanks for finding this!  I was working on getting 2.6.25 built and
+running, but it hates my Forcedeth ethernet ports and won't bring them
+up, which complicated testing immensely.  It's tough when your home
+directory is on NFS and the network is down...
+
+I'm happy to test any patches you have.
+
+Thanks,
+John
+
