@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZDNW1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbZDNW2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbZDNW1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 18:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZDNW1R
+	id S1755912AbZDNW2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 18:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZDNW2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 18:27:17 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:37289 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbZDNW1P (ORCPT
+	Tue, 14 Apr 2009 18:28:45 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:34856 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbZDNW2o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 18:27:15 -0400
-Message-ID: <49E50DC4.3080108@ovro.caltech.edu>
-Date: Tue, 14 Apr 2009 15:27:16 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-CC: Ira Snyder <iws@ovro.caltech.edu>, Arnd Bergmann <arnd@arndb.de>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-References: <20090224000002.GA578@ovro.caltech.edu> <fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com> 	<49E4FED0.1020003@ovro.caltech.edu> <fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com> 	<49E505B3.5070005@ovro.caltech.edu> <fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
-In-Reply-To: <fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 14 Apr 2009 15:27:15 -0700 (PDT)
+	Tue, 14 Apr 2009 18:28:44 -0400
+Subject: TRACE_BRANCH_PROFILING breaks gcc warnings
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-uJnmUmClaXCFiLwmfi1p"
+Date: Wed, 15 Apr 2009 00:28:10 +0200
+Message-Id: <1239748090.4205.26.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Grant,
 
-> Hmmm, I hadn't thought about this.  I was intending to use the
-> Virtex's memory region for all virtio, but if I can allocate memory
-> regions on both sides of the PCI bus, then that may be best.
+--=-uJnmUmClaXCFiLwmfi1p
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Sounds like you can experiment and see what works best :)
+With TRACE_BRANCH_PROFILING enabled you get "dummy may be used
+uninitialised" with code like the following (and gcc 4.3.3):
 
->> If you use
->> a PCI Target only core, then the MPC5200 DMA controller
->> will have to do all the work, and read transfers might
->> be slightly less efficient.
-> 
-> I'll definitely intend to enable master mode on the Xilinx PCI controller.
+void *dummy, *c;
 
-Since you understand the lingo, you clearly understand
-there are core differences :)
+if (a && (dummy =3D b()))
+	c =3D dummy;
 
->> Our target boards (PowerPC) live in compactPCI backplanes
->> and talk to x86 boards that do not have DMA controllers.
->> So the PCI target board DMA controllers are used to
->> transfer data efficiently to the x86 host (writes)
->> and less efficiently from the host to the boards
->> (reads). Our bandwidth requirements are 'to the host',
->> so we can live with the asymmetry in performance.
-> 
-> Fortunately I don't have very high bandwidth requirements for the
-> first spin, so I have some room to experiment.  :-)
+Therefore, allyesconfig has become useless for looking at warnings.
 
-Yes, in theory you have enough bandwidth ... then a
-few features are added, the PCI core is not quite as
-fast as advertised, etc etc :)
+:(
 
-Cheers,
-Dave
+johannes
+
+
+--=-uJnmUmClaXCFiLwmfi1p
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ5Q32AAoJEKVg1VMiehFYRvQQAKoCHL8WfsdklUF2tnPlbcoY
+ADXuK4ilq4UlaFjCdG+90RGL8s72fNE3q3i/kqI1eI1QrGgc9qiTDGitYew/gw5T
+oZwf7nFefDDD9KAKWP36sUlaOR71ySmijzsIScTugBeuxlYRUvmnPfrkH07va3wb
+X+Lk8qAM3RyNzI3ObbWK+eoDxwkdf4oSPLb3vZc7vCHkQmjpgSozwQAtwhleG/b/
+FKBympm/FPaiezve9PufRFgGVatB8p3cK6SP0c2UzN4SrYW1X33uOSHTpmKXkxSk
+BHZyEYGOUsLoW1oDrPsvKwWRrSzmnQ2K1Af9dhCQaEG6cJistDyJ0nwRtUzCPTSF
+siTD2awa6prva/uZTNhYYCHu+txp8Otw4IjbvAz7hgbHwLKExQ93+G6HSZflOPT1
+0zqpqg30bQclhRGMPVXFaDn3SGF58aYx9l4mSPQRjaDbUDcNTAaxdpGdbNhrE6F3
+cIraqO8IEcH/q42Z5i2pcyNS95R337UTEQo251veLEoQlsFabOQcTTNxNrkisdqD
+cmRW+49FyN/jsWM16H5o5DN3lAltFuLjRD0ORyaIRkjrobYeyvF9icZJ4PiYB5/S
+4IMpI+kbACUW1/uMVqL6/Ms8m1fDiXGUB8mEOr5GMz1uM1giKS3z6N9PlXRP19CJ
+ocoINDpuPDjCYoBpsyOb
+=PBW+
+-----END PGP SIGNATURE-----
+
+--=-uJnmUmClaXCFiLwmfi1p--
+
