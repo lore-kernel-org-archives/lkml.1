@@ -1,128 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZDNMZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZDNM17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZDNMZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 08:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZDNMZU
+	id S1755778AbZDNM17 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 08:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZDNM1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 08:25:20 -0400
-Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:25453 "HELO
-	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753988AbZDNMZT (ORCPT
+	Tue, 14 Apr 2009 08:27:46 -0400
+Received: from stinky.trash.net ([213.144.137.162]:62076 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbZDNM1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 08:25:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=b/S+G9aAzCt8uqmBltc3vJQNA3716plEVeTsxRMkQPodp1JDZsJKRfEXlnuM30McvDj946zAYr9ODUEvDLvi9kafDX8MHz1RkU9NH01sfKqnReG0sOWUhRHD8uP3ulnYn5dpZd/w3trdKAEaRWkzbDT1+1qC59kw4pGZ2hmaB9w=  ;
-X-YMail-OSG: ROSHoFMVM1kz91BdgKMnqnwloE6JHMUd0_2sqd8XuNtEu8_pZ58FNpwqjdeMYDfOXvXWfjQptd97PvGB2hLuOaIya4.3LpiPaba.j6IGNjf6OoELLnDXRGte3uSrq4nB__C7hcrOGylMccWSuJbFgsDakbsEUhjirbcLjFJoE003B3_5udzlK9FCI8yCMAawQS5NM6YAk9usgTHnyKF_zj4oFJtK7fI_ee7VCXyIZjoLKGr.sHemPOUhFEntx07nllJdzZT9z1QiLUFhihuR8tcvU93M79Oz9qm5A4q8s6AdTLEJwIWRvLa620eSk_ZqDzhZgjgyWCNCv5gC.EsvRDSs
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Date: Tue, 14 Apr 2009 22:25:09 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andrea Arcangeli <aarcange@redhat.com>,
-       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-References: <20090414151204.C647.A69D9226@jp.fujitsu.com> <200904141925.46012.nickpiggin@yahoo.com.au> <2f11576a0904140502h295faf33qcea9a39ff7f230a5@mail.gmail.com>
-In-Reply-To: <2f11576a0904140502h295faf33qcea9a39ff7f230a5@mail.gmail.com>
+	Tue, 14 Apr 2009 08:27:45 -0400
+Message-ID: <49E48136.5060700@trash.net>
+Date: Tue, 14 Apr 2009 14:27:34 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
+       paulus@samba.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       laijs@cn.fujitsu.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU
+References: <20090411174801.GG6822@linux.vnet.ibm.com>	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>	<20090412173108.GO6822@linux.vnet.ibm.com>	<20090412.181330.23529546.davem@davemloft.net>	<20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam>
+In-Reply-To: <20090413095309.631cf395@nehalam>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904142225.10788.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 April 2009 22:02:47 KOSAKI Motohiro wrote:
-> > On Tuesday 14 April 2009 16:16:52 KOSAKI Motohiro wrote:
-> >> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-> >> @@ -547,7 +549,13 @@ int reuse_swap_page(struct page *page)
-> >>                       SetPageDirty(page);
-> >>               }
-> >>       }
-> >> -     return count == 1;
-> >> +
-> >> +     /*
-> >> +      * If we can re-use the swap page _and_ the end
-> >> +      * result has only one user (the mapping), then
-> >> +      * we reuse the whole page
-> >> +      */
-> >> +     return count + page_count(page) == 2;
-> >>  }
-> >
-> > I guess this patch does work to close the read-side race, but I slightly don't
-> > like using page_count for things like this. page_count can be temporarily
-> > raised for reasons other than access through their user mapping. Swapcache,
-> > page reclaim, LRU pagevecs, concurrent do_wp_page, etc.
+Stephen Hemminger wrote:
+> This is an alternative version of ip/ip6/arp tables locking using
+> per-cpu locks.  This avoids the overhead of synchronize_net() during
+> update but still removes the expensive rwlock in earlier versions.
 > 
-> Yes, that's trade-off.
-> your early decow also can misjudge and make unnecessary copy.
-
-Yes indeed it can. Although it would only ever do so in case of pages
-that have had get_user_pages run against them previously, and not from
-random interactions from any other parts of the kernel.
-
-I would be interested, using an anon vma field as you say for keeping
-a gup count... it could potentially be used to avoid the extra copy.
-But hmm, I don't have much time to go down that path so long as the
-basic concept of my proposal is in question.
-
-
-> >>       /*
-> >> +      * Don't pull an anonymous page out from under get_user_pages.
-> >> +      * GUP carefully breaks COW and raises page count (while holding
-> >> +      * pte_lock, as we have here) to make sure that the page
-> >> +      * cannot be freed.  If we unmap that page here, a user write
-> >> +      * access to the virtual address will bring back the page, but
-> >> +      * its raised count will (ironically) be taken to mean it's not
-> >> +      * an exclusive swap page, do_wp_page will replace it by a copy
-> >> +      * page, and the user never get to see the data GUP was holding
-> >> +      * the original page for.
-> >> +      *
-> >> +      * This test is also useful for when swapoff (unuse_process) has
-> >> +      * to drop page lock: its reference to the page stops existing
-> >> +      * ptes from being unmapped, so swapoff can make progress.
-> >> +      */
-> >> +     if (PageSwapCache(page) &&
-> >> +         page_count(page) != page_mapcount(page) + 2) {
-> >> +             ret = SWAP_FAIL;
-> >> +             goto out_unmap;
-> >> +     }
-> >
-> > I guess it does add another constraint to the VM, ie. not allowed to
-> > unmap an anonymous page with elevated refcount. Maybe not a big deal
-> > now, but I think it is enough that it should be noted. If you squint,
-> > this could actually be more complex/intrusive to the wider VM than my
-> > copy on fork (which is basically exactly like a manual do_wp_page at
-> > fork time).
+> The idea for this came from an earlier version done by Eric Duzamet.
+> Locking is done per-cpu, the fast path locks on the current cpu
+> and updates counters.  The slow case involves acquiring the locks on
+> all cpu's.
 > 
-> I agree this code effect widely kernel activity.
-> but actually, in past days, the kernel did the same behavior. then
-> almost core code is
-> page_count checking safe.
+> The mutex that was added for 2.6.30 in xt_table is unnecessary since
+> there already is a mutex for xt[af].mutex that is held.
 > 
-> but Yes, we need to afraid newer code don't works with this code...
-> 
-> 
-> > And.... I don't think this is safe against a concurrent gup_fast()
-> > (which helps my point).
-> 
-> Could you please explain more detail ?
-> 
+> Tested basic functionality (add/remove/list), but don't have test cases
+> for stress, ip6tables or arptables.
 
-+     if (PageSwapCache(page) &&
-+         page_count(page) != page_mapcount(page) + 2) {
-+             ret = SWAP_FAIL;
-+             goto out_unmap;
-+     }
+Thanks Stephen, I'll do some testing with ip6tables.
 
-Now if another thread does a get_user_pages_fast after it passes this
-check, it can take a gup reference to the page which is now about to
-be unmapped. Then after it is unmapped, if a wp fault is caused on the
-page, then it will not be reused and thus you lose data as explained
-in your big comment.
