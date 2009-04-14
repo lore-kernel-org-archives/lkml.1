@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbZDNRtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbZDNRti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbZDNRtD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZDNRsx
+	id S1756632AbZDNRti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbZDNRtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:48:53 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:54468 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbZDNRsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:48:52 -0400
-Message-ID: <49E4CC82.4050607@msgid.tls.msk.ru>
-Date: Tue, 14 Apr 2009 21:48:50 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Anton Ertl <anton@mips.complang.tuwien.ac.at>,
+	Tue, 14 Apr 2009 13:49:16 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56522 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbZDNRtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 13:49:15 -0400
+Message-Id: <20090414174855.048970682@szeredi.hu>
+References: <20090414174835.487031939@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Tue, 14 Apr 2009 19:48:37 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: jens.axboe@oracle.com, mfasheh@suse.com
+Cc: akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Out-of-order writing by disk drives
-References: <87r5zv72cl.fsf@basil.nowhere.org> <E1Ltla2-0000bS-5j@a4.complang.tuwien.ac.at> <20090414172406.GX14687@one.firstfloor.org> <49E4CA75.902@rtr.ca>
-In-Reply-To: <49E4CA75.902@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [patch 2/6] splice: remove i_mutex locking in splice_from_pipe()
+Content-Disposition: inline; filename=splice_from_pipe_no_i_mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Andi Kleen wrote:
-[]
->> A common problem is barriers over LVM. Since 2.6.29 they work
->> with a single device (and if the underlying device supports it) with 
->> dm linear, but not in any other LVM setup.
-> 
-> Does anyone else here find this rather peculiar?
-> 
-> The folks who actually care about barriers the most
-> (apart from kernel developers) are probably enterprise users.
-> 
-> And who is most likely to be using RAID and LVM,
-> where barriers generally don't work at all ?
+splice_from_pipe() is only called from two places:
 
-And esp. RAID10.
+  - generic_splice_sendpage()
+  - splice_write_null()
 
-(Not being an "enterprise" user really, but I do still use
-several hard drives and databases).
+Neither of these require i_mutex to be taken on the destination inode.
 
-For this very reason, I stopped using both RAID10 and LVM.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ fs/splice.c |   18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
-For now, I've several large RAID1 volumes with GPT partitions
-inside them, and use that for various databases etc.  With
-XFS mostly.  It also does not have constant alignment problems
-what LVM has(*) (I can align GPT properly, even when the tools
-to do so (parted-derivates) are very bad quality still, crashing
-left and right).  Yes it's not that easy to use as LVM, but it
-is MUCH faster because of all the reasons stated.
+Index: linux-2.6/fs/splice.c
+===================================================================
+--- linux-2.6.orig/fs/splice.c	2009-04-14 18:08:03.000000000 +0200
++++ linux-2.6/fs/splice.c	2009-04-14 18:22:53.000000000 +0200
+@@ -784,7 +784,7 @@ EXPORT_SYMBOL(__splice_from_pipe);
+  * @actor:	handler that splices the data
+  *
+  * Description:
+- *    See __splice_from_pipe. This function locks the input and output inodes,
++ *    See __splice_from_pipe. This function locks the pipe inode,
+  *    otherwise it's identical to __splice_from_pipe().
+  *
+  */
+@@ -793,7 +793,6 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 			 splice_actor *actor)
+ {
+ 	ssize_t ret;
+-	struct inode *inode = out->f_mapping->host;
+ 	struct splice_desc sd = {
+ 		.total_len = len,
+ 		.flags = flags,
+@@ -801,24 +800,11 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 		.u.file = out,
+ 	};
+ 
+-	/*
+-	 * The actor worker might be calling ->write_begin and
+-	 * ->write_end. Most of the time, these expect i_mutex to
+-	 * be held. Since this may result in an ABBA deadlock with
+-	 * pipe->inode, we have to order lock acquiry here.
+-	 *
+-	 * Outer lock must be inode->i_mutex, as pipe_wait() will
+-	 * release and reacquire pipe->inode->i_mutex, AND inode must
+-	 * never be a pipe.
+-	 */
+-	WARN_ON(S_ISFIFO(inode->i_mode));
+-	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+ 	if (pipe->inode)
+-		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
++		mutex_lock(&pipe->inode->i_mutex);
+ 	ret = __splice_from_pipe(pipe, &sd, actor);
+ 	if (pipe->inode)
+ 		mutex_unlock(&pipe->inode->i_mutex);
+-	mutex_unlock(&inode->i_mutex);
+ 
+ 	return ret;
+ }
 
-(*) another LVM's issue which is hidden behind scenes for
-most users, and is especially serious on raid5 or raid6 --
-this is misaligned blocks.  The good thing about this is
-that raid[56] are not usually being used for write-intensive
-applications like databases.
-
-/mjt
+--
