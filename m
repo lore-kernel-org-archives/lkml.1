@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZDNX2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbZDNXiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbZDNX2r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 19:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZDNX2h
+	id S1754875AbZDNXiq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 19:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZDNXig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 19:28:37 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:55717 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbZDNX2g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 19:28:36 -0400
-X-IronPort-AV: E=Sophos;i="4.40,188,1238976000"; 
-   d="scan'208";a="153310227"
-Date: Tue, 14 Apr 2009 16:28:36 -0700
-From: VomLehn <dvomlehn@cisco.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Embedded Mailing List <linux-embedded@vger.kernel.org>
-Subject: [PATCH] Wait for console to become available
-Message-ID: <20090414232835.GA20307@cuplxvomd02.corp.sa.net>
+	Tue, 14 Apr 2009 19:38:36 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:44328 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbZDNXif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 19:38:35 -0400
+From: Jeremy Kerr <jk@ozlabs.org>
+To: subrata@linux.vnet.ibm.com
+Subject: Re: [BUILD FAILURE 01/12] Next April 14 : PPC64 randconfig [arch/powerpc/platforms/pseries/dtl.c]
+Date: Wed, 15 Apr 2009 09:36:44 +1000
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: "Linuxppc-dev" <Linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next" <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <1239733686.5344.73.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1239733686.5344.73.camel@subratamodak.linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Message-Id: <200904150936.45483.jk@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Work to improve boot times appears to be successful enough that a race
-condition has been created between the open of /dev/console in init_post
-and USB serial device initialization. Embedded systems are probably the
-primary users of USB serial devices, though I can certainly image blade
-servers using them, as well.
+Hi Subrata,
 
-This patch works for me and, though it's possible this is all that needs
-to be done, I think it's likely there are some other changes required,
-as well.
+> This was reported earlier and fix given by Sachin:
+> http://patchwork.ozlabs.org/patch/25481/,
 
-Signed-off-by: David VomLehn <dvomlehn@cisco>
----
- kernel/printk.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+Michael Neuling asked for some changes to that patch, but I haven't seen 
+a new patch on the list. Will send soon..
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index e3602d0..39f554a 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -104,6 +104,10 @@ static unsigned log_start;	/* Index into log_buf: next char to be read by syslog
- static unsigned con_start;	/* Index into log_buf: next char to be sent to consoles */
- static unsigned log_end;	/* Index into log_buf: most-recently-written-char + 1 */
- 
-+/* Definitions for waiting until a console is registered */
-+#define MAX_CONSOLE_WAIT	msecs_to_jiffies(2000)
-+static DECLARE_WAIT_QUEUE_HEAD(console_wait);
-+
- /*
-  *	Array of consoles built from command line options (console=)
-  */
-@@ -1062,6 +1066,10 @@ struct tty_driver *console_device(int *index)
- 	struct console *c;
- 	struct tty_driver *driver = NULL;
- 
-+	/* Wait a while for a console to show up. If one doesn't show up
-+	 * for too long, we'll just continue without a console. */
-+	wait_event_timeout(console_wait, console_drivers, MAX_CONSOLE_WAIT);
-+
- 	acquire_console_sem();
- 	for (c = console_drivers; c != NULL; c = c->next) {
- 		if (!c->device)
-@@ -1211,6 +1219,7 @@ void register_console(struct console *console)
- 		spin_unlock_irqrestore(&logbuf_lock, flags);
- 	}
- 	release_console_sem();
-+	wake_up_all(&console_wait);
- }
- EXPORT_SYMBOL(register_console);
- 
+Regards,
+
+
+Jeremy
