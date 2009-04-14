@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZDNHQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbZDNHQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZDNHQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 03:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZDNHQX
+	id S1753718AbZDNHQt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 03:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZDNHQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 03:16:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41328 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbZDNHQW (ORCPT
+	Tue, 14 Apr 2009 03:16:27 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:1545 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752624AbZDNHQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 03:16:22 -0400
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: dm-multipath and write request ordering
-From: Andi Kleen <andi@firstfloor.org>
-References: <e2e108260904130422k2ac92e64jb5aff1cc2adc8da0@mail.gmail.com>
-Date: Tue, 14 Apr 2009 09:16:18 +0200
-In-Reply-To: <e2e108260904130422k2ac92e64jb5aff1cc2adc8da0@mail.gmail.com> (Bart Van Assche's message of "Mon, 13 Apr 2009 13:22:49 +0200")
-Message-ID: <878wm3903h.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 14 Apr 2009 03:16:25 -0400
+X-Trace: 177796908/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.21.180/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 79.69.21.180
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiAFAEvV40lPRRW0/2dsb2JhbACBUst4g3wG
+X-IronPort-AV: E=Sophos;i="4.40,183,1238972400"; 
+   d="scan'208";a="177796908"
+Subject: Re: [RFC][patch] filesystem: Vmufat filesystem, version 4
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090414070314.GB29075@linux-sh.org>
+References: <1239654768.6542.10.camel@localhost.localdomain>
+	 <20090413210030.GA14847@linux-sh.org>
+	 <1239658604.6542.28.camel@localhost.localdomain>
+	 <20090413215949.GD14847@linux-sh.org>
+	 <1239692429.6538.2.camel@localhost.localdomain>
+	 <20090414070314.GB29075@linux-sh.org>
+Content-Type: text/plain
+Date: Tue, 14 Apr 2009 08:16:15 +0100
+Message-Id: <1239693375.6538.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche <bart.vanassche@gmail.com> writes:
+On Tue, 2009-04-14 at 16:03 +0900, Paul Mundt wrote:
 
-> - Is it correct that round-robin load balancing can only work
-> correctly in such a setup with proper support for write barriers in
-> the device mapper ?
+> > 
+> Everything about the on-disk format is tied to the VMU. Until that sinks
+> in, don't bother sending me email, thanks.
 
-No opinion on that one.
+No, everything in the file system is dependent on the specification. The
+specification is not dependent on the hardware. Those are the facts.
 
-> - Did I understand it correctly that the current dm implementation
-> only supports barriers when remapping a single underlying device ?
 
-And also only for dm_linear, so probably it doesn't work on dm_mp (haven't
-tested) even if it has only a single device.
-
-Barriers over multiple devices are very difficult, at least as long as
-the underlying protocol doesn't support shared barriers or the Linux
-barrier concept be extended.  The problem is that you cannot express
-to the underlying device that some of its requests are dependent on
-requests going to other devices.
-
-> - Are there any plans to add barrier support to dm-multipath ?
-
-[note I'm not very familiar with Linux's dm_mp finer details, some 
-details here might be wrong]
-
-I doubt it's really doable with RR. It might be possible if you
-do the IO primary on one device and only on error fall back to another
-device. Then during the fallback you could just synchronize all
-IO and solve the barrier problem this way and otherwise do barriers
-on the single active device only. But with multiple devices you
-would have the problem described above.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
