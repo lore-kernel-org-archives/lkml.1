@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZDNQp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZDNQrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbZDNQp7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 12:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbZDNQpe
+	id S1757319AbZDNQrA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 12:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZDNQqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 12:45:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:61717 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756933AbZDNQpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 12:45:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=ZGKhRFZpvhKtEgJVjzXofGMariItcQLhnisGC3et4HtbPx1pUZ2lcnibrKjPaQ5SvN
-         ZV9gMAvSYA+xejp+lzaWTFneR/Z9lQGncnjioBQ6NATFfrNoxUByMbDlmst0Q0q23jQc
-         RYdcBE5ZKYFVzowkmUYkVRKWB+XWi0kt6Im4g=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: Input driver for Twinhan USB 6253:0100 remote control
-Date: Tue, 14 Apr 2009 09:45:13 -0700
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-References: <20090408072935.GA27920@dtor-d630.eng.vmware.com> <200904131931.24009.dmitry.torokhov@gmail.com> <49E4B678.9030508@rtr.ca>
-In-Reply-To: <49E4B678.9030508@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904140945.14652.dmitry.torokhov@gmail.com>
+	Tue, 14 Apr 2009 12:46:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47395 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753498AbZDNQqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 12:46:49 -0400
+Subject: Re: [PATCH -tip] x86: cpu/intel_cacheinfo.c fix compilation
+ warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+In-Reply-To: <20090414133242.GB27163@elte.hu>
+References: <1239712990.3079.17.camel@ht.satnam>
+	 <20090414133242.GB27163@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 14 Apr 2009 22:16:21 +0530
+Message-Id: <1239727581.2966.17.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 April 2009 09:14:48 Mark Lord wrote:
-> Dmitry Torokhov wrote:
-> > Hi Mark,
-> >
-> > On Wednesday 08 April 2009 10:28:09 Mark Lord wrote:
-> >> Dmitry,
-> >>
-> >> I briefly had access to a Twinhan remote control (for Mythtv et al.)
-> >> and cobbled something together quickly to make it work.
-> >>
-> >> But I really don't understand the new hid/input stuff,
-> >> so this is undoubtedly a total abomination to your eyes. :)
-> >
-> > Actually HID is Juri's baby so let's see what he says ;). From my POV
-> > we need to update keymap to make it emit proper codes instead of Myth
-> > specific ones, but that is a lesser issue.
->
-> ..
->
-> That's one thing I haven't figured out:  how to make this compatible
-> with the userspace intput-kbd interface for loading new key maps and stuff.
->
+On Tue, 2009-04-14 at 15:32 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > fix:
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c:712: warning: unused variable ‘node’
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> 
+> you again 'fixed' a warning.
+> 
+> this made you fail to analyze and miss the real reason for this for 
+> example:
+> 
+> >   arch/x86/kernel/cpu/intel_cacheinfo.c:739: warning: unused variable ‘node’
+> 
+> > -	int node = cpu_to_node(cpu);
+> 
+> the local variable is clearly initialized.
+> 
+> The problem is not with that variable - the problem is most likely 
+> with the cpu_to_node() macro not creating a reference to the 'cpu' 
+> variable in a compiler-visible way, in the !NUMA case.
+> 
+> The typical way to solve this is to add a dummy:
+> 
+> 	(void)(cpu)
+> 
+> use to the 'cpu' parameter to the macro definition - or, (which is a 
+> much better solution), to convert it to an inline function.
+> 
 
-You will need to convert your patch into proper hid_driver and
-implement drv->input_mapping() method instead of overriding emitted
-events. Then, once HID core is aware about proper mapping, normal
-EVIOCGKEYCODE/EVIOCSKEYCODE will work and will allow adjusting
-keymap from user space.
+OK send patch:
+[PATCH -tip] x86: k8.h reference to node in node_to_k8_nb_misc for !CONFIG_K8_NB
 
-I think if you take drivers/hid/hid-belkin.c as a template the
-conversion will take you no time.
+Thanks,
 
--- 
-Dmitry
+--
+JSR
+
