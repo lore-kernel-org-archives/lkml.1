@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZDNK3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZDNK3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZDNK3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 06:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZDNK3D
+	id S1755052AbZDNK3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 06:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZDNK3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 06:29:03 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:36985 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbZDNK3B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 06:29:01 -0400
-Date: Tue, 14 Apr 2009 13:26:45 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, alexisb@us.ibm.com
-Subject: Re: [PATCH] calgary: remove IOMMU_DEBUG
-Message-ID: <20090414102645.GD13863@il.ibm.com>
-References: <20090414120827G.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090414120827G.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 14 Apr 2009 06:29:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50418 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753059AbZDNK3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 06:29:44 -0400
+Date: Tue, 14 Apr 2009 20:29:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] lockdep: warn about lockdep disabling after kernel
+ taint, fix
+Message-Id: <20090414202937.b3af431f.sfr@canb.auug.org.au>
+In-Reply-To: <20090414091538.GI27003@elte.hu>
+References: <20090414144317.026498df.sfr@canb.auug.org.au>
+	<20090414091538.GI27003@elte.hu>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 12:12:29PM +0900, FUJITA Tomonori wrote:
-> CONFIG_IOMMU_DEBUG has depends on CONFIG_GART_IOMMU:
-> 
-> config IOMMU_DEBUG
-> 	bool "Enable IOMMU debugging"
-> 	depends on GART_IOMMU && DEBUG_KERNEL
-> 	depends on X86_64
-> 
-> So it's not useful to have CONFIG_IOMMU_DEBUG in Calgary IOMMU code,
-> which does the extra checking of the bitmap space management.
-> 
-> And Calgary uses the iommu helper for the bitmap space management now
-> so it would be better to have the extra checking feature in the iommu
-> helper rather than Calgary code (if necessary).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+--Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+Hi Ingo,
 
+On Tue, 14 Apr 2009 11:15:38 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> This opened up the path for someone eventually only including=20
+> asm/atomic.h from generic code and breaking the architectures that=20
+> only provide it via system.h. So i've queued up the fix below - this=20
+> should address the problem on Sparc and s390.
+
+Thanks.
+
+--=20
 Cheers,
-Muli
--- 
-Muli Ben-Yehuda | muli@il.ibm.com | +972-4-8281080
-Manager, Virtualization and Systems Architecture
-Master Inventor, IBM Haifa Research Laboratory
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-SYSTOR 2009---The Israeli Experimental Systems Conference
-http://www.haifa.il.ibm.com/conferences/systor2009/
+--Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknkZZEACgkQjjKRsyhoI8wskgCghiF0uovgeY5ZRxHxwALFHynd
+d80An36LDimcBloHzJMZcsp+da0BbJF6
+=4TAL
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__14_Apr_2009_20_29_37_+1000_Vp=oirx6LNFRkris--
