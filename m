@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751720AbZDNJjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZDNJkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751720AbZDNJjy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZDNJjm
+	id S1755321AbZDNJkO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZDNJjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:39:42 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:42148 "EHLO mx1.emlix.com"
+	Tue, 14 Apr 2009 05:39:43 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:50643 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751074AbZDNJjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751330AbZDNJjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Apr 2009 05:39:42 -0400
 From: Johannes Weiner <jw@emlix.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org,
-       Oskar Schirmer <os@emlix.com>
-Subject: [patch 03/12] xtensa: fix wrong extern declaration renamed in code using it
-Date: Tue, 14 Apr 2009 11:41:11 +0200
-Message-Id: <1239702080-14355-4-git-send-email-jw@emlix.com>
+Cc: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org
+Subject: [patch 01/12] xtensa: always use correct stack pointer for stack traces
+Date: Tue, 14 Apr 2009 11:41:09 +0200
+Message-Id: <1239702080-14355-2-git-send-email-jw@emlix.com>
 In-Reply-To: <1239702080-14355-1-git-send-email-jw@emlix.com>
 References: <1239702080-14355-1-git-send-email-jw@emlix.com>
 Organization: emlix gmbh, Goettingen, Germany
@@ -23,34 +22,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oskar Schirmer <os@emlix.com>
+Commit '28a0ce7 xtensa: use correct stack pointer for stack traces'
+changed the stack tracer from always reading the stack pointer
+register to always using the saved value in the task descriptor.
 
-The variable ccount_nsec has been renamed to nsec_per_ccount
-in arch/xtensa/kernel/time.c in 2b8aea74 (2007-08-05),
-but the fix failed to rename the variable in
-arch/xtensa/include/asm/timex.h as well.
+The author was too dense to consider the fact that the saved stack
+value is stale for a running process und thus unusable for 'current'.
 
-Signed-off-by: Oskar Schirmer <os@emlix.com>
+What we do now is to use the stack pointer register (a1) for when the
+task is unknown - we can't help it then - or when the task is
+'current'.  For everything else use the saved stack pointer value
+contained in the task descriptor.
+
+Signed-off-by: Johannes Weiner <jw@emlix.com>
 ---
- arch/xtensa/include/asm/timex.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/xtensa/kernel/traps.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/xtensa/include/asm/timex.h b/arch/xtensa/include/asm/timex.h
-index b83a818..053bc42 100644
---- a/arch/xtensa/include/asm/timex.h
-+++ b/arch/xtensa/include/asm/timex.h
-@@ -39,9 +39,9 @@
+diff --git a/arch/xtensa/kernel/traps.c b/arch/xtensa/kernel/traps.c
+index 9f0b711..ba9ab93 100644
+--- a/arch/xtensa/kernel/traps.c
++++ b/arch/xtensa/kernel/traps.c
+@@ -369,6 +369,18 @@ void show_regs(struct pt_regs * regs)
+ 		       regs->syscall);
+ }
  
- #ifdef CONFIG_XTENSA_CALIBRATE_CCOUNT
- extern unsigned long ccount_per_jiffy;
--extern unsigned long ccount_nsec;
-+extern unsigned long nsec_per_ccount;
- #define CCOUNT_PER_JIFFY ccount_per_jiffy
--#define NSEC_PER_CCOUNT  ccount_nsec
-+#define NSEC_PER_CCOUNT  nsec_per_ccount
- #else
- #define CCOUNT_PER_JIFFY (CONFIG_XTENSA_CPU_CLOCK*(1000000UL/HZ))
- #define NSEC_PER_CCOUNT (1000UL / CONFIG_XTENSA_CPU_CLOCK)
++static __always_inline unsigned long *stack_pointer(struct task_struct *task)
++{
++	unsigned long *sp;
++
++	if (!task || task == current)
++		__asm__ __volatile__ ("mov %0, a1\n" : "=a"(sp));
++	else
++		sp = (unsigned long *)task->thread.sp;
++
++	return sp;
++}
++
+ void show_trace(struct task_struct *task, unsigned long *sp)
+ {
+ 	unsigned long a0, a1, pc;
+@@ -377,7 +389,7 @@ void show_trace(struct task_struct *task, unsigned long *sp)
+ 	if (sp)
+ 		a1 = (unsigned long)sp;
+ 	else
+-		a1 = task->thread.sp;
++		a1 = (unsigned long)stack_pointer(task);
+ 
+ 	sp_start = a1 & ~(THREAD_SIZE-1);
+ 	sp_end = sp_start + THREAD_SIZE;
+@@ -420,7 +432,7 @@ void show_stack(struct task_struct *task, unsigned long *sp)
+ 	unsigned long *stack;
+ 
+ 	if (!sp)
+-		sp = (unsigned long *)task->thread.sp;
++		sp = stack_pointer(task);
+  	stack = sp;
+ 
+ 	printk("\nStack: ");
 -- 
 1.6.2.107.ge47ee
 
