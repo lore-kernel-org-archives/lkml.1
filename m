@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZDNJfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751035AbZDNJgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbZDNJfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZDNJfW
+	id S1751035AbZDNJgD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZDNJfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:35:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45621 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751035AbZDNJfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 05:35:21 -0400
-Date: Tue, 14 Apr 2009 11:34:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, anton@samba.org, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, manfred@colorfullife.com, cl@linux-foundation.org,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH 0/3] v2 Make hierarchical RCU less IPI-happy and add
-	more tracing
-Message-ID: <20090414093441.GA3558@elte.hu>
-References: <1239683478419-git-send-email->
+	Tue, 14 Apr 2009 05:35:51 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:44506 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751531AbZDNJfu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 05:35:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XlBP7ia/UGjlbHgr49Wz7k1daSmyXX42a3CRT5cPBqYKRZShbx4RjEZtTVSa60bfeP
+         wta8QzrpwXvNsAcKbP/UlOxBxAdKykQCrXLipeYgyfTJRolRqYf8UxfDR5Nzsm4l/TQd
+         fEN5sdCIaf2y5mDb95a+Iiqf/8QiOseWPZBhs=
+Date: Tue, 14 Apr 2009 18:35:45 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext2: fix missing mutex_unlock in error path
+Message-ID: <20090414093545.GA10092@localhost.localdomain>
+References: <20090414073631.GA4145@localhost.localdomain> <20090414074356.GC398@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239683478419-git-send-email->
+In-Reply-To: <20090414074356.GC398@duck.suse.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 14, 2009 at 09:43:57AM +0200, Jan Kara wrote:
+>   Thanks for the patch but I already have this patch in my quota tree from
+> Dan Carpenter...
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> This three-patch set fixes a hierarchical-RCU performance bug 
-> located by Anton Blanchard.  This bug affects certain high-end 
-> floating-point computation-heavy workloads with closely spaced 
-> barrier-synchronized iterations, where an interruption of any one 
-> CPU's processing during a given iteration slows the system as a 
-> whole.  This bug manifests itself as excessive resched IPIs, and 
-> is strictly a performance regression. It does not affect 
-> correctness.
-> 
-> The first patch provides the fix for the problem, the second patch 
-> adds the tracing, and the third patch adds the documentation for 
-> the tracing.
-> 
-> Located-by: Anton Blanchard <anton@au1.ibm.com>
-> Tested-by: Anton Blanchard <anton@au1.ibm.com>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-i've applied the first patch to tip:core/urgent (for .30) and the 
-second and third one to tip:core/rcu (for .31).
-
-Thanks Paul,
-
-	Ingo
+Oh, I should have checked your tree.
+BTW, JFS still have same problem in jfs_quota_write() 
