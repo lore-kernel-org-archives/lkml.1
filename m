@@ -1,136 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbZDNJpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbZDNJyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756290AbZDNJpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZDNJpb
+	id S1752927AbZDNJyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZDNJyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:45:31 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:58739 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbZDNJpa (ORCPT
+	Tue, 14 Apr 2009 05:54:02 -0400
+Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:37557
+	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751305AbZDNJyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 05:45:30 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC PATCH v2 0/2] sched: Nominate a power-efficient ILB
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20090414045356.7645.33369.stgit@sofia.in.ibm.com>
-References: <20090414045356.7645.33369.stgit@sofia.in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 11:48:04 +0200
-Message-Id: <1239702484.21985.6857.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 05:54:00 -0400
+Date: Tue, 14 Apr 2009 11:53:54 +0200
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux@arm.linux.org.uk
+Subject: Re: linux-next: Tree for April 14: CONFIG_OABI_COMPAT build failure
+Message-ID: <20090414095354.GB15516@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, linux@arm.linux.org.uk
+References: <20090414160809.e92d9d3e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414160809.e92d9d3e.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 10:25 +0530, Gautham R Shenoy wrote:
-> Hi,
-> 
-> This is the second iteration of the patchset which aims at improving
-> the idle-load balancer nomination logic, by taking the system topology
-> into consideration.
-> 
-> Changes from v1 (found here: http://lkml.org/lkml/2009/4/2/246)
-> o Fixed the kernel-doc style comments.
-> o Renamed a variable to better reflect it's usage.
-> 
-> Background
-> ======================================
-> An idle-load balancer is an idle-cpu which does not turn off it's sched_ticks
-> and performs load-balancing on behalf of the other idle CPUs. Currently,
-> this idle load balancer is nominated as the first_cpu(nohz.cpu_mask)
-> 
-> The drawback of the current method is that the CPU numbering in the
-> cores/packages need not necessarily be sequential. For example, on a
-> two-socket, Quad core system, the CPU numbering can be as follows:
-> 
-> |-------------------------------|  |-------------------------------|
-> |               |               |  |               |               |
-> |     0         |      2        |  |     1         |      3        |
-> |-------------------------------|  |-------------------------------|
-> |               |               |  |               |               |
-> |     4         |      6        |  |     5         |      7        |
-> |-------------------------------|  |-------------------------------|
-> 
-> Now, the other power-savings settings such as the sched_mc/smt_power_savings
-> and the power-aware IRQ balancer try to balance tasks/IRQs by taking
-> the system topology into consideration, with the intention of keeping
-> as many "power-domains" (cores/packages) in the low-power state.
-> 
-> The current idle-load-balancer nomination does not necessarily align towards
-> this policy. For eg, we could be having tasks and interrupts largely running
-> on the first package with the intention of keeping the second package idle.
-> Hence, CPU 0 may be busy. The first_cpu in the nohz.cpu_mask happens to be CPU1,
-> which in-turn becomes nominated as the idle-load balancer. CPU1 being from
-> the 2nd package, would in turn prevent the 2nd package from going into a
-> deeper sleep state.
-> 
-> Instead the role of the idle-load balancer could have been assumed by an
-> idle CPU from the first package, thereby helping the second package go
-> completely idle.
-> 
-> This patchset has been tested with 2.6.30-rc1 on a Two-Socket
-> Quad core system with the topology as mentioned above.
-> 
-> |----------------------------------------------------------------------------|
-> |       With Patchset + sched_mc_power_savings = 1                           |
-> |----------------------------------------------------------------------------|
-> |make -j2 options| time taken |  LOC timer interrupts |  LOC timer interrupts|
-> |                |            |  on Package 0         |  on Package 1        |
-> |----------------------------------------------------------------------------|
-> |taskset -c 0,2  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> |                | 227.234s   |  56969    | 57080     | 1003      |  588     |
-> |                |            |----------------------------------------------|
-> |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> |                |            |  55995    | 703       | 583       |  600     |
-> |----------------------------------------------------------------------------|
-> |taskset -c 1,3  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> |                | 227.136s   |  1109     | 611       | 57074     |  57091   |
-> |                |            |----------------------------------------------|
-> |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> |                |            |  709      | 637       | 56133     |  587     |
-> |----------------------------------------------------------------------------|
-> 
-> We see here that the idle load balancer is chosen from the package which is
-> busy. In the first case, it's CPU4 and in the second case it's CPU5.
-> 
-> |----------------------------------------------------------------------------|
-> |       With Patchset + sched_mc_power_savings = 1                           |
-> |----------------------------------------------------------------------------|
-> |make -j2 options| time taken |  LOC timer interrupts |  LOC timer interrupts|
-> |                |            |  on Package 0         |  on Package 1        |
-> |----------------------------------------------------------------------------|
-> |taskset -c 0,2  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> |                | 228.786s   |  59094    | 61994     | 13984     |  43652   |
-> |                |            |----------------------------------------------|
-> |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> |                |            |  1827     | 734       | 748       |  760     |
-> |----------------------------------------------------------------------------|
-> |taskset -c 1,3  |            |  CPU0     | CPU2      | CPU1      |  CPU3    |
-> |                | 228.435s   |  57013    | 876       | 58596     |  61633   |
-> |                |            |----------------------------------------------|
-> |                |            |  CPU4     | CPU6      | CPU5      |  CPU7    |
-> |                |            |  772      | 1133      | 850       |  910     |
-> |----------------------------------------------------------------------------|
-> 
-> Here, we see that the idle load balancer is chosen from the other package,
-> despite choosing sched_mc_power_savings = 1. In the first case, we have
-> CPU1 and CPU3 sharing the responsibility among themselves. In the second case,
-> it's CPU0 and CPU6, which assume that role.
+building of next-20090414 fails for ARM with CONFIG_OABI_COMPAT:
 
-Both tables above claim to be _with_ the pathes :-), from the
-accompanying text one can deduce its the bottom one that is without.
+arch/arm/kernel/sys_oabi-compat.c: In function 'sys_oabi_epoll_wait':
+arch/arm/kernel/sys_oabi-compat.c:288: error: implicit declaration of
+function 'kmalloc'
+arch/arm/kernel/sys_oabi-compat.c:288: error: 'GFP_KERNEL' undeclared
+(first use in this function)
+arch/arm/kernel/sys_oabi-compat.c:288: error: (Each undeclared
+identifier is reported only once
+arch/arm/kernel/sys_oabi-compat.c:288: error: for each function it
+appears in.)
+arch/arm/kernel/sys_oabi-compat.c:288: warning: assignment makes
+pointer from integer without a cast
+arch/arm/kernel/sys_oabi-compat.c:301: error: implicit declaration of
+function 'kfree'
+arch/arm/kernel/sys_oabi-compat.c: In function 'sys_oabi_semtimedop':
+arch/arm/kernel/sys_oabi-compat.c:324: error: 'GFP_KERNEL' undeclared
+(first use in this function)
+arch/arm/kernel/sys_oabi-compat.c:324: warning: assignment makes
+pointer from integer without a cast
+make[1]: *** [arch/arm/kernel/sys_oabi-compat.o] Error 1
+make: *** [arch/arm/kernel] Error 2
 
-Patches look straight-forward enough, seems good stuff.
+-- 
+Matthias Kaehlcke
+Embedded Linux Engineer
+Barcelona
 
-Thanks!
-
+                Don't walk behind me, I may not lead
+             Don't walk in front of me, I may not follow
+                Just walk beside me and be my friend
+                          (Albert Camus)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
