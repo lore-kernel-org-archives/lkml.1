@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZDNRqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbZDNRtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbZDNRqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 13:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZDNRqU
+	id S1756723AbZDNRtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 13:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZDNRsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 13:46:20 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:34528 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbZDNRqT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 13:46:19 -0400
-Message-ID: <49E4CB39.5080802@cs.columbia.edu>
-Date: Tue, 14 Apr 2009 13:43:21 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
+	Tue, 14 Apr 2009 13:48:53 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:54468 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152AbZDNRsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 13:48:52 -0400
+Message-ID: <49E4CC82.4050607@msgid.tls.msk.ru>
+Date: Tue, 14 Apr 2009 21:48:50 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
 User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/30] cr: core stuff
-References: <20090410023539.GK27788@x200.localdomain> <20090413214701.GA24509@us.ibm.com> <20090414152752.GC27461@x200.localdomain> <20090414154139.GA8085@us.ibm.com> <20090414170419.GD27923@x200.localdomain>
-In-Reply-To: <20090414170419.GD27923@x200.localdomain>
-Content-Type: text/plain; charset=us-ascii
+To: Mark Lord <lkml@rtr.ca>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Anton Ertl <anton@mips.complang.tuwien.ac.at>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Out-of-order writing by disk drives
+References: <87r5zv72cl.fsf@basil.nowhere.org> <E1Ltla2-0000bS-5j@a4.complang.tuwien.ac.at> <20090414172406.GX14687@one.firstfloor.org> <49E4CA75.902@rtr.ca>
+In-Reply-To: <49E4CA75.902@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Alexey Dobriyan wrote:
-> On Tue, Apr 14, 2009 at 10:41:39AM -0500, Serge E. Hallyn wrote:
->> Quoting Alexey Dobriyan (adobriyan@gmail.com):
->>> On Mon, Apr 13, 2009 at 04:47:01PM -0500, Serge E. Hallyn wrote:
->>>> Quoting Alexey Dobriyan (adobriyan@gmail.com):
->>>>
->>>> Hi Alexey,
->>>>
->>>> as far as I can see, the main differences between this patch and the
->>>> equivalent in Oren's tree are:
->>>>
->>>> 1. kernel auto-selects container init to freeze
->>> Note, auto-select part was dropped, userspace is required to pass pid of
->>> container init exactly. This was done to keep semantic of checkpoint(2)
->>> small and extendable.
->> sys_checkpoint() in this patch still finds the child_reaper of the
->> passed-in pid, doesn't it?  Or are you saying that a later patch in
->> this set removes that?
->>
->>>> 2. kernel freezes tasks
->>>> 3. no objhash taking references
->>> That's because none needed.
->> Right while I have opinions on some things in this list, I didn't
->> mean to imply positions on these items.  My question was:  are
->> there are differences you want to call out?
+Mark Lord wrote:
+> Andi Kleen wrote:
+[]
+>> A common problem is barriers over LVM. Since 2.6.29 they work
+>> with a single device (and if the underlying device supports it) with 
+>> dm linear, but not in any other LVM setup.
 > 
-> Sorry? "none needed" is relevant to only item 3. If tasks don't
-> dissapear during checkpoint, why would netns dissapear.
-> Taking refcount on checkpoint(2) is likely unneeded.
+> Does anyone else here find this rather peculiar?
 > 
-> But it's low-level detail anyway.
+> The folks who actually care about barriers the most
+> (apart from kernel developers) are probably enterprise users.
+> 
+> And who is most likely to be using RAID and LVM,
+> where barriers generally don't work at all ?
 
-Then you need to prevent anyone from thawing the tasks while you're
-checkpointing.
+And esp. RAID10.
 
-An alternative would be to still grab references, just in case, and
-ask to be notified if cgroup was thawed - and abort operation (safely).
+(Not being an "enterprise" user really, but I do still use
+several hard drives and databases).
 
-Oren.
+For this very reason, I stopped using both RAID10 and LVM.
+
+For now, I've several large RAID1 volumes with GPT partitions
+inside them, and use that for various databases etc.  With
+XFS mostly.  It also does not have constant alignment problems
+what LVM has(*) (I can align GPT properly, even when the tools
+to do so (parted-derivates) are very bad quality still, crashing
+left and right).  Yes it's not that easy to use as LVM, but it
+is MUCH faster because of all the reasons stated.
+
+(*) another LVM's issue which is hidden behind scenes for
+most users, and is especially serious on raid5 or raid6 --
+this is misaligned blocks.  The good thing about this is
+that raid[56] are not usually being used for write-intensive
+applications like databases.
+
+/mjt
