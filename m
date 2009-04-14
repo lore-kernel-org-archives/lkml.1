@@ -1,121 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZDNFXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbZDNFYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205AbZDNFXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 01:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZDNFXE
+	id S1752052AbZDNFYm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 01:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZDNFYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 01:23:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:49855 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbZDNFXC (ORCPT
+	Tue, 14 Apr 2009 01:24:33 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:53616 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbZDNFYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 01:23:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=TEqiOldndl4v6VQDmWVhx9TUsd0OBqzKMCbK8zSPO4p4t/873yq/wUnuBPcRqsLxNZ
-         hAMscdacUjgNg7v6bOORE3GMfBAgJsLVxmQYLNuzlP32gw6vhDO0oRBsWrckzf1nLbDo
-         leYFkIt5v5QH5m7F0bHPVuczPidt9d/+7wEBs=
-Subject: Re: [PATCH, RFC 0/3] Improvements to the tracing documentation
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Theodore Tso <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <20090413225542.GJ8514@elte.hu>
-References: <1239479479-2603-1-git-send-email-tytso@mit.edu>
-	 <20090412092524.GA30349@elte.hu> <20090412121533.GB10547@mit.edu>
-	 <20090412130105.GB20281@elte.hu> <20090412172344.GC10547@mit.edu>
-	 <20090413213124.GB8514@elte.hu> <20090413223526.GB32182@mit.edu>
-	 <20090413225542.GJ8514@elte.hu>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 00:22:59 -0500
-Message-Id: <1239686579.7011.116.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 14 Apr 2009 01:24:32 -0400
+Message-ID: <49E41D7B.8030003@cs.columbia.edu>
+Date: Tue, 14 Apr 2009 01:22:03 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
+       mingo@elte.hu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/30] cr: core stuff
+References: <20090410023539.GK27788@x200.localdomain>
+In-Reply-To: <20090410023539.GK27788@x200.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 00:55 +0200, Ingo Molnar wrote:
-> * Theodore Tso <tytso@mit.edu> wrote:
+
+Alexey Dobriyan wrote:
+> * add struct file_operations::checkpoint
 > 
-> > On Mon, Apr 13, 2009 at 11:31:24PM +0200, Ingo Molnar wrote:
-> > > Cool. [ And i guess you'll like the per tracepoint filter 
-> > > expressions too :-) ]
-> > 
-> > I haven't played with them yet, but I was looking over the source 
-> > code at them (since they aren't documented yet :-).  It looks like 
-> > at the moment only integer matches are allowed, right?  That's a 
-> > bit of an issue for me, since one of the things I'd really like to 
-> > be able to do is filter based on devname (i.e., sda2).  (Most of 
-> > the time we only want to collect information for a particular 
-> > block device or filesystem.)
+>   The point of hook is to serialize enough information to allow restoration
+>   of an opened file.
 > 
-> You can already do:
+>   The idea (good one!) is that the code which supplies struct file_operations
+>   know better what to do with file.
+
+Actually, credit is due to Dave Hansen (or Christoph Hellwig, or both?).
+
 > 
->  aldebaran:/debug/tracing/events/sched/sched_process_wait> echo "comm == Xorg" > filter 
->  aldebaran:/debug/tracing/events/sched/sched_process_wait> cat filter 
->  comm == Xorg
+>   Hook gets C/R context (a cookie more or less) on which dump code can
+>   cr_write() and small restrictions on what to write: globally unique object id
+>   and correct object length to allow jumping through objects.
 > 
-> But string values depends on the type of the format field - so you 
-> cannot do string matches on integer fields.
+>   For usual files on on-disk filesystem add generic_file_checkpoint()
 > 
-> For kdev_t matches i think we'll need native support for that type - 
-> in addition to the integer/string types. It will come up in other 
-> places as well and user-space knows about devices as well.
+>   Add ext3 opened regular files and directories for start.
 > 
-> > Actually, the fact that I'm having to drop some 32 bytes for each 
-> > jbd2 and ext4 trace log for the bdevname in the ring buffer is 
-> > really for the birds.  What I really want to do is just to drop in 
-> > the dev_t, and then for the tracing infrastructure to have an 
-> > efficient (cached) way of taking the dev_t and turning that back 
-> > into struct block_device at TP_printk time so we can print the 
-> > bdevname when it's needed.  We deifnitely don't want to be calling 
-> > bdget() in fs/block_dev.c each time we print a line in the tracing 
-> > buffer!  I'm guessing that's something the blktrace tracer would 
-> > find handy as well.
+>   No ->checkpoint, checkpointing is aborted -- deny by default.
 > 
-> Yeah.
+> FIXME: unlinked, but opened files aren't supported yet.
 > 
-> It could be worked around right now by converting it to an integer 
-> but i think what we want is native support for kdev_t, together with 
-> all the usual convenience forms of specifying it: sda1 should work 
-> the same way as 8:1 or 0801. Even /dev/sda1 should be recognized in 
-> a filter expression.
+> * C/R image design
+> 
+>   The thing should be flexible -- kernel internals changes every day, so we can't
+>   really afford a format with much enforced structure.
+> 
+>   Image consists of header, object images and terminator.
+> 
+>   Image header consists of immutable part and mutable part (for future).
+> 
+>   Immutable header part is magic and image version: "LinuxC/R" + __le32
+> 
+>   Image version determines everything including image header's mutable part.
+>   Image version is going to be bumped at earliest opportunity following changes
+>   in kernel internals.
+> 
+>   So far image header mutable part consists of arch of the kernel which dumped
+>   the image (i386, x86_64, ...) and kernel version as found in utsname.
+> 
+>   Kernel version as string is for distributions. Distro can support C/R for
+>   their own kernels, but can't realistically be expected to bump image version --
+>   this will conflict with mainline kernels having used same version. We also don't
+>   want requests for private parts of image version space.
+
+So far so good, like in our patch-set.
+
+You also need to address differences in configuration (kernel could
+have been recompiled) and runtime environment (boot params, etc).
+
+We deferred this issue to a later time.
+
+> 
+>   Distro expected to keep image version alone and on restart(2) check utsname
+>   version and compare it against previously release kernel versions and based
+>   on that turn on compatibility code.
+
+Are you suggesting that conversion of a checkpoint image from an older
+version to a newer version be done in the kernel ?
+
+It may work for a few versions, and then you'll get a spaghetti of
+#ifdef's in the code, together with a plethora of legacy code.
+
+It is much better/easier to handle checkpoint image transformations
+in user space. The kernel will only understand its "current" version
+(for some definition of version).
+
+> 
+>   Object image is very flexible, the only required parts are a) object type (u32)
+>   and b) object total length (u32, [knocks wood]) which must be at the beginning
+>   of an image. The rest is not generic C/R code problem.
+> 
+>   Object images follow one another without holes. Holes are in theory possible but
+>   unneeded.
 > 
 
-Yeah, I'll make sure the new filter parser can handle all these forms,
-but hopefully in a general way that would allow different forms to be
-used as predicate values for any special type such as kdev_t.  Maybe a
-simple expression matcher that when setting up the filter would map the
-matched value expression to some code that would generate the final
-filter value to be used in the run-time filter.
+When would you need holes ?
 
-Tom
+>   Image ends with terminator object. This is mostly to be sure, that, yes, image
+>   wasn't truncated for some reason.
+> 
+> 
+> * Objects subject to C/R
+> 
+>   The idea is to not be very smart but directly dump core kernel data structures
+>   related to processes. This includes in this patch:
+> 
+> 	struct task_struct
+> 	struct mm_struct
+> 	VMAs
+> 	dirty pages
+> 	struct file
+> 
+>   Relations between objects (task_struct has pointer to mm_struct) are fullfilled
+>   by dumping pointed to object first, keeping it's position in dumpfile and saving
+>   position in a image of pointe? object:
 
-> > Of course having more kernel code play with dev_t's directly isn't 
-> > considered politically correct in some circles, but tough.  :-) We 
-> > can't exactly drop a pointer to a struct block_device in the trace 
-> > buffer, since there's no guarantee it will still be valid when we 
-> > read it out.  Dropping in a dev_t is exactly what we want.  It 
-> > would be nice though if there was a way to specify a major/minor 
-> > number as the filter predicate for the dev_t, and not to have the 
-> > user generate the MAJOR/MINOR encoding.  So some way of parsing 
-> > "MKDEV(8, 4)" as the input to the filter predicate would probably 
-> > be a really good thing to do.
+Unless you use the physical position to actually lseek to there to
+re-read the data, there is no reason to use the actual position. In
+fact it is easier to debug when the shared object identifier is a
+simple counter.
+
+If you do use it to lseek, then it's a poor decision -- sounds fragile:
+what if we change the file (legitimately) adding data in the middle -
+the whole concept breaks.
+
 > 
-> Yeah, exactly. We already have smarts in init/* to recognize certain 
-> device string patterns (for rootdev specification) - that could be 
-> factored out (it already is to a large degree) and reused. We dont 
-> need full udev enumeration really - we just need the most common 
-> variants.
+> 	struct cr_image_task_struct {
+> 		cr_pos_t	cr_pos_mm;
+> 			...
+> 	};
 > 
-> Regardless of whether it's considered politically correct or not ;-) 
-> It's clearly useful.
+>   Code so far tries hard to dump objects in certain order so there won't be any loops.
+>   This property of process that dumpfile can in theory be O_APPEND, will likely be
+>   sacrifised (read: child can ptrace parent)
+
+The ability to streamline the checkpoint image IMHO is invaluable.
+It's the unix way (TM) of doing things; it makes the process pipe-able.
+
+You can do many nice things when the checkpoint can be streamed: you
+can compress, sign, encrypt etc on the fly without taking additional
+diskspace. You can transfer over the network (e.g. for migration),
+or store remotely without explicit file system support. You can easily
+transform the stream from one c/r version to another etc.
+
+This should be a design principle. In my experience I never hit a wall
+that forced me to "sacrifice" this decision.
+
+>   sacrifised (read: child can ptrace parent)
+
+Hmmm... if all tasks are created in user space, then this specific
+becomes a no-brainer !
+
 > 
-> 	Ingo
+> * add struct vm_operations_struct::checkpoint
+> 
+>   just like with files, code that creates special VMAs should know what to do with them
+>   used.
+> 
+>   just like with files, deny checkpointing by default
+> 
+>   So far used to install vDSO to same place.
+
+VDSO can be a troublemaker; in recent kernels its location in the MM
+can be randomized. It is not necessarily immutable - it can reflect
+ynamic kernel data. It may contain different code on newer versions,
+so must be compared or worked around during restart etc.
+
+> 
+> * add checkpoint(2)
+> 
+>   Done by determining which tasks are subject to checkpointing, freezeing them,
+>   collecting pointers to necessary kernel internals (task_struct, mm_struct, ...),
+>   doing that checking supported/unsupported status and aborting if necessary,
+>   actual dumping, unfreezeing/killing set of tasks.
+> 
+>   Also in-checkpoint refcount is maintained to abort on possible invisible changes.
+>   Now it works:
+> 
+> 	For every collected object (mm_struct) keep numbers of references from
+> 	other collected objects. It should match object's own refcount.
+> 	If there is a mismatch, something is likely pinning object, which means
+> 	there is "leak" to outside which means checkpoint(2) can't realistically and
+> 	without consequences proceed.
+> 
+> 	This is in some sense independent check. It's designed to protect from internals
+> 	change when C/R code was forgotten to be updated.
+> 
+>   Userpsace supplies pid of root task and opened file descriptor of future dump file.
+>   Kernel reports 0/-E as usual.
+> 
+>   Runtime tracking of "checkpointable" property is explicitly not done.
+>   This introduces overhead even if checkpoint(2) is not done as shown by proponents.
+>   Instead any check is done at checkpoint(2) time and -E is returned if something is
+>   suspicious or known to be unsupported.
+> 
+>   FIXME: more checks especially in cr_check_task_struct().
+> 
+> * add restart(2)
+> 
+>   Recreate tasks and evething dumped by checkpoint(2) as if nothing happened.
+> 
+>   The focus is on correct recreating, checking every possibility that target kernel
+>   can be on different arch (i386 => x86_64) and target kernel can be very different
+>   from source kernel by mistake (i386 => x86_64 COMPAT=n) kernel.
+> 
+>   restart(2) is done first by creating kernel thread and that demoting it to usual
+>   process by adding mm_struct, VMAs, et al. This saves time against method when
+>   userspace does fork(2)+restart(2) -- forked mm_struct will be thrown out anyway
+>   or at least everything will be unmapped in any case.
+
+Do have figures to support your claims about "saves time" ?
+
+The *largest* component of the restart time, as you probably know,
+is the time it takes to restore the memory address space (pages, pages)
+of the tasks.
+
+If you do show that this optimization is worth our attention, then it
+takes < 10 lines to change current mktree.c to use CLONE_VM ... voila.
+
+I'm interested in hearing more convincing arguments in favor of kernel
+creations of restarting tasks (see my other post about it).
+
+> 
+>   Restoration is done in current context except CPU registers at last stage.
+>   This is because "creation is done by current" is in many, many places,
+>    e.g. mmap(2) code.
+> 
+>   It's expected that filesystem state will be the same. Kernel can't do anything
+>   about it expect probably virtual filesystems. If a file is not there anymore,
+>   it's not kernel fault, -E will be returned, restart aborted.
+> 
+>   FIXME: errors aren't propagated correctly out of kernel thread context
+
+Heh .. I guess they always propagate correctly out of regular task
+context ;)
+
+Oren.
 
