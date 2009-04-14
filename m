@@ -1,128 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZDNJ0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZDNJ0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbZDNJ0Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZDNJZ4
+	id S1755215AbZDNJ0f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZDNJ0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:25:56 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:26489 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750883AbZDNJZz (ORCPT
+	Tue, 14 Apr 2009 05:26:23 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:47506 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbZDNJ0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 05:25:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=Zet67QhwITRLSV60vhVDPqznzGj8TF7QYIjx+O9L0F6uPOOe19t3ETnN+egSOCFhiph31oGBQvX5E3ZbxaxzzWMB5vTt89GWv9l57n3vWdFyzXzFOn1szhe41T22c7jfw5lU4/NosoZziv8LsJFLtpOeXH/9xdZeyozWrwHK3tk=  ;
-X-YMail-OSG: ueFRm1oVM1mxgfRVRqklkei14h4ps6J3K3luMYMPtwKS0clu7jQSw0zaJqd7cfotklZN12xGcUzA6Mvt3tG98jFl_qZ32B1Xwqgf2EgVVCtrXKfzkEoI8YxXlE.4PoRqiSYknfoPA8W2kR4rs0XgMYIeoCpL9Bc9pfiD5JH_CX8xnf7JD5mNUfKNmZ95YFwWcKbM9KFEfinUTUbEHH_gjBhobWsKlInYhS9VCSEuzq4VWPUhmlZKuieO0b9BRfC.Xh6oyyTxtY9e2vYnZpViSCyxE3wgjFcHYin7cA9Jkg9LXLs9pmAXSUuew5J_nLzT36LBGHsoOWZygqyfNbo-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Date: Tue, 14 Apr 2009 19:25:44 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andrea Arcangeli <aarcange@redhat.com>,
-       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-References: <20090414151204.C647.A69D9226@jp.fujitsu.com> <20090414151554.C64A.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090414151554.C64A.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 05:26:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=UZK1QKTVteVhODvfSMCS02L64c+IC7lYSHfANs1318F1IeGcVHH4b32y8wS5/LSnXR
+         L5m6rdeMn93l0IJp2RXpU7IS7WOr10ikMxut7xTk3RZjnx4KBVgrjgsC5+Rt+o0MyAO6
+         0u59ze/9ZOML9bxX+4F5Iig3qdoawNaiUCprI=
+Message-ID: <49E456B5.6030006@tuffmail.co.uk>
+Date: Tue, 14 Apr 2009 10:26:13 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904141925.46012.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [BISECTED] EEE PC hangs when booting off battery
+References: <49E065CF.6040408@tuffmail.co.uk> <200904131315.55519.bjorn.helgaas@hp.com> <49E3990C.6040303@tuffmail.co.uk> <200904131628.35407.bjorn.helgaas@hp.com> <49E44415.1040500@tuffmail.co.uk>
+In-Reply-To: <49E44415.1040500@tuffmail.co.uk>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 April 2009 16:16:52 KOSAKI Motohiro wrote:
+Alan Jenkins wrote:
+> Bjorn Helgaas wrote:
+>   
+>> On Monday 13 April 2009 01:57:00 pm Alan Jenkins wrote:
+>>   
+>>     
+>>> Bjorn Helgaas wrote:
+>>>     
+>>>       
+>>>> On Sunday 12 April 2009 07:11:57 am Alan Jenkins wrote:
+>>>>   
+>>>> You mention that this occurs when booting off battery.  So I
+>>>> assume everything works fine when the EEE is plugged in to the
+>>>> wall socket?
+>>>>       
+>>>>         
+>>> When I tested it before, that was what I found.
+>>>
+>>> However, I now find that's not quite right.  It only works (i.e. doesn't
+>>> hang) if I remove the battery as well as plugging it into the wall.  If
+>>> I have the battery in, it hangs.
+>>>     
+>>>       
+>
+> ... and right now, I can only reproduce it by booting with it plugged
+> into the wall and the battery present.  If I unplug it from the wall, it
+> boots fine.
+>
+> It must be affected by something else as well, maybe battery level or
+> charging / discharging status.
+>
+>   
+>>>>>>>> Magic SysRQ keys work though.  ...
+>>>>>>>>           
+>>>>>>>>               
+>>>>>>>>                 
+>>>>>> I was able to run SysRq-P, and found the following backtrace -
+>>>>>>
+>>>>>> Pid: 0
+>>>>>> EIP is at acpi_idle_enter_bm+0x1df/0x208 [processor]
+>>>>>>           
+>>>>>>             
+>>>> Can you figure out where this is in acpi_idle_enter_bm() or
+>>>> maybe just email me your processor.ko module?
+>>>>
+>>>> Does it always happen at the same point?
+>>>>       
+>>>>         
+>>> Yes, it always happens at the same point.
+>>>
+>>> It turns out I can read the runes, but I don't understand what they're
+>>> saying :-).
+>>>     
+>>>       
+>> I'm not much good with x86 assembly either :-)
+>>
+>> I think that in both cases below, you're right after enabling
+>> interrupts and about to exit the idle routine.  My guess is the
+>> system is not really hung; it just doesn't think it has anything
+>> to do and is spending all its time in the idle loop.
+>>
+>>   
+>>     
+>>> 00001bd0 <acpi_idle_enter_bm>:
+>>>
+>>> ...
+>>> 00001bd0 + 0x1df = 00001daf
+>>> ...
+>>>     1d70:       b8 03 00 00 00          mov    $0x3,%eax
+>>>     1d75:       e8 90 f3 ff ff          call   110a <tsc_halts_in_c>
+>>>     1d7a:       85 c0                   test   %eax,%eax
+>>>     1d7c:       74 0a                   je     1d88 <acpi_idle_enter_bm+0x1b8>
+>>>     1d7e:       b8 0e 09 00 00          mov    $0x90e,%eax
+>>>                         1d7f: R_386_32  .rodata.str1.1
+>>>     1d83:       e8 fc ff ff ff          call   1d84 <acpi_idle_enter_bm+0x1b4>
+>>>                         1d84: R_386_PC32        mark_tsc_unstable
+>>>     1d88:       8b 45 e8                mov    -0x18(%ebp),%eax
+>>>     1d8b:       8b 55 ec                mov    -0x14(%ebp),%edx
+>>>     1d8e:       e8 ab fd ff ff          call   1b3e <us_to_pm_timer_ticks>
+>>>     1d93:       89 c3                   mov    %eax,%ebx
+>>>     1d95:       b8 17 01 00 00          mov    $0x117,%eax
+>>>     1d9a:       69 ca 17 01 00 00       imul   $0x117,%edx,%ecx
+>>>     1da0:       89 d6                   mov    %edx,%esi
+>>>     1da2:       f7 e3                   mul    %ebx
+>>>     1da4:       8d 14 11                lea    (%ecx,%edx,1),%edx
+>>>     1da7:       e8 fc ff ff ff          call   1da8 <acpi_idle_enter_bm+0x1d8>
+>>>                         1da8: R_386_PC32        sched_clock_idle_wakeup_event
+>>>     1dac:       fb                      sti
+>>>     1dad:       89 e0                   mov    %esp,%eax
+>>> ->  1daf:       31 c9                   xor    %ecx,%ecx              <---------
+>>>     1db1:       25 00 e0 ff ff          and    $0xffffe000,%eax
+>>>     1db6:       89 fa                   mov    %edi,%edx
+>>>     1db8:       83 48 0c 04             orl    $0x4,0xc(%eax)
+>>>     1dbc:       ff 47 18                incl   0x18(%edi)
+>>>     1dbf:       8b 45 e4                mov    -0x1c(%ebp),%eax
+>>>     1dc2:       e8 a4 f5 ff ff          call   136b <acpi_state_timer_broadcast>
+>>>     1dc7:       01 5f 1c                add    %ebx,0x1c(%edi)
+>>>     1dca:       11 77 20                adc    %esi,0x20(%edi)
+>>>     1dcd:       8b 45 e8                mov    -0x18(%ebp),%eax
+>>>     1dd0:       83 c4 10                add    $0x10,%esp
+>>>     1dd3:       5b                      pop    %ebx
+>>>     1dd4:       5e                      pop    %esi
+>>>     1dd5:       5f                      pop    %edi
+>>>     1dd6:       5d                      pop    %ebp
+>>>     1dd7:       c3                      ret
+>>>
+>>>     
+>>>       
+>>>> If you blacklist or rename the processor module to prevent it
+>>>> from loading, does that keep the hang from occurring?
+>>>>       
+>>>>         
+>>> No.  In that case I get the hang in default_idle+0x59/0x95
+>>>
+>>> 0000007a <default_idle>:
+>>>   7a:   55                      push   %ebp
+>>>   7b:   89 e5                   mov    %esp,%ebp
+>>>   7d:   56                      push   %esi
+>>>   7e:   53                      push   %ebx
+>>>   7f:   83 ec 18                sub    $0x18,%esp
+>>>   82:   83 3d 18 00 00 00 00    cmpl   $0x0,0x18
+>>>                         84: R_386_32    .bss
+>>>   89:   75 7a                   jne    105 <default_idle+0x8b>
+>>>   8b:   80 3d 05 00 00 00 00    cmpb   $0x0,0x5
+>>>                         8d: R_386_32    boot_cpu_data
+>>>   92:   74 71                   je     105 <default_idle+0x8b>
+>>>   94:   83 3d 04 00 00 00 00    cmpl   $0x0,0x4
+>>>                         96: R_386_32    __tracepoint_power_start
+>>>   9b:   74 23                   je     c0 <default_idle+0x46>
+>>>   9d:   8b 1d 08 00 00 00       mov    0x8,%ebx
+>>>                         9f: R_386_32    __tracepoint_power_start
+>>>   a3:   85 db                   test   %ebx,%ebx
+>>>   a5:   74 19                   je     c0 <default_idle+0x46>
+>>>   a7:   8d 75 e0                lea    -0x20(%ebp),%esi
+>>>   aa:   b9 01 00 00 00          mov    $0x1,%ecx
+>>>   af:   ba 01 00 00 00          mov    $0x1,%edx
+>>>   b4:   89 f0                   mov    %esi,%eax
+>>>   b6:   ff 13                   call   *(%ebx)
+>>>   b8:   83 c3 04                add    $0x4,%ebx
+>>>   bb:   83 3b 00                cmpl   $0x0,(%ebx)
+>>>   be:   75 ea                   jne    aa <default_idle+0x30>
+>>>   c0:   89 e0                   mov    %esp,%eax
+>>>   c2:   25 00 e0 ff ff          and    $0xffffe000,%eax
+>>>   c7:   83 60 0c fb             andl   $0xfffffffb,0xc(%eax)
+>>>   cb:   f6 40 08 08             testb  $0x8,0x8(%eax)
+>>>   cf:   75 04                   jne    d5 <default_idle+0x5b>
+>>>   d1:   fb                      sti
+>>>   d2:   f4                      hlt
+>>> -->  d3:   eb 01                   jmp    d6 <default_idle+0x5c>    <--------
+>>>   d5:   fb                      sti
+>>>   d6:   89 e0                   mov    %esp,%eax
+>>>   d8:   25 00 e0 ff ff          and    $0xffffe000,%eax
+>>>   dd:   83 48 0c 04             orl    $0x4,0xc(%eax)
+>>>   e1:   83 3d 04 00 00 00 00    cmpl   $0x0,0x4
+>>>                         e3: R_386_32    __tracepoint_power_end
+>>>   e8:   74 1e                   je     108 <default_idle+0x8e>
+>>>
+>>>
+>>>     
+>>>       
+>>>>> 7ec0a7290797f57b780f792d12f4bcc19c83aa4f is first bad commit
+>>>>> commit 7ec0a7290797f57b780f792d12f4bcc19c83aa4f
+>>>>> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>>>>> Date:   Mon Mar 30 17:48:24 2009 +0000
+>>>>>         
+>>>>>           
+>>>> Ouch, sorry about that.  Thanks for doing all the bisection work.
+>>>>   
+>>>>       
+>>>>         
+>>>>>     ACPI: processor: use .notify method instead of installing handler
+>>>>> directly
+>>>>>
+>>>>>     This patch adds a .notify() method.  The presence of .notify() causes
+>>>>>     Linux/ACPI to manage event handlers and notify handlers on our behalf,
+>>>>>     so we don't have to install and remove them ourselves.
+>>>>>
+>>>>>     Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>>>>>     CC: Zhang Rui <rui.zhang@intel.com>
+>>>>>     CC: Zhao Yakui <yakui.zhao@intel.com>
+>>>>>     CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+>>>>>     CC: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+>>>>>     Signed-off-by: Len Brown <len.brown@intel.com>
+>>>>>
+>>>>> However, reverting this commit from v2.6.30-rc1 doesn't solve the hang.
+>>>>>         
+>>>>>           
+>>>> I don't see the problem in that commit yet, and if there is a problem
+>>>> with it, I would think that reverting it from 2.6.30-rc1 would solve
+>>>> it.  But maybe it'd be useful to revert the whole .notify series to
+>>>> make sure.  From 2.6.30-rc1, you should be able to revert these:
+>>>>
+>>>>   7ec0a7290797f57b780f792d12f4bcc19c83aa4f processor
+>>>>   373cfc360ec773be2f7615e59a19f3313255db7c button
+>>>>   46ec8598fde74ba59703575c22a6fb0b6b151bb6 Linux/ACPI infrastructure
+>>>>
+>>>> What happens with those commits reverted?
+>>>>       
+>>>>         
+>>> I'll find out tomorrow.
+>>>     
+>>>       
+>> The fact that it still hangs even when you don't load the processor
+>> driver at all suggests that the 7ec0a729079 commit identified by the
+>> bisection is not the real problem.  That commit only touches
+>> drivers/acpi/processor_core.c.
+>>   
+>>     
+>
+> Yah.
+>
+>   
+>> I think it's more likely some kind of race or missed wakeup.
+>>
+>> Since it seems to be sensitive to whether the battery is present,
+>> I guess you could try blacklisting the battery.ko driver.  There
+>> have been a few changes to it since 2.6.29-rc8.  If things work
+>> without battery.ko, we can look through those changes.
+>>   
+>>     
+>
+> Good guess :-).  I tried a couple of times either way, and blacklisting
+> "battery" definitely avoids the hang.
+>   
 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Sugessted-by: Linus Torvalds <torvalds@osdl.org>
+Ok, I tried reverting
 
-"Suggested-by:" ;)
+0f66af530116e9f4dd97f328d91718b56a6fc5a4 "ACPI: battery: asynchronous init"
 
-> Cc: Hugh Dickins <hugh@veritas.com>
-> Cc: Andrew Morton <akpm@osdl.org>
-> Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-> Cc: Andrea Arcangeli <aarcange@redhat.com>
-> Cc: Jeff Moyer <jmoyer@redhat.com>
-> Cc: linux-mm@kvack.org
-> ---
->  mm/rmap.c     |   21 +++++++++++++++++++++
->  mm/swapfile.c |   10 +++++++++-
->  2 files changed, 30 insertions(+), 1 deletion(-)
-> 
-> Index: b/mm/swapfile.c
-> ===================================================================
-> --- a/mm/swapfile.c	2009-04-11 21:38:33.000000000 +0900
-> +++ b/mm/swapfile.c	2009-04-11 21:38:45.000000000 +0900
-> @@ -533,6 +533,8 @@ static inline int page_swapcount(struct 
->   * to it.  And as a side-effect, free up its swap: because the old content
->   * on disk will never be read, and seeking back there to write new content
->   * later would only waste time away from clustering.
-> + * Caller must hold pte_lock. try_to_unmap() decrement page::_mapcount
-> + * and get_user_pages() increment page::_count under pte_lock.
->   */
->  int reuse_swap_page(struct page *page)
->  {
-> @@ -547,7 +549,13 @@ int reuse_swap_page(struct page *page)
->  			SetPageDirty(page);
->  		}
->  	}
-> -	return count == 1;
-> +
-> +	/*
-> +	 * If we can re-use the swap page _and_ the end
-> +	 * result has only one user (the mapping), then
-> +	 * we reuse the whole page
-> +	 */
-> +	return count + page_count(page) == 2;
->  }
+and that fixed it.
 
-I guess this patch does work to close the read-side race, but I slightly don't
-like using page_count for things like this. page_count can be temporarily
-raised for reasons other than access through their user mapping. Swapcache,
-page reclaim, LRU pagevecs, concurrent do_wp_page, etc.
+Thanks for your help so far, Bjorn.
 
-
->  /*
-> Index: b/mm/rmap.c
-> ===================================================================
-> --- a/mm/rmap.c	2009-04-11 21:38:33.000000000 +0900
-> +++ b/mm/rmap.c	2009-04-12 00:58:58.000000000 +0900
-> @@ -773,6 +773,27 @@ static int try_to_unmap_one(struct page 
->  		goto out;
->  
->  	/*
-> +	 * Don't pull an anonymous page out from under get_user_pages.
-> +	 * GUP carefully breaks COW and raises page count (while holding
-> +	 * pte_lock, as we have here) to make sure that the page
-> +	 * cannot be freed.  If we unmap that page here, a user write
-> +	 * access to the virtual address will bring back the page, but
-> +	 * its raised count will (ironically) be taken to mean it's not
-> +	 * an exclusive swap page, do_wp_page will replace it by a copy
-> +	 * page, and the user never get to see the data GUP was holding
-> +	 * the original page for.
-> +	 *
-> +	 * This test is also useful for when swapoff (unuse_process) has
-> +	 * to drop page lock: its reference to the page stops existing
-> +	 * ptes from being unmapped, so swapoff can make progress.
-> +	 */
-> +	if (PageSwapCache(page) &&
-> +	    page_count(page) != page_mapcount(page) + 2) {
-> +		ret = SWAP_FAIL;
-> +		goto out_unmap;
-> +	}
-
-I guess it does add another constraint to the VM, ie. not allowed to
-unmap an anonymous page with elevated refcount. Maybe not a big deal
-now, but I think it is enough that it should be noted. If you squint,
-this could actually be more complex/intrusive to the wider VM than my
-copy on fork (which is basically exactly like a manual do_wp_page at
-fork time).
-
-And.... I don't think this is safe against a concurrent gup_fast()
-(which helps my point).
+Alan
