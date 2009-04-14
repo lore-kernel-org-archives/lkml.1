@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbZDNVpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbZDNVtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756464AbZDNVpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZDNVpb
+	id S1754929AbZDNVtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 17:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZDNVtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:45:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:19584 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752538AbZDNVpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:45:30 -0400
+	Tue, 14 Apr 2009 17:49:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:50815 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbZDNVtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 17:49:03 -0400
+Message-ID: <49E504C1.9010401@goop.org>
+Date: Tue, 14 Apr 2009 14:48:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <49E4FED0.1020003@ovro.caltech.edu>
-References: <20090224000002.GA578@ovro.caltech.edu> <fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com> 
-	<49E4FED0.1020003@ovro.caltech.edu>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 14 Apr 2009 15:45:14 -0600
-Message-ID: <fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-To: David Hawkins <dwh@ovro.caltech.edu>
-Cc: Ira Snyder <iws@ovro.caltech.edu>, Arnd Bergmann <arnd@arndb.de>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
+References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu>
+In-Reply-To: <20090414210445.GM955@mit.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 3:23 PM, David Hawkins <dwh@ovro.caltech.edu> wrote:
-> I'll let Ira update you on the patch status.
+Theodore Tso wrote:
+> Any chance you could support something like this?
 >
-> If you want someone to chat about the hardware-level interaction,
-> feel free to chat off-list - assuming of course that no one wants
-> to hear us talk hardware :)
->
-> I selected the MPC8349EA in-part due to its PCI mailboxes, so
-> that we could implement this type of driver (an interlocked
-> handshake for flow control of data transfers). The previous
-> chip I'd used was a PLX PCI9054 Master/Target, and it has
-> similar registers.
->
-> I'm not sure if the Xilinx PCI core, or whatever PCI core you
-> are using, already has something like the mailboxes implemented,
-> but if not, it won't take much to code up some logic.
-> I prefer VHDL myself, but can speak Verilog if forced to :)
+>   
 
-Thanks David.  I haven't looked closely at the xilinx pci data sheet
-yet, but I don't expect too many issues in this area.  As you say, it
-won't take much to code it up.  I'll be poking my VHDL engineer to
-make it do what I want it to.  :-)
+I think that's already there.  I'm defining 
+arch/x86/include/asm/paravirt-trace.h with:
 
-I'll keep you up to date on my progress.
+#ifndef _ASM_X86_PARAVIRT_TRACE_H
+#define _ASM_X86_PARAVIRT_TRACE_H
 
-g.
+#include <linux/tracepoint.h>
+#include <asm/paravirt_types.h>
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM pvops
+
+#define TRACE_INCLUDE_FILE	paravirt-trace
+#define TRACE_INCLUDE_PATH	asm
+[...]
+
+
+Which ends up including <asm/paravirt-trace.h>
+
+    J
