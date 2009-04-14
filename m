@@ -1,219 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZDNO6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbZDNO7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZDNO6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 10:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZDNO6V
+	id S1756831AbZDNO7T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 10:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZDNO7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 10:58:21 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:47775 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753715AbZDNO6U (ORCPT
+	Tue, 14 Apr 2009 10:59:09 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:2038 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbZDNO7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 10:58:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YiuJ5RIYLI0HJlYv15NX+4JJf2tRxBUKLTrLN+ielnmBlYxDNkJMTK8fQ8HO6vcUhm
-         U8jvt6D0PrVoVnUaVgAGovnv/21s6vMn626cgJ1/V1Iyksu/L2Scu5EA0PoLGgUsVENz
-         8WnahP6nuIVefR+p/LBU9pCS4eK+QDMUFbDok=
-Date: Tue, 14 Apr 2009 18:58:30 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       serue@us.ibm.com, mingo@elte.hu, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
-Message-ID: <20090414145830.GA27461@x200.localdomain>
-References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz> <20090413091423.GA19236@x200.localdomain> <49E4108A.8050201@cs.columbia.edu>
+	Tue, 14 Apr 2009 10:59:07 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [BISECTED] EEE PC hangs when booting off battery
+Date: Tue, 14 Apr 2009 08:59:01 -0600
+User-Agent: KMail/1.9.10
+Cc: linux-acpi@vger.kernel.org, "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <49E065CF.6040408@tuffmail.co.uk> <49E44415.1040500@tuffmail.co.uk> <49E456B5.6030006@tuffmail.co.uk>
+In-Reply-To: <49E456B5.6030006@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49E4108A.8050201@cs.columbia.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904140859.02188.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 12:26:50AM -0400, Oren Laadan wrote:
-> Alexey Dobriyan wrote:
-> > On Thu, Apr 09, 2009 at 10:07:11PM -0700, Dave Hansen wrote:
-> >> I'm curious how you see these fitting in with the work that we've been
-> >> doing with Oren.  Do you mean to just start a discussion or are you
-> >> really proposing these as an alternative to what Oren has been posting?
-> > 
-> > Yes, this is posted as alternative.
-> > 
-> > Some design decisions are seen as incorrect from here like:
+On Tuesday 14 April 2009 03:26:13 am Alan Jenkins wrote:
+> Alan Jenkins wrote:
+> > Bjorn Helgaas wrote:
+> >> On Monday 13 April 2009 01:57:00 pm Alan Jenkins wrote:
+> >>> Bjorn Helgaas wrote:
+> >>>> On Sunday 12 April 2009 07:11:57 am Alan Jenkins wrote:
+> >>>>   
+> >>>> You mention that this occurs when booting off battery.  So I
+> >>>> assume everything works fine when the EEE is plugged in to the
+> >>>> wall socket?
+> >>>>         
+> >>> When I tested it before, that was what I found.
+> >>>
+> >>> However, I now find that's not quite right.  It only works (i.e. doesn't
+> >>> hang) if I remove the battery as well as plugging it into the wall.  If
+> >>> I have the battery in, it hangs.
+> >
+> > ... and right now, I can only reproduce it by booting with it plugged
+> > into the wall and the battery present.  If I unplug it from the wall, it
+> > boots fine.
+> >
+> > It must be affected by something else as well, maybe battery level or
+> > charging / discharging status.
+> >   
+> >>>>>>>> Magic SysRQ keys work though.  ...
+> >>>>>> I was able to run SysRq-P, and found the following backtrace -
+> >>>>>>
+> >>>>>> Pid: 0
+> >>>>>> EIP is at acpi_idle_enter_bm+0x1df/0x208 [processor]
+> >>>>>>             
+> >>>> Can you figure out where this is in acpi_idle_enter_bm() or
+> >>>> maybe just email me your processor.ko module?
+> >>>>
+> >>>> Does it always happen at the same point?
+> >>>>         
+> >>> Yes, it always happens at the same point.
+> >>>
+> >>> It turns out I can read the runes, but I don't understand what they're
+> >>> saying :-).
+> >>>       
+> >> I'm not much good with x86 assembly either :-)
+> >>
+> >> I think that in both cases below, you're right after enabling
+> >> interrupts and about to exit the idle routine.  My guess is the
+> >> system is not really hung; it just doesn't think it has anything
+> >> to do and is spending all its time in the idle loop.
+> >>     
+> >>> 00001bd0 <acpi_idle_enter_bm>:
+> >>> ...
+> >>> 00001bd0 + 0x1df = 00001daf
+> >>> ...
+> >>>     1d70:       b8 03 00 00 00          mov    $0x3,%eax
+> >>>     1d75:       e8 90 f3 ff ff          call   110a <tsc_halts_in_c>
+> >>>     1d7a:       85 c0                   test   %eax,%eax
+> >>>     1d7c:       74 0a                   je     1d88 <acpi_idle_enter_bm+0x1b8>
+> >>>     1d7e:       b8 0e 09 00 00          mov    $0x90e,%eax
+> >>>                         1d7f: R_386_32  .rodata.str1.1
+> >>>     1d83:       e8 fc ff ff ff          call   1d84 <acpi_idle_enter_bm+0x1b4>
+> >>>                         1d84: R_386_PC32        mark_tsc_unstable
+> >>>     1d88:       8b 45 e8                mov    -0x18(%ebp),%eax
+> >>>     1d8b:       8b 55 ec                mov    -0x14(%ebp),%edx
+> >>>     1d8e:       e8 ab fd ff ff          call   1b3e <us_to_pm_timer_ticks>
+> >>>     1d93:       89 c3                   mov    %eax,%ebx
+> >>>     1d95:       b8 17 01 00 00          mov    $0x117,%eax
+> >>>     1d9a:       69 ca 17 01 00 00       imul   $0x117,%edx,%ecx
+> >>>     1da0:       89 d6                   mov    %edx,%esi
+> >>>     1da2:       f7 e3                   mul    %ebx
+> >>>     1da4:       8d 14 11                lea    (%ecx,%edx,1),%edx
+> >>>     1da7:       e8 fc ff ff ff          call   1da8 <acpi_idle_enter_bm+0x1d8>
+> >>>                         1da8: R_386_PC32        sched_clock_idle_wakeup_event
+> >>>     1dac:       fb                      sti
+> >>>     1dad:       89 e0                   mov    %esp,%eax
+> >>> ->  1daf:       31 c9                   xor    %ecx,%ecx              <---------
+> >>>     1db1:       25 00 e0 ff ff          and    $0xffffe000,%eax
+> >>>     1db6:       89 fa                   mov    %edi,%edx
+> >>>     1db8:       83 48 0c 04             orl    $0x4,0xc(%eax)
+> >>>     1dbc:       ff 47 18                incl   0x18(%edi)
+> >>>     1dbf:       8b 45 e4                mov    -0x1c(%ebp),%eax
+> >>>     1dc2:       e8 a4 f5 ff ff          call   136b <acpi_state_timer_broadcast>
+> >>>     1dc7:       01 5f 1c                add    %ebx,0x1c(%edi)
+> >>>     1dca:       11 77 20                adc    %esi,0x20(%edi)
+> >>>     1dcd:       8b 45 e8                mov    -0x18(%ebp),%eax
+> >>>     1dd0:       83 c4 10                add    $0x10,%esp
+> >>>     1dd3:       5b                      pop    %ebx
+> >>>     1dd4:       5e                      pop    %esi
+> >>>     1dd5:       5f                      pop    %edi
+> >>>     1dd6:       5d                      pop    %ebp
+> >>>     1dd7:       c3                      ret
+> >>>
+> >>>> If you blacklist or rename the processor module to prevent it
+> >>>> from loading, does that keep the hang from occurring?
+> >>>>         
+> >>> No.  In that case I get the hang in default_idle+0x59/0x95
+> >>>
+> >>> 0000007a <default_idle>:
+> >>>   7a:   55                      push   %ebp
+> >>>   7b:   89 e5                   mov    %esp,%ebp
+> >>>   7d:   56                      push   %esi
+> >>>   7e:   53                      push   %ebx
+> >>>   7f:   83 ec 18                sub    $0x18,%esp
+> >>>   82:   83 3d 18 00 00 00 00    cmpl   $0x0,0x18
+> >>>                         84: R_386_32    .bss
+> >>>   89:   75 7a                   jne    105 <default_idle+0x8b>
+> >>>   8b:   80 3d 05 00 00 00 00    cmpb   $0x0,0x5
+> >>>                         8d: R_386_32    boot_cpu_data
+> >>>   92:   74 71                   je     105 <default_idle+0x8b>
+> >>>   94:   83 3d 04 00 00 00 00    cmpl   $0x0,0x4
+> >>>                         96: R_386_32    __tracepoint_power_start
+> >>>   9b:   74 23                   je     c0 <default_idle+0x46>
+> >>>   9d:   8b 1d 08 00 00 00       mov    0x8,%ebx
+> >>>                         9f: R_386_32    __tracepoint_power_start
+> >>>   a3:   85 db                   test   %ebx,%ebx
+> >>>   a5:   74 19                   je     c0 <default_idle+0x46>
+> >>>   a7:   8d 75 e0                lea    -0x20(%ebp),%esi
+> >>>   aa:   b9 01 00 00 00          mov    $0x1,%ecx
+> >>>   af:   ba 01 00 00 00          mov    $0x1,%edx
+> >>>   b4:   89 f0                   mov    %esi,%eax
+> >>>   b6:   ff 13                   call   *(%ebx)
+> >>>   b8:   83 c3 04                add    $0x4,%ebx
+> >>>   bb:   83 3b 00                cmpl   $0x0,(%ebx)
+> >>>   be:   75 ea                   jne    aa <default_idle+0x30>
+> >>>   c0:   89 e0                   mov    %esp,%eax
+> >>>   c2:   25 00 e0 ff ff          and    $0xffffe000,%eax
+> >>>   c7:   83 60 0c fb             andl   $0xfffffffb,0xc(%eax)
+> >>>   cb:   f6 40 08 08             testb  $0x8,0x8(%eax)
+> >>>   cf:   75 04                   jne    d5 <default_idle+0x5b>
+> >>>   d1:   fb                      sti
+> >>>   d2:   f4                      hlt
+> >>> -->  d3:   eb 01                   jmp    d6 <default_idle+0x5c>    <--------
+> >>>   d5:   fb                      sti
+> >>>   d6:   89 e0                   mov    %esp,%eax
+> >>>   d8:   25 00 e0 ff ff          and    $0xffffe000,%eax
+> >>>   dd:   83 48 0c 04             orl    $0x4,0xc(%eax)
+> >>>   e1:   83 3d 04 00 00 00 00    cmpl   $0x0,0x4
+> >>>                         e3: R_386_32    __tracepoint_power_end
+> >>>   e8:   74 1e                   je     108 <default_idle+0x8e>
+> >>>
+> >>>>> 7ec0a7290797f57b780f792d12f4bcc19c83aa4f is first bad commit
+> >>>>> commit 7ec0a7290797f57b780f792d12f4bcc19c83aa4f
+> >>>>> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> >>>>> Date:   Mon Mar 30 17:48:24 2009 +0000
+> >>>>>           
+> >>>> Ouch, sorry about that.  Thanks for doing all the bisection work.
+> >>>>   
+> >>>>>     ACPI: processor: use .notify method instead of installing handler
+> >>>>> directly
+> >>>>>
+> >>>>>     This patch adds a .notify() method.  The presence of .notify() causes
+> >>>>>     Linux/ACPI to manage event handlers and notify handlers on our behalf,
+> >>>>>     so we don't have to install and remove them ourselves.
+> >>>>>
+> >>>>>     Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> >>>>>     CC: Zhang Rui <rui.zhang@intel.com>
+> >>>>>     CC: Zhao Yakui <yakui.zhao@intel.com>
+> >>>>>     CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+> >>>>>     CC: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+> >>>>>     Signed-off-by: Len Brown <len.brown@intel.com>
+> >>>>>
+> >>>>> However, reverting this commit from v2.6.30-rc1 doesn't solve the hang.
+> >>>>>           
+> >>>> I don't see the problem in that commit yet, and if there is a problem
+> >>>> with it, I would think that reverting it from 2.6.30-rc1 would solve
+> >>>> it.  But maybe it'd be useful to revert the whole .notify series to
+> >>>> make sure.  From 2.6.30-rc1, you should be able to revert these:
+> >>>>
+> >>>>   7ec0a7290797f57b780f792d12f4bcc19c83aa4f processor
+> >>>>   373cfc360ec773be2f7615e59a19f3313255db7c button
+> >>>>   46ec8598fde74ba59703575c22a6fb0b6b151bb6 Linux/ACPI infrastructure
+> >>>>
+> >>>> What happens with those commits reverted?
+> >>>>         
+> >>> I'll find out tomorrow.
+> >>>       
+> >> The fact that it still hangs even when you don't load the processor
+> >> driver at all suggests that the 7ec0a729079 commit identified by the
+> >> bisection is not the real problem.  That commit only touches
+> >> drivers/acpi/processor_core.c.
+> >
+> > Yah.
+> >   
+> >> I think it's more likely some kind of race or missed wakeup.
+> >>
+> >> Since it seems to be sensitive to whether the battery is present,
+> >> I guess you could try blacklisting the battery.ko driver.  There
+> >> have been a few changes to it since 2.6.29-rc8.  If things work
+> >> without battery.ko, we can look through those changes.
+> >
+> > Good guess :-).  I tried a couple of times either way, and blacklisting
+> > "battery" definitely avoids the hang.
 > 
-> A definition of "design" would help; I find most of your comments
-> below either vague, cryptic, or technical nits...
+> Ok, I tried reverting
 > 
-> > * not rejecting checkpoint with possible "leaks" from container
+> 0f66af530116e9f4dd97f328d91718b56a6fc5a4 "ACPI: battery: asynchronous init"
 > 
-> ...like this, for example.
+> and that fixed it.
 
-Like checkpointing one process out of many living together.
+I can't help with the real problem of why the asynchronous battery
+init causes the hang.
 
-If you allow this you consequently drop checks (e.g. refcount checks)
-for "somebody else is using structure to be checkpointed".
+But I do object to the magic makefile ordering change in that commit.
+Nobody reading the makefile can tell why battery is down at the end,
+and moving it apparently slows down boot significantly.  So the
+ordering change just feels like a band-aid that covers up a place
+where ACPI could be improved.
 
-If you drop these checks, you can't decipher legal sutiations like
-"process genuinely doesn't care about routing table of netns it lives in"
-from "illegal" situations like "process created shm segment but currently
-doesn't use it so not checkpointing ipcns will result in breakagenlater".
+I don't see anything unusual in what the battery init is doing, so
+it's probably just some ACPI methods that take a long time to
+execute.  Other drivers could easily have similar problems.
 
-You'll have to move responsibility to user, so user exactly knows what
-app relies on and on what. And probably add flags like CKPT_SHM,
-CKPT_NETNS_ROUTE ad infinitum.
-
-And user will screw it badly and complain: "after restart my app
-segfaulted". And user himself is screwed now: old running process is
-already killed (it was checkpointed on purpose) and new process in image
-segfaults every time it's restarted.
-
-All of this in out opinion results in doing C/R unreliably and badly.
-
-We are going to do it well and dig from the other side.
-
-If "leak" (any "leak") is detected, C/R is aborted because kernel
-doesn't know what app relies on and what app doesn't care about.
-
-This protected from situations and failure modes described above.
-
-This also protects to some extent from in-kernel changes where C/R code
-should have been updated but wasn't. Person doing incomplete change won't
-notice e.g refcount checks and won't try to "fix" them. But we'll notice it,
-e.g. when running testsuite (amen) and update C/R code accordingly.
-
-I'm talking about these checks so that everyone understands:
-
-	for_each_cr_object(ctx, obj, CR_CTX_MM_STRUCT) {
-                struct mm_struct *mm = obj->o_obj;
-                unsigned int cnt = atomic_read(&mm->mm_users);
-
-                if (obj->o_count != cnt) {
-                        printk("%s: mm_struct %p has external references %lu:%u\n", __func__, mm, obj->o_count, cnt);
-                        return -EINVAL;
-                }
-        }
-
-They are like moving detectors, small, invisible, something moved, you don't
-know what, but you don't care because you have to investigate anyway.
-
-In this scheme, if user wants to checkpoint just one process, he should
-start it alone in separate container. Right now, in posted patchset
-as cloned process with
-CLONE_NEWNS|CLONE_NEWUTS|CLONE_NEWIPC|CLONE_NEWUSER|CLONE_NEWPID|CLONE_NEWNET
-
-All of this by definition won't create situation "mom, where did my shm segment go?".
-
-> Anything in the current design makes it impossible ?
-> 
-> Anything prohibiting your from adding this feature to the current
-> patch-set ?
-> 
-> > * not having CAP_SYS_ADMIN on restart(2)
-> 
-> Surely you have read already on the containers mailing list that
-> for the *time being* we attempt to get as far as possible without
-> requiring root privileges, to identify security hot-spots.
-
-More or less everything is hotspot.
-
-> And surely you have read there the observation that for the general
-> case root privileges will probably be inevitable.
-> 
-> And surely you don't seriously think that adding this check changes
-> the "design"...
-
-This is not about design now, this is about if you allow restart(2) for
-everyone, you open kernel to very very high number of holes of all
-types. I wrote about it in reply to your code.
-
-Numbers of states described by any valid image as described by header
-files is very much higher than number of states that can validly end up
-in an image. Reducing set of states to only valid ones will require
-many checks.
-
-For example, just one structure: struct cr_hdr_cpu.
-
-Segments are directly loaded regardless of RPL.
-
-Debug registers are directly loaded regardless of to where breakpoint
-points to.
-
-If you don't understand scale of problem and insist on restart(2) not
-having CAP_SYS_ADMIN, we'll just drop from discussion and write email
-to bugtraq to warn sysadmins at least.
-
-restart(2) for everyone sounds like excellent feature and is excellent
-feature but simultaneusly is completely unrealistic for Unix-like kernel.
-
-> > * having small (TASK_COMM_LEN) and bigger (objref[1]) image format
-> >   misdesigns.
-> 
-> Eh ?
-
-TASK_COMM_LEN is 16 bytes and is not going to change, so you do
-
-	__u8 cr_comm[16];
-
-and forget. If TASK_COMM_LEN changes you'll just bump size of
-task_struct image and image version.
-
-Saving ->comm as variable-sized string is complication out of nowhere.
-
-As for objref, my apoligies, objection dropped, I understood how it can be useful.
-
-> > * doing fork(2)+restart(2) per restarted task and whole orchestration
-> >   done from userspace/future init task.
-> 
-> Why is it "incorrect" ?
-> What makes it "better" to do it in the kernel ?
-> Only because you say so is not convincing.
-> 
-> (also see my other post in this matter).
-> 
-> > * not seeing bigger picture (note, this is not equivalent to supporting
-> >   everything at once, nobody is asking for everything at once) wrt shared
-> >   objects and format and code changes because of that (note again, image
-> >   format will change, but it's easy to design high level structure which
-> >   won't change)
-> 
-> Why don't you describe the bigger picture so that the rest of can
-> finally see it, too ?!
-> (what a waste to have spent all this effort in vain...)
-
-Sit and graph down all structures that you will eventually checkpoint and
-relations about them. Things like "struct cr_hdr_pids" won't even be on
-the radar.
-
-> > * checking of unsupported features done at wrong place and wrong time
-> >   and runtime overhead because of that on CR=y kernels.
-> 
-> Eh ?   Did you follow the code recently ?
-
-Checks during dup_fd() were dropped? Good.
-
-> > There are also low-level things, but it's cumulative effect.
-> > 
-> > [1] Do I inderstand correctly that cookie for shared object is an
-> > address on kernel stack? This is obviously unreliable, if yes :-)
-> 
-> Ah... I see... you didn't look at it that hard, not even read the
-> documentation with the code.
-> 
-> > 
-> > 	int objref;
-> > 		...
-> > 	/* adding 'file' to the hash will keep a reference to it */
-> > 	new = cr_obj_add_ptr(ctx, file, &objref, CR_OBJ_FILE, 0);
-> > 					^^^^^^^
-> 
-> That said, there are more similarities than differences between your
-> suggested template and the current patchset. With your expertise you
-> can contribute tremendously if you decide to work together.
-
-OK, totally misread code.
+Bjorn
