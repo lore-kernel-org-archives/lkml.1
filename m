@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZDNOvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZDNOxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZDNOvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 10:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZDNOu5
+	id S1756535AbZDNOxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 10:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbZDNOx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 10:50:57 -0400
-Received: from khc.piap.pl ([195.187.100.11]:39249 "EHLO khc.piap.pl"
+	Tue, 14 Apr 2009 10:53:26 -0400
+Received: from cmpxchg.org ([85.214.51.133]:41517 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750793AbZDNOu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 10:50:56 -0400
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, martin@valinux.com,
-       gareth@valinux.com, airlied@linux.ie, dri-devel@lists.sourceforge.net,
-       David Woodhouse <dwmw2@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] radeon_cp: use request_firmware
-References: <1239640067.3237.4.camel@ht.satnam>
-	<1239647163.18110.150.camel@deadeye.i.decadent.org.uk>
-	<1239684881.3033.11.camel@ht.satnam>
-	<20090414142618.GY3051@decadent.org.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 14 Apr 2009 16:50:51 +0200
-In-Reply-To: <20090414142618.GY3051@decadent.org.uk> (Ben Hutchings's message of "Tue\, 14 Apr 2009 15\:26\:18 +0100")
-Message-ID: <m3bpqzuw50.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751744AbZDNOxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 10:53:25 -0400
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] wait: don't use __wake_up_common()
+Date: Tue, 14 Apr 2009 16:53:05 +0200
+Message-Id: <1239720785-19661-1-git-send-email-hannes@cmpxchg.org>
+X-Mailer: git-send-email 1.6.2.1.135.gde769
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Hutchings <ben@decadent.org.uk> writes:
+'777c6c5 wait: prevent exclusive waiter starvation' made
+__wake_up_common() global to be used from abort_exclusive_wait().
 
-> I don't copy Signed-off-by if I make significant changes as the original
-> author should not be held responsible for any errors.  I'll be happy to
-> ask for your S-o-b before submitting a patch based on your work in future.
+It was needed to do a wake-up with the waitqueue lock held while
+passing down a key to the wake-up function.
 
-I think we should never include the original SOB if there was _any_
-change. SOB is not credits, it's a signature. If someone takes my patch
-and changes it, I want my SOB line removed unless I re-sign the modified
-patch.
+Since '4ede816 epoll keyed wakeups: add __wake_up_locked_key() and
+__wake_up_sync_key()' there is an appropriate wrapper for this case:
+__wake_up_locked_key().
 
-We may invent some other Based-on-patch-by: etc. tag if really
-necessary, but the signature is a different thing.
+Use it here and make __wake_up_common() private to the scheduler
+again.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ include/linux/wait.h |    2 --
+ kernel/sched.c       |    2 +-
+ kernel/wait.c        |    2 +-
+ 3 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index 5d631c1..67d4e89 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -132,8 +132,6 @@ static inline void __remove_wait_queue(wait_queue_head_t *head,
+ 	list_del(&old->task_list);
+ }
+ 
+-void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
+-			int nr_exclusive, int sync, void *key);
+ void __wake_up(wait_queue_head_t *q, unsigned int mode, int nr, void *key);
+ void __wake_up_locked_key(wait_queue_head_t *q, unsigned int mode, void *key);
+ void __wake_up_sync_key(wait_queue_head_t *q, unsigned int mode, int nr,
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5724508..46c8f25 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5221,7 +5221,7 @@ EXPORT_SYMBOL(default_wake_function);
+  * started to run but is not in state TASK_RUNNING. try_to_wake_up() returns
+  * zero in this (rare) case, and we handle it by continuing to scan the queue.
+  */
+-void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
++static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
+ 			int nr_exclusive, int sync, void *key)
+ {
+ 	wait_queue_t *curr, *next;
+diff --git a/kernel/wait.c b/kernel/wait.c
+index 42a2dbc..ea7c3b4 100644
+--- a/kernel/wait.c
++++ b/kernel/wait.c
+@@ -154,7 +154,7 @@ void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait,
+ 	if (!list_empty(&wait->task_list))
+ 		list_del_init(&wait->task_list);
+ 	else if (waitqueue_active(q))
+-		__wake_up_common(q, mode, 1, 0, key);
++		__wake_up_locked_key(q, mode, key);
+ 	spin_unlock_irqrestore(&q->lock, flags);
+ }
+ EXPORT_SYMBOL(abort_exclusive_wait);
 -- 
-Krzysztof Halasa
+1.6.2.1.135.gde769
+
