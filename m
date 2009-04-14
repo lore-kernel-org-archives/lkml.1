@@ -1,32 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbZDNSk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759136AbZDNSmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758460AbZDNSk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbZDNSk0
+	id S1759136AbZDNSmh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbZDNSm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:40:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53170 "EHLO mx3.mail.elte.hu"
+	Tue, 14 Apr 2009 14:42:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53400 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757576AbZDNSkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:40:24 -0400
-Date: Tue, 14 Apr 2009 20:40:07 +0200
+	id S1751446AbZDNSm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:42:26 -0400
+Date: Tue, 14 Apr 2009 20:42:22 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "ego@in.ibm.com" <ego@in.ibm.com>, "mingo@redhat.com" <mingo@redhat.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Subject: Re: [tip:sched/urgent] sched: Print sched_group::__cpu_power in
-	sched_domain_debug
-Message-ID: <20090414184007.GB11214@elte.hu>
-References: <20090330045520.2869.24777.stgit@sofia.in.ibm.com> <tip-46e0bb9c12f4bab539736f1714cbf16600f681ec@git.kernel.org> <12c511ca0904131153g39b99ec6n6c6ec2e7de3f7ea6@mail.gmail.com> <20090414000934.GN817@elte.hu> <20090414033936.GA534@in.ibm.com> <57C9024A16AD2D4C97DC78E552063EA39B3CF29A@orsmsx505.amr.corp.intel.com> <20090414170621.GA1733@in.ibm.com> <57C9024A16AD2D4C97DC78E552063EA39B3CF3B4@orsmsx505.amr.corp.intel.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
+	inappropriate or CPU is not supported
+Message-ID: <20090414184222.GC11214@elte.hu>
+References: <1239725240.2966.4.camel@ht.satnam> <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA39B3CF3B4@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <1239728481.2966.21.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,18 +35,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Luck, Tony <tony.luck@intel.com> wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> -               printk(KERN_CONT " %s (__cpu_power = %d)", str,
-> +               printk(KERN_CONT " %s", str);
-> +               if (group->__cpu_power != SCHED_LOAD_SCALE)
-> +                       printk(KERN_CONT " (__cpu_power = %d)",
->                                                 group->__cpu_power);
+> On Tue, 2009-04-14 at 18:50 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > > +		if (!per_cpu(cpu_modelflag, cpu))
+> > 
+> > hm, on a second look - the whole cpu_model / cpu_modelflag 
+> > business in arch/x86/kernel/cpu/cpu_debug.c looks 
+> > over-complicated and broken. You encode it into a 
+> > 'modelflag':
+> > 
+> >                 per_cpu(cpu_model, cpu) = ((cpui->x86_vendor << 16) |
+> >                                            (cpui->x86 << 8) |
+> >                                            (cpui->x86_model));
+> > 
+> > just to decode it later on:
+> > 
+> >         flag = per_cpu(cpu_model, cpu);
+> > 
+> >         switch (flag >> 16) {
+> > 
+> > That does not make much sense. Please use a proper 
+> > boot_cpu_data.x86_vendor switch() statement, ok?
+> > 
 > 
-> That looks better.
+> I am using flags for each cpu, in case there are different CPU in the
+> sockets:
 > 
-> Acked-by: Tony Luck <tony.luck@intel.com>
+> struct cpuinfo_x86 *cpui;
+> cpui = &cpu_data(cpu);
+> 
+> Do you still think that boot_cpu_data.x86_vendor is better option in
+> case for multiple CPUs.
 
-Thanks, picked up this variant!
+yes. Assymetric SMP never really happened on x86.
 
 	Ingo
