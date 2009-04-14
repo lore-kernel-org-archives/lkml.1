@@ -1,61 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZDNVgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZDNVgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756054AbZDNVgf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 17:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZDNVg0
+	id S1753551AbZDNVgw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 17:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbZDNVgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 17:36:26 -0400
-Received: from smtp-noauth7.primus.ca ([216.254.180.38]:47177 "EHLO
-	mail-05.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751711AbZDNVgZ (ORCPT
+	Tue, 14 Apr 2009 17:36:41 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:53987 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbZDNVgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 17:36:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=elastic.org;
-	h=Received:Received:Received:Date:From:To:Subject:Message-ID:References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To:User-Agent;
-	b=i66/KkSlSfTRgwpWOZvKEiptqVPpYXRyOsJ3s5RUZw7tlHB7cAG1tH1bfbKdYQSUQZGRC+jQS4v5yNFaOsMo1sLwJofgrBcNP3DNeokAahjMl5skhLLcvSHQIWyWv7s0;
-Date: Tue, 14 Apr 2009 17:29:17 -0400
-From: "Frank Ch. Eigler" <fche@elastic.org>
-To: Theodore Tso <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Jiaying Zhang <jiayingz@google.com>,
-       Michael Rubin <mrubin@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
-Message-ID: <20090414212917.GA19933@elastic.org>
-References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu>
+	Tue, 14 Apr 2009 17:36:40 -0400
+Message-ID: <49E501D4.6000605@oracle.com>
+Date: Tue, 14 Apr 2009 14:36:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090414210445.GM955@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Trouble with make-install from a NFS mount
+References: <49E500F6.8060401@novell.com>
+In-Reply-To: <49E500F6.8060401@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.49E501B1.00F0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-On Tue, Apr 14, 2009 at 05:04:45PM -0400, Theodore Tso wrote:
-> [...]
-> One thing which I would really like is to avoid needing to drop the
-> header file in include/trace/<subsystem.h>.
+Gregory Haskins wrote:
+> Hi All,
+>   I've been struggling trying to find the cause of a regression in
+> 30-rc1 (compared to 2.6.29) where I am no longer able to make-install a
+> kernel via an NFS mounted home directory.
 > 
-> The problem that I have with this is that for ext4, we need to access
-> private data structures which are defined in header files in
-> fs/ext4/*.h --- which we moved into fs/ext4 a long time ago [...]
+> Historically I do all of my kernel development/building on one machine
+> and then I have a bunch of test machines that are NIS/NFS clients of
+> that machine that have the same /home mounted.  When I am ready to
+> deploy a kernel, I log into that machine and su to root to simply "make
+> modules_install && make install" the kernel.  This has always worked
+> until recently.  I started getting this message:
+> 
+>   INSTALL sound/usb/caiaq/snd-usb-caiaq.ko
+>   INSTALL sound/usb/snd-usb-audio.ko
+>   INSTALL sound/usb/snd-usb-lib.ko
+>   INSTALL sound/usb/usx2y/snd-usb-usx2y.ko
+>   DEPMOD  2.6.30-rc1-vbus
+> rm: cannot remove `include/config/kernel.release': Permission denied
+> make: *** [include/config/kernel.release] Error 1
+> 
+> I understand what is going on w.r.t. the root shell having permisssion
+> problems modifying data on an NFS mount.  However, this _used_ to work
+> so I started investigating for what I thought would be a minor change to
+> kbuild that I could patch.  At first I simply just hacked the makefile
+> to make the kernel.release stuff use the "-" to ignore the error.  This
+> did manage to get me past the initial problem, but then I immediately
+> ran into more problems related to the generation of version.h and
+> version.h.tmp as well. 
+> 
+> Looking into this, I couldnt track down where the "filechk" magic was
+> coming from (any hints from the kbuild gurus?).  So I thought that I
+> would try to bisect the issue.  However, that failed to produce a bad
+> commit for reasons that I do not quite understand either.  Here is the
+> git-bisect log:
+> 
+> git bisect start
+> # good: [8e0ee43bc2c3e19db56a4adaa9a9b04ce885cd84] Linux 2.6.29
+> git bisect good 8e0ee43bc2c3e19db56a4adaa9a9b04ce885cd84
+> # bad: [b21597d0268983f8f9e8b563494f75490403e948] Merge branch
+> 'for-linus' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6
+> git bisect bad b21597d0268983f8f9e8b563494f75490403e948
+> # good: [7f6adeaf2d8800b66c5dd6c2cf2622dfdd68bd31] V4L/DVB (10730):
+> v4l-dvb: cleanup obsolete references to v4l1 headers.
+> git bisect good 7f6adeaf2d8800b66c5dd6c2cf2622dfdd68bd31
+> # good: [18222f98223a00537bcf29ba74c8d5fdb3ae1fb8] Staging: comedi: add
+> ssv_dnp driver
+> git bisect good 18222f98223a00537bcf29ba74c8d5fdb3ae1fb8
+> # bad: [32fb6c17566ec66de87324a834c7776f40e35e78] Merge branch 'release'
+> of git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
+> git bisect bad 32fb6c17566ec66de87324a834c7776f40e35e78
+> # bad: [714f83d5d9f7c785f622259dad1f4fad12d64664] Merge branch
+> 'tracing-for-linus' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect bad 714f83d5d9f7c785f622259dad1f4fad12d64664
+> # good: [6404434525bb9f8f2239998f30fd7c93f2efa5b3] tracing/syscalls:
+> various cleanups
+> git bisect good 6404434525bb9f8f2239998f30fd7c93f2efa5b3
+> # bad: [0a053e8c71d666daf30da2d407147b1293923d8b] Merge branch
+> 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc
+> git bisect bad 0a053e8c71d666daf30da2d407147b1293923d8b
+> # bad: [811158b147a503fbdf9773224004ffd32002d1fe] Merge branch
+> 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/jikos/trivial
+> git bisect bad 811158b147a503fbdf9773224004ffd32002d1fe
+> # bad: [b983471794e568fd71fa767da77a62ba517c3e63] Merge
+> git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable
+> git bisect bad b983471794e568fd71fa767da77a62ba517c3e63
+> # bad: [9140db04ef185f934acf2b1b15b3dd5e6a6bfc22] ocfs2: recover orphans
+> in offline slots during recovery and mount
+> git bisect bad 9140db04ef185f934acf2b1b15b3dd5e6a6bfc22
+> # bad: [feb473a6e8bd19297d0f3bb377b25055c0228c0a] ocfs2: Optimize inode
+> group allocation by recording last used group.
+> git bisect bad feb473a6e8bd19297d0f3bb377b25055c0228c0a
+> # bad: [e7c17e43090afe558c40bfb66637744c27bd2aeb] ocfs2: Introduce dir
+> free space list
+> git bisect bad e7c17e43090afe558c40bfb66637744c27bd2aeb
+> # bad: [59b526a30722f29e5dba6210a6e0fc34e3149b94] ocfs2: Remove debugfs
+> file local_alloc_stats
+> git bisect bad 59b526a30722f29e5dba6210a6e0fc34e3149b94
+> # bad: [96a6c64b5354b804b3ccfd1b31306565a01ebcb1] ocfs2: Move struct
+> recovery_map to a header file
+> git bisect bad 96a6c64b5354b804b3ccfd1b31306565a01ebcb1
+> # bad: [87d3d3f3931f3e0fca44fbb5c06ad45fc4dca9bc] ocfs2/hb: Expose the
+> list of heartbeating nodes via debugfs
+> git bisect bad 87d3d3f3931f3e0fca44fbb5c06ad45fc4dca9bc
+> 
+> What I dont really understand is that this (I thought) was supposed to
+> look for where the behavior first appeared between v2.6.29..HEAD, but
+> some points along the way were actually before v2.6.29 was cut.  I don't
+> really know what went wrong, but if it matters I am running git 1.6.2.
+> 
+> At this point, I am stuck.  Perhaps there is a better methodology to
+> deploying the kernels that I should employ, but I am not sure which to
+> use yet.  Any help appreciated!
 
-If the tracepoints/events expand to code that exposes those private
-structures, then those structures are perhaps not quite so private any
-more.  That argues for moving those headers back under include/..., or
-at least those type decls made reachable from the tracepoints.
 
-- FChE
+See this patch, already applied/merged:
+
+Gitweb:     http://git.kernel.org/linus/556b0f58bbcdc96ba8ed67001b4e57c50198da89
+Commit:     556b0f58bbcdc96ba8ed67001b4e57c50198da89
+Parent:     8e320d02718d2872d52ef88a69a493e420494269
+Author:     David Woodhouse <David.Woodhouse@intel.com>
+AuthorDate: Sat Jan 10 14:53:15 2009 +0000
+Committer:  David Woodhouse <David.Woodhouse@intel.com>
+CommitDate: Mon Apr 6 14:27:17 2009 -0700
+
+    Revert "fix modules_install via NFS"
+    
+    This reverts commit 8b249b6856f16f09b0e5b79ce5f4d435e439b9d6.
+    
+    This 'fix' is not necessary; we just need to undo the damage caused
+    accidentally by Igor/Mauro in 4b29631db33292d416dc395c56122ea865e7635c
+    ("V4L/DVB (9533): cx88: Add support for TurboSight TBS8910 DVB-S PCI card")
+    
+    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+
+
+-- 
+~Randy
