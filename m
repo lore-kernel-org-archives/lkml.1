@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZDNUXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZDNUYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbZDNUXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 16:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZDNUVr
+	id S1755683AbZDNUYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 16:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZDNUVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 16:21:47 -0400
+	Tue, 14 Apr 2009 16:21:53 -0400
 Received: from mail-fx0-f158.google.com ([209.85.220.158]:48643 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754095AbZDNUVg (ORCPT
+	with ESMTP id S1754594AbZDNUVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 16:21:36 -0400
+	Tue, 14 Apr 2009 16:21:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=YHPESaDc9sDneK5Ni0Exrot+IHB7/y9DWIsO/EU8iFP5tY8qTvYBYuC0eOGFGsYfHj
-         yfsOWt4rb3mUXi6RNuZgehgJydiSlvquugwhZ/HzNpdyoKlBMyiUexnfh93WROf7SUxR
-         4ZqmTQu1dq55dHiyOxVmWYJOUPzSwz/KqivX0=
+        b=LlQaR3elX0hhAXxnyWYokWr09n8NsfH16jFsIzABeKNyvHlUJ8jv1b8EbdXVmSlWrQ
+         GmXOSE63iaBbJv1gDYMkfdb+5Ch1u6R6ryNArZ0VK+81918dtJPiHQKAvEsTRwqz4pPw
+         DU2zbdF68SskLeiTAKwyBn2jkddB5fbbRc4OU=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Paul Menage <menage@google.com>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -30,10 +30,10 @@ Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
        Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
        yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/9] support checking of cgroup subsystem dependencies
-Date: Tue, 14 Apr 2009 22:21:15 +0200
-Message-Id: <1239740480-28125-5-git-send-email-righi.andrea@gmail.com>
+       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH 8/9] export per-task io-throttle statistics to userspace
+Date: Tue, 14 Apr 2009 22:21:19 +0200
+Message-Id: <1239740480-28125-9-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
 References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
@@ -41,86 +41,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+Export the throttling statistics collected for each task through
+/proc/PID/io-throttle-stat.
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+Example:
+ $ cat /proc/$$/io-throttle-stat
+ 0 0 0 0
+ ^ ^ ^ ^
+  \ \ \ \_____global iops sleep (in clock ticks)
+   \ \ \______global iops counter
+    \ \_______global bandwidth sleep (in clock ticks)
+     \________global bandwidth counter
 
-This allows one subsystem to require to be mounted only when some other
-subsystems are also present in or not in the proposed hierarchy.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- Documentation/cgroups/cgroups.txt |    5 +++++
- include/linux/cgroup.h            |    2 ++
- kernel/cgroup.c                   |   19 ++++++++++++++++++-
- 3 files changed, 25 insertions(+), 1 deletions(-)
+ fs/proc/base.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-index 6eb1a97..6938025 100644
---- a/Documentation/cgroups/cgroups.txt
-+++ b/Documentation/cgroups/cgroups.txt
-@@ -552,6 +552,11 @@ and root cgroup. Currently this will only involve movement between
- the default hierarchy (which never has sub-cgroups) and a hierarchy
- that is being created/destroyed (and hence has no sub-cgroups).
- 
-+int subsys_depend(struct cgroup_subsys *ss, unsigned long subsys_bits)
-+Called when a cgroup subsystem wants to check if some other subsystems
-+are also present in the proposed hierarchy. If this method returns error,
-+the mount of the cgroup filesystem will fail.
-+
- 4. Questions
- ============
- 
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 665fa70..37ace23 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -385,6 +385,8 @@ struct cgroup_subsys {
- 			struct cgroup *cgrp);
- 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
-+	int (*subsys_depend)(struct cgroup_subsys *ss,
-+			     unsigned long subsys_bits);
- 
- 	int subsys_id;
- 	int active;
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 382109b..fad3f08 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -830,6 +830,23 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	return 0;
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index f715597..c07ee00 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -54,6 +54,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/stat.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/init.h>
+ #include <linux/capability.h>
+ #include <linux/file.h>
+@@ -2453,6 +2454,17 @@ static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
  }
+ #endif /* CONFIG_TASK_IO_ACCOUNTING */
  
-+static int check_subsys_dependency(unsigned long subsys_bits)
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++static int proc_iothrottle_stat(struct task_struct *task, char *buffer)
 +{
-+	int i;
-+	int ret;
-+	struct cgroup_subsys *ss;
-+
-+	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		ss = subsys[i];
-+		if (test_bit(i, &subsys_bits) && ss->subsys_depend) {
-+			ret = ss->subsys_depend(ss, subsys_bits);
-+			if (ret)
-+				return ret;
-+		}
-+	}
-+	return 0;
++	return sprintf(buffer, "%llu %llu %llu %llu\n",
++			get_io_throttle_cnt(task, IOTHROTTLE_BANDWIDTH),
++			get_io_throttle_sleep(task, IOTHROTTLE_BANDWIDTH),
++			get_io_throttle_cnt(task, IOTHROTTLE_IOPS),
++			get_io_throttle_sleep(task, IOTHROTTLE_IOPS));
 +}
++#endif /* CONFIG_CGROUP_IO_THROTTLE */
 +
- struct cgroup_sb_opts {
- 	unsigned long subsys_bits;
- 	unsigned long flags;
-@@ -890,7 +907,7 @@ static int parse_cgroupfs_options(char *data,
- 	if (!opts->subsys_bits)
- 		return -EINVAL;
+ static int proc_pid_personality(struct seq_file *m, struct pid_namespace *ns,
+ 				struct pid *pid, struct task_struct *task)
+ {
+@@ -2539,6 +2551,9 @@ static const struct pid_entry tgid_base_stuff[] = {
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+ 	INF("io",	S_IRUGO, proc_tgid_io_accounting),
+ #endif
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++	INF("io-throttle-stat",	S_IRUGO, proc_iothrottle_stat),
++#endif
+ };
  
--	return 0;
-+	return check_subsys_dependency(opts->subsys_bits);
- }
+ static int proc_tgid_base_readdir(struct file * filp,
+@@ -2874,6 +2889,9 @@ static const struct pid_entry tid_base_stuff[] = {
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+ 	INF("io",	S_IRUGO, proc_tid_io_accounting),
+ #endif
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++	INF("io-throttle-stat",	S_IRUGO, proc_iothrottle_stat),
++#endif
+ };
  
- static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+ static int proc_tid_base_readdir(struct file * filp,
 -- 
 1.5.6.3
 
