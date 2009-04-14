@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZDNJRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbZDNJSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZDNJRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 05:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZDNJRI
+	id S1753026AbZDNJSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 05:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZDNJSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 05:17:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55042 "EHLO hera.kernel.org"
+	Tue, 14 Apr 2009 05:18:44 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33986 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750990AbZDNJRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 05:17:05 -0400
-Date: Tue, 14 Apr 2009 09:15:38 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, davem@davemloft.net, fweisbec@gmail.com,
-       tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, fweisbec@gmail.com,
-       tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
-In-Reply-To: <20090414144317.026498df.sfr@canb.auug.org.au>
-References: <20090414144317.026498df.sfr@canb.auug.org.au>
-Subject: [tip:core/urgent] lockdep: warn about lockdep disabling after kernel taint, fix
-Message-ID: <tip-27b19565fe4ca5b0e9d2ae98ce4b81ca728bf445@git.kernel.org>
-Git-Commit-ID: 27b19565fe4ca5b0e9d2ae98ce4b81ca728bf445
-X-Mailer: tip-git-log-daemon
+	id S1750746AbZDNJSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 05:18:43 -0400
+Date: Tue, 14 Apr 2009 10:18:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: How movable is zone movable?
+Message-ID: <20090414091839.GA1772@csn.ul.ie>
+References: <200904121129.09851.edt@aei.ca> <20090413095924.GA15333@csn.ul.ie> <20090413100440.GB15333@csn.ul.ie> <200904130810.59230.edt@aei.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Apr 2009 09:15:43 +0000 (UTC)
+In-Reply-To: <200904130810.59230.edt@aei.ca>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  27b19565fe4ca5b0e9d2ae98ce4b81ca728bf445
-Gitweb:     http://git.kernel.org/tip/27b19565fe4ca5b0e9d2ae98ce4b81ca728bf445
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 14 Apr 2009 11:03:12 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 14 Apr 2009 11:11:52 +0200
+On Mon, Apr 13, 2009 at 08:10:58AM -0400, Ed Tomlinson wrote:
+> On Monday 13 April 2009 06:04:40 you wrote:
+> > On Mon, Apr 13, 2009 at 10:59:25AM +0100, Mel Gorman wrote:
+> > > > # huge_pages with movablecore set to 3G
+> > > 
+> > > How big did you make the movable zone and what is the hugepage size?
+> > 
+> > Scratch that question, I missed you said it was 3G. Are pages being
+> > mlocked()?
+> 
+> Looks like there are mlocked pages.  What stopped the patches to allow these pages
+> to be migrated?
+> 
 
-lockdep: warn about lockdep disabling after kernel taint, fix
+My recollection is fuzzy but it was mainly down to three points.
 
-Impact: build fix for Sparc and s390
+1. I could occasionally lock up the system if under enough load using
+   page migration. I didn't have a reliable reproduction case to pin down
+   whether it was something in page migration or something wrong with the
+   way I was using it. There have been fixes in page migration since though
+   so it's possible that got fixed along the way.
 
-Stephen Rothwell reported that the Sparc build broke:
+2. At the time, memory partitioning and anti-fragmentation were not long in
+   mainline and dynamic hugepage pool resizing was very new. It was not clear
+   there were going to be users of dynamic hugepage pool resizing that would
+   need memory compaction as well. I was reasonasbly confident but that's
+   not users.
 
- In file included from kernel/panic.c:12:
- include/linux/debug_locks.h: In function '__debug_locks_off':
- include/linux/debug_locks.h:15: error: implicit declaration of function 'xchg'
+3. There were significant problems in hugetlbfs that needed fixing up
+   such as the reliability of MAP_PRIVATE. It was more important to chase
+   down the stuff people certainly needed than complete features that they
+   might need.
 
-due to:
+The patches weren't downright rejected as such but I didn't push hard as there
+were almost zero users of dynamic hugepage pool resizing to be complaining
+about mlock(). Improving hugetlbfs was more important and of obvious benefit
+and I reckoned I'd wait and see who complained about mlock.
 
- 9eeba61: lockdep: warn about lockdep disabling after kernel taint
+This has changed now. hugetlbfs is in way better state than it was and it
+sounds like KVM is a user that is both interested in using dynamic pool
+resizing and has mlocked pages. How much demand is there do you think?
 
-There is some inconsistency between architectures about where exactly
-xchg() is defined.
+There is someone currently working on helping the pool resizing from userspace
+by temporarily adding a swap device during pool resize that will take a
+while to complete. The plan was that they would revisit memory compaction
+based on the prototype patches I did ages ago later in the year but maybe
+that can be pushed along a bit harder if there was enough interest.
 
-The traditional place is in system.h but the more logical point for it
-is in atomic.h - where most architectures (especially new ones) have
-it defined. These architecture also still offer it via system.h.
-
-Some, such as Sparc or s390 only have it in asm/system.h and not available
-via asm/atomic.h at all.
-
-Use the widest set of headers in debug_locks.h and also include asm/system.h.
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <20090414144317.026498df.sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/debug_locks.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/debug_locks.h b/include/linux/debug_locks.h
-index 493dedb..29b3ce3 100644
---- a/include/linux/debug_locks.h
-+++ b/include/linux/debug_locks.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/kernel.h>
- #include <asm/atomic.h>
-+#include <asm/system.h>
- 
- struct task_struct;
- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
