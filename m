@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZDNSIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZDNSJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZDNSIj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 14:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZDNSIa
+	id S1757142AbZDNSJG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 14:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbZDNSIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 14:08:30 -0400
-Received: from ppp-111-110.adsl.restena.lu ([158.64.111.110]:48807 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754580AbZDNSI3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 14:08:29 -0400
-X-Greylist: delayed 660 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Apr 2009 14:08:29 EDT
-Date: Tue, 14 Apr 2009 19:57:26 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: yakui_zhao <yakui.zhao@intel.com>
-Cc: "Shi, Alex" <alex.shi@intel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brown, Len" <len.brown@intel.com>
-Subject: Re: 2.6.30-rc1 regression: boot hang due to commit
- ff69f2bba67bd45514923aaedbf40fe351787c59
-Message-ID: <20090414195726.0244e6ba@neptune.home>
-In-Reply-To: <1239669968.5564.51.camel@localhost.localdomain>
-References: <20090413161101.0b3fc6f7@neptune.home>
-	<1239669968.5564.51.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 14 Apr 2009 14:08:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54191 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755601AbZDNSIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 14:08:51 -0400
+Date: Tue, 14 Apr 2009 20:08:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Subject: Re: [PATCH 00/14] convert voyager over to the x86 quirks model
+Message-ID: <20090414180832.GA25692@elte.hu>
+References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com> <20090414165722.GD2089@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414165722.GD2089@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 April 2009 yakui_zhao <yakui.zhao@intel.com> wrote:
-> On Mon, 2009-04-13 at 22:11 +0800, Bruno Prémont wrote:
-> > Hi All,
-> > 
-> > I bisected a boot-hang on Acer TravelMate 66x laptop and ended on
-> > commit ff69f2bba67bd45514923aaedbf40fe351787c59.
-> Will you please add the boot option of "initcall_debug" and attach the
-> screenshot where it hangs?
->    
-> It will be great if you can file a new bug at
-> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> and attach the output of acpidump?
-> Thanks.
 
-Bug created as
-  http://bugzilla.kernel.org/show_bug.cgi?id=13087
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-and includes complete boot log (until place where kernel hangs) as well
-as acpidump output.
+> 
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> >  39 files changed, 554 insertions(+), 726 deletions(-)
+> 
+> That diffstat is not against current mainline, is it? 
+> Would you mind to send a proper diffstat with the revert 
+> included as well? That will give us a complete picture.
 
-Bruno
+ok, i did the calculations, and the effect of adding back 
+x86/Voyager is roughly:
+
+   48 files changed, 5226 insertions(+), 142 deletions(-)
+
+That's quite a lot, and lets put this into perspective.
+
+You are talking about moving ~5000 lines of legacy code back into 
+arch/x86/, for a total of *four* Voyager/Linux systems, which are 
+using _ancient_ 486/P5 era CPUs.
+
+Two of these systems are in your house, two are somewhere unknown: 
+their owners certainly never sent bugreports against recent mainline 
+kernels (Voyager didnt even _build_ for a couple of straight kernel 
+releases), and i suspect those boxes are probably decommissioned 
+already.
+
+A single core on my run-of-the-mill x86 laptop has more computing 
+power than all Voyager/Linux systems on the planet, combined. And 
+you now want to add back support to the mainline arch/x86 code, 
+which we are trying hard to keep running on millions of x86 Linux 
+systems?
+
+You still have not given proper justification for doing that ...
+
+Sorry to be the one to say 'no', but the reasons you gave so far 
+were not very convincing to me.
+ 
+Anyway, you seem to be willing to maintain this code it out of tree. 
+If someone owns such an ancient Voyager box and wants to test a new 
+kernel then your tree is a good starting point for doing that. 
+There's really no pressing need to have this in mainline.
+
+	Ingo
