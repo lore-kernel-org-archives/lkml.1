@@ -1,83 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZDNTdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZDNTfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZDNTdy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 15:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZDNTdp
+	id S1755520AbZDNTfg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 15:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZDNTf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 15:33:45 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:32809 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbZDNTdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 15:33:44 -0400
-Subject: meminfo Committed_AS underflows
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: linux-mm <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Eric B Munson <ebmunson@us.ibm.com>,
-       Mel Gorman <mel@linux.vnet.ibm.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 14 Apr 2009 12:33:39 -0700
-Message-Id: <1239737619.32604.118.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 14 Apr 2009 15:35:29 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:35476 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbZDNTf3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 15:35:29 -0400
+Message-ID: <49E4E4AB.1030803@cs.columbia.edu>
+Date: Tue, 14 Apr 2009 15:31:55 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       serue@us.ibm.com, mingo@elte.hu, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz> <20090413091423.GA19236@x200.localdomain> <49E4108A.8050201@cs.columbia.edu> <20090414145830.GA27461@x200.localdomain> <49E4D115.5080601@cs.columbia.edu> <20090414183435.GA28233@x200.localdomain>
+In-Reply-To: <20090414183435.GA28233@x200.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a set of ppc64 machines that seem to spontaneously get underflows
-in /proc/meminfo's Committed_AS field:
-        
-        # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
-              1 Committed_AS: 18446744073709323392 kB
-             11 Committed_AS: 18446744073709455488 kB
-              6 Committed_AS:    35136 kB
-              5 Committed_AS: 18446744073709454400 kB
-              7 Committed_AS:    35904 kB
-              3 Committed_AS: 18446744073709453248 kB
-              2 Committed_AS:    34752 kB
-              9 Committed_AS: 18446744073709453248 kB
-              8 Committed_AS:    34752 kB
-              3 Committed_AS: 18446744073709320960 kB
-              7 Committed_AS: 18446744073709454080 kB
-              3 Committed_AS: 18446744073709320960 kB
-              5 Committed_AS: 18446744073709454080 kB
-              6 Committed_AS: 18446744073709320960 kB
 
-As you can see, it bounces in and out of it.  I think the problem is
-here:
-        
-        #define ACCT_THRESHOLD  max(16, NR_CPUS * 2)
-        ...
-        void vm_acct_memory(long pages)
-        {
-                long *local;
-        
-                preempt_disable();
-                local = &__get_cpu_var(committed_space);
-                *local += pages;
-                if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
-                        atomic_long_add(*local, &vm_committed_space);
-                        *local = 0;
-                }
-                preempt_enable();
-        }
 
-Plus, some joker set CONFIG_NR_CPUS=1024.
+Alexey Dobriyan wrote:
+> On Tue, Apr 14, 2009 at 02:08:21PM -0400, Oren Laadan wrote:
+>>
+>> Alexey Dobriyan wrote:
+>>> On Tue, Apr 14, 2009 at 12:26:50AM -0400, Oren Laadan wrote:
+>>>> Alexey Dobriyan wrote:
+>>>>> On Thu, Apr 09, 2009 at 10:07:11PM -0700, Dave Hansen wrote:
+>>>>>> I'm curious how you see these fitting in with the work that we've been
+>>>>>> doing with Oren.  Do you mean to just start a discussion or are you
+>>>>>> really proposing these as an alternative to what Oren has been posting?
+>>>>> Yes, this is posted as alternative.
+>>>>>
+>>>>> Some design decisions are seen as incorrect from here like:
+>>>> A definition of "design" would help; I find most of your comments
+>>>> below either vague, cryptic, or technical nits...
+>>>>
+>>>>> * not rejecting checkpoint with possible "leaks" from container
+>>>> ...like this, for example.
+>>> Like checkpointing one process out of many living together.
+>> See the thread on creating tasks in userspace vs. kernel space:
+>> the argument here is that is an interesting enough use case for
+>> a checkpoint of not-an-entire-container.
+>>
+>> Of course it will require more logic to it, so the user can choose
+>> what she cares or does not care about, and the kernel could alert
+>> the user about it.
+>>
+>> The point is, that it is, IMHO, a desirable capability.
+>>
+>>> If you allow this you consequently drop checks (e.g. refcount checks)
+>>> for "somebody else is using structure to be checkpointed".
+>>>
+>> From this point below, I totally agree with you that for the purpose
+>> of a whole-container-checkpoint this is certainly desirable. My point
+>> was that it can be easily added the existing patchset (not yours).
+>> Why not add it there ?
+>>
+>>> If you drop these checks, you can't decipher legal sutiations like
+>>> "process genuinely doesn't care about routing table of netns it lives in"
+>>> from "illegal" situations like "process created shm segment but currently
+>>> doesn't use it so not checkpointing ipcns will result in breakagenlater".
+>>>
+>>> You'll have to move responsibility to user, so user exactly knows what
+>>> app relies on and on what. And probably add flags like CKPT_SHM,
+>>> CKPT_NETNS_ROUTE ad infinitum.
+>>>
+>>> And user will screw it badly and complain: "after restart my app
+>>> segfaulted". And user himself is screwed now: old running process is
+>>> already killed (it was checkpointed on purpose) and new process in image
+>>> segfaults every time it's restarted.
+>>>
+>>> All of this in out opinion results in doing C/R unreliably and badly.
+>>>
+>>> We are going to do it well and dig from the other side.
+>>>
+>>> If "leak" (any "leak") is detected, C/R is aborted because kernel
+>>> doesn't know what app relies on and what app doesn't care about.
+>>>
+>>> This protected from situations and failure modes described above.
+>>>
+>>> This also protects to some extent from in-kernel changes where C/R code
+>>> should have been updated but wasn't. Person doing incomplete change won't
+>>> notice e.g refcount checks and won't try to "fix" them. But we'll notice it,
+>>> e.g. when running testsuite (amen) and update C/R code accordingly.
+>>>
+>>> I'm talking about these checks so that everyone understands:
+>>>
+>>> 	for_each_cr_object(ctx, obj, CR_CTX_MM_STRUCT) {
+>>>                 struct mm_struct *mm = obj->o_obj;
+>>>                 unsigned int cnt = atomic_read(&mm->mm_users);
+>>>
+>>>                 if (obj->o_count != cnt) {
+>>>                         printk("%s: mm_struct %p has external references %lu:%u\n", __func__, mm, obj->o_count, cnt);
+>>>                         return -EINVAL;
+>>>                 }
+>>>         }
+>>>
+>>> They are like moving detectors, small, invisible, something moved, you don't
+>>> know what, but you don't care because you have to investigate anyway.
+>>>
+>>> In this scheme, if user wants to checkpoint just one process, he should
+>>> start it alone in separate container. Right now, in posted patchset
+>>> as cloned process with
+>>> CLONE_NEWNS|CLONE_NEWUTS|CLONE_NEWIPC|CLONE_NEWUSER|CLONE_NEWPID|CLONE_NEWNET
+>> So you suggest that to checkpoint a single process, say a cpu job that
+>> would run a week, which runs in the topmost pid_ns, I will need to
+>> checkpoint the entire topmost pid_ns (as a container, if at all possible
+>> - surely there will non-checkpointable tasks there) and then in
+>> user-space filter out the data and leave only one task, and then to
+>> restart I'll use a container again ?
+> 
+> No, you do little preparations and start CPU job in container from the very
+> beginning.
 
-nr_cpus (1024) * 2 * page_size (64k) = 128MB.  That means each cpu can
-skew the counter by 128MB.  With 1024 CPUs that means that we can have
-~128GB of outstanding percpu accounting that meminfo doesn't see.  Let's
-say we do vm_acct_memory(128MB-1) on 1023 of the CPUs, then on the other
-CPU, we do  vm_acct_memory(-128GB).
+So you are denying all those other users that don't want to do that
+the joy of checkpointing and restarting their stuff ... :(
 
-The 1023 cpus won't ever hit the ACCT_THRESHOLD.  The 1 CPU that did
-will decrement the global 'vm_committed_space'  by ~128 GB.  Underflow.
-Yay.  This happens on a much smaller scale now.
+Or, for users who do run everything in container, but some task is not
+checkpointable - it is using this electronic microscope device attached
+to their handheld. Alas, they do want to checkpoint that useful program
+they are running there that calculates fibonacci numbers ...
 
-Should we be protecting meminfo so that it spits slightly more sane
-numbers out to the user?
+Or, a nested container that shares something with the parent container,
+so is not checkpointable by itself...
 
--- Dave
+Ok, you probably got the idea.
+
+Oren.
 
