@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZDOBwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbZDOBxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbZDOBwW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZDOBwI
+	id S1758279AbZDOBxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZDOBxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:52:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50751 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754445AbZDOBwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:52:07 -0400
-Date: Wed, 15 Apr 2009 11:52:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 14
-Message-Id: <20090415115201.5ff5db85.sfr@canb.auug.org.au>
-In-Reply-To: <20090415011512.GF10045@kroah.com>
-References: <20090414160809.e92d9d3e.sfr@canb.auug.org.au>
-	<20090415011512.GF10045@kroah.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM"
+	Tue, 14 Apr 2009 21:53:20 -0400
+Received: from kroah.org ([198.145.64.141]:50127 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753109AbZDOBxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 21:53:19 -0400
+Date: Tue, 14 Apr 2009 18:49:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: USB storage no-boot regression (bisected)
+Message-ID: <20090415014930.GA29413@kroah.com>
+References: <49E4FAC6.1030400@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E4FAC6.1030400@garzik.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 14, 2009 at 05:06:14PM -0400, Jeff Garzik wrote:
+> 
+> Once of the x86-64 machines I use for testing runs off of two 2GB USB 
+> flash drives, one for Fedora 10 userland, and one for kernel repository 
+> + builds.
+> 
+> It boots correctly in 2.6.27, but fails with the same symptoms in 
+> 2.6.28, 2.6.29 and 2.6.30-rc1:
+> 
+> 	1) The kernel boots
+> 	2) After time passes, kernel begins executing initramfs
+> 	   userland
+> 	3) the kernel prints out probe messages for the USB keyboard,
+> 	   SCSI probe messages for the two USB flash drives
+> 
+> Or IOW, the keyboard and two SCSI drives appear after initramfs begins 
+> booting.  And this is for drivers built into the kernel (though same 
+> behavior with modules).
+> 
+> This no-boot regression is 100% reproducible, and neatly bisects down to
+> 
+> > commit 8520f38099ccfdac2147a0852f84ee7a8ee5e197
+> > Author: Alan Stern <stern@rowland.harvard.edu>
+> > Date:   Mon Sep 22 14:44:26 2008 -0400
+> > 
+> >     USB: change hub initialization sleeps to delayed_work
+> >     
+> >     This patch (as1137) changes the hub_activate() routine, replacing the
+> >     power-power-up and debounce delays with delayed_work calls.  The idea
+> >     is that on systems where the USB stack is compiled into the kernel
+> >     rather than built as modules, these delays will no longer block the
+> >     boot thread.  At least 100 ms is saved for each root hub, which can
+> >     add up to a significant savings in total boot time.
+> >     
+> >     Arjan van de Ven was very pleased to see that this shaved 700 ms off
+> >     his computer's boot time.  Since his total boot time is on the order
+> >     of two seconds, the improvement is considerable.
+> >     
+> >     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> >     Tested-by: Arjan van de Ven <arjan@infradead.org>
+> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> 
+> My preliminary guess is that this made things --too-- asynchronous, and 
+> for some reason userland begins executing before the SCSI core 
+> initializes the USB storage as Linux block devices.
+> 
+> In any case, I cannot boot because of the above commit :)
 
-Hi Greg,
+Like Arjan said, this is because we are initializing faster now, and
+things are a bit more asynchronous.  Use the root_delay boot option,
+that's what I use for my USB-based systems, and have not had a problem
+with that at all.
 
-On Tue, 14 Apr 2009 18:15:12 -0700 Greg KH <greg@kroah.com> wrote:
->
-> Is linux-next open for 2.6.31 patches yet?  Or is that already happening
-> and I just missed the email somewhere?
+thanks,
 
-The reminder I send out is that I don't want 2.6.(x+1) stuff until
-2.6.x-rc1 is out.  (I wanted to wait for -rc2, but Andrew insisted.)
-
-So, "yes. yes." :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknlPcEACgkQjjKRsyhoI8wVlQCcCoqMbyjkdD4K1zFK05Yz+lEO
-IqEAn09jDzdJbG4LeBLeZ14Exnl4aynm
-=fauW
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM--
+greg k-h
