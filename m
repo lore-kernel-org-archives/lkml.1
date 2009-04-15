@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZDOOYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZDOOZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbZDOOYM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZDOOX4
+	id S1755961AbZDOOZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbZDOOZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:23:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58177 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 10:25:09 -0400
+Received: from rtr.ca ([76.10.145.34]:55027 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbZDOOXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:23:55 -0400
-Subject: Re: [PATCH] ring_buffer: enlarge RB_MAX_SMALL_DATA
-From: Steven Rostedt <srostedt@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090415141221.GE12760@elte.hu>
-References: <49E2AAB3.9010801@cn.fujitsu.com>
-	 <1239633781.21121.25.camel@localhost.localdomain>
-	 <49E5A593.6090605@cn.fujitsu.com>
-	 <1239803101.21121.69.camel@localhost.localdomain>
-	 <20090415141221.GE12760@elte.hu>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Wed, 15 Apr 2009 10:23:40 -0400
-Message-Id: <1239805420.21121.72.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1751052AbZDOOZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:25:07 -0400
+Message-ID: <49E5EE41.3090505@rtr.ca>
+Date: Wed, 15 Apr 2009 10:25:05 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: USB storage no-boot regression (bisected)
+References: <49E4FAC6.1030400@garzik.org> <20090415014930.GA29413@kroah.com> <49E5480F.10501@garzik.org> <20090415050947.GB3462@kroah.com>
+In-Reply-To: <20090415050947.GB3462@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> ..
+> The issue is that you were just lucky that your machine worked properly
+> previously.  My boxes with the same type of setup didn't, so I quickly
+> realized what the root delay boot option was for.  You need to just do
+> the same thing here, there's nothing else we can do.
+..
 
-On Wed, 2009-04-15 at 16:12 +0200, Ingo Molnar wrote:
-> * Steven Rostedt <srostedt@redhat.com> wrote:
+Bad excuse.
 
-> Yeah - format specifications are always good. They weaken ABI 
-> bindings and allow more flexibility both on the tool and the kernel 
-> side.
-> 
-> > We could ask Linus to pull this into 30 because it is a API 
-> > change.
-> 
-> Apps could assume if the format file is not there it's the .30 
-> format.
+SATA drives also take variable amounts of time to "show up" at boot.
+Perhaps Jeff should customize libata for your and Arjan's exact setups,
+just to help with understanding the point here.  :)
 
-My fear is that they are written before the change, and will not know
-about a format file existing. Then those apps will break on 31.
+The speed ups are fine (and welcome), but we really now need
+Arjan to follow-up with a patch to have the kernel *by default*
+wait a little longer for the rootfs to show up.
 
-But this is still new, and the only user I know of at the moment is the
-University student doing the ftrace GUI. I'll keep him informed.
-
-Thanks,
-
--- Steve
-
-
+Not forever, just a few seconds to compensate for the regression.
