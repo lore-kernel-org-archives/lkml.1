@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZDOOds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZDOOfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbZDOOds (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbZDOOdh
+	id S1756057AbZDOOfF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZDOOex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:33:37 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:55974 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753749AbZDOOdf (ORCPT
+	Wed, 15 Apr 2009 10:34:53 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:62429 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753561AbZDOOew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:33:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=x/hhlGUL91jX0WA5srYRa5naZx7leceQMsPEt3ruNuNtAz4OGYDOhzUGJkQlQ8cuB8
-         QN0183k8eNKEooFxPSZzRUaLPDcPWjF2nlvogrMLZcoLY4xL+KHyDhE8lQ9V4oUmOquO
-         yB4RHnI8NrSje4wNXCbr9G2jw/0h2lGkVzF/k=
-Message-ID: <49E5F01B.2060201@tuffmail.co.uk>
-Date: Wed, 15 Apr 2009 15:32:59 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [FIXED] EEE PC hangs when booting off battery
-References: <49E065CF.6040408@tuffmail.co.uk> <200904140859.02188.bjorn.helgaas@hp.com> <20090414081728.10de978a@infradead.org> <200904140948.37633.bjorn.helgaas@hp.com>
-In-Reply-To: <200904140948.37633.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 10:34:52 -0400
+Message-id: <49E5F07E.40704@acm.org>
+Date: Wed, 15 Apr 2009 09:34:38 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-version: 1.0
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       openipmi-developer@lists.sourceforge.net
+Subject: Re: [PATCH 4/5] IPMI: Add console oops catcher
+References: <20090303152123.GD7777@minyard.local>
+ <20090303132046.a8975963.akpm@linux-foundation.org>
+ <49ADC559.7040705@ct.jp.nec.com>
+ <20090402141445.3a7a6504.akpm@linux-foundation.org>
+ <49E58168.3090409@ct.jp.nec.com>
+In-reply-to: <49E58168.3090409@ct.jp.nec.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Tuesday 14 April 2009 09:17:28 am Arjan van de Ven wrote:
->   
->> On Tue, 14 Apr 2009 08:59:01 -0600
->> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+Hiroshi Shimamoto wrote:
+> Andrew Morton wrote:
+>> On Tue, 03 Mar 2009 16:03:37 -0800
+>> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 >>
->>     
->>> I can't help with the real problem of why the asynchronous battery
->>> init causes the hang.
->>>       
->> that got fixed already for the module case.
->>     
+>>> ...
+>>>> This reader is unable to determine what the mystery preempt_disable()
+>>>> is here for.  It needs a comment, please.
+>>> I cannot recall why it's here. So a comment is really needed.
+>>> This preempt_disable() may not be needed.
+>>>
+>>>> What happens if two CPUs oops at the same time (which is fairly 
+>>>> common)?
+>>> ...
+>>>
+>>> OK. I'll look at this.
+>>>
+>>>> It would be prudent to have a timeout in this loop.  The machine has
+>>>> crashed and subsystems and hardware and memory are in an unknown and
+>>>> possibly bad state.
+>>> Right.
+>>>
+>>> ...
+>>>
+>>>> This looks like we're abusing the "unblank" method.
+>>>>
+>>>> If you think that the console subsystem is missing some capability
+>>>> which this driver needs then please do prefer to fix the console
+>>>> subsystem, rather than awkwardly making things fit.
+>>> OK. Will take a look about this point.
+>>>
+>>
+>> None of this happened.
+>>
+>> It makes me reluctant to merge that patches as they stand, because then
+>> it all gets forgotten about, whereas holding the patches back will
+>> remind us that updates are needed.
 >
-> But apparently still broken for the builtin case?  I think Alan is
-> running pretty new bits -- he said "latest git" on April 11.
->   
+> Sorry for late reply.
+> I couldn't have time for this patch.
+> I'll look at this again and will resend updates.
+Andrew, can we drop this for now and at get the other patches in?  At 
+least the first one ("Fix platform return check"), since it's an obvious 
+bug fix.
 
-It's now fixed, in 2.6.30-rc2.  My battery is modular btw.  I suspect
+Thanks,
 
-5d38258ec026921a7b266f4047ebeaa75db358e5 "ACPI battery: fix async boot
-oops" [removal of __init]
+-corey
 
-was not sufficient to fix my problem, but it was solved by the "real" fix,
+>
+> Thanks,
+> Hiroshi
+>
 
-d6de2c80e9d758d2e36c21699117db6178c0f517 "async: Fix module loading
-async-work regression" [module loading waits on async work]
-
-
-I would argue there's still a question over why the asynchronous battery
-init (_with_ the oops fix) should cause a hang in the idle routine.  But
-since the regression is fixed, it's not exactly an urgent question.
-
-Thanks
-Alan
