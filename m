@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbZDOUWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZDOUYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756378AbZDOUWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 16:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZDOUWk
+	id S1756349AbZDOUYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 16:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZDOUYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 16:22:40 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48502 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755188AbZDOUWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 16:22:40 -0400
-Date: Wed, 15 Apr 2009 15:22:20 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, mingo@elte.hu, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+	Wed, 15 Apr 2009 16:24:00 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34816 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753635AbZDOUYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 16:24:00 -0400
 Subject: Re: CAP_SYS_ADMIN on restart(2) (was: Re: [PATCH 00/30] C/R
 	OpenVZ/Virtuozzo style)
-Message-ID: <20090415202220.GA5228@us.ibm.com>
-References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz> <20090413091423.GA19236@x200.localdomain> <49E4108A.8050201@cs.columbia.edu> <20090414145830.GA27461@x200.localdomain> <49E4D115.5080601@cs.columbia.edu> <20090414204912.GA28458@x200.localdomain> <20090414213934.GB17986@us.ibm.com> <20090415192150.GC26994@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, mingo@elte.hu
 In-Reply-To: <20090415192150.GC26994@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20090410023207.GA27788@x200.localdomain>
+	 <1239340031.24083.21.camel@nimitz>
+	 <20090413091423.GA19236@x200.localdomain>
+	 <49E4108A.8050201@cs.columbia.edu>
+	 <20090414145830.GA27461@x200.localdomain>
+	 <49E4D115.5080601@cs.columbia.edu>
+	 <20090414204912.GA28458@x200.localdomain>
+	 <20090414213934.GB17986@us.ibm.com>
+	 <20090415192150.GC26994@x200.localdomain>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 13:23:53 -0700
+Message-Id: <1239827033.32604.167.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
+On Wed, 2009-04-15 at 23:21 +0400, Alexey Dobriyan wrote:
 > Is sysctl to control CAP_SYS_ADMIN on restart(2) OK?
 
-You mean a sysctl to specify whether to require CAP_SYS_ADMIN for
-restart(2)?
+If the point is not to let users even *try* restarting things if it
+*might* not work, then I guess this might be reasonable.  
 
-Yeah I wouldn't object to that - it certainly seems like something
-sane for an admin to use depending on their users.
+If the goal is to increase security by always requiring CAP_SYS_ADMIN
+for "dangerous" operations, I fear it will be harmful.  We may have
+people adding features that are not considering the security impact of
+what they're doing just because the cases they care about all require
+privilege.
 
-Though I think the bigger fish to fry first is whether we only support
-whole-container checkpoint/restart.  If that is the case, then
-CAP_SYS_ADMIN will always be needed for restart since it will always
-unshare some namespaces.
+What would the goal be?
 
-thanks,
--serge
+-- Dave
+
