@@ -1,92 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZDOXcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbZDOXf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbZDOXcu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 19:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZDOXck
+	id S1753794AbZDOXf6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 19:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZDOXfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 19:32:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60149 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752661AbZDOXcj (ORCPT
+	Wed, 15 Apr 2009 19:35:44 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:52181 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbZDOXfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 19:32:39 -0400
-Date: Wed, 15 Apr 2009 16:27:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Trond.Myklebust@netapp.com, dhowells@redhat.com, serue@us.ibm.com,
-       steved@redhat.com, viro@zeniv.linux.org.uk, Daire.Byrne@framestore.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slow_work_thread() should do the exclusive wait
-Message-Id: <20090415162712.342d4c07.akpm@linux-foundation.org>
-In-Reply-To: <20090413222451.GA2758@redhat.com>
-References: <1239649429.16771.9.camel@heimdal.trondhjem.org>
-	<20090413181733.GA10424@redhat.com>
-	<32260.1239658818@redhat.com>
-	<20090413214852.GA1127@redhat.com>
-	<1239659841.16771.26.camel@heimdal.trondhjem.org>
-	<20090413222451.GA2758@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 19:35:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=A8gOP38yya+w7aGizyCgNPs3wXjOQjt/RYdTGS7VAmVh8EM/hiKsYO3w3RdxLegQo8
+         pbkpPPVV0OT1twYt/SCRLZ6HVwp2HbefH/zlEL6M6WjzYpUHZaHMgf42NMy+hTN9ByKI
+         ecNbruUNXDqrOX7NG0kE9CcRBBm7yUvOSPhSY=
+Date: Thu, 16 Apr 2009 01:35:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-nfs@vger.kernel.org,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alessio Igor Bogani <abogani@texware.it>, Jeff Mahoney <jeffm@suse.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [tree] latest kill-the-BKL tree, v12
+Message-ID: <20090415233533.GA5962@nowhere>
+References: <1239680065-25013-1-git-send-email-fweisbec@gmail.com> <20090414045109.GA26908@orion> <20090414090146.GH27003@elte.hu> <a4423d670904151558r4252c7eamd115793fb36a9163@mail.gmail.com> <20090415230736.GA22710@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090415230736.GA22710@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 00:24:51 +0200
-Oleg Nesterov <oleg@redhat.com> wrote:
-
-> On 04/13, Trond Myklebust wrote:
-> >
-> > On Mon, 2009-04-13 at 23:48 +0200, Oleg Nesterov wrote:
-> > > On 04/13, David Howells wrote:
-> > > >
-> > > > Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
-> > > >
-> > > > > Should that really be TASK_INTERRUPTIBLE? I don't see anything obvious
-> > > > > in the enclosing for(;;) loop that checks for or handles signals...
-> > > >
-> > > > If it were TASK_UNINTERRUPTIBLE, it would sit there in the D-state when not
-> > > > doing anything.  I must admit, I thought I was calling daemonize(), but that
-> > > > seems to have got lost somewhere.
+On Thu, Apr 16, 2009 at 01:07:36AM +0200, Ingo Molnar wrote:
+> 
+> * Alexander Beregalov <a.beregalov@gmail.com> wrote:
+> 
+> > 2009/4/14 Ingo Molnar <mingo@elte.hu>:
 > > >
-> > > daemonize() is not needed, kthread_create() creates the kernel thread which
-> > > ignores all signals. So it doesn't matter which state we use to sleep,
-> > > TASK_INTERRUPTIBLE or TASK_UNINTERRUPTIBLE.
-> >
-> > Yes, but that is precisely why it is cleaner to use
-> > TASK_UNINTERRUPTIBLE. It documents the fact that signal handling isn't
-> > needed (whether or not the thread is blocking them).
+> > > * Alexander Beregalov <a.beregalov@gmail.com> wrote:
+> > >
+> > >> On Tue, Apr 14, 2009 at 05:34:22AM +0200, Frederic Weisbecker wrote:
+> > >> > Ingo,
+> > >> >
+> > >> > This small patchset fixes some deadlocks I've faced after trying
+> > >> > some pressures with dbench on a reiserfs partition.
+> > >> >
+> > >> > There is still some work pending such as adding some checks to ensure we
+> > >> > _always_ release the lock before sleeping, as you suggested.
+> > >> > Also I have to fix a lockdep warning reported by Alessio Igor Bogani.
+> > >> > And also some optimizations....
+> > >> >
+> > >> > Thanks,
+> > >> > Frederic.
+> > >> >
+> > >> > Frederic Weisbecker (3):
+> > >> >   kill-the-BKL/reiserfs: provide a tool to lock only once the write lock
+> > >> >   kill-the-BKL/reiserfs: lock only once in reiserfs_truncate_file
+> > >> >   kill-the-BKL/reiserfs: only acquire the write lock once in
+> > >> >     reiserfs_dirty_inode
+> > >> >
+> > >> >  fs/reiserfs/inode.c         |   10 +++++++---
+> > >> >  fs/reiserfs/lock.c          |   26 ++++++++++++++++++++++++++
+> > >> >  fs/reiserfs/super.c         |   15 +++++++++------
+> > >> >  include/linux/reiserfs_fs.h |    2 ++
+> > >> >  4 files changed, 44 insertions(+), 9 deletions(-)
+> > >> >
+> > >>
+> > >> Hi
+> > >>
+> > >> The same test - dbench on reiserfs on loop on sparc64.
+> > >>
+> > >> [ INFO: possible circular locking dependency detected ]
+> > >> 2.6.30-rc1-00457-gb21597d-dirty #2
+> > >
+> > > I'm wondering ... your version hash suggests you used vanilla
+> > > upstream as a base for your test. There's a string of other fixes
+> > > from Frederic in tip:core/kill-the-BKL branch, have you picked them
+> > > all up when you did your testing?
+> > >
+> > > The most coherent way to test this would be to pick up the latest
+> > > core/kill-the-BKL git tree from:
+> > >
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/kill-the-BKL
+> > >
+> > 
+> > I did not know about this branch, now I am testing it and there is 
+> > no more problem with that testcase (dbench).
+> > 
+> > I will continue testing.
 > 
-> Agreed. But TASK_UNINTERRUPTIBLE can confuse a user which does
-> "cat /proc/loadavg" on the idle machine...
+> thanks for testing it! It seems reiserfs with Frederic's changes 
+> appears to be more stable now on your system.
+
+
+
+
+Yeah, thanks a lot for this testing!
+
+
+ 
+> I saw your NFS circular locking kill-the-BKL problem report on LKML 
+> - also attached below.
 > 
-> Note that, for example, worker_thread() uses TASK_INTERRUPTIBLE too, and I
-> think for the same reason.
+> Hopefully someone on the Cc: list with NFS experience can point out 
+> the BKL assumption that is causing this.
 > 
+> 	Ingo
+> 
+> ----- Forwarded message from Alexander Beregalov <a.beregalov@gmail.com> -----
+> 
+> Date: Wed, 15 Apr 2009 22:08:01 +0400
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+> To: linux-kernel <linux-kernel@vger.kernel.org>,
+> 	Ingo Molnar <mingo@elte.hu>, linux-nfs@vger.kernel.org
+> Subject: [core/kill-the-BKL] nfs3: possible circular locking dependency
+> 
+> Hi
+> 
+> I have pulled core/kill-the-BKL on top of 2.6.30-rc2.
+> 
+> device: '0:18': device_add
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.30-rc2-00057-g30aa902-dirty #5
+> -------------------------------------------------------
+> mount.nfs/1740 is trying to acquire lock:
+>  (kernel_mutex){+.+.+.}, at: [<00000000006f32dc>] lock_kernel+0x28/0x3c
+> 
+> but task is already holding lock:
+>  (&type->s_umount_key#24/1){+.+.+.}, at: [<00000000004b88a0>] sget+0x228/0x36c
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&type->s_umount_key#24/1){+.+.+.}:
+>        [<00000000004776d0>] lock_acquire+0x5c/0x74
+>        [<0000000000469f5c>] down_write_nested+0x38/0x50
+>        [<00000000004b88a0>] sget+0x228/0x36c
+>        [<00000000005688fc>] nfs_get_sb+0x80c/0xa7c
+>        [<00000000004b7ec8>] vfs_kern_mount+0x44/0xa4
+>        [<00000000004b7f84>] do_kern_mount+0x30/0xcc
+>        [<00000000004cf300>] do_mount+0x7c8/0x80c
+>        [<00000000004ed2a4>] compat_sys_mount+0x224/0x274
+>        [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
+> 
+> -> #0 (kernel_mutex){+.+.+.}:
+>        [<00000000004776d0>] lock_acquire+0x5c/0x74
+>        [<00000000006f0ebc>] mutex_lock_nested+0x48/0x380
+>        [<00000000006f32dc>] lock_kernel+0x28/0x3c
+>        [<00000000006d20ec>] rpc_wait_bit_killable+0x64/0x8c
+>        [<00000000006f0620>] __wait_on_bit+0x64/0xc0
+>        [<00000000006f06e4>] out_of_line_wait_on_bit+0x68/0x7c
+>        [<00000000006d2938>] __rpc_execute+0x150/0x2b4
+>        [<00000000006d2ac0>] rpc_execute+0x24/0x34
+>        [<00000000006cc338>] rpc_run_task+0x64/0x74
+>        [<00000000006cc474>] rpc_call_sync+0x58/0x7c
+>        [<00000000005717b0>] nfs3_rpc_wrapper+0x24/0xa0
+>        [<0000000000572024>] do_proc_get_root+0x6c/0x10c
+>        [<00000000005720dc>] nfs3_proc_get_root+0x18/0x5c
+>        [<000000000056401c>] nfs_get_root+0x34/0x17c
+>        [<0000000000568adc>] nfs_get_sb+0x9ec/0xa7c
+>        [<00000000004b7ec8>] vfs_kern_mount+0x44/0xa4
+>        [<00000000004b7f84>] do_kern_mount+0x30/0xcc
+>        [<00000000004cf300>] do_mount+0x7c8/0x80c
+>        [<00000000004ed2a4>] compat_sys_mount+0x224/0x274
+>        [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
 
-Yup.  It's a very common pattern for kernel threads to sleep in state
-TASK_INTERRUPTIBLE.  It is "well known" (lol) that kernel threads don't
-accept signals, and having a kernel thread sleep in state
-TASK_UNINTERRUPTIBLE will indeed contribute to load average and we get
-distressed emails quite promptly when we do that.
-
-The patch itself is a little worrisome.  The wake-all semantics are
-very good at covering up little race bugs.  And switching to wake-once
-is a great way of exposing hitherto-unsuspected races.
-
-<looks for races>
-
-Nothing immediately leaps out, but you know how these things are.
-
-I wonder if slow_work_cull_timeout() should have some sort of barrier,
-so the write is suitably visible to the woken thread.  Bearing in mind
-that the thread might _already_ have been woken by someone else?
 
 
-off-topic: afacit the code will cull a maximum of one thread per five
-seconds.  But the rate of thread _creation_ is, afacit, unbound.  Are
-there scenarios in which we can get a runaway thread count?
+
+This is still the dependency between bkl and s_umount_key
+that has been reported recently. I wonder if this is not a
+problem in the fs layer. I should investigate on it.
+
+Thanks.
 
 
+
+ 
+> other info that might help us debug this:
+> 
+> 1 lock held by mount.nfs/1740:
+>  #0:  (&type->s_umount_key#24/1){+.+.+.}, at: [<00000000004b88a0>]
+> sget+0x228/0x36c
+> 
+> stack backtrace:
+> Call Trace:
+>  [00000000004755ac] print_circular_bug_tail+0xfc/0x10c
+>  [0000000000476e24] __lock_acquire+0x12f0/0x1b40
+>  [00000000004776d0] lock_acquire+0x5c/0x74
+>  [00000000006f0ebc] mutex_lock_nested+0x48/0x380
+>  [00000000006f32dc] lock_kernel+0x28/0x3c
+>  [00000000006d20ec] rpc_wait_bit_killable+0x64/0x8c
+>  [00000000006f0620] __wait_on_bit+0x64/0xc0
+>  [00000000006f06e4] out_of_line_wait_on_bit+0x68/0x7c
+>  [00000000006d2938] __rpc_execute+0x150/0x2b4
+>  [00000000006d2ac0] rpc_execute+0x24/0x34
+>  [00000000006cc338] rpc_run_task+0x64/0x74
+>  [00000000006cc474] rpc_call_sync+0x58/0x7c
+>  [00000000005717b0] nfs3_rpc_wrapper+0x24/0xa0
+>  [0000000000572024] do_proc_get_root+0x6c/0x10c
+>  [00000000005720dc] nfs3_proc_get_root+0x18/0x5c
+>  [000000000056401c] nfs_get_root+0x34/0x17c
+> device: '0:19': device_add
+> 
+> ----- End forwarded message -----
 
