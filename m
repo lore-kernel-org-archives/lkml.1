@@ -1,47 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbZDODB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZDODCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbZDODB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbZDODBT
+	id S1758317AbZDODCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZDODCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:01:19 -0400
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:59793 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752300AbZDODBS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:01:18 -0400
-X-Greylist: delayed 3867 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Apr 2009 23:01:18 EDT
-Message-ID: <49E53EE2.2030903@blueyonder.co.uk>
-Date: Wed, 15 Apr 2009 02:56:50 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 14 Apr 2009 23:02:08 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62079 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753604AbZDODCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 23:02:07 -0400
+Message-ID: <49E54E60.50408@cn.fujitsu.com>
+Date: Wed, 15 Apr 2009 11:02:56 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: mcp55 forcedeth woes
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] blktrace: fix context-info when mixed-using blk tracer and
+ trace events
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yan Seiner wrote:
-> There is a newer bios, 1702, that may address these issues - at least teh
-> writeup for the 17xx bios for the m2n32 talks about a network lockup fix.
-> I haven't tried yet. These are the most stable boards I've found; one of
-> mine runs 6 SATA drives locally, 9 via eSATA, 2 dual DVI video cards, and
-> 2 15K scsi drives, all without a hitch. It never glitches - except for
-> the d*mn network, this board is a piece of perfection.
-For the M2N-SLI-Deluxe I found only 1701 which causes oops when booting
-any kernel on 64X2 6000 and for the M2N32-SLI 2205 which I haven't tried
-so far.
+When set current tracer to blk tracer, TRACE_ITER_CONTEXT_INFO is unset,
+but actually context-info is printed:
+    pdflush-431   [000]   821.181576:   8,0    P   N [pdflush]
 
-Regards
-Sid.
+And then if we enable TRACE_ITER_CONTEXT_INFO:
+    # echo context-info > trace_options
+
+We'll see context-info is printed twice. What's worse is, when use blk
+tracer and trace events at a time, we'll see no context-info for trace
+events:
+    jbd2_commit_logging: dev dm-0:8 transaction 333227
+    jbd2_end_commit: dev dm-0:8 transaction 333227 head 332814
+      rm-25433 [001]  9578.307485:   8,18   m   N cfq25433 slice expired t=0
+      rm-25433 [001]  9578.307486:   8,18   m   N cfq25433 put_queue
+
+This patch adds blk_tracer->set_flags(), and context-info flag is unset
+only when we set the output to classic mode.
+
+Note after this patch, one should unset context-info explicitly if he
+wants to get binary output that can be parsed by blkparse:
+    # echo nocontext-info > trace_options
+    # echo bin > trace_options
+    # echo blk > current_tracer
+    # cat trace_pipe | blkparse -i -
+
+Reported-by: Theodore Ts'o <tytso@mit.edu>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/blktrace.c |   18 +++++++++++++-----
+ 1 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 8e7c5da..c32062b 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1211,7 +1211,6 @@ static void blk_tracer_print_header(struct seq_file *m)
+ static void blk_tracer_start(struct trace_array *tr)
+ {
+ 	blk_tracer_enabled = true;
+-	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
+ }
+ 
+ static int blk_tracer_init(struct trace_array *tr)
+@@ -1224,7 +1223,6 @@ static int blk_tracer_init(struct trace_array *tr)
+ static void blk_tracer_stop(struct trace_array *tr)
+ {
+ 	blk_tracer_enabled = false;
+-	trace_flags |= TRACE_ITER_CONTEXT_INFO;
+ }
+ 
+ static void blk_tracer_reset(struct trace_array *tr)
+@@ -1289,9 +1287,6 @@ out:
+ static enum print_line_t blk_trace_event_print(struct trace_iterator *iter,
+ 					       int flags)
+ {
+-	if (!trace_print_context(iter))
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+ 	return print_one_line(iter, false);
+ }
+ 
+@@ -1326,6 +1321,18 @@ static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
+ 	return print_one_line(iter, true);
+ }
+ 
++static int blk_tracer_set_flag(u32 old_flags, u32 bit, int set)
++{
++	/* don't output context-info for blk_classic output */
++	if (bit == TRACE_BLK_OPT_CLASSIC) {
++		if (set)
++			trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
++		else
++			trace_flags |= TRACE_ITER_CONTEXT_INFO;
++	}
++	return 0;
++}
++
+ static struct tracer blk_tracer __read_mostly = {
+ 	.name		= "blk",
+ 	.init		= blk_tracer_init,
+@@ -1335,6 +1342,7 @@ static struct tracer blk_tracer __read_mostly = {
+ 	.print_header	= blk_tracer_print_header,
+ 	.print_line	= blk_tracer_print_line,
+ 	.flags		= &blk_tracer_flags,
++	.set_flag	= blk_tracer_set_flag,
+ };
+ 
+ static struct trace_event trace_blk_event = {
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+1.5.4.rc3
 
