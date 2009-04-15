@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbZDOLjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZDOLmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759864AbZDOLjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758948AbZDOLjI
+	id S1759639AbZDOLmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZDOLmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:39:08 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:59523 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758862AbZDOLjF convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 07:42:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53183 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbZDOLmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:39:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=stC+FrZ0iHwmZa1wZhTKqDOS9IP+FYTkBwnUFia9aGBoH5Wl/pSqvO3yzyqHkW4H+D
-         SrR/goAFSBKcsgvWM11rvU/y8y5evxCVdAlySMn9j5mMW6msFtWLftWQI+Wtgo1gY9/p
-         93wZwjRQzz0WOAwGeLEkN/e07lTFGvvm2TOHU=
-MIME-Version: 1.0
-In-Reply-To: <20090415104615.GG9809@random.random>
-References: <20090414143252.GE28265@random.random>
-	 <200904150042.15653.nickpiggin@yahoo.com.au>
-	 <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
-	 <20090415104615.GG9809@random.random>
-Date: Wed, 15 Apr 2009 20:39:04 +0900
-X-Google-Sender-Auth: fa5531849fcc2cbd
-Message-ID: <2f11576a0904150439k6e828307ja97b6729650bcb94@mail.gmail.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Apr 2009 07:42:07 -0400
+Subject: Re: [PATCH] sched: fix off-by-one bug in balance_tasks()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: miaox@cn.fujitsu.com
+Cc: Ingo Molnar <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <49E54B2A.9060100@cn.fujitsu.com>
+References: <49E54B2A.9060100@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 13:41:59 +0200
+Message-Id: <1239795719.22720.2231.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> +     if (!migration) {
->> +             /* re-check */
->> +             if (PageSwapCache(page) &&
->> +                 page_count(page) != page_mapcount(page) + 2) {
->> +                     /* We lose race against get_user_pages_fast() */
->> +                     set_pte_at(mm, address, pte, pteval);
->> +                     ret = SWAP_FAIL;
->> +                     goto out_unmap;
->> +             }
->> +     }
->> +     mmu_notifier_invalidate_page(vma->vm_mm, address);
->
-> With regard to mmu notifier, this is the opposite of the right
-> ordering. One mmu_notifier_invalidate_page must run _before_ the first
-> check. The ptep_clear_flush_notify will then stay and there's no need
-> of a further mmu_notifier_invalidate_page after the second check.
+On Wed, 2009-04-15 at 10:49 +0800, Miao Xie wrote:
+> If the load that need be moved equals the half weight of a task, I think
+> it is unnecessary to move this task. Or this task will be moved back and
+> forth.
 
-OK. but I have one question.
+That's actually desirable. Consider the 3 tasks on 2 cpus statically
+infeasible scenario. There you'd want the tasks to bounce around a bit
+in order to provide fairness.
 
-Can we assume mmu_notifier is only used by kvm now?
-if not, we need to make new notifier.
+> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+> ---
+>  kernel/sched.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 5724508..44926c8 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -3085,7 +3085,7 @@ next:
+>  	if (!p || loops++ > sysctl_sched_nr_migrate)
+>  		goto out;
+>  
+> -	if ((p->se.load.weight >> 1) > rem_load_move ||
+> +	if ((p->se.load.weight >> 1) >= rem_load_move ||
+>  	    !can_migrate_task(p, busiest, this_cpu, sd, idle, &pinned)) {
+>  		p = iterator->next(iterator->arg);
+>  		goto next;
+
