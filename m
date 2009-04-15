@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZDOPKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZDOPLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZDOPKx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZDOPKp
+	id S1752205AbZDOPLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZDOPLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:10:45 -0400
-Received: from lug-owl.de ([195.71.106.12]:41374 "EHLO lug-owl.de"
+	Wed, 15 Apr 2009 11:11:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53085 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300AbZDOPKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:10:44 -0400
-Date: Wed, 15 Apr 2009 17:10:42 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Jerry Wang <jerry18th@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux Kernel Cross-Compiling question
-Message-ID: <20090415151042.GB25876@lug-owl.de>
-Mail-Followup-To: Jerry Wang <jerry18th@yahoo.com>,
-	linux-kernel@vger.kernel.org
-References: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0ntfKIWw70PvrIHh"
-Content-Disposition: inline
-In-Reply-To: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
-X-Operating-System: Linux mail 2.6.18-5-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological
-	nuclear warfare test the bombastical terror of flooding the spy
-	listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear
-	warfare test the bombastical terror of flooding the spy listeners
-	explosion sex drugs and rock'n'roll
-X-message-flag: Please send plain text messages only. Do not send HTML
-	emails. Thank you. 
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751016AbZDOPLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 11:11:45 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090415140959.GD12760@elte.hu>
+References: <20090415140959.GD12760@elte.hu> <20090415120307.GB17775@elte.hu> <alpine.LFD.2.00.0904141103550.18124@localhost.localdomain> <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain> <20090414161053.28145.1209.stgit@warthog.procyon.org.uk> <15312.1239731865@redhat.com> <14172.1239795632@redhat.com> <1488.1239801659@redhat.com> 
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dhowells@redhat.com, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, tj@kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
+Date: Wed, 15 Apr 2009 16:09:10 +0100
+Message-ID: <9843.1239808150@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> wrote:
 
---0ntfKIWw70PvrIHh
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > > Please create include/linux/percpu_types.h for basic data types 
+> > > and simple, self-sufficient primitives. Also have an 
+> > > include/linux/percpu_api.h or include/linux/percpu.h include 
+> > > file for convenience/speedup inlines. The latter will only be 
+> > > included in .c files, where 'combination' of type spaces is not 
+> > > a problem.
+> > 
+> > Not so.  The problem is that various header files make use of 
+> > per-cpu variable accessors (asm/current.h and asm/thread_info.h to 
+> > name a couple) to build inline asm.
+> 
+> Hm, what portion did you mark with 'not so'?
 
-On Wed, 2009-04-15 07:18:13 -0700, Jerry Wang <jerry18th@yahoo.com> wrote:
-> > In file included from arch/ppc/kernel/asm-offsets.c:13: include/linux/s=
-ched.h: In function `arch_pick_mmap_layout':
-> > include/linux/sched.h:1174: error: `CONFIG_TASK_SIZE' undeclared (first=
- use in this function)
-> > include/linux/sched.h:1174: error: (Each undeclared identifier is repor=
-ted only once
-> > include/linux/sched.h:1174: error: for each function it appears in.)
-[...]
->=20
-> I am trying to cross-compile the linux 2.6.11.1 kernel on
-> i686 vm for ppc, and I've been getting the following
-> errors. Has anyone had this issue before?
+The statement that "The latter will only be included in .c files, where
+'combination' of type spaces is not a problem".
 
-Why are you trying to compile something that is /so/ old? Please
-re-test with a current GIT snapshot.
+> I dont disagree, but i'd like to warn that such patches need _way_ 
+> more testing, these are never same-day obvious patches.
 
-MfG, JBG
+I can't argue with that.
 
+I'd like Linus to pull my first patch, if he will.  That'll at least allow FRV
+to build.  Could you review it?  That's the email that started this thread,
+ensubjected:
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
- Signature of:                            If it doesn't work, force it.
- the second  :                   If it breaks, it needed replacing anyway.
+	[PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
 
---0ntfKIWw70PvrIHh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknl+PIACgkQHb1edYOZ4bv/BgCeMiOEuyFRXQJL1Ecck6ESCCvN
-uPAAnjES5qpjJHE7qlZXsoQSNu9K4khz
-=7c2y
------END PGP SIGNATURE-----
-
---0ntfKIWw70PvrIHh--
+David
