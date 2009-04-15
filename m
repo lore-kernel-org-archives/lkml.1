@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZDOTke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbZDOTrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbZDOTke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 15:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZDOTkV
+	id S1755110AbZDOTrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 15:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZDOTrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 15:40:21 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47218 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755245AbZDOTkU (ORCPT
+	Wed, 15 Apr 2009 15:47:07 -0400
+Received: from exprod6og108.obsmtp.com ([64.18.1.21]:41251 "HELO
+	exprod6og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752902AbZDOTrG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 15:40:20 -0400
-Date: Wed, 15 Apr 2009 21:42:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: Should MODULE_DESCRIPTION be mandatory ?
-Message-ID: <20090415194226.GB25783@uranus.ravnborg.org>
-References: <671646821@web.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <671646821@web.de>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 15 Apr 2009 15:47:06 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] net/sunrpc/svc.c: fix sparse warning
+Date: Wed, 15 Apr 2009 15:46:13 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8D20@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] net/sunrpc/svc.c: fix sparse warning
+Thread-Index: Acm+AtV39LjdCuviRZmjMEuIOnSUvg==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 15 Apr 2009 19:47:03.0267 (UTC) FILETIME=[F2FD5330:01C9BE02]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 01:11:46PM +0200, devzero@web.de wrote:
-> Hi, 
-> 
-> some time ago i spotted that around 20% of the Linux modules lacking a MODULE_DESCRIPTION field.  ( http://bugzilla.kernel.org/show_bug.cgi?id=10770 )
-> 
-> I think it`s not a practicable approach to get this fixed by some single person digging trough all the modules. 
-> If itŽs fixed for a kernel release, one year later there would be another bunch of new modules lacking the description field again.
-> 
-> What about a build-time or run-time warning for missing MODULE_DESCRIPTION ? (as it exists for MODULE_LICENSE in modpost.c) 
+Fix sparse warning in net/sunrpc/svc.c.
 
+	warning: symbol 'node' shadows an earlier one
 
-You mean something like the following untested patch?
-If it works what is the output for an allmodconfig build?
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-	Sam
+---
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 8cc7061..5317d6f 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1553,6 +1553,7 @@ static void read_symbols(char *modname)
- 	const char *symname;
- 	char *version;
- 	char *license;
-+	char *description;
- 	struct module *mod;
- 	struct elf_info info = { };
- 	Elf_Sym *sym;
-@@ -1584,6 +1585,11 @@ static void read_symbols(char *modname)
- 		license = get_next_modinfo(info.modinfo, info.modinfo_len,
- 					   "license", license);
- 	}
-+	description = get_modinfo(info.modinfo, info.modinfo_len, "description");
-+	if (info.modinfo && !description && !is_vmlinux(modname))
-+		warn("modpost: missing MODULE_DESCRIPTION() in %s\n"
-+		     "see include/linux/module.h for "
-+		     "more information\n", modname);
+diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+index 8847add..e781135 100644
+--- a/net/sunrpc/svc.c
++++ b/net/sunrpc/svc.c
+@@ -122,7 +122,7 @@ module_param_call(pool_mode, param_set_pool_mode,
+param_get_pool_mode,
+ static int
+ svc_pool_map_choose_mode(void)
+ {
+-	unsigned int node;
++	unsigned int nid;
  
- 	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
- 		symname = info.strtab + sym->st_name;
+ 	if (num_online_nodes() > 1) {
+ 		/*
+@@ -132,8 +132,8 @@ svc_pool_map_choose_mode(void)
+ 		return SVC_POOL_PERNODE;
+ 	}
+ 
+-	node = any_online_node(node_online_map);
+-	if (nr_cpus_node(node) > 2) {
++	nid = any_online_node(node_online_map);
++	if (nr_cpus_node(nid) > 2) {
+ 		/*
+ 		 * Non-trivial SMP, or CONFIG_NUMA on
+ 		 * non-NUMA hardware, e.g. with a generic 
