@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZDOVWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbZDOVXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbZDOVWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 17:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZDOVWp
+	id S1755495AbZDOVXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 17:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZDOVXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 17:22:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33855 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752315AbZDOVWo (ORCPT
+	Wed, 15 Apr 2009 17:23:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57975
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752315AbZDOVXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 17:22:44 -0400
-Date: Wed, 15 Apr 2009 14:17:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, hpa@zytor.com, tglx@linutronix.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, davej@redhat.com
+	Wed, 15 Apr 2009 17:23:35 -0400
+Date: Wed, 15 Apr 2009 14:23:26 -0700 (PDT)
+Message-Id: <20090415.142326.97287514.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       davej@redhat.com
 Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-Message-Id: <20090415141706.096b3b64.akpm@linux-foundation.org>
-In-Reply-To: <20090415210353.GA27368@elte.hu>
-References: <200904140159.n3E1x1K1014705@hera.kernel.org>
-	<20090414020544.GA3738@elte.hu>
-	<20090415054417.GA5272@elte.hu>
-	<200904152014.11717.rusty@rustcorp.com.au>
-	<alpine.LFD.2.00.0904150822020.4132@localhost.localdomain>
-	<20090415162627.GA32254@elte.hu>
-	<alpine.LFD.2.00.0904151013260.4132@localhost.localdomain>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0904151241490.4132@localhost.localdomain>
+References: <alpine.LFD.2.00.0904151013260.4132@localhost.localdomain>
 	<49E62BD5.6090508@zytor.com>
 	<alpine.LFD.2.00.0904151241490.4132@localhost.localdomain>
-	<20090415133255.b6a33bfe.akpm@linux-foundation.org>
-	<20090415210353.GA27368@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 23:03:53 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 15 Apr 2009 12:43:02 -0700 (PDT)
 
-> what can we do?
+> And if it _is_ obvious, then the mechanical "Impact:" thing is pointless.
+> 
+> In other words - in neither case does it actually help anything at all. 
+> It's only distracting noise.
 
-Write better patch titles?
+FWIW I find the Impact: blurbs highly annoying too.  Just freakin'
+say what the damn patch does in the commit message.
+
+If a person can't be bothered to skim the commit message text,
+this Impact: tag only gives them a false sense of understanding
+what the change does.
