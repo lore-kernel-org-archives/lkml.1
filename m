@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZDOJLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbZDOJMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757231AbZDOJLq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZDOJLg
+	id S1758507AbZDOJMi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZDOJMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:11:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40979 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbZDOJLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:11:36 -0400
-Date: Wed, 15 Apr 2009 17:11:26 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: Yan Zheng <zheng.yan@oracle.com>
-Cc: linux-kernel@vger.kernel.org, eugeneteo@kernel.sg
-Subject: [PATCH] Btrfs: setting variable out of order
-Message-ID: <20090415091126.GA13323@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+	Wed, 15 Apr 2009 05:12:30 -0400
+Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:59256
+	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752506AbZDOJM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 05:12:29 -0400
+Date: Wed, 15 Apr 2009 11:12:23 +0200
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: Linux 2.6.30-rc2: [PATCH] ARM OABI compatibility: fix build
+	error
+Message-ID: <20090415091223.GB12921@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Bill Gatliff <bgat@billgatliff.com>
+References: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain> <20090415083326.GA12921@traven> <20090415090307.GH6058@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090415090307.GH6058@n2100.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This doesn't look intentional.
+El Wed, Apr 15, 2009 at 10:03:07AM +0100 Russell King - ARM Linux ha dit:
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- fs/btrfs/ctree.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> On Wed, Apr 15, 2009 at 10:33:26AM +0200, Matthias Kaehlcke wrote:
+> > Building for ARM with CONFIG_OABI_COMPAT enabled fails due to a
+> > missing include:
+> 
+> Yes, lots of people have been whinging about this over the last six days,
+> but I'm only just catching up since returning from an Easter break.
+> 
+> Does anyone know /when/ this breakage happened, or even better what caused
+> it?
 
-diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
-index e5b2533..6aa2468 100644
---- a/fs/btrfs/ctree.c
-+++ b/fs/btrfs/ctree.c
-@@ -3376,8 +3376,8 @@ int btrfs_insert_some_items(struct
-btrfs_trans_handle *trans,
-        for (i = 0; i < nr; i++) {
-                if (total_size + data_size[i] + sizeof(struct btrfs_item) >
-                    BTRFS_LEAF_DATA_SIZE(root)) {
--                       break;
-                        nr = i;
-+                       break;
-               	}
-                total_data += data_size[i];
-                total_size += data_size[i] + sizeof(struct btrfs_item);
+a week ago i build v2.6.30-rc1 based on the same .config without
+running into this issue. if i find some time i'll try bisecting it
+
+-- 
+Matthias Kaehlcke
+Embedded Linux Engineer
+Barcelona
+
+
+   Usually when people are sad, they don't do anything. They just cry over
+     their condition. But when they get angry, they bring about a change
+                              (Malcolm X)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
