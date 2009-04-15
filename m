@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZDOJdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZDOJee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbZDOJdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZDOJdL
+	id S1759009AbZDOJee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZDOJeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:33:11 -0400
-Received: from iona.labri.fr ([147.210.8.143]:52197 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752223AbZDOJdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:33:10 -0400
-Message-ID: <49E5A9DC.2050309@inria.fr>
-Date: Wed, 15 Apr 2009 11:33:16 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] migration: only migrate_prep() once per move_pages()
-References: <49E58D7A.4010708@ens-lyon.org> <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Apr 2009 05:34:24 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53563 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbZDOJeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 05:34:23 -0400
+Subject: Re: [PATCH 2/4] tracing/events: fix lockdep system name
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+In-Reply-To: <20090415031604.933829085@goodmis.org>
+References: <20090415031511.128139334@goodmis.org>
+	 <20090415031604.933829085@goodmis.org>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 11:32:42 +0200
+Message-Id: <1239787962.22720.1966.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 15 Apr 2009 09:32:10 +0200
-> Brice Goglin <Brice.Goglin@ens-lyon.org> wrote:
->
->   
->> migrate_prep() is fairly expensive (72us on 16-core barcelona 1.9GHz).
->> Commit 3140a2273009c01c27d316f35ab76a37e105fdd8 improved move_pages()
->> throughput by breaking it into chunks, but it also made migrate_prep()
->> be called once per chunk (every 128pages or so) instead of once per
->> move_pages().
->>
->> This patch reverts to calling migrate_prep() only once per chunk
->> as we did before 2.6.29.
->> It is also a followup to commit 0aedadf91a70a11c4a3e7c7d99b21e5528af8d5d
->>     mm: move migrate_prep out from under mmap_sem
->>
->> This improves migration throughput on the above machine from 600MB/s
->> to 750MB/s.
->>
->> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
->>
->>     
-> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> I think this patch is good. page migration is best-effort syscall ;)
->   
+On Tue, 2009-04-14 at 23:15 -0400, Steven Rostedt wrote:
+> plain text document attachment
+> (0002-tracing-events-fix-lockdep-system-name.patch)
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Impact: fix compile error of lockdep event tracer
+> 
+> Ingo Molnar pointed out that the system name for the lockdep tracer was "lock"
+> which is used to include the event trace file name. It should be "lockdep"
 
-My next feeling now is about improving migrate_prep() itself. It makes
-the move_pages() startup overhead very high.
+Ah, I did that on purpose. Whilst it all stems from the lockdep code,
+these tracepoints have nothing much to do with dependency tracking,
+hence I decided to drop that bit of the name.
 
-But lru_add_drain_all() touches some code that I am far from
-understanding :/ Can we imagine using IPI instead of a deferred
-work_struct for this kind of things? Or maybe, for each processor, check
-whether drain_cpu_pagevecs() would have something to do before actually
-scheduling the local work_struct? It's racy, but migrate_prep() doesn't
-guarantee anyway that pages won't be moved out of the LRU before the
-actual migration, so...
 
-Also I don't see why the cost of lru_add_drain_all() seems to increase
-linearly with the number of cores in the machine. There may be some lock
-contention, but it should scale better when there's pretty-much nothing
-in the CPU lists...
-
-> BTW, current users of sys_move_pages() does retry when it gets -EBUSY ?
->   
-
-I'd say they ignore it since it doesn't happen often :)
-
-Brice
 
