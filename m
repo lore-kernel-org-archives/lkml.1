@@ -1,181 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZDOCkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZDOCmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757287AbZDOCkf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 22:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZDOCkV
+	id S1758046AbZDOCmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 22:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZDOCm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 22:40:21 -0400
-Received: from mga14.intel.com ([143.182.124.37]:58925 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbZDOCkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 22:40:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,189,1239001200"; 
-   d="scan'208";a="131549335"
-Date: Wed, 15 Apr 2009 10:39:49 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "xcf@ustc.edu.cn" <xcf@ustc.edu.cn>, linux-nfs@vger.kernel.org,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: [RFC][PATCH] vfs: check inode size on no_cached_page
-Message-ID: <20090415023949.GA9017@localhost>
-References: <20090412071605.GA14058@localhost> <20090414171114.04a47932.akpm@linux-foundation.org> <20090415013634.GB6143@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Content-Disposition: inline
-In-Reply-To: <20090415013634.GB6143@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Apr 2009 22:42:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60143 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbZDOCm2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 22:42:28 -0400
+Date: Tue, 14 Apr 2009 19:44:14 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB storage no-boot regression (bisected)
+Message-ID: <20090414194414.22c63728@infradead.org>
+In-Reply-To: <49E546C4.1060001@garzik.org>
+References: <49E4FAC6.1030400@garzik.org>
+	<20090414183807.3baf72ed@infradead.org>
+	<49E546C4.1060001@garzik.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 09:36:34AM +0800, Wu Fengguang wrote:
-> On Wed, Apr 15, 2009 at 08:11:14AM +0800, Andrew Morton wrote:
-> > On Sun, 12 Apr 2009 15:16:05 +0800
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > [This patch may not necessarily be merged, but at least we should
-> > >  be aware of the problem.]
-> > > 
-> > > When user space requests past-EOF data, do_generic_file_read() will
-> > > issue a bonus readpage call, which may be unfavorable.
-> > > 
-> > > do_generic_file_read:
-> > >         -> find_page:
-> > >         -> find_get_page()             = NULL
-> > >         -> page_cache_sync_readahead()
-> > >         -> find_get_page()             = NULL
-> > >         -> no_cached_page:
-> > >         -> readpage:
-> 
-> > >                 -> nfs_readpage()      = error
-> > >         -> readpage_error:
-> 
-> Sorry nfs_readpage() will actually return 0 now. See below.
-> 
-> > > 
-> > > Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
-> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > ---
-> > >  mm/filemap.c |    5 +++++
-> > >  1 file changed, 5 insertions(+)
-> > > 
-> > > --- mm.orig/mm/filemap.c
-> > > +++ mm/mm/filemap.c
-> > > @@ -1269,6 +1269,11 @@ readpage_error:
-> > >  		goto out;
-> > >  
-> > >  no_cached_page:
-> > > +		isize = i_size_read(inode);
-> > > +		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-> > > +		if (unlikely(!isize || index > end_index))
-> > > +			goto out;
-> > > +
-> > >  		/*
-> > >  		 * Ok, it wasn't cached, so we need to create a new
-> > >  		 * page..
-> > 
-> > Is this a problem which needs to be solved?  userspace does something
-> > silly and the kernel behaves a bit suboptimally?
-> >
-> > If thats the only problem here then it's not worth adding fastpath
-> > cycles to fix it?
-> 
-> Yeah just some inefficiency in theory, so no fixing is necessary.
-> 
-> The underlying fs code shall be able to do the right thing - just
-> as if a concurrent truncate happened.
-> 
-> The NFS case goes like this:
-> 
->         nfs_readpage()
->         {
->                 # some bonus accountings:
->                 nfs_inc_stats(inode, NFSIOS_VFSREADPAGE);
->                 nfs_add_stats(inode, NFSIOS_READPAGES, 1);
-> 
->                 nfs_readpage_async(page)
->                   nfs_return_empty_page(page)
->                     zero_user(page) # will zero the page
-> 
->                 return 0;
->         }
-> 
-> After it returns 0, do_generic_file_read() will goto page_ok and check
-> i_size there, and free the past-EOF page.
-> 
-> I wonder if NFS could be improved to:
-> - move the NFSIOS_READPAGES accounting _after_ a successful read
-> - return AOP_TRUNCATED_PAGE instead of zeroing the past-EOF page
+On Tue, 14 Apr 2009 22:30:28 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-Ah AOP_TRUNCATED_PAGE actually indicates to retry the read_page()
-call.  Returning AOP_TRUNCATED_PAGE in nfs_read_page() in this case
-will create an infinite loop...
-
-Thanks,
-Fengguang
-
-> The following untested patch demonstrates the ideas.
+> Arjan van de Ven wrote:
+> > This change just made it go faster enough for you to be out of luck;
+> > fundamentally your userland needs to wait if the device it wants is
+> > not there. 
 > 
-> Thanks,
-> Fengguang
-> ---
+> All these drivers are in-kernel, and the root device is passed via 
+> command line.  There is no userland at that point, that needs to wait.
+
+ok fair; but that does not change that the kernel does not know if a
+device is coming.
+Yes that sucks; sadly USB is just this way, you don't know when no new
+devices will come from a certain bus.
+
 > 
-> diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-> index 96c4ebf..6688b46 100644
-> --- a/fs/nfs/read.c
-> +++ b/fs/nfs/read.c
-> @@ -76,15 +76,6 @@ void nfs_readdata_release(void *data)
->  	nfs_readdata_free(rdata);
->  }
->  
-> -static
-> -int nfs_return_empty_page(struct page *page)
-> -{
-> -	zero_user(page, 0, PAGE_CACHE_SIZE);
-> -	SetPageUptodate(page);
-> -	unlock_page(page);
-> -	return 0;
-> -}
-> -
->  static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
->  {
->  	unsigned int remainder = data->args.count - data->res.count;
-> @@ -123,7 +114,8 @@ int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
->  
->  	len = nfs_page_length(page);
->  	if (len == 0)
-> -		return nfs_return_empty_page(page);
-> +		return AOP_TRUNCATED_PAGE;
-> +
->  	new = nfs_create_request(ctx, inode, page, 0, len);
->  	if (IS_ERR(new)) {
->  		unlock_page(page);
-> @@ -516,7 +508,6 @@ int nfs_readpage(struct file *file, struct page *page)
->  	dprintk("NFS: nfs_readpage (%p %ld@%lu)\n",
->  		page, PAGE_CACHE_SIZE, page->index);
->  	nfs_inc_stats(inode, NFSIOS_VFSREADPAGE);
-> -	nfs_add_stats(inode, NFSIOS_READPAGES, 1);
->  
->  	/*
->  	 * Try to flush any pending writes to the file..
-> @@ -550,6 +541,8 @@ int nfs_readpage(struct file *file, struct page *page)
->  	}
->  
->  	error = nfs_readpage_async(ctx, inode, page);
-> +	if (!error)
-> +		nfs_add_stats(inode, NFSIOS_READPAGES, 1);
->  
->  out:
->  	put_nfs_open_context(ctx);
-> @@ -575,7 +568,7 @@ readpage_async_filler(void *data, struct page *page)
->  
->  	len = nfs_page_length(page);
->  	if (len == 0)
-> -		return nfs_return_empty_page(page);
-> +		return AOP_TRUNCATED_PAGE;
->  
->  	new = nfs_create_request(desc->ctx, inode, page, 0, len);
->  	if (IS_ERR(new))
+> If this change added an implicit initramfs requirement, that is a
+> pretty major regression.
+
+it didn't; this is what root_wait is for.
+
+
+Having said that, I have a patch that basically retries this stuff
+inside the kernel if the mount-of-rootfs fails....
+
+(but it's independent of the usb improvement)
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
