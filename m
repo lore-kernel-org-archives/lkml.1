@@ -1,73 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbZDOJW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZDOJYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759014AbZDOJW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbZDOJWO
+	id S1758906AbZDOJYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbZDOJYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:22:14 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:34690 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752709AbZDOJWM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:22:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=iUG5l/i6aXcVZB80QZiQfZeKZFC+62J2x1DKNmaNFbv4KKN8furcAI9zeRUQfSmLUQKQPFhwJ4lx422AOlKIYeeuof77ygUKBnhNkNQwNUCyyODeu00lbX9Mdzmc1HLxcfHJp06hc3kqci+f1FCj5k9WG5Q+/NkSP2TqZk2csmM=  ;
-X-YMail-OSG: HSBaEwEVM1mOfpuiob7rlEArr9NHvY2OVeXvNTWIkOB6rzc_19xSg1Ims08OrtG8Oqmu7nMo0oSlP4nc9IytBChvJ1Q4O2H_SHYN_imlR_2gJySOAn4HpKOUCCt_jdXsZFTnvG57c7sG_5nbAWqFx4n3HnABE.eiYs_rS0TElCpIem8ZkBJAjyse1MN5WLOKM9X64p1BqxXdbn4nUs.9FygSEGiywx8dMgehRRAS23zPJgHkLpysftpp_YzmdVpbevBvjZkgoLjGcof5KBPt0yzGvdV8htso_e2CeI1mokp9gd92trch
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Date: Wed, 15 Apr 2009 19:22:03 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
-References: <20090414143252.GE28265@random.random> <20090415165431.AC4C.A69D9226@jp.fujitsu.com> <200904151822.33478.nickpiggin@yahoo.com.au>
-In-Reply-To: <200904151822.33478.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 15 Apr 2009 05:24:13 -0400
+Received: from sh.osrg.net ([192.16.179.4]:35108 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752774AbZDOJYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 05:24:12 -0400
+Date: Wed, 15 Apr 2009 18:22:41 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] dma-debug: add dma_debug_resize_entries() to
+	adjust the number of dma_debug_entries
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090414105823.GL3558@elte.hu>
+References: <1239669799-23579-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20090414105823.GL3558@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904151922.04508.nickpiggin@yahoo.com.au>
+Message-Id: <20090415182234R.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 15 Apr 2009 18:22:41 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 April 2009 18:22:32 Nick Piggin wrote:
-> On Wednesday 15 April 2009 18:05:54 KOSAKI Motohiro wrote:
-> > Hi
-> > 
-> > > On Wednesday 15 April 2009 00:32:52 Andrea Arcangeli wrote:
-> > > > On Wed, Apr 15, 2009 at 12:26:34AM +1000, Nick Piggin wrote:
-> > > > > Andrea: I didn't veto that set_bit change of yours as such. I just
-> > > > 
-> > > > I know you didn't ;)
-> > > > 
-> > > > > noted there could be more atomic operations. Actually I would
-> > > > > welcome more comparison between our two approaches, but they seem
-> > > > 
-> > > > Agree about the welcome of comparison, it'd be nice to measure it the
-> > > > enterprise workloads that showed the gup_fast gain in the first place.
-> > > 
-> > > I think we should be able to ask IBM to run some tests, provided
-> > > they still have machines available to do so. Although I don't want
-> > > to waste their time so we need to have something that has got past
-> > > initial code review and has a chance of being merged.
-> > > 
-> > > If we get that far, then I can ask them to run tests definitely.
-> > 
-> > Oh, it seem very charming idea.
-> > Nick, I hope to help your patch's rollup. It makes good comparision, I think.
-> > Is there my doable thing?
-> 
-> Well, I guess review and testing. There are few possibilities for
-> reducing the cases where we have to de-cow (or increasing the
-> cases where we can WP-on-fork), which I'd like to experiment with,
-> but I don't know how much it will help...
+On Tue, 14 Apr 2009 12:58:23 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Oh, I forgot, it needs to be updated for hugepages as well, I'd say.
+> 
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > +int dma_debug_resize_entries(u32 num_entries)
+> > +{
+> > +	int i, delta, ret = 0;
+> > +	unsigned long flags;
+> > +	struct dma_debug_entry *entry;
+> > +
+> > +	spin_lock_irqsave(&free_entries_lock, flags);
+> > +
+> > +	if (nr_total_entries < num_entries) {
+> > +		delta = num_entries - nr_total_entries;
+> > +
+> > +		for (i = 0; i < delta; i++) {
+> > +			entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
+> > +			if (!entry)
+> > +				break;
+> 
+> hm, using GFP_ATOMIC within a spinlock is not a very nice thing to 
+> do in general. While this is boot-only and the GFP_ATOMIC will 
+> likely succeed, this could become non-boot functionality and then 
+> it's exposed to the momentary VM pressure situation that might make 
+> GFP_ATOMIC fail.
+> 
+> Please fix this to be GFP_KERNEL.
+
+Ok, fixed though I'm not sure it matters. It's unlikely that this could
+become non-boot functionality so I chose a simple way.
+
+I've attached a fixed patch. It's unlikely that this function is
+called concurrently so I don't try hard.
+
+
+> a small detail:
+> 
+> > +		delta = nr_total_entries - num_entries;
+> > +
+> > +		for (i = 0; i < delta && !list_empty(&free_entries); i++) {
+> > +			entry = __dma_entry_alloc();
+> > +			kfree(entry);
+> > +		}
+> > +
+> > +		nr_total_entries -= i;
+> > +	}
+> 
+> Can i != delta ever happen? It would suggest the list length being 
+> out of sync with the nr_total_entries counter.
+
+Yes, it can happen because only free entries are linked to
+free_entries list. If some entries are already used, then it's
+possible that we can't find enough entries in free_entries list here.
+
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] dma-debug: add dma_debug_resize_entries() to adjust the number of dma_debug_entries
+
+We use a static value for the number of dma_debug_entries. It can be
+overwritten by a kernel command line option.
+
+Some IOMMUs (e.g. GART) can't set an appropriate value by a kernel
+command line option because they can't know such value until they
+finish initializing up their hardware.
+
+This patch adds dma_debug_resize_entries() enables IOMMUs to adjust
+the number of dma_debug_entries anytime.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ include/linux/dma-debug.h |    7 ++++
+ lib/dma-debug.c           |   72 +++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 73 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
+index 28d53cb..171ad8a 100644
+--- a/include/linux/dma-debug.h
++++ b/include/linux/dma-debug.h
+@@ -32,6 +32,8 @@ extern void dma_debug_add_bus(struct bus_type *bus);
+ 
+ extern void dma_debug_init(u32 num_entries);
+ 
++extern int dma_debug_resize_entries(u32 num_entries);
++
+ extern void debug_dma_map_page(struct device *dev, struct page *page,
+ 			       size_t offset, size_t size,
+ 			       int direction, dma_addr_t dma_addr,
+@@ -91,6 +93,11 @@ static inline void dma_debug_init(u32 num_entries)
+ {
+ }
+ 
++static inline int dma_debug_resize_entries(u32 num_entries)
++{
++	return 0;
++}
++
+ static inline void debug_dma_map_page(struct device *dev, struct page *page,
+ 				      size_t offset, size_t size,
+ 				      int direction, dma_addr_t dma_addr,
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index d3da7ed..5d61019 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -85,6 +85,7 @@ static u32 show_num_errors = 1;
+ 
+ static u32 num_free_entries;
+ static u32 min_free_entries;
++static u32 nr_total_entries;
+ 
+ /* number of preallocated entries requested by kernel cmdline */
+ static u32 req_entries;
+@@ -257,6 +258,21 @@ static void add_dma_entry(struct dma_debug_entry *entry)
+ 	put_hash_bucket(bucket, &flags);
+ }
+ 
++static struct dma_debug_entry *__dma_entry_alloc(void)
++{
++	struct dma_debug_entry *entry;
++
++	entry = list_entry(free_entries.next, struct dma_debug_entry, list);
++	list_del(&entry->list);
++	memset(entry, 0, sizeof(*entry));
++
++	num_free_entries -= 1;
++	if (num_free_entries < min_free_entries)
++		min_free_entries = num_free_entries;
++
++	return entry;
++}
++
+ /* struct dma_entry allocator
+  *
+  * The next two functions implement the allocator for
+@@ -276,9 +292,7 @@ static struct dma_debug_entry *dma_entry_alloc(void)
+ 		goto out;
+ 	}
+ 
+-	entry = list_entry(free_entries.next, struct dma_debug_entry, list);
+-	list_del(&entry->list);
+-	memset(entry, 0, sizeof(*entry));
++	entry = __dma_entry_alloc();
+ 
+ #ifdef CONFIG_STACKTRACE
+ 	entry->stacktrace.max_entries = DMA_DEBUG_STACKTRACE_ENTRIES;
+@@ -286,9 +300,6 @@ static struct dma_debug_entry *dma_entry_alloc(void)
+ 	entry->stacktrace.skip = 2;
+ 	save_stack_trace(&entry->stacktrace);
+ #endif
+-	num_free_entries -= 1;
+-	if (num_free_entries < min_free_entries)
+-		min_free_entries = num_free_entries;
+ 
+ out:
+ 	spin_unlock_irqrestore(&free_entries_lock, flags);
+@@ -310,6 +321,53 @@ static void dma_entry_free(struct dma_debug_entry *entry)
+ 	spin_unlock_irqrestore(&free_entries_lock, flags);
+ }
+ 
++int dma_debug_resize_entries(u32 num_entries)
++{
++	int i, delta, ret = 0;
++	unsigned long flags;
++	struct dma_debug_entry *entry;
++	LIST_HEAD(tmp);
++
++	spin_lock_irqsave(&free_entries_lock, flags);
++
++	if (nr_total_entries < num_entries) {
++		delta = num_entries - nr_total_entries;
++
++		spin_unlock_irqrestore(&free_entries_lock, flags);
++
++		for (i = 0; i < delta; i++) {
++			entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++			if (!entry)
++				break;
++
++			list_add_tail(&entry->list, &tmp);
++		}
++
++		spin_lock_irqsave(&free_entries_lock, flags);
++
++		list_splice(&tmp, &free_entries);
++		nr_total_entries += i;
++		num_free_entries += i;
++	} else {
++		delta = nr_total_entries - num_entries;
++
++		for (i = 0; i < delta && !list_empty(&free_entries); i++) {
++			entry = __dma_entry_alloc();
++			kfree(entry);
++		}
++
++		nr_total_entries -= i;
++	}
++
++	if (nr_total_entries != num_entries)
++		ret = 1;
++
++	spin_unlock_irqrestore(&free_entries_lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL(dma_debug_resize_entries);
++
+ /*
+  * DMA-API debugging init code
+  *
+@@ -490,6 +548,8 @@ void dma_debug_init(u32 num_entries)
+ 		return;
+ 	}
+ 
++	nr_total_entries = num_free_entries;
++
+ 	printk(KERN_INFO "DMA-API: debugging enabled by kernel config\n");
+ }
+ 
+-- 
+1.6.0.6
+
