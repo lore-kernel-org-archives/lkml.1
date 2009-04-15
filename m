@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZDOOkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZDOOkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbZDOOkL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZDOOj6
+	id S1756706AbZDOOkg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbZDOOkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:39:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:43265 "EHLO ozlabs.org"
+	Wed, 15 Apr 2009 10:40:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:42483 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753777AbZDOOj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:39:57 -0400
+	id S1755086AbZDOOkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:40:22 -0400
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 16 Apr 2009 00:09:52 +0930
-Subject: [PATCH 1/3] lguest: document 32-bit and PAE requirements
-Cc: lguest@ozlabs.org, "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Date: Thu, 16 Apr 2009 00:10:18 +0930
+Subject: [PATCH 2/3] lguest: fix KVM-style hypercalls with vmlinux images
+Cc: Patrick McHardy <kaber@trash.net>,
+       Matias Zabaljauregui <zabaljauregui@gmail.com>,
+       lguest <lguest@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904160009.53570.rusty@rustcorp.com.au>
+Message-Id: <200904160010.19150.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Matias Zabaljauregui <zabaljauregui@gmail.com>
 
-Impact: documentation update
+Impact: fix guest crash 'lguest: unhandled trap 6 at 0x418726 (0x0)'
 
-Robert noted that we don't actually document that lguest is 32-bit only,
-nor that PAE must be off (CONFIG_PAE is now prompted for if HIGHMEM is
-set to "off).
+The Launcher mmaps the kernel image.  The Guest executes and
+immediately faults in the first text page (read-only).  Then it hits a
+hypercall, and we rewrite that hypercall, causing a copy-on-write.
+But the Guest pagetables still refer to the old page: we fault again,
+but as Host we see the hypercall already rewritten, and pass the fault
+back to the Guest.  The Guest hasn't set up an IDT yet, so we kill it.
+
+This doesn't happen with bzImages: they unpack themselves and so the
+text pages are already read-write.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lguest@ozlabs.org
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Tested-by: Patrick McHardy <kaber@trash.net>
 ---
- Documentation/lguest/lguest.txt |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/lguest/x86/core.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/lguest/lguest.txt b/Documentation/lguest/lguest.txt
---- a/Documentation/lguest/lguest.txt
-+++ b/Documentation/lguest/lguest.txt
-@@ -3,11 +3,11 @@
-  /,    /`      - or, A Young Coder's Illustrated Hypervisor
-  \\"--\\    http://lguest.ozlabs.org
+diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
+index a6b7176..b4747f7 100644
+--- a/drivers/lguest/x86/core.c
++++ b/drivers/lguest/x86/core.c
+@@ -324,6 +324,11 @@ static void rewrite_hypercall(struct lg_cpu *cpu)
+ 	u8 insn[3] = {0xcd, 0x1f, 0x90};
  
--Lguest is designed to be a minimal hypervisor for the Linux kernel, for
--Linux developers and users to experiment with virtualization with the
--minimum of complexity.  Nonetheless, it should have sufficient
--features to make it useful for specific tasks, and, of course, you are
--encouraged to fork and enhance it (see drivers/lguest/README).
-+Lguest is designed to be a minimal 32-bit x86 hypervisor for the Linux kernel,
-+for Linux developers and users to experiment with virtualization with the
-+minimum of complexity.  Nonetheless, it should have sufficient features to
-+make it useful for specific tasks, and, of course, you are encouraged to fork
-+and enhance it (see drivers/lguest/README).
+ 	__lgwrite(cpu, guest_pa(cpu, cpu->regs->eip), insn, sizeof(insn));
++	/* The above write might have caused a copy of that page to be made
++	 * (if it was read-only).  We need to make sure the Guest has
++	 * up-to-date pagetables.  As this doesn't happen often, we can just
++	 * drop them all. */
++	guest_pagetable_clear_all(cpu);
+ }
  
- Features:
- 
-@@ -37,6 +37,7 @@ Running Lguest:
-      "Paravirtualized guest support" = Y
-         "Lguest guest support" = Y
-      "High Memory Support" = off/4GB
-+     "PAE (Physical Address Extension) Support" = N
-      "Alignment value to which kernel should be aligned" = 0x100000
-         (CONFIG_PARAVIRT=y, CONFIG_LGUEST_GUEST=y, CONFIG_HIGHMEM64G=n and
-          CONFIG_PHYSICAL_ALIGN=0x100000)
+ static bool is_hypercall(struct lg_cpu *cpu)
+
+
+
 
