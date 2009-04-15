@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZDOFLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZDOFTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbZDOFLk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 01:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZDOFJ6
+	id S1753895AbZDOFTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 01:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZDOFTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 01:09:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39342 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbZDOFJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 01:09:57 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 7/7] swap: Remove code handling bio_alloc failure with __GFP_WAIT
-Date: Wed, 15 Apr 2009 10:37:04 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+	Wed, 15 Apr 2009 01:19:07 -0400
+Received: from kroah.org ([198.145.64.141]:48726 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750814AbZDOFTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 01:19:06 -0400
+Date: Tue, 14 Apr 2009 22:07:25 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 14
+Message-ID: <20090415050725.GA3462@kroah.com>
+References: <20090414160809.e92d9d3e.sfr@canb.auug.org.au> <20090415011512.GF10045@kroah.com> <20090415115201.5ff5db85.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904151037.04929.knikanth@suse.de>
+In-Reply-To: <20090415115201.5ff5db85.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove code handling bio_alloc failure with __GFP_WAIT.
+On Wed, Apr 15, 2009 at 11:52:01AM +1000, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Tue, 14 Apr 2009 18:15:12 -0700 Greg KH <greg@kroah.com> wrote:
+> >
+> > Is linux-next open for 2.6.31 patches yet?  Or is that already happening
+> > and I just missed the email somewhere?
+> 
+> The reminder I send out is that I don't want 2.6.(x+1) stuff until
+> 2.6.x-rc1 is out.  (I wanted to wait for -rc2, but Andrew insisted.)
+> 
+> So, "yes. yes." :-)
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+thanks for the clarification.
 
----
-
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 505f319..8ba052c 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -64,8 +64,6 @@ static int submit(int rw, pgoff_t page_off, struct page *page,
- 	struct bio *bio;
- 
- 	bio = bio_alloc(__GFP_WAIT | __GFP_HIGH, 1);
--	if (!bio)
--		return -ENOMEM;
- 	bio->bi_sector = page_off * (PAGE_SIZE >> 9);
- 	bio->bi_bdev = resume_bdev;
- 	bio->bi_end_io = end_swap_bio_read;
-
+greg k-h
