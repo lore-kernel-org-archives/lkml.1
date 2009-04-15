@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZDOSiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbZDOSjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbZDOSiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 14:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbZDOSia
+	id S1756260AbZDOSjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 14:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZDOSjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 14:38:30 -0400
-Received: from solcza.etanetas.lt ([82.135.221.82]:50752 "EHLO
-	solcza.etanetas.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbZDOSi2 (ORCPT
+	Wed, 15 Apr 2009 14:39:09 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2110 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbZDOSjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 14:38:28 -0400
-From: Zuniga <claudia@forcedmatrix.com>
-To: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: =?iso-8859-1?b?QWNhaSBCZXJyeSAsIGxvc2UgdW53YW50ZWQgd2VpZ2h0IGZhc3Q=?=
-Date: Tue, 14 Apr 2009 20:49:05 +0200
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
-Message-Id: <090414204905DI.03220.claudia@forcedmatrix.com>
+	Wed, 15 Apr 2009 14:39:08 -0400
+Subject: [PATCH] hda_intel.c - Consolidate bitfields
+From: Joe Perches <joe@perches.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Peer Chen <peerchen@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 11:39:01 -0700
+Message-Id: <1239820741.26340.175.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3FIdjqu023124
 
-good afternoon
+Commit fa00e046b41663cbda9b1affc0594669e5f14219
+added a new bitfield not adjacent to other
+bitfields in the same struct.  Moved the new one.
 
-Our first taste of Acai energized not only our bodies but stimulated our mind. We would like to share that with you by offering you our free trial of Acaidiet which will lead to sustainable healthy clear cut weight loss 
-visit site http://mis6hgma6.blogspot.com
+Signed-off-by: Joe Perches <joe@perches.com>
 
-code msg tyhergw
-id 80ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+index bc882f8..21e99cf 100644
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -312,7 +312,6 @@ struct azx_dev {
+ 	unsigned int period_bytes; /* size of the period in bytes */
+ 	unsigned int frags;	/* number for period in the play buffer */
+ 	unsigned int fifo_size;	/* FIFO size */
+-	unsigned int start_flag: 1;	/* stream full start flag */
+ 	unsigned long start_jiffies;	/* start + minimum jiffies */
+ 	unsigned long min_jiffies;	/* minimum jiffies before position is valid */
+ 
+@@ -333,6 +332,7 @@ struct azx_dev {
+ 	unsigned int opened :1;
+ 	unsigned int running :1;
+ 	unsigned int irq_pending :1;
++	unsigned int start_flag: 1;	/* stream full start flag */
+ 	/*
+ 	 * For VIA:
+ 	 *  A flag to ensure DMA position is 0
+
+
