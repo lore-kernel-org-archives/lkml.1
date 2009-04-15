@@ -1,37 +1,30 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZDOSoa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 15 Apr 2009 14:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZDOSoQ
+	id S1754949AbZDOSzS (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 15 Apr 2009 14:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZDOSzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 14:44:16 -0400
-Received: from solcza.etanetas.lt ([82.135.221.82]:50981 "EHLO
-	solcza.etanetas.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752699AbZDOSoP convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 14:55:00 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:34065 "EHLO
+	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbZDOSy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 14:44:15 -0400
-Date: Tue, 14 Apr 2009 21:52:50 +0200
-From: Claudia <zuniga@08161.com>
-X-Mailer: The Bat! (v3.99.3) UNREG
-Organization: wjwrofp
-X-Priority: 3 (Normal)
-Message-Id: <790797880.200904142152@08161.com>
-To: linux-usb@vger.kernel.org, linux-usb@vger.kernel.org,
-   linux-usb@vger.kernel.org, linux-usb@vger.kernel.org,
-   linux-kernel@vger.kernel.org
-CC: util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org,
-   netdev@vger.kernel.org
-Subject: =?iso-8859-1?b?TG9zZSA1IHBkcyBhIGRheSAsIHdpdGggYWNjYWkgYmVycnkg?=
+	Wed, 15 Apr 2009 14:54:59 -0400
+Message-Id: <7h9gbp$crppbp@rrcs-agw-01b.hrndva.rr.com>
+X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
+From: Mrs Joan Thomas <feetfirst@winch.twcbc.com>
+Reply-To: jerry.smith33@onlineprocessingdept.co.uk
+To: <info@lotto.org>
+Subject: Winner
+Date: Wed, 15 Apr 2009 13:54:57 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-go0d afternoon
+The Global  International Programme.Therefore you have been approve for a lump sum payout (£950.000.00 GBP) Nine hundred and fifty thousand Pounds in the Global Sweepstakes International Program
 
-Acai is a deliqete fruit that is only found in south american rain forest. The fruit has been featured on Oprah and once eaten will result in high energy. Acai Diet is packed with antioxidants , amino acids , vitamins and Minerals all this good stuff will result in weight loss for you. Get your free trial now.
-visit site http://groups.yahoo.com/group/vizajipatoryn89/message/1
+You have been awarded the sum of £950.000.00 GBP in our Global draw, get back to us asap
 
-code msg gjh
-id 6459
+Name:Country:Sex:Age:Address:
