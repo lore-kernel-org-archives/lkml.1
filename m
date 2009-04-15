@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbZDOKuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbZDOKwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbZDOKuX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZDOKuG
+	id S1759467AbZDOKwA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbZDOKvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:50:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48140 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 06:51:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:55473 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbZDOKuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:50:05 -0400
-Date: Wed, 15 Apr 2009 12:46:15 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Message-ID: <20090415104615.GG9809@random.random>
-References: <20090414143252.GE28265@random.random> <200904150042.15653.nickpiggin@yahoo.com.au> <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
+	id S1758777AbZDOKvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:51:45 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: RFC: introduce struct ksymbol
+Date: Wed, 15 Apr 2009 20:21:40 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Joe Perches <joe@perches.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com> <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
+In-Reply-To: <20090415055839.GA12040@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
+Message-Id: <200904152021.41427.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 05:05:54PM +0900, KOSAKI Motohiro wrote:
-> -	/*
-> -	 * If the page is mlock()d, we cannot swap it out.
-> -	 * If it's recently referenced (perhaps page_referenced
-> -	 * skipped over this mm) then we should reactivate it.
-> -	 */
->  	if (!migration) {
-> +		if (PageSwapCache(page) &&
-> +		    page_count(page) != page_mapcount(page) + 2) {
-> +			ret = SWAP_FAIL;
-> +			goto out_unmap;
-> +		}
-> +
-> +		/*
-> +		 * If the page is mlock()d, we cannot swap it out.
-> +		 * If it's recently referenced (perhaps page_referenced
-> +		 * skipped over this mm) then we should reactivate it.
-> +		 */
->  		if (vma->vm_flags & VM_LOCKED) {
->  			ret = SWAP_MLOCK;
->  			goto out_unmap;
-> @@ -790,7 +796,19 @@ static int try_to_unmap_one(struct page 
->  
->  	/* Nuke the page table entry. */
->  	flush_cache_page(vma, address, page_to_pfn(page));
-> -	pteval = ptep_clear_flush_notify(vma, address, pte);
-> +	pteval = ptep_clear_flush(vma, address, pte);
-> +
-> +	if (!migration) {
-> +		/* re-check */
-> +		if (PageSwapCache(page) &&
-> +		    page_count(page) != page_mapcount(page) + 2) {
-> +			/* We lose race against get_user_pages_fast() */
-> +			set_pte_at(mm, address, pte, pteval);
-> +			ret = SWAP_FAIL;
-> +			goto out_unmap;
-> +		}
-> +	}
-> +	mmu_notifier_invalidate_page(vma->vm_mm, address);
+On Wed, 15 Apr 2009 03:28:39 pm Ingo Molnar wrote:
+> Why not 'struct ksym'? That name is unused right now, it is shorter 
+> and just as descriptive.
+> 
+> Regarding the change... dunno. Sam, Rusty - what do you think?
 
-With regard to mmu notifier, this is the opposite of the right
-ordering. One mmu_notifier_invalidate_page must run _before_ the first
-check. The ptep_clear_flush_notify will then stay and there's no need
-of a further mmu_notifier_invalidate_page after the second check.
+Yes, ksym is nice.  But agree with you that it's marginal obfuscation
+to wrap it in a struct.
+
+The current symbol printing APIs are awful; we should address them first
+(like the %pF patch does) IMHO.
+
+Cheers,
+Rusty.
