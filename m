@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756288AbZDOAOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbZDOAOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756288AbZDOAOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 20:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZDOAN7
+	id S1757274AbZDOAOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 20:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbZDOAOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 20:13:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:4386 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbZDOAN6 (ORCPT
+	Tue, 14 Apr 2009 20:14:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33480 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755263AbZDOAOF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 20:13:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iQ/Y+UrLPN+mZL63trPFOqu9yGA2ztvg1AO8SIiRJ1558aBPBy3FZcQL17E5iraIuX
-         m9XXcrDbnOorr6quFVi8A12KfChmifuX+4TMMshe1fP7HQ5gFBPEQ8AdpvmxhC2ZDrB6
-         zKoGalvEZvb5AqP2Ubd70s9tZ7tZkxXzYUDw4=
-Date: Wed, 15 Apr 2009 02:13:54 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vsprintf: introduce %pf
-Message-ID: <20090415001353.GH5968@nowhere>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com> <1239754196.28331.1.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239754196.28331.1.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Apr 2009 20:14:05 -0400
+Date: Tue, 14 Apr 2009 17:11:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       xcf@ustc.edu.cn
+Subject: Re: [RFC][PATCH] vfs: check inode size on no_cached_page
+Message-Id: <20090414171114.04a47932.akpm@linux-foundation.org>
+In-Reply-To: <20090412071605.GA14058@localhost>
+References: <20090412071605.GA14058@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 05:09:56PM -0700, Joe Perches wrote:
-> On Wed, 2009-04-15 at 02:00 +0200, Frederic Weisbecker wrote:
-> > diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-> > index b56f6d0..15c9094 100644
-> > --- a/lib/vsprintf.c
-> > +++ b/lib/vsprintf.c
-> > @@ -575,12 +575,15 @@ static char *string(char *buf, char *end, char *s, struct printf_spec spec)
-> >  }
-> >  
-> >  static char *symbol_string(char *buf, char *end, void *ptr,
-> > -				struct printf_spec spec)
-> > +				struct printf_spec spec, char ext)
-> >  {
-> >  	unsigned long value = (unsigned long) ptr;
-> >  #ifdef CONFIG_KALLSYMS
-> >  	char sym[KSYM_SYMBOL_LEN];
-> > -	sprint_symbol(sym, value);
-> > +	if (ext != 'f')
-> > +		sprint_symbol(sym, value);
-> > +	else
-> > +		kallsyms_lookup(value, NULL, NULL, NULL, sym);
+On Sun, 12 Apr 2009 15:16:05 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+> [This patch may not necessarily be merged, but at least we should
+>  be aware of the problem.]
 > 
-> buffer overflow waiting to happen yes?
+> When user space requests past-EOF data, do_generic_file_read() will
+> issue a bonus readpage call, which may be unfavorable.
+> 
+> do_generic_file_read:
+>         -> find_page:
+>         -> find_get_page()             = NULL
+>         -> page_cache_sync_readahead()
+>         -> find_get_page()             = NULL
+>         -> no_cached_page:
+>         -> readpage:
+>                 -> nfs_readpage()      = error
+>         -> readpage_error:
+> 
+> Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  mm/filemap.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> --- mm.orig/mm/filemap.c
+> +++ mm/mm/filemap.c
+> @@ -1269,6 +1269,11 @@ readpage_error:
+>  		goto out;
+>  
+>  no_cached_page:
+> +		isize = i_size_read(inode);
+> +		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
+> +		if (unlikely(!isize || index > end_index))
+> +			goto out;
+> +
+>  		/*
+>  		 * Ok, it wasn't cached, so we need to create a new
+>  		 * page..
 
+Is this a problem which needs to be solved?  userspace does something
+silly and the kernel behaves a bit suboptimally?
 
-But a symbol is not supposed to exceed KSYM_SYMBOL_LEN. 
+If thats the only problem here then it's not worth adding fastpath
+cycles to fix it?
+
 
