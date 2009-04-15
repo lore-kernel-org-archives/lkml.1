@@ -1,84 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZDOPGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZDOPGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbZDOPGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZDOPGE
+	id S1754217AbZDOPGi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZDOPGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:06:04 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:47133 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751812AbZDOPGD (ORCPT
+	Wed, 15 Apr 2009 11:06:25 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:39129 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753457AbZDOPGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:06:03 -0400
-Subject: Re: 2.6.30-rc1: parisc: system hangs on boot at __schedule()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <a4423d670904150549s48b844a7iba097acaf875b992@mail.gmail.com>
-References: <a4423d670904080603w50face2fl87cd16bd7967cb5d@mail.gmail.com>
-	 <20090408220921.GF7372@bombadil.infradead.org>
-	 <a4423d670904090146w2937bf15le2afb5dfad718f0e@mail.gmail.com>
-	 <20090409144611.GH7372@bombadil.infradead.org>
-	 <a4423d670904150549s48b844a7iba097acaf875b992@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 15 Apr 2009 15:06:03 +0000
-Message-Id: <1239807963.3371.17.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 11:06:24 -0400
+Date: Wed, 15 Apr 2009 09:07:06 -0600
+From: dann frazier <dannf@hp.com>
+To: Corey Minyard <minyard@acm.org>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Openipmi-developer] [PATCH 4/5] IPMI: Add console oops catcher
+Message-ID: <20090415150706.GQ8345@ldl.fc.hp.com>
+References: <20090303152123.GD7777@minyard.local> <20090303132046.a8975963.akpm@linux-foundation.org> <49ADC559.7040705@ct.jp.nec.com> <20090402141445.3a7a6504.akpm@linux-foundation.org> <49E58168.3090409@ct.jp.nec.com> <49E5F07E.40704@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E5F07E.40704@acm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 16:49 +0400, Alexander Beregalov wrote:
-> 2009/4/9 Kyle McMartin <kyle@mcmartin.ca>:
-> > On Thu, Apr 09, 2009 at 12:46:15PM +0400, Alexander Beregalov wrote:
-> >> 2009/4/9 Kyle McMartin <kyle@mcmartin.ca>:
-> >> > On Wed, Apr 08, 2009 at 05:03:04PM +0400, Alexander Beregalov wrote:
-> >> >> Hi
-> >> >>
-> >> >> Machine is HP j6000.
-> >> >> CPU(s): 2 x PA8700 (PCX-W2) at 750.000000 MHz
-> >> >>
-> >> >> gcc version 4.3.3 (Gentoo 4.3.3-r2 p1.1, pie-10.1.5)
-> >> >>
-> >> >>
-> >> >> Machine hangs before starting rc scripts, but SysRq and C-A-Del work.
-> >> >>
-> >> >> All tasks are at __schedule+0x268/0x7bc:
-> >> >>
-> >> >
-> >> > .config?
+On Wed, Apr 15, 2009 at 09:34:38AM -0500, Corey Minyard wrote:
+> Hiroshi Shimamoto wrote:
+> > Andrew Morton wrote:
+> >> On Tue, 03 Mar 2009 16:03:37 -0800
+> >> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 > >>
-> >> Sorry, attached.
+> >>> ...
+> >>>> This reader is unable to determine what the mystery preempt_disable()
+> >>>> is here for.  It needs a comment, please.
+> >>> I cannot recall why it's here. So a comment is really needed.
+> >>> This preempt_disable() may not be needed.
+> >>>
+> >>>> What happens if two CPUs oops at the same time (which is fairly 
+> >>>> common)?
+> >>> ...
+> >>>
+> >>> OK. I'll look at this.
+> >>>
+> >>>> It would be prudent to have a timeout in this loop.  The machine has
+> >>>> crashed and subsystems and hardware and memory are in an unknown and
+> >>>> possibly bad state.
+> >>> Right.
+> >>>
+> >>> ...
+> >>>
+> >>>> This looks like we're abusing the "unblank" method.
+> >>>>
+> >>>> If you think that the console subsystem is missing some capability
+> >>>> which this driver needs then please do prefer to fix the console
+> >>>> subsystem, rather than awkwardly making things fit.
+> >>> OK. Will take a look about this point.
+> >>>
+> >>
+> >> None of this happened.
+> >>
+> >> It makes me reluctant to merge that patches as they stand, because then
+> >> it all gets forgotten about, whereas holding the patches back will
+> >> remind us that updates are needed.
 > >
-> > Thanks, I swapped disks into my j6700 and will try to reproduce.
+> > Sorry for late reply.
+> > I couldn't have time for this patch.
+> > I'll look at this again and will resend updates.
+> Andrew, can we drop this for now and at get the other patches in?  At 
+> least the first one ("Fix platform return check"), since it's an obvious 
+> bug fix.
+
+As it should allow us stop shipping a set of forked modules,
+ipmi-add-oem-message-handling.patch would be nice too :)
+
 > 
-> It seems the problem is the same as mentioned here:
-> http://marc.info/?l=linux-kernel&m=123920746830420&w=2
+> Thanks,
 > 
-> The patch  fixes the issue.
+> -corey
 > 
-> James?
-> The same problem on two of my hosts: x86_64 with LSI SAS MegaRAID
-> and parisc with SYM53C8XX_2
+> >
+> > Thanks,
+> > Hiroshi
+> >
+> 
+> 
+> ------------------------------------------------------------------------------
+> This SF.net email is sponsored by:
+> High Quality Requirements in a Collaborative Environment.
+> Download a free trial of Rational Requirements Composer Now!
+> http://p.sf.net/sfu/www-ibm-com
+> _______________________________________________
+> Openipmi-developer mailing list
+> Openipmi-developer@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/openipmi-developer
+> 
 
-Well, I can tell you why I don't see the problem:  My parisc system has
-modular SCSI, so it doesn't really test out the async system that well
-(it was designed more for monolithic kernels).
-
-On the specific patch in the email, it seems reasonable, but I think it
-might interfere with the sd probe async calls, so what you might end up
-losing a rache where the host fully scanned, but the sd driver not
-attached.
-
-The root cause of the problem is that we now have two different async
-mechanisms in SCSI: our original one for host scanning and the new one
-for sd attachment.
-
-James
-
+-- 
+dann frazier
 
