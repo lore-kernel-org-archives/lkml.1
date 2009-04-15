@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZDOTrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZDOTsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZDOTrt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 15:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZDOTrj
+	id S1756201AbZDOTsK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 15:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZDOTrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 15:47:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52570 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753690AbZDOTri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 15:47:38 -0400
-Message-ID: <49E6397D.1020201@kernel.org>
-Date: Wed, 15 Apr 2009 12:46:05 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Wed, 15 Apr 2009 15:47:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52071 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756308AbZDOTrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 15:47:48 -0400
+Date: Wed, 15 Apr 2009 12:43:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: [PATCH] x86: used used_vectors in init_IRQ
-References: <49E62DFD.6010904@kernel.org> <20090415192550.GA27004@elte.hu> <49E636F2.7030902@kernel.org> <20090415193827.GB32675@elte.hu>
-In-Reply-To: <20090415193827.GB32675@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Dave Jones <davej@redhat.com>
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+In-Reply-To: <49E62BD5.6090508@zytor.com>
+Message-ID: <alpine.LFD.2.00.0904151241490.4132@localhost.localdomain>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <20090414020544.GA3738@elte.hu> <20090415054417.GA5272@elte.hu> <200904152014.11717.rusty@rustcorp.com.au> <alpine.LFD.2.00.0904150822020.4132@localhost.localdomain> <20090415162627.GA32254@elte.hu>
+ <alpine.LFD.2.00.0904151013260.4132@localhost.localdomain> <49E62BD5.6090508@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+
+
+On Wed, 15 Apr 2009, H. Peter Anvin wrote:
 > 
->> Ingo Molnar wrote:
->>
->>> Note, i removed the -stable tag because i dont think .29 nor 
->>> .30-rc2 is affected. Your patch to irqinit*.c (and the later 
->>> unification by Pekka) is something still pending in the 
->>> perfcounters and x86 trees, queued for .31.
->> not sure .29, but it seems we need this for 2.6.30
->>
+> "cleanup" is indeed the most common, as it is intended to signify a
+> trivial but nonzero code change.  Whether or not it's *correct* is
+> another matter.  "build fix" is valid and proper use: it tells that it
+> fixes a compilation error, which succinctly communicates both the
+> priority of the fix and how it needs to be validated.
 
-you are right...
+Why would that be "proper use"?
 
-in trap_init with linus tree
+Dammit, if the "build fix" is not obvious from the rest of the commit 
+message, there's something wrong.
 
-still have
-#ifdef CONFIG_X86_64
-        set_bit(IA32_SYSCALL_VECTOR, used_vectors);
-#else
-        set_bit(SYSCALL_VECTOR, used_vectors);
-#endif
+And if it _is_ obvious, then the mechanical "Impact:" thing is pointless.
 
+In other words - in neither case does it actually help anything at all. 
+It's only distracting noise.
 
-so one patch (merge irqinit_32/64) in tip for .31 expose that bug.
-
-aka we don't back port ...
-
-YH
+			Linus
