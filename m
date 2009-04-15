@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZDOPh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbZDOPjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbZDOPh5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZDOPhr
+	id S1752456AbZDOPjQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZDOPi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:37:47 -0400
-Received: from rtr.ca ([76.10.145.34]:39945 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbZDOPhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:37:46 -0400
-Message-ID: <49E5FF48.3030809@rtr.ca>
-Date: Wed, 15 Apr 2009 11:37:44 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB storage no-boot regression (bisected)
-References: <49E4FAC6.1030400@garzik.org>	<20090415014930.GA29413@kroah.com>	<49E5480F.10501@garzik.org>	<20090415050947.GB3462@kroah.com>	<49E5EE41.3090505@rtr.ca> <20090415073001.503b0361@infradead.org>
-In-Reply-To: <20090415073001.503b0361@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 11:38:56 -0400
+Received: from vms173009pub.verizon.net ([206.46.173.9]:30442 "EHLO
+	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbZDOPiz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 11:38:55 -0400
+Date: Wed, 15 Apr 2009 11:38:32 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: "Moore, Robert" <robert.moore@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [BISECTED] EEE PC hangs when booting off battery
+In-reply-to: <200904141056.14159.bjorn.helgaas@hp.com>
+Message-id: <alpine.LFD.2.00.0904151056390.5664@localhost.localdomain>
+References: <49E065CF.6040408@tuffmail.co.uk>
+ <200904140948.37633.bjorn.helgaas@hp.com>
+ <4911F71203A09E4D9981D27F9D8308581D3722EB@orsmsx503.amr.corp.intel.com>
+ <200904141056.14159.bjorn.helgaas@hp.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 15 Apr 2009 10:25:05 -0400
-> Mark Lord <lkml@rtr.ca> wrote:
+
+> > In fact, ACPI methods can execute concurrently -- constrained by the ACPI specification itself. The "big lock" is released before anything that will block for a significant amount of time, allowing other methods to run.
 > 
->> Greg KH wrote:
->>> ..
->>> The issue is that you were just lucky that your machine worked
->>> properly previously.  My boxes with the same type of setup didn't,
->>> so I quickly realized what the root delay boot option was for.  You
->>> need to just do the same thing here, there's nothing else we can do.
->> ..
->>
->> Bad excuse.
->>
->> SATA drives also take variable amounts of time to "show up" at boot.
->> Perhaps Jeff should customize libata for your and Arjan's exact
->> setups, just to help with understanding the point here.  :)
+> We had a discussion about this a couple years ago:
+>   http://www.mail-archive.com/linux-acpi%40vger.kernel.org/msg06976.html
 > 
-> the difference is that with sata you know when you are done and have all
-> possible drives. No so much much with USB. So with SATA we can, and do,
-> wait for the scan to complete at the right point in the boot.
+> Here's my understanding (please correct me if I'm wrong):
 > 
->> The speed ups are fine (and welcome), but we really now need
->> Arjan to follow-up with a patch to have the kernel *by default*
->> wait a little longer for the rootfs to show up.
->>
->> Not forever, just a few seconds to compensate for the regression.
+> - The ACPI CA holds a mutex while executing an AML method (see
+>   acpi_ex_enter_interpreter()).
 > 
-> seconds!!!!!
-> The whole kernel boots in half a second!
-..
+> - When an AML method blocks, the ACPI CA releases the mutex, which
+>   allows another AML method to run while the first is blocked.
+> 
+> - Because of the mutex, at most one AML method can be executing at
+>   any given time.  Others may have started, but they are blocked
+>   until the current method completes or blocks itself.
+> 
+> - The undocumented "acpi_serialize" option makes the ACPI CA hold
+>   the mutex for the entire duration of a method, even while a method
+>   is blocked.
+> 
+> Based on that, my guess about the battery init being slow because of
+> a long-running AML method might be incorrect, although I suppose
+> it's still possible to write AML busy-loops that never block.
+> 
+> I'd really like to understand what's making it slow.  The only
+> thing that looks at all unusual in acpi_battery_add() is
+> acpi_battery_update(), and that evaluates _STA and _BIF and
+> not much else.
+> 
+> Arjan, do you have any more information?  Is the battery driver
+> slow on all laptops?  If not, where did you see the problem?  Do
+> you have a DSDT for them?
 
-Oh, absolutely I agree.
+Before I added Arjan's async battery patch, I booted a couple of laptops
+with async disabled and enabled.  I saw about 40 usec battery init (T61, 
+nx6325).
 
-That's why I'm not suggesting a DELAY,
-but rather a TIMEOUT (where it keeps trying up until the timeout).
+Obviously, this was too fast for async battery to have any measurable
+benefit on these machines (though async disk probing, by comparison,
+was a big win).
 
-For desktop, it should really just wait forever,
-but I can understand situations (server room)
-where that would be a Really Bad Idea.
+But Arjan saw O(300) usec serial battery init on an EEE PC,
+which is why he optimized it.
 
-So just have it sit there and retry the rootfs for a few seconds,
-to compensate for this regression and also for others that have
-yet to be discovered / reported.
+Indeed, this thread was started b/c a failure was seen on an EEEPC,
+probably because of its unusually slow timing.
 
-Everyone's life will be easier that way.
+-Len
 
-Cheers
+
