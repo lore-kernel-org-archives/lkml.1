@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZDOTjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZDOTke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZDOTjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 15:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZDOTj1
+	id S1756086AbZDOTke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 15:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZDOTkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 15:39:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45083 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754246AbZDOTj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 15:39:26 -0400
-Date: Wed, 15 Apr 2009 21:38:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: [PATCH] x86: used used_vectors in init_IRQ
-Message-ID: <20090415193827.GB32675@elte.hu>
-References: <49E62DFD.6010904@kernel.org> <20090415192550.GA27004@elte.hu> <49E636F2.7030902@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 15 Apr 2009 15:40:21 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:47218 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755245AbZDOTkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 15:40:20 -0400
+Date: Wed, 15 Apr 2009 21:42:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: devzero@web.de
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: Should MODULE_DESCRIPTION be mandatory ?
+Message-ID: <20090415194226.GB25783@uranus.ravnborg.org>
+References: <671646821@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <49E636F2.7030902@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <671646821@web.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Ingo Molnar wrote:
+On Wed, Apr 15, 2009 at 01:11:46PM +0200, devzero@web.de wrote:
+> Hi, 
 > 
-> > Note, i removed the -stable tag because i dont think .29 nor 
-> > .30-rc2 is affected. Your patch to irqinit*.c (and the later 
-> > unification by Pekka) is something still pending in the 
-> > perfcounters and x86 trees, queued for .31.
+> some time ago i spotted that around 20% of the Linux modules lacking a MODULE_DESCRIPTION field.  ( http://bugzilla.kernel.org/show_bug.cgi?id=10770 )
 > 
-> not sure .29, but it seems we need this for 2.6.30
+> I think it`s not a practicable approach to get this fixed by some single person digging trough all the modules. 
+> If itŽs fixed for a kernel release, one year later there would be another bunch of new modules lacking the description field again.
 > 
-> or you want me to produce one against to linus tree?
+> What about a build-time or run-time warning for missing MODULE_DESCRIPTION ? (as it exists for MODULE_LICENSE in modpost.c) 
 
-Yes, do one please.
 
-	Ingo
+You mean something like the following untested patch?
+If it works what is the output for an allmodconfig build?
+
+	Sam
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 8cc7061..5317d6f 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1553,6 +1553,7 @@ static void read_symbols(char *modname)
+ 	const char *symname;
+ 	char *version;
+ 	char *license;
++	char *description;
+ 	struct module *mod;
+ 	struct elf_info info = { };
+ 	Elf_Sym *sym;
+@@ -1584,6 +1585,11 @@ static void read_symbols(char *modname)
+ 		license = get_next_modinfo(info.modinfo, info.modinfo_len,
+ 					   "license", license);
+ 	}
++	description = get_modinfo(info.modinfo, info.modinfo_len, "description");
++	if (info.modinfo && !description && !is_vmlinux(modname))
++		warn("modpost: missing MODULE_DESCRIPTION() in %s\n"
++		     "see include/linux/module.h for "
++		     "more information\n", modname);
+ 
+ 	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
+ 		symname = info.strtab + sym->st_name;
