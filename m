@@ -1,47 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751673AbZDOEOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbZDOEPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751673AbZDOEOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 00:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZDOEOl
+	id S1753037AbZDOEPi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 00:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbZDOEP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 00:14:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46012 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZDOEOl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 00:14:41 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][PATCH] Add file RSS accounting to the memory resource controller
-Cc: kosaki.motohiro@jp.fujitsu.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090414180706.GQ7082@balbir.in.ibm.com>
-References: <20090414180706.GQ7082@balbir.in.ibm.com>
-Message-Id: <20090415131348.AC43.A69D9226@jp.fujitsu.com>
+	Wed, 15 Apr 2009 00:15:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46307 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751014AbZDOEP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 00:15:28 -0400
+Message-ID: <49E55EF6.2070007@kernel.org>
+Date: Wed, 15 Apr 2009 13:13:42 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       miklos@szeredi.hu, akpm@linux-foundation.org, npiggin@suse.de
+Subject: Re: [PATCH 1/5] mmap: don't assume f_op->mmap() doesn't change vma->vm_file
+References: <1239674662-31318-1-git-send-email-tj@kernel.org> <1239674662-31318-2-git-send-email-tj@kernel.org>
+In-Reply-To: <1239674662-31318-2-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 15 Apr 2009 13:14:37 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Apr 2009 04:13:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+This patch is dropped as per Hugh Dickins' comment.
 
-> We currently don't track file RSS, the RSS we report is actually anon RSS.
-> All the file mapped pages, come in through the page cache and get accounted
-> there. This patch adds support for accounting file RSS pages. It should
-> 
-> 1. Help improve the metrics reported by the memory resource controller
-> 2. Will form the basis for a future shared memory accounting heuristic
->    that has been proposed by Kamezawa.
+Thanks.
 
-It seems impressive feature although I haven't review it.
-I'll review this later.
-
-thanks.
-
-
+-- 
+tejun
