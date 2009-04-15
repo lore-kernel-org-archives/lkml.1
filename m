@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZDON7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZDOOCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbZDON7b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 09:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZDON7X
+	id S1753173AbZDOOCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZDOOCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 09:59:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36642 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752474AbZDON7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 09:59:22 -0400
-Date: Wed, 15 Apr 2009 15:59:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stanislaw Gruszka <sgruszka@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] itimers: periodic timers fixes
-Message-ID: <20090415135902.GC12760@elte.hu>
-References: <20090402141135.655d1b2b@dhcp-lab-109.englab.brq.redhat.com> <20090402165753.GA12793@elte.hu> <20090415142232.46a97f70@dhcp-lab-109.englab.brq.redhat.com>
+	Wed, 15 Apr 2009 10:02:05 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:3321 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753988AbZDOOCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:02:04 -0400
+Message-ID: <49E5E8D0.1090505@imap.cc>
+Date: Wed, 15 Apr 2009 16:01:52 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415142232.46a97f70@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Kconfig Q: expressing a modularity dependency
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig920103BF38F6B050F1BCC328"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig920103BF38F6B050F1BCC328
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-* Stanislaw Gruszka <sgruszka@redhat.com> wrote:
+My current attempts to port the Gigaset driver from isdn4linux
+to CAPI require the following Kconfig dependency:
 
-> Hi Ingo.
-> 
-> On Thu, 2 Apr 2009 18:57:53 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> > > We found the periodic timers ITIMER_PROF and ITIMER_VIRT are 
-> > > unreliable, they have systematic timing error. For example period 
-> > > of 10000 us will not be represented by the kernel as 10 ticks, but 
-> > > 11 (for HZ=1000). The reason is that the frequency of the hardware 
-> > > timer can only be chosen in discrete steps and the actual 
-> > > frequency is about 1000.152 Hz. So 10 ticks would take only about 
-> > > 9.9985 ms, the kernel decides it must never return earlier than 
-> > > requested, so it rounds the period up to 11 ticks. This results in 
-> > > a systematic multiplicative timing error of -10 %. The situation 
-> > > is even worse where application try to request with 1 thick 
-> > > period. It will get the signal once per two kernel ticks, not on 
-> > > every tick. The systematic multiplicative timing error is -50 %. 
-> > > He have program [1] that shows itimers systematic error, results 
-> > > are below [2].
-> > > 
-> > > To fix situation we wrote two patches. First one just simplify 
-> > > code related with itimers. Second is fix, it change intervals 
-> > > measurement resolutions and correct times when signal is 
-> > > generated. However this add some drawback, that I'm not sure if 
-> > > are acceptable:
-> > > 
-> > > - the time between two consecutive tics can be smaller than 
-> > >   requested interval
-> > > 
-> > > - intervals values which are returned to user by getitimer() are 
-> > >   not rounded up
-> > > 
-> > > Second drawback mean that applications which first call 
-> > > setitimer() then call getitimer() to see if interval was round up 
-> > > and to correct timings, will potentially stop works. However this 
-> > > can be only problem with requested interval smaller than 1/HZ, as 
-> > > for intervals > 1/Hz we can generate signals with proper 
-> > > resolution.
-> > 
-> > Converting those to GTOD sampling instead of jiffies sampling is a 
-> > worthwile change IMO and a good concept.
-> > 
-> > The unificaton of ITIMER_PROF and ITIMER_VIRT is a nice observation 
-> > and a good patch.
-> > 
-> > The second one, changing all the sampling from cputime to ktime_t is 
-> > nicely done too:
-> > 
-> > We could do more though, there's still a bit of cputime legacies 
-> > around:
-> > 
-> > +	cputime_t cval, nval;
-> > 
-> > Couldnt all of that go over into the ktime_t space as well, phasing 
-> > out cputime logic from the itimer code?
-> > 
-> > The user ABI is struct timeval based, so there's no need to have 
-> > cputime anywhere. The scheduler does nanoseconds accurate stats so 
-> > it can be connected up there too.
-> 
-> Could the patches be merged and possible other work done in later 
-> time? Or perhaps I should rework on them?
+- If isdn4linux or kernelcapi or both are built as a module
+  (CONFIG_ISDN_I4L=3Dm || CONFIG_ISDN_CAPI=3Dm)
+  then gigaset can only be built as a module
+  (CONFIG_ISDN_DRV_GIGASET depends on m).
 
-It's up to Thomas - but they certainly looked good to me.
+- If neither isdn4linux nor kernelcapi ar built as a module
+  (CONFIG_ISDN_I4L!=3Dm && CONFIG_ISDN_CAPI!=3Dm),
+  including the case that neither is being built at all
+  (CONFIG_ISDN_I4L=3Dn && CONFIG_ISDN_CAPI=3Dn),
+  then gigaset may be built statically or as a module
+  (all three tristate settings for CONFIG_ISDN_DRV_GIGASET are
+  legal).
 
-	Ingo
+How is that best expressed in Kconfig?
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig920103BF38F6B050F1BCC328
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJ5ejZQ3+did9BuFsRAm3QAJ9a/HT9+61pjjSPgQxGwLkvNQHhewCbBlam
+IRwdCzt2ZdOs0uzJe4YeU24=
+=zR0U
+-----END PGP SIGNATURE-----
+
+--------------enig920103BF38F6B050F1BCC328--
