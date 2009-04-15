@@ -1,261 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZDOH1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZDOH2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbZDOH1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 03:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZDOH1F
+	id S1755592AbZDOH2r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 03:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZDOH2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 03:27:05 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:38714 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbZDOH1C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 03:27:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=CUxwmZSalFMAT+sZnAvKKKDmazgC3b/GG0mAJBOsrQY+8uQJIKCM4x2OkdUbHv3glG
-         aUDxeAQdMwpNH2JfU3A6fkOcFKOv3OqVvCM5pRZEzTHCpVoiO37ai2HQlUF8O34EPCh5
-         MsURiPuaoU4TN6vYb1vUhmQDiStguIxx6/FQM=
-Date: Wed, 15 Apr 2009 09:26:55 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       axboe@kernel.dk, bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/17] scsi: replace custom rq mapping with
-	blk_rq_map_kern_sgl()
-Message-ID: <20090415072655.GA11054@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	bharrosh@panasas.com, James.Bottomley@hansenpartnership.com,
-	linux-scsi@vger.kernel.org, axboe@kernel.dk, bzolnier@gmail.com,
-	linux-kernel@vger.kernel.org
-References: <20090413125912.GA16337@liondog.tnic> <20090414093401V.fujita.tomonori@lab.ntt.co.jp> <20090414100131.GA14646@liondog.tnic> <20090415084431H.fujita.tomonori@lab.ntt.co.jp> <49E561A0.7040607@kernel.org>
+	Wed, 15 Apr 2009 03:28:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35331 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751886AbZDOH2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 03:28:38 -0400
+Date: Wed, 15 Apr 2009 09:27:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+Subject: Re: [PATCH 0/4] [GIT PULL] more updates for TRACE_EVENTS for
+	modules
+Message-ID: <20090415072744.GB18192@elte.hu>
+References: <20090415031511.128139334@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49E561A0.7040607@kernel.org>
+In-Reply-To: <20090415031511.128139334@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
 
-On Wed, Apr 15, 2009 at 01:25:04PM +0900, Tejun Heo wrote:
-> >> Basically, I opted for preallocating a sense request in the ->do_request
-> >> routine and do that only on demand, i.e. I reinitialize it only if it
-> >> got used in the irq handler. So in case you want to shove a rq sense in
-> >> front of the queue, you simply use the already prepared one. Then in the
-> >> irq handler it is being finished the usual ways (blk_end_request). Next
-> >> time around you ->do_request, you reallocate it again since it got eaten
-> >> in the last round.
-> > 
-> > Sounds a workable solution.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
 > 
-> Haven't actually looked at the code but sweeeeeet.
+> Please pull the latest tip/tracing/core tree, which can be found at:
 > 
-> >> The good thing is that now I don't need all those static block layer
-> >> structs in the driver (bio, bio_vec, etc) and do the preferred dynamic
-> >> allocation instead.
-> > 
-> > That's surely good.
-> > 
-> > Well, if you could remove the usage of request structure that are not
-> > came from blk_get_request, it will be super. But it's a different
-> > topic and Tejun can go forward without such change.
-> > 
-> >> The patch is ontop of Tejun's series at
-> >> http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=ide-phase1
-> >> with some small modifications in commit 15783b1443f810ae72cb5ccb3a3a3ccc3aeb8729
-> >> wrt proper sense buffer length.
-> > 
-> > I think that Tejun will drop some of the patchset. At least, we don't
-> > need blk_rq_map_kern_prealloc stuff. I think that Tejun doesn't need
-> > to play with the mapping API. Well, we need to play with the mapping
-> > API for OSD but it's not directly related with the block layer
-> > cleanups necessary for the libata SCSI separation.
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/core
 > 
-> Yeah, the blk_rq_map_kern_prealloc() was basically shifting rq map
-> from ide to blk/bio so that at least codes are all in one place.  If
-> it's not necessary, super.  :-)
 > 
-> I'll drop stuff from this and the other patchset and repost them with
-> Borislav's patch in a few hours.  Thanks guys.
+> Steven Rostedt (4):
+>       tracing/events: fix compile for modules disabled
+>       tracing/events: fix lockdep system name
+>       tracing/events: move trace point headers into include/trace/events
+>       tracing/events: add trace-events-sample
 
-here's a version which gets rid of the static drive->request_sense_rq
-structure and does the usual blk_get_request(), as Fujita suggested.
+Pulled, thanks - i'm doing some more tests on it now.
 
-@Tejun: we're gonna need the same thing for ide-atapi before you'll be
-able to get rid of the _prealloc() hack. I'll try to cook something up by
-tomorrow the latest.
+The include/trace/ structure now looks extremely tidy, kudos!
 
----
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Tue, 14 Apr 2009 13:24:43 +0200
-Subject: [PATCH] ide-cd: preallocate rq sense out of the irq path
-
-Preallocate a sense request in the ->do_request method and reinitialize
-it only on demand, in case it's been consumed in the IRQ handler path.
-The reason for this is that we don't want to be mapping rq to bio in
-the IRQ path and introduce all kinds of unnecessary hacks to the block
-layer.
-
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: Tejun Heo <tj@kernel.org>
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-cd.c |   67 +++++++++++++++++++++++++++++---------------------
- include/linux/ide.h  |    3 ++
- 2 files changed, 42 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 35d0973..82c9339 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -206,32 +206,21 @@ static void cdrom_analyze_sense_data(ide_drive_t *drive,
- 	ide_cd_log_error(drive->name, failed_command, sense);
- }
- 
--static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
--				      struct request *failed_command)
-+static struct request *ide_cd_prep_sense(ide_drive_t *drive)
- {
- 	struct cdrom_info *info	= drive->driver_data;
--	struct request *rq	= &drive->request_sense_rq;
--	struct bio *bio		= &drive->request_sense_bio;
--	struct bio_vec *bvec	= drive->request_sense_bvec;
--	unsigned int bvec_len	= ARRAY_SIZE(drive->request_sense_bvec);
--	unsigned sense_len	= 18;
--	int error;
-+	void *sense		= &info->sense_data;
-+	unsigned sense_len	= sizeof(struct request_sense);
-+	struct request *rq;
- 
- 	ide_debug_log(IDE_DBG_SENSE, "enter");
- 
--	if (sense == NULL) {
--		sense = &info->sense_data;
--		sense_len = sizeof(struct request_sense);
--	}
--
- 	memset(sense, 0, sense_len);
- 
--	/* stuff the sense request in front of our current request */
--	blk_rq_init(NULL, rq);
-+	rq = blk_get_request(drive->queue, 0, __GFP_WAIT);
- 
--	error = blk_rq_map_kern_prealloc(drive->queue, rq, bio, bvec, bvec_len,
--					 sense, sense_len, true);
--	BUG_ON(error);
-+	if (blk_rq_map_kern(drive->queue, rq, sense, sense_len, __GFP_WAIT))
-+		return NULL;
- 
- 	rq->rq_disk = info->disk;
- 
-@@ -241,18 +230,17 @@ static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
- 	rq->cmd_type = REQ_TYPE_SENSE;
- 	rq->cmd_flags |= REQ_PREEMPT;
- 
--	/* NOTE! Save the failed command in "rq->special" */
--	rq->special = (void *)failed_command;
--
--	if (failed_command)
--		ide_debug_log(IDE_DBG_SENSE, "failed_cmd: 0x%x",
--					     failed_command->cmd[0]);
-+	return rq;
-+}
- 
--	drive->hwif->rq = NULL;
-+static void ide_cd_queue_rq_sense(ide_drive_t *drive)
-+{
-+	BUG_ON(!drive->rq_sense);
- 
--	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
-+	elv_add_request(drive->queue, drive->rq_sense, ELEVATOR_INSERT_FRONT, 0);
- }
- 
-+
- static void ide_cd_complete_failed_rq(ide_drive_t *drive, struct request *rq)
- {
- 	/*
-@@ -440,7 +428,7 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 
- 	/* if we got a CHECK_CONDITION status, queue a request sense command */
- 	if (stat & ATA_ERR)
--		cdrom_queue_request_sense(drive, NULL, NULL);
-+		ide_cd_queue_rq_sense(drive);
- 	return 1;
- 
- end_request:
-@@ -454,7 +442,7 @@ end_request:
- 
- 		hwif->rq = NULL;
- 
--		cdrom_queue_request_sense(drive, rq->sense, rq);
-+		ide_cd_queue_rq_sense(drive);
- 		return 1;
- 	} else
- 		return 2;
-@@ -788,6 +776,10 @@ out_end:
- 
- 		ide_complete_rq(drive, uptodate ? 0 : -EIO, nsectors << 9);
- 
-+		/* our sense buffer got used, reset it the next time around. */
-+		if (sense)
-+			drive->rq_sense = NULL;
-+
- 		if (sense && rc == 2)
- 			ide_error(drive, "request sense failure", stat);
- 	}
-@@ -901,6 +893,25 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
- 		goto out_end;
- 	}
- 
-+	/*
-+	 * prepare request sense if it got used with the last rq
-+	 */
-+	if (!drive->rq_sense) {
-+		drive->rq_sense = ide_cd_prep_sense(drive);
-+		if (!drive->rq_sense) {
-+			printk(KERN_ERR "%s: error prepping sense request!\n",
-+					drive->name);
-+			return ide_stopped;
-+		}
-+	}
-+
-+	/*
-+	 * save the current request in case we'll be queueing a sense rq
-+	 * afterwards due to its potential failure.
-+	 */
-+	if (!blk_sense_request(rq))
-+		drive->rq_sense->special = (void *)rq;
-+
- 	memset(&cmd, 0, sizeof(cmd));
- 
- 	if (rq_data_dir(rq))
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index c942533..4c2d310 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -605,6 +605,9 @@ struct ide_drive_s {
- 	struct request request_sense_rq;
- 	struct bio request_sense_bio;
- 	struct bio_vec request_sense_bvec[2];
-+
-+	/* current sense rq */
-+	struct request *rq_sense;
- };
- 
- typedef struct ide_drive_s ide_drive_t;
--- 
-1.6.2.2
-
-
--- 
-Regards/Gruss,
-    Boris.
+	Ingo
