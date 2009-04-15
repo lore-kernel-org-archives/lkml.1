@@ -1,101 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbZDOFwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbZDOF7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757955AbZDOFwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 01:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbZDOFwL
+	id S1755141AbZDOF7Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 01:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZDOF7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 01:52:11 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:50864 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbZDOFwK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 01:52:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=BuRTpZQDSEUmP3CwKd7qnKxhjgyWQoMlwa8zzkGnW1bJzanWYA7XxASlntk9r19vCw
-         vxUmKmZbTrdOlye4DDLOmWBt7OW6x/lDVFhKTzP5rK/xHqyFMMJhmHx1uC3DaITTTW+6
-         MNptGstjux64tmQt4xXgoK/Dpb7tDtv2jPKjc=
-Message-ID: <49E575ED.8010306@gmail.com>
-Date: Wed, 15 Apr 2009 07:51:41 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
+	Wed, 15 Apr 2009 01:59:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48556 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752801AbZDOF7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 01:59:15 -0400
+Date: Wed, 15 Apr 2009 07:58:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joe Perches <joe@perches.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: RFC: introduce struct ksymbol
+Message-ID: <20090415055839.GA12040@elte.hu>
+References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com> <1239771791.32241.6.camel@localhost>
 MIME-Version: 1.0
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, mjg59@srcf.ucam.org,
-       yakui_zhao <yakui.zhao@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control brightness
- with hotkeys (BISECTED)
-References: <49E10684.5090101@gmail.com>	 <20090411150555.8b13ed18.akpm@linux-foundation.org>	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com>	 <1239585695.5564.5.camel@localhost.localdomain> <49E3575A.60204@gmail.com>	 <20090413203450.GC16152@khazad-dum.debian.net> <49E5234E.5070303@gmail.com> <1239756088.8954.5.camel@maxim-laptop>
-In-Reply-To: <1239756088.8954.5.camel@maxim-laptop>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239771791.32241.6.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/15/2009 02:41 AM, Maxim Levitsky wrote:
-> On Wed, 2009-04-15 at 01:59 +0200, Niel Lambrechts wrote:
->   
->> On 04/13/2009 10:34 PM, Henrique de Moraes Holschuh wrote:
->>     
->>> On Mon, 13 Apr 2009, Niel Lambrechts wrote:
->>>   
->>>       
->>>>>> In 2.6.29.1:
->>>>>> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
->>>>>> -> ../../devices/virtual/backlight/acpi_video0
->>>>>>         
->>>>>>             
->>> Well, that at least confirms that thinkpad-acpi doesn't have anything to
->>> do with your troubles, you were using acpi video.
->>>   
->>>       
->> Okay, I've bisected it to:
->>
->> 74a365b3f354fafc537efa5867deb7a9fadbfe27 is first bad commit
->> commit 74a365b3f354fafc537efa5867deb7a9fadbfe27
->> Author: Matthew Garrett <mjg59@srcf.ucam.org>
->> Date:   Thu Mar 19 21:35:39 2009 +0000
->>
->>     ACPI: Populate DIDL before registering ACPI video device on Intel
->>
->> ---
->>
->> Matthew, can you help?
->>
->> Regards,
->> Niel
->>     
->
->
-> Just to note,
->
-> I have nvidia, and yet have the same bug.
-> I reverted this commit - didn't help.
->   
-While you may have _some_ of the same symptoms, you clearly don't have
-the same bug.
 
-I reverted the commit as well, and my laptop is working fine under
-2.6.30-rc2 now.
+(Sam and Rusty Cc:-ed)
 
-> I get lots of 
-> ACPI: Failed to switch the brightnes
-> when I press hardware keys that change brightness
-> (even these sometimes don't work)
->   
-Mine consistently did not work, and I had no messages.
+* Joe Perches <joe@perches.com> wrote:
 
-I understand you could try to do a limited bisect using something like
-git bisect start -- drivers/acpi drivers/video
+> On Wed, 2009-04-15 at 02:00 +0200, Frederic Weisbecker wrote:
+> > arch/blackfin/kernel/traps.c:   symname = kallsyms_lookup(address, &symsize, &offset, &modname, namebuf);
+> > arch/powerpc/xmon/xmon.c:               name = kallsyms_lookup(pc, &size, &offset, NULL, tmpstr);
+> > arch/sh/kernel/cpu/sh5/unwind.c:        sym = kallsyms_lookup(pc, NULL, &offset, NULL, namebuf);
+> > arch/x86/kernel/ftrace.c:       kallsyms_lookup((unsigned long) syscall, NULL, NULL, NULL, str);
+> > kernel/kprobes.c:               sym = kallsyms_lookup((unsigned long)p->addr, NULL,
+> > kernel/lockdep.c:       return kallsyms_lookup((unsigned long)key, NULL, NULL, NULL, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, &modname, str);
+> > kernel/trace/ftrace.c:  kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
+> > kernel/trace/trace_functions.c: kallsyms_lookup(ip, NULL, NULL, NULL, str);
+> > kernel/trace/trace_output.c:    kallsyms_lookup(address, NULL, NULL, NULL, str);
+> 
+> Perhaps a conversion from
+> 
+> "char str[KSYM_SYMBOL_LEN]"
+> to
+> "struct ksymbol sym"?
+> 
+> could be useful.
+> 
+> There are a few places that use a hard coded length of 128
+> instead of KSYM_SYMBOL_LENGTH that are also converted.
+> 
+> Compile tested only
 
-Perhaps you can do a bisect as well?
+Why not 'struct ksym'? That name is unused right now, it is shorter 
+and just as descriptive.
 
-Regards,
-Niel
+Regarding the change... dunno. Sam, Rusty - what do you think?
 
+Downsides would be loss of awareness of stack footprint impact. A 
+plain struct is easy to slap on, and it's not immediately visible 
+that it carries 128 bytes of weight. It might also be confusing in 
+terms of the nature of the interface - whether it's a pointery 
+object or not.
+
+Prior use:
+
+        char str[KSYM_SYMBOL_LEN];
+
+        kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+
+New use:
+
+	struct ksym sym;
+
+	kallsyms_lookup(rec->ip, NULL, NULL, NULL, &sym);
+
+Dunno.
+
+	Ingo
