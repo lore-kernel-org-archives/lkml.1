@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZDOOMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZDOOMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZDOOMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZDOOMG
+	id S1756781AbZDOOMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbZDOOMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:12:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52354 "EHLO mx3.mail.elte.hu"
+	Wed, 15 Apr 2009 10:12:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52442 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752525AbZDOOMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:12:03 -0400
-Date: Wed, 15 Apr 2009 16:09:59 +0200
+	id S1753965AbZDOOMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:12:34 -0400
+Date: Wed, 15 Apr 2009 16:12:21 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, tj@kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
-Message-ID: <20090415140959.GD12760@elte.hu>
-References: <20090415120307.GB17775@elte.hu> <alpine.LFD.2.00.0904141103550.18124@localhost.localdomain> <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain> <20090414161053.28145.1209.stgit@warthog.procyon.org.uk> <15312.1239731865@redhat.com> <14172.1239795632@redhat.com> <1488.1239801659@redhat.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ring_buffer: enlarge RB_MAX_SMALL_DATA
+Message-ID: <20090415141221.GE12760@elte.hu>
+References: <49E2AAB3.9010801@cn.fujitsu.com> <1239633781.21121.25.camel@localhost.localdomain> <49E5A593.6090605@cn.fujitsu.com> <1239803101.21121.69.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1488.1239801659@redhat.com>
+In-Reply-To: <1239803101.21121.69.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,62 +36,65 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Howells <dhowells@redhat.com> wrote:
+* Steven Rostedt <srostedt@redhat.com> wrote:
 
-> > There's three too 'thick' headers: linux/percpu.h, 
-> > linux/prefetch.h and asm/processor.h.
 > 
-> Yes, I noticed.
+> On Wed, 2009-04-15 at 17:14 +0800, Lai Jiangshan wrote:
 > 
-> linux/percpu.h needs to be split three ways for instance: 
-> definitions, access methods, and alocators.
-
-yeah. Often a super-header has to be split into several basic 
-headers or header pairs.
-
-> linux/prefetch.h isn't too bad: what it needs is the prefetch 
-> stuff splitting out of asm/processor.h into asm/prefetch.h.
-
-yeah.
-
-> > Please create include/linux/percpu_types.h for basic data types 
-> > and simple, self-sufficient primitives. Also have an 
-> > include/linux/percpu_api.h or include/linux/percpu.h include 
-> > file for convenience/speedup inlines. The latter will only be 
-> > included in .c files, where 'combination' of type spaces is not 
-> > a problem.
+> > 
+> > How about this method:
+> > 
+> > {u32 type_len:5, time_delta:27;};
+> > 
+> > time_delta is still 27bits, but RB_MAX_SMALL_DATA is increased to 112,
+> > it is larger than 60 in my patch.
+> > 
+> > type_len  actual type                actual len
+> > 0         RINGBUF_TYPE_DATA,         array[0]
+> > 1 ~ 28    RINGBUF_TYPE_DATA          4*1 ~ 4*28
+> > 29        RINGBUF_TYPE_TIME_STAMP    
+> > 30        RINGBUF_TYPE_TIME_EXTEND
+> > 31        RINGBUF_TYPE_PADDING       array[0] if it's not the last event
+> >                                      in the buffer_page(discarded event)
+> > If you like this method, I will implement it.
 > 
-> Not so.  The problem is that various header files make use of 
-> per-cpu variable accessors (asm/current.h and asm/thread_info.h to 
-> name a couple) to build inline asm.
-
-Hm, what portion did you mark with 'not so'?
-
-inline asm is used in inline functions there, and that is what 
-'instantiates' the types in a 'mixed' manner and way below their 
-proper hierarchic level as well - creating both a mess and, as mess 
-increases above a critical threshold an inevitable circular 
-dependency as well.
-
-> Anyway, here are a pair of patches on top of the one I've already 
-> sent to Linus.  The second breaks a number of header files into 
-> pieces and rearranges the percpu headers to put the DECLARE and 
-> DEFINE macros together.
+> I like the idea a lot. The only issue I have with it is that these types
+> are used a lot in switch statements, and in fast paths.
 > 
-> The first patch could potentially be applied immediately.  It adds 
-> #inclusions and forward refs that are required to iron out compile 
-> errors from the second patch.
+> But the compression may be a better win.
 > 
-> Note that these only work for the configuration I routinely use on 
-> my x86_64 test machine.  It will break all other arches and many 
-> other i386 and x86_64 configurations.
+> We could do this in the switches.
+> 
+> 	switch (event->type_len) {
+> 	case RINGBUF_TYPE_TIME_STAMP:
+> 		/**/
+> 		break;
+> 	case RINGBUF_TYPE_TIME_EXTEND:
+> 		/**/
+> 		break;
+> 	case RINGBUF_TYPE_PADDING:
+> 		/**/
+> 		break;
+> 	default: /* RINGBUF_TYPE_DATA */
+> 
+> 	}
+> 
+> But before any of this goes in. I would like to export the 
+> interface. Yes it is suppose to be OK to be able to change the 
+> interface, but the binary output made it into 30. I doubt this 
+> change will make it before 31. If that's the case. We must have 
+> the format listed. 30 is expected to be used by many distros. 
+> There's already tools using ftrace. If we make a change that can 
+> not be caught, then it will break many tools.
 
-I dont disagree, but i'd like to warn that such patches need _way_ 
-more testing, these are never same-day obvious patches.
+Yeah - format specifications are always good. They weaken ABI 
+bindings and allow more flexibility both on the tool and the kernel 
+side.
 
-We have split up one big x86 header in this development cycle 
-(asm/pgtable.h) and that alone was highly non-trivial and needed 
-about a week to settle down, even with intense development and 
-testing.
+> We could ask Linus to pull this into 30 because it is a API 
+> change.
+
+Apps could assume if the format file is not there it's the .30 
+format.
 
 	Ingo
