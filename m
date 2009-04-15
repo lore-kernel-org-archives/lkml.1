@@ -1,33 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZDOQvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZDOQ4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZDOQvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 12:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbZDOQvB
+	id S1754082AbZDOQ4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 12:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZDOQ4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 12:51:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48491 "EHLO mx3.mail.elte.hu"
+	Wed, 15 Apr 2009 12:56:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58375 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752902AbZDOQvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 12:51:00 -0400
-Date: Wed, 15 Apr 2009 18:49:29 +0200
+	id S1752704AbZDOQ4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 12:56:09 -0400
+Date: Wed, 15 Apr 2009 18:54:46 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, tj@kernel.org,
+To: David Howells <dhowells@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, tj@kernel.org,
        akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
-Message-ID: <20090415164929.GA10345@elte.hu>
-References: <alpine.LFD.2.00.0904141103550.18124@localhost.localdomain> <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain> <20090414161053.28145.1209.stgit@warthog.procyon.org.uk> <15312.1239731865@redhat.com> <2193.1239791070@redhat.com> <alpine.LFD.2.00.0904150808550.4132@localhost.localdomain>
+Message-ID: <20090415165446.GB10345@elte.hu>
+References: <20090415140959.GD12760@elte.hu> <20090415120307.GB17775@elte.hu> <alpine.LFD.2.00.0904141103550.18124@localhost.localdomain> <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain> <20090414161053.28145.1209.stgit@warthog.procyon.org.uk> <15312.1239731865@redhat.com> <14172.1239795632@redhat.com> <1488.1239801659@redhat.com> <9843.1239808150@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904150808550.4132@localhost.localdomain>
+In-Reply-To: <9843.1239808150@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,42 +37,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* David Howells <dhowells@redhat.com> wrote:
 
-> On Wed, 15 Apr 2009, David Howells wrote:
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > > Hmm. Why not move it all above the '#include <asm/percpu.h>'?
-> > 
-> > There are circular dependencies between the x86 arch headers that both use
-> > this and are used to implement this, and it's a bit fragile.
+> I'd like Linus to pull my first patch, if he will.  That'll at 
+> least allow FRV to build.  Could you review it?  That's the email 
+> that started this thread, ensubjected:
 > 
-> Grr. Indeed it seems to be. Nasty. Header files seem to want that 
-> DECLARE_PER_CPU() thing without all the other baggage that is 
-> implied by including all of <linux/percpu.h>, so they just include 
-> <asm/percpu.h> directly instead.
-> 
-> What a mess.
-> 
-> So maybe we could move DEFINE_PER_CPU in there too? It's less than 
-> perfect, but at least we'd have things together rather than split 
-> in really odd ways.
+> 	[PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
 
-I think splitting the type related defines away into percpu_types.h, 
-and updating the lowlevel headers to include linux/percpu_types.h 
-[which would include asm/percpu.h] would do the trick.
+hm, this moves the section defines from a generic header into 
+platform headers in essence - not a good move IMO.
 
-Even the exising percpu.h could be made lighter:
+Why not start a new linux/percpu_types.h header with just those 
+defines in place, include it both from linux/percpu.h and from all 
+the asm*/percpu.h files you modify in that patch?
 
-slab.h:    is needed for the kzalloc in the !SMP wrapper case. That 
-           could be eliminated by uninlining the UP wrappers.
+This would fix your build problem minimally - and it would also seed 
+the new percpu_types.h file that could start the untangling of this 
+dependency hell.
 
-preempt.h: is needed for preempt_disable/enable() in the 
-           get_cpu_var()/put_cpu_var() methods.
+(it would also be much easier to verify for correctness - you just 
+move bits and include it trivially in places that need it.)
 
-smp.h:     not sure what it's needed for - nothing obvious at first
-           sight.
-
-Most of them could be eliminated.
+Am i missing something?
 
 	Ingo
