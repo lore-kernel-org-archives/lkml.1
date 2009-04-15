@@ -1,41 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbZDOFdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZDOFfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbZDOFdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 01:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZDOFc7
+	id S1756640AbZDOFfU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 01:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZDOFfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 01:32:59 -0400
-Received: from solcza.etanetas.lt ([82.135.221.82]:36205 "EHLO
-	solcza.etanetas.lt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZDOFc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 01:32:58 -0400
-X-Greylist: delayed 32147 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Apr 2009 01:32:57 EDT
-From: Jackie Whaley <jackie@08161.com>
-To: linux-wireless@vger.kernel.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: =?iso-8859-1?b?WW91ciB0aWNrZXQgdG8gYSBuZXcgU2xpbSBhbmQgVmlicmFudCBsaWY=?=
- =?iso-8859-1?b?ZSAsIEFjYWkgYmVycnkg?=
-Date: Tue, 14 Apr 2009 21:52:50 +0200
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
-Message-Id: <090414215250U1.03220.jackie@08161.com>
+	Wed, 15 Apr 2009 01:35:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39339 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752205AbZDOFfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 01:35:04 -0400
+Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
+ inappropriate or CPU is not supported
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090414191622.GA797@elte.hu>
+References: <1239725240.2966.4.camel@ht.satnam>
+	 <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam>
+	 <20090414184222.GC11214@elte.hu>
+	 <20090414200247.1d0a8667@lxorguk.ukuu.org.uk>
+	 <20090414191622.GA797@elte.hu>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 11:04:25 +0530
+Message-Id: <1239773665.15436.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3F5XIqu016263
 
-go0d afternoon
+On Tue, 2009-04-14 at 21:16 +0200, Ingo Molnar wrote:
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > > > Do you still think that boot_cpu_data.x86_vendor is better option in
+> > > > case for multiple CPUs.
+> > > 
+> > > yes. Assymetric SMP never really happened on x86.
+> > 
+> > It did but not between vendors. You can get away with a vendor 
+> > assumption but cpu type (mixed 486SX/DX, PII/PIII/Celeron) mixed 
+> > steppings and mixed speeds do occur. We've never supported the 
+> > mixed 486SX cases but the PII/PIII cases work (or at least 
+> > worked).
+> 
+> yeah - but look at the specific purpose here: we are deciding 
+> whether to print out state information related to major CPU 
+> features. Mixed steppings/speeds might happen, mixed apic / 
+> non-lapic not really.
+> 
 
-We are the Global leader in acai and your online source for premium sustainable and certified organic Acai. Our Acai diet plan has proven results boost your immune system with our free trial offer for you. 
-visit site http://t7io66hki.blogspot.com
+We are trying to debug each CPU, so we should also collect information
+from each CPU.
 
-code msg yiuiohj
-id 547685ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Just reading information from boot CPU and display information for all
+CPU is not correct. If we are getting information from boot CPU then we
+only need to show information for boot CPU and ignore others.
+
+I am trying to adding more features which will be unique for each
+CPU/core.
+
+So it seems current model is correct where I am collecting information
+for each CPU and printing information for each CPU.
+
+Thanks,
+
+--
+JSR
+
