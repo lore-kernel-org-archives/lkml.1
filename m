@@ -1,152 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbZDOBqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZDOBuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbZDOBqz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZDOBqp
+	id S1757745AbZDOBuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZDOBuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:46:45 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:53843 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758148AbZDOBqo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:46:44 -0400
-Subject: [RFC][PATCH 6/8] Convert m68k to use arch_getoffset()
- infrastructure.
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: rmk+lkml@arm.linux.org.uk, cooloney@kernel.org, starvik@axis.com,
-       takata@linux-m32r.org, geert@linux-m68k.org,
-       Roman Zippel <zippel@linux-m68k.org>, lethal@linux-sh.org,
-       Magnus Damm <magnus.damm@gmail.com>, wli@holomorphy.com,
-       rth@twiddle.net
-In-Reply-To: <1239759929.6064.38.camel@localhost>
-References: <1239759163.6064.25.camel@localhost>
-	 <1239759251.6064.27.camel@localhost>  <1239759393.6064.30.camel@localhost>
-	 <1239759551.6064.33.camel@localhost>  <1239759668.6064.35.camel@localhost>
-	 <1239759805.6064.36.camel@localhost>  <1239759877.6064.37.camel@localhost>
-	 <1239759929.6064.38.camel@localhost>
+	Tue, 14 Apr 2009 21:50:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:5332 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbZDOBuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 21:50:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,188,1239001200"; 
+   d="scan'208";a="681613195"
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
+	brightness with hotkeys (BISECTED)
+From: Zhang Rui <rui.zhang@intel.com>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "mjg59@srcf.ucam.org" <mjg59@srcf.ucam.org>,
+       "Zhao, Yakui" <yakui.zhao@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <49E5234E.5070303@gmail.com>
+References: <49E10684.5090101@gmail.com>
+	 <20090411150555.8b13ed18.akpm@linux-foundation.org>
+	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com>
+	 <1239585695.5564.5.camel@localhost.localdomain> <49E3575A.60204@gmail.com>
+	 <20090413203450.GC16152@khazad-dum.debian.net> <49E5234E.5070303@gmail.com>
 Content-Type: text/plain
-Date: Tue, 14 Apr 2009 18:46:40 -0700
-Message-Id: <1239760000.6064.39.camel@localhost>
+Date: Wed, 15 Apr 2009 09:50:42 +0800
+Message-Id: <1239760242.7661.305.camel@rzhang-dt>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts m68k to use GENERIC_TIME via the arch_getoffset()
-infrastructure 
+On Wed, 2009-04-15 at 07:59 +0800, Niel Lambrechts wrote:
+> On 04/13/2009 10:34 PM, Henrique de Moraes Holschuh wrote:
+> > On Mon, 13 Apr 2009, Niel Lambrechts wrote:
+> >   
+> >>>> In 2.6.29.1:
+> >>>> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
+> >>>> -> ../../devices/virtual/backlight/acpi_video0
+> >>>>         
+> >
+> > Well, that at least confirms that thinkpad-acpi doesn't have anything to
+> > do with your troubles, you were using acpi video.
+> >   
+> 
+> Okay, I've bisected it to:
+> 
+> 74a365b3f354fafc537efa5867deb7a9fadbfe27 is first bad commit
+> commit 74a365b3f354fafc537efa5867deb7a9fadbfe27
+> Author: Matthew Garrett <mjg59@srcf.ucam.org>
+> Date:   Thu Mar 19 21:35:39 2009 +0000
+> 
+>     ACPI: Populate DIDL before registering ACPI video device on Intel
+> 
 
-I do not have cross compilers for these architectures, and in some cases
-the architectures can be compiles both with and without clocksources. So
-I've taken my best swing at converting this, but I'm not confident I got
-it right. Any assistance from arch maintainers or testers would be
-great.
+please set CONFIG_DRM_I915_KMS, reload the ACPI video driver after
+loading i915 and see if it helps.
 
-NOT FOR INCLUSION
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index fb87c08..29dd848 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -58,6 +58,12 @@ config HZ
- 	int
- 	default 100
- 
-+config GENERIC_TIME
-+	def_bool y
-+
-+config ARCH_USES_GETTIMEOFFSET
-+	def_bool y
-+
- mainmenu "Linux/68k Kernel Configuration"
- 
- source "init/Kconfig"
-diff --git a/arch/m68k/kernel/time.c b/arch/m68k/kernel/time.c
-index 54d9807..17dc2a3 100644
---- a/arch/m68k/kernel/time.c
-+++ b/arch/m68k/kernel/time.c
-@@ -91,77 +91,11 @@ void __init time_init(void)
- 	mach_sched_init(timer_interrupt);
- }
- 
--/*
-- * This version of gettimeofday has near microsecond resolution.
-- */
--void do_gettimeofday(struct timeval *tv)
-+u32 arch_gettimeoffset(void)
- {
--	unsigned long flags;
--	unsigned long seq;
--	unsigned long usec, sec;
--	unsigned long max_ntp_tick = tick_usec - tickadj;
--
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--
--		usec = mach_gettimeoffset();
--
--		/*
--		 * If time_adjust is negative then NTP is slowing the clock
--		 * so make sure not to go into next possible interval.
--		 * Better to lose some accuracy than have time go backwards..
--		 */
--		if (unlikely(time_adjust < 0))
--			usec = min(usec, max_ntp_tick);
--
--		sec = xtime.tv_sec;
--		usec += xtime.tv_nsec/1000;
--	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
--
--	while (usec >= 1000000) {
--		usec -= 1000000;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, sec = tv->tv_sec;
--	long wtm_nsec, nsec = tv->tv_nsec;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irq(&xtime_lock);
--	/* This is revolting. We need to set the xtime.tv_nsec
--	 * correctly. However, the value in this location is
--	 * is value at the last tick.
--	 * Discover what correction gettimeofday
--	 * would have done, and then undo it!
--	 */
--	nsec -= 1000 * mach_gettimeoffset();
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
--
--	set_normalized_timespec(&xtime, sec, nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--	return 0;
-+	return mach_gettimeoffset() * 1000;
- }
- 
--EXPORT_SYMBOL(do_settimeofday);
--
--
- static int __init rtc_init(void)
- {
- 	struct platform_device *pdev;
-
+thanks,
+rui
 
