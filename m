@@ -1,54 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZDOVAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZDOVEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbZDOVAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 17:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZDOVA1
+	id S1756242AbZDOVEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 17:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZDOVEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 17:00:27 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52515 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754247AbZDOVA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 17:00:26 -0400
-Date: Wed, 15 Apr 2009 22:00:17 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       yakui_zhao <yakui.zhao@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control brightness with hotkeys (BISECTED)
-Message-ID: <20090415210017.GA32594@srcf.ucam.org>
-References: <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com> <1239585695.5564.5.camel@localhost.localdomain> <49E3575A.60204@gmail.com> <20090413203450.GC16152@khazad-dum.debian.net> <49E5234E.5070303@gmail.com> <20090415164939.GA27807@srcf.ucam.org> <49E63BCB.9090801@gmail.com> <20090415200125.GA31483@srcf.ucam.org> <49E64A28.8070402@gmail.com>
+	Wed, 15 Apr 2009 17:04:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37376 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753424AbZDOVEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 17:04:30 -0400
+Date: Wed, 15 Apr 2009 23:03:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       tglx@linutronix.de, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+Message-ID: <20090415210353.GA27368@elte.hu>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <20090414020544.GA3738@elte.hu> <20090415054417.GA5272@elte.hu> <200904152014.11717.rusty@rustcorp.com.au> <alpine.LFD.2.00.0904150822020.4132@localhost.localdomain> <20090415162627.GA32254@elte.hu> <alpine.LFD.2.00.0904151013260.4132@localhost.localdomain> <49E62BD5.6090508@zytor.com> <alpine.LFD.2.00.0904151241490.4132@localhost.localdomain> <20090415133255.b6a33bfe.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49E64A28.8070402@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090415133255.b6a33bfe.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 10:57:12PM +0200, Niel Lambrechts wrote:
 
-> So is there any chance of getting this fix merged any time soon (at
-> least before 2.6.30 is out)?
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yeah, I'd hope it's merged before .30. I've sent it to the maintainers.
+> On Wed, 15 Apr 2009 12:43:02 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Wed, 15 Apr 2009, H. Peter Anvin wrote:
+> > > 
+> > > "cleanup" is indeed the most common, as it is intended to signify a
+> > > trivial but nonzero code change.  Whether or not it's *correct* is
+> > > another matter.  "build fix" is valid and proper use: it tells that it
+> > > fixes a compilation error, which succinctly communicates both the
+> > > priority of the fix and how it needs to be validated.
+> > 
+> > Why would that be "proper use"?
+> > 
+> > Dammit, if the "build fix" is not obvious from the rest of the commit 
+> > message, there's something wrong.
+> > 
+> > And if it _is_ obvious, then the mechanical "Impact:" thing is pointless.
+> > 
+> > In other words - in neither case does it actually help anything at all. 
+> > It's only distracting noise.
+> > 
+> 
+> I'm getting quite a few Impact:s now and I must say that the 
+> Impact: line is always duplicative of the Subject:.  Except in a 
+> few cases, and that's because the Subject: sucked.
+> 
+> But I leave the Impact: lines in there because I'm nice.
 
-> I'd love to use KMS, but I have no idea how to troubleshoot the freeze
-> I'm getting after the main gdm login screen. Or is there still a future
-> i915 milestone(s) to be reached before I can realistically do
-> i915.modeset=1, given the large amount of activity around this in recent
-> times?
+I looked at the current .30 cycle up to latest -git and i found only 
+five commits out of 584 that had your signoff (most went upstream 
+via you) which also had Impact lines:
 
-There's still a lot of work being done in this area, and it can be a bit 
-sensitive to you using the correct X driver version with a given kernel 
-version.
+| commit 3d26dcf7679c5cc6c9f3b95ffdb2152fba2b7fae
+| Author: Andi Kleen <andi@firstfloor.org>
+| Date:   Mon Apr 13 14:40:08 2009 -0700
+|
+|    kernel/sys.c: clean up sys_shutdown exit path
+|    
+|    Impact: cleanup, fix
+|
+| Clean up sys_shutdown() exit path.  Factor out common code.  Return
+| correct error code instead of always 0 on failure.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Impact line exposes wrong patch structure: cleanup should never be 
+mixed with fix.
+
+Impact line is not duplicative of subject line - it correctly 
+mentions that there are side-effects. (sys_shutdown() changes its 
+return code)
+
+The subject line is thus wrong.
+
+| commit 0769c2981495c3d05429840d6fc7a1b5e26accaa
+| Author: Andi Kleen <andi@firstfloor.org>
+| Date:   Mon Apr 13 14:39:56 2009 -0700
+|
+|     asm-generic/siginfo.h: update NSIGTRAP definition
+|    
+|     Impact: (nearly) trivial
+
+impact line somewhat atypical but correct - the patch is a cleanup 
+but might affect user-space.
+
+Impact line is not duplicative of subject line.
+
+| commit 6b44003e5ca66a3fffeb5bc90f40ada2c4340896
+| Author: Andrew Morton <akpm@linux-foundation.org>
+| Date:   Thu Apr 9 09:50:37 2009 -0600
+|
+|     work_on_cpu(): rewrite it to create a kernel thread on demand
+|    
+|     Impact: circular locking bugfix
+
+Impact line is correct.
+
+You wrote a fix - Rusty was nice in keeping your subject line and 
+enhanced the commit with a non-trivial impact line.
+
+[ Btw., this commit also had an unintended impact: it caused a 10% 
+  mysqld performance drop on certain systems. When this commit was 
+  bisected to later on it was immediately obvious from the impact 
+  line that this side-effect was not intended when the patch was
+  written. ]
+
+Impact line is not duplicative of subject line.
+
+| commit acdd052a285a7b4cc7da4fa7d34ef9fd0a67b2f8
+| Author: Hannes Eder <hannes@hanneseder.net>
+| Date:   Tue Mar 31 15:23:50 2009 -0700
+|
+|     init/main.c: fix sparse warnings: context imbalance
+|     
+|     Impact: Attribute function 'init_post' with __releases(...).
+
+Impact line is incorrect (describes action not effect).
+
+Impact line is not duplicative of subject line.
+
+| commit ee99c71c59f897436ec65debb99372b3146f9985
+| Author: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+| Date:   Tue Mar 31 15:19:31 2009 -0700
+|
+|     mm: introduce for_each_populated_zone() macro
+|    
+|     Impact: cleanup
+
+Impact line is correct and appropriate.
+
+Impact line is not duplicative of subject line.
+
+So, here are my conclusions:
+
+- only 0.85% of the commits you were involved with in this cycle had 
+  an impact line.
+
+- out of 5 cases, 4 had correct impact lines, despite _you_ 
+  admittedly not liking them and not caring about them. That's a 
+  pretty good ratio IMO. Impact lines should be handled by the
+  maintainer. You should not pass them through - just erase them
+  please - just like you erase or change other parts of changelogs 
+  you dont like.
+
+- i one out of the 5 cases, you could have detected a slightly
+  suboptimal patch structure just based on the (truthful) impact
+  line. But you dont use the impact lines so you missed this detail.
+
+- in one out of the 5 cases, the impact line was used later on 
+  during bug analysis. _I_ remember having looked at that impact 
+  line and saw that he performance regression was clearly not 
+  anticipated. Could i have recovered that information in some other 
+  way? Yes, i could have mailed you, or i could have made a guess 
+  out of other context data. But the impact line told me for sure.
+
+- i'm not sure on what you base your observation that the impact
+  lines you get are "always duplicative of the Subject:.". It wasnt
+  duplicative in any of the above cases.
+
+So i'm puzzled really. This stuff is clearly useful to us every day, 
+it shows up in only 0.85% of your commits (because you let them 
+through - you could erase them) but clearly if both Linus and you 
+are against it what can we do? :-(
+
+	Ingo
