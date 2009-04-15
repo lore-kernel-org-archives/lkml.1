@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbZDOP1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbZDOP3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbZDOP1g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZDOP12
+	id S1753397AbZDOP3j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZDOP3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:27:28 -0400
-Received: from mga12.intel.com ([143.182.124.36]:28768 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750966AbZDOP11 (ORCPT
+	Wed, 15 Apr 2009 11:29:30 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:55554 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbZDOP33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:27:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,192,1239001200"; 
-   d="scan'208";a="131761227"
-Message-ID: <49E5FCD7.8060902@linux.intel.com>
-Date: Wed, 15 Apr 2009 08:27:19 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 15 Apr 2009 11:29:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wUumC6q0QvEX4mLJRN3tGXmZbB/bR57FlOny1+Ogabi0CiP8Ls45dcGfcWNk933ru6
+         O+rkobWxQDPGfq0hQclWOlWu5+4BGgOmhw4Tti5r9axVmJP3rIREx6RlBTIPH6rbuVB4
+         44Q0e3gAt0N+jKhdpZzdtB+FKsHm8nEnERID8=
+Date: Wed, 15 Apr 2009 17:29:25 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vsprintf: introduce %pf
+Message-ID: <20090415152924.GB5989@nowhere>
+References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com> <8bd0f97a0904141917g3496f526ifc4fe0bd41c3d1c7@mail.gmail.com>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-04-14-17-24 uploaded
-References: <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org> <22518.1239773374@turing-police.cc.vt.edu>
-In-Reply-To: <22518.1239773374@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0904141917g3496f526ifc4fe0bd41c3d1c7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 14 Apr 2009 17:24:57 PDT, akpm@linux-foundation.org said:
->> The mm-of-the-moment snapshot 2009-04-14-17-24 has been uploaded to
->>
->>    http://userweb.kernel.org/~akpm/mmotm/
+On Tue, Apr 14, 2009 at 10:17:28PM -0400, Mike Frysinger wrote:
+> On Tue, Apr 14, 2009 at 20:00, Frederic Weisbecker wrote:
+> > - * - 'F' For symbolic function descriptor pointers
+> > + * - 'F' For symbolic function descriptor pointers with asm offset
+> > + * - 'f' For simple function symbol
 > 
-> patch input-add-a-dmi-table-for-the-i8042reset-option-make-msi-wind-u-100-work.patch
-> is horribly busticated - was this dependent on another patch that was dropped?
-> The reference to 'i8042_nonfatal' is odd, I can't find it defined anywhere in the tree.
+> "asm" is weird here as it isnt an assembly offset (not that i have any
+> idea what an "assembly offset" even means).  just say "offset".
+> -mike
 
-it depends on a patch that now has gone mainline....
+
+Right, "asm" offset made sense for me because
+I've kept %pF offset output and gdb disass output on the same
+area in my brain :-)
+
+I will update the patch with just "offset", thanks!
 
