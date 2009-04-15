@@ -1,100 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZDOOMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZDOONU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbZDOOMq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbZDOOMf
+	id S1756712AbZDOONU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbZDOOM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:12:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52442 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbZDOOMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:12:34 -0400
-Date: Wed, 15 Apr 2009 16:12:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_buffer: enlarge RB_MAX_SMALL_DATA
-Message-ID: <20090415141221.GE12760@elte.hu>
-References: <49E2AAB3.9010801@cn.fujitsu.com> <1239633781.21121.25.camel@localhost.localdomain> <49E5A593.6090605@cn.fujitsu.com> <1239803101.21121.69.camel@localhost.localdomain>
+	Wed, 15 Apr 2009 10:12:59 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:34725 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754310AbZDOOM6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:12:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=COhqFFG2/S37KgaTAoM8V2HcNy1s2hYHBM0n52kjS/VAW07jndm20VvuHRJ7VJ4qxK
+         l05woUWy60JYAxeCOQEloNZWkfrAIzXq/j9aQdhVghuiQQXWBdRJxIb2818ZZ/DBeH+p
+         m8O7LzCqM5hboju7HIN/CAdAfr3WkC67126yg=
+Date: Wed, 15 Apr 2009 18:12:51 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 10/14] [VOYAGER] x86: make disabling the apics
+	functional instead of a flag
+Message-ID: <20090415141251.GA10433@lenovo>
+References: <1239724300-16371-5-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-6-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-7-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-8-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-9-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-10-git-send-email-James.Bottomley@HansenPartnership.com> <1239724300-16371-11-git-send-email-James.Bottomley@HansenPartnership.com> <20090414170942.GC12888@lenovo> <20090414174427.GA24578@lenovo> <1239799869.3371.3.camel@mulgrave.int.hansenpartnership.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239803101.21121.69.camel@localhost.localdomain>
+In-Reply-To: <1239799869.3371.3.camel@mulgrave.int.hansenpartnership.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[James Bottomley - Wed, Apr 15, 2009 at 12:51:09PM +0000]
+| On Tue, 2009-04-14 at 21:44 +0400, Cyrill Gorcunov wrote:
+| > [Cyrill Gorcunov - Tue, Apr 14, 2009 at 09:09:42PM +0400]
+| > ...
+| > | | diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+| > | | index f9e830e..aa96dbe 100644
+| > | | --- a/arch/x86/kernel/apic/apic.c
+| > | | +++ b/arch/x86/kernel/apic/apic.c
+| > | | @@ -1539,6 +1539,9 @@ void __init early_init_lapic_mapping(void)
+| > | |   */
+| > | |  void __init init_apic_mappings(void)
+| > | |  {
+| > | | +	if (disable_apic)
+| > | | +		return;
+| > | | +
+| > | 
+| > | No, we shouldn't do that without additional
+| > | code review (otherwise we will loose mapping for fake apic page).
+| > | And I suspect we get NULL deref on reboot procedure
+| > | if kernel was compiled _with_ SMP support but APIC disabled
+| > | by kernel option. hmm, can't find this reference in LKML.
+| > | I was telling Ingo about my suspicious on smp operations
+| > | when APIC is disabled by option and we're safe _only_ 'cause
+| > | we have fake mapping page reserved. For example call of
+| > | smp_send_stop() in kernel/panic.c if kernel was compiled _with_ SMP
+| > | support and then APIC disabled by kernel option.
+| > | 
+| > | |  	if (x2apic) {
+| > | |  		boot_cpu_physical_apicid = read_apic_id();
+| > | |  		return;
+| > ...
+| > 
+| > Ah, I found that link -- http://lkml.org/lkml/2009/4/12/139
+| > I've promised to take a look, unfortunately out of time now.
+| > Maybe a bit later.
+| 
+| Hmm, well, looking at this, I think there are two points
+| 
+| The first is that disable_apic should really mean that: It is a
+| dangerous option; there are modern CPUs that can't deliver interrupts
+| without apics and if you have one and disable it, there's no way of
+| preventing the hang that follows (because you can't even get timer
+| interrupts).
 
-* Steven Rostedt <srostedt@redhat.com> wrote:
+Even having APIC (local or discrete) cpu (well, not cpu itself but
+chipset logic rather) is to provide backward compatibility via 8259(a)
+(or familiar one) controller for ExtInt or VirtualWire modes I believe.
+Though to be fair I don't have most modern cpus like Core i7 under the
+hands to check this. We're talking about x86 family right?
 
-> 
-> On Wed, 2009-04-15 at 17:14 +0800, Lai Jiangshan wrote:
-> 
-> > 
-> > How about this method:
-> > 
-> > {u32 type_len:5, time_delta:27;};
-> > 
-> > time_delta is still 27bits, but RB_MAX_SMALL_DATA is increased to 112,
-> > it is larger than 60 in my patch.
-> > 
-> > type_len  actual type                actual len
-> > 0         RINGBUF_TYPE_DATA,         array[0]
-> > 1 ~ 28    RINGBUF_TYPE_DATA          4*1 ~ 4*28
-> > 29        RINGBUF_TYPE_TIME_STAMP    
-> > 30        RINGBUF_TYPE_TIME_EXTEND
-> > 31        RINGBUF_TYPE_PADDING       array[0] if it's not the last event
-> >                                      in the buffer_page(discarded event)
-> > If you like this method, I will implement it.
-> 
-> I like the idea a lot. The only issue I have with it is that these types
-> are used a lot in switch statements, and in fast paths.
-> 
-> But the compression may be a better win.
-> 
-> We could do this in the switches.
-> 
-> 	switch (event->type_len) {
-> 	case RINGBUF_TYPE_TIME_STAMP:
-> 		/**/
-> 		break;
-> 	case RINGBUF_TYPE_TIME_EXTEND:
-> 		/**/
-> 		break;
-> 	case RINGBUF_TYPE_PADDING:
-> 		/**/
-> 		break;
-> 	default: /* RINGBUF_TYPE_DATA */
-> 
-> 	}
-> 
-> But before any of this goes in. I would like to export the 
-> interface. Yes it is suppose to be OK to be able to change the 
-> interface, but the binary output made it into 30. I doubt this 
-> change will make it before 31. If that's the case. We must have 
-> the format listed. 30 is expected to be used by many distros. 
-> There's already tools using ftrace. If we make a change that can 
-> not be caught, then it will break many tools.
+| 
+| Secondly, I can fix your original emailed problem by having a check for
+| disable_apic in the shutdown path on disable_local_apic() ... I think
+| that fixes everything?
 
-Yeah - format specifications are always good. They weaken ABI 
-bindings and allow more flexibility both on the tool and the kernel 
-side.
+Yes, it should do the trick. Though there could be other ways
+to hang on SMP+APIC compiled kernel with disable_apic passed
+I guess :) But testing should reveal the screwed pathes.
 
-> We could ask Linus to pull this into 30 because it is a API 
-> change.
-
-Apps could assume if the format file is not there it's the .30 
-format.
-
-	Ingo
+| 
+| James
+| 
+| 
+        Cyrill
