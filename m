@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZDORe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZDORfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZDORe1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 13:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZDOReR
+	id S1754615AbZDORfc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 13:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZDORfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 13:34:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50121 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752025AbZDOReQ (ORCPT
+	Wed, 15 Apr 2009 13:35:22 -0400
+Received: from easi.embeddedalley.com ([71.6.201.124]:43008 "HELO
+	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752025AbZDORfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 13:34:16 -0400
-Date: Wed, 15 Apr 2009 18:32:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: VomLehn <dvomlehn@cisco.com>
-Cc: Mark Lord <lkml@rtr.ca>, Alan Stern <stern@rowland.harvard.edu>,
-       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: USB storage no-boot regression (bisected)
-Message-ID: <20090415183252.32ba7a4f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090415170617.GA14485@cuplxvomd02.corp.sa.net>
-References: <Pine.LNX.4.44L0.0904151146210.3072-100000@iolanthe.rowland.org>
-	<49E60219.9080103@rtr.ca>
-	<20090415170617.GA14485@cuplxvomd02.corp.sa.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 15 Apr 2009 13:35:22 -0400
+In-Reply-To: <20090415082446.GT7082@balbir.in.ibm.com>
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com> <20090415093555.d84b6655.kamezawa.hiroyu@jp.fujitsu.com> <20090415082446.GT7082@balbir.in.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9272A08E-4928-486D-84D3-4593300B017A@embeddedalley.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>
 Content-Transfer-Encoding: 7bit
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH] Memory usage limit notification addition to memcg
+Date: Wed, 15 Apr 2009 10:35:20 -0700
+To: balbir@linux.vnet.ibm.com
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Saying that we were "lucky" that things worked before is no help and
-> you should be aware that it ticks people off. 
 
-No doubt those who wrote the code and never expected that timing to
-reliably work will take affront at those who blame them for it not
-working. Those who expected it to work and never knew it was not
-guaranteed will feel likewise in reverse.
+On Apr 15, 2009, at 1:24 AM, Balbir Singh wrote:
 
-The real questions are should it be fixed and is dumping the problem on
-the initrd the right answer. The concensus appears to yes and no.
+> Welcome! I've taken a cursory look at the patches, but I'll come back
+> with more review comments.
 
-The console one is less clear but if we are doing one we should probably
-do both.
+I'm going to submit a new patch shortly, so let's wait and review that
+one.  Too many updates since the first time I sent it.
 
-Alan
+> ...   Could you point me to your
+> presentation/paper? I could not find the PDF at
+> http://www.celinuxforum.org/CelfPubWiki/ELC2009Presentations
+
+Apologies.  I just uploaded it now.  There was an hour of
+talking that goes along with that, which I hope will explain some
+of the points on the slides.  The video was recorded, I assume it
+will show up someplace, someday :-)
+
+Thanks.
+
+	-- Dan
+
