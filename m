@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbZDOXgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZDOXnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbZDOXgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 19:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZDOXf6
+	id S1756505AbZDOXnj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 19:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZDOXna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 19:35:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45734 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753794AbZDOXf5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 19:35:57 -0400
-Date: Wed, 15 Apr 2009 16:32:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: dhowells@redhat.com, jmorris@namei.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rework/fix is_single_threaded()
-Message-Id: <20090415163243.94a00ba6.akpm@linux-foundation.org>
-In-Reply-To: <20090413214513.GA1119@redhat.com>
-References: <20090413214513.GA1119@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 19:43:30 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:38786 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbZDOXna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 19:43:30 -0400
+Date: Thu, 16 Apr 2009 09:43:28 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Jerry Wang <jerry18th@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux Kernel Cross-Compiling question
+Message-ID: <20090415234328.GX16602@bilbo.ozlabs.org>
+Mail-Followup-To: Jerry Wang <jerry18th@yahoo.com>,
+	linux-kernel@vger.kernel.org
+References: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009 23:45:13 +0200
-Oleg Nesterov <oleg@redhat.com> wrote:
+On Wed, Apr 15, 2009 at 07:18:13AM -0700, Jerry Wang wrote:
+> 
+> Hi,
+> 
+> I am trying to cross-compile the linux 2.6.11.1 kernel on
+> i686 vm for ppc, and I've been getting the following
+> errors. Has anyone had this issue before?
 
-> - Fix the comment, is_single_threaded(p) actually means that nobody shares
->   ->mm with p.
-> 
->   I think this helper should be renamed, and it should not have arguments.
->   With or without this patch it must not be used unless p == current,
->   otherwise we can't safely use p->signal or p->mm.
-> 
-> - "if (atomic_read(&p->signal->count) != 1)" is not right when we have a
->   zombie group leader, use signal->live instead.
-> 
-> - Add PF_KTHREAD check to skip kernel threads which may borrow p->mm,
->   otherwise we can return the wrong "false".
-> 
-> - Use for_each_process() instead of do_each_thread(), all threads must use
->   the same ->mm.
-> 
-> - Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
->   to iterate over the process list. If there is another CLONE_VM process
->   it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
->   a freshly forked CLONE_VM task, but this doesn't matter because we must
->   see its parent and return false.
+Can you post the command you used to genberate the .config and build the
+kernel.  Also what is version of your powerpc binutils and gcc?
 
-hum.  I'm searching for a reason to merge this into 2.6.30 but I'm not
-seeing one?
+I assume you need 2.6.11.1 for some reason and newer kernels are out of the
+question?
 
+Yours Tony
