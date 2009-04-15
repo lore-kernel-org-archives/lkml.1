@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZDODWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZDODYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbZDODWk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZDODWb
+	id S1757917AbZDODYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZDODYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:22:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:35167 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbZDODWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:22:30 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 8/8] tracing/events: add support for modules to TRACE_EVENT
-Date: Wed, 15 Apr 2009 12:52:24 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-References: <20090414172337.280621613@goodmis.org> <20090414172642.137060126@goodmis.org>
-In-Reply-To: <20090414172642.137060126@goodmis.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Tue, 14 Apr 2009 23:24:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46963
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753491AbZDODYI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 23:24:08 -0400
+Date: Tue, 14 Apr 2009 20:23:59 -0700 (PDT)
+Message-Id: <20090414.202359.07968871.davem@davemloft.net>
+To: shemminger@vyatta.com
+Cc: dada1@cosmosbay.com, jeff.chua.linux@gmail.com, kaber@trash.net,
+       paulmck@linux.vnet.ibm.com, paulus@samba.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090414141351.0f63ac98@nehalam>
+References: <20090414111716.28585806@nehalam>
+	<49E4E3E8.5090201@cosmosbay.com>
+	<20090414141351.0f63ac98@nehalam>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904151252.25989.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 02:53:45 am Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> Impact: allow modules to add TRACE_EVENTS on load
+From: Stephen Hemminger <shemminger@vyatta.com>
+Date: Tue, 14 Apr 2009 14:13:51 -0700
 
-Acked-by: Rusty Russell <rusty@rustcorp.com.au> (module parts)
+> This is an alternative version of ip/ip6/arp tables locking using
+> per-cpu locks.  This avoids the overhead of synchronize_net() during
+> update but still removes the expensive rwlock in earlier versions.
+> 
+> The idea for this came from an earlier version done by Eric Dumazet.
+> Locking is done per-cpu, the fast path locks on the current cpu
+> and updates counters.  The slow case involves acquiring the locks on
+> all cpu's.
+> 
+> The mutex that was added for 2.6.30 in xt_table is unnecessary since
+> there already is a mutex for xt[af].mutex that is held.
+> 
+> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+
+Things seem to be winding down, good. :-)
+
+I'll let Patrick McHardy merge this to me with his other pending
+netfilter fixes.
 
 Thanks!
-Rusty.
