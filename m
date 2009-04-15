@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbZDOKJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZDOKL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759139AbZDOKJl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbZDOKJa
+	id S1758873AbZDOKL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZDOKLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:09:30 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:19315 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbZDOKJ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:09:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iHVB1k5o25xOgtDBE6LBMSKG3FlULvkJmmczD2dJVAiKvmdSy6lggZQfqnZmLoUueb
-         ePvi/Lh4D/1oKoTtAl01H+aGFmj7eoyD87pHZuOCJnCN/8UyPvpq8WAQxM+ToxPe1FKB
-         bpj1ZME2ada70khx8efcLYwiju4iCpDZifRw0=
-Message-ID: <49E5B252.4030104@tuffmail.co.uk>
-Date: Wed, 15 Apr 2009 11:09:22 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 15 Apr 2009 06:11:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56360 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753564AbZDOKLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:11:46 -0400
+Date: Wed, 15 Apr 2009 12:09:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+Subject: Re: [PATCH 0/4] [GIT PULL] more updates for TRACE_EVENTS for
+	modules
+Message-ID: <20090415100939.GA9773@elte.hu>
+References: <20090415031511.128139334@goodmis.org> <20090415072744.GB18192@elte.hu>
 MIME-Version: 1.0
-To: linux-pm@lists.linux-foundation.org
-CC: USB list <linux-usb@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Regression: active uvcvideo breaks over suspend
-References: <49E5B2F3.4080502@tuffmail.co.uk>
-In-Reply-To: <49E5B2F3.4080502@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090415072744.GB18192@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[removed from members-only mailing list]
 
-Alan Jenkins wrote:
-> I found this in v2.6.30-rc2.  I haven't tested beyond that.  I'm sure
-> it didn't happen in 2.6.29.
->
-> If I run "xawtv" and then suspend, it stops working on resume; the
-> xawtv display goes black and the camera LED stays off.  When I close
-> xawtv, the LED blinks on then off again.  If I then try to run xawtv
-> again, it works fine.
->
-> In dmesg (after resume) I see
->
-> [  562.884298] usb 1-8: type resume
-> [  562.990014] usb 1-8: reset high speed USB device using ehci_hcd and
-> address 3
-> [  563.665921] restoring control 00000000-0000-0000-0000-000000000101/0/2
-> [  563.665935] restoring control 00000000-0000-0000-0000-000000000101/1/3
-> [  563.665948] restoring control 00000000-0000-0000-0000-000000000101/3/7
-> [  563.666412] uvcvideo 1-8:1.1: reset_resume error -12
->
-> Thanks in advance
-> Alan
+* Ingo Molnar <mingo@elte.hu> wrote:
 
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > Ingo,
+> > 
+> > Please pull the latest tip/tracing/core tree, which can be found at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> > tip/tracing/core
+> > 
+> > 
+> > Steven Rostedt (4):
+> >       tracing/events: fix compile for modules disabled
+> >       tracing/events: fix lockdep system name
+> >       tracing/events: move trace point headers into include/trace/events
+> >       tracing/events: add trace-events-sample
+> 
+> Pulled, thanks - i'm doing some more tests on it now.
+> 
+> The include/trace/ structure now looks extremely tidy, kudos!
+
+Ok, preliminary tests passed, so i pushed it out into -tip:master as 
+well.
+
+Btw., i have yet to trigger the lock tracing related lockup you saw 
+- shouldnt the self-tests have triggered any such lockup?
+
+	Ingo
