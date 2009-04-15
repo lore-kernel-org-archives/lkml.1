@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZDODQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbZDODQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbZDODQg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZDODQJ
+	id S1758433AbZDODQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZDODQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:16:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45534 "EHLO
+	Tue, 14 Apr 2009 23:16:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47288 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbZDODQH (ORCPT
+	with ESMTP id S1752530AbZDODQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:16:07 -0400
-Message-Id: <20090415031511.128139334@goodmis.org>
+	Tue, 14 Apr 2009 23:16:08 -0400
+Message-Id: <20090415031604.933829085@goodmis.org>
+References: <20090415031511.128139334@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 14 Apr 2009 23:15:11 -0400
+Date: Tue, 14 Apr 2009 23:15:13 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -29,58 +30,39 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
        Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
        Martin Bligh <mbligh@google.com>
-Subject: [PATCH 0/4] [GIT PULL] more updates for TRACE_EVENTS for modules
+Subject: [PATCH 2/4] tracing/events: fix lockdep system name
+Content-Disposition: inline; filename=0002-tracing-events-fix-lockdep-system-name.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+From: Steven Rostedt <srostedt@redhat.com>
 
-Please pull the latest tip/tracing/core tree, which can be found at:
+Impact: fix compile error of lockdep event tracer
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core
+Ingo Molnar pointed out that the system name for the lockdep tracer was "lock"
+which is used to include the event trace file name. It should be "lockdep"
 
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ include/trace/lockdep.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Steven Rostedt (4):
-      tracing/events: fix compile for modules disabled
-      tracing/events: fix lockdep system name
-      tracing/events: move trace point headers into include/trace/events
-      tracing/events: add trace-events-sample
+diff --git a/include/trace/lockdep.h b/include/trace/lockdep.h
+index 4d301e7..45e326b 100644
+--- a/include/trace/lockdep.h
++++ b/include/trace/lockdep.h
+@@ -5,7 +5,7 @@
+ #include <linux/tracepoint.h>
+ 
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM lock
++#define TRACE_SYSTEM lockdep
+ 
+ #ifdef CONFIG_LOCKDEP
+ 
+-- 
+1.6.2.1
 
-----
- include/linux/kmemtrace.h                  |    2 +-
- include/trace/define_trace.h               |    2 +-
- include/trace/events/irq.h                 |   57 +++++
- include/trace/events/kmem.h                |  194 ++++++++++++++++
- include/trace/events/lockdep.h             |   60 +++++
- include/trace/events/sched.h               |  339 ++++++++++++++++++++++++++++
- include/trace/events/skb.h                 |   40 ++++
- include/trace/irq.h                        |   57 -----
- include/trace/kmem.h                       |  194 ----------------
- include/trace/lockdep.h                    |   60 -----
- include/trace/sched.h                      |  339 ----------------------------
- include/trace/skb.h                        |   40 ----
- kernel/exit.c                              |    2 +-
- kernel/fork.c                              |    3 +-
- kernel/irq/handle.c                        |    2 +-
- kernel/kthread.c                           |    2 +-
- kernel/lockdep.c                           |    2 +-
- kernel/sched.c                             |    2 +-
- kernel/signal.c                            |    2 +-
- kernel/softirq.c                           |    2 +-
- kernel/trace/ftrace.c                      |    2 +-
- kernel/trace/trace_events.c                |   12 +-
- kernel/trace/trace_sched_switch.c          |    2 +-
- kernel/trace/trace_sched_wakeup.c          |    2 +-
- mm/util.c                                  |    2 +-
- net/core/drop_monitor.c                    |    2 +-
- net/core/net-traces.c                      |    2 +-
- net/core/skbuff.c                          |    2 +-
- samples/Kconfig                            |    7 +
- samples/Makefile                           |    2 +-
- samples/trace_events/Makefile              |    8 +
- samples/trace_events/trace-events-sample.c |   56 +++++
- samples/trace_events/trace-events-sample.h |  124 ++++++++++
- 33 files changed, 914 insertions(+), 710 deletions(-)
 -- 
