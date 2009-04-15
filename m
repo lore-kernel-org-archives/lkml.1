@@ -1,172 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbZDOBhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZDOBhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052AbZDOBhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZDOBgw
+	id S1757904AbZDOBhi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757822AbZDOBhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:36:52 -0400
-Received: from mga14.intel.com ([143.182.124.37]:14161 "EHLO mga14.intel.com"
+	Tue, 14 Apr 2009 21:37:11 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:56959 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757600AbZDOBgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:36:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,188,1239001200"; 
-   d="scan'208";a="131534633"
-Date: Wed, 15 Apr 2009 09:36:34 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "xcf@ustc.edu.cn" <xcf@ustc.edu.cn>, linux-nfs@vger.kernel.org,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: [RFC][PATCH] vfs: check inode size on no_cached_page
-Message-ID: <20090415013634.GB6143@localhost>
-References: <20090412071605.GA14058@localhost> <20090414171114.04a47932.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Content-Disposition: inline
-In-Reply-To: <20090414171114.04a47932.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1757851AbZDOBhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 21:37:09 -0400
+Subject: Re: [BUILD FAILURE 02/12] Next April 14 : PPC64 randconfig
+ [arch/powerpc/kernel/of_platform.c]
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: subrata@linux.vnet.ibm.com
+Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-next <linux-next@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+In-Reply-To: <1239733694.5344.74.camel@subratamodak.linux.ibm.com>
+References: <1239733694.5344.74.camel@subratamodak.linux.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-C56sA11F81bV6PHagl9g"
+Date: Wed, 15 Apr 2009 11:37:04 +1000
+Message-Id: <1239759424.6552.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 08:11:14AM +0800, Andrew Morton wrote:
-> On Sun, 12 Apr 2009 15:16:05 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > [This patch may not necessarily be merged, but at least we should
-> >  be aware of the problem.]
-> > 
-> > When user space requests past-EOF data, do_generic_file_read() will
-> > issue a bonus readpage call, which may be unfavorable.
-> > 
-> > do_generic_file_read:
-> >         -> find_page:
-> >         -> find_get_page()             = NULL
-> >         -> page_cache_sync_readahead()
-> >         -> find_get_page()             = NULL
-> >         -> no_cached_page:
-> >         -> readpage:
 
-> >                 -> nfs_readpage()      = error
-> >         -> readpage_error:
+--=-C56sA11F81bV6PHagl9g
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Sorry nfs_readpage() will actually return 0 now. See below.
+On Tue, 2009-04-14 at 23:58 +0530, Subrata Modak wrote:
+> Observed the following build error:
+> ---
+> arch/powerpc/kernel/of_platform.c: In function =E2=80=98of_pci_phb_probe=
+=E2=80=99:
+> arch/powerpc/kernel/of_platform.c:270: error: implicit declaration of
+> function =E2=80=98pci_devs_phb_init_dynamic=E2=80=99
+> arch/powerpc/kernel/of_platform.c:279: error: implicit declaration of
+> function =E2=80=98scan_phb=E2=80=99
+> arch/powerpc/kernel/of_platform.c:295: error: implicit declaration of
+> function =E2=80=98pci_bus_add_devices=E2=80=99
+> make[1]: *** [arch/powerpc/kernel/of_platform.o] Error 1
+> make: *** [arch/powerpc/kernel] Error 2
+> ---
+>=20
+> I saw some discussion(s) happening last year, but could not find out if
+> some fixes are already available:
+> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg26215.html,
 
-> > 
-> > Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  mm/filemap.c |    5 +++++
-> >  1 file changed, 5 insertions(+)
-> > 
-> > --- mm.orig/mm/filemap.c
-> > +++ mm/mm/filemap.c
-> > @@ -1269,6 +1269,11 @@ readpage_error:
-> >  		goto out;
-> >  
-> >  no_cached_page:
-> > +		isize = i_size_read(inode);
-> > +		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-> > +		if (unlikely(!isize || index > end_index))
-> > +			goto out;
-> > +
-> >  		/*
-> >  		 * Ok, it wasn't cached, so we need to create a new
-> >  		 * page..
-> 
-> Is this a problem which needs to be solved?  userspace does something
-> silly and the kernel behaves a bit suboptimally?
->
-> If thats the only problem here then it's not worth adding fastpath
-> cycles to fix it?
+It's a different problem.
 
-Yeah just some inefficiency in theory, so no fixing is necessary.
+You have CONFIG_PPC_OF_PLATFORM_PCI=3Dy but CONFIG_PCI=3Dn.
 
-The underlying fs code shall be able to do the right thing - just
-as if a concurrent truncate happened.
+That's because PPC_CELL_NATIVE selects PLATFORM_PCI, without regard to
+whether PCI is enabled.
 
-The NFS case goes like this:
+cheers
 
-        nfs_readpage()
-        {
-                # some bonus accountings:
-                nfs_inc_stats(inode, NFSIOS_VFSREADPAGE);
-                nfs_add_stats(inode, NFSIOS_READPAGES, 1);
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-                nfs_readpage_async(page)
-                  nfs_return_empty_page(page)
-                    zero_user(page) # will zero the page
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-                return 0;
-        }
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-After it returns 0, do_generic_file_read() will goto page_ok and check
-i_size there, and free the past-EOF page.
+--=-C56sA11F81bV6PHagl9g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-I wonder if NFS could be improved to:
-- move the NFSIOS_READPAGES accounting _after_ a successful read
-- return AOP_TRUNCATED_PAGE instead of zeroing the past-EOF page
-The following untested patch demonstrates the ideas.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Thanks,
-Fengguang
----
+iEYEABECAAYFAknlOkAACgkQdSjSd0sB4dKdvwCeNza0BCxAlZpKDjbrB+WWjZsZ
++YcAnRH6DrWI+DhUvfBcj1N3kggIlsfj
+=tj4p
+-----END PGP SIGNATURE-----
 
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 96c4ebf..6688b46 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -76,15 +76,6 @@ void nfs_readdata_release(void *data)
- 	nfs_readdata_free(rdata);
- }
- 
--static
--int nfs_return_empty_page(struct page *page)
--{
--	zero_user(page, 0, PAGE_CACHE_SIZE);
--	SetPageUptodate(page);
--	unlock_page(page);
--	return 0;
--}
--
- static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
- {
- 	unsigned int remainder = data->args.count - data->res.count;
-@@ -123,7 +114,8 @@ int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
- 
- 	len = nfs_page_length(page);
- 	if (len == 0)
--		return nfs_return_empty_page(page);
-+		return AOP_TRUNCATED_PAGE;
-+
- 	new = nfs_create_request(ctx, inode, page, 0, len);
- 	if (IS_ERR(new)) {
- 		unlock_page(page);
-@@ -516,7 +508,6 @@ int nfs_readpage(struct file *file, struct page *page)
- 	dprintk("NFS: nfs_readpage (%p %ld@%lu)\n",
- 		page, PAGE_CACHE_SIZE, page->index);
- 	nfs_inc_stats(inode, NFSIOS_VFSREADPAGE);
--	nfs_add_stats(inode, NFSIOS_READPAGES, 1);
- 
- 	/*
- 	 * Try to flush any pending writes to the file..
-@@ -550,6 +541,8 @@ int nfs_readpage(struct file *file, struct page *page)
- 	}
- 
- 	error = nfs_readpage_async(ctx, inode, page);
-+	if (!error)
-+		nfs_add_stats(inode, NFSIOS_READPAGES, 1);
- 
- out:
- 	put_nfs_open_context(ctx);
-@@ -575,7 +568,7 @@ readpage_async_filler(void *data, struct page *page)
- 
- 	len = nfs_page_length(page);
- 	if (len == 0)
--		return nfs_return_empty_page(page);
-+		return AOP_TRUNCATED_PAGE;
- 
- 	new = nfs_create_request(desc->ctx, inode, page, 0, len);
- 	if (IS_ERR(new))
+--=-C56sA11F81bV6PHagl9g--
+
