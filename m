@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZDOXnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbZDOXor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbZDOXnj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 19:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZDOXna
+	id S1754568AbZDOXor (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 19:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZDOXoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 19:43:30 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:38786 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbZDOXna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 19:43:30 -0400
-Date: Thu, 16 Apr 2009 09:43:28 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Jerry Wang <jerry18th@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux Kernel Cross-Compiling question
-Message-ID: <20090415234328.GX16602@bilbo.ozlabs.org>
-Mail-Followup-To: Jerry Wang <jerry18th@yahoo.com>,
-	linux-kernel@vger.kernel.org
-References: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 15 Apr 2009 19:44:38 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:43779 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbZDOXoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 19:44:37 -0400
+Date: Thu, 16 Apr 2009 01:46:42 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Gregory Haskins <ghaskins@novell.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       henrix@sapo.pt
+Subject: Re: Trouble with make-install from a NFS mount
+Message-ID: <20090415234642.GA28531@uranus.ravnborg.org>
+References: <49E500F6.8060401@novell.com> <49E501D4.6000605@oracle.com> <49E627AA.5080105@novell.com> <49E641D4.2000604@oracle.com> <49E64DE1.8070909@novell.com> <20090415212009.GA27597@uranus.ravnborg.org> <49E651A9.8030409@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49E651A9.8030409@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 07:18:13AM -0700, Jerry Wang wrote:
+On Wed, Apr 15, 2009 at 02:29:13PM -0700, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> >>The problem seems to be that 30-rcX thinks that there are dependencies
+> >>to update (such as include/config/kernel.release and version.h.tmp)
+> >>during a make-install operation.  Since I am on a root-squashed NFS
+> >>mount, these files cannot be updated and thus the install fails. 
+> >>Previous trees prior to linux-current (at least up to 2.6.29) did not
+> >>try to update these files so the install would succeed.
+> >
+> >It is because arch/x86/Makefile has
+> >a dependency on vmlinux for the install target.
+> >
+> >I know hpa has had a fix for it but it is not applied.
+> >I recall there was a trivial bug in the first version.
+> >
 > 
-> Hi,
-> 
-> I am trying to cross-compile the linux 2.6.11.1 kernel on
-> i686 vm for ppc, and I've been getting the following
-> errors. Has anyone had this issue before?
+> OK, do we have a consensus that this is desirable?  I was somewhat 
+> confused if it was desired or considered user error.
 
-Can you post the command you used to genberate the .config and build the
-kernel.  Also what is version of your powerpc binutils and gcc?
+It is desireable - so please go ahead and fix the patch.
 
-I assume you need 2.6.11.1 for some reason and newer kernels are out of the
-question?
-
-Yours Tony
+Thanks,
+	Sam
