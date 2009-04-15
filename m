@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZDOV7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZDOWGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbZDOV7k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 17:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZDOV7b
+	id S1755087AbZDOWGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 18:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZDOWGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 17:59:31 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:50517 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753248AbZDOV7b convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 18:06:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45478 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751362AbZDOWGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 17:59:31 -0400
-Date: Wed, 15 Apr 2009 23:59:28 +0200
-Message-Id: <672387486@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Should MODULE_DESCRIPTION be mandatory ?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19qyGrljISUcurlFXq7U0v7SZWf2BWxxt7BTM8y9N2taCzbb
- QYKwup674Vg4rktDjq4b0r17KhnuU1NeU5tAwCYOuEW4Q2wk6s=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Apr 2009 18:06:39 -0400
+Date: Wed, 15 Apr 2009 14:59:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] hugetlbfs: return negative error code for bad mount
+ option
+Message-Id: <20090415145910.22910363.akpm@linux-foundation.org>
+In-Reply-To: <20090413035623.GA4156@localhost.localdomain>
+References: <20090413035623.GA4156@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> on x86_64 allmodconfig (2.6.30-rc2), here are the "missing"s that are reported:
-> >>
-> >> WARNING: modpost: missing MODULE_DESCRIPTION() in Documentation/filesystems/configfs/configfs_example_explicit.o
-> >> WARNING: modpost: missing MODULE_DESCRIPTION() in Documentation/filesystems/configfs/configfs_example_macros.o
-> >> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/x86/ia32/ia32_aout.o
-> > ...
-> > We need to bring that list down before we apply the patch.
-> > Is it worth it?
-> 
-> I see 424 modules without MODULE_DESCRIPTION (in the list above) and
-> 3127 .c files that contain "MODULE_DESCRIPTION".
-> 
-> To me it's a Nice to have but not Required.  (i.e., not worth it IMO)
-> 
-> -- 
-> ~Randy
-> 
+On Mon, 13 Apr 2009 12:56:23 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-i can offer spending an afternoon (or more) on compiling a list of modulenames + missing description for review.
-if that list is complete and ack`ed, i could create a patch or patch series from that. 
-(maybe the list could be split into logical parts, too)
+> This fixes the following BUG:
+> 
+> # mount -o size=MM -t hugetlbfs none /huge
+> hugetlbfs: Bad value 'MM' for mount option 'size=MM'
+> ------------[ cut here ]------------
+> kernel BUG at fs/super.c:996!
 
-would that be welcomed ?
+I can't tell where this BUG (or WARN?) is happening unless I know
+exactly which kernel version was tested.
 
-roland
+I assume that it is BUG_ON(!mnt->mnt_sb); in vfs_kern_mount()?
 
-____________________________________________________________________
-Psssst! Schon vom neuen WEB.DE MultiMessenger gehört? 
-Der kann`s mit allen: http://www.produkte.web.de/messenger/?did=3123
+> Also, remove unused #include <linux/quotaops.h>
+> 
+> Cc: William Irwin <wli@holomorphy.com>
+> Cc: stable@kernel.org
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> ---
+> 
+> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+> index 23a3c76..153d968 100644
+> --- a/fs/hugetlbfs/inode.c
+> +++ b/fs/hugetlbfs/inode.c
+> @@ -26,7 +26,6 @@
+>  #include <linux/pagevec.h>
+>  #include <linux/parser.h>
+>  #include <linux/mman.h>
+> -#include <linux/quotaops.h>
+>  #include <linux/slab.h>
+>  #include <linux/dnotify.h>
+>  #include <linux/statfs.h>
+> @@ -842,7 +841,7 @@ hugetlbfs_parse_options(char *options, struct hugetlbfs_config *pconfig)
+>  bad_val:
+>   	printk(KERN_ERR "hugetlbfs: Bad value '%s' for mount option '%s'\n",
+>  	       args[0].from, p);
+> - 	return 1;
+> + 	return -EINVAL;
+>  }
+>  
+>  static int
 
