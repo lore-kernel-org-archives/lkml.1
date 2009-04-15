@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZDOQmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZDOQmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbZDOQmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 12:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZDOQm1
+	id S1754991AbZDOQmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 12:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZDOQmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 12:42:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51092 "EHLO gate.crashing.org"
+	Wed, 15 Apr 2009 12:42:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39835 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752208AbZDOQm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 12:42:26 -0400
-Subject: Re: [PATCH] Make radeon_reinitialize_M10() absent if its reference
- is #ifdef'd out
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Howells <dhowells@redhat.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090414155651.27671.36394.stgit@warthog.procyon.org.uk>
-References: <20090414155651.27671.36394.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain
-Date: Wed, 15 Apr 2009 18:40:27 +0200
-Message-Id: <1239813627.7443.18.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1754699AbZDOQme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 12:42:34 -0400
+Date: Wed, 15 Apr 2009 18:41:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ali Gholami Rudi <ali@rudi.ir>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+Message-ID: <20090415164143.GA9871@elte.hu>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <20090414020544.GA3738@elte.hu> <20090415054417.GA5272@elte.hu> <alpine.LFD.2.00.0904150755170.4132@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904150755170.4132@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 16:56 +0100, David Howells wrote:
-> Make radeon_reinitialize_M10() absent if its reference is #ifdef'd out
-> (if
-> CONFIG_PM=n or CONFIG_PPC_PMAC=n.  Otherwise a warning is given:
-> 
->   CC      drivers/video/aty/radeon_pm.o
-> drivers/video/aty/radeon_pm.c:1720: warning: 'radeon_reinitialize_M10'
-> defined but not used
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Nah. You ifdef it with CONFIG_PPC_PMAC, but it can be used on x86
-too (see the "BUGFIX" entries).
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Cheers,
-Ben.
+> On Wed, 15 Apr 2009, Ingo Molnar wrote:
+> > 
+> > fuller log below. I think this is because 
+> > smp_call_function_many() was essentially unused before - an IPI 
+> > function should not trigger this warning, it will naturally be 
+> > called in preemptible context.
+> 
+> Yeah, that thing is buggy. It just does "this_cpu = 
+> smp_processor_id()".
+> 
+> But I have to admit that the breakage is documented. Both the 
+> "other CPU's" part _and_ the "preemption must be disabled when 
+> calling".
+> 
+> So it's not a bug, it's a "feature".
+> 
+> Which is obviously not to say that the thing isn't complete crap.
+> 
+> This patch should fix it - not by fixing smp_call_function_many(), 
+> but by just living with the breakage. Andrew already sent out a 
+> patch that just avoided the function entirely, but at least some 
+> systems are likely to be able to do one single broadcast IPI with 
+> this, so it's at least in theory still better to use that 
+> smp_call_function_many() function, even though it has braindamaged 
+> semantics.
 
-> ---
-> 
->  drivers/video/aty/radeon_pm.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/drivers/video/aty/radeon_pm.c
-> b/drivers/video/aty/radeon_pm.c
-> index 97a1f09..8655bbd 100644
-> --- a/drivers/video/aty/radeon_pm.c
-> +++ b/drivers/video/aty/radeon_pm.c
-> @@ -1716,6 +1716,7 @@ static void radeon_pm_m10_reconfigure_mc(struct radeonfb_info *rinfo)
->  	OUTREG(MC_IND_INDEX, 0);
->  }
->  
-> +#if defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC)
->  static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
->  {
->  	u32 tmp, i;
-> @@ -1940,6 +1941,7 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
->  	 */
->  	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
->  }
-> +#endif /* CONFIG_PM && CONFIG_PPC_PMAC */
->  
->  #ifdef CONFIG_PPC_OF
->  
+I have no good way to trigger the bug right now: it triggered only 
+once (maybe twice) in the past 2 days, and was not repeatable. But 
+your patch looks like it should work around the API problem. Should 
+Dave or me apply it, or will you?
 
+But the whole code there had a pretty suspicious affinity handling 
+to begin with and the cpumask changes just tried to keep the status 
+quo (and even had trouble at keeping that ;-) and didnt improve it.
+
+	Ingo
