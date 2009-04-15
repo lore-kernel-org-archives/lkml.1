@@ -1,121 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZDODCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZDODHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbZDODCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZDODCI
+	id S1754897AbZDODHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZDODGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:02:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62079 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbZDODCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:02:07 -0400
-Message-ID: <49E54E60.50408@cn.fujitsu.com>
-Date: Wed, 15 Apr 2009 11:02:56 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 14 Apr 2009 23:06:52 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:46080 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbZDODGv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 23:06:51 -0400
+Date: Wed, 15 Apr 2009 08:36:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] Add file RSS accounting to the memory resource
+	controller
+Message-ID: <20090415030606.GR7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090414180706.GQ7082@balbir.in.ibm.com> <20090415090130.26813449.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] blktrace: fix context-info when mixed-using blk tracer and
- trace events
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090415090130.26813449.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When set current tracer to blk tracer, TRACE_ITER_CONTEXT_INFO is unset,
-but actually context-info is printed:
-    pdflush-431   [000]   821.181576:   8,0    P   N [pdflush]
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-15 09:01:30]:
 
-And then if we enable TRACE_ITER_CONTEXT_INFO:
-    # echo context-info > trace_options
+> I think your concept is good. A few comments below.
+>
 
-We'll see context-info is printed twice. What's worse is, when use blk
-tracer and trace events at a time, we'll see no context-info for trace
-events:
-    jbd2_commit_logging: dev dm-0:8 transaction 333227
-    jbd2_end_commit: dev dm-0:8 transaction 333227 head 332814
-      rm-25433 [001]  9578.307485:   8,18   m   N cfq25433 slice expired t=0
-      rm-25433 [001]  9578.307486:   8,18   m   N cfq25433 put_queue
-
-This patch adds blk_tracer->set_flags(), and context-info flag is unset
-only when we set the output to classic mode.
-
-Note after this patch, one should unset context-info explicitly if he
-wants to get binary output that can be parsed by blkparse:
-    # echo nocontext-info > trace_options
-    # echo bin > trace_options
-    # echo blk > current_tracer
-    # cat trace_pipe | blkparse -i -
-
-Reported-by: Theodore Ts'o <tytso@mit.edu>
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/blktrace.c |   18 +++++++++++++-----
- 1 files changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 8e7c5da..c32062b 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1211,7 +1211,6 @@ static void blk_tracer_print_header(struct seq_file *m)
- static void blk_tracer_start(struct trace_array *tr)
- {
- 	blk_tracer_enabled = true;
--	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
- }
+Thanks,
  
- static int blk_tracer_init(struct trace_array *tr)
-@@ -1224,7 +1223,6 @@ static int blk_tracer_init(struct trace_array *tr)
- static void blk_tracer_stop(struct trace_array *tr)
- {
- 	blk_tracer_enabled = false;
--	trace_flags |= TRACE_ITER_CONTEXT_INFO;
- }
- 
- static void blk_tracer_reset(struct trace_array *tr)
-@@ -1289,9 +1287,6 @@ out:
- static enum print_line_t blk_trace_event_print(struct trace_iterator *iter,
- 					       int flags)
- {
--	if (!trace_print_context(iter))
--		return TRACE_TYPE_PARTIAL_LINE;
--
- 	return print_one_line(iter, false);
- }
- 
-@@ -1326,6 +1321,18 @@ static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
- 	return print_one_line(iter, true);
- }
- 
-+static int blk_tracer_set_flag(u32 old_flags, u32 bit, int set)
-+{
-+	/* don't output context-info for blk_classic output */
-+	if (bit == TRACE_BLK_OPT_CLASSIC) {
-+		if (set)
-+			trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
-+		else
-+			trace_flags |= TRACE_ITER_CONTEXT_INFO;
-+	}
-+	return 0;
-+}
-+
- static struct tracer blk_tracer __read_mostly = {
- 	.name		= "blk",
- 	.init		= blk_tracer_init,
-@@ -1335,6 +1342,7 @@ static struct tracer blk_tracer __read_mostly = {
- 	.print_header	= blk_tracer_print_header,
- 	.print_line	= blk_tracer_print_line,
- 	.flags		= &blk_tracer_flags,
-+	.set_flag	= blk_tracer_set_flag,
- };
- 
- static struct trace_event trace_blk_event = {
+> On Tue, 14 Apr 2009 23:37:06 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > 
+> > Feature: Add file RSS tracking per memory cgroup
+> > 
+> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > 
+> > Testing
+> > 
+> > 1. Feature enabled, built and booted the kernel. Mounted the memory
+> > resource controller and verified the statistics
+> > 2. Compiled with CGROUP_MEM_RES_CTLR disabled
+> > 
+> > We currently don't track file RSS, the RSS we report is actually anon RSS.
+> > All the file mapped pages, come in through the page cache and get accounted
+> > there. This patch adds support for accounting file RSS pages. It should
+> > 
+> > 1. Help improve the metrics reported by the memory resource controller
+> > 2. Will form the basis for a future shared memory accounting heuristic
+> >    that has been proposed by Kamezawa.
+> > 
+> > Unfortunately, we cannot rename the existing "rss" keyword used in memory.stat
+> > to "anon_rss". We however, add "file_rss" data and hope to educate the end
+> > user through documentation.
+> > ---
+> > 
+> >  include/linux/memcontrol.h |    7 +++++++
+> >  include/linux/rmap.h       |    4 ++--
+> >  mm/filemap_xip.c           |    2 +-
+> >  mm/fremap.c                |    2 +-
+> >  mm/memcontrol.c            |   34 +++++++++++++++++++++++++++++++++-
+> >  mm/memory.c                |    8 ++++----
+> >  mm/migrate.c               |    2 +-
+> >  mm/rmap.c                  |   13 ++++++++-----
+> >  8 files changed, 57 insertions(+), 15 deletions(-)
+> > 
+> > 
+> > diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+> > index 18146c9..c844a13 100644
+> > --- a/include/linux/memcontrol.h
+> > +++ b/include/linux/memcontrol.h
+> > @@ -116,6 +116,8 @@ static inline bool mem_cgroup_disabled(void)
+> >  }
+> >  
+> >  extern bool mem_cgroup_oom_called(struct task_struct *task);
+> > +extern void
+> > +mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val);
+> >  
+> >  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+> >  struct mem_cgroup;
+> > @@ -264,6 +266,11 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
+> >  {
+> >  }
+> >  
+> > +static inline void
+> > +mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val)
+> > +{
+> > +}
+> > +
+> >  #endif /* CONFIG_CGROUP_MEM_CONT */
+> >  
+> >  #endif /* _LINUX_MEMCONTROL_H */
+> > diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+> > index b35bc0e..01b4af1 100644
+> > --- a/include/linux/rmap.h
+> > +++ b/include/linux/rmap.h
+> > @@ -68,8 +68,8 @@ void __anon_vma_link(struct vm_area_struct *);
+> >   */
+> >  void page_add_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
+> >  void page_add_new_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
+> > -void page_add_file_rmap(struct page *);
+> > -void page_remove_rmap(struct page *);
+> > +void page_add_file_rmap(struct page *, struct vm_area_struct *);
+> > +void page_remove_rmap(struct page *, struct vm_area_struct *);
+> >  
+> >  #ifdef CONFIG_DEBUG_VM
+> >  void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address);
+> > diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+> > index 427dfe3..e8b2b18 100644
+> > --- a/mm/filemap_xip.c
+> > +++ b/mm/filemap_xip.c
+> > @@ -193,7 +193,7 @@ retry:
+> >  			/* Nuke the page table entry. */
+> >  			flush_cache_page(vma, address, pte_pfn(*pte));
+> >  			pteval = ptep_clear_flush_notify(vma, address, pte);
+> > -			page_remove_rmap(page);
+> > +			page_remove_rmap(page, vma);
+> >  			dec_mm_counter(mm, file_rss);
+> >  			BUG_ON(pte_dirty(pteval));
+> >  			pte_unmap_unlock(pte, ptl);
+> > diff --git a/mm/fremap.c b/mm/fremap.c
+> > index b6ec85a..01ea2da 100644
+> > --- a/mm/fremap.c
+> > +++ b/mm/fremap.c
+> > @@ -37,7 +37,7 @@ static void zap_pte(struct mm_struct *mm, struct vm_area_struct *vma,
+> >  		if (page) {
+> >  			if (pte_dirty(pte))
+> >  				set_page_dirty(page);
+> > -			page_remove_rmap(page);
+> > +			page_remove_rmap(page, vma);
+> >  			page_cache_release(page);
+> >  			update_hiwater_rss(mm);
+> >  			dec_mm_counter(mm, file_rss);
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index e44fb0f..d903b61 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -62,7 +62,8 @@ enum mem_cgroup_stat_index {
+> >  	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
+> >  	 */
+> >  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
+> > -	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
+> > +	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
+> > +	MEM_CGROUP_STAT_FILE_RSS,  /* # of pages charged as file rss */
+> 
+> I don't like the word "FILE RSS". MAPPED FILE PAGES or some will be more straigtforward.
+> (IIUC, meminfo shows this information as MAPPED_FILE)
+
+OK, I'll call it mapped_file
+
+> 
+> >  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+> >  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+> >  
+> > @@ -321,6 +322,33 @@ static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
+> >  	return css_is_removed(&mem->css);
+> >  }
+> >  
+> > +/*
+> > + * Currently used to update file_rss statistics, but the routine can be
+> > + * generalized to update other statistics as well.
+> > + */
+> > +void
+> > +mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val)
+> > +{
+> 
+> Hmm. "mem_cgroup_update_statistics()" have wider meaning than what it does..
+> Could you 
+>   - modify function name for showing "this function counts MAPPED_FILE"
+
+I thought about this, but made it more generic. How about
+mem_cgroup_update_mapped_file_stat()
+
+>  or
+>   - add a function argument as "Which counter should be modified."
+> 
+> 
+> > +	struct mem_cgroup *mem;
+> > +	struct mem_cgroup_stat *stat;
+> > +	struct mem_cgroup_stat_cpu *cpustat;
+> > +	int cpu = get_cpu();
+> > +
+> > +	if (!page_is_file_cache(page))
+> > +		return;
+> > +
+> > +	if (unlikely(!mm))
+> > +		mm = &init_mm;
+> > +
+> > +	mem = try_get_mem_cgroup_from_mm(mm);
+> > +	if (!mem)
+> > +		return;
+> > +
+> > +	stat = &mem->stat;
+> > +	cpustat = &stat->cpustat[cpu];
+> > +
+> > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_RSS, val);
+> > +}
+> >  
+> >  /*
+> >   * Call callback function against all cgroup under hierarchy tree.
+> > @@ -2051,6 +2079,7 @@ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+> >  enum {
+> >  	MCS_CACHE,
+> >  	MCS_RSS,
+> > +	MCS_FILE_RSS,
+> >  	MCS_PGPGIN,
+> >  	MCS_PGPGOUT,
+> >  	MCS_INACTIVE_ANON,
+> > @@ -2071,6 +2100,7 @@ struct {
+> >  } memcg_stat_strings[NR_MCS_STAT] = {
+> >  	{"cache", "total_cache"},
+> >  	{"rss", "total_rss"},
+> > +	{"file_rss", "total_file_rss"},
+> >  	{"pgpgin", "total_pgpgin"},
+> >  	{"pgpgout", "total_pgpgout"},
+> >  	{"inactive_anon", "total_inactive_anon"},
+> > @@ -2091,6 +2121,8 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
+> >  	s->stat[MCS_CACHE] += val * PAGE_SIZE;
+> >  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
+> >  	s->stat[MCS_RSS] += val * PAGE_SIZE;
+> > +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_FILE_RSS);
+> > +	s->stat[MCS_FILE_RSS] += val * PAGE_SIZE;
+> >  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
+> >  	s->stat[MCS_PGPGIN] += val;
+> >  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
+> 
+> IIUC, you have to add hook to force_empty() and move FILE_RSS counter to the parent.
+> I hope there is no terrible race around force empty...
+> 
+> Thanks,
+> -Kame
+>
+
+Good catch, I'll do the necessary changes in
+mem_cgroup_move_account(). I don't see any dirty race occuring, since
+the counters are per-cpu. I'll double check however.
 -- 
-1.5.4.rc3
-
+	Balbir
