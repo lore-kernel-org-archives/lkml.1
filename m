@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZDOOfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZDOOkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZDOOfF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZDOOex
+	id S1755526AbZDOOkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZDOOj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:34:53 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:62429 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753561AbZDOOew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:34:52 -0400
-Message-id: <49E5F07E.40704@acm.org>
-Date: Wed, 15 Apr 2009 09:34:38 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-version: 1.0
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       openipmi-developer@lists.sourceforge.net
-Subject: Re: [PATCH 4/5] IPMI: Add console oops catcher
-References: <20090303152123.GD7777@minyard.local>
- <20090303132046.a8975963.akpm@linux-foundation.org>
- <49ADC559.7040705@ct.jp.nec.com>
- <20090402141445.3a7a6504.akpm@linux-foundation.org>
- <49E58168.3090409@ct.jp.nec.com>
-In-reply-to: <49E58168.3090409@ct.jp.nec.com>
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
+	Wed, 15 Apr 2009 10:39:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:43265 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753777AbZDOOj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:39:57 -0400
+To: linux-kernel@vger.kernel.org
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 16 Apr 2009 00:09:52 +0930
+Subject: [PATCH 1/3] lguest: document 32-bit and PAE requirements
+Cc: lguest@ozlabs.org, "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904160009.53570.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroshi Shimamoto wrote:
-> Andrew Morton wrote:
->> On Tue, 03 Mar 2009 16:03:37 -0800
->> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
->>
->>> ...
->>>> This reader is unable to determine what the mystery preempt_disable()
->>>> is here for.  It needs a comment, please.
->>> I cannot recall why it's here. So a comment is really needed.
->>> This preempt_disable() may not be needed.
->>>
->>>> What happens if two CPUs oops at the same time (which is fairly 
->>>> common)?
->>> ...
->>>
->>> OK. I'll look at this.
->>>
->>>> It would be prudent to have a timeout in this loop.  The machine has
->>>> crashed and subsystems and hardware and memory are in an unknown and
->>>> possibly bad state.
->>> Right.
->>>
->>> ...
->>>
->>>> This looks like we're abusing the "unblank" method.
->>>>
->>>> If you think that the console subsystem is missing some capability
->>>> which this driver needs then please do prefer to fix the console
->>>> subsystem, rather than awkwardly making things fit.
->>> OK. Will take a look about this point.
->>>
->>
->> None of this happened.
->>
->> It makes me reluctant to merge that patches as they stand, because then
->> it all gets forgotten about, whereas holding the patches back will
->> remind us that updates are needed.
->
-> Sorry for late reply.
-> I couldn't have time for this patch.
-> I'll look at this again and will resend updates.
-Andrew, can we drop this for now and at get the other patches in?  At 
-least the first one ("Fix platform return check"), since it's an obvious 
-bug fix.
 
-Thanks,
+Impact: documentation update
 
--corey
+Robert noted that we don't actually document that lguest is 32-bit only,
+nor that PAE must be off (CONFIG_PAE is now prompted for if HIGHMEM is
+set to "off).
 
->
-> Thanks,
-> Hiroshi
->
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lguest@ozlabs.org
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
+---
+ Documentation/lguest/lguest.txt |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/lguest/lguest.txt b/Documentation/lguest/lguest.txt
+--- a/Documentation/lguest/lguest.txt
++++ b/Documentation/lguest/lguest.txt
+@@ -3,11 +3,11 @@
+  /,    /`      - or, A Young Coder's Illustrated Hypervisor
+  \\"--\\    http://lguest.ozlabs.org
+ 
+-Lguest is designed to be a minimal hypervisor for the Linux kernel, for
+-Linux developers and users to experiment with virtualization with the
+-minimum of complexity.  Nonetheless, it should have sufficient
+-features to make it useful for specific tasks, and, of course, you are
+-encouraged to fork and enhance it (see drivers/lguest/README).
++Lguest is designed to be a minimal 32-bit x86 hypervisor for the Linux kernel,
++for Linux developers and users to experiment with virtualization with the
++minimum of complexity.  Nonetheless, it should have sufficient features to
++make it useful for specific tasks, and, of course, you are encouraged to fork
++and enhance it (see drivers/lguest/README).
+ 
+ Features:
+ 
+@@ -37,6 +37,7 @@ Running Lguest:
+      "Paravirtualized guest support" = Y
+         "Lguest guest support" = Y
+      "High Memory Support" = off/4GB
++     "PAE (Physical Address Extension) Support" = N
+      "Alignment value to which kernel should be aligned" = 0x100000
+         (CONFIG_PARAVIRT=y, CONFIG_LGUEST_GUEST=y, CONFIG_HIGHMEM64G=n and
+          CONFIG_PHYSICAL_ALIGN=0x100000)
 
