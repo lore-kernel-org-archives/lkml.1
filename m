@@ -1,84 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbZDOSG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZDOSIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755164AbZDOSG5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 14:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZDOSGs
+	id S1755408AbZDOSIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 14:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZDOSIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 14:06:48 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:55018 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbZDOSGr convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 14:08:05 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:48148 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbZDOSIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 14:06:47 -0400
+	Wed, 15 Apr 2009 14:08:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ke8eLnwEYbzswpJ4Im8V+/CON5YJenRNWt0xrIxhB0SBV5R6jZ1eXhUpstXTLKWnAY
-         8wgc5XBDjXy+5g5TP/PLo678NZnIaceDET0d9ADKyudWmhnvqq29ojgda9mYXUKAobX5
-         rSbcmabifw+pD4myOgEnpZfmVszlsq5rGitGM=
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=YGjDJyVbKHIV8dm2GSnl0vcrW/CTjE7eKDYI2ilYNvUCefXTauvmAU5kPammZ89vMC
+         YoQvZhLGN5dBWMnVQce+k2jvC6v9YdFFUWIwv8cbHFFvdkoV3b1SUezvOUB1BTwMqyMV
+         +nN9D+XUNEyeEh0CsJlf/Fj1OB2RJxCnOFKOI=
 MIME-Version: 1.0
-In-Reply-To: <s5h7i1m1021.wl%tiwai@suse.de>
-References: <5a4c581d0904090732o4d50ede7jed7739bab6043cbe@mail.gmail.com>
-	 <s5h4owr2tpd.wl%tiwai@suse.de>
-	 <5a4c581d0904150634k6c2f4207s8396877719e38b84@mail.gmail.com>
-	 <s5h7i1m1021.wl%tiwai@suse.de>
-Date: Wed, 15 Apr 2009 20:06:44 +0200
-Message-ID: <5a4c581d0904151106k6ea98746w97477ccb43918912@mail.gmail.com>
-Subject: Re: No sound with 2.6.29-git5 vanilla through 2.6.30-rc1-git1 on 
-	hda-intel (F10 kernel has sound)
-From: Alessandro Suardi <alessandro.suardi@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Date: Wed, 15 Apr 2009 22:08:01 +0400
+Message-ID: <a4423d670904151108h39eb3a5fk36d0e5e623e7388f@mail.gmail.com>
+Subject: [core/kill-the-BKL] nfs3: possible circular locking dependency
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-nfs@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 4:08 PM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Wed, 15 Apr 2009 15:34:56 +0200,
-> Alessandro Suardi wrote:
->>
->> On Tue, Apr 14, 2009 at 4:30 PM, Takashi Iwai <tiwai@suse.de> wrote:
->> > At Thu, 9 Apr 2009 16:32:48 +0200,
->> > Alessandro Suardi wrote:
->> >>
->> >> My cursed Dell E6400 is turning up more issues I recall ever seeing
->> >>  in my 13.5 years of Linuxing -- wireless is unsupported in vanilla,
->> >>  X/VT switching moans, MTRR still complains, microcode WARNs on
->> >>  boot - and the joys of 64-bit Firefox with gnash and IcedTea...
->> >>
->> >> And now, sound only works in Fedora 10 with the F10 kernel, that is:
->> >>
->> >> 2.6.27.21-170.2.56.fc10.x86_64
->> >>
->> >>  but not with any vanilla kernel I built. So it might be me, of course; but
->> >>  the ALSA modules seem the same in the two kernels - where applicable
->> >>  (recent kernels have a hda-intel-codec module that doesn't seem to be
->> >>  loaded in the F10 kernel).
->> >
->> > snd-hda-codec-* modules are loaded automatically from snd-hda-intel.
->> > Do you have snd-hda-codec-idt module?
->> > It's enabled via CONFIG_SND_HDA_CODEC_SIGMATEL=y.
->> >
->> >
->> > Takashi
->>
->> Thanks Takashi -
->>
->>   no, I haven't that one; am I supposed to set to Y all codecs under the
->>   SND_HDA_INTEL tab ? And if not, how do I guess which one[s] ?
->
-> Unless you are sure that you have no matching codecs, it's better to
-> say all Y, especially if you are using modules.
+Hi
 
-That's what I did, and *poof* my audio is back on 2.6.30-rc2 !
+I have pulled core/kill-the-BKL on top of 2.6.30-rc2.
 
-Thanks a lot,
+device: '0:18': device_add
 
---alessandro
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.30-rc2-00057-g30aa902-dirty #5
+-------------------------------------------------------
+mount.nfs/1740 is trying to acquire lock:
+ (kernel_mutex){+.+.+.}, at: [<00000000006f32dc>] lock_kernel+0x28/0x3c
 
- "Sun keeps rising in the west / I keep on waking fully confused"
+but task is already holding lock:
+ (&type->s_umount_key#24/1){+.+.+.}, at: [<00000000004b88a0>] sget+0x228/0x36c
 
-   (The Replacements, "Within Your Reach")
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&type->s_umount_key#24/1){+.+.+.}:
+       [<00000000004776d0>] lock_acquire+0x5c/0x74
+       [<0000000000469f5c>] down_write_nested+0x38/0x50
+       [<00000000004b88a0>] sget+0x228/0x36c
+       [<00000000005688fc>] nfs_get_sb+0x80c/0xa7c
+       [<00000000004b7ec8>] vfs_kern_mount+0x44/0xa4
+       [<00000000004b7f84>] do_kern_mount+0x30/0xcc
+       [<00000000004cf300>] do_mount+0x7c8/0x80c
+       [<00000000004ed2a4>] compat_sys_mount+0x224/0x274
+       [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
+
+-> #0 (kernel_mutex){+.+.+.}:
+       [<00000000004776d0>] lock_acquire+0x5c/0x74
+       [<00000000006f0ebc>] mutex_lock_nested+0x48/0x380
+       [<00000000006f32dc>] lock_kernel+0x28/0x3c
+       [<00000000006d20ec>] rpc_wait_bit_killable+0x64/0x8c
+       [<00000000006f0620>] __wait_on_bit+0x64/0xc0
+       [<00000000006f06e4>] out_of_line_wait_on_bit+0x68/0x7c
+       [<00000000006d2938>] __rpc_execute+0x150/0x2b4
+       [<00000000006d2ac0>] rpc_execute+0x24/0x34
+       [<00000000006cc338>] rpc_run_task+0x64/0x74
+       [<00000000006cc474>] rpc_call_sync+0x58/0x7c
+       [<00000000005717b0>] nfs3_rpc_wrapper+0x24/0xa0
+       [<0000000000572024>] do_proc_get_root+0x6c/0x10c
+       [<00000000005720dc>] nfs3_proc_get_root+0x18/0x5c
+       [<000000000056401c>] nfs_get_root+0x34/0x17c
+       [<0000000000568adc>] nfs_get_sb+0x9ec/0xa7c
+       [<00000000004b7ec8>] vfs_kern_mount+0x44/0xa4
+       [<00000000004b7f84>] do_kern_mount+0x30/0xcc
+       [<00000000004cf300>] do_mount+0x7c8/0x80c
+       [<00000000004ed2a4>] compat_sys_mount+0x224/0x274
+       [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
+
+other info that might help us debug this:
+
+1 lock held by mount.nfs/1740:
+ #0:  (&type->s_umount_key#24/1){+.+.+.}, at: [<00000000004b88a0>]
+sget+0x228/0x36c
+
+stack backtrace:
+Call Trace:
+ [00000000004755ac] print_circular_bug_tail+0xfc/0x10c
+ [0000000000476e24] __lock_acquire+0x12f0/0x1b40
+ [00000000004776d0] lock_acquire+0x5c/0x74
+ [00000000006f0ebc] mutex_lock_nested+0x48/0x380
+ [00000000006f32dc] lock_kernel+0x28/0x3c
+ [00000000006d20ec] rpc_wait_bit_killable+0x64/0x8c
+ [00000000006f0620] __wait_on_bit+0x64/0xc0
+ [00000000006f06e4] out_of_line_wait_on_bit+0x68/0x7c
+ [00000000006d2938] __rpc_execute+0x150/0x2b4
+ [00000000006d2ac0] rpc_execute+0x24/0x34
+ [00000000006cc338] rpc_run_task+0x64/0x74
+ [00000000006cc474] rpc_call_sync+0x58/0x7c
+ [00000000005717b0] nfs3_rpc_wrapper+0x24/0xa0
+ [0000000000572024] do_proc_get_root+0x6c/0x10c
+ [00000000005720dc] nfs3_proc_get_root+0x18/0x5c
+ [000000000056401c] nfs_get_root+0x34/0x17c
+device: '0:19': device_add
