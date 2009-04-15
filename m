@@ -1,72 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbZDOAny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZDOA4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbZDOAny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 20:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZDOAno
+	id S1753424AbZDOA4u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 20:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZDOA4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 20:43:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34839 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbZDOAnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 20:43:43 -0400
-Message-ID: <49E52D85.2080808@kernel.org>
-Date: Tue, 14 Apr 2009 17:42:45 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 14 Apr 2009 20:56:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54795 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZDOA4h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 20:56:37 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: [RFC][PATCH v3 4/6] aio: Don't inherit aio ring memory at fork
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Zach Brown <zach.brown@oracle.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-api@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <x49iql7z0k1.fsf@segfault.boston.devel.redhat.com>
+References: <20090414151924.C653.A69D9226@jp.fujitsu.com> <x49iql7z0k1.fsf@segfault.boston.devel.redhat.com>
+Message-Id: <20090415091534.AC18.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] x86/pci: fix -1 calling to e820_all_mapped with mmconfig
-References: <bug-11103-13546@http.bugzilla.kernel.org/> <200904101913.n3AJDhMm018684@demeter.kernel.org> <49DFABCC.3070001@kernel.org> <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org>
-In-Reply-To: <49E52D3F.1090206@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 15 Apr 2009 09:56:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-Impact: fix calling
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
+> 
+> > AIO folks, Am I missing anything?
+> >
+> > ===============
+> > Subject: [RFC][PATCH] aio: Don't inherit aio ring memory at fork
+> >
+> > Currently, mm_struct::ioctx_list member isn't copyed at fork. IOW aio context don't inherit at fork.
+> > but only ring memory inherited. that's strange.
+> >
+> > This patch mark DONTFORK to ring-memory too.
+> 
+> Well, given that clearly nobody relies on io contexts being copied to
+> the child, I think it's okay to make this change.  I think the current
+> behaviour violates the principal of least surprise, but I'm having a
+> hard time getting upset about that.  ;)
 
-e820_all_mapped need end is (addr + size) instead of (addr + size - 1)
+ok.
+So, Can I get your Acked-by?
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > In addition, This patch has good side effect. it also fix
+> > "get_user_pages() vs fork" problem.
+> 
+> Hmm, I don't follow you, here.  As I understand it, the get_user_pages
+> vs. fork problem has to do with the pages used for the actual I/O, not
+> the pages used to store the completion data.  So, could you elaborate a
+> bit on what you mean by the above statement?
 
----
- arch/x86/pci/mmconfig-shared.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+No.
 
-Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
-+++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-@@ -375,7 +375,7 @@ static acpi_status __init check_mcfg_res
- 		if (!fixmem32)
- 			return AE_OK;
- 		if ((mcfg_res->start >= fixmem32->address) &&
--		    (mcfg_res->end < (fixmem32->address +
-+		    (mcfg_res->end <= (fixmem32->address +
- 				      fixmem32->address_length))) {
- 			mcfg_res->flags = 1;
- 			return AE_CTRL_TERMINATE;
-@@ -392,7 +392,7 @@ static acpi_status __init check_mcfg_res
- 		return AE_OK;
- 
- 	if ((mcfg_res->start >= address.minimum) &&
--	    (mcfg_res->end < (address.minimum + address.address_length))) {
-+	    (mcfg_res->end <= (address.minimum + address.address_length))) {
- 		mcfg_res->flags = 1;
- 		return AE_CTRL_TERMINATE;
- 	}
-@@ -439,7 +439,7 @@ static int __init is_mmconf_reserved(che
- 	u64 old_size = size;
- 	int valid = 0;
- 
--	while (!is_reserved(addr, addr + size - 1, E820_RESERVED)) {
-+	while (!is_reserved(addr, addr + size, E820_RESERVED)) {
- 		size >>= 1;
- 		if (size < (16UL<<20))
- 			break;
+The problem is, get_user_pages() increment page_count only.
+but VM page-fault logic don't care page_count. (it only care page::_mapcount)
+Then, fork and pagefault can change virtual-physical relationship although
+get_user_pages() is called.
+
+drawback worst aio scenario here
+-----------------------------------------------------------------------
+io_setup() and gup			inc page_count
+
+fork					inc mapcount
+					and make write-protect to pte
+
+write ring from userland(*)		page fault and
+					COW break.
+					parent process get copyed page and
+					child get original page owner-ship.
+
+kmap and memcpy from kernel		change child page. (it mean data lost)
+
+(*) Is this happend?
+
+MADV_DONTFORK or down_read(mmap_sem) or down_read(mm_pinned_sem) 
+or copy-at-fork mecanism(=Nick/Andrea patch) solve it.
+
+
+
+> > I think "man fork" also sould be changed. it only say
+> >
+> >        *  The child does not inherit outstanding asynchronous I/O operations from
+> >           its parent (aio_read(3), aio_write(3)).
+> > but aio_context_t (return value of io_setup(2)) also don't inherit in current implementaion.
+> 
+> I can certainly make that change, as I have other changes I need to push
+> to Michael, anyway.
+
+thanks.
+
+
+
