@@ -1,53 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZDONrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZDONy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbZDONrA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 09:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZDONqt
+	id S1754217AbZDONy7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 09:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZDONyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 09:46:49 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51885 "EHLO mail.dvmed.net"
+	Wed, 15 Apr 2009 09:54:50 -0400
+Received: from flatoutfitness.com ([66.178.130.209]:41841 "EHLO seiner.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbZDONqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 09:46:48 -0400
-Message-ID: <49E5E541.6090108@garzik.org>
-Date: Wed, 15 Apr 2009 09:46:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752151AbZDONyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 09:54:49 -0400
+Message-ID: <49E5E725.2040400@seiner.com>
+Date: Wed, 15 Apr 2009 06:54:45 -0700
+From: Yan Seiner <yan@seiner.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: USB storage no-boot regression (bisected)
-References: <49E4FAC6.1030400@garzik.org> <20090415014930.GA29413@kroah.com> <49E5480F.10501@garzik.org> <20090415050947.GB3462@kroah.com>
-In-Reply-To: <20090415050947.GB3462@kroah.com>
+To: netdev@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: mcp55 forcedeth woes
+References: <e3e0f4f0ca9fdce35c24b30559d10f31.squirrel@www.datavault.us> <20090413164548.f241ec1e.akpm@linux-foundation.org>
+In-Reply-To: <20090413164548.f241ec1e.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Apr 14, 2009 at 10:35:59PM -0400, Jeff Garzik wrote:
->>> Like Arjan said, this is because we are initializing faster now, and
->>> things are a bit more asynchronous.  Use the root_delay boot option,
->>> that's what I use for my USB-based systems, and have not had a problem
->>> with that at all.
->> Is that solution really scalable to every user with a regression severe 
->> enough it prevents them from booting?
+Andrew Morton wrote:
+> (suitable cc's added)
+>
+> On Mon, 13 Apr 2009 15:13:05 -0700 (PDT)
+> "Yan Seiner" <yan@seiner.com> wrote:
+>
+>   
+>> I have a few Asus M2N-SLI deluxe mobos.  These mobos have the MCP55
+>> chipset and two 1gb ethernet ports.  Occasionally, and for no reason that
+>> I can figure out, these ports will die.  There are various ways to try and
+>> fix these; they seem to be about 50% effective, and approach something
+>> akin to voodoo.
 >>
->> When did regressions become an acceptable tradeoff for speed?
-> 
-> So, we aren't allowed to go faster?
+>> Based on this discussion here:
+>>
+>> http://patchwork.kernel.org/patch/16212/
+>>
+>> I've gotten the ability to turn the ports on and off somewhat.
+>>
+>> For port 0,
+>>
+>> ethtool -s eth0 autoneg off speed 10 duplex full
+>>
+>> turns on the link, and gets me half-duplex, 10mb/sec. Not much, granted.
+>>
+>> ethtool -s eth0 autoneg off speed 100 duplex full
+>>
+>> causes the link to go up and down on about a 2 second cycle.
+>>
+>> ethtool -s eth0 autoneg on
+>>
+>> causes the link to drop.
+>>
+>> For port 1, the behavior is similar, except that I can get a stable 100
+>> mbit connection.
+>>
+>> So the problem is in the autoneg code. It's a driver issue as this is
+>> reported widely to work under windows of various flavors.
+>>
+>> I'm running 2.6.29.1; I'm ok with patching and building kernels, but I'm
+>> not a kernel hacker.
+>>
+>> What, if anything, can I provide and do to fix this?
+>>
+>>     
+>
+>
+>   
+I've been reading the forcedeth.c code. 
 
-Well, when the result fails to boot, you are only going faster to a point :)
+So far I've established that it does recognize the Marvell PHY.  AFAIK, 
+the PHY on the board is 88E1116, so that much is right.  OK, not much 
+progress.
 
-Oh well...
+In nv_probe, there are some lines that should turn on the PHY.  I stuck 
+some printk in there to see what's happening.  Turns out nothing is 
+happening.....  powerstate remains 0?  Does this mean that the power is 
+already on?  Or that we're reading/writing the wrong register?
 
-	Jeff
+    if (id->driver_data & DEV_HAS_POWER_CNTRL) {
+
+        /* take phy and nic out of low power mode */
+        powerstate = readl(base + NvRegPowerState2);
+        printk(KERN_INFO "Turning on power: 0x%04x.\n",powerstate);
+        powerstate &= ~NVREG_POWERSTATE2_POWERUP_MASK;
+        if ((id->device == PCI_DEVICE_ID_NVIDIA_NVENET_12 ||
+             id->device == PCI_DEVICE_ID_NVIDIA_NVENET_13) &&
+            pci_dev->revision >= 0xA3)
+            powerstate |= NVREG_POWERSTATE2_POWERUP_REV_A3;
+        printk(KERN_INFO "Writing powerstate: 0x%04x.\n",powerstate);
+        writel(powerstate, base + NvRegPowerState2);
+        powerstate = readl(base + NvRegPowerState2);
+        printk(KERN_INFO "Powerstate 0x%04x.\n",powerstate);
+    }
+
+[ 3936.277196] forcedeth: Reverse Engineered nForce ethernet driver. 
+Version 0.64.
+[ 3936.277223] forcedeth 0000:00:08.0: PCI INT A -> Link[APCH] -> GSI 22 
+(level, low) -> IRQ 22
+[ 3936.277230] forcedeth 0000:00:08.0: setting latency timer to 64
+[ 3936.277331] nv_probe: set workaround bit for reversed mac addr
+[ 3936.277337] Turning on power: 0x0000.
+[ 3936.277339] Writing powerstate: 0x0000.
+[ 3936.277343] Powerstate 0x0000.
+[ 3936.278352] 0000:00:08.0: open: Found PHY 5040:0003 at address 19.
+[ 3936.796061] 0000:00:08.0: phy reset
+[ 3937.316809] forcedeth 0000:00:08.0: ifname eth0, PHY OUI 0x5043 @ 19, 
+addr 00:1e:8c:6f:a5:27
+[ 3937.316816] forcedeth 0000:00:08.0: highdma csum vlan pwrctl mgmt 
+gbit lnktim msi desc-v3
+[ 3937.317113] forcedeth 0000:00:09.0: PCI INT A -> Link[AMC1] -> GSI 20 
+(level, low) -> IRQ 20
+[ 3937.317120] forcedeth 0000:00:09.0: setting latency timer to 64
+[ 3937.317200] nv_probe: set workaround bit for reversed mac addr
+[ 3937.317206] Turning on power: 0x0000.
+[ 3937.317209] Writing powerstate: 0x0000.
+[ 3937.317213] Powerstate 0x0000.
+[ 3937.318317] 0000:00:09.0: open: Found PHY 5040:0003 at address 19.
+[ 3937.379044] forcedeth 0000:00:08.0: irq 29 for MSI/MSI-X
+[ 3937.379236] eth0: no link during initialization.
+[ 3937.836062] 0000:00:09.0: phy reset
+[ 3938.356857] forcedeth 0000:00:09.0: ifname eth1, PHY OUI 0x5043 @ 19, 
+addr 00:1e:8c:6f:be:40
+[ 3938.356864] forcedeth 0000:00:09.0: highdma csum vlan pwrctl mgmt 
+gbit lnktim msi desc-v3
+[ 3938.417202] forcedeth 0000:00:09.0: irq 30 for MSI/MSI-X
+[ 3938.417396] eth1: no link during initialization.
+
+(this is getting more urgent; I rebooted the machine and lost both 
+network ports.  Instead of dual-gigabit I'm running off an ancient PCI 
+card.  I'm willing to test/build/debug, but I need some input from those 
+who understand the forcedeth code....)
+
+-- 
+Yan Seiner 
+
+Support my bid for the 4J School Board.
+Visit http://www.seiner.com/schoolboard
 
 
