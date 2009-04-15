@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZDOKBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbZDOKCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbZDOKBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZDOKBZ
+	id S1758656AbZDOKCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZDOKCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:01:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46354 "EHLO mx1.suse.de"
+	Wed, 15 Apr 2009 06:02:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36105 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZDOKBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:01:24 -0400
-Date: Wed, 15 Apr 2009 12:01:23 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: Daniel Mack <daniel@caiaq.de>, LKML <linux-kernel@vger.kernel.org>,
-       Trivial <trivial@kernel.org>
-Subject: Re: [PATCH] misc: Fix typo in Kconfig
-In-Reply-To: <1239705262-6415-1-git-send-email-abogani@texware.it>
-Message-ID: <alpine.LNX.2.00.0904151200400.13028@wotan.suse.de>
-References: <1239705262-6415-1-git-send-email-abogani@texware.it>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1751644AbZDOKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:02:41 -0400
+Date: Wed, 15 Apr 2009 12:01:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Yinghai Lu <yinghai@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       hpa@zytor.com, ebiederm@xmission.com, garyhade@us.ibm.com,
+       lcm@us.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] irq: correct CPUMASKS_OFFSTACK typo -v2
+Message-ID: <20090415100105.GC6669@elte.hu>
+References: <20090402013108.GB7103@us.ibm.com> <20090404003520.GA8847@us.ibm.com> <20090410215515.GC7242@us.ibm.com> <20090411065510.GA11799@elte.hu> <20090413220321.GA11098@us.ibm.com> <49E4146C.7060507@kernel.org> <49E4162A.3060701@kernel.org> <20090414131711.GA4403@elte.hu> <49E4F513.1060709@kernel.org> <20090414135958.36c79836.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414135958.36c79836.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009, Alessio Igor Bogani wrote:
 
-> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
-> ---
->  drivers/input/misc/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 14 Apr 2009 13:41:55 -0700
+> Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-> index 203abac..674f755 100644
-> --- a/drivers/input/misc/Kconfig
-> +++ b/drivers/input/misc/Kconfig
-> @@ -232,7 +232,7 @@ config INPUT_GPIO_ROTARY_ENCODER
->  	depends on GPIOLIB && GENERIC_GPIO
->  	help
->  	  Say Y here to add support for rotary encoders connected to GPIO lines.
-> -	  Check file:Documentation/incput/rotary_encoder.txt for more
-> +	  Check file:Documentation/input/rotary_encoder.txt for more
->  	  information.
+> > irq
+> 
+> Speaking of which, could someone please take a look at
+> http://www.gossamer-threads.com/lists/linux/kernel/1060580?do=post_view_threaded#1060580
+> ?
+[...]
 
-It's still not quite correct, the filename in current tree is 
-file:Documentation/input/rotary-encoder.txt :)
+> But try_one_irq() is running tifm_7xx1_isr() with local interrupts 
+> enabled, which upsets lockdep.
 
--- 
-Jiri Kosina
-SUSE Labs
+It doesnt just upset lockdep, it could also cause real lockups. 
+Lockdep is just the canary, the lockup is the methane explosion.
+
+> But I suspect that the code as it stands is non-buggy. Unless the 
+> interrupt can magically come back to life. In which case any 
+> change we make is purely a make-lockdep-shut-up thing.
+
+Hm, i'd suggest we go for the methane leak instead of squashing the 
+canary. Which in this case would be try_one_irq() ignoring 
+IRQF_DISABLED or so? Affecting (much) more ISRs than just 
+tifm_7xx1_isr()?
+
+Thomas?
+
+	Ingo
