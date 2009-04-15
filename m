@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbZDOMoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbZDOMp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbZDOMoN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 08:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757737AbZDOMnz
+	id S1759978AbZDOMp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 08:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDOMpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 08:43:55 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:61567 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752659AbZDOMny (ORCPT
+	Wed, 15 Apr 2009 08:45:18 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:4036 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbZDOMpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 08:43:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=UphaFO2ySrYbgm8DlmWlFjqIoi1RWglyveXFMX+azCj8zvgVBuuXd4Ys/NqmAKQRz5
-         CO18HrWyv+KHXXgyjG6ZyJCKejGdfM8VhCi0+CzayxbGDE41O/4D2rUnYeEdTUKuUITY
-         PyPNbrzlpU9r5B8SCvNSCJFUomnuaM7IT714o=
+	Wed, 15 Apr 2009 08:45:17 -0400
+Message-ID: <49E5D6D9.3040903@imap.cc>
+Date: Wed, 15 Apr 2009 14:45:13 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
 MIME-Version: 1.0
-Date: Wed, 15 Apr 2009 16:43:52 +0400
-Message-ID: <a4423d670904150543w3d6e1371i874618c6bd8bbd0e@mail.gmail.com>
-Subject: 2.6.30-rc2: BUG: MAX_LOCKDEP_ENTRIES too low! when mounting rootfs
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fast testing
+References: <49E5D0C1.6010608@wpkg.org>
+In-Reply-To: <49E5D0C1.6010608@wpkg.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC2993D8500C83649ED964CC9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC2993D8500C83649ED964CC9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-bnx2: eth0 NIC Copper Link is Up, 1000 Mbps full duplex, receive &
-transmit flow control ON
-BUG: MAX_LOCKDEP_ENTRIES too low!
-turning off the locking correctness validator.
-Pid: 2382, comm: mount Tainted: G        W  2.6.30-rc2-dirty #121
-Call Trace:
- [<ffffffff80280aa7>] add_lock_to_list+0xf7/0x110
- [<ffffffff80282ad1>] ? check_irq_usage+0xb1/0x110
- [<ffffffff802df73c>] ? lock_super+0x3c/0x60
- [<ffffffff80284f20>] __lock_acquire+0xe80/0x12b0
- [<ffffffff802df73c>] ? lock_super+0x3c/0x60
- [<ffffffff802853f0>] lock_acquire+0xa0/0xe0
- [<ffffffff802df73c>] ? lock_super+0x3c/0x60
- [<ffffffff805f0b50>] ? usbfs_fill_super+0x0/0xe0
- [<ffffffff806d9178>] __mutex_lock_common+0x68/0x500
- [<ffffffff802df73c>] ? lock_super+0x3c/0x60
- [<ffffffff802df73c>] ? lock_super+0x3c/0x60
- [<ffffffff805f0b50>] ? usbfs_fill_super+0x0/0xe0
- [<ffffffff806d9738>] mutex_lock_nested+0x48/0x70
- [<ffffffff802df73c>] lock_super+0x3c/0x60
- [<ffffffff802dfa7a>] __fsync_super+0x2a/0xa0
- [<ffffffff802dfb10>] fsync_super+0x20/0x50
- [<ffffffff802f1f70>] ? shrink_dcache_sb+0x20/0x40
- [<ffffffff802dfb8c>] do_remount_sb+0x4c/0x250
- [<ffffffff802e08a5>] get_sb_single+0x75/0x100
- [<ffffffff805f02b9>] usb_get_sb+0x29/0x50
- [<ffffffff802df0e7>] vfs_kern_mount+0x67/0xf0
- [<ffffffff802f942d>] ? get_fs_type+0x4d/0xf0
- [<ffffffff802df21d>] do_kern_mount+0x5d/0x130
- [<ffffffff802fcd88>] do_mount+0x2e8/0x930
- [<ffffffff802a996e>] ? __get_free_pages+0x2e/0x80
- [<ffffffff802fd4b0>] sys_mount+0xe0/0x120
- [<ffffffff8020ba6b>] system_call_fastpath+0x16/0x1b
+Tomasz Chmielewski schrieb:
+>> Wow. Nice machine. I wish I had one like that. And how long until
+>> the GUI is usable again and you can actually continue working?
+>>=20
+>> For comparison: my 3.4 GHz Pentium D takes 30 secs for kernel start
+>> (ie. until it begins looking for the filesystems),
+>=20
+> Including all BIOS routines?
+
+No - from hitting Enter in the GRUB menu.
+
+>>  2 mins until the graphical login screen appears, and
+>> 5 mins from logging in to the GUI being completely present.
+>=20
+> I have an old 366 MHz / 192 MB machine which boots to GUI much faster.
+
+Might depend on the value of "GUI". Mine wouldn't even load in 192 MB.
+Anyway, my preceding P3/700 MHz/512 MB box hasn't been much worse,
+either.
+
+> Something's wrong with your setup (unless you start really lots of=20
+> things or have some other, "uncommon" things).
+
+Hmm, it's always been like that. As for "uncommon", this is a more
+or less out of the box openSUSE 10.3 installation. (Without Beagle,
+in case you were wondering.) Perhaps that's what's wrong? :-)
+
+OTOH, even the GUIless CentOS server boxes I look after for a
+living take about 5 mins until they are up and running again after
+a kernel update - including BIOS, but without the fsck penalty.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+
+
+--------------enigC2993D8500C83649ED964CC9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJ5dbaQ3+did9BuFsRAsWDAJ4ksXuRhTCt43uBYWIQq56ox9yfTACfYGe+
+6enAtWBeMZa9D2gP7xJfLhA=
+=YJyO
+-----END PGP SIGNATURE-----
+
+--------------enigC2993D8500C83649ED964CC9--
