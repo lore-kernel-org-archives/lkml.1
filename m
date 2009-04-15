@@ -1,840 +1,490 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZDOP4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbZDOP5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZDOP4e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZDOP4V
+	id S1752699AbZDOP5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbZDOP5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:56:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35732 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 11:57:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40342 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753922AbZDOP4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:56:17 -0400
-Subject: GFS2: Tracing support for review
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
-       Ingo Molnar <mingo@elte.hu>
+	id S1751014AbZDOP5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 11:57:09 -0400
+Subject: Re: [git-pull -tip] Add -Werror to arch/x86/ files only and fix
+ warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1239798333.7653.15.camel@ht.satnam>
+References: <1239793458.7653.12.camel@ht.satnam>
+	 <20090415111355.GB27727@elte.hu>  <1239798333.7653.15.camel@ht.satnam>
 Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Wed, 15 Apr 2009 16:55:05 +0100
-Message-Id: <1239810905.29604.60.camel@localhost.localdomain>
+Date: Wed, 15 Apr 2009 21:25:23 +0530
+Message-Id: <1239810924.2996.1.camel@ht.satnam>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2009-04-15 at 17:55 +0530, Jaswinder Singh Rajput wrote:
+> On Wed, 2009-04-15 at 13:13 +0200, Ingo Molnar wrote:
+> > >  
+> > > +# Make all warnings into errors
+> > 
+> > => 'Turn all warnings into errors'
+> > 
+> > > +ccflags-y := -Werror
+> > > +
+> > >  targets		:= vmlinux.bin setup.bin setup.elf bzImage
+> > >  targets		+= fdimage fdimage144 fdimage288 image.iso mtools.conf
+> > >  subdir-		:= compressed
+> > 
+> > > --- a/arch/x86/mm/Makefile
+> > > +++ b/arch/x86/mm/Makefile
+> > > @@ -1,3 +1,6 @@
+> > > +# Make all warnings into errors
+> > > +ccflags-y			:= -Werror
+> > > +
+> > >  obj-y	:=  init.o init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+> > >  	    pat.o pgtable.o gup.o
+> > 
+> > i'd suggest to right-align this obj-y rule as well, to move it in 
+> > line with the other lines.
+> > 
+> > Looks good otherwise.
+> > 
+> 
+> Ok here is the updated patch:
+> 
+> Subject: [PATCH] x86: Adding -Werror to arch/x86/ files only
+> 
+> Adding -Werror to arch/x86/ files only, to turn all warnings into errors.
 
-This is my current patch to add tracepoints to GFS2. I couldn't use
-the recommended method of putting the trace_gfs2.h into fs/gfs2/
-because of something strange happening with the macros. The full
-path on my machine was: /home/steve/linux-2.6-tip/fs/gfs2 but
-somehow this was being substituted as: /home/steve/1-2.6-tip/fs/gfs2
-if I used the second method listed here: http://lkml.org/lkml/2009/4/14/578
+Here is V2 of this patch where we can enable/disable this option:
 
-Also there seemed to be a symbol which was not exported, which I've added
-to the patch below.
+Subject: [PATCH-tip] x86: Adding -Werror to arch/x86/ files only for !CONFIG_ALLOW_X86_WARNINGS
 
-There are a few more minor things that I'll want to fix up before
-this is ready, plus any review comments of course, but I think when
-the time comes it would make more sense to push this via the -tip
-tree since the gfs2 tree doesn't have the rest of the tracing updates
-required to make this work.
+Adding -Werror to arch/x86/ files only, to turn all warnings into errors.
 
-Steve.
-
->From cd20f2074779273d05ecaaddcd49261a125da174 Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Wed, 15 Apr 2009 15:38:59 +0100
-Subject: [PATCH] GFS2: Add tracing support
-
-This is my previous patch ported to the latest -tip tree. Its
-only compile tested, but its a direct conversion of the previous
-patch against upstream 2.6.29-rc2 and I know that I'll need to
-make one or two changes to this anyway. So this is for review
-rather than merging.
-
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- fs/gfs2/bmap.c        |    3 +
- fs/gfs2/glock.c       |   12 ++-
- fs/gfs2/glock.h       |   29 ++++
- fs/gfs2/incore.h      |   15 ++
- fs/gfs2/log.c         |    8 +
- fs/gfs2/lops.c        |    3 +
- fs/gfs2/ops_fstype.c  |    2 +
- fs/gfs2/rgrp.c        |   10 +-
- fs/gfs2/trace_gfs2.h  |  395 +++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/perf_counter.c |    1 +
- 10 files changed, 474 insertions(+), 4 deletions(-)
- create mode 100644 fs/gfs2/trace_gfs2.h
+ arch/x86/Kconfig                       |    9 +++++++++
+ arch/x86/boot/Makefile                 |    5 +++++
+ arch/x86/boot/compressed/Makefile      |    5 +++++
+ arch/x86/crypto/Makefile               |    5 +++++
+ arch/x86/ia32/Makefile                 |    5 +++++
+ arch/x86/kernel/Makefile               |    5 +++++
+ arch/x86/kernel/acpi/Makefile          |    5 +++++
+ arch/x86/kernel/acpi/realmode/Makefile |    5 +++++
+ arch/x86/kernel/apic/Makefile          |    5 +++++
+ arch/x86/kernel/cpu/Makefile           |    5 +++++
+ arch/x86/kernel/cpu/cpufreq/Makefile   |    5 +++++
+ arch/x86/kernel/cpu/mcheck/Makefile    |    5 +++++
+ arch/x86/kernel/cpu/mtrr/Makefile      |    5 +++++
+ arch/x86/kvm/Makefile                  |    5 +++++
+ arch/x86/lguest/Makefile               |    5 +++++
+ arch/x86/lib/Makefile                  |    5 +++++
+ arch/x86/math-emu/Makefile             |    5 +++++
+ arch/x86/mm/Makefile                   |   10 ++++++++--
+ arch/x86/mm/kmemcheck/Makefile         |    7 ++++++-
+ arch/x86/oprofile/Makefile             |    5 +++++
+ arch/x86/pci/Makefile                  |    5 +++++
+ arch/x86/power/Makefile                |    5 +++++
+ arch/x86/vdso/Makefile                 |    6 +++++-
+ arch/x86/video/Makefile                |    7 ++++++-
+ arch/x86/xen/Makefile                  |    7 ++++++-
+ 25 files changed, 135 insertions(+), 6 deletions(-)
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index 3a5d3f8..a17c2b1 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -26,6 +26,7 @@
- #include "dir.h"
- #include "util.h"
- #include "ops_address.h"
-+#include "trace_gfs2.h"
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 2560fff..f53e335 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -171,6 +171,15 @@ config ARCH_SUPPORTS_OPTIMIZED_INLINING
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	def_bool y
  
- /* This doesn't need to be that large as max 64 bit pointers in a 4k
-  * block is 512, so __u16 is fine for that. It saves stack space to
-@@ -585,6 +586,7 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
- 	clear_buffer_mapped(bh_map);
- 	clear_buffer_new(bh_map);
- 	clear_buffer_boundary(bh_map);
-+	trace_gfs2_bmap(ip, bh_map, lblock, create, 1);
- 	if (gfs2_is_dir(ip)) {
- 		bsize = sdp->sd_jbsize;
- 		arr = sdp->sd_jheightsize;
-@@ -619,6 +621,7 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
- 	ret = 0;
- out:
- 	release_metapath(&mp);
-+	trace_gfs2_bmap(ip, bh_map, lblock, create, ret);
- 	bmap_unlock(ip, create);
- 	return ret;
++config ALLOW_X86_WARNINGS
++	bool "Continue building x86 despite compiler warnings"
++	default n
++	depends on ALLOW_WARNINGS
++	depends on DEBUG_KERNEL
++	help
++	  By enabling this option you will disable -Werror on building
++	  x86 C files only.
++
+ # Use the generic interrupt handling code in kernel/irq/:
+ config GENERIC_HARDIRQS
+ 	bool
+diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
+index 658bc52..95f9cfd 100644
+--- a/arch/x86/boot/Makefile
++++ b/arch/x86/boot/Makefile
+@@ -22,6 +22,11 @@ ROOT_DEV	:= CURRENT
  
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 3984e47..442acfb 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -39,6 +39,8 @@
- #include "super.h"
- #include "util.h"
- #include "bmap.h"
-+#define CREATE_TRACE_POINTS
-+#include "trace_gfs2.h"
+ SVGA_MODE	:= -DSVGA_MODE=NORMAL_VGA
  
- struct gfs2_gl_hash_bucket {
-         struct hlist_head hb_list;
-@@ -155,7 +157,7 @@ static void glock_free(struct gfs2_glock *gl)
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y	:= -Werror
++endif
++
+ targets		:= vmlinux.bin setup.bin setup.elf bzImage
+ targets		+= fdimage fdimage144 fdimage288 image.iso mtools.conf
+ subdir-		:= compressed
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index 65551c9..2e84872 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -4,6 +4,11 @@
+ # create a compressed vmlinux image from the original vmlinux
+ #
  
- 	if (aspace)
- 		gfs2_aspace_put(aspace);
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
+ 
+ KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+index ebe7dee..e12163b 100644
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -2,6 +2,11 @@
+ # Arch-specific CryptoAPI modules.
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ obj-$(CONFIG_CRYPTO_AES_586) += aes-i586.o
+ obj-$(CONFIG_CRYPTO_TWOFISH_586) += twofish-i586.o
+ obj-$(CONFIG_CRYPTO_SALSA20_586) += salsa20-i586.o
+diff --git a/arch/x86/ia32/Makefile b/arch/x86/ia32/Makefile
+index 52d0ccf..87af2bc 100644
+--- a/arch/x86/ia32/Makefile
++++ b/arch/x86/ia32/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for the ia32 kernel emulation subsystem.
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ obj-$(CONFIG_IA32_EMULATION) := ia32entry.o sys_ia32.o ia32_signal.o
+ 
+ sysv-$(CONFIG_SYSVIPC) := ipc32.o
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 68a4ff6..f3bbc79 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for the linux kernel.
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y		:= -Werror
++endif
++
+ extra-y                := head_$(BITS).o head$(BITS).o head.o init_task.o vmlinux.lds
+ 
+ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
+diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
+index fd5ca97..43a4559 100644
+--- a/arch/x86/kernel/acpi/Makefile
++++ b/arch/x86/kernel/acpi/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y			:= -Werror
++endif
++
+ subdir-				:= realmode
+ 
+ obj-$(CONFIG_ACPI)		+= boot.o
+diff --git a/arch/x86/kernel/acpi/realmode/Makefile b/arch/x86/kernel/acpi/realmode/Makefile
+index 167bc16..e053670 100644
+--- a/arch/x86/kernel/acpi/realmode/Makefile
++++ b/arch/x86/kernel/acpi/realmode/Makefile
+@@ -6,6 +6,11 @@
+ # for more details.
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y	:= -Werror
++endif
++
+ always		:= wakeup.bin
+ targets		:= wakeup.elf wakeup.lds
+ 
+diff --git a/arch/x86/kernel/apic/Makefile b/arch/x86/kernel/apic/Makefile
+index da7b7b9..3d06de5 100644
+--- a/arch/x86/kernel/apic/Makefile
++++ b/arch/x86/kernel/apic/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for local APIC drivers and for the IO-APIC code
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y			:= -Werror
++endif
++
+ obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o probe_$(BITS).o ipi.o nmi.o
+ obj-$(CONFIG_X86_IO_APIC)	+= io_apic.o
+ obj-$(CONFIG_SMP)		+= ipi.o
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+index 3efcb2b..b010843 100644
+--- a/arch/x86/kernel/cpu/Makefile
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for x86-compatible CPU details, features and quirks
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y		:= -Werror
++endif
++
+ # Don't trace early stages of a secondary CPU boot
+ ifdef CONFIG_FUNCTION_TRACER
+ CFLAGS_REMOVE_common.o = -pg
+diff --git a/arch/x86/kernel/cpu/cpufreq/Makefile b/arch/x86/kernel/cpu/cpufreq/Makefile
+index 509296d..986c7db 100644
+--- a/arch/x86/kernel/cpu/cpufreq/Makefile
++++ b/arch/x86/kernel/cpu/cpufreq/Makefile
+@@ -2,6 +2,11 @@
+ # K8 systems. ACPI is preferred to all other hardware-specific drivers.
+ # speedstep-* is preferred over p4-clockmod.
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y				:= -Werror
++endif
++
+ obj-$(CONFIG_X86_POWERNOW_K8)		+= powernow-k8.o
+ obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
+ obj-$(CONFIG_X86_POWERNOW_K6)		+= powernow-k6.o
+diff --git a/arch/x86/kernel/cpu/mcheck/Makefile b/arch/x86/kernel/cpu/mcheck/Makefile
+index b2f8982..e3b1755 100644
+--- a/arch/x86/kernel/cpu/mcheck/Makefile
++++ b/arch/x86/kernel/cpu/mcheck/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y			:= -Werror
++endif
++
+ obj-y				=  mce_$(BITS).o therm_throt.o
+ 
+ obj-$(CONFIG_X86_32)		+= k7.o p4.o p5.o p6.o winchip.o
+diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
+index f4361b5..29d2d03 100644
+--- a/arch/x86/kernel/cpu/mtrr/Makefile
++++ b/arch/x86/kernel/cpu/mtrr/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y	:= -Werror
++endif
++
+ obj-y		:= main.o if.o generic.o state.o cleanup.o
+ obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
+ 
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index d3ec292..cc975ed 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for Kernel-based Virtual Machine module
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o ioapic.o \
+                 coalesced_mmio.o irq_comm.o)
+ ifeq ($(CONFIG_KVM_TRACE),y)
+diff --git a/arch/x86/lguest/Makefile b/arch/x86/lguest/Makefile
+index 27f0c9e..7f99e43 100644
+--- a/arch/x86/lguest/Makefile
++++ b/arch/x86/lguest/Makefile
+@@ -1 +1,6 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y	:= -Werror
++endif
++
+ obj-y		:= i386_head.o boot.o
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 55e11aa..ffa4fe8 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for x86 specific library files.
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ obj-$(CONFIG_SMP) := msr-on-cpu.o
+ 
+ lib-y := delay.o
+diff --git a/arch/x86/math-emu/Makefile b/arch/x86/math-emu/Makefile
+index 9b0c63b..85278e8 100644
+--- a/arch/x86/math-emu/Makefile
++++ b/arch/x86/math-emu/Makefile
+@@ -8,6 +8,11 @@ PARANOID = -DPARANOID
+ EXTRA_CFLAGS	:= $(PARANOID) $(DEBUG) -fno-builtin $(MATH_EMULATION)
+ EXTRA_AFLAGS	:= $(PARANOID)
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y	:= -Werror
++endif
++
+ # From 'C' language sources:
+ C_OBJS =fpu_entry.o errors.o \
+ 	fpu_arith.o fpu_aux.o fpu_etc.o fpu_tags.o fpu_trig.o \
+diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
+index eefdeee..0ef8c18 100644
+--- a/arch/x86/mm/Makefile
++++ b/arch/x86/mm/Makefile
+@@ -1,5 +1,11 @@
+-obj-y	:=  init.o init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+-	    pat.o pgtable.o gup.o
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y			:= -Werror
++endif
++
++obj-y				:=  init.o init_$(BITS).o fault.o ioremap.o \
++				    extable.o pageattr.o mmap.o pat.o \
++				    pgtable.o gup.o
+ 
+ obj-$(CONFIG_SMP)		+= tlb.o
+ 
+diff --git a/arch/x86/mm/kmemcheck/Makefile b/arch/x86/mm/kmemcheck/Makefile
+index 520b3bc..e789844 100644
+--- a/arch/x86/mm/kmemcheck/Makefile
++++ b/arch/x86/mm/kmemcheck/Makefile
+@@ -1 +1,6 @@
+-obj-y := error.o kmemcheck.o opcode.o pte.o selftest.o shadow.o
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y	:= -Werror
++endif
++
++obj-y		:= error.o kmemcheck.o opcode.o pte.o selftest.o shadow.o
+diff --git a/arch/x86/oprofile/Makefile b/arch/x86/oprofile/Makefile
+index 446902b..07a1689 100644
+--- a/arch/x86/oprofile/Makefile
++++ b/arch/x86/oprofile/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ obj-$(CONFIG_OPROFILE) += oprofile.o
+ 
+ DRIVER_OBJS = $(addprefix ../../../drivers/oprofile/, \
+diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
+index d49202e..8b8920d 100644
+--- a/arch/x86/pci/Makefile
++++ b/arch/x86/pci/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y			:= -Werror
++endif
++
+ obj-y				:= i386.o init.o
+ 
+ obj-$(CONFIG_PCI_BIOS)		+= pcbios.o
+diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
+index 58b32db..0ebd3f7 100644
+--- a/arch/x86/power/Makefile
++++ b/arch/x86/power/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y		:= -Werror
++endif
++
+ # __restore_processor_state() restores %gs after S3 resume and so should not
+ # itself be stack-protected
+ nostackp := $(call cc-option, -fno-stack-protector)
+diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
+index 16a9020..c5c47b4 100644
+--- a/arch/x86/vdso/Makefile
++++ b/arch/x86/vdso/Makefile
+@@ -2,6 +2,11 @@
+ # Building vDSO images for x86.
+ #
+ 
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y			:= -Werror
++endif
++
+ VDSO64-$(CONFIG_X86_64)		:= y
+ VDSO32-$(CONFIG_X86_32)		:= y
+ VDSO32-$(CONFIG_COMPAT)		:= y
+@@ -9,7 +14,6 @@ VDSO32-$(CONFIG_COMPAT)		:= y
+ vdso-install-$(VDSO64-y)	+= vdso.so
+ vdso-install-$(VDSO32-y)	+= $(vdso32-images)
+ 
 -
-+	trace_gfs2_glock_put(gl);
- 	sdp->sd_lockstruct.ls_ops->lm_put_lock(gfs2_glock_cachep, gl);
- }
+ # files to link into the vdso
+ vobjs-y := vdso-note.o vclock_gettime.o vgetcpu.o vvar.o
  
-@@ -317,14 +319,17 @@ restart:
- 						return 2;
- 					gh->gh_error = ret;
- 					list_del_init(&gh->gh_list);
-+					trace_gfs2_glock_queue(gh, 0);
- 					gfs2_holder_wake(gh);
- 					goto restart;
- 				}
- 				set_bit(HIF_HOLDER, &gh->gh_iflags);
-+				trace_gfs2_promote(gh, 1);
- 				gfs2_holder_wake(gh);
- 				goto restart;
- 			}
- 			set_bit(HIF_HOLDER, &gh->gh_iflags);
-+			trace_gfs2_promote(gh, 0);
- 			gfs2_holder_wake(gh);
- 			continue;
- 		}
-@@ -354,6 +359,7 @@ static inline void do_error(struct gfs2_glock *gl, const int ret)
- 		else
- 			continue;
- 		list_del_init(&gh->gh_list);
-+		trace_gfs2_glock_queue(gh, 0);
- 		gfs2_holder_wake(gh);
- 	}
- }
-@@ -422,6 +428,7 @@ static void finish_xmote(struct gfs2_glock *gl, unsigned int ret)
- 	int rv;
+diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
+index 2c447c9..16aafab 100644
+--- a/arch/x86/video/Makefile
++++ b/arch/x86/video/Makefile
+@@ -1 +1,6 @@
+-obj-$(CONFIG_FB)               += fbdev.o
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y		:= -Werror
++endif
++
++obj-$(CONFIG_FB)	+= fbdev.o
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+index 3b767d0..bb22068 100644
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -1,3 +1,8 @@
++# Turn all warnings into errors
++ifndef CONFIG_ALLOW_X86_WARNINGS
++ccflags-y := -Werror
++endif
++
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not profile debug and lowlevel utilities
+ CFLAGS_REMOVE_spinlock.o = -pg
+@@ -10,4 +15,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
+ 			grant-table.o suspend.o
  
- 	spin_lock(&gl->gl_spin);
-+	trace_gfs2_glock_state_change(gl, state);
- 	state_change(gl, state);
- 	gh = find_first_waiter(gl);
- 
-@@ -836,6 +843,7 @@ static void handle_callback(struct gfs2_glock *gl, unsigned int state,
- 			gl->gl_demote_state != state) {
- 		gl->gl_demote_state = LM_ST_UNLOCKED;
- 	}
-+	trace_gfs2_demote_rq(gl);
- }
- 
- /**
-@@ -921,6 +929,7 @@ fail:
- 			goto do_cancel;
- 		return;
- 	}
-+	trace_gfs2_glock_queue(gh, 1);
- 	list_add_tail(&gh->gh_list, insert_pt);
- do_cancel:
- 	gh = list_entry(gl->gl_holders.next, struct gfs2_holder, gh_list);
-@@ -1017,6 +1026,7 @@ void gfs2_glock_dq(struct gfs2_holder *gh)
- 		    !test_bit(GLF_DEMOTE, &gl->gl_flags))
- 			fast_path = 1;
- 	}
-+	trace_gfs2_glock_queue(gh, 0);
- 	spin_unlock(&gl->gl_spin);
- 	if (likely(fast_path))
- 		return;
-diff --git a/fs/gfs2/glock.h b/fs/gfs2/glock.h
-index a602a28..282b35b 100644
---- a/fs/gfs2/glock.h
-+++ b/fs/gfs2/glock.h
-@@ -260,4 +260,33 @@ void gfs2_unregister_debugfs(void);
- 
- extern const struct lm_lockops gfs2_dlm_ops;
- 
-+static inline u8 glock_trace_state(unsigned int state)
-+{
-+	switch(state) {
-+	case LM_ST_SHARED:
-+		return DLM_LOCK_PR;
-+	case LM_ST_DEFERRED:
-+		return DLM_LOCK_CW;
-+	case LM_ST_EXCLUSIVE:
-+		return DLM_LOCK_EX;
-+	}
-+	return DLM_LOCK_NL;
-+}
-+
-+static inline const char *glock_trace_name(u8 state)
-+{
-+	switch(state) {
-+	case DLM_LOCK_PR:
-+		return "PR";
-+	case DLM_LOCK_CW:
-+		return "CW";
-+	case DLM_LOCK_EX:
-+		return "EX";
-+	case DLM_LOCK_NL:
-+		return "NL";
-+	default:
-+		return "--";
-+	}
-+}
-+
- #endif /* __GLOCK_DOT_H__ */
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 399d1b9..de69333 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -667,5 +667,20 @@ struct gfs2_sbd {
- 	struct dentry *debugfs_dentry_glocks; /* for debugfs */
- };
- 
-+static inline const char *gfs2_blkst_name(u8 state)
-+{
-+	switch(state) {
-+	case GFS2_BLKST_FREE:
-+		return "free";
-+	case GFS2_BLKST_USED:
-+		return "used";
-+	case GFS2_BLKST_DINODE:
-+		return "dinode";
-+	case GFS2_BLKST_UNLINKED:
-+		return "unlinked";
-+	}
-+	return "???";
-+}
-+
- #endif /* __INCORE_DOT_H__ */
- 
-diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
-index 98918a7..f82d7be 100644
---- a/fs/gfs2/log.c
-+++ b/fs/gfs2/log.c
-@@ -28,6 +28,7 @@
- #include "meta_io.h"
- #include "util.h"
- #include "dir.h"
-+#include "trace_gfs2.h"
- 
- #define PULL 1
- 
-@@ -313,6 +314,7 @@ int gfs2_log_reserve(struct gfs2_sbd *sdp, unsigned int blks)
- 		gfs2_log_lock(sdp);
- 	}
- 	atomic_sub(blks, &sdp->sd_log_blks_free);
-+	trace_gfs2_log_blocks(sdp, -blks);
- 	gfs2_log_unlock(sdp);
- 	mutex_unlock(&sdp->sd_log_reserve_mutex);
- 
-@@ -333,6 +335,7 @@ void gfs2_log_release(struct gfs2_sbd *sdp, unsigned int blks)
- 
- 	gfs2_log_lock(sdp);
- 	atomic_add(blks, &sdp->sd_log_blks_free);
-+	trace_gfs2_log_blocks(sdp, blks);
- 	gfs2_assert_withdraw(sdp,
- 			     atomic_read(&sdp->sd_log_blks_free) <= sdp->sd_jdesc->jd_blocks);
- 	gfs2_log_unlock(sdp);
-@@ -558,6 +561,7 @@ static void log_pull_tail(struct gfs2_sbd *sdp, unsigned int new_tail)
- 
- 	gfs2_log_lock(sdp);
- 	atomic_add(dist, &sdp->sd_log_blks_free);
-+	trace_gfs2_log_blocks(sdp, dist);
- 	gfs2_assert_withdraw(sdp, atomic_read(&sdp->sd_log_blks_free) <= sdp->sd_jdesc->jd_blocks);
- 	gfs2_log_unlock(sdp);
- 
-@@ -715,6 +719,7 @@ void __gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
- 		up_write(&sdp->sd_log_flush_lock);
- 		return;
- 	}
-+	trace_gfs2_log_flush(sdp, 1);
- 
- 	ai = kzalloc(sizeof(struct gfs2_ail), GFP_NOFS | __GFP_NOFAIL);
- 	INIT_LIST_HEAD(&ai->ai_ail1_list);
-@@ -746,6 +751,7 @@ void __gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
- 	else if (sdp->sd_log_tail != current_tail(sdp) && !sdp->sd_log_idle){
- 		gfs2_log_lock(sdp);
- 		atomic_dec(&sdp->sd_log_blks_free); /* Adjust for unreserved buffer */
-+		trace_gfs2_log_blocks(sdp, -1);
- 		gfs2_log_unlock(sdp);
- 		log_write_header(sdp, 0, PULL);
- 	}
-@@ -765,6 +771,7 @@ void __gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
- 	gfs2_log_unlock(sdp);
- 
- 	sdp->sd_vfs->s_dirt = 0;
-+	trace_gfs2_log_flush(sdp, 0);
- 	up_write(&sdp->sd_log_flush_lock);
- 
- 	kfree(ai);
-@@ -788,6 +795,7 @@ static void log_refund(struct gfs2_sbd *sdp, struct gfs2_trans *tr)
- 	gfs2_assert_withdraw(sdp, sdp->sd_log_blks_reserved + tr->tr_reserved >= reserved);
- 	unused = sdp->sd_log_blks_reserved - reserved + tr->tr_reserved;
- 	atomic_add(unused, &sdp->sd_log_blks_free);
-+	trace_gfs2_log_blocks(sdp, unused);
- 	gfs2_assert_withdraw(sdp, atomic_read(&sdp->sd_log_blks_free) <=
- 			     sdp->sd_jdesc->jd_blocks);
- 	sdp->sd_log_blks_reserved = reserved;
-diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
-index 80e4f5f..52e591b 100644
---- a/fs/gfs2/lops.c
-+++ b/fs/gfs2/lops.c
-@@ -25,6 +25,7 @@
- #include "rgrp.h"
- #include "trans.h"
- #include "util.h"
-+#include "trace_gfs2.h"
- 
- /**
-  * gfs2_pin - Pin a buffer in memory
-@@ -51,6 +52,7 @@ static void gfs2_pin(struct gfs2_sbd *sdp, struct buffer_head *bh)
- 	if (bd->bd_ail)
- 		list_move(&bd->bd_ail_st_list, &bd->bd_ail->ai_ail2_list);
- 	get_bh(bh);
-+	trace_gfs2_pin(bd, 1);
- }
- 
- /**
-@@ -87,6 +89,7 @@ static void gfs2_unpin(struct gfs2_sbd *sdp, struct buffer_head *bh,
- 	bd->bd_ail = ai;
- 	list_add(&bd->bd_ail_st_list, &ai->ai_ail1_list);
- 	clear_bit(GLF_LFLUSH, &bd->bd_gl->gl_flags);
-+	trace_gfs2_pin(bd, 0);
- 	gfs2_log_unlock(sdp);
- 	unlock_buffer(bh);
- }
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 51883b3..3dba6d6 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -32,6 +32,7 @@
- #include "log.h"
- #include "quota.h"
- #include "dir.h"
-+#include "trace_gfs2.h"
- 
- #define DO 0
- #define UNDO 1
-@@ -781,6 +782,7 @@ static int init_journal(struct gfs2_sbd *sdp, int undo)
- 		/* Map the extents for this journal's blocks */
- 		map_journal_extents(sdp);
- 	}
-+	trace_gfs2_log_blocks(sdp, atomic_read(&sdp->sd_log_blks_free));
- 
- 	if (sdp->sd_lockstruct.ls_first) {
- 		unsigned int x;
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index f03d024..24de3df 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -30,6 +30,7 @@
- #include "log.h"
- #include "inode.h"
- #include "ops_address.h"
-+#include "trace_gfs2.h"
- 
- #define BFITNOENT ((u32)~0)
- #define NO_BLOCK ((u64)~0)
-@@ -1476,7 +1477,7 @@ u64 gfs2_alloc_block(struct gfs2_inode *ip, unsigned int *n)
- 	spin_lock(&sdp->sd_rindex_spin);
- 	rgd->rd_free_clone -= *n;
- 	spin_unlock(&sdp->sd_rindex_spin);
--
-+	trace_gfs2_block_alloc(ip, block, *n, GFS2_BLKST_USED);
- 	return block;
- }
- 
-@@ -1519,7 +1520,7 @@ u64 gfs2_alloc_di(struct gfs2_inode *dip, u64 *generation)
- 	spin_lock(&sdp->sd_rindex_spin);
- 	rgd->rd_free_clone--;
- 	spin_unlock(&sdp->sd_rindex_spin);
--
-+	trace_gfs2_block_alloc(dip, block, 1, GFS2_BLKST_DINODE);
- 	return block;
- }
- 
-@@ -1539,7 +1540,7 @@ void gfs2_free_data(struct gfs2_inode *ip, u64 bstart, u32 blen)
- 	rgd = rgblk_free(sdp, bstart, blen, GFS2_BLKST_FREE);
- 	if (!rgd)
- 		return;
--
-+	trace_gfs2_block_alloc(ip, bstart, blen, GFS2_BLKST_FREE);
- 	rgd->rd_free += blen;
- 
- 	gfs2_trans_add_bh(rgd->rd_gl, rgd->rd_bits[0].bi_bh, 1);
-@@ -1567,6 +1568,7 @@ void gfs2_free_meta(struct gfs2_inode *ip, u64 bstart, u32 blen)
- 	rgd = rgblk_free(sdp, bstart, blen, GFS2_BLKST_FREE);
- 	if (!rgd)
- 		return;
-+	trace_gfs2_block_alloc(ip, bstart, blen, GFS2_BLKST_FREE);
- 
- 	rgd->rd_free += blen;
- 
-@@ -1590,6 +1592,7 @@ void gfs2_unlink_di(struct inode *inode)
- 	rgd = rgblk_free(sdp, blkno, 1, GFS2_BLKST_UNLINKED);
- 	if (!rgd)
- 		return;
-+	trace_gfs2_block_alloc(ip, blkno, 1, GFS2_BLKST_UNLINKED);
- 	gfs2_trans_add_bh(rgd->rd_gl, rgd->rd_bits[0].bi_bh, 1);
- 	gfs2_rgrp_out(rgd, rgd->rd_bits[0].bi_bh->b_data);
- 	gfs2_trans_add_rg(rgd);
-@@ -1621,6 +1624,7 @@ static void gfs2_free_uninit_di(struct gfs2_rgrpd *rgd, u64 blkno)
- void gfs2_free_di(struct gfs2_rgrpd *rgd, struct gfs2_inode *ip)
- {
- 	gfs2_free_uninit_di(rgd, ip->i_no_addr);
-+	trace_gfs2_block_alloc(ip, ip->i_no_addr, 1, GFS2_BLKST_FREE);
- 	gfs2_quota_change(ip, -1, ip->i_inode.i_uid, ip->i_inode.i_gid);
- 	gfs2_meta_wipe(ip, ip->i_no_addr, 1);
- }
-diff --git a/fs/gfs2/trace_gfs2.h b/fs/gfs2/trace_gfs2.h
-new file mode 100644
-index 0000000..73850fd
---- /dev/null
-+++ b/fs/gfs2/trace_gfs2.h
-@@ -0,0 +1,395 @@
-+#if !defined(_TRACE_GFS2_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_GFS2_H
-+
-+#include <linux/tracepoint.h>
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM gfs2
-+#define TRACE_INCLUDE_FILE trace_gfs2
-+
-+#include <linux/fs.h>
-+#include <linux/buffer_head.h>
-+#include <linux/dlmconstants.h>
-+#include <linux/gfs2_ondisk.h>
-+#include "incore.h"
-+#include "glock.h"
-+
-+/* Section 1 - Locking
-+ *
-+ * Objectives:
-+ * Latency: Remote demote request to state change
-+ * Latency: Local lock request to state change
-+ * Latency: State change to lock grant
-+ * Correctness: Ordering of local lock state vs. I/O requests
-+ * Correctness: Responses to remote demote requests
-+ */
-+
-+/* General glock state change (DLM lock request completes) */
-+TRACE_EVENT(gfs2_glock_state_change,
-+
-+	TP_PROTO(const struct gfs2_glock *gl, unsigned int new_state),
-+
-+	TP_ARGS(gl, new_state),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,	glnum			)
-+		__field(	u32,	gltype			)
-+		__field(	dev_t,	dev			)
-+		__field(	u8,	cur_state		)
-+		__field(	u8,	new_state		)
-+		__field(	u8,	dmt_state		)
-+		__field(	u8,	tgt_state		)
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->glnum		= gl->gl_name.ln_number;
-+		__entry->gltype		= gl->gl_name.ln_type;
-+		__entry->dev		= gl->gl_sbd->sd_vfs->s_dev;
-+		__entry->cur_state	= glock_trace_state(gl->gl_state);
-+		__entry->new_state	= glock_trace_state(new_state);
-+		__entry->tgt_state	= glock_trace_state(gl->gl_target);
-+		__entry->dmt_state	= DLM_LOCK_IV;
-+		if (test_bit(GLF_DEMOTE, &gl->gl_flags) ||
-+		    test_bit(GLF_PENDING_DEMOTE, &gl->gl_flags))
-+			__entry->dmt_state	= glock_trace_state(gl->gl_demote_state);
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+	),
-+
-+	TP_printk("%u:%u glock %d:%lld state %s => %s tgt:%s dmt:%s task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  __entry->gltype, (unsigned long long)__entry->glnum,
-+		  glock_trace_name(__entry->cur_state),
-+		  glock_trace_name(__entry->new_state),
-+		  glock_trace_name(__entry->tgt_state),
-+		  glock_trace_name(__entry->dmt_state),
-+		  __entry->comm, __entry->pid)
-+);
-+
-+/* State change -> unlocked, glock is being deallocated */
-+TRACE_EVENT(gfs2_glock_put,
-+
-+	TP_PROTO(const struct gfs2_glock *gl),
-+
-+	TP_ARGS(gl),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,	glnum			)
-+		__field(	u32,	gltype			)
-+		__field(	dev_t,	dev			)
-+		__field(	u8,	cur_state		)
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->gltype		= gl->gl_name.ln_type;
-+		__entry->glnum		= gl->gl_name.ln_number;
-+		__entry->dev		= gl->gl_sbd->sd_vfs->s_dev;
-+		__entry->cur_state	= glock_trace_state(gl->gl_state);
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+	),
-+
-+	TP_printk("%u:%u glock %d:%lld state %s => %s task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+                  __entry->gltype, (unsigned long long)__entry->glnum,
-+                  glock_trace_name(__entry->cur_state),
-+		  glock_trace_name(DLM_LOCK_IV),
-+		  __entry->comm, __entry->pid)
-+
-+);
-+
-+/* Callback (local or remote) requesting lock demotion */
-+TRACE_EVENT(gfs2_demote_rq,
-+
-+	TP_PROTO(const struct gfs2_glock *gl),
-+
-+	TP_ARGS(gl),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,	glnum		)
-+		__field(	u32,	gltype		)
-+		__field(	dev_t,	dev		)
-+		__field(	u8,	cur_state	)
-+		__field(	u8,	dmt_state	)
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->gltype		= gl->gl_name.ln_type;
-+		__entry->glnum		= gl->gl_name.ln_number;
-+		__entry->dev		= gl->gl_sbd->sd_vfs->s_dev;
-+		__entry->cur_state	= glock_trace_state(gl->gl_state);
-+		__entry->dmt_state	= glock_trace_state(gl->gl_demote_state);
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+	),
-+
-+	TP_printk("%u:%u glock %d:%lld demote %s to %s task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+                  __entry->gltype, (unsigned long long)__entry->glnum,
-+                  glock_trace_name(__entry->cur_state),
-+                  glock_trace_name(__entry->dmt_state),
-+		  __entry->comm, __entry->pid)
-+
-+);
-+
-+/* Promotion/grant of a glock */
-+TRACE_EVENT(gfs2_promote,
-+
-+	TP_PROTO(const struct gfs2_holder *gh, int first),
-+
-+	TP_ARGS(gh, first),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,	glnum			)
-+		__field(	u32,	gltype			)
-+		__field(	dev_t,	dev			)
-+		__field(	int,	first			)
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->glnum	= gh->gh_gl->gl_name.ln_number;
-+		__entry->gltype	= gh->gh_gl->gl_name.ln_type;
-+		__entry->dev    = gh->gh_gl->gl_sbd->sd_vfs->s_dev;
-+		__entry->first	= first;
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+	),
-+
-+	TP_printk("%u:%u glock %u:%llu promote%s task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  __entry->gltype, (unsigned long long)__entry->glnum,
-+		  __entry->first ? " first": "",
-+		  __entry->comm, __entry->pid)
-+);
-+
-+/* Queue/dequeue a lock request */
-+TRACE_EVENT(gfs2_glock_queue,
-+
-+	TP_PROTO(const struct gfs2_holder *gh, int queue),
-+
-+	TP_ARGS(gh, queue),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,	glnum			)
-+		__field(	u32,	gltype			)
-+		__field(	dev_t,	dev			)
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+		__field(	int,	queue			)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->glnum	= gh->gh_gl->gl_name.ln_number;
-+		__entry->gltype	= gh->gh_gl->gl_name.ln_type;
-+		__entry->dev    = gh->gh_gl->gl_sbd->sd_vfs->s_dev;
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+		__entry->queue		= queue;
-+	),
-+
-+	TP_printk("%u:%u glock %u:%llu %squeue task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  __entry->gltype, (unsigned long long)__entry->glnum,
-+		  __entry->queue ? "" : "de",
-+		  __entry->comm, __entry->pid)
-+);
-+
-+/* Section 2 - Log/journal
-+ *
-+ * Objectives:
-+ * Latency: Log flush time
-+ * Correctness: pin/unpin vs. disk I/O ordering
-+ * Performance: Log usage stats
-+ */
-+
-+/* Pin/unpin a block in the log */
-+TRACE_EVENT(gfs2_pin,
-+
-+	TP_PROTO(const struct gfs2_bufdata *bd, int pin),
-+
-+	TP_ARGS(bd, pin),
-+
-+	TP_STRUCT__entry(
-+		__field(	dev_t,	dev			)
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+		__field(	int,	pin			)
-+		__field(	u32,	len			)
-+		__field(	sector_t,	block		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->dev		= bd->bd_gl->gl_sbd->sd_vfs->s_dev;
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+		__entry->pin		= pin;
-+		__entry->len		= bd->bd_bh->b_size;
-+		__entry->block		= bd->bd_bh->b_blocknr;
-+	),
-+
-+	TP_printk("%u:%u log %s %llu/%lu task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  __entry->pin ? "pin" : "unpin",
-+		 (unsigned long long)__entry->block,
-+		 (unsigned long)__entry->len,
-+		  __entry->comm, __entry->pid)
-+);
-+
-+/* Flushing the log */
-+TRACE_EVENT(gfs2_log_flush,
-+
-+	TP_PROTO(const struct gfs2_sbd *sdp, int start),
-+
-+	TP_ARGS(sdp, start),
-+
-+	TP_STRUCT__entry(
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+		__field(	int,	start			)
-+		__field(	dev_t,	dev			)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+		__entry->start		= start;
-+		__entry->dev		= sdp->sd_vfs->s_dev;
-+	),
-+
-+	TP_printk("%u:%u log flush %s task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  __entry->start ? "start" : "end",
-+		  __entry->comm, __entry->pid)
-+);
-+
-+/* Reserving/releasing blocks in the log */
-+TRACE_EVENT(gfs2_log_blocks,
-+
-+	TP_PROTO(const struct gfs2_sbd *sdp, int blocks),
-+
-+	TP_ARGS(sdp, blocks),
-+
-+	TP_STRUCT__entry(
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+		__field(	int,	blocks			)
-+		__field(	dev_t,	dev			)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+		__entry->blocks		= blocks;
-+		__entry->dev		= sdp->sd_vfs->s_dev;
-+	),
-+
-+	TP_printk("%u:%u log reserve %d task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  __entry->blocks,
-+		  __entry->comm, __entry->pid)
-+);
-+
-+/* Section 3 - bmap
-+ *
-+ * Objectives:
-+ * Latency: Bmap request time
-+ * Performance: Block allocator tracing
-+ * Correctness: Test of disard generation vs. blocks allocated
-+ */
-+
-+/* Map an extent of blocks, possibly a new allocation */
-+TRACE_EVENT(gfs2_bmap,
-+
-+	TP_PROTO(const struct gfs2_inode *ip, const struct buffer_head *bh,
-+		sector_t lblock, int create, int errno),
-+
-+	TP_ARGS(ip, bh, lblock, create, errno),
-+
-+	TP_STRUCT__entry(
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+		__field(	sector_t, lblock		)
-+		__field(	sector_t, pblock		)
-+		__field(	u64,	inum			)
-+		__field(	unsigned long, state		)
-+		__field(	u32,	len			)
-+		__field(	int,	create			)
-+		__field(	int,	errno			)
-+		__field(	dev_t,	dev			)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+		__entry->lblock		= lblock;
-+		__entry->pblock		= buffer_mapped(bh) ?  bh->b_blocknr : 0;
-+		__entry->inum		= ip->i_no_addr;
-+		__entry->state		= bh->b_state;
-+		__entry->len		= bh->b_size;
-+		__entry->create		= create;
-+		__entry->errno		= errno;
-+		__entry->dev		= ip->i_inode.i_sb->s_dev;
-+	),
-+
-+	TP_printk("%u:%u bmap %llu map %llu/%lu to %llu flags:%08lx %s%d task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  (unsigned long long)__entry->inum,
-+		  (unsigned long long)__entry->lblock,
-+		  (unsigned long)__entry->len,
-+		  (unsigned long long)__entry->pblock,
-+		  __entry->state, __entry->create ? "create " : "",
-+		  __entry->errno, __entry->comm, __entry->pid)
-+);
-+
-+/* Keep track of blocks as they are allocated/freed */
-+TRACE_EVENT(gfs2_block_alloc,
-+
-+	TP_PROTO(const struct gfs2_inode *ip, u64 block, unsigned len,
-+		u8 block_state),
-+
-+	TP_ARGS(ip, block, len, block_state),
-+
-+	TP_STRUCT__entry(
-+		__array(	char,	comm,	TASK_COMM_LEN	)
-+		__field(	pid_t,	pid			)
-+		__field(	dev_t,	dev			)
-+		__field(	u64,	start			)
-+		__field(	u64,	inum			)
-+		__field(	u32,	len			)
-+		__field(	u8,	block_state		)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-+		__entry->pid		= current->pid;
-+		__entry->dev		= ip->i_inode.i_sb->s_dev;
-+		__entry->start		= block;
-+		__entry->inum		= ip->i_no_addr;
-+		__entry->len		= len;
-+		__entry->block_state	= block_state;
-+	),
-+
-+	TP_printk("%u:%u bmap %llu alloc %llu/%lu %s task:%s:%d",
-+		  MAJOR(__entry->dev), MINOR(__entry->dev),
-+		  (unsigned long long)__entry->inum,
-+		  (unsigned long long)__entry->start,
-+		  (unsigned long)__entry->len,
-+		  gfs2_blkst_name(__entry->block_state),
-+		  __entry->comm, __entry->pid)
-+);
-+
-+#endif /* _TRACE_GFS2_H */
-+
-+/* This part must be outside protection */
-+#undef TRACE_INCLUDE_PATH
-+#define TRACE_INCLUDE_PATH ../../fs/gfs2/
-+#include <trace/define_trace.h>
-+
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 7f9521c..0939609 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2590,6 +2590,7 @@ void perf_tpcounter_event(int event_id)
- 
- 	__perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, regs, 0);
- }
-+EXPORT_SYMBOL_GPL(perf_tpcounter_event);
- 
- extern int ftrace_profile_enable(int);
- extern void ftrace_profile_disable(int);
+ obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+-obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+\ No newline at end of file
++obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
 -- 
 1.6.0.6
 
