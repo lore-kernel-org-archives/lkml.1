@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbZDOLW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759164AbZDOLZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbZDOLW5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbZDOLWp
+	id S1759164AbZDOLZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbZDOLZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:22:45 -0400
-Received: from stinky.trash.net ([213.144.137.162]:57070 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbZDOLWo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:22:44 -0400
-Message-ID: <49E5C378.9020209@trash.net>
-Date: Wed, 15 Apr 2009 13:22:32 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 15 Apr 2009 07:25:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57329 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752873AbZDOLZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 07:25:46 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Zhang\, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: tiobench read 50% regression with 2.6.30-rc1
+References: <1239265763.2567.769.camel@ymzhang>
+	<20090409095706.GD5178@kernel.dk> <1239330541.2567.779.camel@ymzhang>
+	<20090414121431.GH5178@kernel.dk>
+	<x49fxgaimq8.fsf@segfault.boston.devel.redhat.com>
+	<20090415062649.GO5178@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 15 Apr 2009 07:25:39 -0400
+In-Reply-To: <20090415062649.GO5178@kernel.dk> (Jens Axboe's message of "Wed,
+	15 Apr 2009 08:26:49 +0200")
+Message-ID: <x49ws9mgnv0.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Jiri Pirko <jpirko@redhat.com>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       davem@davemloft.net, shemminger@linux-foundation.org,
-       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
-       bonding-devel@lists.sourceforge.net, mschmidt@redhat.com,
-       ivecera@redhat.com
-Subject: Re: [PATCH 1/3] net: introduce a list of device addresses	dev_addr_list
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090415081720.GA21342@psychotron.englab.brq.redhat.com> <20090415081819.GB21342@psychotron.englab.brq.redhat.com> <49E59A1C.9030108@cn.fujitsu.com> <20090415083223.GF21342@psychotron.englab.brq.redhat.com> <49E5A896.90408@cosmosbay.com> <20090415111724.GG21342@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20090415111724.GG21342@psychotron.englab.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Pirko wrote:
+Jens Axboe <jens.axboe@oracle.com> writes:
 
->> Since you obviously need a write lock here to be sure following
->> can be done by one cpu only.
->>
->> You have same problem all over this patch.
-> 
-> Yes, as Dave wrote, this is guarded by RTNL mutex.
+> On Wed, Apr 15 2009, Jeff Moyer wrote:
+>> I tested this using iozone to read a file from an NFS client.  The
+>> iozone command line was:
+>>   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+>> 
+>> The numbers in the nfsd's row represent the number of nfsd threads.  I
+>> included numbers for the deadline scheduler as well for comparison.
+>> 
+>>                v2.6.29
+>> 
+>> nfsd's  |   1    |  2   |   4   |   8
+>> --------+---------------+-------+------
+>> cfq     | 91356 | 66391 | 61942 | 51674
+>> deadline| 43207 | 67436 | 96289 | 107784
+>> 
+>>               2.6.30-rc1
+>> 
+>> nfsd's  |   1   |   2   |   4   |   8
+>> --------+---------------+-------+------
+>> cfq     | 43127 | 22354 | 20858 | 21179
+>> deadline| 43732 | 68059 | 76659 | 83231
+>> 
+>>           2.6.30-rc1 + cfq fix
+>> 
+>> nfsd's  |   1    |    2   |   4   |   8
+>> --------+-----------------+-------+------
+>> cfq     | 114602 | 102280 | 43479 | 43160
+>> 
+>> As you can see, for 1 and 2 threads, the patch *really* helps out.  We
+>> still don't get back the performance for 4 and 8 nfsd threads, though.
+>> It's interesting to note that the deadline scheduler regresses for 4 and
+>> 8 threads, as well.  I think we've still got some digging to do.
+>
+> Wow, that does indeed look pretty good!
 
-This was incorrect. IPv6 adds multicast addresses in softirq context.
+Please don't lose the later part of the message, which is that both CFQ
+and deadline regress for 4 and 8 threads when moving from 2.6.29 to
+2.6.30-rc1!  There have been way too many changes to keep track of in
+this area recently, and I'd like to get some confidence that we
+understand the performance implications of them.
 
->>> +
->>> +	ha = kzalloc(sizeof(*ha), GFP_ATOMIC);
->> kzalloc(max(sizeof(*ha), L1_CACHE_SIZE), GFP_...) is thus higly recommended here.
->>
->> Also, why GFP_ATOMIC is needed here ?
-> 
-> Yes, it is not needed here. I've copied it here from the original unicast and
-> multicast add funtion to stay close but as I can see, there is no need for it
-> there either.
-> Noted.
+>> I'll try the cfq close cooperator patches next.
+>
+> I have a pending update on the coop patch that isn't pushed out yet, I
+> hope to have it finalized and tested later today. Hopefully, with that,
+> we should be able to maintain > 100Mb/sec for 4 and 8 threads.
 
-Also needed for IPv6 in softirq context.
+OK, please let me know when and where this is available and I'll give it
+a try.
 
+Cheers,
+Jeff
