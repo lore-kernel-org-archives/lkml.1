@@ -1,113 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZDOGNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZDOGNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbZDOGNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 02:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZDOGNQ
+	id S1756453AbZDOGNl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 02:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZDOGNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 02:13:16 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:56723 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbZDOGNP convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 02:13:23 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50971 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755590AbZDOGNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 02:13:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=LIaX/6smQYmgyTzJo/nFB4wjHmhYEMgArTad2Pq2kfWAFgaaYS+PoJaCsnFox44Amc
-         pkSlxQT17Whv45fx90f4BbR93snZuGPYTyWT0SrOiSjfSB3ZmlM84Cft4JCoDktaXfUH
-         70h1X27/rsWSAqmr6FLvcGj7VIFvmgR1dYIIc=
-MIME-Version: 1.0
-In-Reply-To: <20090415055839.GA12040@elte.hu>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com>
-	 <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
-Date: Wed, 15 Apr 2009 09:13:12 +0300
-X-Google-Sender-Auth: ff26ef2c161d9e28
-Message-ID: <84144f020904142313m4da323fdj9a8becf3010c519c@mail.gmail.com>
-Subject: Re: RFC: introduce struct ksymbol
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joe Perches <joe@perches.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Wed, 15 Apr 2009 02:13:22 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH v2 5/4] ftrace, workqueuetrace: display work name
+Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090415011533.GI5968@nowhere>
+References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere>
+Message-Id: <20090415141250.AC46.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 15 Apr 2009 15:13:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Hi
 
-On Wed, Apr 15, 2009 at 8:58 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> (Sam and Rusty Cc:-ed)
->
-> * Joe Perches <joe@perches.com> wrote:
->
->> On Wed, 2009-04-15 at 02:00 +0200, Frederic Weisbecker wrote:
->> > arch/blackfin/kernel/traps.c:   symname = kallsyms_lookup(address, &symsize, &offset, &modname, namebuf);
->> > arch/powerpc/xmon/xmon.c:               name = kallsyms_lookup(pc, &size, &offset, NULL, tmpstr);
->> > arch/sh/kernel/cpu/sh5/unwind.c:        sym = kallsyms_lookup(pc, NULL, &offset, NULL, namebuf);
->> > arch/x86/kernel/ftrace.c:       kallsyms_lookup((unsigned long) syscall, NULL, NULL, NULL, str);
->> > kernel/kprobes.c:               sym = kallsyms_lookup((unsigned long)p->addr, NULL,
->> > kernel/lockdep.c:       return kallsyms_lookup((unsigned long)key, NULL, NULL, NULL, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, &modname, str);
->> > kernel/trace/ftrace.c:  kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
->> > kernel/trace/trace_functions.c: kallsyms_lookup(ip, NULL, NULL, NULL, str);
->> > kernel/trace/trace_output.c:    kallsyms_lookup(address, NULL, NULL, NULL, str);
->>
->> Perhaps a conversion from
->>
->> "char str[KSYM_SYMBOL_LEN]"
->> to
->> "struct ksymbol sym"?
->>
->> could be useful.
->>
->> There are a few places that use a hard coded length of 128
->> instead of KSYM_SYMBOL_LENGTH that are also converted.
->>
->> Compile tested only
->
-> Why not 'struct ksym'? That name is unused right now, it is shorter
-> and just as descriptive.
->
-> Regarding the change... dunno. Sam, Rusty - what do you think?
->
-> Downsides would be loss of awareness of stack footprint impact. A
-> plain struct is easy to slap on, and it's not immediately visible
-> that it carries 128 bytes of weight. It might also be confusing in
-> terms of the nature of the interface - whether it's a pointery
-> object or not.
->
-> Prior use:
->
->        char str[KSYM_SYMBOL_LEN];
->
->        kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
->
-> New use:
->
->        struct ksym sym;
->
->        kallsyms_lookup(rec->ip, NULL, NULL, NULL, &sym);
->
-> Dunno.
+> Kosaki-san,
+> 
+> Perhaps you misunderstood me, which is easy because my english is
+> evil ;-)
 
-The change makes sense to me. Passing a raw char pointer down the
-call-chain is a buffer overflow waiting to happen and as a matter of
-fact, we've had bugs in this area before. See commit
-9c24624727f6d6c460e45762a408ca5f5b9b8ef2 ("KSYM_SYMBOL_LEN fixes") for
-an example.
+hehe, my english is poor much than you ;)
 
-                                      Pekka
+
+> We have to distinguish event tracing and statistical/histogram tracing
+> here.
+> 
+> Event tracing is about logging the events when they come and store
+> them one by one to output them later. That's what does TRACE_EVENT
+> for instance.
+> 
+> Statistical tracing doesn't store a trace of each event but instead
+> update some numbers after each event: number of events, maximum
+> latency, average, etc...
+
+Agreed.
+
+
+> About event tracing, we want to have something that let us identifying
+> the events individually. For the works it can be either the function
+> embedeed in the work, or the work itself.
+> But do we need both? Since it's rare that a function can be embedeed in
+> more than two works, I guess we only need one of those informations.
+> Which one is the more efficient to identify a work? That can be discussed
+> actually.
+
+OK. I think function name is enough. I'll drop this patch.
+
+And also function name has another benefit.
+symbol name is module unload safe. then we don't need to care
+module unloading.
+
+In the other hand, work_struct variable is often static variable.
+it mean the variable name is often very short.
+
+
+> When I talked about per-work tracing, it was in a generic way. What do we
+> use to identify each work individually: either the function or the work
+> name? Both seems accurate for that actually, the fact is that both can
+> be used for per-work tracing.
+> 
+> Actually my previous mails were focused on statistical tracing.
+> 
+> You proposed something that would result in the following final view:
+> 
+> 	workqueue_name:pid	n_inserted n_executed cpu max_latency
+> 
+> And then by looking at the trace file, we can retrieve the work/function
+> that produced this max latency.
+> 
+> While I proposed this another idea:
+> 
+> 	workqueue_name:pid	n_inserted n_executed cpu
+> 
+> 	work1	latency_avg	latency_max
+> 	work2	latency_avg	latency_max
+> 	work3	latency_avg	latency_max
+> 	.....
+> 
+> (We can have it with one file per workqueue).
+> work1 can be either the work name or the function executed though
+> the function is probably the main focus here because it's the
+> real source culprit.
+> But we can also output work_name:func
+> 
+> You see? With such output we see immediately which works are creating the
+> worst latencies.
+> And the event tracing is still very helpful here to have a more
+> fine grained tracing and see the behaviour of some works more precisely.
+> 
+> That's a kind of tracing process we can imagine:
+> 
+> - we start by looking at the statistics and indentify the wicked
+>   works/funcs.
+> - we look at the events on /debug/tracing/trace and, coupling with
+>   some well-chosen filters, we observe the behaviour of a work with
+>   more precision.
+> 
+> 
+> But I'm not opposite to your patch, I think it can be helpful to also
+> have the work name on certain circumstances.
+> But it makes the whole line a bit messy with a lot of informations for
+> those who only need the func name (or only the work name).
+> The best would be to have a runtime option to choose whether we want
+> to display it or not.
+
+I understand you mean. thanks.
+My conclusion is follow,
+
+Conclusion:
+ 1/4	resend, but remove __entry->work
+ 2/4	resend
+ 3/4	remake as your suggestion
+ 4/4	remake as your suggestion
+ 5/4	dropped
+
+but unfortunately I don't have enough development time. then,
+I and Zhaolei discuss this issue and we agreed Zaholei develop it.
+
+
+Thanks!
+
+
+
+
