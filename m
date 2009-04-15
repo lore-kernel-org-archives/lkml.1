@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbZDOT3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZDOTcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbZDOT3t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 15:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbZDOT3S
+	id S1755145AbZDOTcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 15:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZDOTcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 15:29:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51230 "EHLO mx3.mail.elte.hu"
+	Wed, 15 Apr 2009 15:32:02 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45287 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755170AbZDOT3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 15:29:17 -0400
-Date: Wed, 15 Apr 2009 21:28:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	id S1752690AbZDOTcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 15:32:00 -0400
+Subject: Re: [PATCH] Fix inconsistent lock state in inotify
+From: Eric Paris <eparis@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, x86@kernel.org,
-       sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: [git-pull -tip] Add -Werror to arch/x86/ files only and fix
-	warnings
-Message-ID: <20090415192802.GB27004@elte.hu>
-References: <1239793458.7653.12.camel@ht.satnam> <20090415122251.beba3b43.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415122251.beba3b43.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Cc: Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
+       john@johnmccutchan.com, rlove@rlove.org
+In-Reply-To: <20090415122532.0a0c5f24.akpm@linux-foundation.org>
+References: <20090410192533.GA24345@dreamland.darkstar.lan>
+	 <20090414161329.094b977c.akpm@linux-foundation.org>
+	 <68676e00904150459q6cc34f9fjb9475937a4e73c71@mail.gmail.com>
+	 <20090415122532.0a0c5f24.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 15:31:35 -0400
+Message-Id: <1239823895.2562.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 15 Apr 2009 16:34:18 +0530
-> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Wed, 2009-04-15 at 12:25 -0700, Andrew Morton wrote:
+> On Wed, 15 Apr 2009 13:59:29 +0200
+> Luca Tettamanti <kronos.it@gmail.com> wrote:
 > 
-> > I added -Werror for x86/files only
+> > >> +++ b/fs/notify/inotify/inotify_user.c
+> > >> @@ -220,7 +220,7 @@ static struct inotify_kernel_event * kernel_event(s32 wd, u32 mask, u32 cookie,
+> > >>                               rem = 0;
+> > >>               }
+> > >>
+> > >> -             kevent->name = kmalloc(len + rem, GFP_KERNEL);
+> > >> +             kevent->name = kmalloc(len + rem, GFP_NOFS);
+> > >>               if (unlikely(!kevent->name)) {
+> > >>                       kmem_cache_free(event_cachep, kevent);
+> > >>                       return NULL;
+> > >
+> > > Thanks.
+> > >
+> > > This is in fact a false positive and we plan to fix it via lockdep
+> > > annotation.
+> > 
+> > Well, I trust you on the "false positive", but a few line before there this:
+> > 
+> >   kevent = kmem_cache_alloc(event_cachep, GFP_NOFS);
+> > 
+> > so can kmem_cache_alloc also use GFP_KERNEL?
 > 
-> yikes.
+> Yes, it looks that way.
 > 
-> Not only does this need to be tested for all configs, it also need 
-> to be tested for all approved gcc versions.
+> umm, I think I'll merge your original patch as a reminder-to-self.
+> If the problem doesn't get fixed in a better way for 2.6.30 then I
+> might end up going with the GFP_NOFS approach.
 > 
-> For example, one of my compilers always spews warnings from x86 
-> because it has the "foo(&bar) doesn't initialise bar" stupidity.
-> 
-> And there will be other gcc inconsitencies, for sure.
+> But it's bad to weaken the memory allocation mode just to plug a lockdep
+> warning.
 
-Yes.
+I swear, I'm fighting with my machines trying to get one to work so I
+can test my lockdep fix today (and found a separate oddity/bug in the
+process)
 
-> > Subject: [PATCH-tip] x86: Adding -Werror to arch/x86/ files only 
-> > for !CONFIG_ALLOW_X86_WARNINGS
-> 
-> whew, that sounds better.
+-Eric
 
-Yes, as requested by an equally worried x86 maintainer ;-)
-
-	Ingo
