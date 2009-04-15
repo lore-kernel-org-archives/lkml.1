@@ -1,248 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZDODHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbZDODIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbZDODHH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZDODGw
+	id S1757744AbZDODIV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbZDODII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:06:52 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:46080 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZDODGv (ORCPT
+	Tue, 14 Apr 2009 23:08:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57258 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbZDODIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:06:51 -0400
-Date: Wed, 15 Apr 2009 08:36:07 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] Add file RSS accounting to the memory resource
-	controller
-Message-ID: <20090415030606.GR7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090414180706.GQ7082@balbir.in.ibm.com> <20090415090130.26813449.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090415090130.26813449.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Apr 2009 23:08:07 -0400
+Date: Tue, 14 Apr 2009 20:09:52 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB storage no-boot regression (bisected)
+Message-ID: <20090414200952.1714f1c5@infradead.org>
+In-Reply-To: <49E54B12.8040303@garzik.org>
+References: <49E4FAC6.1030400@garzik.org>
+	<20090414183807.3baf72ed@infradead.org>
+	<49E546C4.1060001@garzik.org>
+	<20090414194414.22c63728@infradead.org>
+	<49E54B12.8040303@garzik.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-15 09:01:30]:
+On Tue, 14 Apr 2009 22:48:50 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-> I think your concept is good. A few comments below.
->
+> Arjan van de Ven wrote:
+> > On Tue, 14 Apr 2009 22:30:28 -0400
+> > Jeff Garzik <jeff@garzik.org> wrote:
+> > 
+> >> Arjan van de Ven wrote:
+> >>> This change just made it go faster enough for you to be out of
+> >>> luck; fundamentally your userland needs to wait if the device it
+> >>> wants is not there. 
+> >> All these drivers are in-kernel, and the root device is passed via 
+> >> command line.  There is no userland at that point, that needs to
+> >> wait.
+> > 
+> > ok fair; but that does not change that the kernel does not know if a
+> > device is coming.
+> > Yes that sucks; sadly USB is just this way, you don't know when no
+> > new devices will come from a certain bus.
+> 
+> Perhaps -- but I can say that kernels <= 2.6.27 booted with 100% 
+> reliability.
+> 
+> Now, Kernels >= 2.6.28 always fail.
+> d
+> The ONLY variable is the kernel.
 
-Thanks,
- 
-> On Tue, 14 Apr 2009 23:37:06 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > 
-> > Feature: Add file RSS tracking per memory cgroup
-> > 
-> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > 
-> > Testing
-> > 
-> > 1. Feature enabled, built and booted the kernel. Mounted the memory
-> > resource controller and verified the statistics
-> > 2. Compiled with CGROUP_MEM_RES_CTLR disabled
-> > 
-> > We currently don't track file RSS, the RSS we report is actually anon RSS.
-> > All the file mapped pages, come in through the page cache and get accounted
-> > there. This patch adds support for accounting file RSS pages. It should
-> > 
-> > 1. Help improve the metrics reported by the memory resource controller
-> > 2. Will form the basis for a future shared memory accounting heuristic
-> >    that has been proposed by Kamezawa.
-> > 
-> > Unfortunately, we cannot rename the existing "rss" keyword used in memory.stat
-> > to "anon_rss". We however, add "file_rss" data and hope to educate the end
-> > user through documentation.
-> > ---
-> > 
-> >  include/linux/memcontrol.h |    7 +++++++
-> >  include/linux/rmap.h       |    4 ++--
-> >  mm/filemap_xip.c           |    2 +-
-> >  mm/fremap.c                |    2 +-
-> >  mm/memcontrol.c            |   34 +++++++++++++++++++++++++++++++++-
-> >  mm/memory.c                |    8 ++++----
-> >  mm/migrate.c               |    2 +-
-> >  mm/rmap.c                  |   13 ++++++++-----
-> >  8 files changed, 57 insertions(+), 15 deletions(-)
-> > 
-> > 
-> > diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-> > index 18146c9..c844a13 100644
-> > --- a/include/linux/memcontrol.h
-> > +++ b/include/linux/memcontrol.h
-> > @@ -116,6 +116,8 @@ static inline bool mem_cgroup_disabled(void)
-> >  }
-> >  
-> >  extern bool mem_cgroup_oom_called(struct task_struct *task);
-> > +extern void
-> > +mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val);
-> >  
-> >  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
-> >  struct mem_cgroup;
-> > @@ -264,6 +266,11 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
-> >  {
-> >  }
-> >  
-> > +static inline void
-> > +mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val)
-> > +{
-> > +}
-> > +
-> >  #endif /* CONFIG_CGROUP_MEM_CONT */
-> >  
-> >  #endif /* _LINUX_MEMCONTROL_H */
-> > diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-> > index b35bc0e..01b4af1 100644
-> > --- a/include/linux/rmap.h
-> > +++ b/include/linux/rmap.h
-> > @@ -68,8 +68,8 @@ void __anon_vma_link(struct vm_area_struct *);
-> >   */
-> >  void page_add_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
-> >  void page_add_new_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
-> > -void page_add_file_rmap(struct page *);
-> > -void page_remove_rmap(struct page *);
-> > +void page_add_file_rmap(struct page *, struct vm_area_struct *);
-> > +void page_remove_rmap(struct page *, struct vm_area_struct *);
-> >  
-> >  #ifdef CONFIG_DEBUG_VM
-> >  void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address);
-> > diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-> > index 427dfe3..e8b2b18 100644
-> > --- a/mm/filemap_xip.c
-> > +++ b/mm/filemap_xip.c
-> > @@ -193,7 +193,7 @@ retry:
-> >  			/* Nuke the page table entry. */
-> >  			flush_cache_page(vma, address, pte_pfn(*pte));
-> >  			pteval = ptep_clear_flush_notify(vma, address, pte);
-> > -			page_remove_rmap(page);
-> > +			page_remove_rmap(page, vma);
-> >  			dec_mm_counter(mm, file_rss);
-> >  			BUG_ON(pte_dirty(pteval));
-> >  			pte_unmap_unlock(pte, ptl);
-> > diff --git a/mm/fremap.c b/mm/fremap.c
-> > index b6ec85a..01ea2da 100644
-> > --- a/mm/fremap.c
-> > +++ b/mm/fremap.c
-> > @@ -37,7 +37,7 @@ static void zap_pte(struct mm_struct *mm, struct vm_area_struct *vma,
-> >  		if (page) {
-> >  			if (pte_dirty(pte))
-> >  				set_page_dirty(page);
-> > -			page_remove_rmap(page);
-> > +			page_remove_rmap(page, vma);
-> >  			page_cache_release(page);
-> >  			update_hiwater_rss(mm);
-> >  			dec_mm_counter(mm, file_rss);
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index e44fb0f..d903b61 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -62,7 +62,8 @@ enum mem_cgroup_stat_index {
-> >  	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
-> >  	 */
-> >  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
-> > -	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
-> > +	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
-> > +	MEM_CGROUP_STAT_FILE_RSS,  /* # of pages charged as file rss */
-> 
-> I don't like the word "FILE RSS". MAPPED FILE PAGES or some will be more straigtforward.
-> (IIUC, meminfo shows this information as MAPPED_FILE)
+yes.
+and you can get the old behavior back by just sticking an
+msleep(100 * <number of USB ports you have minus one>); 
+back in near the end of the boot.
 
-OK, I'll call it mapped_file
+that really is not the right answer.
 
-> 
-> >  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
-> >  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
-> >  
-> > @@ -321,6 +322,33 @@ static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
-> >  	return css_is_removed(&mem->css);
-> >  }
-> >  
-> > +/*
-> > + * Currently used to update file_rss statistics, but the routine can be
-> > + * generalized to update other statistics as well.
-> > + */
-> > +void
-> > +mem_cgroup_update_statistics(struct page *page, struct mm_struct *mm, int val)
-> > +{
-> 
-> Hmm. "mem_cgroup_update_statistics()" have wider meaning than what it does..
-> Could you 
->   - modify function name for showing "this function counts MAPPED_FILE"
+by your argument if anything else gets faster and your system is then
+booting too fast again that has to get reverted as well.
 
-I thought about this, but made it more generic. How about
-mem_cgroup_update_mapped_file_stat()
+If there was some reasonable way to wait on USB scanning being done
+we'd do that. Not a nanosecond doubt about that.
 
->  or
->   - add a function argument as "Which counter should be modified."
-> 
-> 
-> > +	struct mem_cgroup *mem;
-> > +	struct mem_cgroup_stat *stat;
-> > +	struct mem_cgroup_stat_cpu *cpustat;
-> > +	int cpu = get_cpu();
-> > +
-> > +	if (!page_is_file_cache(page))
-> > +		return;
-> > +
-> > +	if (unlikely(!mm))
-> > +		mm = &init_mm;
-> > +
-> > +	mem = try_get_mem_cgroup_from_mm(mm);
-> > +	if (!mem)
-> > +		return;
-> > +
-> > +	stat = &mem->stat;
-> > +	cpustat = &stat->cpustat[cpu];
-> > +
-> > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_RSS, val);
-> > +}
-> >  
-> >  /*
-> >   * Call callback function against all cgroup under hierarchy tree.
-> > @@ -2051,6 +2079,7 @@ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
-> >  enum {
-> >  	MCS_CACHE,
-> >  	MCS_RSS,
-> > +	MCS_FILE_RSS,
-> >  	MCS_PGPGIN,
-> >  	MCS_PGPGOUT,
-> >  	MCS_INACTIVE_ANON,
-> > @@ -2071,6 +2100,7 @@ struct {
-> >  } memcg_stat_strings[NR_MCS_STAT] = {
-> >  	{"cache", "total_cache"},
-> >  	{"rss", "total_rss"},
-> > +	{"file_rss", "total_file_rss"},
-> >  	{"pgpgin", "total_pgpgin"},
-> >  	{"pgpgout", "total_pgpgout"},
-> >  	{"inactive_anon", "total_inactive_anon"},
-> > @@ -2091,6 +2121,8 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
-> >  	s->stat[MCS_CACHE] += val * PAGE_SIZE;
-> >  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
-> >  	s->stat[MCS_RSS] += val * PAGE_SIZE;
-> > +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_FILE_RSS);
-> > +	s->stat[MCS_FILE_RSS] += val * PAGE_SIZE;
-> >  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
-> >  	s->stat[MCS_PGPGIN] += val;
-> >  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
-> 
-> IIUC, you have to add hook to force_empty() and move FILE_RSS counter to the parent.
-> I hope there is no terrible race around force empty...
-> 
-> Thanks,
-> -Kame
->
+But since there isn't, this "race who's faster" is an unsolvable
+problem other than by you saying "wait for root to be there please".
 
-Good catch, I'll do the necessary changes in
-mem_cgroup_move_account(). I don't see any dirty race occuring, since
-the counters are per-cpu. I'll double check however.
+        rootwait        [KNL] Wait (indefinitely) for root device to show up.
+                        Useful for devices that are detected asynchronously
+                        (e.g. USB and MMC devices).
+
+that option has been there for a really long time, and has technically be required
+for your case. You got lucky so far by pure timing... until recently.
+It's not nice to not boot suddenly, I sympathize with that. But there's nothing 
+we can realistically do other than using the option that is there for exactly your case.
+
+
+
 -- 
-	Balbir
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
