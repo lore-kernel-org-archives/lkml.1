@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbZDOKRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZDOKVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbZDOKRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbZDOKRa
+	id S1756620AbZDOKVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZDOKU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:17:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55784 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751906AbZDOKR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:17:29 -0400
-Date: Wed, 15 Apr 2009 12:17:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
-	inappropriate or CPU is not supported
-Message-ID: <20090415101700.GE6669@elte.hu>
-References: <1239725240.2966.4.camel@ht.satnam> <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam> <20090414184222.GC11214@elte.hu> <20090414200247.1d0a8667@lxorguk.ukuu.org.uk> <20090414191622.GA797@elte.hu> <1239773665.15436.9.camel@localhost.localdomain>
+	Wed, 15 Apr 2009 06:20:59 -0400
+Received: from stinky.trash.net ([213.144.137.162]:55673 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZDOKU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:20:58 -0400
+Message-ID: <49E5B4FF.50606@trash.net>
+Date: Wed, 15 Apr 2009 12:20:47 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239773665.15436.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Eric Leblond <eric@inl.fr>, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] netfilter: nf_log fix
+References: <20090410191736.21efab8c@mako-desktop>	 <49E4744D.5090205@trash.net>	<49E47C2D.1050508@cosmosbay.com>	 <49E47EA5.3060706@trash.net> <20090414211946.4ea0455e@mako-desktop>	 <49E4EE9C.7040509@cosmosbay.com> <1239742000.24204.9.camel@ice-age> <49E4FB0C.1080103@cosmosbay.com>
+In-Reply-To: <49E4FB0C.1080103@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> On Tue, 2009-04-14 at 21:16 +0200, Ingo Molnar wrote:
-> > * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > 
-> > > > > Do you still think that boot_cpu_data.x86_vendor is better option in
-> > > > > case for multiple CPUs.
-> > > > 
-> > > > yes. Assymetric SMP never really happened on x86.
-> > > 
-> > > It did but not between vendors. You can get away with a vendor 
-> > > assumption but cpu type (mixed 486SX/DX, PII/PIII/Celeron) mixed 
-> > > steppings and mixed speeds do occur. We've never supported the 
-> > > mixed 486SX cases but the PII/PIII cases work (or at least 
-> > > worked).
-> > 
-> > yeah - but look at the specific purpose here: we are deciding 
-> > whether to print out state information related to major CPU 
-> > features. Mixed steppings/speeds might happen, mixed apic / 
-> > non-lapic not really.
-> > 
+Eric Dumazet wrote:
+> OK thanks everybody, I submit it more formally then, using ARRAY_SIZE() macro too :)
 > 
-> We are trying to debug each CPU, so we should also collect information
-> from each CPU.
+> [PATCH] netfilter: nf_log fix
 > 
-> Just reading information from boot CPU and display information for 
-> all CPU is not correct. If we are getting information from boot 
-> CPU then we only need to show information for boot CPU and ignore 
-> others.
+> commit ca735b3aaa945626ba65a3e51145bfe4ecd9e222
+> 'netfilter: use a linked list of loggers'
+> introduced an array of list_head in "struct nf_logger", but
+> forgot to initialize it in nf_log_register(). This resulted
+> in oops when calling nf_log_unregister() at module unload time.
 > 
-> I am trying to adding more features which will be unique for each 
-> CPU/core.
-> 
-> So it seems current model is correct where I am collecting 
-> information for each CPU and printing information for each CPU.
+> Reported-and-tested-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> Acked-by: Eric Leblond <eric@inl.fr>
 
-that's OK - and we have all the per cpu data too.
+Applied, thanks everyone.
 
-The main beef i had with your code is that it copies CPU enumeration 
-over into some local variables (cpu_modelflag, cpu_model) with 
-redundant encodings and decodings which dont fully work.
-
-Is there anything that your encoding/decoding does that cannot be 
-done via the standard methods?
-
-Do:
-
-   git grep X86_VENDOR_INTEL arch/x86/
-
-To see existing coding practices that make use of these facilities.
-
-	Ingo
