@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbZDOC0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbZDOCao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757181AbZDOC0T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 22:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZDOC0B
+	id S1754354AbZDOCao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 22:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZDOCad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 22:26:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43799 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753663AbZDOC0A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 22:26:00 -0400
-Date: Tue, 14 Apr 2009 22:25:57 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 5/8] tracing/events: move the ftrace event tracing code
- to core
-In-Reply-To: <1239736986.22720.266.camel@laptop>
-Message-ID: <alpine.DEB.2.00.0904142219570.31421@gandalf.stny.rr.com>
-References: <20090414172337.280621613@goodmis.org>  <20090414172641.457760734@goodmis.org> <1239736986.22720.266.camel@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 14 Apr 2009 22:30:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49373 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752128AbZDOCad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 22:30:33 -0400
+Message-ID: <49E546C4.1060001@garzik.org>
+Date: Tue, 14 Apr 2009 22:30:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB storage no-boot regression (bisected)
+References: <49E4FAC6.1030400@garzik.org> <20090414183807.3baf72ed@infradead.org>
+In-Reply-To: <20090414183807.3baf72ed@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
+> This change just made it go faster enough for you to be out of luck;
+> fundamentally your userland needs to wait if the device it wants is not
+> there. 
 
-On Tue, 14 Apr 2009, Peter Zijlstra wrote:
+All these drivers are in-kernel, and the root device is passed via 
+command line.  There is no userland at that point, that needs to wait.
 
-> On Tue, 2009-04-14 at 13:23 -0400, Steven Rostedt wrote:
-> > + * static struct trace_event ftrace_event_type_<call> = {
-> > + *     .trace                  = ftrace_raw_output_<call>, <-- stage 2
-> > + * };
-> 
-> > + * static struct ftrace_event_call __used
-> > + * __attribute__((__aligned__(4)))
-> > + * __attribute__((section("_ftrace_events"))) event_<call> = {
-> > + *     .name                   = "<call>",
-> > + *     .system                 = "<system>",
-> > + *     .raw_init               = ftrace_raw_init_event_<call>,
-> > + *     .regfunc                = ftrace_reg_event_<call>,
-> > + *     .unregfunc              = ftrace_unreg_event_<call>,
-> > + *     .show_format            = ftrace_format_<call>,
-> > + * }
-> 
-> Is there a good reason these are two different structs?
-> 
-> I've always wondered about that, it seems natural to unify them and to
-> generalize the reverse lookup hash that is now private to trace_output.
-> 
-> The trace_event_profile code could use that reverse lookup, that linear
-> search it currently does it really lame.
+If this change added an implicit initramfs requirement, that is a pretty 
+major regression.
 
-Hmm, I'll have to look at that. Of course that means touching these crazy 
-macros again ;-)
+	Jeff
 
--- Steve
+
 
