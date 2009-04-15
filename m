@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZDOGri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbZDOGsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZDOGri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 02:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbZDOGr3
+	id S1758156AbZDOGsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 02:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbZDOGsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 02:47:29 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40970 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbZDOGr2 (ORCPT
+	Wed, 15 Apr 2009 02:48:09 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:43806 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbZDOGsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 02:47:28 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/1] tracing, workqueuetrace: Make workqueue tracepoints use TRACE_EVENT macro
-Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090413141341.GB5977@nowhere>
-References: <49E28D4B.5040802@cn.fujitsu.com> <20090413141341.GB5977@nowhere>
-Message-Id: <20090415154059.AC49.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 15 Apr 2009 15:47:24 +0900 (JST)
+	Wed, 15 Apr 2009 02:48:08 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 2/3] Char: cyclades, don't kill FW
+Date: Wed, 15 Apr 2009 08:47:13 +0200
+Message-Id: <1239778034-18099-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.2
+In-Reply-To: <1239778034-18099-1-git-send-email-jirislaby@gmail.com>
+References: <1239778034-18099-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Don't reset the PLX chip after FW load, which effectively kills
+the FW, so that user had to boot manually.
 
-> > +	TP_fast_assign(
-> > +		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
-> 
-> 
-> 
-> This is not about your patch but I see this pattern happen often. We should
-> start think about a way to use tracing_record_cmdline for that.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/char/cyclades.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-I guess two movq isn't expensive than tracing_record_cmdline ;)
-
-
-> > +	TP_printk("thread=%s:%d work=%p func=%p", __entry->thread_comm,
-> 
-> These pointer addresses are not very useful to display.
-> We can zap work and display the func as a %pF.
-> 
-> Not related to your patch: only the name of the func is useful,
-> not its asm offset. A format for raw func name without offset would
-> start to become very handy. I remember Andrew talked about that by the past.
-> 
-> I wonder which format we could use for that. %pf ?
-
-perhaps, static function need offset...
-
-
-
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index bde2458..6d52439 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -4932,8 +4932,6 @@ static int __devinit cyz_load_fw(struct pci_dev *pdev, void __iomem *base_addr,
+ 	cy_writel(&ctl_addr->intr_ctrl_stat, readl(&ctl_addr->intr_ctrl_stat) |
+ 			0x00030800UL);
+ 
+-	plx_init(pdev, irq, ctl_addr);
+-
+ 	return 0;
+ err_rel:
+ 	release_firmware(fw);
+-- 
+1.6.2
 
