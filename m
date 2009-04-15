@@ -1,138 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbZDOEH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751355AbZDOEK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751284AbZDOEH3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 00:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbZDOEHT
+	id S1751355AbZDOEK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 00:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZDOEKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 00:07:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38482 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbZDOEHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 00:07:18 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Zhang\, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tiobench read 50% regression with 2.6.30-rc1
-References: <1239265763.2567.769.camel@ymzhang>
-	<20090409095706.GD5178@kernel.dk> <1239330541.2567.779.camel@ymzhang>
-	<20090414121431.GH5178@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 15 Apr 2009 00:07:11 -0400
-In-Reply-To: <20090414121431.GH5178@kernel.dk> (Jens Axboe's message of "Tue,
-	14 Apr 2009 14:14:31 +0200")
-Message-ID: <x49fxgaimq8.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 15 Apr 2009 00:10:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34162 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbZDOEKO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 00:10:14 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: meminfo Committed_AS underflows
+Cc: kosaki.motohiro@jp.fujitsu.com, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Eric B Munson <ebmunson@us.ibm.com>,
+       Mel Gorman <mel@linux.vnet.ibm.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20090415033455.GS7082@balbir.in.ibm.com>
+References: <20090415105033.AC29.A69D9226@jp.fujitsu.com> <20090415033455.GS7082@balbir.in.ibm.com>
+Message-Id: <20090415130042.AC3D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 15 Apr 2009 13:10:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 11:04:59]:
+> 
+> >  	committed = atomic_long_read(&vm_committed_space);
+> > +	if (committed < 0)
+> > +		committed = 0;
+> 
+> Isn't this like pushing the problem under the rug?
 
-> On Fri, Apr 10 2009, Zhang, Yanmin wrote:
->> On Thu, 2009-04-09 at 11:57 +0200, Jens Axboe wrote:
->> > On Thu, Apr 09 2009, Zhang, Yanmin wrote:
->> > > Comparing with 2.6.29's result, tiobench (read) has about 50% regression
->> > > with 2.6.30-rc1 on all my machines. Bisect down to below patch.
->> > > 
->> > > b029195dda0129b427c6e579a3bb3ae752da3a93 is first bad commit
->> > > commit b029195dda0129b427c6e579a3bb3ae752da3a93
->> > > Author: Jens Axboe <jens.axboe@oracle.com>
->> > > Date:   Tue Apr 7 11:38:31 2009 +0200
->> > > 
->> > >     cfq-iosched: don't let idling interfere with plugging
->> > >     
->> > >     When CFQ is waiting for a new request from a process, currently it'll
->> > >     immediately restart queuing when it sees such a request. This doesn't
->> > >     work very well with streamed IO, since we then end up splitting IO
->> > >     that would otherwise have been merged nicely. For a simple dd test,
->> > >     this causes 10x as many requests to be issued as we should have.
->> > >     Normally this goes unnoticed due to the low overhead of requests
->> > >     at the device side, but some hardware is very sensitive to request
->> > >     sizes and there it can cause big slow downs.
->> > > 
->> > > 
->> > > 
->> > > Command to start the testing:
->> > > #tiotest -k0 -k1 -k3 -f 80 -t 32
->> > > 
->> > > It's a multi-threaded program and starts 32 threads. Every thread does I/O
->> > > on its own 80MB file.
->> The files should be created before the testing and pls. drop page caches
->> by "echo 3 >/proc/sys/vm/drop_caches" before testing.
->> 
->> > 
->> > It's not a huge surprise that we regressed there. I'll get this fixed up
->> > next week. Can you I talk you into trying to change the 'quantum' sysfs
->> > variable for the drive? It's in /sys/block/xxx/queue/iosched where xxx
->> > is your drive(s). It's set to 4, if you could try progressively larger
->> > settings and retest, that would help get things started.
->> I tried 4,8,16,64,128 and didn't find result difference.
->
-> Can you try with this patch?
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index a4809de..66f00e5 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1905,10 +1905,17 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->  		 * Remember that we saw a request from this process, but
->  		 * don't start queuing just yet. Otherwise we risk seeing lots
->  		 * of tiny requests, because we disrupt the normal plugging
-> -		 * and merging.
-> +		 * and merging. If the request is already larger than a single
-> +		 * page, let it rip immediately. For that case we assume that
-> +		 * merging is already done.
->  		 */
-> -		if (cfq_cfqq_wait_request(cfqq))
-> +		if (cfq_cfqq_wait_request(cfqq)) {
-> +			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE) {
-> +				del_timer(&cfqd->idle_slice_timer);
-> +				blk_start_queueing(cfqd->queue);
-> +			}
->  			cfq_mark_cfqq_must_dispatch(cfqq);
-> +		}
->  	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
->  		/*
->  		 * not the active queue - expire current slice if it is
+global_page_state() already has same logic.
+IOW almost meminfo filed has this one (except Commited_AS).
 
-I tested this using iozone to read a file from an NFS client.  The
-iozone command line was:
-  iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
 
-The numbers in the nfsd's row represent the number of nfsd threads.  I
-included numbers for the deadline scheduler as well for comparison.
+> >  	allowed = ((totalram_pages - hugetlb_total_pages())
+> >  		* sysctl_overcommit_ratio / 100) + total_swap_pages;
+> > 
+> > Index: b/mm/swap.c
+> > ===================================================================
+> > --- a/mm/swap.c
+> > +++ b/mm/swap.c
+> > @@ -519,7 +519,7 @@ EXPORT_SYMBOL(pagevec_lookup_tag);
+> >   * We tolerate a little inaccuracy to avoid ping-ponging the counter between
+> >   * CPUs
+> >   */
+> > -#define ACCT_THRESHOLD	max(16, NR_CPUS * 2)
+> > +#define ACCT_THRESHOLD	max_t(long, 16, num_online_cpus() * 2)
+> >
+> 
+> Hmm.. this is a one time expansion, free of CPU hotplug.
+> 
+> Should we use nr_cpu_ids or num_possible_cpus()?
 
-               v2.6.29
+#define num_online_cpus()       cpumask_weight(cpu_online_mask)
+#define num_possible_cpus()     cpumask_weight(cpu_possible_mask)
 
-nfsd's  |   1    |  2   |   4   |   8
---------+---------------+-------+------
-cfq     | 91356 | 66391 | 61942 | 51674
-deadline| 43207 | 67436 | 96289 | 107784
+num_possible_cpus() have the same calculation cost.
+nr_cpu_ids isn't proper value.
+it point to valid cpu-id range, no related number of online nor possible cpus.
 
-              2.6.30-rc1
 
-nfsd's  |   1   |   2   |   4   |   8
---------+---------------+-------+------
-cfq     | 43127 | 22354 | 20858 | 21179
-deadline| 43732 | 68059 | 76659 | 83231
 
-          2.6.30-rc1 + cfq fix
 
-nfsd's  |   1    |    2   |   4   |   8
---------+-----------------+-------+------
-cfq     | 114602 | 102280 | 43479 | 43160
-
-As you can see, for 1 and 2 threads, the patch *really* helps out.  We
-still don't get back the performance for 4 and 8 nfsd threads, though.
-It's interesting to note that the deadline scheduler regresses for 4 and
-8 threads, as well.  I think we've still got some digging to do.
-
-I'll try the cfq close cooperator patches next.
-
-Cheers,
-Jeff
