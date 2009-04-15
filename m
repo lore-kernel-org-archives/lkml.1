@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZDOBnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbZDOBov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbZDOBnj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZDOBna
+	id S1758040AbZDOBov (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZDOBom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:43:30 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:54839 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbZDOBn3 (ORCPT
+	Tue, 14 Apr 2009 21:44:42 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46647 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbZDOBol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:43:29 -0400
-Subject: [RFC][PATCH 3/8] Convert blackfin to use arch_getoffset()
+	Tue, 14 Apr 2009 21:44:41 -0400
+Subject: [RFC][PATCH 4/8] Convert cris to use arch_getoffset()
  infrastructure.
 From: john stultz <johnstul@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
@@ -19,13 +19,14 @@ Cc: rmk+lkml@arm.linux.org.uk, cooloney@kernel.org, starvik@axis.com,
        Roman Zippel <zippel@linux-m68k.org>, lethal@linux-sh.org,
        Magnus Damm <magnus.damm@gmail.com>, wli@holomorphy.com,
        rth@twiddle.net
-In-Reply-To: <1239759668.6064.35.camel@localhost>
+In-Reply-To: <1239759805.6064.36.camel@localhost>
 References: <1239759163.6064.25.camel@localhost>
 	 <1239759251.6064.27.camel@localhost>  <1239759393.6064.30.camel@localhost>
 	 <1239759551.6064.33.camel@localhost>  <1239759668.6064.35.camel@localhost>
+	 <1239759805.6064.36.camel@localhost>
 Content-Type: text/plain
-Date: Tue, 14 Apr 2009 18:43:25 -0700
-Message-Id: <1239759805.6064.36.camel@localhost>
+Date: Tue, 14 Apr 2009 18:44:37 -0700
+Message-Id: <1239759877.6064.37.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -33,8 +34,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts blackfin to use GENERIC_TIME via the
-arch_getoffset() infrastructure 
+This patch converts cris to use GENERIC_TIME via the arch_getoffset()
+infrastructure 
 
 I do not have cross compilers for these architectures, and in some cases
 the architectures can be compiles both with and without clocksources. So
@@ -42,86 +43,72 @@ I've taken my best swing at converting this, but I'm not confident I got
 it right. Any assistance from arch maintainers or testers would be
 great.
 
+NOT FOR INCLUSION
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index 3640cdc..2b41547 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -606,9 +606,7 @@ comment "Kernel Timer/Scheduler"
- source kernel/Kconfig.hz
+diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
+index 7adac38..059eac6 100644
+--- a/arch/cris/Kconfig
++++ b/arch/cris/Kconfig
+@@ -20,6 +20,12 @@ config RWSEM_GENERIC_SPINLOCK
+ config RWSEM_XCHGADD_ALGORITHM
+ 	bool
  
- config GENERIC_TIME
--	bool "Generic time"
--	depends on !SMP
--	default y
-+	def_bool y
- 
- config GENERIC_CLOCKEVENTS
- 	bool "Generic clock events"
-@@ -628,6 +626,10 @@ config CYCLES_CLOCKSOURCE
- 	  still be able to read it (such as for performance monitoring), but
- 	  writing the registers will most likely crash the kernel.
- 
-+config ARCH_USES_GETTIMEOFFSET
-+	depends on !CYCLES_CLOCKSOURCE
++config GENERIC_TIME
 +	def_bool y
 +
- source kernel/time/Kconfig
++config ARCH_USES_GETTIMEOFFSET
++	def_bool y
++
+ config GENERIC_IOMAP
+        bool
+        default y
+diff --git a/arch/cris/kernel/time.c b/arch/cris/kernel/time.c
+index 074fe7d..a05dd31 100644
+--- a/arch/cris/kernel/time.c
++++ b/arch/cris/kernel/time.c
+@@ -42,75 +42,11 @@ unsigned long loops_per_usec;
+ extern unsigned long do_slow_gettimeoffset(void);
+ static unsigned long (*do_gettimeoffset)(void) = do_slow_gettimeoffset;
  
- comment "Misc"
-diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
-index 1bbacfb..ddd1827 100644
---- a/arch/blackfin/kernel/time.c
-+++ b/arch/blackfin/kernel/time.c
-@@ -85,11 +85,11 @@ time_sched_init(irqreturn_t(*timer_routine) (int, void *))
- #endif
- }
- 
-+#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
- /*
-  * Should return useconds since last timer tick
-  */
--#ifndef CONFIG_GENERIC_TIME
--static unsigned long gettimeoffset(void)
-+u32 arch_gettimeoffset(void)
- {
- 	unsigned long offset;
- 	unsigned long clocks_per_jiffy;
-@@ -199,64 +199,29 @@ void __init time_init(void)
- 	time_sched_init(timer_interrupt);
- }
- 
--#ifndef CONFIG_GENERIC_TIME
+-/*
+- * This version of gettimeofday has near microsecond resolution.
+- *
+- * Note: Division is quite slow on CRIS and do_gettimeofday is called
+- *       rather often. Maybe we should do some kind of approximation here
+- *       (a naive approximation would be to divide by 1024).
+- */
 -void do_gettimeofday(struct timeval *tv)
 -{
 -	unsigned long flags;
--	unsigned long seq;
--	unsigned long usec, sec;
+-	signed long usec, sec;
+-	local_irq_save(flags);
+-	usec = do_gettimeoffset();
 -
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--		usec = gettimeoffset();
--		sec = xtime.tv_sec;
--		usec += (xtime.tv_nsec / NSEC_PER_USEC);
--	}
--	while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-        /*
+-	 * If time_adjust is negative then NTP is slowing the clock
+-	 * so make sure not to go into next possible interval.
+-	 * Better to lose some accuracy than have time go backwards..
+-	 */
+-	if (unlikely(time_adjust < 0) && usec > tickadj)
+-		usec = tickadj;
 -
--	while (usec >= USEC_PER_SEC) {
--		usec -= USEC_PER_SEC;
+-	sec = xtime.tv_sec;
+-	usec += xtime.tv_nsec / 1000;
+-	local_irq_restore(flags);
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
 -		sec++;
 -	}
 -
 -	tv->tv_sec = sec;
 -	tv->tv_usec = usec;
 -}
+-
 -EXPORT_SYMBOL(do_gettimeofday);
 -
 -int do_settimeofday(struct timespec *tv)
-+#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
-+/*
-+ * Should return nseconds since last timer tick
-+ */
 +u32 arch_gettimeoffset(void)
  {
 -	time_t wtm_sec, sec = tv->tv_sec;
@@ -132,44 +119,31 @@ index 1bbacfb..ddd1827 100644
 -
 -	write_seqlock_irq(&xtime_lock);
 -	/*
--	 * This is revolting. We need to set the xtime.tv_usec
--	 * correctly. However, the value in this location is
--	 * is value at the last tick.
--	 * Discover what correction gettimeofday
--	 * would have done, and then undo it!
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
 -	 */
--	nsec -= (gettimeoffset() * NSEC_PER_USEC);
+-	nsec -= do_gettimeoffset() * NSEC_PER_USEC;
 -
--	wtm_sec = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
 -	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
 -
 -	set_normalized_timespec(&xtime, sec, nsec);
 -	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
-+	unsigned long offset;
-+	unsigned long clocks_per_jiffy;
- 
+-
 -	ntp_clear();
-+	clocks_per_jiffy = bfin_read_TPERIOD();
-+	offset =
-+	    (clocks_per_jiffy -
-+	     bfin_read_TCOUNT()) / (((clocks_per_jiffy + 1) * HZ) /
-+				    USEC_PER_SEC);
- 
 -	write_sequnlock_irq(&xtime_lock);
 -	clock_was_set();
-+	/* Check if we just wrapped the counters and maybe missed a tick */
-+	if ((bfin_read_ILAT() & (1 << IRQ_CORETMR))
-+	    && (offset < (100000 / HZ / 2)))
-+		offset += (USEC_PER_SEC / HZ);
- 
 -	return 0;
-+	return offset*1000;
++	return do_gettimeoffset() * 1000;
  }
--EXPORT_SYMBOL(do_settimeofday);
--#endif /* !CONFIG_GENERIC_TIME */
-+#endif /* !CONFIG_ARCH_USES_GETTIMEOFFSET */
  
+-EXPORT_SYMBOL(do_settimeofday);
+-
+-
  /*
-  * Scheduler clock - returns current time in nanosec units.
+  * BUG: This routine does not handle hour overflow properly; it just
+  *      sets the minutes. Usually you'll only notice that after reboot!
 
 
