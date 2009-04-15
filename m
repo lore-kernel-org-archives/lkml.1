@@ -1,41 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbZDOBTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZDOB1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756866AbZDOBTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZDOBTA
+	id S1755292AbZDOB1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZDOB1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:19:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56515 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753503AbZDOBS7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:18:59 -0400
-Date: Tue, 14 Apr 2009 18:17:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.30-rc2
-In-Reply-To: <5a4c581d0904141722g12e791eha4fa0fb206769ce5@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0904141816400.4132@localhost.localdomain>
-References: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain> <5a4c581d0904141722g12e791eha4fa0fb206769ce5@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Apr 2009 21:27:09 -0400
+Received: from mga09.intel.com ([134.134.136.24]:60464 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752288AbZDOB1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 21:27:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,188,1239001200"; 
+   d="scan'208";a="403202568"
+Subject: Re: tiobench read 50% regression with 2.6.30-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090414121431.GH5178@kernel.dk>
+References: <1239265763.2567.769.camel@ymzhang>
+	 <20090409095706.GD5178@kernel.dk> <1239330541.2567.779.camel@ymzhang>
+	 <20090414121431.GH5178@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 15 Apr 2009 09:27:41 +0800
+Message-Id: <1239758861.2567.813.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-04-14 at 14:14 +0200, Jens Axboe wrote:
+> On Fri, Apr 10 2009, Zhang, Yanmin wrote:
+> > On Thu, 2009-04-09 at 11:57 +0200, Jens Axboe wrote:
+> > > On Thu, Apr 09 2009, Zhang, Yanmin wrote:
+> > > > Comparing with 2.6.29's result, tiobench (read) has about 50% regression
+> > > > with 2.6.30-rc1 on all my machines. Bisect down to below patch.
+> > > > 
+> > > > b029195dda0129b427c6e579a3bb3ae752da3a93 is first bad commit
+> > > > commit b029195dda0129b427c6e579a3bb3ae752da3a93
+> > > > Author: Jens Axboe <jens.axboe@oracle.com>
+> > > > Date:   Tue Apr 7 11:38:31 2009 +0200
+
+> > > 
+> > > It's not a huge surprise that we regressed there. I'll get this fixed up
+> > > next week. Can you I talk you into trying to change the 'quantum' sysfs
+> > > variable for the drive? It's in /sys/block/xxx/queue/iosched where xxx
+> > > is your drive(s). It's set to 4, if you could try progressively larger
+> > > settings and retest, that would help get things started.
+> > I tried 4,8,16,64,128 and didn't find result difference.
+> 
+> Can you try with this patch?
+The new patch does fix it.
 
 
-On Wed, 15 Apr 2009, Alessandro Suardi wrote:
->
-> arch/x86/kernel/traps.c:57:28: error: asm/mach_traps.h: No such file or directory
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index a4809de..66f00e5 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1905,10 +1905,17 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>  		 * Remember that we saw a request from this process, but
+>  		 * don't start queuing just yet. Otherwise we risk seeing lots
+>  		 * of tiny requests, because we disrupt the normal plugging
+> -		 * and merging.
+> +		 * and merging. If the request is already larger than a single
+> +		 * page, let it rip immediately. For that case we assume that
+> +		 * merging is already done.
+>  		 */
+> -		if (cfq_cfqq_wait_request(cfqq))
+> +		if (cfq_cfqq_wait_request(cfqq)) {
+> +			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE) {
+> +				del_timer(&cfqd->idle_slice_timer);
+> +				blk_start_queueing(cfqd->queue);
+> +			}
+>  			cfq_mark_cfqq_must_dispatch(cfqq);
+> +		}
+>  	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
+>  		/*
+>  		 * not the active queue - expire current slice if it is
+> 
 
-Hmm. You should have a file called:
-
-	arch/x86/include/asm/mach_traps.h
-
-no?
-
-		Linus
