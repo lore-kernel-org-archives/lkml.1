@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758998AbZDOKsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbZDOKuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758998AbZDOKsO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbZDOKrz
+	id S1759343AbZDOKuX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZDOKuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:47:55 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56270 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbZDOKry (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:47:54 -0400
-Message-ID: <49E5BB4F.2060607@trash.net>
-Date: Wed, 15 Apr 2009 12:47:43 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 15 Apr 2009 06:50:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48140 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752622AbZDOKuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:50:05 -0400
+Date: Wed, 15 Apr 2009 12:46:15 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
+Message-ID: <20090415104615.GG9809@random.random>
+References: <20090414143252.GE28265@random.random> <200904150042.15653.nickpiggin@yahoo.com.au> <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: dada1@cosmosbay.com, jpirko@redhat.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net,
-       mschmidt@redhat.com, ivecera@redhat.com
-Subject: Re: [PATCH 1/3] net: introduce a list of device addresses dev_addr_list
-References: <49E5B365.2010008@trash.net>	<20090415.031510.162624644.davem@davemloft.net>	<49E5B9BD.5070204@trash.net> <20090415.034507.208815568.davem@davemloft.net>
-In-Reply-To: <20090415.034507.208815568.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Wed, 15 Apr 2009 12:41:01 +0200
-> 
->> Herbert (I think) suggested to make address list updates in softirq
->> context a two-step process, where addresses would first be added to
->> a temporary list and the final change would be done in process context
->> while holding the RTNL.
->>
->> Given the complicated mess we currently have, this would be a very
->> worthwhile change IMO.
-> 
-> This would break the IPV6 TAHI tests if you think we could use
-> such an idea for that.
-> 
-> When IPV6 packets arrive that influence multicast and unicast
-> address lists, the effect must be essentially immediate.  Such
-> that a subsequent packet will cause the kernel the behave
-> with the necessary side effects, no matter how quickly that
-> next packet arrives.
+On Wed, Apr 15, 2009 at 05:05:54PM +0900, KOSAKI Motohiro wrote:
+> -	/*
+> -	 * If the page is mlock()d, we cannot swap it out.
+> -	 * If it's recently referenced (perhaps page_referenced
+> -	 * skipped over this mm) then we should reactivate it.
+> -	 */
+>  	if (!migration) {
+> +		if (PageSwapCache(page) &&
+> +		    page_count(page) != page_mapcount(page) + 2) {
+> +			ret = SWAP_FAIL;
+> +			goto out_unmap;
+> +		}
+> +
+> +		/*
+> +		 * If the page is mlock()d, we cannot swap it out.
+> +		 * If it's recently referenced (perhaps page_referenced
+> +		 * skipped over this mm) then we should reactivate it.
+> +		 */
+>  		if (vma->vm_flags & VM_LOCKED) {
+>  			ret = SWAP_MLOCK;
+>  			goto out_unmap;
+> @@ -790,7 +796,19 @@ static int try_to_unmap_one(struct page 
+>  
+>  	/* Nuke the page table entry. */
+>  	flush_cache_page(vma, address, page_to_pfn(page));
+> -	pteval = ptep_clear_flush_notify(vma, address, pte);
+> +	pteval = ptep_clear_flush(vma, address, pte);
+> +
+> +	if (!migration) {
+> +		/* re-check */
+> +		if (PageSwapCache(page) &&
+> +		    page_count(page) != page_mapcount(page) + 2) {
+> +			/* We lose race against get_user_pages_fast() */
+> +			set_pte_at(mm, address, pte, pteval);
+> +			ret = SWAP_FAIL;
+> +			goto out_unmap;
+> +		}
+> +	}
+> +	mmu_notifier_invalidate_page(vma->vm_mm, address);
 
-I see, thanks for the explanation.
-
+With regard to mmu notifier, this is the opposite of the right
+ordering. One mmu_notifier_invalidate_page must run _before_ the first
+check. The ptep_clear_flush_notify will then stay and there's no need
+of a further mmu_notifier_invalidate_page after the second check.
