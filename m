@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbZDOKwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZDOK7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759467AbZDOKwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbZDOKvr
+	id S1754858AbZDOK7e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZDOK7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:51:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:55473 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758777AbZDOKvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:51:45 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: RFC: introduce struct ksymbol
-Date: Wed, 15 Apr 2009 20:21:40 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Joe Perches <joe@perches.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com> <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
-In-Reply-To: <20090415055839.GA12040@elte.hu>
+	Wed, 15 Apr 2009 06:59:20 -0400
+Received: from stinky.trash.net ([213.144.137.162]:56508 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbZDOK7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:59:19 -0400
+Message-ID: <49E5BDF7.8090502@trash.net>
+Date: Wed, 15 Apr 2009 12:59:03 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904152021.41427.rusty@rustcorp.com.au>
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, paulus@samba.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+References: <20090411174801.GG6822@linux.vnet.ibm.com>	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>	<20090412173108.GO6822@linux.vnet.ibm.com>	<20090412.181330.23529546.davem@davemloft.net>	<20090413040413.GQ6822@linux.vnet.ibm.com>	<20090413095309.631cf395@nehalam>	<49E48136.5060700@trash.net>	<49E49C65.8060808@cosmosbay.com>	<20090414074554.7fa73e2f@nehalam>	<49E4B0A5.70404@cosmosbay.com>	<b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com>	<20090414111716.28585806@nehalam>	<49E4E3E8.5090201@cosmosbay.com> <20090414141351.0f63ac98@nehalam> <49E502B5.7070700@cosmosbay.com>
+In-Reply-To: <49E502B5.7070700@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 03:28:39 pm Ingo Molnar wrote:
-> Why not 'struct ksym'? That name is unused right now, it is shorter 
-> and just as descriptive.
+Eric Dumazet wrote:
+> Stephen Hemminger a écrit :
+>> This is an alternative version of ip/ip6/arp tables locking using
+>> per-cpu locks.  This avoids the overhead of synchronize_net() during
+>> update but still removes the expensive rwlock in earlier versions.
+>>
+>> The idea for this came from an earlier version done by Eric Dumazet.
+>> Locking is done per-cpu, the fast path locks on the current cpu
+>> and updates counters.  The slow case involves acquiring the locks on
+>> all cpu's.
+>>
+>> The mutex that was added for 2.6.30 in xt_table is unnecessary since
+>> there already is a mutex for xt[af].mutex that is held.
+>>
+>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>>
+>> ---
+>>  include/linux/netfilter/x_tables.h |    5 -
+>>  net/ipv4/netfilter/arp_tables.c    |  112 +++++++++------------------------
+>>  net/ipv4/netfilter/ip_tables.c     |  123 +++++++++++--------------------------
+>>  net/ipv6/netfilter/ip6_tables.c    |  119 +++++++++++------------------------
+>>  net/netfilter/x_tables.c           |   28 --------
+>>  5 files changed, 110 insertions(+), 277 deletions(-)
+>>
 > 
-> Regarding the change... dunno. Sam, Rusty - what do you think?
+> Tested successfuly on my dev machine, thanks Stephen.
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Yes, ksym is nice.  But agree with you that it's marginal obfuscation
-to wrap it in a struct.
-
-The current symbol printing APIs are awful; we should address them first
-(like the %pF patch does) IMHO.
-
-Cheers,
-Rusty.
+Applied, thanks everyone. I'll give it some testing myself and
+will send it upstream tonight.
