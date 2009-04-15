@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbZDOMp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZDOMqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbZDOMp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 08:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDOMpS
+	id S1759674AbZDOMqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 08:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759523AbZDOMqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 08:45:18 -0400
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:4036 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbZDOMpR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 08:45:17 -0400
-Message-ID: <49E5D6D9.3040903@imap.cc>
-Date: Wed, 15 Apr 2009 14:45:13 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
+	Wed, 15 Apr 2009 08:46:04 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46404 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758378AbZDOMqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 08:46:02 -0400
+Date: Wed, 15 Apr 2009 14:46:01 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Michael Tokarev <mjt@tls.msk.ru>,
+       Mark Lord <lkml@rtr.ca>, Anton Ertl <anton@mips.complang.tuwien.ac.at>,
+       linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: Out-of-order writing by disk drives
+Message-ID: <20090415124601.GM5178@kernel.dk>
+References: <87r5zv72cl.fsf@basil.nowhere.org> <E1Ltla2-0000bS-5j@a4.complang.tuwien.ac.at> <20090414172406.GX14687@one.firstfloor.org> <49E4CA75.902@rtr.ca> <20090414175433.GY14687@one.firstfloor.org> <49E4D16C.7030809@msgid.tls.msk.ru> <20090414185058.GZ14687@one.firstfloor.org> <1239737226.28321.22.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Fast testing
-References: <49E5D0C1.6010608@wpkg.org>
-In-Reply-To: <49E5D0C1.6010608@wpkg.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC2993D8500C83649ED964CC9"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239737226.28321.22.camel@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC2993D8500C83649ED964CC9
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 14 2009, Chris Mason wrote:
+> On Tue, 2009-04-14 at 20:50 +0200, Andi Kleen wrote:
+> > On Tue, Apr 14, 2009 at 10:09:48PM +0400, Michael Tokarev wrote:
+> > > Andi Kleen wrote:
+> > > []
+> > > >Where I see it as a problem is with virtualization; LVM seems to be the
+> > > >most sane way to manage file systems for lots of VMs and you likely
+> > > >want barriers there too.
+> > > 
+> > > Virtualisation is the best fit for partitionable raid1 arrays.
+> > > It is, in fact, what we have here -- I tested LVM but rejected
+> > > it because of this very issue - it does not support barriers.
+> > 
+> > It does now as of 2.6.29, as long as you only have a single
+> > underlying device and use dm linear.
+> 
+> Eric Sandeen noticed this is actually still broken:
+> 
+> http://lkml.org/lkml/2009/3/23/360
 
-Tomasz Chmielewski schrieb:
->> Wow. Nice machine. I wish I had one like that. And how long until
->> the GUI is usable again and you can actually continue working?
->>=20
->> For comparison: my 3.4 GHz Pentium D takes 30 secs for kernel start
->> (ie. until it begins looking for the filesystems),
->=20
-> Including all BIOS routines?
+Alasdair promised to push the remaining barrier bits for 2.6.30, so
+hopefully it should all be in working order Real Soon Now.
 
-No - from hitting Enter in the GRUB menu.
+-- 
+Jens Axboe
 
->>  2 mins until the graphical login screen appears, and
->> 5 mins from logging in to the GUI being completely present.
->=20
-> I have an old 366 MHz / 192 MB machine which boots to GUI much faster.
-
-Might depend on the value of "GUI". Mine wouldn't even load in 192 MB.
-Anyway, my preceding P3/700 MHz/512 MB box hasn't been much worse,
-either.
-
-> Something's wrong with your setup (unless you start really lots of=20
-> things or have some other, "uncommon" things).
-
-Hmm, it's always been like that. As for "uncommon", this is a more
-or less out of the box openSUSE 10.3 installation. (Without Beagle,
-in case you were wondering.) Perhaps that's what's wrong? :-)
-
-OTOH, even the GUIless CentOS server boxes I look after for a
-living take about 5 mins until they are up and running again after
-a kernel update - including BIOS, but without the fsck penalty.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
-
-
---------------enigC2993D8500C83649ED964CC9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJ5dbaQ3+did9BuFsRAsWDAJ4ksXuRhTCt43uBYWIQq56ox9yfTACfYGe+
-6enAtWBeMZa9D2gP7xJfLhA=
-=YJyO
------END PGP SIGNATURE-----
-
---------------enigC2993D8500C83649ED964CC9--
