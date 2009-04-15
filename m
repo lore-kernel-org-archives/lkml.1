@@ -1,136 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZDOUZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbZDOU3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZDOUZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 16:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZDOUZQ
+	id S1756514AbZDOU3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 16:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZDOU3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 16:25:16 -0400
-Received: from deferred-out-211.livemail.co.uk ([213.171.216.211]:41008 "EHLO
-	deferred-out-211.livemail.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751669AbZDOUZP (ORCPT
+	Wed, 15 Apr 2009 16:29:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45338 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752376AbZDOU3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 16:25:15 -0400
-X-Greylist: delayed 1245 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Apr 2009 16:25:14 EDT
-From: <info@old.co.uk>
-To: <linux-kernel@vger.kernel.org>
-Subject: FW: www.old.co.uk webpage sent to you from jllsmclick43@gmail.com
-Date: Wed, 15 Apr 2009 21:04:26 +0100
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
-Message-ID: <IIS6383J3eQEKUEd0X800013db2@IIS638.xtreme-support.co.uk>
-X-OriginalArrivalTime: 15 Apr 2009 20:04:26.0385 (UTC) FILETIME=[60BC8010:01C9BE05]
+	Wed, 15 Apr 2009 16:29:42 -0400
+Date: Wed, 15 Apr 2009 13:27:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, den@openvz.org
+Subject: Re: mmotm 2009-04-14-17-24 uploaded (mtd)
+Message-Id: <20090415132746.e45d8fd9.akpm@linux-foundation.org>
+In-Reply-To: <49E5FFB8.2020906@oracle.com>
+References: <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org>
+	<49E5FFB8.2020906@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 15 Apr 2009 08:39:36 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-jllsmclick43@gmail.com  asked us to forward a message to you because they 
-thought you might be interested in the following page  at www.old.co.uk:
+> 
+> akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-04-14-17-24 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > It contains the following patches against 2.6.30-rc1:
+> 
+> 
+> 
+> drivers/mtd/mtdcore.c:51: error: invalid operands to binary *
 
-http://www.old.co.uk/products/italian_tailoring.asp
+hrm.  This, I suppose:
 
-__________________________________________
+From: Andrew Morton <akpm@linux-foundation.org>
 
-jllsmclick43@gmail.com wrote :
-
-Hi friend,
-
-I suspect that email line got your attention...
-
-In fact, I know it got your attention!!
-
-Because it sure gets mine! AND, I'll show you how YOU can get those
-same notifications on a daily basis (it's VERY easy)
-
-My good friend John Denton is opening up the doorway to the exact
-same, provien marketing System that hundreds of extremely
-successful people are already using to receive hundreds of those
-$1,000.00 notifications each month.
-
-Go Noww ==> http://hotshorturl.com/uy22
-
-John is looking to help 100 people (one-on-one), explode their home
-biased income through the roof!
-
-Let me ask you a couple quick questions...
-
-"How long has it been since you actually received a notification
-like that, if ever?" ...
-
-"How long has it been since you have made any REAL *Jing* online,
-if ever??"
-
-Here's the thing ... John has a SYSTEM in place that is currently
-putting 1,000's of extra drollars into the pockets of countless
-nwetpreneuers - just like you - each and every month...
-
-..Again, and again, and again!
-
-SYSTEMS work, PEOPLE fail... It's that simple!!
-
-Here is what I want you to do:
-
-Read John's special report at the link below and then decide for
-yourself if you want his help -- I am not going to force you or
-twist your arm at all... You can make your own decisions!
-
-Go Noww ==> http://hotshorturl.com/uy22
-
-
-John is going to show you exactly how he and many of his students
-are already making all this extra jing online right now -- and how
-YOU will too!!
-
-Don't believe it? Find out for yourself...
-
-Go Noww ==> http://hotshorturl.com/uy22
-
-If you're not making at least $10k/month online already in this day
-and age, then you really have no reason not to read John's special
-report.
-
-John's goal is to have YOU making a 'Healthy Residual Incrome'
-within the next 30days.
-
-Wake up and smell the coffee....
-
-Time is ticking and it isn't going to be this easy to make so much
-moniey on the internet forever. Like I said, John is going to show
-just 100 people this system (at the time of writing this email to
-you, he already has 64 spots filled).
-
-Get it while the gettin's GOOD!
-
-Go Noww ==>  http://hotshorturl.com/uy22
-
-
-
-P.S. John already has 64 of 100 of the positions filled... Yes,
-they're going fast, so I highly recommend that you take a serious
-look at this straight away.. +-
-
-Go Noww ==> http://hotshorturl.com/uy22
-
-
-
-
-Sincerely yours,
-
-
-joy morein
-
-P.S  If you want  to be "Remove" please reply remove to:
-
-karylmendoza@rocketmail.com
-
-Thank you and God Bless..
-
-
-
-
-
-
-__________________________________________
-Robert Old
-http://www.old.co.uk 
+--- a/drivers/mtd/mtdcore.c~mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix
++++ a/drivers/mtd/mtdcore.c
+@@ -48,7 +48,7 @@ static LIST_HEAD(mtd_notifiers);
+  */
+ static void mtd_release(struct device *dev)
+ {
+-	dev_t index = MTD_DEVT(dev_to_mtd(dev));
++	dev_t index = MTD_DEVT(dev_to_mtd(dev)->index);
+ 
+ 	/* remove /dev/mtdXro node if needed */
+ 	if (index)
+_
 
