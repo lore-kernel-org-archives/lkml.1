@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbZDODo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbZDOEH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757738AbZDODo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZDODoS
+	id S1751284AbZDOEH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 00:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbZDOEHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:44:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39575 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 00:07:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38482 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbZDODoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:44:18 -0400
+	id S1750719AbZDOEHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 00:07:18 -0400
 From: Jeff Moyer <jmoyer@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
-References: <20090412071950.166891982@intel.com>
-	<20090412072052.686760755@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Zhang\, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: tiobench read 50% regression with 2.6.30-rc1
+References: <1239265763.2567.769.camel@ymzhang>
+	<20090409095706.GD5178@kernel.dk> <1239330541.2567.779.camel@ymzhang>
+	<20090414121431.GH5178@kernel.dk>
 X-PGP-KeyID: 1F78E1B4
 X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
 X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 14 Apr 2009 23:43:32 -0400
-In-Reply-To: <20090412072052.686760755@intel.com> (Wu Fengguang's message of
-	"Sun, 12 Apr 2009 15:19:53 +0800")
-Message-ID: <x49k55mintn.fsf@segfault.boston.devel.redhat.com>
+Date: Wed, 15 Apr 2009 00:07:11 -0400
+In-Reply-To: <20090414121431.GH5178@kernel.dk> (Jens Axboe's message of "Tue,
+	14 Apr 2009 14:14:31 +0200")
+Message-ID: <x49fxgaimq8.fsf@segfault.boston.devel.redhat.com>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -31,88 +31,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang <fengguang.wu@intel.com> writes:
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-> Introduce page cache context based readahead algorithm.
-> This is to better support concurrent read streams in general.
+> On Fri, Apr 10 2009, Zhang, Yanmin wrote:
+>> On Thu, 2009-04-09 at 11:57 +0200, Jens Axboe wrote:
+>> > On Thu, Apr 09 2009, Zhang, Yanmin wrote:
+>> > > Comparing with 2.6.29's result, tiobench (read) has about 50% regression
+>> > > with 2.6.30-rc1 on all my machines. Bisect down to below patch.
+>> > > 
+>> > > b029195dda0129b427c6e579a3bb3ae752da3a93 is first bad commit
+>> > > commit b029195dda0129b427c6e579a3bb3ae752da3a93
+>> > > Author: Jens Axboe <jens.axboe@oracle.com>
+>> > > Date:   Tue Apr 7 11:38:31 2009 +0200
+>> > > 
+>> > >     cfq-iosched: don't let idling interfere with plugging
+>> > >     
+>> > >     When CFQ is waiting for a new request from a process, currently it'll
+>> > >     immediately restart queuing when it sees such a request. This doesn't
+>> > >     work very well with streamed IO, since we then end up splitting IO
+>> > >     that would otherwise have been merged nicely. For a simple dd test,
+>> > >     this causes 10x as many requests to be issued as we should have.
+>> > >     Normally this goes unnoticed due to the low overhead of requests
+>> > >     at the device side, but some hardware is very sensitive to request
+>> > >     sizes and there it can cause big slow downs.
+>> > > 
+>> > > 
+>> > > 
+>> > > Command to start the testing:
+>> > > #tiotest -k0 -k1 -k3 -f 80 -t 32
+>> > > 
+>> > > It's a multi-threaded program and starts 32 threads. Every thread does I/O
+>> > > on its own 80MB file.
+>> The files should be created before the testing and pls. drop page caches
+>> by "echo 3 >/proc/sys/vm/drop_caches" before testing.
+>> 
+>> > 
+>> > It's not a huge surprise that we regressed there. I'll get this fixed up
+>> > next week. Can you I talk you into trying to change the 'quantum' sysfs
+>> > variable for the drive? It's in /sys/block/xxx/queue/iosched where xxx
+>> > is your drive(s). It's set to 4, if you could try progressively larger
+>> > settings and retest, that would help get things started.
+>> I tried 4,8,16,64,128 and didn't find result difference.
 >
-> RATIONALE
-> ---------
-> The current readahead algorithm detects interleaved reads in a _passive_ way.
-> Given a sequence of interleaved streams 1,1001,2,1002,3,4,1003,5,1004,1005,6,...
-> By checking for (offset == prev_offset + 1), it will discover the sequentialness
-> between 3,4 and between 1004,1005, and start doing sequential readahead for the
-> individual streams since page 4 and page 1005.
+> Can you try with this patch?
 >
-> The context readahead algorithm guarantees to discover the sequentialness no
-> matter how the streams are interleaved. For the above example, it will start
-> sequential readahead since page 2 and 1002.
->
-> The trick is to poke for page @offset-1 in the page cache when it has no other
-> clues on the sequentialness of request @offset: if the current requenst belongs
-> to a sequential stream, that stream must have accessed page @offset-1 recently,
-> and the page will still be cached now. So if page @offset-1 is there, we can
-> take request @offset as a sequential access.
->
-> BENEFICIARIES
-> -------------
-> - strictly interleaved reads  i.e. 1,1001,2,1002,3,1003,...
->   the current readahead will take them as silly random reads;
->   the context readahead will take them as two sequential streams.
->
-> - cooperative IO processes   i.e. NFS and SCST
->   They create a thread pool, farming off (sequential) IO requests to different
->   threads which will be performing interleaved IO.
->
->   It was not easy(or possible) to reliably tell from file->f_ra all those
->   cooperative processes working on the same sequential stream, since they will
->   have different file->f_ra instances. And NFSD's file->f_ra is particularly
->   unusable, since their file objects are dynamically created for each request.
->   The nfsd does have code trying to restore the f_ra bits, but not satisfactory.
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index a4809de..66f00e5 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1905,10 +1905,17 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>  		 * Remember that we saw a request from this process, but
+>  		 * don't start queuing just yet. Otherwise we risk seeing lots
+>  		 * of tiny requests, because we disrupt the normal plugging
+> -		 * and merging.
+> +		 * and merging. If the request is already larger than a single
+> +		 * page, let it rip immediately. For that case we assume that
+> +		 * merging is already done.
+>  		 */
+> -		if (cfq_cfqq_wait_request(cfqq))
+> +		if (cfq_cfqq_wait_request(cfqq)) {
+> +			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE) {
+> +				del_timer(&cfqd->idle_slice_timer);
+> +				blk_start_queueing(cfqd->queue);
+> +			}
+>  			cfq_mark_cfqq_must_dispatch(cfqq);
+> +		}
+>  	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
+>  		/*
+>  		 * not the active queue - expire current slice if it is
 
-Hi, Wu,
-
-I tested out your patches.  Below are some basic iozone numbers for a
-single NFS client reading a file.  The iozone command line is:
-
+I tested this using iozone to read a file from an NFS client.  The
+iozone command line was:
   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
 
-The file system is unmounted after each run to flush the cache.  The
-numbers below reflect only a single run each.  The file system was also
-unmounted on the NFS client after each run.
+The numbers in the nfsd's row represent the number of nfsd threads.  I
+included numbers for the deadline scheduler as well for comparison.
 
-KEY
----
-vanilla:	   2.6.30-rc1
-readahead:	   2.6.30-rc1 + your 10 readahead patches
-context readahead: 2.6.30-rc1 + your 10 readahead patches + the 3
-		   context readahead patches.
-nfsd's:		   number of NFSD threads on the server
+               v2.6.29
 
-I'll note that the cfq in 2.6.30-rc1 is crippled, and that Jens has a
-patch posted that makes the numbers look at least a little better, but
-that's immaterial to this discussion, I think.
+nfsd's  |   1    |  2   |   4   |   8
+--------+---------------+-------+------
+cfq     | 91356 | 66391 | 61942 | 51674
+deadline| 43207 | 67436 | 96289 | 107784
 
-                vanilla
+              2.6.30-rc1
 
 nfsd's  |   1   |   2   |   4   |   8
 --------+---------------+-------+------
 cfq     | 43127 | 22354 | 20858 | 21179
 deadline| 43732 | 68059 | 76659 | 83231
 
-                readahead
+          2.6.30-rc1 + cfq fix
 
-nfsd's  |   1   |   2   |   4   |   8
---------+---------------+-------+------
-cfq     | 42471 | 21913 | 21252 | 20979
-deadline| 42801 | 70158 | 82068 | 82406
+nfsd's  |   1    |    2   |   4   |   8
+--------+-----------------+-------+------
+cfq     | 114602 | 102280 | 43479 | 43160
 
-           context readahead
+As you can see, for 1 and 2 threads, the patch *really* helps out.  We
+still don't get back the performance for 4 and 8 nfsd threads, though.
+It's interesting to note that the deadline scheduler regresses for 4 and
+8 threads, as well.  I think we've still got some digging to do.
 
-nfsd's  |   1   |   2   |   4   |   8
---------+---------------+-------+------
-cfq     | 42827 | 21882 | 20678 | 21508
-deadline| 43040 | 71173 | 82407 | 86583
+I'll try the cfq close cooperator patches next.
 
 Cheers,
 Jeff
