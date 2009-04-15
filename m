@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZDOJES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZDOJIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754064AbZDOJES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZDOJED
+	id S1753307AbZDOJIV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZDOJIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:04:03 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37017 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZDOJEB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:04:01 -0400
-Date: Wed, 15 Apr 2009 10:03:07 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Bill Gatliff <bgat@billgatliff.com>
-Subject: Re: Linux 2.6.30-rc2: [PATCH] ARM OABI compatibility: fix build
-	error
-Message-ID: <20090415090307.GH6058@n2100.arm.linux.org.uk>
-References: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain> <20090415083326.GA12921@traven>
+	Wed, 15 Apr 2009 05:08:12 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51055 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751886AbZDOJIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 05:08:11 -0400
+Date: Wed, 15 Apr 2009 11:08:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] brd: support barriers
+Message-ID: <20090415090810.GU5178@kernel.dk>
+References: <20090415082707.GA7685@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090415083326.GA12921@traven>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090415082707.GA7685@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 10:33:26AM +0200, Matthias Kaehlcke wrote:
-> Building for ARM with CONFIG_OABI_COMPAT enabled fails due to a
-> missing include:
+On Wed, Apr 15 2009, Nick Piggin wrote:
+> Hi Jens,
+> Do you have a tree I can send this though? Is this the right way to
+> do what I want?
 
-Yes, lots of people have been whinging about this over the last six days,
-but I'm only just catching up since returning from an Easter break.
+It'll let the barriers through, so I think it does what you want :-)
+I can put it in the block tree.
 
-Does anyone know /when/ this breakage happened, or even better what caused
-it?
+> 
+> --
+> 
+> brd is always ordered (not that it matters, as it is defined not to
+> survive when the system goes down). So tell the block layer it is
+> ordered, which might be of help with testing filesystems.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
+>  drivers/block/brd.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux-2.6/drivers/block/brd.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/block/brd.c
+> +++ linux-2.6/drivers/block/brd.c
+> @@ -436,6 +436,7 @@ static struct brd_device *brd_alloc(int
+>  	if (!brd->brd_queue)
+>  		goto out_free_dev;
+>  	blk_queue_make_request(brd->brd_queue, brd_make_request);
+> +	blk_queue_ordered(brd->brd_queue, QUEUE_ORDERED_TAG, NULL);
+>  	blk_queue_max_sectors(brd->brd_queue, 1024);
+>  	blk_queue_bounce_limit(brd->brd_queue, BLK_BOUNCE_ANY);
+>  
+
+-- 
+Jens Axboe
+
