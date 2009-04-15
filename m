@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZDOFfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZDOFnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbZDOFfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 01:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZDOFfF
+	id S1755445AbZDOFnf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 01:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZDOFn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 01:35:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39339 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752205AbZDOFfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 01:35:04 -0400
-Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
- inappropriate or CPU is not supported
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090414191622.GA797@elte.hu>
-References: <1239725240.2966.4.camel@ht.satnam>
-	 <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam>
-	 <20090414184222.GC11214@elte.hu>
-	 <20090414200247.1d0a8667@lxorguk.ukuu.org.uk>
-	 <20090414191622.GA797@elte.hu>
-Content-Type: text/plain
-Date: Wed, 15 Apr 2009 11:04:25 +0530
-Message-Id: <1239773665.15436.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Wed, 15 Apr 2009 01:43:26 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:8126 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZDOFnZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 01:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=o78noh5TGqUDaE4sYqB3TZXrfFAmAkcCFPPZXiFwdmMzQ+yPSd2JU6JZR7YEohiENM
+         1ITjuYFyqD+Jn/dy6yZw1+/HIAnBKjKIvHJfm+0WP7hipRuHvUTeL2luBFZVsGF8k3/x
+         DtwNU6ifhEkt773RbiLv5L0qh6IHBJzwOIiLc=
+MIME-Version: 1.0
+In-Reply-To: <20090414211851.219d8b45@nehalam>
+References: <20090414211851.219d8b45@nehalam>
+Date: Tue, 14 Apr 2009 22:43:24 -0700
+X-Google-Sender-Auth: 8525754c32066929
+Message-ID: <e9c3a7c20904142243n3d4aa187i94b534cc43d85c9c@mail.gmail.com>
+Subject: Re: Can't boot with "nosmp"
+From: Dan Williams <dan.j.williams@intel.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 21:16 +0200, Ingo Molnar wrote:
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> > > > Do you still think that boot_cpu_data.x86_vendor is better option in
-> > > > case for multiple CPUs.
-> > > 
-> > > yes. Assymetric SMP never really happened on x86.
-> > 
-> > It did but not between vendors. You can get away with a vendor 
-> > assumption but cpu type (mixed 486SX/DX, PII/PIII/Celeron) mixed 
-> > steppings and mixed speeds do occur. We've never supported the 
-> > mixed 486SX cases but the PII/PIII cases work (or at least 
-> > worked).
-> 
-> yeah - but look at the specific purpose here: we are deciding 
-> whether to print out state information related to major CPU 
-> features. Mixed steppings/speeds might happen, mixed apic / 
-> non-lapic not really.
-> 
+On Tue, Apr 14, 2009 at 9:18 PM, Stephen Hemminger
+<shemminger@vyatta.com> wrote:
+> If I boot a KVM instance configured with 4 CPU's but pass the "nosmp" flag
+> Host kernel is 2.6.30-rc1, guest kernel is 2.6.29.1
+> It dies really early in boot, on a module I never use..
+>
 
-We are trying to debug each CPU, so we should also collect information
-from each CPU.
+Hi Stephen,
 
-Just reading information from boot CPU and display information for all
-CPU is not correct. If we are getting information from boot CPU then we
-only need to show information for boot CPU and ignore others.
+I'll try to reproduce this.  In the meantime you can set
+CONFIG_DMA_ENGINE=n as a workaround.  The output of
+scripts/markup_oops.pl may help...
 
-I am trying to adding more features which will be unique for each
-CPU/core.
-
-So it seems current model is correct where I am collecting information
-for each CPU and printing information for each CPU.
-
-Thanks,
-
---
-JSR
-
+Thanks for the report,
+Dan
