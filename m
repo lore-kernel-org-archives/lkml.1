@@ -1,225 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbZDOEkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZDOEnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751707AbZDOEkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 00:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbZDOEkX
+	id S1753711AbZDOEnh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 00:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZDOEn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 00:40:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48393 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 00:43:28 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44883 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbZDOEkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 00:40:22 -0400
-Date: Wed, 15 Apr 2009 00:37:59 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Nauman Rafique <nauman@google.com>,
-       Moyer Jeff Moyer <jmoyer@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: dm-ioband: Test results.
-Message-ID: <20090415043759.GA8349@redhat.com>
-References: <20090413.130552.226792299.ryov@valinux.co.jp>
+	id S1751392AbZDOEn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 00:43:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,190,1239001200"; 
+   d="scan'208";a="131578711"
+Date: Wed, 15 Apr 2009 12:43:01 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
+Message-ID: <20090415044301.GB9948@localhost>
+References: <20090412071950.166891982@intel.com> <20090412072052.686760755@intel.com> <x49k55mintn.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090413.130552.226792299.ryov@valinux.co.jp>
+In-Reply-To: <x49k55mintn.fsf@segfault.boston.devel.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 01:05:52PM +0900, Ryo Tsuruta wrote:
-> Hi Alasdair and all,
+On Wed, Apr 15, 2009 at 11:43:32AM +0800, Jeff Moyer wrote:
+> Wu Fengguang <fengguang.wu@intel.com> writes:
 > 
-> I did more tests on dm-ioband and I've posted the test items and
-> results on my website. The results are very good.
-> http://people.valinux.co.jp/~ryov/dm-ioband/test/test-items.xls
+> > Introduce page cache context based readahead algorithm.
+> > This is to better support concurrent read streams in general.
+> >
+> > RATIONALE
+> > ---------
+> > The current readahead algorithm detects interleaved reads in a _passive_ way.
+> > Given a sequence of interleaved streams 1,1001,2,1002,3,4,1003,5,1004,1005,6,...
+> > By checking for (offset == prev_offset + 1), it will discover the sequentialness
+> > between 3,4 and between 1004,1005, and start doing sequential readahead for the
+> > individual streams since page 4 and page 1005.
+> >
+> > The context readahead algorithm guarantees to discover the sequentialness no
+> > matter how the streams are interleaved. For the above example, it will start
+> > sequential readahead since page 2 and 1002.
+> >
+> > The trick is to poke for page @offset-1 in the page cache when it has no other
+> > clues on the sequentialness of request @offset: if the current requenst belongs
+> > to a sequential stream, that stream must have accessed page @offset-1 recently,
+> > and the page will still be cached now. So if page @offset-1 is there, we can
+> > take request @offset as a sequential access.
+> >
+> > BENEFICIARIES
+> > -------------
+> > - strictly interleaved reads  i.e. 1,1001,2,1002,3,1003,...
+> >   the current readahead will take them as silly random reads;
+> >   the context readahead will take them as two sequential streams.
+> >
+> > - cooperative IO processes   i.e. NFS and SCST
+> >   They create a thread pool, farming off (sequential) IO requests to different
+> >   threads which will be performing interleaved IO.
+> >
+> >   It was not easy(or possible) to reliably tell from file->f_ra all those
+> >   cooperative processes working on the same sequential stream, since they will
+> >   have different file->f_ra instances. And NFSD's file->f_ra is particularly
+> >   unusable, since their file objects are dynamically created for each request.
+> >   The nfsd does have code trying to restore the f_ra bits, but not satisfactory.
 > 
-> I hope someone will test dm-ioband and report back to the dm-devel
-> mailing list.
+> Hi, Wu,
 > 
-
-Hi Ryo,
-
-I have been able to take your patch for 2.6.30-rc1 kernel and started
-doing some testing for reads. Hopefully you will provide bio-cgroup
-patches soon so that I can do some write testing also.
-
-In the beginning of the mail, i am listing some basic test results and
-in later part of mail I am raising some of my concerns with this patchset.
-
-My test setup:
---------------
-I have got one SATA driver with two partitions /dev/sdd1 and /dev/sdd2 on
-that. I have created ext3 file systems on these partitions. Created one
-ioband device "ioband1" with weight 40 on /dev/sdd1 and another ioband
-device "ioband2" with weight 10 on /dev/sdd2.
-  
-1) I think an RT task with-in a group does not get its fair share (all
-  the BW available as long as RT task is backlogged). 
-
-  I launched one RT read task of 2G file in ioband1 group and in parallel
-  launched more readers in ioband1 group. ioband2 group did not have any
-  io going. Following are results with and without ioband.
-
-  A) 1 RT prio 0 + 1 BE prio 4 reader
-
-	dm-ioband
-	2147483648 bytes (2.1 GB) copied, 39.4701 s, 54.4 MB/s
-	2147483648 bytes (2.1 GB) copied, 71.8034 s, 29.9 MB/s
-
-	without-dm-ioband
-	2147483648 bytes (2.1 GB) copied, 35.3677 s, 60.7 MB/s
-	2147483648 bytes (2.1 GB) copied, 70.8214 s, 30.3 MB/s
-
-  B) 1 RT prio 0 + 2 BE prio 4 reader
-
-	dm-ioband
-	2147483648 bytes (2.1 GB) copied, 43.8305 s, 49.0 MB/s
-	2147483648 bytes (2.1 GB) copied, 135.395 s, 15.9 MB/s
-	2147483648 bytes (2.1 GB) copied, 136.545 s, 15.7 MB/s
-
-	without-dm-ioband
-	2147483648 bytes (2.1 GB) copied, 35.3177 s, 60.8 MB/s
-	2147483648 bytes (2.1 GB) copied, 124.793 s, 17.2 MB/s
-	2147483648 bytes (2.1 GB) copied, 126.267 s, 17.0 MB/s
-
-  C) 1 RT prio 0 + 3 BE prio 4 reader
-
-	dm-ioband
-	2147483648 bytes (2.1 GB) copied, 48.8159 s, 44.0 MB/s
-	2147483648 bytes (2.1 GB) copied, 185.848 s, 11.6 MB/s
-	2147483648 bytes (2.1 GB) copied, 188.171 s, 11.4 MB/s
-	2147483648 bytes (2.1 GB) copied, 189.537 s, 11.3 MB/s
-
-	without-dm-ioband
-	2147483648 bytes (2.1 GB) copied, 35.2928 s, 60.8 MB/s
-	2147483648 bytes (2.1 GB) copied, 169.929 s, 12.6 MB/s
-	2147483648 bytes (2.1 GB) copied, 172.486 s, 12.5 MB/s
-	2147483648 bytes (2.1 GB) copied, 172.817 s, 12.4 MB/s
-
-  C) 1 RT prio 0 + 3 BE prio 4 reader
-	dm-ioband
-	2147483648 bytes (2.1 GB) copied, 51.4279 s, 41.8 MB/s
-	2147483648 bytes (2.1 GB) copied, 260.29 s, 8.3 MB/s
-	2147483648 bytes (2.1 GB) copied, 261.824 s, 8.2 MB/s
-	2147483648 bytes (2.1 GB) copied, 261.981 s, 8.2 MB/s
-	2147483648 bytes (2.1 GB) copied, 262.372 s, 8.2 MB/s
-
-	without-dm-ioband
-	2147483648 bytes (2.1 GB) copied, 35.4213 s, 60.6 MB/s
-	2147483648 bytes (2.1 GB) copied, 215.784 s, 10.0 MB/s
-	2147483648 bytes (2.1 GB) copied, 218.706 s, 9.8 MB/s
-	2147483648 bytes (2.1 GB) copied, 220.12 s, 9.8 MB/s
-	2147483648 bytes (2.1 GB) copied, 220.57 s, 9.7 MB/s
-
-Notice that with dm-ioband as number of readers are increasing, finish
-time of RT tasks is also increasing. But without dm-ioband finish time
-of RT tasks remains more or less constat even with increase in number
-of readers.
-
-For some reason overall throughput also seems to be less with dm-ioband.
-Because ioband2 is not doing any IO, i expected that tasks in ioband1
-will get full disk BW and throughput will not drop.
-
-I have not debugged it but I guess it might be coming from the fact that
-there are no separate queues for RT tasks. bios from all the tasks can be
-buffered on a single queue in a cgroup and that might be causing RT
-request to hide behind BE tasks' request?
-
-General thoughts about dm-ioband
-================================
-- Implementing control at second level has the advantage tha one does not
-  have to muck with IO scheduler code. But then it also has the
-  disadvantage that there is no communication with IO scheduler.
-
-- dm-ioband is buffering bio at higher layer and then doing FIFO release
-  of these bios. This FIFO release can lead to priority inversion problems
-  in certain cases where RT requests are way behind BE requests or 
-  reader starvation where reader bios are getting hidden behind writer
-  bios etc. These are hard to notice issues in user space. I guess above
-  RT results do highlight the RT task problems. I am still working on
-  other test cases and see if i can show the probelm.
-
-- dm-ioband does this extra grouping logic using dm messages. Why
-  cgroup infrastructure is not sufficient to meet your needs like
-  grouping tasks based on uid etc? I think we should get rid of all
-  the extra grouping logic and just use cgroup for grouping information.
-
-- Why do we need to specify bio cgroup ids to the dm-ioband externally with
-  the help of dm messages? A user should be able to just create the
-  cgroups, put the tasks in right cgroup and then everything should
-  just work fine.
-
-- Why do we have to put another dm-ioband device on top of every partition
-  or existing device mapper device to control it? Is it possible to do
-  this control on make_request function of the reuqest queue so that
-  we don't end up creating additional dm devices? I had posted the crude
-  RFC patch as proof of concept but did not continue the development 
-  because of fundamental issue of FIFO release of buffered bios.
-
-	http://lkml.org/lkml/2008/11/6/227 
-
-  Can you please have a look and provide feedback about why we can not
-  go in the direction of the above patches and why do we need to create
-  additional dm device.
-
-  I think in current form, dm-ioband is hard to configure and we should
-  look for ways simplify configuration.
-
-- I personally think that even group IO scheduling should be done at
-  IO scheduler level and we should not break down IO scheduling in two
-  parts where group scheduling is done by higher level IO scheduler 
-  sitting in dm layer and io scheduling among tasks with-in groups is
-  done by actual IO scheduler.
-
-  But this also means more work as one has to muck around with core IO
-  scheduler's to make them cgroup aware and also make sure existing
-  functionality is not broken. I posted the patches here.
-
-	http://lkml.org/lkml/2009/3/11/486
-
-  Can you please let us know that why does IO scheduler based approach
-  does not work for you? 
-
-  Jens, it would be nice to hear your opinion about two level vs one
-  level conrol. Do you think that common layer approach is the way
-  to go where one can control things more tightly or FIFO release of bios
-  from second level controller is fine and we can live with this additional       serialization in the layer above just above IO scheduler?
-
-- There is no notion of RT cgroups. So even if one wants to run an RT
-  task in root cgroup to make sure to get full access of disk, it can't
-  do that. It has to share the BW with other competing groups. 
-
-- dm-ioband controls amount of IO done per second. Will a seeky process
-  not run away more disk time? 
-
-  Additionally, at group level we will provide fairness in terms of amount
-  of IO (number of blocks transferred etc) and with-in group cfq will try
-  to provide fairness in terms of disk access time slices. I don't even
-  know whether it is a matter of concern or not. I was thinking that
-  probably one uniform policy on the hierarchical scheduling tree would
-  have probably been better. Just thinking loud.....
-
-Thanks
-Vivek
- 
-> Alasdair, could you please merge dm-ioband into upstream? Or could
-> you please tell me why dm-ioband can't be merged?
+> I tested out your patches.  Below are some basic iozone numbers for a
+> single NFS client reading a file.  The iozone command line is:
 > 
-> Thanks,
-> Ryo Tsuruta
+>   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+
+Jeff, thank you very much for the testing out!
+
+> The file system is unmounted after each run to flush the cache.  The
+> numbers below reflect only a single run each.  The file system was also
+> unmounted on the NFS client after each run.
 > 
-> To know the details of dm-ioband:
-> http://people.valinux.co.jp/~ryov/dm-ioband/
+> KEY
+> ---
+> vanilla:	   2.6.30-rc1
+> readahead:	   2.6.30-rc1 + your 10 readahead patches
+> context readahead: 2.6.30-rc1 + your 10 readahead patches + the 3
+> 		   context readahead patches.
+> nfsd's:		   number of NFSD threads on the server
+
+I guess you are applying the readahead patches to the server side?
+
+What's the NFS mount options and client/server side readahead size?
+The context readahead is pretty sensible to these parameters.
+
+> I'll note that the cfq in 2.6.30-rc1 is crippled, and that Jens has a
+> patch posted that makes the numbers look at least a little better, but
+> that's immaterial to this discussion, I think.
 > 
-> RPM packages for RHEL5 and CentOS5 are available:
-> http://people.valinux.co.jp/~ryov/dm-ioband/binary.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>                 vanilla
+> 
+> nfsd's  |   1   |   2   |   4   |   8
+> --------+---------------+-------+------
+> cfq     | 43127 | 22354 | 20858 | 21179
+> deadline| 43732 | 68059 | 76659 | 83231
+> 
+>                 readahead
+> 
+> nfsd's  |   1   |   2   |   4   |   8
+> --------+---------------+-------+------
+> cfq     | 42471 | 21913 | 21252 | 20979
+> deadline| 42801 | 70158 | 82068 | 82406
+> 
+>            context readahead
+> 
+> nfsd's  |   1   |   2   |   4   |   8
+> --------+---------------+-------+------
+> cfq     | 42827 | 21882 | 20678 | 21508
+> deadline| 43040 | 71173 | 82407 | 86583
+
+Let me transform them into relative numbers:
+
+             A     B     C      A..B      A..C         
+cfq-1      43127 42471 42827    -1.5%     -0.7%         
+cfq-2      22354 21913 21882    -2.0%     -2.1%         
+cfq-4      20858 21252 20678    +1.9%     -0.9%         
+cfq-8      21179 20979 21508    -0.9%     +1.6%         
+           
+deadline-1 43732 42801 43040    -2.1%     -1.6%         
+deadline-2 68059 70158 71173    +3.1%     +4.6%         
+deadline-4 76659 82068 82407    +7.1%     +7.5%         
+deadline-8 83231 82406 86583    -1.0%     +4.0%         
+
+Summaries:
+1) the overall numbers are slightly negative for CFQ and looks better
+   with deadline.
+
+Anyway we have the io context problem for CFQ.  And I'm planning to
+dive into the CFQ code and your patch on that :-)
+
+2) the single thread case performance consistently dropped by 1-2%.
+
+It seems not related to the behavior changes introduced by the mmap
+readahead patches and context readahead patches. And looks more like
+some overheads created by the code reorganization and the patch
+"readahead: apply max_sane_readahead() limit in ondemand_readahead()"
+which adds a bit overhead with the call max_sane_readahead().
+
+I'll try to root cause it.
+
+Thanks again for the numbers!
+
+Regards,
+Fengguang
