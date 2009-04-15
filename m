@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbZDODfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbZDODkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbZDODfq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZDODfh
+	id S1757087AbZDODkY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZDODkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:35:37 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:36456 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbZDODfg (ORCPT
+	Tue, 14 Apr 2009 23:40:10 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:54459 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752288AbZDODkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:35:36 -0400
-Date: Wed, 15 Apr 2009 09:04:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Eric B Munson <ebmunson@us.ibm.com>,
-       Mel Gorman <mel@linux.vnet.ibm.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: meminfo Committed_AS underflows
-Message-ID: <20090415033455.GS7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1239737619.32604.118.camel@nimitz> <20090415105033.AC29.A69D9226@jp.fujitsu.com>
+	Tue, 14 Apr 2009 23:40:08 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=SnPuYwUAGIdz61fILckLeEjqXoyujX98B8Mj2NmjsqKjdeoZqMqwKbi2P7jina/wU
+	yE7TUa1ItYqYbaJ15T8Iw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090415105033.AC29.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.2.00.0904142219570.31421@gandalf.stny.rr.com>
+References: <20090414172337.280621613@goodmis.org>
+	 <20090414172641.457760734@goodmis.org>
+	 <1239736986.22720.266.camel@laptop>
+	 <alpine.DEB.2.00.0904142219570.31421@gandalf.stny.rr.com>
+Date: Tue, 14 Apr 2009 20:40:02 -0700
+Message-ID: <5df78e1d0904142040v3a46ce24m77a4fcea84f92027@mail.gmail.com>
+Subject: Re: [PATCH 5/8] tracing/events: move the ftrace event tracing code to 
+	core
+From: Jiaying Zhang <jiayingz@google.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Michael Rubin <mrubin@google.com>, Martin Bligh <mbligh@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-04-15 11:04:59]:
+I think merging these structures together can also allow you to move
+certain parts of code to the general functions in kernel/trace/trace_events.c
+so you don't need to define those functions for individual events.
 
->  	committed = atomic_long_read(&vm_committed_space);
-> +	if (committed < 0)
-> +		committed = 0;
+Jiaying
 
-Isn't this like pushing the problem under the rug?
-
->  	allowed = ((totalram_pages - hugetlb_total_pages())
->  		* sysctl_overcommit_ratio / 100) + total_swap_pages;
-> 
-> Index: b/mm/swap.c
-> ===================================================================
-> --- a/mm/swap.c
-> +++ b/mm/swap.c
-> @@ -519,7 +519,7 @@ EXPORT_SYMBOL(pagevec_lookup_tag);
->   * We tolerate a little inaccuracy to avoid ping-ponging the counter between
->   * CPUs
->   */
-> -#define ACCT_THRESHOLD	max(16, NR_CPUS * 2)
-> +#define ACCT_THRESHOLD	max_t(long, 16, num_online_cpus() * 2)
+On Tue, Apr 14, 2009 at 7:25 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
 >
-
-Hmm.. this is a one time expansion, free of CPU hotplug.
-
-Should we use nr_cpu_ids or num_possible_cpus()?
- 
-
--- 
-	Balbir
+> On Tue, 14 Apr 2009, Peter Zijlstra wrote:
+>
+>> On Tue, 2009-04-14 at 13:23 -0400, Steven Rostedt wrote:
+>> > + * static struct trace_event ftrace_event_type_<call> = {
+>> > + *     .trace                  = ftrace_raw_output_<call>, <-- stage 2
+>> > + * };
+>>
+>> > + * static struct ftrace_event_call __used
+>> > + * __attribute__((__aligned__(4)))
+>> > + * __attribute__((section("_ftrace_events"))) event_<call> = {
+>> > + *     .name                   = "<call>",
+>> > + *     .system                 = "<system>",
+>> > + *     .raw_init               = ftrace_raw_init_event_<call>,
+>> > + *     .regfunc                = ftrace_reg_event_<call>,
+>> > + *     .unregfunc              = ftrace_unreg_event_<call>,
+>> > + *     .show_format            = ftrace_format_<call>,
+>> > + * }
+>>
+>> Is there a good reason these are two different structs?
+>>
+>> I've always wondered about that, it seems natural to unify them and to
+>> generalize the reverse lookup hash that is now private to trace_output.
+>>
+>> The trace_event_profile code could use that reverse lookup, that linear
+>> search it currently does it really lame.
+>
+> Hmm, I'll have to look at that. Of course that means touching these crazy
+> macros again ;-)
+>
+> -- Steve
+>
+>
