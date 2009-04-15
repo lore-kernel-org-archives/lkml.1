@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZDOJee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbZDOJfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbZDOJee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZDOJeY
+	id S1759115AbZDOJfd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbZDOJfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:34:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53563 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbZDOJeX (ORCPT
+	Wed, 15 Apr 2009 05:35:24 -0400
+Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:58917
+	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754985AbZDOJfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:34:23 -0400
-Subject: Re: [PATCH 2/4] tracing/events: fix lockdep system name
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-In-Reply-To: <20090415031604.933829085@goodmis.org>
-References: <20090415031511.128139334@goodmis.org>
-	 <20090415031604.933829085@goodmis.org>
-Content-Type: text/plain
-Date: Wed, 15 Apr 2009 11:32:42 +0200
-Message-Id: <1239787962.22720.1966.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 05:35:23 -0400
+Date: Wed, 15 Apr 2009 11:35:19 +0200
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: Linux 2.6.30-rc2: [PATCH] ARM OABI compatibility: fix build
+	error
+Message-ID: <20090415093519.GC12921@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Bill Gatliff <bgat@billgatliff.com>
+References: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain> <20090415083326.GA12921@traven> <20090415090307.GH6058@n2100.arm.linux.org.uk> <20090415091223.GB12921@traven> <20090415092942.GJ6058@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090415092942.GJ6058@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-14 at 23:15 -0400, Steven Rostedt wrote:
-> plain text document attachment
-> (0002-tracing-events-fix-lockdep-system-name.patch)
-> From: Steven Rostedt <srostedt@redhat.com>
+El Wed, Apr 15, 2009 at 10:29:42AM +0100 Russell King - ARM Linux ha dit:
+
+> On Wed, Apr 15, 2009 at 11:12:23AM +0200, Matthias Kaehlcke wrote:
+> > El Wed, Apr 15, 2009 at 10:03:07AM +0100 Russell King - ARM Linux ha dit:
+> > 
+> > > On Wed, Apr 15, 2009 at 10:33:26AM +0200, Matthias Kaehlcke wrote:
+> > > > Building for ARM with CONFIG_OABI_COMPAT enabled fails due to a
+> > > > missing include:
+> > > 
+> > > Yes, lots of people have been whinging about this over the last six days,
+> > > but I'm only just catching up since returning from an Easter break.
+> > > 
+> > > Does anyone know /when/ this breakage happened, or even better what caused
+> > > it?
+> > 
+> > a week ago i build v2.6.30-rc1 based on the same .config without
+> > running into this issue. if i find some time i'll try bisecting it
 > 
-> Impact: fix compile error of lockdep event tracer
+> Hmm, I think it's caused by 47788c58e66c050982241d9a05eb690daceb05a9.
+
+you're right, bitsecting just pointed me to this commit
+ 
+> The commit message looks rather interesting, including:
 > 
-> Ingo Molnar pointed out that the system name for the lockdep tracer was "lock"
-> which is used to include the event trace file name. It should be "lockdep"
+>     arch/ia64/ia32/ia32priv.h:290:1: warning: "elf_check_arch" redefined
+>     arch/ia64/include/asm/elf.h:19:1: warning: this is the location of the previous definition
+> 
+> surely the right answer is to only have _one_ definition of this thing,
+> rather than two which may be different?  IOW, how do you know for certain
+> which definition gets used where.
+> 
+> Not sure that I totally agree with the rationale in this commit, but I
+> guess we have to live with it because it's x86.
+> 
+> Now, others have been putting out patches to solve the ARM build problem
+> caused by the above commit, including one which includes linux/slab.h
+> instead of linux/mm.h.  That seems to be a better fix than needlessly
+> including lots of other stuff via linux/mm.h.  I notice that akpm picked
+> up the linux/slab.h version yesterday.
 
-Ah, I did that on purpose. Whilst it all stems from the lockdep code,
-these tracepoints have nothing much to do with dependency tracking,
-hence I decided to drop that bit of the name.
+i agree that linux/slab.h is preferable to linux/mm.h
 
+-- 
+Matthias Kaehlcke
+Embedded Linux Engineer
+Barcelona
 
-
+                       El camino se hace al andar
+                           (Antonio Machado)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
