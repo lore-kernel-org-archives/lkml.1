@@ -1,111 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZDOSIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZDOSL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbZDOSIT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 14:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZDOSIF
+	id S1753374AbZDOSL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 14:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZDOSLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 14:08:05 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:48148 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbZDOSIE (ORCPT
+	Wed, 15 Apr 2009 14:11:17 -0400
+Received: from mga14.intel.com ([143.182.124.37]:53561 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752366AbZDOSLQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 14:08:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=YGjDJyVbKHIV8dm2GSnl0vcrW/CTjE7eKDYI2ilYNvUCefXTauvmAU5kPammZ89vMC
-         YoQvZhLGN5dBWMnVQce+k2jvC6v9YdFFUWIwv8cbHFFvdkoV3b1SUezvOUB1BTwMqyMV
-         +nN9D+XUNEyeEh0CsJlf/Fj1OB2RJxCnOFKOI=
+	Wed, 15 Apr 2009 14:11:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,193,1239001200"; 
+   d="scan'208";a="131834249"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Wed, 15 Apr 2009 11:12:50 -0700
+Subject: RE: 2.6.29 git master and PAT problems
+Thread-Topic: 2.6.29 git master and PAT problems
+Thread-Index: Acm98hmojeTGRYMBQBmfX7jDFAYDTgAAzBrQ
+Message-ID: <7E82351C108FA840AB1866AC776AEC46587162E6@orsmsx505.amr.corp.intel.com>
+References: <200903302317.04515.a.miskiewicz@gmail.com>
+ <20090408081711.GA4938@elte.hu>
+ <20090408223716.GC3493@linux-os.sc.intel.com>
+ <200904151945.56411.a.miskiewicz@gmail.com>
+In-Reply-To: <200904151945.56411.a.miskiewicz@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Date: Wed, 15 Apr 2009 22:08:01 +0400
-Message-ID: <a4423d670904151108h39eb3a5fk36d0e5e623e7388f@mail.gmail.com>
-Subject: [core/kill-the-BKL] nfs3: possible circular locking dependency
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-nfs@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+ 
 
-I have pulled core/kill-the-BKL on top of 2.6.30-rc2.
+>-----Original Message-----
+>From: Arkadiusz Miskiewicz [mailto:a.miskiewicz@gmail.com] 
+>Sent: Wednesday, April 15, 2009 10:46 AM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Thomas Gleixner; H. Peter Anvin; Siddha, 
+>Suresh B; linux-kernel@vger.kernel.org; Jesse Barnes
+>Subject: Re: 2.6.29 git master and PAT problems
+>
+>On Thursday 09 of April 2009, Pallipadi, Venkatesh wrote:
+>> On Wed, Apr 08, 2009 at 01:17:11AM -0700, Ingo Molnar wrote:
+>> > * Arkadiusz Miskiewicz <a.miskiewicz@gmail.com> wrote:
+>> > > On Wednesday 08 of April 2009, Pallipadi, Venkatesh wrote:
+>> > > > On Tue, Apr 07, 2009 at 02:12:28AM -0700, Arkadiusz 
+>Miskiewicz wrote:
+>> > > > > On Tuesday 07 of April 2009, Pallipadi, Venkatesh wrote:
+>> > > > > > On Thu, 2009-04-02 at 00:12 -0700, Arkadiusz 
+>Miskiewicz wrote:
+>> > > > > >
+>> > > > > > I was finally able to reproduce the problem of 
+>"freeing invalid
+>> > > > > > memtype" with upstream git kernel (commit 
+>0221c81b1b) + latest
+>> > > > > > xf86 intel driver. But, with upstream + the patch 
+>I had sent you
+>> > > > > > earlier in this thread
+>> > > > > > 
+>(http://marc.info/?l=linux-kernel&m=123863345520617&w=2) I don't
+>> > > > > > see those freeing invalid memtype errors anymore.
+>> > > > > >
+>> > > > > > Can you please double check with current git and 
+>that patch and
+>> > > > > > let me know if you are still seeing the problem.
+>> > > > >
+>> > > > > Latest linus tree + that patch (it's really applied 
+>here), xserver
+>> > > > > 1.6, libdrm from git master, intel driver from git master,
+>> > > > > previously mesa 7.4 (and 7.5 snap currently), 
+>tremolous.net 1.1.0
+>> > > > > game (tremolous-smp binary), GM45 gpu.
+>> > > > >
+>> > > > > To reproduce I just need to run tremolous-smp and 
+>connect to some
+>> > > > > map. When map finishes loading I instantly get:
+>> > >
+>> > > [...]
+>> > >
+>> > > > OK. One more test patch below, applies over linus's 
+>git and you can
+>> > > > ignore the earlier patch. The patch below should get rid of the
+>> > > > problem and as it removes the track/untrack of vm_insert_pfn
+>> > > > completely. This will also eliminate the overhead of 
+>hundreds or
+>> > > > thousands of entries in pat_memtype_list. Can you 
+>please test it.
+>> > >
+>> > > With this patch I'm no longer able to reproduce problem. Thanks!
+>> >
+>> > Great, thanks!
+>> >
+>> > Venki, mind sending a patch with a proper changelog, Reported-by,
+>> > Tested-by tags, with Nick and Andrew Cc:-ed for the memory.c bits,
+>> > etc.?
+>>
+>> Ingo,
+>>
+>> Below is the cleaner version of the patch. It does not have 
+>any changes in
+>> mm as we are only removing the tracking inside the PAT code. 
+>I have left
+>> the generic mm interface as is, until we fully resolve the 
+>issue in future.
+>>
+>> Thanks,
+>> Venki
+>>
+>> Subject: [PATCH] x86, PAT: Remove page granularity tracking for
+>> vm_insert_pfn maps
+>
+>I wonder what's with these patches that they missed rc2 ?
+>
+>This one and Subject: [PATCH] x86, PAT: Remove duplicate 
+>memtype reserve in 
+>pci mmap
+>
 
-device: '0:18': device_add
+I do see the above patch in rc2. Here
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5a3ae276057840f0e60664c12fc3ef80aa59d1d4
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.30-rc2-00057-g30aa902-dirty #5
--------------------------------------------------------
-mount.nfs/1740 is trying to acquire lock:
- (kernel_mutex){+.+.+.}, at: [<00000000006f32dc>] lock_kernel+0x28/0x3c
+But, the patch below has not yet made it.
+http://marc.info/?l=linux-kernel&m=123923026401648&w=2
 
-but task is already holding lock:
- (&type->s_umount_key#24/1){+.+.+.}, at: [<00000000004b88a0>] sget+0x228/0x36c
+Ingo: Can you push this along?
 
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&type->s_umount_key#24/1){+.+.+.}:
-       [<00000000004776d0>] lock_acquire+0x5c/0x74
-       [<0000000000469f5c>] down_write_nested+0x38/0x50
-       [<00000000004b88a0>] sget+0x228/0x36c
-       [<00000000005688fc>] nfs_get_sb+0x80c/0xa7c
-       [<00000000004b7ec8>] vfs_kern_mount+0x44/0xa4
-       [<00000000004b7f84>] do_kern_mount+0x30/0xcc
-       [<00000000004cf300>] do_mount+0x7c8/0x80c
-       [<00000000004ed2a4>] compat_sys_mount+0x224/0x274
-       [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
-
--> #0 (kernel_mutex){+.+.+.}:
-       [<00000000004776d0>] lock_acquire+0x5c/0x74
-       [<00000000006f0ebc>] mutex_lock_nested+0x48/0x380
-       [<00000000006f32dc>] lock_kernel+0x28/0x3c
-       [<00000000006d20ec>] rpc_wait_bit_killable+0x64/0x8c
-       [<00000000006f0620>] __wait_on_bit+0x64/0xc0
-       [<00000000006f06e4>] out_of_line_wait_on_bit+0x68/0x7c
-       [<00000000006d2938>] __rpc_execute+0x150/0x2b4
-       [<00000000006d2ac0>] rpc_execute+0x24/0x34
-       [<00000000006cc338>] rpc_run_task+0x64/0x74
-       [<00000000006cc474>] rpc_call_sync+0x58/0x7c
-       [<00000000005717b0>] nfs3_rpc_wrapper+0x24/0xa0
-       [<0000000000572024>] do_proc_get_root+0x6c/0x10c
-       [<00000000005720dc>] nfs3_proc_get_root+0x18/0x5c
-       [<000000000056401c>] nfs_get_root+0x34/0x17c
-       [<0000000000568adc>] nfs_get_sb+0x9ec/0xa7c
-       [<00000000004b7ec8>] vfs_kern_mount+0x44/0xa4
-       [<00000000004b7f84>] do_kern_mount+0x30/0xcc
-       [<00000000004cf300>] do_mount+0x7c8/0x80c
-       [<00000000004ed2a4>] compat_sys_mount+0x224/0x274
-       [<0000000000406154>] linux_sparc_syscall32+0x34/0x40
-
-other info that might help us debug this:
-
-1 lock held by mount.nfs/1740:
- #0:  (&type->s_umount_key#24/1){+.+.+.}, at: [<00000000004b88a0>]
-sget+0x228/0x36c
-
-stack backtrace:
-Call Trace:
- [00000000004755ac] print_circular_bug_tail+0xfc/0x10c
- [0000000000476e24] __lock_acquire+0x12f0/0x1b40
- [00000000004776d0] lock_acquire+0x5c/0x74
- [00000000006f0ebc] mutex_lock_nested+0x48/0x380
- [00000000006f32dc] lock_kernel+0x28/0x3c
- [00000000006d20ec] rpc_wait_bit_killable+0x64/0x8c
- [00000000006f0620] __wait_on_bit+0x64/0xc0
- [00000000006f06e4] out_of_line_wait_on_bit+0x68/0x7c
- [00000000006d2938] __rpc_execute+0x150/0x2b4
- [00000000006d2ac0] rpc_execute+0x24/0x34
- [00000000006cc338] rpc_run_task+0x64/0x74
- [00000000006cc474] rpc_call_sync+0x58/0x7c
- [00000000005717b0] nfs3_rpc_wrapper+0x24/0xa0
- [0000000000572024] do_proc_get_root+0x6c/0x10c
- [00000000005720dc] nfs3_proc_get_root+0x18/0x5c
- [000000000056401c] nfs_get_root+0x34/0x17c
-device: '0:19': device_add
+Thanks,
+Venki
