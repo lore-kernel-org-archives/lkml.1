@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZDOTcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZDOTgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755145AbZDOTcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 15:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZDOTcC
+	id S1754242AbZDOTgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 15:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZDOTgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 15:32:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45287 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 15:36:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46983 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752690AbZDOTcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 15:32:00 -0400
-Subject: Re: [PATCH] Fix inconsistent lock state in inotify
-From: Eric Paris <eparis@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-       john@johnmccutchan.com, rlove@rlove.org
-In-Reply-To: <20090415122532.0a0c5f24.akpm@linux-foundation.org>
-References: <20090410192533.GA24345@dreamland.darkstar.lan>
-	 <20090414161329.094b977c.akpm@linux-foundation.org>
-	 <68676e00904150459q6cc34f9fjb9475937a4e73c71@mail.gmail.com>
-	 <20090415122532.0a0c5f24.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 15 Apr 2009 15:31:35 -0400
-Message-Id: <1239823895.2562.1.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1753715AbZDOTgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 15:36:32 -0400
+Message-ID: <49E636F2.7030902@kernel.org>
+Date: Wed, 15 Apr 2009 12:35:14 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: [PATCH] x86: used used_vectors in init_IRQ
+References: <49E62DFD.6010904@kernel.org> <20090415192550.GA27004@elte.hu>
+In-Reply-To: <20090415192550.GA27004@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 12:25 -0700, Andrew Morton wrote:
-> On Wed, 15 Apr 2009 13:59:29 +0200
-> Luca Tettamanti <kronos.it@gmail.com> wrote:
-> 
-> > >> +++ b/fs/notify/inotify/inotify_user.c
-> > >> @@ -220,7 +220,7 @@ static struct inotify_kernel_event * kernel_event(s32 wd, u32 mask, u32 cookie,
-> > >>                               rem = 0;
-> > >>               }
-> > >>
-> > >> -             kevent->name = kmalloc(len + rem, GFP_KERNEL);
-> > >> +             kevent->name = kmalloc(len + rem, GFP_NOFS);
-> > >>               if (unlikely(!kevent->name)) {
-> > >>                       kmem_cache_free(event_cachep, kevent);
-> > >>                       return NULL;
-> > >
-> > > Thanks.
-> > >
-> > > This is in fact a false positive and we plan to fix it via lockdep
-> > > annotation.
-> > 
-> > Well, I trust you on the "false positive", but a few line before there this:
-> > 
-> >   kevent = kmem_cache_alloc(event_cachep, GFP_NOFS);
-> > 
-> > so can kmem_cache_alloc also use GFP_KERNEL?
-> 
-> Yes, it looks that way.
-> 
-> umm, I think I'll merge your original patch as a reminder-to-self.
-> If the problem doesn't get fixed in a better way for 2.6.30 then I
-> might end up going with the GFP_NOFS approach.
-> 
-> But it's bad to weaken the memory allocation mode just to plug a lockdep
-> warning.
+Ingo Molnar wrote:
 
-I swear, I'm fighting with my machines trying to get one to work so I
-can test my lockdep fix today (and found a separate oddity/bug in the
-process)
+> Note, i removed the -stable tag because i dont think .29 nor .30-rc2 
+> is affected. Your patch to irqinit*.c (and the later unification by 
+> Pekka) is something still pending in the perfcounters and x86 trees, 
+> queued for .31.
+> 
 
--Eric
+not sure .29, but it seems we need this for 2.6.30
 
+or you want me to produce one against to linus tree?
+
+YH
