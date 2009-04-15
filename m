@@ -1,123 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbZDOCpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZDOCqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbZDOCpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 22:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbZDOCo5
+	id S1758183AbZDOCqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 22:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZDOCqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 22:44:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59161 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZDOCo4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 22:44:56 -0400
-Date: Tue, 14 Apr 2009 19:46:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg KH <greg@kroah.com>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB storage no-boot regression (bisected)
-Message-ID: <20090414194641.662fc976@infradead.org>
-In-Reply-To: <49E5480F.10501@garzik.org>
-References: <49E4FAC6.1030400@garzik.org>
-	<20090415014930.GA29413@kroah.com>
-	<49E5480F.10501@garzik.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 14 Apr 2009 22:46:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34833 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752587AbZDOCp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 22:45:59 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-api@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC][PATCH v3 4/6] aio: Don't inherit aio ring memory at fork
+References: <20090414151924.C653.A69D9226@jp.fujitsu.com>
+	<x49iql7z0k1.fsf@segfault.boston.devel.redhat.com>
+	<20090415091534.AC18.A69D9226@jp.fujitsu.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 14 Apr 2009 22:44:03 -0400
+In-Reply-To: <20090415091534.AC18.A69D9226@jp.fujitsu.com> (KOSAKI Motohiro's
+	message of "Wed, 15 Apr 2009 09:56:34 +0900 (JST)")
+Message-ID: <x49tz4qiqks.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 22:35:59 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
 
-> Greg KH wrote:
-> > On Tue, Apr 14, 2009 at 05:06:14PM -0400, Jeff Garzik wrote:
-> >> Once of the x86-64 machines I use for testing runs off of two 2GB
-> >> USB flash drives, one for Fedora 10 userland, and one for kernel
-> >> repository 
-> >> + builds.
-> >>
-> >> It boots correctly in 2.6.27, but fails with the same symptoms in 
-> >> 2.6.28, 2.6.29 and 2.6.30-rc1:
-> >>
-> >> 	1) The kernel boots
-> >> 	2) After time passes, kernel begins executing initramfs
-> >> 	   userland
-> >> 	3) the kernel prints out probe messages for the USB
-> >> keyboard, SCSI probe messages for the two USB flash drives
-> >>
-> >> Or IOW, the keyboard and two SCSI drives appear after initramfs
-> >> begins booting.  And this is for drivers built into the kernel
-> >> (though same behavior with modules).
-> >>
-> >> This no-boot regression is 100% reproducible, and neatly bisects
-> >> down to
-> >>
-> >>> commit 8520f38099ccfdac2147a0852f84ee7a8ee5e197
-> >>> Author: Alan Stern <stern@rowland.harvard.edu>
-> >>> Date:   Mon Sep 22 14:44:26 2008 -0400
-> >>>
-> >>>     USB: change hub initialization sleeps to delayed_work
-> >>>     
-> >>>     This patch (as1137) changes the hub_activate() routine,
-> >>> replacing the power-power-up and debounce delays with
-> >>> delayed_work calls.  The idea is that on systems where the USB
-> >>> stack is compiled into the kernel rather than built as modules,
-> >>> these delays will no longer block the boot thread.  At least 100
-> >>> ms is saved for each root hub, which can add up to a significant
-> >>> savings in total boot time. 
-> >>>     Arjan van de Ven was very pleased to see that this shaved 700
-> >>> ms off his computer's boot time.  Since his total boot time is on
-> >>> the order of two seconds, the improvement is considerable.
-> >>>     
-> >>>     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> >>>     Tested-by: Arjan van de Ven <arjan@infradead.org>
-> >>>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> >>
-> >> My preliminary guess is that this made things --too--
-> >> asynchronous, and for some reason userland begins executing before
-> >> the SCSI core initializes the USB storage as Linux block devices.
-> >>
-> >> In any case, I cannot boot because of the above commit :)
-> > 
-> > Like Arjan said, this is because we are initializing faster now, and
-> > things are a bit more asynchronous.  Use the root_delay boot option,
-> > that's what I use for my USB-based systems, and have not had a
-> > problem with that at all.
-> 
-> Is that solution really scalable to every user with a regression
-> severe enough it prevents them from booting?
-> 
-> When did regressions become an acceptable tradeoff for speed?
-> 
-> This system boots just fine under kernel 2.6.27, 2.6.26, 2.6.25, and
-> so on.  Switch the kernel to 2.6.28, and it no longer boots.  A
-> regression cannot get more clear than that.
+> Hi!
+>
+>> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
+>> 
+>> > AIO folks, Am I missing anything?
+>> >
+>> > ===============
+>> > Subject: [RFC][PATCH] aio: Don't inherit aio ring memory at fork
+>> >
+>> > Currently, mm_struct::ioctx_list member isn't copyed at fork. IOW aio context don't inherit at fork.
+>> > but only ring memory inherited. that's strange.
+>> >
+>> > This patch mark DONTFORK to ring-memory too.
+>> 
+>> Well, given that clearly nobody relies on io contexts being copied to
+>> the child, I think it's okay to make this change.  I think the current
+>> behaviour violates the principal of least surprise, but I'm having a
+>> hard time getting upset about that.  ;)
+>
+> ok.
+> So, Can I get your Acked-by?
 
-You had pure luck though.
+I have more comments below.
 
-We used to wait 100 msec per USB bus.
-A normal laptop has like 5 of these.
-if your usb storage was in the first one, basically you got a "free"
-500msec delay there. You are/were happy.
+>> > In addition, This patch has good side effect. it also fix
+>> > "get_user_pages() vs fork" problem.
+>> 
+>> Hmm, I don't follow you, here.  As I understand it, the get_user_pages
+>> vs. fork problem has to do with the pages used for the actual I/O, not
+>> the pages used to store the completion data.  So, could you elaborate a
+>> bit on what you mean by the above statement?
+>
+> No.
+>
+> The problem is, get_user_pages() increment page_count only.
+> but VM page-fault logic don't care page_count. (it only care page::_mapcount)
+> Then, fork and pagefault can change virtual-physical relationship although
+> get_user_pages() is called.
+>
+> drawback worst aio scenario here
+> -----------------------------------------------------------------------
+> io_setup() and gup			inc page_count
+>
+> fork					inc mapcount
+> 					and make write-protect to pte
+>
+> write ring from userland(*)		page fault and
+> 					COW break.
+> 					parent process get copyed page and
+> 					child get original page owner-ship.
+>
+> kmap and memcpy from kernel		change child page. (it mean data lost)
+>
+> (*) Is this happend?
 
-Now.. if you stuck your disk in the last port you would get a 100msec
-delay. Probably not enough for what you want. But you didn't stick
-your disk there....
+I guess it's possible, but I don't know of any programs that do this.
 
-In the new code all ports get their power turned on and THEN things
-wait... so all ports get the 100 msec treatment, not the
-500/400/300/200/100 staggering.
+> MADV_DONTFORK or down_read(mmap_sem) or down_read(mm_pinned_sem) 
+> or copy-at-fork mecanism(=Nick/Andrea patch) solve it.
 
+OK, thanks for the explanation.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
++	/*
++	 * aio context doesn't inherit while fork. (see mm_init())
++	 * Then, aio ring also mark DONTFORK.
++	 */
+
+Would you mind if I did some word-smithing on that comment?  Something
+like:
+	/*
+	 * The io_context is not inherited by the child after fork()
+         * (see mm_init).  Therefore, it makes little sense for the
+         * completion ring to be inherited.
+         */
+
++	ret = sys_madvise(info->mmap_base, info->mmap_size, MADV_DONTFORK);
++	BUG_ON(ret);
++
+
+It appears there's no other way to set the VM_DONTCOPY flag, so I guess
+calling sys_madvise is fine.  I'm not sure I agree with the BUG_ON(ret),
+however, as EAGAIN may be feasible.
+
+So, fix that up and you can add my reviewed-by.  I think you should push
+this patch independent of the other patches in this series.
+
+>> > I think "man fork" also sould be changed. it only say
+>> >
+>> >        *  The child does not inherit outstanding asynchronous I/O operations from
+>> >           its parent (aio_read(3), aio_write(3)).
+>> > but aio_context_t (return value of io_setup(2)) also don't inherit in current implementaion.
+>> 
+>> I can certainly make that change, as I have other changes I need to push
+>> to Michael, anyway.
+>
+> thanks.
+
+No problem.  As you know, I've already sent a patch for this.
+
+Cheers,
+Jeff
