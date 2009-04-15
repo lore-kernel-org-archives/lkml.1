@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbZDOBvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZDOBwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbZDOBvW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZDOBvM
+	id S1758213AbZDOBwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZDOBwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:51:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:6457 "EHLO mga09.intel.com"
+	Tue, 14 Apr 2009 21:52:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50751 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753549AbZDOBvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:51:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,188,1239001200"; 
-   d="scan'208";a="403207448"
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
-	brightness with hotkeys (BISECTED)
-From: Zhang Rui <rui.zhang@intel.com>
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "mjg59@srcf.ucam.org" <mjg59@srcf.ucam.org>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <1239760242.7661.305.camel@rzhang-dt>
-References: <49E10684.5090101@gmail.com>
-	 <20090411150555.8b13ed18.akpm@linux-foundation.org>
-	 <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com>
-	 <1239585695.5564.5.camel@localhost.localdomain> <49E3575A.60204@gmail.com>
-	 <20090413203450.GC16152@khazad-dum.debian.net> <49E5234E.5070303@gmail.com>
-	 <1239760242.7661.305.camel@rzhang-dt>
-Content-Type: text/plain
-Date: Wed, 15 Apr 2009 09:51:31 +0800
-Message-Id: <1239760291.7661.307.camel@rzhang-dt>
+	id S1754445AbZDOBwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 21:52:07 -0400
+Date: Wed, 15 Apr 2009 11:52:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 14
+Message-Id: <20090415115201.5ff5db85.sfr@canb.auug.org.au>
+In-Reply-To: <20090415011512.GF10045@kroah.com>
+References: <20090414160809.e92d9d3e.sfr@canb.auug.org.au>
+	<20090415011512.GF10045@kroah.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 09:50 +0800, Zhang Rui wrote:
-> On Wed, 2009-04-15 at 07:59 +0800, Niel Lambrechts wrote:
-> > On 04/13/2009 10:34 PM, Henrique de Moraes Holschuh wrote:
-> > > On Mon, 13 Apr 2009, Niel Lambrechts wrote:
-> > >   
-> > >>>> In 2.6.29.1:
-> > >>>> lrwxrwxrwx 1 root root 0 Apr 12 20:01 /sys/class/backlight/acpi_video0
-> > >>>> -> ../../devices/virtual/backlight/acpi_video0
-> > >>>>         
-> > >
-> > > Well, that at least confirms that thinkpad-acpi doesn't have anything to
-> > > do with your troubles, you were using acpi video.
-> > >   
-> > 
-> > Okay, I've bisected it to:
-> > 
-> > 74a365b3f354fafc537efa5867deb7a9fadbfe27 is first bad commit
-> > commit 74a365b3f354fafc537efa5867deb7a9fadbfe27
-> > Author: Matthew Garrett <mjg59@srcf.ucam.org>
-> > Date:   Thu Mar 19 21:35:39 2009 +0000
-> > 
-> >     ACPI: Populate DIDL before registering ACPI video device on Intel
-> > 
-> 
-> please set CONFIG_DRM_I915_KMS, reload the ACPI video driver after
-> loading i915 and see if it helps.
-> 
-sorry, you don't need to reload the ACPI video driver...
+--Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> thanks,
-> rui
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hi Greg,
 
+On Tue, 14 Apr 2009 18:15:12 -0700 Greg KH <greg@kroah.com> wrote:
+>
+> Is linux-next open for 2.6.31 patches yet?  Or is that already happening
+> and I just missed the email somewhere?
+
+The reminder I send out is that I don't want 2.6.(x+1) stuff until
+2.6.x-rc1 is out.  (I wanted to wait for -rc2, but Andrew insisted.)
+
+So, "yes. yes." :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknlPcEACgkQjjKRsyhoI8wVlQCcCoqMbyjkdD4K1zFK05Yz+lEO
+IqEAn09jDzdJbG4LeBLeZ14Exnl4aynm
+=fauW
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__15_Apr_2009_11_52_01_+1000_D=7RYfTOnBcOhMAM--
