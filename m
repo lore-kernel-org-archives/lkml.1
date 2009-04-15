@@ -1,211 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZDOINZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbZDOINr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZDOINZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 04:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZDOINJ
+	id S1758258AbZDOINr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 04:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbZDOINY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 04:13:09 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:52252 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbZDOING (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 04:13:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=oy1WRvEtmaQbmQdZuIfT7OnJQFxywELKVF7sx5lKQMDZbJJwss1az/Z5UKFOV9HwYB
-         K3n6tkOMlU2VvXmvYM3HLH1uQ/ASl6yldk+4jVs6j6lE51LIumY/iRO+/I0QeZut32ei
-         h2StqQdOtHOjbmqz8ba1scfHtoDyk4o82iKkE=
-Date: Wed, 15 Apr 2009 10:13:00 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: tj@kernel.org, bharrosh@panasas.com, James.Bottomley@hansenpartnership.com,
-       linux-scsi@vger.kernel.org, axboe@kernel.dk, bzolnier@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/17] scsi: replace custom rq mapping with
-	blk_rq_map_kern_sgl()
-Message-ID: <20090415081259.GB11054@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tj@kernel.org,
-	bharrosh@panasas.com, James.Bottomley@hansenpartnership.com,
-	linux-scsi@vger.kernel.org, axboe@kernel.dk, bzolnier@gmail.com,
-	linux-kernel@vger.kernel.org
-References: <20090415084431H.fujita.tomonori@lab.ntt.co.jp> <49E561A0.7040607@kernel.org> <20090415072655.GA11054@liondog.tnic> <20090415164725S.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 15 Apr 2009 04:13:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47754 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756856AbZDOINV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 04:13:21 -0400
+Date: Wed, 15 Apr 2009 10:12:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: TRACE_BRANCH_PROFILING breaks gcc warnings
+Message-ID: <20090415081253.GE18192@elte.hu>
+References: <1239748090.4205.26.camel@johannes.local> <1239748293.21121.60.camel@localhost.localdomain> <20090415073720.GC18192@elte.hu> <20090415074659.GA21764@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090415164725S.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090415074659.GA21764@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Wed, Apr 15, 2009 at 04:48:35PM +0900, FUJITA Tomonori wrote:
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-[..]
-
-> I have some comments.
+> > > This has been mentioned before, and I've asked about sending a 
+> > > patch that would prevent TRACE_BRANCH_PROFILING from being 
+> > > selected with an allyesconfig.
+> > > 
+> > > It is easy to do. I could make it a selection and not a 
+> > > boolean and it will not select it as default, even for 
+> > > allyes/modconfig
 > 
+> We should have a symbol that is only set for allyesconfig builds.
 > 
-> > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> > index 35d0973..82c9339 100644
-> > --- a/drivers/ide/ide-cd.c
-> > +++ b/drivers/ide/ide-cd.c
-> > @@ -206,32 +206,21 @@ static void cdrom_analyze_sense_data(ide_drive_t *drive,
-> >  	ide_cd_log_error(drive->name, failed_command, sense);
-> >  }
-> >  
-> > -static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
-> > -				      struct request *failed_command)
-> > +static struct request *ide_cd_prep_sense(ide_drive_t *drive)
-> >  {
-> >  	struct cdrom_info *info	= drive->driver_data;
-> > -	struct request *rq	= &drive->request_sense_rq;
-> > -	struct bio *bio		= &drive->request_sense_bio;
-> > -	struct bio_vec *bvec	= drive->request_sense_bvec;
-> > -	unsigned int bvec_len	= ARRAY_SIZE(drive->request_sense_bvec);
-> > -	unsigned sense_len	= 18;
-> > -	int error;
-> > +	void *sense		= &info->sense_data;
-> > +	unsigned sense_len	= sizeof(struct request_sense);
-> > +	struct request *rq;
-> >  
-> >  	ide_debug_log(IDE_DBG_SENSE, "enter");
-> >  
-> > -	if (sense == NULL) {
-> > -		sense = &info->sense_data;
-> > -		sense_len = sizeof(struct request_sense);
-> > -	}
-> > -
-> >  	memset(sense, 0, sense_len);
-> >  
-> > -	/* stuff the sense request in front of our current request */
-> > -	blk_rq_init(NULL, rq);
-> > +	rq = blk_get_request(drive->queue, 0, __GFP_WAIT);
-> >  
-> > -	error = blk_rq_map_kern_prealloc(drive->queue, rq, bio, bvec, bvec_len,
-> > -					 sense, sense_len, true);
-> > -	BUG_ON(error);
-> > +	if (blk_rq_map_kern(drive->queue, rq, sense, sense_len, __GFP_WAIT))
-> > +		return NULL;
-> >  
-> >  	rq->rq_disk = info->disk;
-> >  
-> > @@ -241,18 +230,17 @@ static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
-> >  	rq->cmd_type = REQ_TYPE_SENSE;
-> >  	rq->cmd_flags |= REQ_PREEMPT;
-> >  
-> > -	/* NOTE! Save the failed command in "rq->special" */
-> > -	rq->special = (void *)failed_command;
-> > -
-> > -	if (failed_command)
-> > -		ide_debug_log(IDE_DBG_SENSE, "failed_cmd: 0x%x",
-> > -					     failed_command->cmd[0]);
-> > +	return rq;
-> > +}
-> >  
-> > -	drive->hwif->rq = NULL;
-> > +static void ide_cd_queue_rq_sense(ide_drive_t *drive)
-> > +{
-> > +	BUG_ON(!drive->rq_sense);
-> >  
-> > -	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
-> > +	elv_add_request(drive->queue, drive->rq_sense, ELEVATOR_INSERT_FRONT, 0);
-> >  }
-> >  
-> > +
-> >  static void ide_cd_complete_failed_rq(ide_drive_t *drive, struct request *rq)
-> >  {
-> >  	/*
-> > @@ -440,7 +428,7 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
-> >  
-> >  	/* if we got a CHECK_CONDITION status, queue a request sense command */
-> >  	if (stat & ATA_ERR)
-> > -		cdrom_queue_request_sense(drive, NULL, NULL);
-> > +		ide_cd_queue_rq_sense(drive);
-> >  	return 1;
-> >  
-> >  end_request:
-> > @@ -454,7 +442,7 @@ end_request:
-> >  
-> >  		hwif->rq = NULL;
-> >  
-> > -		cdrom_queue_request_sense(drive, rq->sense, rq);
-> > +		ide_cd_queue_rq_sense(drive);
-> >  		return 1;
-> >  	} else
-> >  		return 2;
-> > @@ -788,6 +776,10 @@ out_end:
-> >  
-> >  		ide_complete_rq(drive, uptodate ? 0 : -EIO, nsectors << 9);
-> >  
-> > +		/* our sense buffer got used, reset it the next time around. */
-> > +		if (sense)
-> > +			drive->rq_sense = NULL;
+> Then we could do something like:
 > 
-> Needs to call blk_put_request() here?
-
-No, because this is done by ide_complete_rq() above. Otherwise I'd be
-ending the sense request even it didn't get used. This way, I only use
-it if I call ide_cd_queue_rq_sense() from which cdrom_decode_status().
-
-> I guess that we also need to call blk_put_request() when ide_drive_s
-> is freed.
-
-That we need to do, thanks. Will update accordingly.
-
-> > +
-> >  		if (sense && rc == 2)
-> >  			ide_error(drive, "request sense failure", stat);
-> >  	}
-> > @@ -901,6 +893,25 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
-> >  		goto out_end;
-> >  	}
-> >  
-> > +	/*
-> > +	 * prepare request sense if it got used with the last rq
-> > +	 */
-> > +	if (!drive->rq_sense) {
-> > +		drive->rq_sense = ide_cd_prep_sense(drive);
-> > +		if (!drive->rq_sense) {
-> > +			printk(KERN_ERR "%s: error prepping sense request!\n",
-> > +					drive->name);
-> > +			return ide_stopped;
-> > +		}
-> > +	}
-> > +
-> > +	/*
-> > +	 * save the current request in case we'll be queueing a sense rq
-> > +	 * afterwards due to its potential failure.
-> > +	 */
-> > +	if (!blk_sense_request(rq))
-> > +		drive->rq_sense->special = (void *)rq;
-> > +
-> >  	memset(&cmd, 0, sizeof(cmd));
-> >  
-> >  	if (rq_data_dir(rq))
-> > diff --git a/include/linux/ide.h b/include/linux/ide.h
-> > index c942533..4c2d310 100644
-> > --- a/include/linux/ide.h
-> > +++ b/include/linux/ide.h
-> > @@ -605,6 +605,9 @@ struct ide_drive_s {
-> >  	struct request request_sense_rq;
-> >  	struct bio request_sense_bio;
-> >  	struct bio_vec request_sense_bvec[2];
+> config TRACE_BRANCH_PROFILING
+> 	depends on !ALLYESCONFIG
 > 
-> We can remove the above, right?
+> The advantage is that it is obvious why we have defiend it like 
+> this rather than some inverse symbols.
+> 
+> I looked at generating such symbol in kconfig long time ago but 
+> never finished it.
 
-id-atapi uses them too, see
-http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=commitdiff;h=9ac15840a6e5bf1fa6dce293484cb7aba4d078bb
+ah, nice idea! Should be fairly simple to do, right?
 
-They can go after I've converted ide-floppy and ide-tape to the same
-sense handling as ide-cd. I'm on it...
+The other option is to disable/remove the branch profiler 
+altogether.
 
--- 
-Regards/Gruss,
-    Boris.
+	Ingo
