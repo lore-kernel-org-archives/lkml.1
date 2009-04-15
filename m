@@ -1,135 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbZDOPxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbZDOP4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbZDOPxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZDOPxE
+	id S1754015AbZDOP4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZDOPz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:53:04 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:46363 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbZDOPxB (ORCPT
+	Wed, 15 Apr 2009 11:55:59 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:41418 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbZDOPz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:53:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=nG0ipdIexoWXZnSaImqvalUClqwAnArI+D2j68Kr/3hPVIWOaQOHyvMzDOmPLYyXfB
-         QkrjGGRCxfBZlZjfgg6DiSkUT3PAVH/i8ok38ql191y+LQ224u7kvKT0CEUOfwAJe5Gk
-         Qz7GaMzBJuLTxgblJPN+wgbCXtZ+b2HQd3BgE=
-Date: Wed, 15 Apr 2009 17:52:56 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Joe Perches <joe@perches.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RFC: introduce struct ksymbol
-Message-ID: <20090415155255.GD5989@nowhere>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com> <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu> <84144f020904142313m4da323fdj9a8becf3010c519c@mail.gmail.com> <20090415063106.GC12040@elte.hu>
+	Wed, 15 Apr 2009 11:55:58 -0400
+Message-ID: <49E603A9.2010004@oracle.com>
+Date: Wed, 15 Apr 2009 08:56:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090415063106.GC12040@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Justin Mattock <justinmattock@gmail.com>
+CC: Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] [PATCH] add missing definitions(letters) to 	HD-Audio.txt
+References: <dd18b0c30904141431x231a3251v438e365d512f9f95@mail.gmail.com>	 <s5hiql618mt.wl%tiwai@suse.de> <dd18b0c30904150835l6d246bbes648ad50e20690e7e@mail.gmail.com>
+In-Reply-To: <dd18b0c30904150835l6d246bbes648ad50e20690e7e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.49E60385.0032:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 08:31:06AM +0200, Ingo Molnar wrote:
+Justin Mattock wrote:
+> On Wed, Apr 15, 2009 at 4:03 AM, Takashi Iwai <tiwai@suse.de> wrote:
+>> At Tue, 14 Apr 2009 14:31:21 -0700,
+>> Justin Mattock wrote:
+>>> impact: Add missing definitions(letters).
+>>>
+>>> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+>> Thanks, applied now.
+>>
+>> (BTW, your patch couldn't be applied cleanly, partly because of
+>>  a wrong format and partly because of your MUA breaking the lines...)
+>>
+>>
+>> Takashi
+>>
+>>> ---
+>>>  Documentation/sound/alsa/HD-Audio.txt | 3 +++
+>>>  1 files changed,3 insertions(+),0 deletions(-)
+>>>
+>>> ===========================================================================================
+>>> ---- Documentation/sound/alsa/HD-Audio.txt        2009-04-14
+>>> 17:03:14.000000000 -0700
+>>> ++++ Documentation/sound/alsa/HD-Audio.txt        2009-04-14
+>>> 21:15:22.000000000 -0700
+>>> @@ -162,7 +162,7 @@
+>>>  What `model` option values are available depends on the codec chip.
+>>>  Check your codec chip from the codec proc file (see "Codec Proc-File"
+>>>  section below).  It will show the vendor/product name of your codec
+>>> -chip.  Then, see Documentation/sound/alsa/HD-Audio-Modelstxt file,
+>>> +chip.  Then, see Documentation/sound/alsa/HD-Audio-Models.txt file,
+>>>  the section of HD-audio driver.  You can find a list of codecs
+>>>  and `model` options belonging to each codec.  For example, for Realtek
+>>>  ALC262 codec chip, pass `model=ultra` for devices that are compatible
+>>> @@ -170,7 +170,7 @@
+>>>
+>>>  Thus, the first thing you can do for any brand-new, unsupported and
+>>>  non-working HD-audio hardware is to check HD-audio codec and several
+>>> -different `model` option values.  If you have a luck, some of them
+>>> +different `model` option values.  If you have any luck, some of them
+>>>  might suit with your device well.
+>>>
+>>>  Some codecs such as ALC880 have a special model option `model=test`.
+>>>
+>>> --
 > 
-> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> I went diff -u file.old file.new
+> (I'm not sure how to generate the
+> 1 files changed,2 etc... stuff)
+
+It's listed in Documentation/SubmittingPatches:  /diffstat/
+along with the expected patch format etc.
+Please read/use it.
+
+> And yes I will be honest I didn't test the patch.
+> (figured it wasn't that complicated, and I was tired).
 > 
-> > Hi Ingo,
-> > 
-> > On Wed, Apr 15, 2009 at 8:58 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > (Sam and Rusty Cc:-ed)
-> > >
-> > > * Joe Perches <joe@perches.com> wrote:
-> > >
-> > >> On Wed, 2009-04-15 at 02:00 +0200, Frederic Weisbecker wrote:
-> > >> > arch/blackfin/kernel/traps.c:   symname = kallsyms_lookup(address, &symsize, &offset, &modname, namebuf);
-> > >> > arch/powerpc/xmon/xmon.c:               name = kallsyms_lookup(pc, &size, &offset, NULL, tmpstr);
-> > >> > arch/sh/kernel/cpu/sh5/unwind.c:        sym = kallsyms_lookup(pc, NULL, &offset, NULL, namebuf);
-> > >> > arch/x86/kernel/ftrace.c:       kallsyms_lookup((unsigned long) syscall, NULL, NULL, NULL, str);
-> > >> > kernel/kprobes.c:               sym = kallsyms_lookup((unsigned long)p->addr, NULL,
-> > >> > kernel/lockdep.c:       return kallsyms_lookup((unsigned long)key, NULL, NULL, NULL, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup(rec->ip, NULL, NULL, &modname, str);
-> > >> > kernel/trace/ftrace.c:  kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
-> > >> > kernel/trace/trace_functions.c: kallsyms_lookup(ip, NULL, NULL, NULL, str);
-> > >> > kernel/trace/trace_output.c:    kallsyms_lookup(address, NULL, NULL, NULL, str);
-> > >>
-> > >> Perhaps a conversion from
-> > >>
-> > >> "char str[KSYM_SYMBOL_LEN]"
-> > >> to
-> > >> "struct ksymbol sym"?
-> > >>
-> > >> could be useful.
-> > >>
-> > >> There are a few places that use a hard coded length of 128
-> > >> instead of KSYM_SYMBOL_LENGTH that are also converted.
-> > >>
-> > >> Compile tested only
-> > >
-> > > Why not 'struct ksym'? That name is unused right now, it is shorter
-> > > and just as descriptive.
-> > >
-> > > Regarding the change... dunno. Sam, Rusty - what do you think?
-> > >
-> > > Downsides would be loss of awareness of stack footprint impact. A
-> > > plain struct is easy to slap on, and it's not immediately visible
-> > > that it carries 128 bytes of weight. It might also be confusing in
-> > > terms of the nature of the interface - whether it's a pointery
-> > > object or not.
-> > >
-> > > Prior use:
-> > >
-> > >        char str[KSYM_SYMBOL_LEN];
-> > >
-> > >        kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> > >
-> > > New use:
-> > >
-> > >        struct ksym sym;
-> > >
-> > >        kallsyms_lookup(rec->ip, NULL, NULL, NULL, &sym);
-> > >
-> > > Dunno.
-> > 
-> > The change makes sense to me. Passing a raw char pointer down the 
-> > call-chain is a buffer overflow waiting to happen and as a matter 
-> > of fact, we've had bugs in this area before. See commit 
-> > 9c24624727f6d6c460e45762a408ca5f5b9b8ef2 ("KSYM_SYMBOL_LEN fixes") 
-> > for an example.
-> 
-> OK.
-> 
-> Albeit i think that particular bug happened due to the ambigious 
-> namingof KSYM_SYMBOL_LEN versus KSYM_NAME_LEN. Who would have 
-> thought that there's a difference between the two and that there's a 
-> 'ksym symbol' versus 'ksym name' distinction?
-> 
-> It would be more robust to have just one length (the longer one), 
-> and maybe have the shorter one as __KSYM_NAME_LEN - for expert use.
+> If I find more I'll let you know.
+> (back to trying to get sound working on my imac).
 
 
-IMHO, I would prefer that rather than the struct ksym because of
-the obfuscation reasons you talked about previously.
-
-Frederic.
-
- 
-> 	Ingo
-
-
+-- 
+~Randy
