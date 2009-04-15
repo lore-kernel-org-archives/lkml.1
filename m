@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZDOO2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZDOOds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbZDOO2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZDOO2T
+	id S1754803AbZDOOds (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbZDOOdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:28:19 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47235 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752835AbZDOO2S (ORCPT
+	Wed, 15 Apr 2009 10:33:37 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:55974 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753749AbZDOOdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:28:18 -0400
-Date: Wed, 15 Apr 2009 07:30:01 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB storage no-boot regression (bisected)
-Message-ID: <20090415073001.503b0361@infradead.org>
-In-Reply-To: <49E5EE41.3090505@rtr.ca>
-References: <49E4FAC6.1030400@garzik.org>
-	<20090415014930.GA29413@kroah.com>
-	<49E5480F.10501@garzik.org>
-	<20090415050947.GB3462@kroah.com>
-	<49E5EE41.3090505@rtr.ca>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 15 Apr 2009 10:33:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=x/hhlGUL91jX0WA5srYRa5naZx7leceQMsPEt3ruNuNtAz4OGYDOhzUGJkQlQ8cuB8
+         QN0183k8eNKEooFxPSZzRUaLPDcPWjF2nlvogrMLZcoLY4xL+KHyDhE8lQ9V4oUmOquO
+         yB4RHnI8NrSje4wNXCbr9G2jw/0h2lGkVzF/k=
+Message-ID: <49E5F01B.2060201@tuffmail.co.uk>
+Date: Wed, 15 Apr 2009 15:32:59 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [FIXED] EEE PC hangs when booting off battery
+References: <49E065CF.6040408@tuffmail.co.uk> <200904140859.02188.bjorn.helgaas@hp.com> <20090414081728.10de978a@infradead.org> <200904140948.37633.bjorn.helgaas@hp.com>
+In-Reply-To: <200904140948.37633.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 10:25:05 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+Bjorn Helgaas wrote:
+> On Tuesday 14 April 2009 09:17:28 am Arjan van de Ven wrote:
+>   
+>> On Tue, 14 Apr 2009 08:59:01 -0600
+>> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+>>
+>>     
+>>> I can't help with the real problem of why the asynchronous battery
+>>> init causes the hang.
+>>>       
+>> that got fixed already for the module case.
+>>     
+>
+> But apparently still broken for the builtin case?  I think Alan is
+> running pretty new bits -- he said "latest git" on April 11.
+>   
 
-> Greg KH wrote:
-> > ..
-> > The issue is that you were just lucky that your machine worked
-> > properly previously.  My boxes with the same type of setup didn't,
-> > so I quickly realized what the root delay boot option was for.  You
-> > need to just do the same thing here, there's nothing else we can do.
-> ..
-> 
-> Bad excuse.
-> 
-> SATA drives also take variable amounts of time to "show up" at boot.
-> Perhaps Jeff should customize libata for your and Arjan's exact
-> setups, just to help with understanding the point here.  :)
+It's now fixed, in 2.6.30-rc2.  My battery is modular btw.  I suspect
 
-the difference is that with sata you know when you are done and have all
-possible drives. No so much much with USB. So with SATA we can, and do,
-wait for the scan to complete at the right point in the boot.
+5d38258ec026921a7b266f4047ebeaa75db358e5 "ACPI battery: fix async boot
+oops" [removal of __init]
 
-> 
-> The speed ups are fine (and welcome), but we really now need
-> Arjan to follow-up with a patch to have the kernel *by default*
-> wait a little longer for the rootfs to show up.
-> 
-> Not forever, just a few seconds to compensate for the regression.
+was not sufficient to fix my problem, but it was solved by the "real" fix,
 
-seconds!!!!!
-The whole kernel boots in half a second!
+d6de2c80e9d758d2e36c21699117db6178c0f517 "async: Fix module loading
+async-work regression" [module loading waits on async work]
 
-for this case, which is unfortunately not detectable by the kernel,
-there is the rootwait option.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+I would argue there's still a question over why the asynchronous battery
+init (_with_ the oops fix) should cause a hang in the idle routine.  But
+since the regression is fixed, it's not exactly an urgent question.
+
+Thanks
+Alan
