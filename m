@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbZDOU3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZDOUeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbZDOU3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 16:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZDOU3n
+	id S1755592AbZDOUeh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 16:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZDOUe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 16:29:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45338 "EHLO
+	Wed, 15 Apr 2009 16:34:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37921 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752376AbZDOU3m (ORCPT
+	by vger.kernel.org with ESMTP id S1752313AbZDOUe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 16:29:42 -0400
-Date: Wed, 15 Apr 2009 13:27:46 -0700
+	Wed, 15 Apr 2009 16:34:27 -0400
+Date: Wed, 15 Apr 2009 13:31:04 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, den@openvz.org
-Subject: Re: mmotm 2009-04-14-17-24 uploaded (mtd)
-Message-Id: <20090415132746.e45d8fd9.akpm@linux-foundation.org>
-In-Reply-To: <49E5FFB8.2020906@oracle.com>
-References: <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org>
-	<49E5FFB8.2020906@oracle.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: kronos.it@gmail.com, linux-kernel@vger.kernel.org, john@johnmccutchan.com,
+       rlove@rlove.org
+Subject: Re: [PATCH] Fix inconsistent lock state in inotify
+Message-Id: <20090415133104.5f248c1b.akpm@linux-foundation.org>
+In-Reply-To: <1239823895.2562.1.camel@localhost.localdomain>
+References: <20090410192533.GA24345@dreamland.darkstar.lan>
+	<20090414161329.094b977c.akpm@linux-foundation.org>
+	<68676e00904150459q6cc34f9fjb9475937a4e73c71@mail.gmail.com>
+	<20090415122532.0a0c5f24.akpm@linux-foundation.org>
+	<1239823895.2562.1.camel@localhost.localdomain>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,39 +31,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 08:39:36 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Wed, 15 Apr 2009 15:31:35 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-> 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-04-14-17-24 has been uploaded to
+> On Wed, 2009-04-15 at 12:25 -0700, Andrew Morton wrote:
+> > On Wed, 15 Apr 2009 13:59:29 +0200
+> > Luca Tettamanti <kronos.it@gmail.com> wrote:
 > > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
+> > > >> +++ b/fs/notify/inotify/inotify_user.c
+> > > >> @@ -220,7 +220,7 @@ static struct inotify_kernel_event * kernel_event(s32 wd, u32 mask, u32 cookie,
+> > > >>                               rem = 0;
+> > > >>               }
+> > > >>
+> > > >> -             kevent->name = kmalloc(len + rem, GFP_KERNEL);
+> > > >> +             kevent->name = kmalloc(len + rem, GFP_NOFS);
+> > > >>               if (unlikely(!kevent->name)) {
+> > > >>                       kmem_cache_free(event_cachep, kevent);
+> > > >>                       return NULL;
+> > > >
+> > > > Thanks.
+> > > >
+> > > > This is in fact a false positive and we plan to fix it via lockdep
+> > > > annotation.
+> > > 
+> > > Well, I trust you on the "false positive", but a few line before there this:
+> > > 
+> > >   kevent = kmem_cache_alloc(event_cachep, GFP_NOFS);
+> > > 
+> > > so can kmem_cache_alloc also use GFP_KERNEL?
 > > 
-> > and will soon be available at
+> > Yes, it looks that way.
 > > 
-> >    git://git.zen-sources.org/zen/mmotm.git
+> > umm, I think I'll merge your original patch as a reminder-to-self.
+> > If the problem doesn't get fixed in a better way for 2.6.30 then I
+> > might end up going with the GFP_NOFS approach.
 > > 
-> > It contains the following patches against 2.6.30-rc1:
+> > But it's bad to weaken the memory allocation mode just to plug a lockdep
+> > warning.
 > 
+> I swear, I'm fighting with my machines trying to get one to work so I
+> can test my lockdep fix today (and found a separate oddity/bug in the
+> process)
 > 
-> 
-> drivers/mtd/mtdcore.c:51: error: invalid operands to binary *
 
-hrm.  This, I suppose:
+heh, thanks.  No rush, it's a tiny problem.  Some time this week or
+next would be OK.
 
-From: Andrew Morton <akpm@linux-foundation.org>
-
---- a/drivers/mtd/mtdcore.c~mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix
-+++ a/drivers/mtd/mtdcore.c
-@@ -48,7 +48,7 @@ static LIST_HEAD(mtd_notifiers);
-  */
- static void mtd_release(struct device *dev)
- {
--	dev_t index = MTD_DEVT(dev_to_mtd(dev));
-+	dev_t index = MTD_DEVT(dev_to_mtd(dev)->index);
- 
- 	/* remove /dev/mtdXro node if needed */
- 	if (index)
-_
-
+I get all paranoid about things falling through cracks.
