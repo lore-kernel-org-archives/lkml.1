@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbZDOTrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZDOTrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755110AbZDOTrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 15:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZDOTrH
+	id S1755949AbZDOTrt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 15:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZDOTrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 15:47:07 -0400
-Received: from exprod6og108.obsmtp.com ([64.18.1.21]:41251 "HELO
-	exprod6og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752902AbZDOTrG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 15:47:06 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 15 Apr 2009 15:47:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52570 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753690AbZDOTri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 15:47:38 -0400
+Message-ID: <49E6397D.1020201@kernel.org>
+Date: Wed, 15 Apr 2009 12:46:05 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] net/sunrpc/svc.c: fix sparse warning
-Date: Wed, 15 Apr 2009 15:46:13 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8D20@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net/sunrpc/svc.c: fix sparse warning
-Thread-Index: Acm+AtV39LjdCuviRZmjMEuIOnSUvg==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Apr 2009 19:47:03.0267 (UTC) FILETIME=[F2FD5330:01C9BE02]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: [PATCH] x86: used used_vectors in init_IRQ
+References: <49E62DFD.6010904@kernel.org> <20090415192550.GA27004@elte.hu> <49E636F2.7030902@kernel.org> <20090415193827.GB32675@elte.hu>
+In-Reply-To: <20090415193827.GB32675@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse warning in net/sunrpc/svc.c.
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> Ingo Molnar wrote:
+>>
+>>> Note, i removed the -stable tag because i dont think .29 nor 
+>>> .30-rc2 is affected. Your patch to irqinit*.c (and the later 
+>>> unification by Pekka) is something still pending in the 
+>>> perfcounters and x86 trees, queued for .31.
+>> not sure .29, but it seems we need this for 2.6.30
+>>
 
-	warning: symbol 'node' shadows an earlier one
+you are right...
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+in trap_init with linus tree
 
----
+still have
+#ifdef CONFIG_X86_64
+        set_bit(IA32_SYSCALL_VECTOR, used_vectors);
+#else
+        set_bit(SYSCALL_VECTOR, used_vectors);
+#endif
 
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 8847add..e781135 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -122,7 +122,7 @@ module_param_call(pool_mode, param_set_pool_mode,
-param_get_pool_mode,
- static int
- svc_pool_map_choose_mode(void)
- {
--	unsigned int node;
-+	unsigned int nid;
- 
- 	if (num_online_nodes() > 1) {
- 		/*
-@@ -132,8 +132,8 @@ svc_pool_map_choose_mode(void)
- 		return SVC_POOL_PERNODE;
- 	}
- 
--	node = any_online_node(node_online_map);
--	if (nr_cpus_node(node) > 2) {
-+	nid = any_online_node(node_online_map);
-+	if (nr_cpus_node(nid) > 2) {
- 		/*
- 		 * Non-trivial SMP, or CONFIG_NUMA on
- 		 * non-NUMA hardware, e.g. with a generic 
+
+so one patch (merge irqinit_32/64) in tip for .31 expose that bug.
+
+aka we don't back port ...
+
+YH
