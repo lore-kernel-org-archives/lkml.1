@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZDOMT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbZDOMXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbZDOMT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 08:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757128AbZDOMTU
+	id S1758914AbZDOMXX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 08:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZDOMXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 08:19:20 -0400
-Received: from mx03.syneticon.net ([78.111.66.105]:34959 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753495AbZDOMTT (ORCPT
+	Wed, 15 Apr 2009 08:23:06 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:21518
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751829AbZDOMXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 08:19:19 -0400
-Message-ID: <49E5D0C1.6010608@wpkg.org>
-Date: Wed, 15 Apr 2009 14:19:13 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Wed, 15 Apr 2009 08:23:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAIRu5Ul8qNw9/2dsb2JhbADSX4N+Bg
+X-IronPort-AV: E=Sophos;i="4.40,192,1238947200"; 
+   d="scan'208";a="482651723"
+Message-ID: <49E5D1A2.7010901@eyal.emu.id.au>
+Date: Wed, 15 Apr 2009 22:22:58 +1000
+From: Eyal Lebedinsky <eyal@eyal.emu.id.au>
+Organization: Eyal at Home
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Fast testing
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.30-rc2
+References: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Wow. Nice machine. I wish I had one like that. And how long until
-> the GUI is usable again and you can actually continue working?
-> 
-> For comparison: my 3.4 GHz Pentium D takes 30 secs for kernel start
-> (ie. until it begins looking for the filesystems),
+I get a build failure with this one:
 
-Including all BIOS routines?
+   LD      vmlinux.o
+   MODPOST vmlinux.o
+WARNING: modpost: Found 1 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+   GEN     .version
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CC      init/version.o
+   LD      init/built-in.o
+   LD      .tmp_vmlinux1
+arch/x86/mm/built-in.o(.init.text+0x178a): In function `memtest':
+: undefined reference to `__udivdi3'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [sub-make] Error 2
 
+I have
+	gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
 
->  2 mins until the graphical login screen appears, and
-> 5 mins from logging in to the GUI being completely present.
+I know, very old Debian... but the doco says required version is 3.2.
 
-I have an old 366 MHz / 192 MB machine which boots to GUI much faster.
-
-Something's wrong with your setup (unless you start really lots of 
-things or have some other, "uncommon" things).
-
+A quick search indicates that this type of failure may be related to
+gcc version related optimization. I saw similar reports in linux-next recently.
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
-
-
+Eyal Lebedinsky	(eyal@eyal.emu.id.au)
