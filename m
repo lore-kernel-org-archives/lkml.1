@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbZDOMtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZDOMte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759990AbZDOMtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 08:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbZDOMtA
+	id S1759674AbZDOMte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 08:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759866AbZDOMtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 08:49:00 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:54467 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752743AbZDOMs7 (ORCPT
+	Wed, 15 Apr 2009 08:49:09 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:59275 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759523AbZDOMtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 08:48:59 -0400
-Date: Wed, 15 Apr 2009 08:41:38 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Brice Goglin <Brice.Goglin@inria.fr>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] migration: only migrate_prep() once per move_pages()
-In-Reply-To: <49E5A9DC.2050309@inria.fr>
-Message-ID: <alpine.DEB.1.10.0904150840450.10217@qirst.com>
-References: <49E58D7A.4010708@ens-lyon.org> <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com> <49E5A9DC.2050309@inria.fr>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 15 Apr 2009 08:49:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JyV3NZ3kr2xnvjKo2Kis+NuQ14ALsOWw+4ECA0uLg/WnbGUPKajF1BCc2uASJx5wK/
+         mJ4bAX3kZX7zddVFezgWpTKIoPPUokqtnWlE4/SmiWQ35yIEpRAwihBzlFoRvM5wyCrG
+         vLTsiUV9pcfHU1OFuH1oMehhwrjygzNuX7Skk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090409144611.GH7372@bombadil.infradead.org>
+References: <a4423d670904080603w50face2fl87cd16bd7967cb5d@mail.gmail.com>
+	 <20090408220921.GF7372@bombadil.infradead.org>
+	 <a4423d670904090146w2937bf15le2afb5dfad718f0e@mail.gmail.com>
+	 <20090409144611.GH7372@bombadil.infradead.org>
+Date: Wed, 15 Apr 2009 16:49:03 +0400
+Message-ID: <a4423d670904150549s48b844a7iba097acaf875b992@mail.gmail.com>
+Subject: Re: 2.6.30-rc1: parisc: system hangs on boot at __schedule()
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux-parisc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009, Brice Goglin wrote:
-
-> But lru_add_drain_all() touches some code that I am far from
-> understanding :/ Can we imagine using IPI instead of a deferred
-> work_struct for this kind of things? Or maybe, for each processor, check
-> whether drain_cpu_pagevecs() would have something to do before actually
-> scheduling the local work_struct? It's racy, but migrate_prep() doesn't
-> guarantee anyway that pages won't be moved out of the LRU before the
-> actual migration, so...
-
-IPI means that code must run with interrupts disabled.
-
-> > BTW, current users of sys_move_pages() does retry when it gets -EBUSY ?
-> >
+2009/4/9 Kyle McMartin <kyle@mcmartin.ca>:
+> On Thu, Apr 09, 2009 at 12:46:15PM +0400, Alexander Beregalov wrote:
+>> 2009/4/9 Kyle McMartin <kyle@mcmartin.ca>:
+>> > On Wed, Apr 08, 2009 at 05:03:04PM +0400, Alexander Beregalov wrote:
+>> >> Hi
+>> >>
+>> >> Machine is HP j6000.
+>> >> CPU(s): 2 x PA8700 (PCX-W2) at 750.000000 MHz
+>> >>
+>> >> gcc version 4.3.3 (Gentoo 4.3.3-r2 p1.1, pie-10.1.5)
+>> >>
+>> >>
+>> >> Machine hangs before starting rc scripts, but SysRq and C-A-Del work.
+>> >>
+>> >> All tasks are at __schedule+0x268/0x7bc:
+>> >>
+>> >
+>> > .config?
+>>
+>> Sorry, attached.
 >
-> I'd say they ignore it since it doesn't happen often :)
+> Thanks, I swapped disks into my j6700 and will try to reproduce.
 
-Right.
+It seems the problem is the same as mentioned here:
+http://marc.info/?l=linux-kernel&m=123920746830420&w=2
 
+The patch  fixes the issue.
+
+James?
+The same problem on two of my hosts: x86_64 with LSI SAS MegaRAID
+and parisc with SYM53C8XX_2
