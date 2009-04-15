@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZDOWb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZDOWcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZDOWb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 18:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZDOWbr
+	id S1756218AbZDOWcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 18:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZDOWcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 18:31:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53138 "EHLO
+	Wed, 15 Apr 2009 18:32:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47126 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752104AbZDOWbq (ORCPT
+	by vger.kernel.org with ESMTP id S1752104AbZDOWcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 18:31:46 -0400
-Date: Wed, 15 Apr 2009 15:26:35 -0700
+	Wed, 15 Apr 2009 18:32:06 -0400
+Date: Wed, 15 Apr 2009 15:27:04 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Harry Ciao <qingtao.cao@windriver.com>
 Cc: norsk5@yahoo.com, michael@ellerman.id.au,
        bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [v2 PATCH 0/3] Add CPC925 Memory Controller EDAC drivers
-Message-Id: <20090415152635.2e1e260a.akpm@linux-foundation.org>
-In-Reply-To: <1239602716-18352-1-git-send-email-qingtao.cao@windriver.com>
+Subject: Re: [v2 PATCH 1/3] EDAC: Add CPC925 Memory Controller driver
+Message-Id: <20090415152704.b7ebddc7.akpm@linux-foundation.org>
+In-Reply-To: <1239602716-18352-2-git-send-email-qingtao.cao@windriver.com>
 References: <1239602716-18352-1-git-send-email-qingtao.cao@windriver.com>
+	<1239602716-18352-2-git-send-email-qingtao.cao@windriver.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,23 +29,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009 14:05:13 +0800
+On Mon, 13 Apr 2009 14:05:14 +0800
 Harry Ciao <qingtao.cao@windriver.com> wrote:
 
-> 
-> Hi Doug and Michael,
-> 
-> This is the latest v2 patches, the 1/3 of CPC925 MC EDAC driver remains
-> the same as before, the 2/3 has been pushed to Andrew already, and the 
-> 3/3 has integrated Michael's suggestions to add a fixup routine for the 
-> memory controller on Maple that has incorrect number of cells, and create
-> related platform_device for CPC925 on Motorola ATCA-6101 target by far.
-> 
-> All patches have been tested, please give me your further concerns or 
-> suggestions, thanks!
+> Introduce IBM CPC925 EDAC driver, which makes use of ECC, CPU and
+> HyperTransport Link error detections and corrections on the IBM
+> CPC925 Bridge and Memory Controller.
 
-For some reason I didn't have 2/3 anywhere.
+A wee cleanup:
 
-I'll plan to merge all these into 2.6.31 unless someone shouts at me.
-
+--- a/drivers/edac/cpc925_edac.c~edac-add-cpc925-memory-controller-driver-cleanup
++++ a/drivers/edac/cpc925_edac.c
+@@ -291,9 +291,6 @@ struct cpc925_dev_info {
+ 	void (*check)(struct edac_device_ctl_info *edac_dev);
+ };
+ 
+-
+-static int edac_mc_idx;
+-
+ /* Get total memory size from Open Firmware DTB */
+ static void get_total_mem(struct cpc925_mc_pdata *pdata)
+ {
+@@ -866,6 +863,7 @@ static int cpc925_mc_get_channels(void _
+ 
+ static int __devinit cpc925_probe(struct platform_device *pdev)
+ {
++	static int edac_mc_idx;
+ 	struct mem_ctl_info *mci;
+ 	void __iomem *vbase;
+ 	struct cpc925_mc_pdata *pdata;
+_
 
