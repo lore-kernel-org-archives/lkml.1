@@ -1,192 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbZDOONe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbZDOOS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757117AbZDOONe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbZDOONQ
+	id S1753720AbZDOOS1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbZDOOSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:13:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57638 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756744AbZDOONO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:13:14 -0400
-Date: Wed, 15 Apr 2009 10:10:49 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, fernando@oss.ntt.co.jp, nauman@google.com,
-       jmoyer@redhat.com, balbir@linux.vnet.ibm.com
-Subject: Re: dm-ioband: Test results.
-Message-ID: <20090415141049.GA15067@redhat.com>
-References: <20090413.130552.226792299.ryov@valinux.co.jp> <20090415043759.GA8349@redhat.com> <20090415.223832.71125857.ryov@valinux.co.jp>
+	Wed, 15 Apr 2009 10:18:17 -0400
+Received: from web65503.mail.ac4.yahoo.com ([76.13.9.47]:31836 "HELO
+	web65503.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752965AbZDOOSQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 10:18:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=uThcUmwf9YKAkLG00HR+UwLAe2o4TvYD4fggTMP4dTEwX+ZI1n+uYZonvhL4GFj7sm7VFCD09fb6BnTdojyVgpEjvODrZpt3liP0VMDb2YFisu87rC7E6oQ5Rh3H0wCRKokXviG+rQx5sdy3ISnS4V6lSpcmjao0Qpc8cyhmgU8=;
+Message-ID: <344183.64836.qm@web65503.mail.ac4.yahoo.com>
+X-YMail-OSG: S9QnpwcVM1kdaQXhwJt3IQv4CpQWbD22oVE_rDRAzzkaA5.wlX..EVa_cnlVwZsfy8mZK6nJzv2Nc9MVNSFnzpmWw1PVmpWReEqKXW7bTYhj5DaqHSeJo78T4yVHU_EVEsRHR5UHE06ndUrOITg42noexLYbe4DB7FV.YAgRDplWlEiGtqtbXnV6cB374XMimb2Bof5xf7ZGRGTIdp5GYJ7npwjMIDoeohQNNjyYemw_DO2TtRjIuy8gFz_Fx.3Sw2DT13H3QHbra12bbFCCBViZ
+X-Mailer: YahooMailWebService/0.7.289.1
+Date: Wed, 15 Apr 2009 07:18:13 -0700 (PDT)
+From: Jerry Wang <jerry18th@yahoo.com>
+Reply-To: jerry18th@yahoo.com
+Subject: Linux Kernel Cross-Compiling question
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415.223832.71125857.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 10:38:32PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek, 
-> 
-> > In the beginning of the mail, i am listing some basic test results and
-> > in later part of mail I am raising some of my concerns with this patchset.
-> 
-> I did a similar test and got different results to yours. I'll reply
-> later about the later part of your mail.
-> 
-> > My test setup:
-> > --------------
-> > I have got one SATA driver with two partitions /dev/sdd1 and /dev/sdd2 on
-> > that. I have created ext3 file systems on these partitions. Created one
-> > ioband device "ioband1" with weight 40 on /dev/sdd1 and another ioband
-> > device "ioband2" with weight 10 on /dev/sdd2.
-> >   
-> > 1) I think an RT task with-in a group does not get its fair share (all
-> >   the BW available as long as RT task is backlogged). 
-> > 
-> >   I launched one RT read task of 2G file in ioband1 group and in parallel
-> >   launched more readers in ioband1 group. ioband2 group did not have any
-> >   io going. Following are results with and without ioband.
-> > 
-> >   A) 1 RT prio 0 + 1 BE prio 4 reader
-> > 
-> > 	dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 39.4701 s, 54.4 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 71.8034 s, 29.9 MB/s
-> > 
-> > 	without-dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 35.3677 s, 60.7 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 70.8214 s, 30.3 MB/s
-> > 
-> >   B) 1 RT prio 0 + 2 BE prio 4 reader
-> > 
-> > 	dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 43.8305 s, 49.0 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 135.395 s, 15.9 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 136.545 s, 15.7 MB/s
-> > 
-> > 	without-dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 35.3177 s, 60.8 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 124.793 s, 17.2 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 126.267 s, 17.0 MB/s
-> > 
-> >   C) 1 RT prio 0 + 3 BE prio 4 reader
-> > 
-> > 	dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 48.8159 s, 44.0 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 185.848 s, 11.6 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 188.171 s, 11.4 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 189.537 s, 11.3 MB/s
-> > 
-> > 	without-dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 35.2928 s, 60.8 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 169.929 s, 12.6 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 172.486 s, 12.5 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 172.817 s, 12.4 MB/s
-> > 
-> >   C) 1 RT prio 0 + 3 BE prio 4 reader
-> > 	dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 51.4279 s, 41.8 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 260.29 s, 8.3 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 261.824 s, 8.2 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 261.981 s, 8.2 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 262.372 s, 8.2 MB/s
-> > 
-> > 	without-dm-ioband
-> > 	2147483648 bytes (2.1 GB) copied, 35.4213 s, 60.6 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 215.784 s, 10.0 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 218.706 s, 9.8 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 220.12 s, 9.8 MB/s
-> > 	2147483648 bytes (2.1 GB) copied, 220.57 s, 9.7 MB/s
-> > 
-> > Notice that with dm-ioband as number of readers are increasing, finish
-> > time of RT tasks is also increasing. But without dm-ioband finish time
-> > of RT tasks remains more or less constat even with increase in number
-> > of readers.
-> > 
-> > For some reason overall throughput also seems to be less with dm-ioband.
-> > Because ioband2 is not doing any IO, i expected that tasks in ioband1
-> > will get full disk BW and throughput will not drop.
-> > 
-> > I have not debugged it but I guess it might be coming from the fact that
-> > there are no separate queues for RT tasks. bios from all the tasks can be
-> > buffered on a single queue in a cgroup and that might be causing RT
-> > request to hide behind BE tasks' request?
-> 
-> I followed your setup and ran the following script on my machine.
-> 
->         #!/bin/sh
->         echo 1 > /proc/sys/vm/drop_caches
->         ionice -c1 -n0 dd if=/mnt1/2g.1 of=/dev/null &
->         ionice -c2 -n4 dd if=/mnt1/2g.2 of=/dev/null &
->         ionice -c2 -n4 dd if=/mnt1/2g.3 of=/dev/null &
->         ionice -c2 -n4 dd if=/mnt1/2g.4 of=/dev/null &
->         wait
-> 
-> I got different results and there is no siginificant difference each
-> dd's throughput between w/ and w/o dm-ioband. 
-> 
->     A) 1 RT prio 0 + 1 BE prio 4 reader
->         w/ dm-ioband
->         2147483648 bytes (2.1 GB) copied, 64.0764 seconds, 33.5 MB/s
->         2147483648 bytes (2.1 GB) copied, 99.0757 seconds, 21.7 MB/s
->         w/o dm-ioband
->         2147483648 bytes (2.1 GB) copied, 62.3575 seconds, 34.4 MB/s
->         2147483648 bytes (2.1 GB) copied, 98.5804 seconds, 21.8 MB/s
-> 
->     B) 1 RT prio 0 + 2 BE prio 4 reader
->         w/ dm-ioband
->         2147483648 bytes (2.1 GB) copied, 64.5634 seconds, 33.3 MB/s
->         2147483648 bytes (2.1 GB) copied, 220.372 seconds, 9.7 MB/s
->         2147483648 bytes (2.1 GB) copied, 222.174 seconds, 9.7 MB/s
->         w/o dm-ioband
->         2147483648 bytes (2.1 GB) copied, 62.3036 seconds, 34.5 MB/s
->         2147483648 bytes (2.1 GB) copied, 226.315 seconds, 9.5 MB/s
->         2147483648 bytes (2.1 GB) copied, 229.064 seconds, 9.4 MB/s
-> 
->     C) 1 RT prio 0 + 3 BE prio 4 reader
->         w/ dm-ioband
->         2147483648 bytes (2.1 GB) copied, 66.7155 seconds, 32.2 MB/s
->         2147483648 bytes (2.1 GB) copied, 306.524 seconds, 7.0 MB/s
->         2147483648 bytes (2.1 GB) copied, 306.627 seconds, 7.0 MB/s
->         2147483648 bytes (2.1 GB) copied, 306.971 seconds, 7.0 MB/s
->         w/o dm-ioband
->         2147483648 bytes (2.1 GB) copied, 66.1144 seconds, 32.5 MB/s
->         2147483648 bytes (2.1 GB) copied, 305.5 seconds, 7.0 MB/s
->         2147483648 bytes (2.1 GB) copied, 306.469 seconds, 7.0 MB/s
->         2147483648 bytes (2.1 GB) copied, 307.63 seconds, 7.0 MB/s
-> 
-> The results show that the effect of the single queue is too small and
-> dm-ioband doesn't break CFQ's classification and priority.
-> What do you think about my results?
 
-Hmm..., strange. We are getting different results.  May be it is some
-configuration/setup issue.
+Hi,
 
-How does your ioband setup looks like. Have you created at least one more
-competing ioband device? Because I think only in that case you have got
-this ad-hoc logic of waiting for the group which has not finished the
-tokens yet and you will end up buffering the bio in a FIFO.
+I am trying to cross-compile the linux 2.6.11.1 kernel on
+i686 vm for ppc, and I've been getting the following
+errors. Has anyone had this issue before?
 
-If you have not already done, can you just create two partitions on your
-disk, say sda1 and sda2. Create two ioband devices with weights say 95
-and 5 (95% of disk for first partition and 5% for other) and then run
-the above test on first ioband device.
+Thanks,
+Jerry 
 
-So how does this proportional weight thing works. If I have got two ioband
-devices with weight 80 and 20 and if there is no IO happening on the
-second device, first devices should get all the BW?
+> In file included from arch/ppc/kernel/asm-offsets.c:13:
+> include/linux/sched.h: In function
+> `arch_pick_mmap_layout':
+> include/linux/sched.h:1174: error: `CONFIG_TASK_SIZE'
+> undeclared (first use in this function)
+> include/linux/sched.h:1174: error: (Each undeclared
+> identifier is reported only once
+> include/linux/sched.h:1174: error: for each function it
+> appears in.)
+> In file included from include/linux/mman.h:5,
+>                  from arch/ppc/kernel/asm-offsets.c:19:
+> include/linux/mm.h: In function `lowmem_page_address':
+> include/linux/mm.h:437: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> In file included from arch/ppc/kernel/asm-offsets.c:21:
+> include/asm/io.h: In function `virt_to_bus':
+> include/asm/io.h:396: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> include/asm/io.h: In function `bus_to_virt':
+> include/asm/io.h:407: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> include/asm/io.h: In function `virt_to_phys':
+> include/asm/io.h:420: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> include/asm/io.h: In function `phys_to_virt':
+> include/asm/io.h:429: error: `CONFIG_KERNEL_START'
+> undeclared (first use in this function)
+> arch/ppc/kernel/asm-offsets.c: In function `main':
+> arch/ppc/kernel/asm-offsets.c:139: error:
+> `CONFIG_TASK_SIZE' undeclared (first use in this
+> function)
+> make[1]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
+> make: *** [arch/ppc/kernel/asm-offsets.s] Error 2
 
-I will re-run my tests.
 
-Secondly from technical point of view how do you explain the fact that
-FIFO release of bio does not break the notion of CFQ priority? The moment
-you buffered the bios in a single queue and started doing FIFO dispatch,
-you lost that notion of one bio being more important than other.
-
-That's a different thing that in practice it might not be easily visible.
-
-Thanks
-Vivek
+      
