@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZDORGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbZDORLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbZDORGa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 13:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZDORGU
+	id S1752617AbZDORLr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 13:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZDORLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 13:06:20 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:43157 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbZDORGT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 13:06:19 -0400
-X-IronPort-AV: E=Sophos;i="4.40,192,1238976000"; 
-   d="scan'208";a="155029297"
-Date: Wed, 15 Apr 2009 10:06:17 -0700
-From: VomLehn <dvomlehn@cisco.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: USB storage no-boot regression (bisected)
-Message-ID: <20090415170617.GA14485@cuplxvomd02.corp.sa.net>
-References: <Pine.LNX.4.44L0.0904151146210.3072-100000@iolanthe.rowland.org> <49E60219.9080103@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E60219.9080103@rtr.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Wed, 15 Apr 2009 13:11:38 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:56019 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZDORLh (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 13:11:37 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-04-14-17-24 uploaded
+In-Reply-To: Your message of "Wed, 15 Apr 2009 08:27:19 PDT."
+             <49E5FCD7.8060902@linux.intel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org> <22518.1239773374@turing-police.cc.vt.edu>
+            <49E5FCD7.8060902@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1239815458_5930P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 15 Apr 2009 13:10:58 -0400
+Message-ID: <24159.1239815458@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 11:49:45AM -0400, Mark Lord wrote:
-> Alan Stern wrote:
->> On Wed, 15 Apr 2009, Alan Cox wrote:
->>
->>> Why should every user suffer a slower boot and a poorer resume time ?
->>>
->>> Instead make the root fs mounting look like this
->>>
->>>
->>> 	while(my_rootfs_hasnt_appeared_and_i_am_sad()) {
->>> 		wait_on(&new_disk_discovery);
->>> 	}
->>>
->>> and poke the queue whenever we add a relevant device.
->>>
->>> That way if you are booting off an initrd you can finish the SATA probe
->>> in parallel to getting userspace ticking over.
->>>
->>> On what is nowdays essentially a hot plug system it all needs turning
->>> this way up - eg RAID volumes should assemble and come online as the
->>> drives are discovered not at some fixed point later in userspace.
->>
->> Indeed, something like this should also be used for  
->> resume-from-hibernation, to wait for the swap device.
-> ..
->
-> It just needs a way to set a finite timeout, so that server room
-> equipment can auto-panic-reboot and try again if a device has died.
+--==_Exmh_1239815458_5930P
+Content-Type: text/plain; charset=us-ascii
 
-The problem with USB root devices is the same one I brought up a couple of
-weeks ago--faster booting means that USB boot devices fail. We now have
-problems with three different classes of devices:
+On Wed, 15 Apr 2009 08:27:19 PDT, Arjan van de Ven said:
 
-o	Disks
-o	Network devices
-o	Serial consoles
+> it depends on a patch that now has gone mainline....
 
-Saying that we were "lucky" that things worked before is no help and
-you should be aware that it ticks people off. I agree that this is not a
-USB problem, but there is a *very* real problem:
+OK, I just reverted it locally, and will assume we just hit a race condition
+with the timing of pull requests and when Andrew created the origin.patch
+and linux-next.patch.  If it's still wrecked in the next mmotm tarball that
+Andrew posts, I'll follow up then.
 
-     The work to decrease boot time has exposed race conditions that
-     always existed, but are now making the kernel less usable.
 
-So, instead of spending time denying that there is a USB problem, let's
-focus on solve the boot device synchronization problem.  I have already
-posted a (probably incomplete, possibly wrong) patch to synchronize console
-initialization. We need to do the same for other boot devices, too.
+--==_Exmh_1239815458_5930P
+Content-Type: application/pgp-signature
 
-David VomLehn
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ5hUicC3lWbTT17ARAmPsAKC93Swl/Ynko800Jdv2wuvwOGC9nwCglICc
+5NHOjvn+Oo317bBTdj8WtEA=
+=qA5G
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1239815458_5930P--
