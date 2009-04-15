@@ -1,252 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZDOJYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZDOJaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbZDOJYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 05:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbZDOJYN
+	id S1756705AbZDOJaX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 05:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZDOJaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 05:24:13 -0400
-Received: from sh.osrg.net ([192.16.179.4]:35108 "EHLO sh.osrg.net"
+	Wed, 15 Apr 2009 05:30:06 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:58819 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774AbZDOJYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 05:24:12 -0400
-Date: Wed, 15 Apr 2009 18:22:41 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] dma-debug: add dma_debug_resize_entries() to
-	adjust the number of dma_debug_entries
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090414105823.GL3558@elte.hu>
-References: <1239669799-23579-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20090414105823.GL3558@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1753464AbZDOJaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 05:30:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090415182234R.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 15 Apr 2009 18:22:41 +0900 (JST)
+Message-ID: <18917.43269.907035.106694@cargo.ozlabs.ibm.com>
+Date: Wed, 15 Apr 2009 19:29:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: [git pull] Please pull powerpc.git merge branch
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 12:58:23 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Linus,
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > +int dma_debug_resize_entries(u32 num_entries)
-> > +{
-> > +	int i, delta, ret = 0;
-> > +	unsigned long flags;
-> > +	struct dma_debug_entry *entry;
-> > +
-> > +	spin_lock_irqsave(&free_entries_lock, flags);
-> > +
-> > +	if (nr_total_entries < num_entries) {
-> > +		delta = num_entries - nr_total_entries;
-> > +
-> > +		for (i = 0; i < delta; i++) {
-> > +			entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
-> > +			if (!entry)
-> > +				break;
-> 
-> hm, using GFP_ATOMIC within a spinlock is not a very nice thing to 
-> do in general. While this is boot-only and the GFP_ATOMIC will 
-> likely succeed, this could become non-boot functionality and then 
-> it's exposed to the momentary VM pressure situation that might make 
-> GFP_ATOMIC fail.
-> 
-> Please fix this to be GFP_KERNEL.
+Please pull from the 'merge' branch of
 
-Ok, fixed though I'm not sure it matters. It's unlikely that this could
-become non-boot functionality so I chose a simple way.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-I've attached a fixed patch. It's unlikely that this function is
-called concurrently so I don't try hard.
+to get a collection of bug fixes, a documentation update and a
+defconfig update for powerpc.
 
+The commit from Hugh Dickins is not strictly a bugfix, but it is
+small, obvious, only affects people using a very specialized embedded
+setup (those using 256kB pages on PPC44x embedded systems), and I got
+prodded by Andrew Morton about it, so I put it in.
 
-> a small detail:
-> 
-> > +		delta = nr_total_entries - num_entries;
-> > +
-> > +		for (i = 0; i < delta && !list_empty(&free_entries); i++) {
-> > +			entry = __dma_entry_alloc();
-> > +			kfree(entry);
-> > +		}
-> > +
-> > +		nr_total_entries -= i;
-> > +	}
-> 
-> Can i != delta ever happen? It would suggest the list length being 
-> out of sync with the nr_total_entries counter.
+Thanks,
+Paul.
 
-Yes, it can happen because only free entries are linked to
-free_entries list. If some entries are already used, then it's
-possible that we can't find enough entries in free_entries list here.
+ Documentation/powerpc/dts-bindings/fsl/i2c.txt |   46 +++++--
+ arch/powerpc/Kconfig                           |    2 
+ arch/powerpc/boot/dts/tqm8540.dts              |    4 -
+ arch/powerpc/boot/dts/tqm8541.dts              |    4 -
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts     |    8 +
+ arch/powerpc/boot/dts/tqm8548.dts              |    8 +
+ arch/powerpc/boot/dts/tqm8555.dts              |    4 -
+ arch/powerpc/boot/dts/tqm8560.dts              |    4 -
+ arch/powerpc/configs/85xx/tqm8548_defconfig    |  164 +++++++-----------------
+ arch/powerpc/include/asm/futex.h               |   12 +-
+ arch/powerpc/include/asm/mmu.h                 |    6 +
+ arch/powerpc/include/asm/ppc-opcode.h          |   13 ++
+ arch/powerpc/kernel/cputable.c                 |    2 
+ arch/powerpc/mm/tlb_nohash.c                   |    1 
+ arch/powerpc/mm/tlb_nohash_low.S               |   14 ++
+ arch/powerpc/platforms/pseries/dtl.c           |    1 
+ arch/powerpc/platforms/pseries/eeh_driver.c    |    2 
+ include/linux/fsl_devices.h                    |    4 -
+ 18 files changed, 136 insertions(+), 163 deletions(-)
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] dma-debug: add dma_debug_resize_entries() to adjust the number of dma_debug_entries
+Hugh Dickins (1):
+      powerpc: Allow 256kB pages with SHMEM
 
-We use a static value for the number of dma_debug_entries. It can be
-overwritten by a kernel command line option.
+Kumar Gala (3):
+      powerpc: Fix tlbilx opcode
+      powerpc: Add support for early tlbilx opcode
+      powerpc/mm: Fix compile warning
 
-Some IOMMUs (e.g. GART) can't set an appropriate value by a kernel
-command line option because they can't know such value until they
-finish initializing up their hardware.
+Mike Mason (1):
+      powerpc/pseries: Set error_state to pci_channel_io_normal in eeh_report_reset()
 
-This patch adds dma_debug_resize_entries() enables IOMMUs to adjust
-the number of dma_debug_entries anytime.
+Paul Mackerras (1):
+      powerpc: Fix data-corrupting bug in __futex_atomic_op
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/linux/dma-debug.h |    7 ++++
- lib/dma-debug.c           |   72 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 73 insertions(+), 6 deletions(-)
+Sachin Sant (1):
+      powerpc: pseries/dtl.c should include asm/firmware.h
 
-diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index 28d53cb..171ad8a 100644
---- a/include/linux/dma-debug.h
-+++ b/include/linux/dma-debug.h
-@@ -32,6 +32,8 @@ extern void dma_debug_add_bus(struct bus_type *bus);
- 
- extern void dma_debug_init(u32 num_entries);
- 
-+extern int dma_debug_resize_entries(u32 num_entries);
-+
- extern void debug_dma_map_page(struct device *dev, struct page *page,
- 			       size_t offset, size_t size,
- 			       int direction, dma_addr_t dma_addr,
-@@ -91,6 +93,11 @@ static inline void dma_debug_init(u32 num_entries)
- {
- }
- 
-+static inline int dma_debug_resize_entries(u32 num_entries)
-+{
-+	return 0;
-+}
-+
- static inline void debug_dma_map_page(struct device *dev, struct page *page,
- 				      size_t offset, size_t size,
- 				      int direction, dma_addr_t dma_addr,
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index d3da7ed..5d61019 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -85,6 +85,7 @@ static u32 show_num_errors = 1;
- 
- static u32 num_free_entries;
- static u32 min_free_entries;
-+static u32 nr_total_entries;
- 
- /* number of preallocated entries requested by kernel cmdline */
- static u32 req_entries;
-@@ -257,6 +258,21 @@ static void add_dma_entry(struct dma_debug_entry *entry)
- 	put_hash_bucket(bucket, &flags);
- }
- 
-+static struct dma_debug_entry *__dma_entry_alloc(void)
-+{
-+	struct dma_debug_entry *entry;
-+
-+	entry = list_entry(free_entries.next, struct dma_debug_entry, list);
-+	list_del(&entry->list);
-+	memset(entry, 0, sizeof(*entry));
-+
-+	num_free_entries -= 1;
-+	if (num_free_entries < min_free_entries)
-+		min_free_entries = num_free_entries;
-+
-+	return entry;
-+}
-+
- /* struct dma_entry allocator
-  *
-  * The next two functions implement the allocator for
-@@ -276,9 +292,7 @@ static struct dma_debug_entry *dma_entry_alloc(void)
- 		goto out;
- 	}
- 
--	entry = list_entry(free_entries.next, struct dma_debug_entry, list);
--	list_del(&entry->list);
--	memset(entry, 0, sizeof(*entry));
-+	entry = __dma_entry_alloc();
- 
- #ifdef CONFIG_STACKTRACE
- 	entry->stacktrace.max_entries = DMA_DEBUG_STACKTRACE_ENTRIES;
-@@ -286,9 +300,6 @@ static struct dma_debug_entry *dma_entry_alloc(void)
- 	entry->stacktrace.skip = 2;
- 	save_stack_trace(&entry->stacktrace);
- #endif
--	num_free_entries -= 1;
--	if (num_free_entries < min_free_entries)
--		min_free_entries = num_free_entries;
- 
- out:
- 	spin_unlock_irqrestore(&free_entries_lock, flags);
-@@ -310,6 +321,53 @@ static void dma_entry_free(struct dma_debug_entry *entry)
- 	spin_unlock_irqrestore(&free_entries_lock, flags);
- }
- 
-+int dma_debug_resize_entries(u32 num_entries)
-+{
-+	int i, delta, ret = 0;
-+	unsigned long flags;
-+	struct dma_debug_entry *entry;
-+	LIST_HEAD(tmp);
-+
-+	spin_lock_irqsave(&free_entries_lock, flags);
-+
-+	if (nr_total_entries < num_entries) {
-+		delta = num_entries - nr_total_entries;
-+
-+		spin_unlock_irqrestore(&free_entries_lock, flags);
-+
-+		for (i = 0; i < delta; i++) {
-+			entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-+			if (!entry)
-+				break;
-+
-+			list_add_tail(&entry->list, &tmp);
-+		}
-+
-+		spin_lock_irqsave(&free_entries_lock, flags);
-+
-+		list_splice(&tmp, &free_entries);
-+		nr_total_entries += i;
-+		num_free_entries += i;
-+	} else {
-+		delta = nr_total_entries - num_entries;
-+
-+		for (i = 0; i < delta && !list_empty(&free_entries); i++) {
-+			entry = __dma_entry_alloc();
-+			kfree(entry);
-+		}
-+
-+		nr_total_entries -= i;
-+	}
-+
-+	if (nr_total_entries != num_entries)
-+		ret = 1;
-+
-+	spin_unlock_irqrestore(&free_entries_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(dma_debug_resize_entries);
-+
- /*
-  * DMA-API debugging init code
-  *
-@@ -490,6 +548,8 @@ void dma_debug_init(u32 num_entries)
- 		return;
- 	}
- 
-+	nr_total_entries = num_free_entries;
-+
- 	printk(KERN_INFO "DMA-API: debugging enabled by kernel config\n");
- }
- 
--- 
-1.6.0.6
+Wolfgang Grandegger (4):
+      powerpc/85xx: TQM85xx: correct address of LM75 I2C device nodes
+      powerpc/85xx: TQM8548: use proper phy-handles for enet2 and enet3
+      powerpc/85xx: TQM8548: update defconfig
+      powerpc: Document new FSL I2C bindings and cleanup
 
