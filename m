@@ -1,113 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZDOREs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZDORGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbZDOREs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 13:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZDOREg
+	id S1753705AbZDORGa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 13:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZDORGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 13:04:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46083 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753103AbZDOREf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 13:04:35 -0400
-Date: Wed, 15 Apr 2009 13:04:15 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: dm-devel@redhat.com, vivek.goyal2008@gmail.com,
-       linux-kernel@vger.kernel.org, agk@redhat.com
-Subject: Re: [dm-devel] Re: dm-ioband: Test results.
-Message-ID: <20090415170415.GE15067@redhat.com>
-References: <20090413.130552.226792299.ryov@valinux.co.jp> <20090413144626.GF18007@redhat.com> <20090414.183022.71120459.ryov@valinux.co.jp>
+	Wed, 15 Apr 2009 13:06:20 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:43157 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZDORGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 13:06:19 -0400
+X-IronPort-AV: E=Sophos;i="4.40,192,1238976000"; 
+   d="scan'208";a="155029297"
+Date: Wed, 15 Apr 2009 10:06:17 -0700
+From: VomLehn <dvomlehn@cisco.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: USB storage no-boot regression (bisected)
+Message-ID: <20090415170617.GA14485@cuplxvomd02.corp.sa.net>
+References: <Pine.LNX.4.44L0.0904151146210.3072-100000@iolanthe.rowland.org> <49E60219.9080103@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090414.183022.71120459.ryov@valinux.co.jp>
+In-Reply-To: <49E60219.9080103@rtr.ca>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 06:30:22PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> > I quickly looked at the xls sheet. Most of the test cases seem to be
-> > direct IO. Have you done testing with buffered writes/async writes and
-> > been able to provide service differentiation between cgroups?
-> > 
-> > For example, two "dd" threads running in two cgroups doing writes.
-> 
-> Thanks for taking a look at the sheet. I did a buffered write test
-> with "fio." Only two "dd" threads can't generate enough I/O load to
-> make dm-ioband start bandwidth control. The following is a script that
-> I actually used for the test.
-> 
->   #!/bin/bash
->   sync
->   echo 1 > /proc/sys/vm/drop_caches
->   arg="--size=64m --rw=write --numjobs=50 --group_reporting"
->   echo $$ > /cgroup/1/tasks
->   fio $arg --name=ioband1 --directory=/mnt1 --output=ioband1.log &
->   echo $$ > /cgroup/2/tasks
->   fio $arg --name=ioband2 --directory=/mnt2 --output=ioband2.log &
->   echo $$ > /cgroup/tasks
->   wait
-> 
+On Wed, Apr 15, 2009 at 11:49:45AM -0400, Mark Lord wrote:
+> Alan Stern wrote:
+>> On Wed, 15 Apr 2009, Alan Cox wrote:
+>>
+>>> Why should every user suffer a slower boot and a poorer resume time ?
+>>>
+>>> Instead make the root fs mounting look like this
+>>>
+>>>
+>>> 	while(my_rootfs_hasnt_appeared_and_i_am_sad()) {
+>>> 		wait_on(&new_disk_discovery);
+>>> 	}
+>>>
+>>> and poke the queue whenever we add a relevant device.
+>>>
+>>> That way if you are booting off an initrd you can finish the SATA probe
+>>> in parallel to getting userspace ticking over.
+>>>
+>>> On what is nowdays essentially a hot plug system it all needs turning
+>>> this way up - eg RAID volumes should assemble and come online as the
+>>> drives are discovered not at some fixed point later in userspace.
+>>
+>> Indeed, something like this should also be used for  
+>> resume-from-hibernation, to wait for the swap device.
+> ..
+>
+> It just needs a way to set a finite timeout, so that server room
+> equipment can auto-panic-reboot and try again if a device has died.
 
-Ryo,
+The problem with USB root devices is the same one I brought up a couple of
+weeks ago--faster booting means that USB boot devices fail. We now have
+problems with three different classes of devices:
 
-Can you also send bio-cgroup patches which apply to 2.6.30-rc1 so that
-I can do testing for async writes.
+o	Disks
+o	Network devices
+o	Serial consoles
 
-Why have you split the regular patch and bio-cgroup patch? Do you want
-to address only reads and sync writes?
+Saying that we were "lucky" that things worked before is no help and
+you should be aware that it ticks people off. I agree that this is not a
+USB problem, but there is a *very* real problem:
 
-In the above test case, do these "fio" jobs finish at different times?
-In my testing I see that two dd generate a lot of traffic at IO scheudler
-level but traffic seems to be bursty. So when higher weight process has
-done some IO, it seems to disappear for .2 to 1 seconds and in that
-time other writer gets to do lot of IO and eradicates any service
-difference provided so far. 
+     The work to decrease boot time has exposed race conditions that
+     always existed, but are now making the kernel less usable.
 
-I am not sure where this high priority writer is blocked and that needs
-to be looked into. But I am sure that you will also face the same issue.
+So, instead of spending time denying that there is a USB problem, let's
+focus on solve the boot device synchronization problem.  I have already
+posted a (probably incomplete, possibly wrong) patch to synchronize console
+initialization. We need to do the same for other boot devices, too.
 
-Thanks
-Vivek
-
-> I created two dm-devices to easily monitor the throughput of each
-> cgroup by iostat, and gave weights of 200 for cgroup1 and 100 for
-> cgroup2 that means cgroup1 can use twice bandwidth of cgroup2. The
-> following is a part of the output of iostat. dm-0 and dm-1 corresponds
-> to ioband1 and ioband2. You can see the bandwidth is according to the
-> weights.
-> 
->   avg-cpu:  %user   %nice %system %iowait  %steal   %idle
->              0.99    0.00    6.44   92.57    0.00    0.00
->   
->   Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
->   dm-0           3549.00         0.00     28392.00          0      28392
->   dm-1           1797.00         0.00     14376.00          0      14376
->   
->   avg-cpu:  %user   %nice %system %iowait  %steal   %idle
->              1.01    0.00    4.02   94.97    0.00    0.00
->   
->   Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
->   dm-0           3919.00         0.00     31352.00          0      31352
->   dm-1           1925.00         0.00     15400.00          0      15400
->   
->   avg-cpu:  %user   %nice %system %iowait  %steal   %idle
->              0.00    0.00    5.97   94.03    0.00    0.00
->   
->   Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
->   dm-0           3534.00         0.00     28272.00          0      28272
->   dm-1           1773.00         0.00     14184.00          0      14184
->   
->   avg-cpu:  %user   %nice %system %iowait  %steal   %idle
->              0.50    0.00    6.00   93.50    0.00    0.00
->   
->   Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
->   dm-0           4053.00         0.00     32424.00          0      32424
->   dm-1           2039.00         8.00     16304.00          8      16304
-> 
-
-> Thanks,
-> Ryo Tsuruta
+David VomLehn
