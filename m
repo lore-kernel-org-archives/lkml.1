@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZDOKla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZDOKmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbZDOKla (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZDOKlR
+	id S1755980AbZDOKmp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZDOKmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:41:17 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56124 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZDOKlR (ORCPT
+	Wed, 15 Apr 2009 06:42:32 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:40801 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752738AbZDOKmb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:41:17 -0400
-Message-ID: <49E5B9BD.5070204@trash.net>
-Date: Wed, 15 Apr 2009 12:41:01 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 15 Apr 2009 06:42:31 -0400
+Message-ID: <49E5BA13.7000501@cosmosbay.com>
+Date: Wed, 15 Apr 2009 12:42:27 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: dada1@cosmosbay.com, jpirko@redhat.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net,
-       mschmidt@redhat.com, ivecera@redhat.com
-Subject: Re: [PATCH 1/3] net: introduce a list of device addresses dev_addr_list
-References: <49E5A896.90408@cosmosbay.com>	<20090415.023104.82135803.davem@davemloft.net>	<49E5B365.2010008@trash.net> <20090415.031510.162624644.davem@davemloft.net>
-In-Reply-To: <20090415.031510.162624644.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Patrick McHardy <kaber@trash.net>
+CC: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: panic on rmmod of nf_conntrack_irc
+References: <20090410191736.21efab8c@mako-desktop> <49E4744D.5090205@trash.net> <49E47C2D.1050508@cosmosbay.com> <49E5B66D.30602@trash.net>
+In-Reply-To: <49E5B66D.30602@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 15 Apr 2009 12:42:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Wed, 15 Apr 2009 12:13:57 +0200
+Patrick McHardy a écrit :
+> Eric Dumazet wrote:
+>> I should have used different fields names (from "next", "first", ...)
+>> to catch this
+>> kind of errors at compile time :(
+>>
+>> Something like :
+>>
+>> diff --git a/include/linux/list_nulls.h b/include/linux/list_nulls.h
 > 
->> David Miller wrote:
->>> From: Eric Dumazet <dada1@cosmosbay.com>
->>> Date: Wed, 15 Apr 2009 11:27:50 +0200
->>>
->>>> Since you obviously need a write lock here to be sure following
->>>> can be done by one cpu only.
->>>>
->>>> You have same problem all over this patch.
->>> RTNL semaphore is held across all modification operations.
->> If this will also be used for multicast lists, changes can happen
->> (IPv6) without the RTNL.
+> Eric, on second thought, could you please resubmit this to Dave?
+> It touches too many files outside of netfilter to go through my
+> tree.
 > 
-> Indeed, that is true :-/
+> 
 
-Herbert (I think) suggested to make address list updates in softirq
-context a two-step process, where addresses would first be added to
-a temporary list and the final change would be done in process context
-while holding the RTNL.
+Sure, but its a cleanup (and was an RFC to show my point)
+so should wait a litle bit until David opens his -next tree (for 2.6.31)
 
-Given the complicated mess we currently have, this would be a very
-worthwhile change IMO.
+Please just submit your patch for 2.6.30 ?
+
+
