@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZDOW2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZDOWb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbZDOW2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 18:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZDOW2T
+	id S1754219AbZDOWb4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 18:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZDOWbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 18:28:19 -0400
-Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:37730 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751424AbZDOW2R convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 18:31:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53138 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752104AbZDOWbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 18:28:17 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] net/sunrpc/svc.c: fix sparse warning
-Date: Wed, 15 Apr 2009 18:27:49 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8DB7@mi8nycmail19.Mi8.com>
-In-Reply-To: <alpine.LNX.2.00.0904152247580.25543@swampdragon.chaosbits.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net/sunrpc/svc.c: fix sparse warning
-Thread-Index: Acm+C6pxs2IODapfSHG/H9wBl3Be2wADZNhg
-References: <BD79186B4FD85F4B8E60E381CAEE1909015F8D20@mi8nycmail19.Mi8.com> <alpine.LNX.2.00.0904152247580.25543@swampdragon.chaosbits.net>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Jesper Juhl" <jj@chaosbits.net>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Apr 2009 22:28:15.0452 (UTC) FILETIME=[780FA1C0:01C9BE19]
+	Wed, 15 Apr 2009 18:31:46 -0400
+Date: Wed, 15 Apr 2009 15:26:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harry Ciao <qingtao.cao@windriver.com>
+Cc: norsk5@yahoo.com, michael@ellerman.id.au,
+       bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v2 PATCH 0/3] Add CPC925 Memory Controller EDAC drivers
+Message-Id: <20090415152635.2e1e260a.akpm@linux-foundation.org>
+In-Reply-To: <1239602716-18352-1-git-send-email-qingtao.cao@windriver.com>
+References: <1239602716-18352-1-git-send-email-qingtao.cao@windriver.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse warning in net/sunrpc/svc.c.
+On Mon, 13 Apr 2009 14:05:13 +0800
+Harry Ciao <qingtao.cao@windriver.com> wrote:
 
-	warning: symbol 'node' shadows an earlier one
+> 
+> Hi Doug and Michael,
+> 
+> This is the latest v2 patches, the 1/3 of CPC925 MC EDAC driver remains
+> the same as before, the 2/3 has been pushed to Andrew already, and the 
+> 3/3 has integrated Michael's suggestions to add a fixup routine for the 
+> memory controller on Maple that has incorrect number of cells, and create
+> related platform_device for CPC925 on Motorola ATCA-6101 target by far.
+> 
+> All patches have been tested, please give me your further concerns or 
+> suggestions, thanks!
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Acked-by: Jesper Juhl <jj@chaosbits.net>
+For some reason I didn't have 2/3 anywhere.
 
----
+I'll plan to merge all these into 2.6.31 unless someone shouts at me.
 
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 8847add..e781135 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -122,7 +122,7 @@ module_param_call(pool_mode, param_set_pool_mode,
-param_get_pool_mode,
- static int
- svc_pool_map_choose_mode(void)
- {
--	unsigned int node;
-+	unsigned int nid;
- 
- 	if (num_online_nodes() > 1) {
- 		/*
-@@ -132,8 +132,8 @@ svc_pool_map_choose_mode(void)
- 		return SVC_POOL_PERNODE;
- 	}
- 
--	node = any_online_node(node_online_map);
--	if (nr_cpus_node(node) > 2) {
-+	nid = any_online_node(node_online_map);
-+	if (nr_cpus_node(nid) > 2) {
- 		/*
- 		 * Non-trivial SMP, or CONFIG_NUMA on
- 		 * non-NUMA hardware, e.g. with a generic
+
