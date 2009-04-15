@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZDOOw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbZDOPDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754095AbZDOOw5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZDOOwr
+	id S1753993AbZDOPDV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZDOPDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:52:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57405 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751711AbZDOOwq (ORCPT
+	Wed, 15 Apr 2009 11:03:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38630 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752790AbZDOPDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:52:46 -0400
-Date: Wed, 15 Apr 2009 07:45:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ali Gholami Rudi <ali@rudi.ir>, Ingo Molnar <mingo@elte.hu>,
-       Valdis.Kletnieks@vt.edu, Mike Travis <travis@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mm-commits@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>
-Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
-In-Reply-To: <20090415013456.cf5ce205.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0904150739100.4132@localhost.localdomain>
-References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org> <4609.1239456126@turing-police.cc.vt.edu> <alpine.LFD.2.00.0904130847500.4583@localhost.localdomain> <20090413171853.GA4601@elte.hu> <20090413102749.4ca3a217.akpm@linux-foundation.org>
- <20090415081534.GA2894@lilem.mirepesht> <20090415013456.cf5ce205.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 15 Apr 2009 11:03:07 -0400
+Date: Wed, 15 Apr 2009 16:01:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: USB storage no-boot regression (bisected)
+Message-ID: <20090415160153.485c2095@lxorguk.ukuu.org.uk>
+In-Reply-To: <49E5EE41.3090505@rtr.ca>
+References: <49E4FAC6.1030400@garzik.org>
+	<20090415014930.GA29413@kroah.com>
+	<49E5480F.10501@garzik.org>
+	<20090415050947.GB3462@kroah.com>
+	<49E5EE41.3090505@rtr.ca>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> SATA drives also take variable amounts of time to "show up" at boot.
+> Perhaps Jeff should customize libata for your and Arjan's exact setups,
+> just to help with understanding the point here.  :)
 
+Actually I would argue the reverse. The sooner we can push this so that
+libata isn't blocking mounting the rootfs the better.
 
-On Wed, 15 Apr 2009, Andrew Morton wrote:
+> The speed ups are fine (and welcome), but we really now need
+> Arjan to follow-up with a patch to have the kernel *by default*
+> wait a little longer for the rootfs to show up.
 > 
-> <stares suspiciously at smp_call_function_many()>
-> 
->  * smp_call_function_many(): Run a function on a set of other CPUs.
-> 
-> "other".  It refuses to call the function on *this* CPU.  Tricky.
+> Not forever, just a few seconds to compensate for the regression.
 
-.. Argh. And totally different from all the other smp_call_function's. In 
-smp_call_function_single(), for example, we literally test
+Why should every user suffer a slower boot and a poorer resume time ?
 
-        if (cpu == this_cpu) {
-                local_irq_save(flags);
-                func(info);
-                local_irq_restore(flags);
-	}  else {
-		.. do the cross-call ..
+Instead make the root fs mounting look like this
 
-so I think this is just smp_call_function_many() breakage.
 
-In fact, right now the PPC flush_tlb_page() does that insane dance just 
-because of this issue. So yes, there are a few current users, and they 
-seem to dislike the bad semantics (the kvm code doesn't care).
+	while(my_rootfs_hasnt_appeared_and_i_am_sad()) {
+		wait_on(&new_disk_discovery);
+	}
 
-Duh duh duh.
+and poke the queue whenever we add a relevant device.
 
-		Linus
+That way if you are booting off an initrd you can finish the SATA probe
+in parallel to getting userspace ticking over.
+
+On what is nowdays essentially a hot plug system it all needs turning
+this way up - eg RAID volumes should assemble and come online as the
+drives are discovered not at some fixed point later in userspace.
+
+Alan
