@@ -1,65 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZDORYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZDORZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbZDORYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 13:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZDORYB
+	id S1755611AbZDORZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 13:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZDORY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 13:24:01 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:42931 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbZDORX7 (ORCPT
+	Wed, 15 Apr 2009 13:24:28 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:34128 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbZDORYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 13:23:59 -0400
+	Wed, 15 Apr 2009 13:24:19 -0400
 From: Chris Mason <chris.mason@oracle.com>
 To: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
        "Theodore Ts'o" <tytso@mit.edu>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
        Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [PATCH RFC] ext3 data=guarded v3
-Date: Wed, 15 Apr 2009 13:22:36 -0400
-Message-Id: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
+Cc: Chris Mason <chris.mason@oracle.com>
+Subject: [PATCH 2/3] Add block_write_full_page_endio for passing endio handler
+Date: Wed, 15 Apr 2009 13:22:38 -0400
+Message-Id: <356cd76dcfa621f750bbdf5ed0c675a4a3a00a73.1239815649.git.chris.mason@oracle.com>
 X-Mailer: git-send-email 1.6.0.2
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+In-Reply-To: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
+In-Reply-To: <abbad87ab84075cbac38f4cd99507a4c605fd731.1239815649.git.chris.mason@oracle.com>
+References: <abbad87ab84075cbac38f4cd99507a4c605fd731.1239815649.git.chris.mason@oracle.com>
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49E617E8.009A:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090204.49E617F4.0034:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+block_write_full_page doesn't allow the caller to control what happens
+when the IO is over.  This adds a new call named block_write_full_page_endio
+so the buffer head end_io handler can be provided by the caller.
 
-Here is another version of the data=guarded work for ext3.  The main
-difference between this code and yesterday's is the guarded writepage
-function now sends any newly allocated block through the old data=ordered code.
+This will be used by the ext3 data=guarded mode to do i_size updates
+in a workqueue based end_io handler.  end_buffer_async_write is also
+exported so it can be called to do the dirty work of managing
+page writeback for the higher level end_io handler.
 
-This is important because at the time we're walking the buffers, the page
-may be unlocked, so we can't trust anything inside the page.  In general,
-any allocation done by writepage is to fill a hole, so the old data=ordered
-is what we want anyway.
+Signed-off-by: Chris Mason <chris.mason@oracle.com>
+---
+ fs/buffer.c                 |   45 ++++++++++++++++++++++++++++++++----------
+ include/linux/buffer_head.h |    3 ++
+ 2 files changed, 37 insertions(+), 11 deletions(-)
 
-This passed a longer stress test and generally seems to be working.  I
-don't think anyone would recommend it as a default for 2.6.30, but it
-may be a good idea to have a review party and decide if it is safe enough
-to include so people can experiment with it.
-
-Overall diffstat of the series:
-
- fs/buffer.c                 |   45 ++-
- fs/ext3/Makefile            |    3
- fs/ext3/fsync.c             |   12
- fs/ext3/inode.c             |  546 +++++++++++++++++++++++++++++++++++++++++++-
- fs/ext3/namei.c             |    3
- fs/ext3/ordered-data.c      |  318 +++++++++++++++++++++++++
- fs/ext3/super.c             |   48 +++
- fs/jbd/transaction.c        |    1
- include/linux/buffer_head.h |    3
- include/linux/ext3_fs.h     |   33 ++
- include/linux/ext3_fs_i.h   |   44 +++
- include/linux/ext3_fs_sb.h  |    6
- include/linux/ext3_jbd.h    |   11
- include/linux/jbd.h         |   10
- mm/filemap.c                |    1
-
--chris
-
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 13edf7a..308865b 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -360,7 +360,7 @@ still_busy:
+  * Completion handler for block_write_full_page() - pages which are unlocked
+  * during I/O, and which have PageWriteback cleared upon I/O completion.
+  */
+-static void end_buffer_async_write(struct buffer_head *bh, int uptodate)
++void end_buffer_async_write(struct buffer_head *bh, int uptodate)
+ {
+ 	char b[BDEVNAME_SIZE];
+ 	unsigned long flags;
+@@ -438,11 +438,17 @@ static void mark_buffer_async_read(struct buffer_head *bh)
+ 	set_buffer_async_read(bh);
+ }
+ 
+-void mark_buffer_async_write(struct buffer_head *bh)
++void mark_buffer_async_write_endio(struct buffer_head *bh,
++				   bh_end_io_t *handler)
+ {
+-	bh->b_end_io = end_buffer_async_write;
++	bh->b_end_io = handler;
+ 	set_buffer_async_write(bh);
+ }
++
++void mark_buffer_async_write(struct buffer_head *bh)
++{
++	mark_buffer_async_write_endio(bh, end_buffer_async_write);
++}
+ EXPORT_SYMBOL(mark_buffer_async_write);
+ 
+ 
+@@ -1608,7 +1614,8 @@ EXPORT_SYMBOL(unmap_underlying_metadata);
+  * unplugging the device queue.
+  */
+ static int __block_write_full_page(struct inode *inode, struct page *page,
+-			get_block_t *get_block, struct writeback_control *wbc)
++			get_block_t *get_block, struct writeback_control *wbc,
++			bh_end_io_t *handler)
+ {
+ 	int err;
+ 	sector_t block;
+@@ -1693,7 +1700,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 			continue;
+ 		}
+ 		if (test_clear_buffer_dirty(bh)) {
+-			mark_buffer_async_write(bh);
++			mark_buffer_async_write_endio(bh, handler);
+ 		} else {
+ 			unlock_buffer(bh);
+ 		}
+@@ -1746,7 +1753,7 @@ recover:
+ 		if (buffer_mapped(bh) && buffer_dirty(bh) &&
+ 		    !buffer_delay(bh)) {
+ 			lock_buffer(bh);
+-			mark_buffer_async_write(bh);
++			mark_buffer_async_write_endio(bh, handler);
+ 		} else {
+ 			/*
+ 			 * The buffer may have been set dirty during
+@@ -2672,7 +2679,8 @@ int nobh_writepage(struct page *page, get_block_t *get_block,
+ out:
+ 	ret = mpage_writepage(page, get_block, wbc);
+ 	if (ret == -EAGAIN)
+-		ret = __block_write_full_page(inode, page, get_block, wbc);
++		ret = __block_write_full_page(inode, page, get_block, wbc,
++					      end_buffer_async_write);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(nobh_writepage);
+@@ -2830,9 +2838,10 @@ out:
+ 
+ /*
+  * The generic ->writepage function for buffer-backed address_spaces
++ * this form passes in the end_io handler used to finish the IO.
+  */
+-int block_write_full_page(struct page *page, get_block_t *get_block,
+-			struct writeback_control *wbc)
++int block_write_full_page_endio(struct page *page, get_block_t *get_block,
++			struct writeback_control *wbc, bh_end_io_t *handler)
+ {
+ 	struct inode * const inode = page->mapping->host;
+ 	loff_t i_size = i_size_read(inode);
+@@ -2841,7 +2850,8 @@ int block_write_full_page(struct page *page, get_block_t *get_block,
+ 
+ 	/* Is the page fully inside i_size? */
+ 	if (page->index < end_index)
+-		return __block_write_full_page(inode, page, get_block, wbc);
++		return __block_write_full_page(inode, page, get_block, wbc,
++					       handler);
+ 
+ 	/* Is the page fully outside i_size? (truncate in progress) */
+ 	offset = i_size & (PAGE_CACHE_SIZE-1);
+@@ -2864,9 +2874,20 @@ int block_write_full_page(struct page *page, get_block_t *get_block,
+ 	 * writes to that region are not written out to the file."
+ 	 */
+ 	zero_user_segment(page, offset, PAGE_CACHE_SIZE);
+-	return __block_write_full_page(inode, page, get_block, wbc);
++	return __block_write_full_page(inode, page, get_block, wbc, handler);
+ }
+ 
++/*
++ * The generic ->writepage function for buffer-backed address_spaces
++ */
++int block_write_full_page(struct page *page, get_block_t *get_block,
++			struct writeback_control *wbc)
++{
++	return block_write_full_page_endio(page, get_block, wbc,
++					   end_buffer_async_write);
++}
++
++
+ sector_t generic_block_bmap(struct address_space *mapping, sector_t block,
+ 			    get_block_t *get_block)
+ {
+@@ -3335,9 +3356,11 @@ EXPORT_SYMBOL(block_read_full_page);
+ EXPORT_SYMBOL(block_sync_page);
+ EXPORT_SYMBOL(block_truncate_page);
+ EXPORT_SYMBOL(block_write_full_page);
++EXPORT_SYMBOL(block_write_full_page_endio);
+ EXPORT_SYMBOL(cont_write_begin);
+ EXPORT_SYMBOL(end_buffer_read_sync);
+ EXPORT_SYMBOL(end_buffer_write_sync);
++EXPORT_SYMBOL(end_buffer_async_write);
+ EXPORT_SYMBOL(file_fsync);
+ EXPORT_SYMBOL(generic_block_bmap);
+ EXPORT_SYMBOL(generic_cont_expand_simple);
+diff --git a/include/linux/buffer_head.h b/include/linux/buffer_head.h
+index 7b73bb8..16ed028 100644
+--- a/include/linux/buffer_head.h
++++ b/include/linux/buffer_head.h
+@@ -155,6 +155,7 @@ void create_empty_buffers(struct page *, unsigned long,
+ 			unsigned long b_state);
+ void end_buffer_read_sync(struct buffer_head *bh, int uptodate);
+ void end_buffer_write_sync(struct buffer_head *bh, int uptodate);
++void end_buffer_async_write(struct buffer_head *bh, int uptodate);
+ 
+ /* Things to do with buffers at mapping->private_list */
+ void mark_buffer_dirty_inode(struct buffer_head *bh, struct inode *inode);
+@@ -197,6 +198,8 @@ extern int buffer_heads_over_limit;
+ void block_invalidatepage(struct page *page, unsigned long offset);
+ int block_write_full_page(struct page *page, get_block_t *get_block,
+ 				struct writeback_control *wbc);
++int block_write_full_page_endio(struct page *page, get_block_t *get_block,
++			struct writeback_control *wbc, bh_end_io_t *handler);
+ int block_read_full_page(struct page*, get_block_t*);
+ int block_is_partially_uptodate(struct page *page, read_descriptor_t *desc,
+ 				unsigned long from);
+-- 
+1.6.0.2
 
