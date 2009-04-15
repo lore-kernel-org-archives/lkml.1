@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbZDOLng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759931AbZDOLnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759602AbZDOLng (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZDOLn1
+	id S1759931AbZDOLnv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759757AbZDOLnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:43:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33496 "EHLO mx2.redhat.com"
+	Wed, 15 Apr 2009 07:43:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33504 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbZDOLn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:43:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0904141103550.18124@localhost.localdomain>
-References: <alpine.LFD.2.00.0904141103550.18124@localhost.localdomain> <alpine.LFD.2.00.0904140954160.18124@localhost.localdomain> <20090414161053.28145.1209.stgit@warthog.procyon.org.uk> <15312.1239731865@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, tj@kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
-Date: Wed, 15 Apr 2009 12:40:32 +0100
-Message-ID: <14172.1239795632@redhat.com>
+	id S1759702AbZDOLnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 07:43:37 -0400
+Date: Wed, 15 Apr 2009 13:41:54 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Jeff Moyer <jmoyer@redhat.com>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
+Message-ID: <20090415114154.GI9809@random.random>
+References: <20090414143252.GE28265@random.random> <200904150042.15653.nickpiggin@yahoo.com.au> <20090415165431.AC4C.A69D9226@jp.fujitsu.com> <20090415104615.GG9809@random.random> <2f11576a0904150439k6e828307ja97b6729650bcb94@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2f11576a0904150439k6e828307ja97b6729650bcb94@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 15, 2009 at 08:39:04PM +0900, KOSAKI Motohiro wrote:
+> >> +     if (!migration) {
+> >> +             /* re-check */
+> >> +             if (PageSwapCache(page) &&
+> >> +                 page_count(page) != page_mapcount(page) + 2) {
+> >> +                     /* We lose race against get_user_pages_fast() */
+> >> +                     set_pte_at(mm, address, pte, pteval);
+> >> +                     ret = SWAP_FAIL;
+> >> +                     goto out_unmap;
+> >> +             }
+> >> +     }
+> >> +     mmu_notifier_invalidate_page(vma->vm_mm, address);
+> >
+> > With regard to mmu notifier, this is the opposite of the right
+> > ordering. One mmu_notifier_invalidate_page must run _before_ the first
+> > check. The ptep_clear_flush_notify will then stay and there's no need
+> > of a further mmu_notifier_invalidate_page after the second check.
+> 
+> OK. but I have one question.
+> 
+> Can we assume mmu_notifier is only used by kvm now?
+> if not, we need to make new notifier.
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+KVM is no fundamentally different from other users in this respect, so
+I don't see why need a new notifier. If it works for others it'll work
+for KVM and the other way around is true too.
 
-> But yeah, I didn't look at all the details. It _looked_ pretty
-> straightforward to just move the DEFINE/DECLARE stuff up, but there may well
-> be something subtle I'm missing.
-
-The problem is mainly one of #include recursion.  There's way too much of it.
-
-I wonder if we should replace the standard headerfile boilerplate:
-
-	#ifndef _THIS_HEADER_H
-	#define _THIS_HEADER_H
-	...
-	#endif /* _THIS_HEADER_H */
-
-with something a bit nastier:
-
-	#ifndef _THIS_HEADER_H
-	#define _THIS_HEADER_H 1
-	...
-	#undef _THIS_HEADER_H
-	#define _THIS_HEADER_H 2
-	#elif  _THIS_HEADER_H == 1
-	#error Recursive inclusion is not permitted
-	#endif /* _THIS_HEADER_H */
-
-and make people break up their header files to avoid getting this error.
-
-There are a number of problems with doing this, of course; the least of which
-is that cpp has special code for handling the first case efficiently, IIRC.
-
-David
+mmu notifier users can or cannot take a page pin. KVM does. GRU
+doesn't. XPMEM does. All of them releases any pin after
+mmu_notifier_invalidate_page. All that is important is to run
+mmu_notifier_invalidate_page _after_ the ptep_clear_young_notify, so
+that we don't nuke secondary mappings on the pages unless we really go
+to nuke the pte.
