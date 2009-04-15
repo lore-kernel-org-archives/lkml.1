@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZDOD17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbZDOD3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbZDOD17 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 23:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZDOD1u
+	id S1758177AbZDOD3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 23:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZDOD3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 23:27:50 -0400
-Received: from ozlabs.org ([203.10.76.45]:55747 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496AbZDOD1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 23:27:49 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 2/4] irq: make set_affinity to return status
-Date: Wed, 15 Apr 2009 12:57:44 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gary Hade <garyhade@us.ibm.com>, lcm@us.ibm.com,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200903231757.53709.rusty@rustcorp.com.au> <49E4F513.1060709@kernel.org> <49E4F54C.7030807@kernel.org>
-In-Reply-To: <49E4F54C.7030807@kernel.org>
+	Tue, 14 Apr 2009 23:29:04 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:49768 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788AbZDOD3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 23:29:03 -0400
+Message-Id: <200904150328.n3F3S0F9083222@www262.sakura.ne.jp>
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: hugh@veritas.com
+Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, jmorris@namei.org,
+       akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904151257.44715.rusty@rustcorp.com.au>
+Date: Wed, 15 Apr 2009 12:28:00 +0900
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk> <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp> <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk> <200904130048.n3D0mw1f077050@www262.sakura.ne.jp> <Pine.LNX.4.64.0904141801300.24679@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0904141801300.24679@blonde.anvils>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 15042009 #1849205, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 06:12:52 am Yinghai Lu wrote:
-> 
-> Impact: prepare to use it to keep affinity consistent
-> 
-> according to Ingo, change set_affinity() in irq_chip to return int.
+Hello.
 
-I prefer a bool, or an actual -errno rather than -1.  Maybe Ingo feels
-differently?
+Hugh Dickins wrote:
+> But my compiler on your config gives quite different function
+> sizes: please would you post to the list or send me privately
+> the output of "objdump -trd fs/exec.o", so we can check that.
+I uploaded it to http://I-love.SAKURA.ne.jp/tmp/dump-2.6.30-rc1-fs-exec.txt
 
-Plus:
+# gcc --version
+gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
+Copyright (C) 2003 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-> @@ -199,6 +199,8 @@ static void octeon_irq_ciu0_set_affinity
->  	 */
->  	cvmx_read_csr(CVMX_CIU_INTX_EN0(cvmx_get_core_num() * 2));
->  	write_unlock(&octeon_irq_ciu0_rwlock);
-> +
-> +	reutrn 0;
->  }
 
-Typo.
 
-Thanks,
-Rusty.
+Regards.
