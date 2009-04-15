@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZDOOw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZDOOw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246AbZDOOw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 10:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZDOOwP
+	id S1754095AbZDOOw5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 10:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZDOOwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 10:52:15 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:39174 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752208AbZDOOwO (ORCPT
+	Wed, 15 Apr 2009 10:52:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57405 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751711AbZDOOwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 10:52:14 -0400
-Message-ID: <49E5F457.5090602@csr.com>
-Date: Wed, 15 Apr 2009 15:51:03 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 15 Apr 2009 10:52:46 -0400
+Date: Wed, 15 Apr 2009 07:45:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ali Gholami Rudi <ali@rudi.ir>, Ingo Molnar <mingo@elte.hu>,
+       Valdis.Kletnieks@vt.edu, Mike Travis <travis@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mm-commits@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+In-Reply-To: <20090415013456.cf5ce205.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0904150739100.4132@localhost.localdomain>
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org> <4609.1239456126@turing-police.cc.vt.edu> <alpine.LFD.2.00.0904130847500.4583@localhost.localdomain> <20090413171853.GA4601@elte.hu> <20090413102749.4ca3a217.akpm@linux-foundation.org>
+ <20090415081534.GA2894@lilem.mirepesht> <20090415013456.cf5ce205.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: device_for_each_child() before device_add() doesn't work
-References: <49E4BFD0.2020302@csr.com> <20090414165905.GA25645@kroah.com> <49E4D2FF.8090906@csr.com> <20090415051548.GC3462@kroah.com>
-In-Reply-To: <20090415051548.GC3462@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Apr 2009 14:51:02.0980 (UTC) FILETIME=[99089840:01C9BDD9]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> 
-> So the problem is for the first device being added, right?  Can't you
-> just have a flag for this?
 
-It's trivial to fix in the UWB stack.
 
->> This address must be assigned during initialization and during normal 
->> operation and in the past we didn't need to special case the address 
->> assignment during initialization.
+On Wed, 15 Apr 2009, Andrew Morton wrote:
 > 
-> Does the patch below fix the problem for you?
+> <stares suspiciously at smp_call_function_many()>
+> 
+>  * smp_call_function_many(): Run a function on a set of other CPUs.
+> 
+> "other".  It refuses to call the function on *this* CPU.  Tricky.
 
-Yes.
+.. Argh. And totally different from all the other smp_call_function's. In 
+smp_call_function_single(), for example, we literally test
 
->  drivers/base/core.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -1142,6 +1142,9 @@ int device_for_each_child(struct device 
->  	struct device *child;
->  	int error = 0;
->  
-> +	if (!parent->p)
-> +		return 0;
-> +
->  	klist_iter_init(&parent->p->klist_children, &i);
->  	while ((child = next_device(&i)) && !error)
->  		error = fn(child, data);
-> 
-> 
+        if (cpu == this_cpu) {
+                local_irq_save(flags);
+                func(info);
+                local_irq_restore(flags);
+	}  else {
+		.. do the cross-call ..
 
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+so I think this is just smp_call_function_many() breakage.
+
+In fact, right now the PPC flush_tlb_page() does that insane dance just 
+because of this issue. So yes, there are a few current users, and they 
+seem to dislike the bad semantics (the kvm code doesn't care).
+
+Duh duh duh.
+
+		Linus
