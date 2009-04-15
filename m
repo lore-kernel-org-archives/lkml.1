@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZDOLfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZDOLh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbZDOLfi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbZDOLf3
+	id S1759950AbZDOLh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759428AbZDOLhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:35:29 -0400
-Received: from fmmailgate09.web.de ([217.72.192.184]:57543 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753025AbZDOLf2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:35:28 -0400
-X-Greylist: delayed 1419 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Apr 2009 07:35:27 EDT
-Date: Wed, 15 Apr 2009 13:11:46 +0200
-Message-Id: <671646821@web.de>
+	Wed, 15 Apr 2009 07:37:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40658 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759340AbZDOLht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 07:37:49 -0400
+Date: Wed, 15 Apr 2009 13:33:59 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/4] ftrace: introduce workqueue_handler_exit
+	tracepoint and rename workqueue_execution to workqueue_handler_entry
+Message-ID: <20090415113359.GA5118@redhat.com>
+References: <20090413125653.6E01.A69D9226@jp.fujitsu.com> <20090413145105.6E07.A69D9226@jp.fujitsu.com> <20090413145159.6E0A.A69D9226@jp.fujitsu.com> <20090413162534.GI5977@nowhere> <20090415102257.GA2617@redhat.com> <20090415110937.GA27727@elte.hu>
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: alan@lxorguk.ukuu.org.uk, sam@ravnborg.org
-Subject: Should MODULE_DESCRIPTION be mandatory ?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18RI7Wzfud8N/rsDIBqQTMFOcAeGo0R9fskuPOCb8KXhYQBj
- Z9Jh5NyS9RsuOdoLIljavk/1hUf0PFttrBTrgvr3muQetAR+LA=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090415110937.GA27727@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On 04/15, Ingo Molnar wrote:
+>
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > > >  		lock_map_acquire(&lockdep_map);
+> > > > +		trace_workqueue_handler_entry(cwq->thread, work);
+> > > >  		f(work);
+> > > > +		trace_workqueue_handler_exit(cwq->thread, work);
+> >
+> > This doesn't look right. We must not use "work" after f(work).
+> > work->func() can kfree its work.
+>
+> We can use it as long as we use it as a 'cookie' - i.e. an
+> identifier for visualization/statistics, but dont actually
+> dereference it, right?
 
-some time ago i spotted that around 20% of the Linux modules lacking a MODULE_DESCRIPTION field.  ( http://bugzilla.kernel.org/show_bug.cgi?id=10770 )
+Yes sure.
 
-I think it`s not a practicable approach to get this fixed by some single person digging trough all the modules. 
-If it´s fixed for a kernel release, one year later there would be another bunch of new modules lacking the description field again.
+I do not know whether this matters or not, but just in case...
+Of course it is possible that, when trace_workqueue_handler_exit() runs,
+this memory was already reused for another work even without kfree.
+For example,
 
-What about a build-time or run-time warning for missing MODULE_DESCRIPTION ? (as it exists for MODULE_LICENSE in modpost.c) 
+	void my_work_func(struct work_struct *work)
+	{
+		INIT_WORK(work, another_work_func);
+		queue_work(another_workqueue, work);
+	}
 
-Wouldn`t that solve the "problem" automatically as time goes by ?
+In this case another_workqueue can report trace_workqueue_handler_entry()
+before my_work_func() returns.
 
-regards
-Roland
+This means that trace_workqueue_handler_exit() can't use the address
+of work as a "key" to find some data recorded by _entry(). Unless this
+data lives in cpu_workqueue_struct.
 
+Not sure why I am trying to explain the things which are very obvious
+to all ;) Just because I don't really understand what these patches do.
 
-
-
-
-
-
-
-____________________________________________________________________
-Psssst! Schon vom neuen WEB.DE MultiMessenger gehört? 
-Der kann`s mit allen: http://www.produkte.web.de/messenger/?did=3123
+Oleg.
 
