@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbZDOK0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbZDOK1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758034AbZDOK0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZDOK0p
+	id S1759677AbZDOK1g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZDOK1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:26:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45807 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbZDOK0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:26:44 -0400
-Date: Wed, 15 Apr 2009 12:22:57 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] ftrace: introduce workqueue_handler_exit
-	tracepoint and rename workqueue_execution to workqueue_handler_entry
-Message-ID: <20090415102257.GA2617@redhat.com>
-References: <20090413125653.6E01.A69D9226@jp.fujitsu.com> <20090413145105.6E07.A69D9226@jp.fujitsu.com> <20090413145159.6E0A.A69D9226@jp.fujitsu.com> <20090413162534.GI5977@nowhere>
+	Wed, 15 Apr 2009 06:27:05 -0400
+Received: from stinky.trash.net ([213.144.137.162]:55805 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758335AbZDOK1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 06:27:03 -0400
+Message-ID: <49E5B66D.30602@trash.net>
+Date: Wed, 15 Apr 2009 12:26:53 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413162534.GI5977@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: panic on rmmod of nf_conntrack_irc
+References: <20090410191736.21efab8c@mako-desktop> <49E4744D.5090205@trash.net> <49E47C2D.1050508@cosmosbay.com>
+In-Reply-To: <49E47C2D.1050508@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am very sorry for delay. I am going to study these patches later.
+Eric Dumazet wrote:
+> I should have used different fields names (from "next", "first", ...) to catch this
+> kind of errors at compile time :(
+> 
+> Something like :
+> 
+> diff --git a/include/linux/list_nulls.h b/include/linux/list_nulls.h
 
-Just one note,
-
-> On Mon, Apr 13, 2009 at 02:53:01PM +0900, KOSAKI Motohiro wrote:
->
-> > Subject: [PATCH] ftrace: introduce workqueue_handler_exit tracepoint and rename workqueue_execution to workqueue_handler_entry
-> >
-> > Entry/exit handler pair is useful common tracepoint technique. it can mesure handler consumption time.
-...
-> >  static void run_workqueue(struct cpu_workqueue_struct *cwq)
-> >  {
-> > @@ -282,7 +283,6 @@ static void run_workqueue(struct cpu_wor
-> >  		 */
-> >  		struct lockdep_map lockdep_map = work->lockdep_map;
-> >  #endif
-> > -		trace_workqueue_execution(cwq->thread, work);
-> >  		cwq->current_work = work;
-> >  		list_del_init(cwq->worklist.next);
-> >  		spin_unlock_irq(&cwq->lock);
-> > @@ -291,7 +291,9 @@ static void run_workqueue(struct cpu_wor
-> >  		work_clear_pending(work);
-> >  		lock_map_acquire(&cwq->wq->lockdep_map);
-> >  		lock_map_acquire(&lockdep_map);
-> > +		trace_workqueue_handler_entry(cwq->thread, work);
-> >  		f(work);
-> > +		trace_workqueue_handler_exit(cwq->thread, work);
-
-This doesn't look right. We must not use "work" after f(work). work->func()
-can kfree its work.
-
-That is why we copy lockdep_map beforehand. Perhaps ftrace should do
-something similar.
-
-Oleg.
-
+Eric, on second thought, could you please resubmit this to Dave?
+It touches too many files outside of netfilter to go through my
+tree.
