@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZDOUjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZDOUjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbZDOUjH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 16:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbZDOUix
+	id S1757048AbZDOUjm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 16:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbZDOUjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 16:38:53 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:45348 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756192AbZDOUix (ORCPT
+	Wed, 15 Apr 2009 16:39:32 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:55679 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbZDOUjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 16:38:53 -0400
-Message-ID: <49E645CD.3080101@oracle.com>
-Date: Wed, 15 Apr 2009 13:38:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 15 Apr 2009 16:39:31 -0400
+Date: Wed, 15 Apr 2009 15:39:20 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: CAP_SYS_ADMIN on restart(2) (was: Re: [PATCH 00/30] C/R
+	OpenVZ/Virtuozzo style)
+Message-ID: <20090415203920.GA5475@us.ibm.com>
+References: <20090410023207.GA27788@x200.localdomain> <1239340031.24083.21.camel@nimitz> <20090413091423.GA19236@x200.localdomain> <49E4108A.8050201@cs.columbia.edu> <20090414145830.GA27461@x200.localdomain> <49E4D115.5080601@cs.columbia.edu> <20090414204912.GA28458@x200.localdomain> <20090414213934.GB17986@us.ibm.com> <20090415192150.GC26994@x200.localdomain> <1239827033.32604.167.camel@nimitz>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, den@openvz.org
-Subject: Re: mmotm 2009-04-14-17-24 uploaded (mtd)
-References: <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org>	<49E5FFB8.2020906@oracle.com> <20090415132746.e45d8fd9.akpm@linux-foundation.org>
-In-Reply-To: <20090415132746.e45d8fd9.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.49E645A9.00E5:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239827033.32604.167.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 15 Apr 2009 08:39:36 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Wed, 2009-04-15 at 23:21 +0400, Alexey Dobriyan wrote:
+> > Is sysctl to control CAP_SYS_ADMIN on restart(2) OK?
 > 
->> akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2009-04-14-17-24 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>    git://git.zen-sources.org/zen/mmotm.git
->>>
->>> It contains the following patches against 2.6.30-rc1:
->>
->>
->> drivers/mtd/mtdcore.c:51: error: invalid operands to binary *
+> If the point is not to let users even *try* restarting things if it
+> *might* not work, then I guess this might be reasonable.  
 > 
-> hrm.  This, I suppose:
+> If the goal is to increase security by always requiring CAP_SYS_ADMIN
+> for "dangerous" operations, I fear it will be harmful.  We may have
+> people adding features that are not considering the security impact of
+> what they're doing just because the cases they care about all require
+> privilege.
 
-Yes, that builds cleanly.  Thanks.
+Nah, I disagree.  (Or put another way, that wouldn't be the goal)
+There are two administrators we want to satisfy:
 
-> From: Andrew Morton <akpm@linux-foundation.org>
+1. the one who wants his users to do partial checkpoints, but doesn't
+want to risk giving away any privilege at all in the process.  He'll
+be satisified by setting restart(2) to not require cap_sys_admin,
+and his users just won't be able to do a whole container.  A lot of
+users will be happy with that (though no SYSVIPC support, then).
+
+2. the one who may have one or two users who he trusts to do
+checkpoint/restart, but otherwise doesn't want even the slightest
+risk of other users using restart, and maybe finding an exploit.
+That one is probably the more common admin, and he'll be satisified
+with requiring CAP_SYS_ADMIN for all restart(2)'s, since he's ok
+risking giving extra privilege to the ones he trusts.
+
+And meanwhile, by virtue of leaving (1) supported, we are still
+more under the gun to make sure that everything restart(2) does
+is properly checked.
+
+> What would the goal be?
 > 
-> --- a/drivers/mtd/mtdcore.c~mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix
-> +++ a/drivers/mtd/mtdcore.c
-> @@ -48,7 +48,7 @@ static LIST_HEAD(mtd_notifiers);
->   */
->  static void mtd_release(struct device *dev)
->  {
-> -	dev_t index = MTD_DEVT(dev_to_mtd(dev));
-> +	dev_t index = MTD_DEVT(dev_to_mtd(dev)->index);
->  
->  	/* remove /dev/mtdXro node if needed */
->  	if (index)
-> _
-> 
+> -- Dave
 
-
--- 
-~Randy
+-serge
