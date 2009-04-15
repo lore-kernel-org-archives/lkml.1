@@ -1,102 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbZDOLqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbZDOLtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbZDOLqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZDOLqO
+	id S1758806AbZDOLtU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZDOLtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:46:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51657 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbZDOLqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:46:13 -0400
-Date: Wed, 15 Apr 2009 13:45:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] ftrace: introduce workqueue_handler_exit
-	tracepoint and rename workqueue_execution to workqueue_handler_entry
-Message-ID: <20090415114549.GA17775@elte.hu>
-References: <20090413125653.6E01.A69D9226@jp.fujitsu.com> <20090413145105.6E07.A69D9226@jp.fujitsu.com> <20090413145159.6E0A.A69D9226@jp.fujitsu.com> <20090413162534.GI5977@nowhere> <20090415102257.GA2617@redhat.com> <20090415110937.GA27727@elte.hu> <20090415113359.GA5118@redhat.com>
+	Wed, 15 Apr 2009 07:49:09 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:2235 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbZDOLtI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 07:49:08 -0400
+Message-ID: <49E5C997.3030804@imap.cc>
+Date: Wed, 15 Apr 2009 13:48:39 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415113359.GA5118@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: Fast testing
+References: <2d05c4580904140255t25414b2bpe99b2a150dbe132a@mail.gmail.com> <20090414080511.5f50a81a@infradead.org>
+In-Reply-To: <20090414080511.5f50a81a@infradead.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig312DE371A2AD23AA4EEAE829"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig312DE371A2AD23AA4EEAE829
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+Arjan van de Ven schrieb:
+> On Tue, 14 Apr 2009 11:55:10 +0200
+> Dragoslav Zaric <dragoslav.zaric.kd@gmail.com> wrote:
+>=20
+>> I have question regarding fast testing of some change in some kernel
+>> source file. Since rebooting is a long process, there must be way to
+>=20
+> Rebooting is bloody fast for me (0.7 seconds for the kernel start,
+> about 3 to 4 seconds for the whole boot)....
 
-> On 04/15, Ingo Molnar wrote:
-> >
-> > * Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > > >  		lock_map_acquire(&lockdep_map);
-> > > > > +		trace_workqueue_handler_entry(cwq->thread, work);
-> > > > >  		f(work);
-> > > > > +		trace_workqueue_handler_exit(cwq->thread, work);
-> > >
-> > > This doesn't look right. We must not use "work" after f(work).
-> > > work->func() can kfree its work.
-> >
-> > We can use it as long as we use it as a 'cookie' - i.e. an
-> > identifier for visualization/statistics, but dont actually
-> > dereference it, right?
-> 
-> Yes sure.
-> 
-> I do not know whether this matters or not, but just in case... Of 
-> course it is possible that, when trace_workqueue_handler_exit() 
-> runs, this memory was already reused for another work even without 
-> kfree. For example,
-> 
-> 	void my_work_func(struct work_struct *work)
-> 	{
-> 		INIT_WORK(work, another_work_func);
-> 		queue_work(another_workqueue, work);
-> 	}
-> 
-> In this case another_workqueue can report 
-> trace_workqueue_handler_entry() before my_work_func() returns.
-> 
-> This means that trace_workqueue_handler_exit() can't use the 
-> address of work as a "key" to find some data recorded by _entry(). 
-> Unless this data lives in cpu_workqueue_struct.
-> 
-> Not sure why I am trying to explain the things which are very 
-> obvious to all ;) Just because I don't really understand what 
-> these patches do.
+Wow. Nice machine. I wish I had one like that. And how long until
+the GUI is usable again and you can actually continue working?
 
-The patches try to map and instrument the life cycle of a worklet, 
-and the main actions that occur in the workqueue subsystem in 
-general.
+For comparison: my 3.4 GHz Pentium D takes 30 secs for kernel start
+(ie. until it begins looking for the filesystems), 6 mins for fsck
+if it happens to decide my filesystems have gone too long without
+checking, 2 mins until the graphical login screen appears, and
+5 mins from logging in to the GUI being completely present.
 
-The purpose is instrumentation: for debugging purposes, for 
-improving kernel code and for just understanding how the system 
-functions and what its dynamic actions are.
+> not sure that doing weird magic to save that is worth it...
 
-In that sense the worklet 'key' possibly getting reallocated and 
-reused before the 'completed' action was traced is probably not a 
-big deal - but tools have to be aware of it possibly happening (and 
-most not hard-code any assumption to the contrary).
-
-Plus the exit handler must not dereference the worklet either. 
-Safest would be to make this sure in the prototype already: pass in 
-a void * key, not a work structure.
+Not for systems like yours, that's for sure, but perhaps for
+systems like mine.
 
 Thanks,
+Tilman
 
-	Ingo
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig312DE371A2AD23AA4EEAE829
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJ5cmhQ3+did9BuFsRAnSVAJ9UNFngIBUBOqglWb8GjZrnj/f/swCfUtv1
+sZnPOhg/DzuSWZqON0JFUls=
+=74AY
+-----END PGP SIGNATURE-----
+
+--------------enig312DE371A2AD23AA4EEAE829--
