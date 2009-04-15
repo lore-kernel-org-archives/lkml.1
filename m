@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZDOU7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZDOVAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbZDOU7y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 16:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZDOU7n
+	id S1756244AbZDOVAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 17:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZDOVA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 16:59:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56615 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753056AbZDOU7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 16:59:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
-Date: Wed, 15 Apr 2009 22:59:09 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200904100057.43827.rjw@sisk.pl> <200904142312.33833.rjw@sisk.pl> <s5hbpqy12mh.wl%tiwai@suse.de>
-In-Reply-To: <s5hbpqy12mh.wl%tiwai@suse.de>
+	Wed, 15 Apr 2009 17:00:27 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:52515 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754247AbZDOVA0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 17:00:26 -0400
+Date: Wed, 15 Apr 2009 22:00:17 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       yakui_zhao <yakui.zhao@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control brightness with hotkeys (BISECTED)
+Message-ID: <20090415210017.GA32594@srcf.ucam.org>
+References: <20090412161448.GC26502@khazad-dum.debian.net> <49E234ED.5010105@gmail.com> <1239585695.5564.5.camel@localhost.localdomain> <49E3575A.60204@gmail.com> <20090413203450.GC16152@khazad-dum.debian.net> <49E5234E.5070303@gmail.com> <20090415164939.GA27807@srcf.ucam.org> <49E63BCB.9090801@gmail.com> <20090415200125.GA31483@srcf.ucam.org> <49E64A28.8070402@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904152259.10473.rjw@sisk.pl>
+In-Reply-To: <49E64A28.8070402@gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 April 2009, Takashi Iwai wrote:
-> At Tue, 14 Apr 2009 23:12:33 +0200,
-> Rafael J. Wysocki wrote:
-> > 
-> > On Tuesday 14 April 2009, Takashi Iwai wrote:
-> > > At Fri, 10 Apr 2009 00:57:41 +0200,
-> > > Rafael J. Wysocki wrote:
-> > > > 
-> > > > Second, KDE4 on openSUSE 11.1 sometimes fails to handle audio correctly after
-> > > > a fresh boot.  Everything seems to work, but there's no sound at all.  It is
-> > > > sufficient to close the X session and start the desktop environment again to
-> > > > make it work, though (may that be async too? ;-)).  The hardware in question is
-> > > > Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller
-> > > > (rev 02) and the driver is snd_hda_intel.
-> > > 
-> > > Is this problem still there?
-> > 
-> > Just a few minutes ago sound stopped working (that was after a resume from S3,
-> > but not immediately after it), without anything suspicious in dmesg etc.
-> > Restarting X fixed that.
-> > 
-> > Still, that doesn't happen very often and it is not readily reproducible.
-> > 
-> > > If restarting the X session fixes the problem, it could be a
-> > > pulseaudio problem.  But, then it doesn't sound like a kernel update
-> > > issue.
-> > 
-> > Well, that may be a pulseaudio problem, but the very same pulsaudio apparently
-> >  worked well with 2.6.29-git<something>.  That might be a coincidence, though.
-> 
-> 2.6.30-rc[12] have some patches regarding the DMA pointer handling,
-> which may influence on PA.  More fix patches are pending.  Could you
-> try sound git tree either master or for-next branch?  At least it
-> seems working for some others.
->     git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+On Wed, Apr 15, 2009 at 10:57:12PM +0200, Niel Lambrechts wrote:
 
-I'm going to try 2.6.30-rc2-git in a while.  If I have the time, I'll also test
-the sound git tree.
+> So is there any chance of getting this fix merged any time soon (at
+> least before 2.6.30 is out)?
 
-Thanks,
-Rafael
+Yeah, I'd hope it's merged before .30. I've sent it to the maintainers.
+
+> I'd love to use KMS, but I have no idea how to troubleshoot the freeze
+> I'm getting after the main gdm login screen. Or is there still a future
+> i915 milestone(s) to be reached before I can realistically do
+> i915.modeset=1, given the large amount of activity around this in recent
+> times?
+
+There's still a lot of work being done in this area, and it can be a bit 
+sensitive to you using the correct X driver version with a given kernel 
+version.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
