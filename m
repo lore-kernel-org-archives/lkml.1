@@ -1,602 +1,692 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZDOLcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbZDOLdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751904AbZDOLcD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758221AbZDOLbv
+	id S1759649AbZDOLdp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758335AbZDOLdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:31:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:41727 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758007AbZDOLbs (ORCPT
+	Wed, 15 Apr 2009 07:33:32 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:46881 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756989AbZDOLda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:31:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=rzdAmI6JvgBP48nCSG9BSRLwhS2SIsFfghH+KR3uo5ui/N30xkdy9NhR/yzyaJOIyn
-         5hoi0uNhaelVdHDL7nY7SDr3fa8GLpCbAYWYRlnF8qZ3WqVcOc/5l53q5bYUZGE5h245
-         JcawGSaTnQkUJaI1j3OcUcOjXKO3NMma8RcDA=
+	Wed, 15 Apr 2009 07:33:30 -0400
+X-IronPort-AV: E=Sophos;i="4.40,192,1238990400"; 
+   d="scan'208";a="69747094"
+From: <cliffcai.sh@gmail.com>
+To: <drzeus-mmc@drzeus.cx>
+CC: <linux-kernel@vger.kernel.org>, <cliff.cai@analog.com>,
+       Cliff Cai <cliffcai.sh@gmail.com>
+Subject: [PATCH] [mmc/host]:Blackfin SDH Controller Driver
+Date: Thu, 16 Apr 2009 03:25:08 +0800
+Message-ID: <1239823508-861-1-git-send-email-cliffcai.sh@gmail.com>
+X-Mailer: git-send-email 1.6.2.2
 MIME-Version: 1.0
-Date: Wed, 15 Apr 2009 06:31:46 -0500
-Message-ID: <273677990904150431t1da7809dr893bf6076f518c0d@mail.gmail.com>
-Subject: PROBLEM: crashes or unstability while watching tv with MPlayer from 
-	pci bttv card
-From: =?ISO-8859-1?Q?Alejandro_V=E9lez?= <null274@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[1.] One line summary of the problem:
+From: Cliff Cai <cliffcai.sh@gmail.com>
 
-General system unstability occurs while previewing any video input
-from the pci bttv-card with MPlayer SVN.
+Signed-off-by: Cliff Cai <cliffcai.sh@gmail.com>
+---
+ drivers/mmc/host/bfin_sdh.c |  648 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 648 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mmc/host/bfin_sdh.c
 
-[2.] Full description of the problem/report:
-
-after a time of watching or previewing the tv card input with MPlayer
-the system becomes irreversibly unstable, for example the kernel can
-crash in a different number of ways all the times that that I have
-reproduced such behavior or the system just lockups with the caps lock
-and scroll lock leds blinking.
-
-[3.] Keywords (i.e., modules, networking, kernel):
-
-kernel, crashes, lockups, unstability, MPlayer, Hauppauge WinTV-Go,
-bttv, X11, bttv.
-
-[4.] Kernel version (from /proc/version):
-
-Linux version 2.6.29.1-smp (root@midas) (gcc version 4.3.3 (GCC) ) #1
-SMP Fri Apr 10 18:42:54 CDT 2009
-
-[5.] Output of Oops.. message (if applicable) with symbolic
-information resolved (see Documentation/oops-tracing.txt)
-
-Not Applicable. There's a different type of kernel crash if there's it
-at all everytime that I reproduce the bug.
-
-[6.] A small shell script or example program which triggers the
-problem (if possible)
-
-I just preview the tv input with the command: mplayer tv:// -tv input=1:normid=0
-
-[7.] Environment
-[7.1.] Software (add the output of the ver_linux script here)
-
-If some fields are empty or look unusual you may have an old version.
-Compare to the current minimal requirements in Documentation/Changes.
-
-Linux slacktoo 2.6.29.1-smp #1 SMP Fri Apr 10 18:42:54 CDT 2009 i686
-Unknown CPU Type AuthenticAMD GNU/Linux
-
-Gnu C                  4.2.3
-Gnu make               3.81
-binutils               2.17.50.0.17.20070615
-util-linux             2.13.1
-mount                  2.13.1
-module-init-tools      found
-quota-tools            3.13.
-Linux C Library        2.7
-Dynamic linker (ldd)   2.7
-Linux C++ Library      6.0.9
-Procps                 3.2.7
-Kbd                    1.12
-oprofile               0.9.2
-Sh-utils               6.9
-udev                   118
-Modules Loaded         savage drm bsd_comp ppp_synctty ppp_async
-crc_ccitt ppp_generic slhc it87 hwmon_vid snd_seq_dummy snd_seq_oss
-snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss ipt_MASQUERADE
-xt_limit xt_pkttype ipt_REJECT xt_tcpudp xt_state ipt_LOG
-iptable_mangle iptable_nat iptable_filter nf_conntrack_irc nf_nat_ftp
-nf_nat nf_conntrack_ftp nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4
-ip_tables x_tables nls_utf8 ntfs xfs exportfs quota_v2 quota_tree lp
-fuse tuner_simple tuner_types tuner tvaudio fan snd_cs4232
-snd_wavefront snd_wss_lib ns558 snd_opl3_lib snd_hwdep bttv snd_mpu401
-ir_common i2c_algo_bit v4l2_common thermal parport_pc videodev parport
-v4l1_compat serio_raw processor thermal_sys hwmon videobuf_dma_sg
-videobuf_core evdev psmouse button rtc_cmos rtc_core rtc_lib
-snd_via82xx gameport snd_ac97_codec ac97_bus snd_pcm snd_timer
-snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd
-soundcore btcx_risc uhci_hcd via_agp tveeprom i2c_viapro shpchp
-agpgart sundance i2c_core 8139too mii sg ext3 jbd mbcache
-
-[7.2.] Processor information (from /proc/cpuinfo):
-
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 6
-model           : 8
-model name      : Unknown CPU Type
-stepping        : 1
-cpu MHz         : 1673.954
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow up
-bogomips        : 3347.90
-clflush size    : 32
-power management: ts
-
-[7.3.] Module information (from /proc/modules):
-
-savage 30940 2 - Live 0xe6ccb000
-drm 137824 3 savage, Live 0xe6ae7000
-bsd_comp 5244 0 - Live 0xe6f2e000
-ppp_synctty 6940 0 - Live 0xe6eca000
-ppp_async 8668 1 - Live 0xe6de5000
-crc_ccitt 1628 1 ppp_async, Live 0xe6ddd000
-ppp_generic 22472 7 bsd_comp,ppp_synctty,ppp_async, Live 0xe6d88000
-slhc 5404 1 ppp_generic, Live 0xe6d6d000
-it87 19820 0 - Live 0xe6d51000
-hwmon_vid 2684 1 it87, Live 0xe6d4e000
-snd_seq_dummy 2464 0 - Live 0xe6cc6000
-snd_seq_oss 29792 0 - Live 0xe6ca3000
-snd_seq_midi_event 5980 1 snd_seq_oss, Live 0xe6c8e000
-snd_seq 47984 5 snd_seq_dummy,snd_seq_oss,snd_seq_midi_event, Live 0xe6a67000
-snd_pcm_oss 37728 0 - Live 0xe683e000
-snd_mixer_oss 14300 1 snd_pcm_oss, Live 0xe6812000
-ipt_MASQUERADE 2460 1 - Live 0xe897a000
-xt_limit 1824 3 - Live 0xe8885000
-xt_pkttype 1372 1 - Live 0xe886d000
-ipt_REJECT 2780 8 - Live 0xe8659000
-xt_tcpudp 2620 40 - Live 0xe852f000
-xt_state 1756 7 - Live 0xe84f4000
-ipt_LOG 5344 13 - Live 0xe84d8000
-iptable_mangle 2332 0 - Live 0xe843b000
-iptable_nat 4796 1 - Live 0xe8415000
-iptable_filter 2268 1 - Live 0xe83f0000
-nf_conntrack_irc 4800 0 - Live 0xe83e5000
-nf_nat_ftp 2492 0 - Live 0xe83db000
-nf_nat 16208 3 ipt_MASQUERADE,iptable_nat,nf_nat_ftp, Live 0xe83c2000
-nf_conntrack_ftp 6880 1 nf_nat_ftp, Live 0xe83b6000
-nf_conntrack_ipv4 12520 10 iptable_nat,nf_nat, Live 0xe839f000
-nf_conntrack 53844 8
-ipt_MASQUERADE,xt_state,iptable_nat,nf_conntrack_irc,nf_nat_ftp,nf_nat,nf_conntrack_ftp,nf_conntrack_ipv4,
-Live 0xe830c000
-nf_defrag_ipv4 1532 1 nf_conntrack_ipv4, Live 0xe70a6000
-ip_tables 10860 3 iptable_mangle,iptable_nat,iptable_filter, Live 0xe82f4000
-x_tables 13280 9
-ipt_MASQUERADE,xt_limit,xt_pkttype,ipt_REJECT,xt_tcpudp,xt_state,ipt_LOG,iptable_nat,ip_tables,
-Live 0xe82e8000
-nls_utf8 1472 1 - Live 0xe6f93000
-ntfs 220320 1 - Live 0xe7db7000
-xfs 521320 1 - Live 0xe7278000
-exportfs 3964 1 xfs, Live 0xe6cc8000
-quota_v2 3324 2 - Live 0xe6cbb000
-quota_tree 8284 1 quota_v2, Live 0xe6c9e000
-lp 9316 0 - Live 0xe6c7d000
-fuse 53976 1 - Live 0xe6a79000
-tuner_simple 14288 1 - Live 0xe6a61000
-tuner_types 13884 1 tuner_simple, Live 0xe6a54000
-tuner 27620 0 - Live 0xe6a31000
-tvaudio 26332 0 - Live 0xe6a0c000
-fan 4064 0 - Live 0xe6a06000
-snd_cs4232 11956 0 - Live 0xe6875000
-snd_wavefront 51444 0 - Live 0xe684b000
-snd_wss_lib 23996 2 snd_cs4232,snd_wavefront, Live 0xe6829000
-ns558 4156 0 - Live 0xe680e000
-snd_opl3_lib 9212 2 snd_cs4232,snd_wavefront, Live 0xe71e3000
-snd_hwdep 6816 2 snd_wavefront,snd_opl3_lib, Live 0xe71cd000
-bttv 191828 0 - Live 0xe7247000
-snd_mpu401 6152 0 - Live 0xe71aa000
-ir_common 39872 1 bttv, Live 0xe7189000
-i2c_algo_bit 5504 1 bttv, Live 0xe7178000
-v4l2_common 14268 3 tuner,tvaudio,bttv, Live 0xe715a000
-thermal 15096 0 - Live 0xe714a000
-parport_pc 24004 1 - Live 0xe712f000
-videodev 38688 4 tuner,tvaudio,bttv,v4l2_common, Live 0xe70f2000
-parport 30700 2 lp,parport_pc, Live 0xe706c000
-v4l1_compat 13184 1 videodev, Live 0xe704c000
-serio_raw 5024 0 - Live 0xe7036000
-processor 38568 2 thermal, Live 0xe6fdd000
-thermal_sys 10756 3 fan,thermal,processor, Live 0xe6fc1000
-hwmon 2104 2 it87,thermal_sys, Live 0xe6fa9000
-videobuf_dma_sg 10784 1 bttv, Live 0xe6fa1000
-videobuf_core 15520 2 bttv,videobuf_dma_sg, Live 0xe6f95000
-evdev 9152 4 - Live 0xe6f6a000
-psmouse 41676 0 - Live 0xe6ebd000
-button 5708 0 - Live 0xe6e43000
-rtc_cmos 10124 0 - Live 0xe6e0e000
-rtc_core 15992 1 rtc_cmos, Live 0xe6dbf000
-rtc_lib 2332 1 rtc_core, Live 0xe6db4000
-snd_via82xx 22772 1 - Live 0xe6d76000
-gameport 9864 3 ns558,snd_via82xx, Live 0xe6d58000
-snd_ac97_codec 100128 1 snd_via82xx, Live 0xe6d0c000
-ac97_bus 1372 1 snd_ac97_codec, Live 0xe6ce4000
-snd_pcm 68128 5 snd_pcm_oss,snd_wss_lib,snd_via82xx,snd_ac97_codec,
-Live 0xe6b8b000
-snd_timer 19108 4 snd_seq,snd_wss_lib,snd_opl3_lib,snd_pcm, Live 0xe6b1f000
-snd_page_alloc 7972 3 snd_wss_lib,snd_via82xx,snd_pcm, Live 0xe6b0f000
-snd_mpu401_uart 6524 4
-snd_cs4232,snd_wavefront,snd_mpu401,snd_via82xx, Live 0xe6ae3000
-snd_rawmidi 19040 2 snd_wavefront,snd_mpu401_uart, Live 0xe6aa0000
-snd_seq_device 6088 5
-snd_seq_dummy,snd_seq_oss,snd_seq,snd_opl3_lib,snd_rawmidi, Live
-0xe6a91000
-snd 50820 18 snd_seq_oss,snd_seq,snd_pcm_oss,snd_mixer_oss,snd_cs4232,snd_wavefront,snd_wss_lib,snd_opl3_lib,snd_hwdep,snd_mpu401,snd_via82xx,snd_ac97_codec,snd_pcm,snd_timer,snd_mpu401_uart,snd_rawmidi,snd_seq_device,
-Live 0xe6a3e000
-soundcore 5824 1 snd, Live 0xe6a14000
-btcx_risc 4196 1 bttv, Live 0xe6a02000
-uhci_hcd 22284 0 - Live 0xe6817000
-via_agp 7900 1 - Live 0xe7217000
-tveeprom 11808 1 bttv, Live 0xe720c000
-i2c_viapro 7440 0 - Live 0xe71fe000
-shpchp 31888 0 - Live 0xe71d4000
-agpgart 29256 2 drm,via_agp, Live 0xe7116000
-sundance 19808 0 - Live 0xe70c5000
-i2c_core 20496 9
-drm,tuner_simple,tuner,tvaudio,bttv,i2c_algo_bit,v4l2_common,tveeprom,i2c_viapro,
-Live 0xe70a8000
-8139too 22780 0 - Live 0xe7044000
-mii 4380 2 sundance,8139too, Live 0xe7032000
-sg 24432 0 - Live 0xe701f000
-ext3 126020 2 - Live 0xe6e69000
-jbd 42416 1 ext3, Live 0xe685d000
-mbcache 6496 1 ext3, Live 0xe680a000
-
-[7.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem)
-
-/proc/ioports
-0000-001f : dma1
-0020-0021 : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-0060 : keyboard
-0064-0064 : keyboard
-0070-0073 : rtc0
-0080-008f : dma page reg
-00a0-00a1 : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-0170-0177 : 0000:00:11.1
-  0170-0177 : via82cxxx
-01f0-01f7 : 0000:00:11.1
-  01f0-01f7 : via82cxxx
-0201-0201 : ns558-pnp
-0290-0297 : pnp 00:02
-  0295-0296 : it87
-    0295-0296 : it87
-02f8-02ff : serial
-0330-0331 : MPU401 UART
-0376-0376 : 0000:00:11.1
-  0376-0376 : via82cxxx
-0378-037a : parport0
-03c0-03df : vesafb
-03f2-03f2 : floppy
-03f4-03f5 : floppy
-03f6-03f6 : 0000:00:11.1
-  03f6-03f6 : via82cxxx
-03f7-03f7 : floppy
-03f8-03ff : serial
-04d0-04d1 : pnp 00:02
-0800-0805 : pnp 00:02
-0cf8-0cff : PCI conf1
-4000-4003 : ACPI PM1a_EVT_BLK
-4008-400b : ACPI PM_TMR
-4010-4015 : ACPI CPU throttle
-4020-4023 : ACPI GPE0_BLK
-40f0-40f1 : ACPI PM1a_CNT_BLK
-5000-5007 : vt596_smbus
-c000-c007 : 0000:00:08.0
-c400-c403 : 0000:00:08.0
-c800-c807 : 0000:00:08.0
-cc00-cc03 : 0000:00:08.0
-d000-d00f : 0000:00:08.0
-d400-d47f : 0000:00:09.0
-  d400-d47f : sundance
-d800-d8ff : 0000:00:0e.0
-  d800-d8ff : 8139too
-dc00-dc0f : 0000:00:11.1
-  dc00-dc0f : via82cxxx
-e000-e01f : 0000:00:11.2
-  e000-e01f : uhci_hcd
-e400-e41f : 0000:00:11.3
-  e400-e41f : uhci_hcd
-e800-e8ff : 0000:00:11.5
-  e800-e8ff : VIA8233A
-
-/proc/iomem
-00000000-0000ffff : reserved
-00010000-0009fbff : System RAM
-0009fc00-0009ffff : reserved
-000a0000-000bffff : Video RAM area
-000c0000-000cbfff : Video ROM
-000cc000-000d07ff : Adapter ROM
-000d0800-000d3fff : pnp 00:00
-000f0000-000fffff : reserved
-  000f0000-000fffff : System ROM
-00100000-25feffff : System RAM
-  00100000-0040ea82 : Kernel code
-  0040ea83-00577507 : Kernel data
-  005da000-00636e23 : Kernel bss
-25ff0000-25ff2fff : ACPI Non-volatile Storage
-25ff3000-25ffffff : ACPI Tables
-30000000-3007ffff : 0000:00:08.0
-30080000-3008ffff : 0000:00:09.0
-d0000000-d7ffffff : 0000:00:00.0
-d8000000-dfffffff : PCI Bus 0000:01
-  d8000000-dfffffff : 0000:01:00.0
-    d8000000-d9eeffff : vesafb
-e0000000-e1ffffff : PCI Bus 0000:01
-  e0000000-e000ffff : 0000:01:00.0
-  e1000000-e107ffff : 0000:01:00.0
-e3000000-e30001ff : 0000:00:08.0
-  e3000000-e30001ff : sata_sil
-e3001000-e30011ff : 0000:00:09.0
-  e3001000-e30011ff : sundance
-e3002000-e3002fff : 0000:00:0a.0
-  e3002000-e3002fff : bttv0
-e3003000-e3003fff : 0000:00:0a.1
-e3004000-e30040ff : 0000:00:0e.0
-  e3004000-e30040ff : 8139too
-fec00000-fec00fff : IOAPIC 0
-  fec00000-fec00fff : reserved
-    fec00000-fec00fff : pnp 00:00
-fee00000-fee00fff : Local APIC
-  fee00000-fee00fff : reserved
-    fee00000-fee00fff : pnp 00:00
-fff80000-fffeffff : pnp 00:00
-ffff0000-ffffffff : reserved
-  ffff0000-ffffffff : pnp 00:00
-
-[7.5.] PCI information ('lspci -vvv' as root)
-
-00:00.0 Host bridge: VIA Technologies, Inc. VT8375 [KM266/KL266] Host Bridge
-	Subsystem: Elitegroup Computer Systems Unknown device 0a76
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR- INTx-
-	Latency: 8
-	Region 0: Memory at d0000000 (32-bit, prefetchable) [size=128M]
-	Capabilities: [a0] AGP version 2.0
-		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit-
-FW- AGP3- Rate=x1,x2,x4
-		Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP+ GART64- 64bit- FW- Rate=x4
-	Capabilities: [c0] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: agpgart-via
-	Kernel modules: via-agp
-
-00:01.0 PCI bridge: VIA Technologies, Inc. VT8633 [Apollo Pro266 AGP]
-(prog-if 00 [Normal decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR+ FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR+ INTx-
-	Latency: 0
-	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
-	I/O behind bridge: 0000f000-00000fff
-	Memory behind bridge: e0000000-e1ffffff
-	Prefetchable memory behind bridge: d8000000-dfffffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- <SERR- <PERR-
-	BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B-
-		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-	Capabilities: [80] Power Management version 2
-		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel modules: shpchp
-
-00:08.0 Mass storage controller: Silicon Image, Inc. SiI 3112
-[SATALink/SATARaid] Serial ATA Controller (rev 02)
-	Subsystem: Silicon Image, Inc. SiI 3112 SATALink Controller
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32, Cache Line Size: 32 bytes
-	Interrupt: pin A routed to IRQ 16
-	Region 0: I/O ports at c000 [size=8]
-	Region 1: I/O ports at c400 [size=4]
-	Region 2: I/O ports at c800 [size=8]
-	Region 3: I/O ports at cc00 [size=4]
-	Region 4: I/O ports at d000 [size=16]
-	Region 5: Memory at e3000000 (32-bit, non-prefetchable) [size=512]
-	[virtual] Expansion ROM at 30000000 [disabled] [size=512K]
-	Capabilities: [60] Power Management version 2
-		Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
-	Kernel driver in use: sata_sil
-
-00:09.0 Ethernet controller: Sundance Technology Inc / IC Plus Corp IC
-Plus IP100A Integrated 10/100 Ethernet MAC + PHY (rev 31)
-	Subsystem: Sundance Technology Inc / IC Plus Corp Unknown device 0201
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort+
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32 (2500ns min, 2500ns max), Cache Line Size: 32 bytes
-	Interrupt: pin A routed to IRQ 17
-	Region 0: I/O ports at d400 [size=128]
-	Region 1: Memory at e3001000 (32-bit, non-prefetchable) [size=512]
-	[virtual] Expansion ROM at 30080000 [disabled] [size=64K]
-	Capabilities: [50] Power Management version 2
-		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
-		Status: D0 PME-Enable+ DSel=0 DScale=2 PME-
-	Kernel driver in use: sundance
-	Kernel modules: sundance
-
-00:0a.0 Multimedia video controller: Brooktree Corporation Bt878 Video
-Capture (rev 11)
-	Subsystem: Hauppauge computer works Inc. WinTV Series
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32 (4000ns min, 10000ns max)
-	Interrupt: pin A routed to IRQ 18
-	Region 0: Memory at e3002000 (32-bit, prefetchable) [size=4K]
-	Capabilities: [44] Vital Product Data <?>
-	Capabilities: [4c] Power Management version 2
-		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: bttv
-	Kernel modules: bttv
-
-00:0a.1 Multimedia controller: Brooktree Corporation Bt878 Audio
-Capture (rev 11)
-	Subsystem: Hauppauge computer works Inc. WinTV Series
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32 (1000ns min, 63750ns max)
-	Interrupt: pin A routed to IRQ 5
-	Region 0: Memory at e3003000 (32-bit, prefetchable) [size=4K]
-	Capabilities: [44] Vital Product Data <?>
-	Capabilities: [4c] Power Management version 2
-		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel modules: snd-bt87x
-
-00:0e.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
-RTL-8139/8139C/8139C+ (rev 10)
-	Subsystem: Realtek Semiconductor Co., Ltd. RT8139
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32 (8000ns min, 16000ns max)
-	Interrupt: pin A routed to IRQ 18
-	Region 0: I/O ports at d800 [size=256]
-	Region 1: Memory at e3004000 (32-bit, non-prefetchable) [size=256]
-	Capabilities: [50] Power Management version 2
-		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: 8139too
-	Kernel modules: 8139too, 8139cp
-
-00:11.0 ISA bridge: VIA Technologies, Inc. VT8233A ISA Bridge
-	Subsystem: Elitegroup Computer Systems Unknown device 0a76
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping+ SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Capabilities: [c0] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel modules: i2c-viapro, via-ircc
-
-00:11.1 IDE interface: VIA Technologies, Inc.
-VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
-(prog-if 8a [Master SecP PriP])
-	Subsystem: VIA Technologies, Inc.
-VT82C586/B/VT82C686/A/B/VT8233/A/C/VT8235 PIPC Bus Master IDE
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32
-	Interrupt: pin A routed to IRQ 23
-	Region 0: [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [size=8]
-	Region 1: [virtual] Memory at 000003f0 (type 3, non-prefetchable) [size=1]
-	Region 2: [virtual] Memory at 00000170 (32-bit, non-prefetchable) [size=8]
-	Region 3: [virtual] Memory at 00000370 (type 3, non-prefetchable) [size=1]
-	Region 4: I/O ports at dc00 [size=16]
-	Capabilities: [c0] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: VIA_IDE
-	Kernel modules: pata_via
-
-00:11.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
-Controller (rev 23) (prog-if 00 [UHCI])
-	Subsystem: First International Computer, Inc. VA-502 Mainboard
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32, Cache Line Size: 32 bytes
-	Interrupt: pin D routed to IRQ 21
-	Region 4: I/O ports at e000 [size=32]
-	Capabilities: [80] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: uhci_hcd
-	Kernel modules: uhci-hcd
-
-00:11.3 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
-Controller (rev 23) (prog-if 00 [UHCI])
-	Subsystem: First International Computer, Inc. VA-502 Mainboard
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32, Cache Line Size: 32 bytes
-	Interrupt: pin D routed to IRQ 21
-	Region 4: I/O ports at e400 [size=32]
-	Capabilities: [80] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: uhci_hcd
-	Kernel modules: uhci-hcd
-
-00:11.5 Multimedia audio controller: VIA Technologies, Inc.
-VT8233/A/8235/8237 AC97 Audio Controller (rev 40)
-	Subsystem: Elitegroup Computer Systems Unknown device 0a76
-	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Interrupt: pin C routed to IRQ 22
-	Region 0: I/O ports at e800 [size=256]
-	Capabilities: [c0] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: VIA 82xx Audio
-	Kernel modules: snd-via82xx
-
-01:00.0 VGA compatible controller: S3 Inc. VT8375 [ProSavage8
-KM266/KL266] (prog-if 00 [VGA controller])
-	Subsystem: Elitegroup Computer Systems Unknown device 0a76
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 32 (1000ns min, 63750ns max), Cache Line Size: 32 bytes
-	Interrupt: pin A routed to IRQ 16
-	Region 0: Memory at e1000000 (32-bit, non-prefetchable) [size=512K]
-	Region 1: Memory at d8000000 (32-bit, prefetchable) [size=128M]
-	[virtual] Expansion ROM at e0000000 [disabled] [size=64K]
-	Capabilities: [dc] Power Management version 2
-		Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [80] AGP version 2.0
-		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA- ITACoh- GART64- HTrans- 64bit-
-FW- AGP3- Rate=x4
-		Command: RQ=32 ArqSz=0 Cal=0 SBA- AGP+ GART64- 64bit- FW- Rate=x4
-	Kernel modules: savagefb
-
-[7.6.] SCSI information (from /proc/scsi/scsi)
-
-Attached devices:
-Host: scsi1 Channel: 00 Id: 00 Lun: 00
-  Vendor: ATA      Model: SAMSUNG HD250HJ  Rev: FH10
-  Type:   Direct-Access                    ANSI  SCSI revision: 05
-
-[7.7.] Other information that might be relevant to the problem
-       (please look in /proc and include all information that you
-       think to be relevant):
-
-[X.] Other notes, patches, fixes, workarounds:
-
-Note that I havent noticed any crash If I do the same action while X11
-isnt running, i.e. trying to view TV input under the text console. the
-same kind of behavior had happened me with different kernel versions
-and even with a different tv card brand based in the bt8x8 chip
-distributions: Xubuntu 8.04 and 8.10, Slackware 12.1 and 12.2
+diff --git a/drivers/mmc/host/bfin_sdh.c b/drivers/mmc/host/bfin_sdh.c
+new file mode 100644
+index 0000000..c22f326
+--- /dev/null
++++ b/drivers/mmc/host/bfin_sdh.c
+@@ -0,0 +1,648 @@
++/*
++ *  linux/drivers/mmc/bfin_sdh.c - Blackfin SDH Controller Driver
++ *
++ *  Copyright (C) 2007 Analog Device Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++/* In term of ADSP_BF5xx_Blackfin_Processor_Peripheral_Hardware_Reference,
++ * the SDH allows software to detect a card when it is inserted into its slot.
++ * The SD_DATA3 pin powers up low due to a special pull-down resistor. When an
++ * SD Card is inserted in its slot, the resistance increases and a rising edge
++ * is detected by the SDH module.
++ * But this doesn't work sometimes. When a MMC/SD card is inserted, the voltage
++ * doesn't rise on SD_DATA3. In term of The MultiMediaCard System Specification,
++ * SD_DATA3 is used as CS pin in SPI mode. The MultiMediaCard wakes up in the
++ * MultiMediaCard mode. During the scan procedure, host will send CMD0 to reset
++ * MMC card, if CS pin is low, MMC card will enter SPI mode. Of course Secure
++ * Digital Host controller is not a SPI controller. So the Card detect function
++ * has to be disabled. After card is inserted run "echo 0 > /proc/driver/sdh"
++ * to trigger card scanning */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/dma-mapping.h>
++#include <linux/mmc/host.h>
++#include <linux/proc_fs.h>
++
++#include <asm/cacheflush.h>
++#include <asm/dma.h>
++#include <asm/portmux.h>
++#include <asm/bfin_sdh.h>
++
++#define DRIVER_NAME	"bfin-sdh"
++
++#define NR_SG	32
++
++#if defined(CONFIG_BF51x)
++#define bfin_write_SDH_PWR_CTL		bfin_write_RSI_PWR_CTL
++#define bfin_read_SDH_CLK_CTL		bfin_read_RSI_CLK_CTL
++#define bfin_write_SDH_CLK_CTL		bfin_write_RSI_CLK_CTL
++#define bfin_write_SDH_ARGUMENT		bfin_write_RSI_ARGUMENT
++#define bfin_write_SDH_COMMAND		bfin_write_RSI_COMMAND
++#define bfin_write_SDH_DATA_TIMER	bfin_write_RSI_DATA_TIMER
++#define bfin_read_SDH_RESPONSE0		bfin_read_RSI_RESPONSE0
++#define bfin_read_SDH_RESPONSE1		bfin_read_RSI_RESPONSE1
++#define bfin_read_SDH_RESPONSE2		bfin_read_RSI_RESPONSE2
++#define bfin_read_SDH_RESPONSE3		bfin_read_RSI_RESPONSE3
++#define bfin_write_SDH_DATA_LGTH	bfin_write_RSI_DATA_LGTH
++#define bfin_read_SDH_DATA_CTL		bfin_read_RSI_DATA_CTL
++#define bfin_write_SDH_DATA_CTL		bfin_write_RSI_DATA_CTL
++#define bfin_read_SDH_DATA_CNT		bfin_read_RSI_DATA_CNT
++#define bfin_write_SDH_STATUS_CLR	bfin_write_RSI_STATUS_CLR
++#define bfin_read_SDH_E_STATUS		bfin_read_RSI_E_STATUS
++#define bfin_write_SDH_E_STATUS		bfin_write_RSI_E_STATUS
++#define bfin_read_SDH_STATUS		bfin_read_RSI_STATUS
++#define bfin_write_SDH_MASK0		bfin_write_RSI_MASK0
++#define bfin_read_SDH_CFG		bfin_read_RSI_CFG
++#define bfin_write_SDH_CFG		bfin_write_RSI_CFG
++#endif
++
++struct dma_desc_array {
++	unsigned long	start_addr;
++	unsigned short	cfg;
++	unsigned short	x_count;
++	short		x_modify;
++} __attribute__((packed));
++
++struct sdh_host {
++	struct mmc_host		*mmc;
++	spinlock_t		lock; /* Why I have to give a comment here? */
++	struct resource		*res;
++	void __iomem		*base;
++	int			irq;
++	int			stat_irq;
++	int			dma_ch;
++	int			dma_dir;
++	struct dma_desc_array	*sg_cpu;
++	dma_addr_t		sg_dma;
++	int			dma_len;
++
++	unsigned int		imask;
++	unsigned int		power_mode;
++	unsigned int		clk_div;
++
++	struct mmc_request	*mrq;
++	struct mmc_command	*cmd;
++	struct mmc_data		*data;
++};
++
++static struct bfin_sd_host *get_sdh_data(struct platform_device *pdev)
++{
++	return pdev->dev.platform_data;
++}
++
++static void sdh_stop_clock(struct sdh_host *host)
++{
++	bfin_write_SDH_CLK_CTL(bfin_read_SDH_CLK_CTL() & ~CLK_E);
++	SSYNC();
++}
++
++static void sdh_enable_stat_irq(struct sdh_host *host, unsigned int mask)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&host->lock, flags);
++	host->imask |= mask;
++	bfin_write_SDH_MASK0(mask);
++	SSYNC();
++	spin_unlock_irqrestore(&host->lock, flags);
++}
++
++static void sdh_disable_stat_irq(struct sdh_host *host, unsigned int mask)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&host->lock, flags);
++	host->imask &= ~mask;
++	bfin_write_SDH_MASK0(host->imask);
++	SSYNC();
++	spin_unlock_irqrestore(&host->lock, flags);
++}
++
++static void sdh_setup_data(struct sdh_host *host, struct mmc_data *data)
++{
++	unsigned int length;
++	unsigned int data_ctl;
++	unsigned int dma_cfg;
++#if defined(CONFIG_BF54x)
++	int i;
++#endif
++	pr_debug("%s enter flags:0x%x\n", __func__, data->flags);
++	host->data = data;
++	data_ctl = 0;
++	dma_cfg = 0;
++
++	length = data->blksz * data->blocks;
++	bfin_write_SDH_DATA_LGTH(length);
++
++	if (data->flags & MMC_DATA_STREAM)
++		data_ctl |= DTX_MODE;
++
++	if (data->flags & MMC_DATA_READ)
++		data_ctl |= DTX_DIR;
++
++	BUG_ON(data->blksz & (data->blksz -1));
++	data_ctl |= ((ffs(data->blksz) -1) << 4);
++
++	bfin_write_SDH_DATA_CTL(data_ctl);
++
++	bfin_write_SDH_DATA_TIMER(0xFFFFF);
++	SSYNC();
++
++	if (data->flags & MMC_DATA_READ) {
++		host->dma_dir = DMA_FROM_DEVICE;
++		dma_cfg |= WNR;
++	} else
++		host->dma_dir = DMA_TO_DEVICE;
++
++	sdh_enable_stat_irq(host, (DAT_CRC_FAIL | DAT_TIME_OUT | DAT_END));
++	host->dma_len = dma_map_sg(mmc_dev(host->mmc), data->sg, data->sg_len, host->dma_dir);
++#if defined(CONFIG_BF54x)
++	dma_cfg |= DMAFLOW_ARRAY | NDSIZE_5 | RESTART | WDSIZE_32 | DMAEN;
++	for (i = 0; i < host->dma_len; i++) {
++		host->sg_cpu[i].start_addr = sg_dma_address(&data->sg[i]);
++		host->sg_cpu[i].cfg = dma_cfg;
++		host->sg_cpu[i].x_count = sg_dma_len(&data->sg[i]) / 4;
++		host->sg_cpu[i].x_modify = 4;
++		pr_debug("%d: start_addr:0x%lx, cfg:0x%x, x_count:0x%x, x_modify:0x%x\n",
++				i, host->sg_cpu[i].start_addr, host->sg_cpu[i].cfg,
++				host->sg_cpu[i].x_count, host->sg_cpu[i].x_modify);
++	}
++	flush_dcache_range((unsigned int)host->sg_cpu, \
++			(unsigned int)host->sg_cpu + \
++			host->dma_len * sizeof(struct dma_desc_array));
++	/* Set the last descriptor to stop mode */
++	host->sg_cpu[host->dma_len - 1].cfg &= ~(DMAFLOW | NDSIZE);
++	host->sg_cpu[host->dma_len - 1].cfg |= DI_EN;
++
++	set_dma_curr_desc_addr(host->dma_ch, (unsigned long *)host->sg_dma);
++	set_dma_x_count(host->dma_ch, 0);
++	set_dma_x_modify(host->dma_ch, 0);
++	set_dma_config(host->dma_ch, dma_cfg);
++	
++/* RSI DMA doesn't work in array mode */
++#elif defined(CONFIG_BF51x)
++	dma_cfg |= WDSIZE_32 | DMAEN;
++	set_dma_start_addr(host->dma_ch, sg_dma_address(&data->sg[0]));
++	set_dma_x_count(host->dma_ch, length / 4);
++	set_dma_x_modify(host->dma_ch, 4);
++	set_dma_config(host->dma_ch, dma_cfg);
++#endif
++	bfin_write_SDH_DATA_CTL(bfin_read_SDH_DATA_CTL() | DTX_DMA_E | DTX_E);
++
++	SSYNC();
++
++	pr_debug("%s exit\n", __func__);
++}
++
++static void sdh_start_cmd(struct sdh_host *host, struct mmc_command *cmd)
++{
++	unsigned int sdh_cmd;
++	unsigned int stat_mask;
++
++	pr_debug("%s enter cmd:0x%p\n", __func__, cmd);
++	WARN_ON(host->cmd != NULL);
++	host->cmd = cmd;
++
++	sdh_cmd = 0;
++	stat_mask = 0;
++
++	sdh_cmd |= cmd->opcode;
++
++	if (cmd->flags & MMC_RSP_PRESENT) {
++		sdh_cmd |= CMD_RSP;
++		stat_mask |= CMD_RESP_END;
++	} else
++		stat_mask |= CMD_SENT;
++
++	if (cmd->flags & MMC_RSP_136)
++		sdh_cmd |= CMD_L_RSP;
++
++	stat_mask |= CMD_CRC_FAIL | CMD_TIME_OUT;
++
++	sdh_enable_stat_irq(host, stat_mask);
++
++	bfin_write_SDH_ARGUMENT(cmd->arg);
++	bfin_write_SDH_COMMAND(sdh_cmd | CMD_E);
++	bfin_write_SDH_CLK_CTL(bfin_read_SDH_CLK_CTL() | CLK_E);
++	SSYNC();
++}
++
++static void sdh_finish_request(struct sdh_host *host, struct mmc_request *mrq)
++{
++	pr_debug("%s enter\n", __func__);
++	host->mrq = NULL;
++	host->cmd = NULL;
++	host->data = NULL;
++	mmc_request_done(host->mmc, mrq);
++}
++
++static int sdh_cmd_done(struct sdh_host *host, unsigned int stat)
++{
++	struct mmc_command *cmd = host->cmd;
++
++	pr_debug("%s enter cmd:%p\n", __func__, cmd);
++	if (!cmd)
++		return 0;
++
++	host->cmd = NULL;
++
++	if (cmd->flags & MMC_RSP_PRESENT) {
++		cmd->resp[0] = bfin_read_SDH_RESPONSE0();
++		if (cmd->flags & MMC_RSP_136) {
++			cmd->resp[1] = bfin_read_SDH_RESPONSE1();
++			cmd->resp[2] = bfin_read_SDH_RESPONSE2();
++			cmd->resp[3] = bfin_read_SDH_RESPONSE3();
++		}
++	}
++	if (stat & CMD_TIME_OUT)
++		cmd->error = -ETIMEDOUT;
++	else if (stat & CMD_CRC_FAIL && cmd->flags & MMC_RSP_CRC)
++		cmd->error = -EILSEQ;
++
++	sdh_disable_stat_irq(host, (CMD_SENT | CMD_RESP_END | CMD_TIME_OUT | CMD_CRC_FAIL));
++
++	if (host->data && !cmd->error) {
++		if (host->data->flags & MMC_DATA_WRITE)
++			sdh_setup_data(host, host->data);
++
++		sdh_enable_stat_irq(host, DAT_END | RX_OVERRUN | TX_UNDERRUN | DAT_TIME_OUT);
++	} else
++		sdh_finish_request(host, host->mrq);
++
++	return 1;
++}
++
++static int sdh_data_done(struct sdh_host *host, unsigned int stat)
++{
++	struct mmc_data *data = host->data;
++
++	pr_debug("%s enter stat:0x%x\n", __func__, stat);
++	if (!data)
++		return 0;
++
++	disable_dma(host->dma_ch);
++	dma_unmap_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
++		     host->dma_dir);
++
++	if (stat & DAT_TIME_OUT)
++		data->error = -ETIMEDOUT;
++	else if (stat & DAT_CRC_FAIL)
++		data->error = -EILSEQ;
++	else if (stat & (RX_OVERRUN | TX_UNDERRUN))
++		data->error = -EIO;
++
++	if (!data->error)
++		data->bytes_xfered = data->blocks * data->blksz;
++	else
++		data->bytes_xfered = data->blocks * data->blksz - \
++				     bfin_read_SDH_DATA_CNT();
++
++	sdh_disable_stat_irq(host, DAT_END | DAT_TIME_OUT | DAT_CRC_FAIL | RX_OVERRUN | TX_UNDERRUN);
++	bfin_write_SDH_STATUS_CLR(DAT_END_STAT | DAT_TIMEOUT_STAT | \
++			DAT_CRC_FAIL_STAT | DAT_BLK_END_STAT | RX_OVERRUN | TX_UNDERRUN);
++	bfin_write_SDH_DATA_CTL(0);
++	SSYNC();
++
++	host->data = NULL;
++	if (host->mrq->stop) {
++		sdh_stop_clock(host);
++		sdh_start_cmd(host, host->mrq->stop);
++	} else
++		sdh_finish_request(host, host->mrq);
++
++	return 1;
++}
++
++static void sdh_request(struct mmc_host *mmc, struct mmc_request *mrq)
++{
++	struct sdh_host *host = mmc_priv(mmc);
++
++	pr_debug("%s enter, mrp:%p, cmd:%p\n", __func__, mrq, mrq->cmd);
++	WARN_ON(host->mrq != NULL);
++
++	host->mrq = mrq;
++	host->data = mrq->data;
++
++	if (mrq->data && mrq->data->flags & MMC_DATA_READ)
++		sdh_setup_data(host, mrq->data);
++
++	sdh_start_cmd(host, mrq->cmd);
++}
++
++static int sdh_get_ro(struct mmc_host *mmc)
++{
++	/* Host doesn't support read only detection so assume writeable */
++	return -ENOSYS;
++}
++
++static void sdh_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
++{
++	struct sdh_host *host;
++	unsigned long flags;
++	u16 clk_ctl = 0;
++	u16 pwr_ctl = 0;
++	u16 cfg;
++	host = mmc_priv(mmc);
++
++	spin_lock_irqsave(&host->lock, flags);
++	if (ios->clock) {
++		unsigned long clk_div;
++		unsigned long sys_clk;
++		sys_clk = get_sclk();
++		if (sys_clk % (2*ios->clock) == 0)
++			clk_div = sys_clk / (2*ios->clock) - 1;
++		else
++			clk_div = sys_clk / (2*ios->clock);
++		if (clk_div > 0xff)
++			clk_div = 0xFF;
++		clk_ctl |= clk_div & 0xFF;
++		clk_ctl |= CLK_E;
++		host->clk_div = clk_div;
++	} else
++		sdh_stop_clock(host);
++
++	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN)
++#ifdef CONFIG_SDH_BFIN_MISSING_CMD_PULLUP_WORKAROUND
++		pwr_ctl |= ROD_CTL;
++#else
++		pwr_ctl |= SD_CMD_OD | ROD_CTL;
++#endif
++
++	if (ios->bus_width == MMC_BUS_WIDTH_4) {
++		cfg = bfin_read_SDH_CFG();
++		cfg &= ~0x80;
++		cfg |= 0x40;
++		/* Enable 4 bit SDIO */
++		cfg |= 0x0c;
++		bfin_write_SDH_CFG(cfg);
++		clk_ctl |= WIDE_BUS;
++	} else {
++		cfg = bfin_read_SDH_CFG();
++		cfg |= 0x08;
++		bfin_write_SDH_CFG(cfg);
++	}
++
++	bfin_write_SDH_CLK_CTL(clk_ctl);
++
++	host->power_mode = ios->power_mode;
++	if (ios->power_mode == MMC_POWER_ON)
++		pwr_ctl |= PWR_ON;
++
++	bfin_write_SDH_PWR_CTL(pwr_ctl);
++	SSYNC();
++
++	spin_unlock_irqrestore(&host->lock, flags);
++
++	pr_debug("SDH: clk_div = 0x%x actual clock:%ld expected clock:%d\n",
++			host->clk_div, host->clk_div?get_sclk()/(2 * (host->clk_div + 1)):0,
++			ios->clock);
++}
++
++static const struct mmc_host_ops sdh_ops = {
++	.request	= sdh_request,
++	.get_ro		= sdh_get_ro,
++	.set_ios	= sdh_set_ios,
++};
++
++static irqreturn_t sdh_dma_irq(int irq, void *devid)
++{
++	struct sdh_host *host = devid;
++
++	pr_debug("%s enter, irq_stat:0x%04x\n", __func__,\
++			get_dma_curr_irqstat(host->dma_ch));
++	clear_dma_irqstat(host->dma_ch);
++	SSYNC();
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t sdh_stat_irq(int irq, void *devid)
++{
++	struct sdh_host *host = devid;
++	unsigned int status;
++	int handled = 0;
++
++	pr_debug("%s enter\n", __func__);
++	status = bfin_read_SDH_E_STATUS();
++	if (status & SD_CARD_DET) {
++		mmc_detect_change(host->mmc, 0);
++		bfin_write_SDH_E_STATUS(SD_CARD_DET);
++	}
++
++	status = bfin_read_SDH_STATUS();
++	if (status & (CMD_SENT | CMD_RESP_END | CMD_TIME_OUT | CMD_CRC_FAIL)) {
++		handled |= sdh_cmd_done(host, status);
++		bfin_write_SDH_STATUS_CLR( CMD_SENT_STAT | CMD_RESP_END_STAT | \
++				CMD_TIMEOUT_STAT | CMD_CRC_FAIL_STAT);
++		SSYNC();
++	}
++
++	status = bfin_read_SDH_STATUS();
++	if (status & (DAT_END | DAT_TIME_OUT | DAT_CRC_FAIL | RX_OVERRUN | TX_UNDERRUN))
++		handled |= sdh_data_done(host, status);
++
++	pr_debug("%s exit\n\n", __func__);
++
++	return IRQ_RETVAL(handled);
++}
++
++static int proc_write(struct file *file, const char __user *buffer,
++		unsigned long count, void *data)
++{
++	struct sdh_host *host = data;
++	unsigned long cmd = simple_strtoul(buffer, NULL, 16);
++
++	switch (cmd) {
++	case 0:
++		mmc_detect_change(host->mmc, 0);
++		break;
++	default:
++		printk(KERN_ERR "bfin_sdh: cmd %lu not support\n", cmd);
++		break;
++	}
++
++	return count;
++}
++
++static int __devinit sdh_probe(struct platform_device *pdev)
++{
++	struct mmc_host *mmc;
++	struct sdh_host *host = NULL;
++	struct proc_dir_entry *sd_entry;
++	struct bfin_sd_host *drv_data = get_sdh_data(pdev);
++	int ret;
++
++	if (!drv_data) {
++		dev_err(&pdev->dev, "missing platform driver data\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	mmc = mmc_alloc_host(sizeof(struct sdh_host), &pdev->dev);
++	if (!mmc) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	mmc->ops = &sdh_ops;
++	mmc->max_phys_segs = NR_SG;
++	mmc->max_seg_size = 1 << 16;
++	mmc->max_blk_size = 2 << 11;
++	mmc->max_blk_count = 2 << 16;
++	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
++	mmc->f_min = get_sclk() >> 9;
++	mmc->f_max = get_sclk();
++	mmc->caps = MMC_CAP_4_BIT_DATA;
++	host = mmc_priv(mmc);
++	host->mmc = mmc;
++
++	spin_lock_init(&host->lock);
++	host->irq = drv_data->irq_int0;
++	host->dma_ch = drv_data->dma_chan;
++	ret = request_irq(host->irq, sdh_stat_irq, 0, "SDH Status IRQ", host);
++	if (ret) {
++		dev_err(&pdev->dev, "unable to request status irq\n");
++		goto out1;
++	}
++
++	ret = request_dma(host->dma_ch, DRIVER_NAME "DMA");
++	if (ret) {
++		dev_err(&pdev->dev, "unable to request DMA channel\n");
++		goto out2;
++	}
++
++	ret = set_dma_callback(host->dma_ch, sdh_dma_irq, host);
++	if (ret) {
++		dev_err(&pdev->dev, "unable to request DMA irq\n");
++		goto out3;
++	}
++
++	host->sg_cpu = dma_alloc_coherent(&pdev->dev, PAGE_SIZE, &host->sg_dma, GFP_KERNEL);
++	if (host->sg_cpu == NULL) {
++		ret = -ENOMEM;
++		goto out3;
++	}
++
++	platform_set_drvdata(pdev, mmc);
++	mmc_add_host(mmc);
++	ret = peripheral_request_list(drv_data->pin_req, DRIVER_NAME);
++	if (ret) {
++		dev_err(&pdev->dev, "unable to request peripheral pins\n");
++		goto out3;
++	}
++
++#if defined(CONFIG_BF54x)
++	/* Secure Digital Host shares DMA with Nand controller */
++	bfin_write_DMAC1_PERIMUX(bfin_read_DMAC1_PERIMUX() | 0x1);
++#endif
++
++	bfin_write_SDH_CFG(bfin_read_SDH_CFG() | CLKS_EN);
++	SSYNC();
++
++	/* Disable card inserting detection pin.It's not that useful,since
++	 * we can't detect removal,and it will affect card detection on BF51x.
++	 */
++	bfin_write_SDH_CFG((bfin_read_SDH_CFG() & 0x1F) | 0x60);
++	SSYNC();
++	sd_entry = create_proc_entry("driver/sdh", 0600, NULL);
++	sd_entry->read_proc = NULL;
++	sd_entry->write_proc = proc_write;
++	sd_entry->data = host;
++
++	return 0;
++
++out3:
++	free_dma(host->dma_ch);
++out2:
++	free_irq(host->irq, host);
++out1:
++	mmc_free_host(mmc);
++ out:
++	return ret;
++}
++
++static int __devexit sdh_remove(struct platform_device *pdev)
++{
++	struct mmc_host *mmc = platform_get_drvdata(pdev);
++
++	platform_set_drvdata(pdev, NULL);
++
++	if (mmc) {
++		struct sdh_host *host = mmc_priv(mmc);
++
++		mmc_remove_host(mmc);
++
++		sdh_stop_clock(host);
++		free_irq(host->irq, host);
++		free_dma(host->dma_ch);
++		dma_free_coherent(&pdev->dev, PAGE_SIZE, host->sg_cpu, host->sg_dma);
++
++		mmc_free_host(mmc);
++	}
++	remove_proc_entry("driver/sdh", NULL);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int sdh_suspend(struct platform_device *dev, pm_message_t state)
++{
++	struct mmc_host *mmc = platform_get_drvdata(dev);
++	int ret = 0;
++
++	if (mmc)
++		ret = mmc_suspend_host(mmc, state);
++
++	return ret;
++}
++
++static int sdh_resume(struct platform_device *dev)
++{
++	struct mmc_host *mmc = platform_get_drvdata(dev);
++	int ret = 0;
++
++	if (mmc)
++		ret = mmc_resume_host(mmc);
++
++	return ret;
++}
++#else
++#define sdh_suspend	NULL
++#define sdh_resume	NULL
++#endif
++
++static struct platform_driver sdh_driver = {
++	.probe		= sdh_probe,
++	.remove		= sdh_remove,
++	.suspend	= sdh_suspend,
++	.resume		= sdh_resume,
++	.driver		= {
++		.name	= DRIVER_NAME,
++	},
++};
++
++static int __init sdh_init(void)
++{
++	return platform_driver_register(&sdh_driver);
++}
++
++static void __exit sdh_exit(void)
++{
++	platform_driver_unregister(&sdh_driver);
++}
++
++module_init(sdh_init);
++module_exit(sdh_exit);
++
++MODULE_DESCRIPTION("Blackfin Secure Digital Host Driver");
++MODULE_AUTHOR("Cliff Cai, Roy Huang");
++MODULE_LICENSE("GPL");
+-- 
+1.6.2
