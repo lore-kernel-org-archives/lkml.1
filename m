@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZDOKVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbZDOKWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbZDOKVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 06:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZDOKU7
+	id S1758938AbZDOKWA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 06:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZDOKVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 06:20:59 -0400
-Received: from stinky.trash.net ([213.144.137.162]:55673 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZDOKU6 (ORCPT
+	Wed, 15 Apr 2009 06:21:51 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35335 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753097AbZDOKVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 06:20:58 -0400
-Message-ID: <49E5B4FF.50606@trash.net>
-Date: Wed, 15 Apr 2009 12:20:47 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Eric Leblond <eric@inl.fr>, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] netfilter: nf_log fix
-References: <20090410191736.21efab8c@mako-desktop>	 <49E4744D.5090205@trash.net>	<49E47C2D.1050508@cosmosbay.com>	 <49E47EA5.3060706@trash.net> <20090414211946.4ea0455e@mako-desktop>	 <49E4EE9C.7040509@cosmosbay.com> <1239742000.24204.9.camel@ice-age> <49E4FB0C.1080103@cosmosbay.com>
-In-Reply-To: <49E4FB0C.1080103@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 15 Apr 2009 06:21:50 -0400
+Message-Id: <1239790909.3454.1310587155@webmail.messagingengine.com>
+X-Sasl-Enc: BOMwhs9H9vbc46djtvguapTIGxhWxEUKJ7TKnFlZb2gE 1239790909
+From: "Mr Blogs" <mrblogs@ssl-mail.com>
+To: linux-kernel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: 2.6.29 CCISS Problem
+Date: Wed, 15 Apr 2009 03:21:49 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> OK thanks everybody, I submit it more formally then, using ARRAY_SIZE() macro too :)
-> 
-> [PATCH] netfilter: nf_log fix
-> 
-> commit ca735b3aaa945626ba65a3e51145bfe4ecd9e222
-> 'netfilter: use a linked list of loggers'
-> introduced an array of list_head in "struct nf_logger", but
-> forgot to initialize it in nf_log_register(). This resulted
-> in oops when calling nf_log_unregister() at module unload time.
-> 
-> Reported-and-tested-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> Acked-by: Eric Leblond <eric@inl.fr>
+ I am using Gentoo on a HP DL380 G3. Intel Xeon (P4) 3.06ghz processors,
+with a HP COMPAQ CCISS ARRAY in RAID 0 mode (hardware, linux just sees
+one single drive)
 
-Applied, thanks everyone.
+hdparm on 2.6.27 shows the speed at ~ 130mbs
+
+After performing an upgrade of the kernel
+
+hdparm on 2.6.29 shows the speed at ~ 30mbs (30-50mbs varies)
+
+I looked at the DMESG comparisons,
+and the only difference is that 2.6.29 mentions:
+"IRQF_DISABLED is not guaranteed on shared IRQs"
+
+Now I have looked for hours to see if it was a configuration issue, but
+to no avail.
+
+ Yes the 2.6.27 kernel was self built, and it works fine. The 2.6.29 was
+ built using the .config file from the 2.6.27.
+
+I compiled this kernel on two servers, both same spec (well, one has 4GB
+ram other has 2GB ram), same setup - and both responded as above.
+
+On the one, I recompiled the kernel to just use the new version (NO
+config changes). The other I re-compiled using config changes (removing
+things not relevant for the machine etc) - both end up having this
+problem.
+
+I have done a "diff" compare on the configs, but there is nothing I can
+find that would explain this.
+
+I know that this "IRQF_DISABLED" warning isn't present in 2.6.27 boots,
+and that the CISS driver works full speed in that one.
+
+I thought it was originally that I changed the IO Scheduling, but as i
+said, on the one machine - all i did was copy the config file and
+recompile.
+
+Do you know of anything that could be causing this?
+
+I checked proc/interrupts on both kernel versions, and IRQ 30 is
+unshared (IO-APIC-FASTEOI cciss or something like that), i am just
+unsure what is causing the issue.
+
+Thankyou.
+-- 
+  Mr Blogs
+  mrblogs@ssl-mail.com
+
+-- 
+http://www.fastmail.fm - Accessible with your email software
+                          or over the web
 
