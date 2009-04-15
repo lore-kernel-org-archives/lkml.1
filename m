@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZDOHbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZDOHcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbZDOHbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 03:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZDOHbf
+	id S1754827AbZDOHcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 03:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZDOHcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 03:31:35 -0400
-Received: from mga02.intel.com ([134.134.136.20]:11888 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbZDOHbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 03:31:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,191,1239001200"; 
-   d="scan'208";a="403273080"
-Subject: Re: Linux 2.6.30-rc2
-From: yakui_zhao <yakui.zhao@intel.com>
-To: Brice Goglin <Brice.Goglin@ens-lyon.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <49E57CEA.1020401@ens-lyon.org>
-References: <alpine.LFD.2.00.0904141628570.4132@localhost.localdomain>
-	 <49E57CEA.1020401@ens-lyon.org>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Wed, 15 Apr 2009 15:33:00 +0800
-Message-Id: <1239780780.5564.130.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Wed, 15 Apr 2009 03:32:06 -0400
+Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:45845
+	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751438AbZDOHcF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 03:32:05 -0400
+X-IronPort-AV: E=Sophos;i="4.40,191,1238968800"; 
+   d="scan'208";a="38500371"
+Message-ID: <49E58D7A.4010708@ens-lyon.org>
+Date: Wed, 15 Apr 2009 09:32:10 +0200
+From: Brice Goglin <Brice.Goglin@ens-lyon.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] migration: only migrate_prep() once per move_pages()
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 14:21 +0800, Brice Goglin wrote:
-> CC [M]  drivers/acpi/video.o
->   <no warning>
->   ...
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `intel_opregion_init':
-> (.text+0x813e2): undefined reference to `acpi_video_register'
-> make: *** [.tmp_vmlinux1] Error 1
-Will you please try the patch in the comment #16/#21 of 
-http://bugzilla.kernel.org/show_bug.cgi?id=13065 ?
+migrate_prep() is fairly expensive (72us on 16-core barcelona 1.9GHz).
+Commit 3140a2273009c01c27d316f35ab76a37e105fdd8 improved move_pages()
+throughput by breaking it into chunks, but it also made migrate_prep()
+be called once per chunk (every 128pages or so) instead of once per
+move_pages().
 
-Thanks.
-> 
-> I think I had the same with -rc1.
-> 
-> .config is attached
-> 
-> Cheers,
-> Brice
-> 
+This patch reverts to calling migrate_prep() only once per chunk
+as we did before 2.6.29.
+It is also a followup to commit 0aedadf91a70a11c4a3e7c7d99b21e5528af8d5d
+    mm: move migrate_prep out from under mmap_sem
+
+This improves migration throughput on the above machine from 600MB/s
+to 750MB/s.
+
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 068655d..a2d3e83 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -820,7 +820,6 @@ static int do_move_page_to_node_array(struct mm_struct *mm,
+ 	struct page_to_node *pp;
+ 	LIST_HEAD(pagelist);
+ 
+-	migrate_prep();
+ 	down_read(&mm->mmap_sem);
+ 
+ 	/*
+@@ -907,6 +906,9 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
+ 	pm = (struct page_to_node *)__get_free_page(GFP_KERNEL);
+ 	if (!pm)
+ 		goto out;
++
++	migrate_prep();
++
+ 	/*
+ 	 * Store a chunk of page_to_node array in a page,
+ 	 * but keep the last one as a marker
+
 
