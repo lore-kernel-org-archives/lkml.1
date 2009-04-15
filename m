@@ -1,105 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbZDORqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZDOR5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbZDORqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 13:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZDORqF
+	id S1754145AbZDOR5X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 13:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZDOR5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 13:46:05 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:59367 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752895AbZDORqC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 13:46:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=KtsJ5+0fdklXyXVdT/7Nt1P3wQKzNEdEQz1mHbntiZJLRRrS04jaERI6goAgkpH3TM
-         88V7+tcAYa5bZ/yFSmvW2T+U6CbRjVHk1xMwFvTP3ER19b+rd5Cv0x1BasrlvoW+J0Cz
-         +DD5qvgCfaaZT2I6OZTQjaQW0bCx9gxZioOxc=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.29 git master and PAT problems
-Date: Wed, 15 Apr 2009 19:45:56 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2; KDE/4.2.2; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <200903302317.04515.a.miskiewicz@gmail.com> <20090408081711.GA4938@elte.hu> <20090408223716.GC3493@linux-os.sc.intel.com>
-In-Reply-To: <20090408223716.GC3493@linux-os.sc.intel.com>
+	Wed, 15 Apr 2009 13:57:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36248 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751927AbZDOR5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 13:57:09 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
+References: <20090412071950.166891982@intel.com>
+	<20090412072052.686760755@intel.com>
+	<x49k55mintn.fsf@segfault.boston.devel.redhat.com>
+	<20090415044301.GB9948@localhost>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 15 Apr 2009 13:55:48 -0400
+In-Reply-To: <20090415044301.GB9948@localhost> (Wu Fengguang's message of
+	"Wed, 15 Apr 2009 12:43:01 +0800")
+Message-ID: <x49r5ztg5sr.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904151945.56411.a.miskiewicz@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 of April 2009, Pallipadi, Venkatesh wrote:
-> On Wed, Apr 08, 2009 at 01:17:11AM -0700, Ingo Molnar wrote:
-> > * Arkadiusz Miskiewicz <a.miskiewicz@gmail.com> wrote:
-> > > On Wednesday 08 of April 2009, Pallipadi, Venkatesh wrote:
-> > > > On Tue, Apr 07, 2009 at 02:12:28AM -0700, Arkadiusz Miskiewicz wrote:
-> > > > > On Tuesday 07 of April 2009, Pallipadi, Venkatesh wrote:
-> > > > > > On Thu, 2009-04-02 at 00:12 -0700, Arkadiusz Miskiewicz wrote:
-> > > > > >
-> > > > > > I was finally able to reproduce the problem of "freeing invalid
-> > > > > > memtype" with upstream git kernel (commit 0221c81b1b) + latest
-> > > > > > xf86 intel driver. But, with upstream + the patch I had sent you
-> > > > > > earlier in this thread
-> > > > > > (http://marc.info/?l=linux-kernel&m=123863345520617&w=2) I don't
-> > > > > > see those freeing invalid memtype errors anymore.
-> > > > > >
-> > > > > > Can you please double check with current git and that patch and
-> > > > > > let me know if you are still seeing the problem.
-> > > > >
-> > > > > Latest linus tree + that patch (it's really applied here), xserver
-> > > > > 1.6, libdrm from git master, intel driver from git master,
-> > > > > previously mesa 7.4 (and 7.5 snap currently), tremolous.net 1.1.0
-> > > > > game (tremolous-smp binary), GM45 gpu.
-> > > > >
-> > > > > To reproduce I just need to run tremolous-smp and connect to some
-> > > > > map. When map finishes loading I instantly get:
-> > >
-> > > [...]
-> > >
-> > > > OK. One more test patch below, applies over linus's git and you can
-> > > > ignore the earlier patch. The patch below should get rid of the
-> > > > problem and as it removes the track/untrack of vm_insert_pfn
-> > > > completely. This will also eliminate the overhead of hundreds or
-> > > > thousands of entries in pat_memtype_list. Can you please test it.
-> > >
-> > > With this patch I'm no longer able to reproduce problem. Thanks!
-> >
-> > Great, thanks!
-> >
-> > Venki, mind sending a patch with a proper changelog, Reported-by,
-> > Tested-by tags, with Nick and Andrew Cc:-ed for the memory.c bits,
-> > etc.?
->
-> Ingo,
->
-> Below is the cleaner version of the patch. It does not have any changes in
-> mm as we are only removing the tracking inside the PAT code. I have left
-> the generic mm interface as is, until we fully resolve the issue in future.
->
-> Thanks,
-> Venki
->
-> Subject: [PATCH] x86, PAT: Remove page granularity tracking for
-> vm_insert_pfn maps
+Hi, Fengguang,
 
-I wonder what's with these patches that they missed rc2 ?
+Wu Fengguang <fengguang.wu@intel.com> writes:
 
-This one and Subject: [PATCH] x86, PAT: Remove duplicate memtype reserve in 
-pci mmap
+>> I tested out your patches.  Below are some basic iozone numbers for a
+>> single NFS client reading a file.  The iozone command line is:
+>> 
+>>   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+>
+> Jeff, thank you very much for the testing out!
+>
+>> The file system is unmounted after each run to flush the cache.  The
+>> numbers below reflect only a single run each.  The file system was also
+>> unmounted on the NFS client after each run.
+>> 
+>> KEY
+>> ---
+>> vanilla:	   2.6.30-rc1
+>> readahead:	   2.6.30-rc1 + your 10 readahead patches
+>> context readahead: 2.6.30-rc1 + your 10 readahead patches + the 3
+>> 		   context readahead patches.
+>> nfsd's:		   number of NFSD threads on the server
+>
+> I guess you are applying the readahead patches to the server side?
 
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+That's right.
 
+> What's the NFS mount options and client/server side readahead size?
+> The context readahead is pretty sensible to these parameters.
+
+Default options everywhere.
+
+>> I'll note that the cfq in 2.6.30-rc1 is crippled, and that Jens has a
+>> patch posted that makes the numbers look at least a little better, but
+>> that's immaterial to this discussion, I think.
+>> 
+>>                 vanilla
+>> 
+>> nfsd's  |   1   |   2   |   4   |   8
+>> --------+---------------+-------+------
+>> cfq     | 43127 | 22354 | 20858 | 21179
+>> deadline| 43732 | 68059 | 76659 | 83231
+>> 
+>>                 readahead
+>> 
+>> nfsd's  |   1   |   2   |   4   |   8
+>> --------+---------------+-------+------
+>> cfq     | 42471 | 21913 | 21252 | 20979
+>> deadline| 42801 | 70158 | 82068 | 82406
+>> 
+>>            context readahead
+>> 
+>> nfsd's  |   1   |   2   |   4   |   8
+>> --------+---------------+-------+------
+>> cfq     | 42827 | 21882 | 20678 | 21508
+>> deadline| 43040 | 71173 | 82407 | 86583
+>
+> Let me transform them into relative numbers:
+>
+>              A     B     C      A..B      A..C         
+> cfq-1      43127 42471 42827    -1.5%     -0.7%         
+> cfq-2      22354 21913 21882    -2.0%     -2.1%         
+> cfq-4      20858 21252 20678    +1.9%     -0.9%         
+> cfq-8      21179 20979 21508    -0.9%     +1.6%         
+>            
+> deadline-1 43732 42801 43040    -2.1%     -1.6%         
+> deadline-2 68059 70158 71173    +3.1%     +4.6%         
+> deadline-4 76659 82068 82407    +7.1%     +7.5%         
+> deadline-8 83231 82406 86583    -1.0%     +4.0%         
+>
+> Summaries:
+> 1) the overall numbers are slightly negative for CFQ and looks better
+>    with deadline.
+
+The variance is probably 1-2%.  I'll try to quantify that for you.
+
+> Anyway we have the io context problem for CFQ.  And I'm planning to
+> dive into the CFQ code and your patch on that :-)
+
+Jens already reworked the patch and included it in his for-linus branch
+of the block tree.  So, you can start there.  ;-)
+
+> 2) the single thread case performance consistently dropped by 1-2%.
+
+> It seems not related to the behavior changes introduced by the mmap
+> readahead patches and context readahead patches. And looks more like
+> some overheads created by the code reorganization and the patch
+> "readahead: apply max_sane_readahead() limit in ondemand_readahead()"
+> which adds a bit overhead with the call max_sane_readahead().
+>
+> I'll try to root cause it.
+>
+> Thanks again for the numbers!
+
+No problem.
+
+Cheers,
+Jeff
