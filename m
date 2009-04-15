@@ -1,349 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbZDONSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbZDONYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbZDONSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 09:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZDONSW
+	id S1759351AbZDONYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 09:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZDONYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 09:18:22 -0400
-Received: from mga14.intel.com ([143.182.124.37]:60013 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbZDONSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 09:18:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,192,1239001200"; 
-   d="scan'208";a="131716272"
-Date: Wed, 15 Apr 2009 21:18:00 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090415131800.GA11191@localhost>
-References: <20090414133448.C645.A69D9226@jp.fujitsu.com> <20090414064132.GB5746@localhost> <20090414154606.C665.A69D9226@jp.fujitsu.com> <20090414071159.GV14687@one.firstfloor.org>
+	Wed, 15 Apr 2009 09:24:05 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51155 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753785AbZDONYC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 09:24:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=Y+m96kvzHuNMCx/gDwgkxD7OGNtKZqiBLn18blGM6I/fbBqXiReXUmM+tKXhWMbFET
+         r9eH030Vk5ojpyzSn7KJfcRfWP0xtEYdqspPx8BEvtDziDMZBON1iEXqDiiS+oj9lkbT
+         24ZoDYj/RM4etU+MyMN8c4XFTFUUVlJg6I49I=
+Date: Wed, 15 Apr 2009 15:23:57 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-ID: <20090415132356.GA19270@linux>
+Mail-Followup-To: Ryo Tsuruta <ryov@valinux.co.jp>,
+	kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+	balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+	agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+	baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+	dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+	taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
+	dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+	roberto@unbit.it, s-uchida@ap.jp.nec.com,
+	subrata@linux.vnet.ibm.com, yoshikawa.takuya@oss.ntt.co.jp,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com> <20090415111528.b796519a.kamezawa.hiroyu@jp.fujitsu.com> <20090415093716.GA5968@linux> <20090415.213850.226770691.ryov@valinux.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090414071159.GV14687@one.firstfloor.org>
+In-Reply-To: <20090415.213850.226770691.ryov@valinux.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 03:11:59PM +0800, Andi Kleen wrote:
-> On Tue, Apr 14, 2009 at 03:54:40PM +0900, KOSAKI Motohiro wrote:
-> > Hi
+On Wed, Apr 15, 2009 at 09:38:50PM +0900, Ryo Tsuruta wrote:
+> Hi Andrea and Kamezawa-san,
 > 
-> There are two use cases here:
+> > Ryo, it would be great if you can look at this and fix/integrate into
+> > the mainstream bio-cgroup. Otherwise I can try to to schedule this in my
+> > work.
 > 
-> First what is useful for the administrator as a general abstraction.
-> And what is useful for the kernel hacker for debugging.
+> O.K. I'll apply those fixes and post patches as soon as I can.
 > 
-> The kernel hacker wants everything even if it's subject to change,
-> the administrator wants a higher level abstraction they can make
-> sense of and that doesn't change too often.
-> 
-> I think there's a case for both usages, but perhaps they 
-> should be separated (in a public and a internal interface perhaps?)
 
-That's pretty good separations. I guess it would be convenient to make the
-extra kernel flags available under CONFIG_DEBUG_KERNEL?
+Very good! I've just tested the bio_cgroup_id inclusion in
+page_cgroup->flags. I'm posting the patch on-top-of my patchset.
 
-> My comments below are about abstractions for the first case.
-> 
-> 
-> > 
-> > > On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
-> > > > > Export the following page flags in /proc/kpageflags,
-> > > > > just in case they will be useful to someone:
-> > > > > 
-> > > > > - PG_swapcache
-> > > > > - PG_swapbacked
-> > > > > - PG_mappedtodisk
-> > > > > - PG_reserved
-> 
-> PG_reserved should be exported as PG_KERNEL or somesuch.
-
-PG_KERNEL could be misleading. PG_reserved obviously do not cover all
-(or most) kernel pages. So I'd prefer to export PG_reserved as it is.
-
-It seems that the vast amount of free pages are marked PG_reserved:
-
-# uname -a
-Linux hp 2.6.30-rc2 #157 SMP Wed Apr 15 19:37:49 CST 2009 x86_64 GNU/Linux
-# echo 1 > /proc/sys/vm/drop_caches
-# ./page-types
-   flags        page-count       MB  symbolic-flags             long-symbolic-flags
-0x004000            497474     1943  ______________r_____       reserved
-0x008000              4454       17  _______________o____       compound
-0x008014                 5        0  __R_D__________o____       referenced,dirty,compound
-0x000020                 1        0  _____l______________       lru
-0x000028               310        1  ___U_l______________       uptodate,lru
-0x00002c                18        0  __RU_l______________       referenced,uptodate,lru
-0x000068                80        0  ___U_lA_____________       uptodate,lru,active
-0x00006c               157        0  __RU_lA_____________       referenced,uptodate,lru,active
-0x002078                 1        0  ___UDlA______b______       uptodate,dirty,lru,active,swapbacked
-0x00207c                17        0  __RUDlA______b______       referenced,uptodate,dirty,lru,active,swapbacked
-0x000228                13        0  ___U_l___x__________       uptodate,lru,reclaim
-0x000400              2085        8  __________B_________       buddy
-0x000804                 1        0  __R________m________       referenced,mmap
-0x002808                10        0  ___U_______m_b______       uptodate,mmap,swapbacked
-0x000828              1060        4  ___U_l_____m________       uptodate,lru,mmap
-0x00082c               215        0  __RU_l_____m________       referenced,uptodate,lru,mmap
-0x000868               189        0  ___U_lA____m________       uptodate,lru,active,mmap
-0x002868              4187       16  ___U_lA____m_b______       uptodate,lru,active,mmap,swapbacked
-0x00286c                30        0  __RU_lA____m_b______       referenced,uptodate,lru,active,mmap,swapbacked
-0x00086c              1012        3  __RU_lA____m________       referenced,uptodate,lru,active,mmap
-0x002878                 3        0  ___UDlA____m_b______       uptodate,dirty,lru,active,mmap,swapbacked
-0x008880               936        3  _______S___m___o____       slab,mmap,compound
-0x000880              1602        6  _______S___m________       slab,mmap
-0x0088c0                59        0  ______AS___m___o____       active,slab,mmap,compound
-0x0008c0                49        0  ______AS___m________       active,slab,mmap
-   total            513968     2007
-
-# ./page-areas 0x004000
-    offset      len         KB
-         0       15       60KB
-        31        4       16KB
-       159       97      388KB
-      4096     2213     8852KB
-      6899     2385     9540KB
-      9497        3       12KB
-      9728    14528    58112KB
-
-> > > > > - PG_private
-> > > > > - PG_private_2
-> > > > > - PG_owner_priv_1
-> > > > > 
-> > > > > - PG_head
-> > > > > - PG_tail
-> > > > > - PG_compound
-> 
-> I would combine these three into a pseudo "large page" flag.
-
-Very neat idea! Patch updated accordingly.
- 
-However - one pity I observed:
-
-# ./page-areas 0x008000
-    offset      len         KB
-      3088        4       16KB
-
-We can no longer tell if the above line means one 4-page hugepage, or two
-2-page hugepages... Adding PG_COMPOUND_TAIL into the CONFIG_DEBUG_KERNEL block
-can help kernel developers. Or will it be ever cared by administrators?
-
-    341196        2        8KB
-    341202        2        8KB
-    341262        2        8KB
-    341272        8       32KB
-    341296        8       32KB
-    488448       24       96KB
-    488490        2        8KB
-    488496      320     1280KB
-    488842        2        8KB
-    488848       40      160KB
-
-> > > > > 
-> > > > > - PG_unevictable
-> > > > > - PG_mlocked
-> > > > > 
-> > > > > - PG_poison
-> 
-> PG_poison is also useful to export. But since it depends on my
-> patchkit I will pull a patch for that into the HWPOISON series.
-
-That's not a problem - since the PG_poison line is be protected by
-#ifdef CONFIG_MEMORY_FAILURE :-) 
-
-> > > > > - PG_unevictable
-> > > > > - PG_mlocked
-> > 
-> > this 9 flags shouldn't exported.
-> > I can't imazine administrator use what purpose those flags.
-> 
-> I think an abstraced "PG_pinned" or somesuch flag that combines
-> page lock, unevictable, mlocked would be useful for the administrator.
-
-The PG_PINNED abstraction risks hiding useful information.
-The administrator may not only care about the pinned pages,
-but also care _why_ they are pinned, i.e. ramfs.. or mlock?
-
-So it might be good to export them as is, with proper document.
-
-Here is the v2 patch, with flags for kernel hackers numbered from 32.
-Comments are welcome!
+If you're interested, it should apply cleanly to the original
+bio-cgroup, except for the get/put_cgroup_from_page() part.
 
 Thanks,
-Fengguang
+-Andrea
 ---
+bio-cgroup: encode bio_cgroup_id in page_cgroup->flags
 
-Export all available page flags in /proc/kpageflags, plus two pseudo ones. 
-This increases the total number of exported page flags to 26.
+Encode the bio_cgroup_id into the flags argument of page_cgroup as
+suggested by Kamezawa.
 
-TODO: more document
+Lower 16-bits of the flags attribute are used for the actual page_cgroup
+flags. The rest is reserved to store the bio-cgroup id.
 
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+This allows to save 4 bytes (in 32-bit architectures) or 8 bytes (in
+64-bit) for each page_cgroup element.
+
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- fs/proc/page.c |  122 +++++++++++++++++++++++++++++++++++------------
- 1 file changed, 91 insertions(+), 31 deletions(-)
+ include/linux/biotrack.h    |    2 +-
+ include/linux/page_cgroup.h |   24 +++++++++++++++++++++---
+ mm/biotrack.c               |   26 ++++++++++++--------------
+ 3 files changed, 34 insertions(+), 18 deletions(-)
 
---- mm.orig/fs/proc/page.c
-+++ mm/fs/proc/page.c
-@@ -68,20 +68,96 @@ static const struct file_operations proc
+diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
+index 25b8810..4bd0242 100644
+--- a/include/linux/biotrack.h
++++ b/include/linux/biotrack.h
+@@ -28,7 +28,7 @@ struct bio_cgroup {
  
- /* These macros are used to decouple internal flags from exported ones */
- 
--#define KPF_LOCKED     0
--#define KPF_ERROR      1
--#define KPF_REFERENCED 2
--#define KPF_UPTODATE   3
--#define KPF_DIRTY      4
--#define KPF_LRU        5
--#define KPF_ACTIVE     6
--#define KPF_SLAB       7
--#define KPF_WRITEBACK  8
--#define KPF_RECLAIM    9
--#define KPF_BUDDY     10
-+#define KPF_LOCKED		0
-+#define KPF_ERROR		1
-+#define KPF_REFERENCED		2
-+#define KPF_UPTODATE		3
-+#define KPF_DIRTY		4
-+#define KPF_LRU			5
-+#define KPF_ACTIVE		6
-+#define KPF_SLAB		7
-+#define KPF_WRITEBACK		8
-+#define KPF_RECLAIM		9
-+#define KPF_BUDDY		10
-+
-+/* new additions in 2.6.31 */
-+#define KPF_MMAP		11
-+#define KPF_SWAPCACHE		12
-+#define KPF_SWAPBACKED		13
-+#define KPF_RESERVED		14
-+#define KPF_COMPOUND		15
-+#define KPF_UNEVICTABLE		16
-+#define KPF_MLOCKED		17
-+#define KPF_POISON		18
-+#define KPF_NOPAGE		19
-+
-+/* kernel hacking assistances */
-+#define KPF_MAPPEDTODISK	32
-+#define KPF_PRIVATE		33
-+#define KPF_PRIVATE2		34
-+#define KPF_OWNER_PRIVATE	35
-+#define KPF_ARCH		36
-+#define KPF_UNCACHED		37
- 
- #define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
- 
-+u64 get_uflags(struct page *page)
-+{
-+	u64 kflags;
-+	u64 uflags;
-+
-+	if (!page)
-+		return 1 << KPF_NOPAGE;
-+
-+	kflags = page->flags;
-+	uflags = 0;
-+
-+	if (page_mapped(page))
-+		uflags |= 1 << KPF_MMAP;
-+
-+	uflags |= kpf_copy_bit(kflags, KPF_LOCKED,	PG_locked);
-+	uflags |= kpf_copy_bit(kflags, KPF_ERROR,	PG_error);
-+	uflags |= kpf_copy_bit(kflags, KPF_REFERENCED,	PG_referenced);
-+	uflags |= kpf_copy_bit(kflags, KPF_UPTODATE,	PG_uptodate);
-+	uflags |= kpf_copy_bit(kflags, KPF_DIRTY,	PG_dirty);
-+	uflags |= kpf_copy_bit(kflags, KPF_LRU,		PG_lru)	;
-+	uflags |= kpf_copy_bit(kflags, KPF_ACTIVE,	PG_active);
-+	uflags |= kpf_copy_bit(kflags, KPF_SLAB,	PG_slab);
-+	uflags |= kpf_copy_bit(kflags, KPF_WRITEBACK,	PG_writeback);
-+	uflags |= kpf_copy_bit(kflags, KPF_RECLAIM,	PG_reclaim);
-+	uflags |= kpf_copy_bit(kflags, KPF_BUDDY,	PG_buddy);
-+
-+	uflags |= kpf_copy_bit(kflags, KPF_SWAPCACHE,	PG_swapcache);
-+	uflags |= kpf_copy_bit(kflags, KPF_SWAPBACKED,	PG_swapbacked);
-+	uflags |= kpf_copy_bit(kflags, KPF_RESERVED,	PG_reserved);
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND,	PG_head);
-+	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND,	PG_tail);
-+#else
-+	uflags |= kpf_copy_bit(kflags, KPF_COMPOUND,	PG_compound);
-+#endif
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	uflags |= kpf_copy_bit(kflags, KPF_UNEVICTABLE,	PG_unevictable);
-+	uflags |= kpf_copy_bit(kflags, KPF_MLOCKED,	PG_mlocked);
-+#endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	uflags |= kpf_copy_bit(kflags, KPF_POISON,	PG_poison);
-+#endif
-+
-+#ifdef CONFIG_DEBUG_KERNEL
-+	uflags |= kpf_copy_bit(kflags, KPF_MAPPEDTODISK, PG_mappedtodisk);
-+	uflags |= kpf_copy_bit(kflags, KPF_PRIVATE,	PG_private);
-+	uflags |= kpf_copy_bit(kflags, KPF_PRIVATE2,	PG_private_2);
-+	uflags |= kpf_copy_bit(kflags, KPF_OWNER_PRIVATE, PG_owner_priv_1);
-+	uflags |= kpf_copy_bit(kflags, KPF_ARCH,	PG_arch_1);
-+#ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
-+	uflags |= kpf_copy_bit(kflags, KPF_UNCACHED,	PG_uncached);
-+#endif
-+#endif
-+
-+	return uflags;
-+};
-+
- static ssize_t kpageflags_read(struct file *file, char __user *buf,
- 			     size_t count, loff_t *ppos)
+ static inline void __init_bio_page_cgroup(struct page_cgroup *pc)
  {
-@@ -90,7 +166,6 @@ static ssize_t kpageflags_read(struct fi
- 	unsigned long src = *ppos;
- 	unsigned long pfn;
- 	ssize_t ret = 0;
--	u64 kflags, uflags;
+-	pc->bio_cgroup_id = 0;
++	page_cgroup_set_bio_id(pc, 0);
+ }
  
- 	pfn = src / KPMSIZE;
- 	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
-@@ -98,32 +173,17 @@ static ssize_t kpageflags_read(struct fi
- 		return -EINVAL;
+ extern struct cgroup *get_cgroup_from_page(struct page *page);
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 00a49c5..af780a4 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -16,12 +16,30 @@ struct page_cgroup {
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 	struct mem_cgroup *mem_cgroup;
+ #endif
+-#ifdef CONFIG_CGROUP_BIO
+-	int bio_cgroup_id;
+-#endif
+ 	struct list_head lru;		/* per cgroup LRU list */
+ };
  
- 	while (count > 0) {
--		ppage = NULL;
- 		if (pfn_valid(pfn))
- 			ppage = pfn_to_page(pfn);
--		pfn++;
--		if (!ppage)
--			kflags = 0;
- 		else
--			kflags = ppage->flags;
++#ifdef CONFIG_CGROUP_BIO
++/*
++ * use lower 16 bits for flags and reserve the rest for the bio-cgroup id
++ */
++#define BIO_CGROUP_ID_SHIFT	(16)
++#define BIO_CGROUP_ID_BITS (8 * sizeof(unsigned long) - BIO_CGROUP_ID_SHIFT)
++
++static inline unsigned long page_cgroup_get_bio_id(struct page_cgroup *pc)
++{
++	return pc->flags >> BIO_CGROUP_ID_SHIFT;
++}
++
++static inline void page_cgroup_set_bio_id(struct page_cgroup *pc,
++				unsigned long id)
++{
++	WARN_ON(id >= (1UL << BIO_CGROUP_ID_BITS));
++	pc->flags &= (1UL << BIO_CGROUP_ID_SHIFT) - 1;
++	pc->flags |= (unsigned long)(id << BIO_CGROUP_ID_SHIFT);
++}
++#endif
++
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
+ void __init page_cgroup_init(void);
+ struct page_cgroup *lookup_page_cgroup(struct page *page);
+diff --git a/mm/biotrack.c b/mm/biotrack.c
+index 431056c..4cca3bf 100644
+--- a/mm/biotrack.c
++++ b/mm/biotrack.c
+@@ -74,7 +74,7 @@ void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
+ 	struct bio_cgroup *biog;
+ 	struct page_cgroup *pc;
+ 
+-	WARN_ON_ONCE(test_bit(PG_locked, &page->flags));
++	WARN_ON_ONCE(!test_bit(PG_locked, &page->flags));
+ 
+ 	if (bio_cgroup_disabled())
+ 		return;
+@@ -82,7 +82,7 @@ void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
+ 	if (unlikely(!pc))
+ 		return;
+ 
+-	pc->bio_cgroup_id = 0;	/* 0: default bio_cgroup id */
++	__init_bio_page_cgroup(pc);
+ 	if (!mm)
+ 		return;
+ 	/*
+@@ -95,11 +95,11 @@ void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
+ 		goto out;
+ 	/*
+ 	 * css_get(&bio->css) isn't called to increment the reference
+-	 * count of this bio_cgroup "biog" so pc->bio_cgroup_id might turn
+-	 * invalid even if this page is still active.
+-	 * This approach is chosen to minimize the overhead.
++	 * count of this bio_cgroup "biog" so the bio-cgroup id might turn
++	 * invalid even if this page is still active. This approach is chosen
++	 * to minimize the overhead.
+ 	 */
+-	pc->bio_cgroup_id = biog->id;
++	page_cgroup_set_bio_id(pc, biog->id);
+ out:
+ 	rcu_read_unlock();
+ }
+@@ -112,7 +112,7 @@ void bio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
+ 	/*
+ 	 * A little trick:
+ 	 * Just call bio_cgroup_set_owner() for pages which are already
+-	 * active since the bio_cgroup_id member of page_cgroup can be
++	 * active since the bio-cgroup id member of page_cgroup can be
+ 	 * updated without any locks. This is because an integer type of
+ 	 * variable can be set a new value at once on modern cpus.
+ 	 */
+@@ -148,12 +148,10 @@ void bio_cgroup_copy_owner(struct page *npage, struct page *opage)
+ 	opc = lookup_page_cgroup(opage);
+ 	if (unlikely(!opc))
+ 		return;
 -
--		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
--			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
--			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
--			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
--			kpf_copy_bit(kflags, KPF_DIRTY, PG_dirty) |
--			kpf_copy_bit(kflags, KPF_LRU, PG_lru) |
--			kpf_copy_bit(kflags, KPF_ACTIVE, PG_active) |
--			kpf_copy_bit(kflags, KPF_SLAB, PG_slab) |
--			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
--			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
--			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
-+			ppage = NULL;
+ 	/*
+-	 * Do this without any locks. The reason is the same as
+-	 * bio_cgroup_reset_owner().
++	 * XXX: is it safe to do this without locking?
+ 	 */
+-	npc->bio_cgroup_id = opc->bio_cgroup_id;
++	page_cgroup_set_bio_id(npc, page_cgroup_get_bio_id(opc));
+ }
  
--		if (put_user(uflags, out++)) {
-+		if (put_user(get_uflags(ppage), out)) {
- 			ret = -EFAULT;
- 			break;
- 		}
--
-+		out++;
-+		pfn++;
- 		count -= KPMSIZE;
- 	}
+ /* Create a new bio-cgroup. */
+@@ -250,7 +248,7 @@ struct cgroup *get_cgroup_from_page(struct page *page)
+ 	if (!pc)
+ 		return NULL;
+ 	lock_page_cgroup(pc);
+-	biog = find_bio_cgroup(pc->bio_cgroup_id);
++	biog = find_bio_cgroup(page_cgroup_get_bio_id(pc));
+ 	if (biog) {
+ 		css_get(&biog->css);
+ 		cgrp = biog->css.cgroup;
+@@ -268,7 +266,7 @@ void put_cgroup_from_page(struct page *page)
+ 	if (!pc)
+ 		return;
+ 	lock_page_cgroup(pc);
+-	biog = find_bio_cgroup(pc->bio_cgroup_id);
++	biog = find_bio_cgroup(page_cgroup_get_bio_id(pc));
+ 	if (biog)
+ 		css_put(&biog->css);
+ 	unlock_page_cgroup(pc);
+@@ -283,7 +281,7 @@ int get_bio_cgroup_id(struct bio *bio)
  
+ 	pc = lookup_page_cgroup(page);
+ 	if (pc)
+-		id = pc->bio_cgroup_id;
++		id = page_cgroup_get_bio_id(pc);
+ 	return id;
+ }
+ EXPORT_SYMBOL(get_bio_cgroup_id);
