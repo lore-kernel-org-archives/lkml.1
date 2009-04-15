@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZDOVJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbZDOVJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbZDOVJL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 17:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbZDOVIz
+	id S1756801AbZDOVJb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 17:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZDOVJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 17:08:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52635 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754253AbZDOVIy (ORCPT
+	Wed, 15 Apr 2009 17:09:07 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:53357 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756196AbZDOVJF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 17:08:54 -0400
-Date: Wed, 15 Apr 2009 14:05:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Takashi Iwai <tiwai@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but
- annoying) audio problem
-In-Reply-To: <200904152259.10473.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0904151402460.4042@localhost.localdomain>
-References: <200904100057.43827.rjw@sisk.pl> <200904142312.33833.rjw@sisk.pl> <s5hbpqy12mh.wl%tiwai@suse.de> <200904152259.10473.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 15 Apr 2009 17:09:05 -0400
+Message-ID: <49E64C91.5020708@cosmosbay.com>
+Date: Wed, 15 Apr 2009 23:07:29 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Patrick McHardy <kaber@trash.net>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
+       paulus@samba.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+References: <20090411174801.GG6822@linux.vnet.ibm.com>	<18913.53699.544083.320542@cargo.ozlabs.ibm.com>	<20090412173108.GO6822@linux.vnet.ibm.com>	<20090412.181330.23529546.davem@davemloft.net>	<20090413040413.GQ6822@linux.vnet.ibm.com>	<20090413095309.631cf395@nehalam>	<49E48136.5060700@trash.net>	<49E49C65.8060808@cosmosbay.com>	<20090414074554.7fa73e2f@nehalam>	<49E4B0A5.70404@cosmosbay.com>	<b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com>	<20090414111716.28585806@nehalam>	<49E4E3E8.5090201@cosmosbay.com>	<20090414141351.0f63ac98@nehalam>	<49E502B5.7070700@cosmosbay.com>	<49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam>
+In-Reply-To: <20090415135526.2afc4d18@nehalam>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 15 Apr 2009 23:07:30 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 15 Apr 2009, Rafael J. Wysocki wrote:
+Stephen Hemminger a écrit :
+> Looks like there is some recursive path into ip_tables that makes the
+> per-cpu spinlock break.  I get lockup's with KVM networking.
 > 
-> I'm going to try 2.6.30-rc2-git in a while.  If I have the time, I'll also test
-> the sound git tree.
+> Suggestions?
 
-There's a sound merge today (ie post-rc2) which hopefully contains the 
-relevant fixes. 
+Well, it seems original patch was not so bad after all
 
-			Linus
+http://lists.netfilter.org/pipermail/netfilter-devel/2006-January/023175.html
+
+So change per-cpu spinlocks to per-cpu rwlocks 
+
+and use read_lock() in ipt_do_table() to allow recursion...
+
+
