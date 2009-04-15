@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZDOWGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZDOW2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbZDOWGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 18:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZDOWGk
+	id S1755577AbZDOW2a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 18:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZDOW2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 18:06:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45478 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751362AbZDOWGj (ORCPT
+	Wed, 15 Apr 2009 18:28:19 -0400
+Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:37730 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751424AbZDOW2R convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 18:06:39 -0400
-Date: Wed, 15 Apr 2009 14:59:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] hugetlbfs: return negative error code for bad mount
- option
-Message-Id: <20090415145910.22910363.akpm@linux-foundation.org>
-In-Reply-To: <20090413035623.GA4156@localhost.localdomain>
-References: <20090413035623.GA4156@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 18:28:17 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] net/sunrpc/svc.c: fix sparse warning
+Date: Wed, 15 Apr 2009 18:27:49 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8DB7@mi8nycmail19.Mi8.com>
+In-Reply-To: <alpine.LNX.2.00.0904152247580.25543@swampdragon.chaosbits.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] net/sunrpc/svc.c: fix sparse warning
+Thread-Index: Acm+C6pxs2IODapfSHG/H9wBl3Be2wADZNhg
+References: <BD79186B4FD85F4B8E60E381CAEE1909015F8D20@mi8nycmail19.Mi8.com> <alpine.LNX.2.00.0904152247580.25543@swampdragon.chaosbits.net>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Jesper Juhl" <jj@chaosbits.net>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 15 Apr 2009 22:28:15.0452 (UTC) FILETIME=[780FA1C0:01C9BE19]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009 12:56:23 +0900
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
+Fix sparse warning in net/sunrpc/svc.c.
 
-> This fixes the following BUG:
-> 
-> # mount -o size=MM -t hugetlbfs none /huge
-> hugetlbfs: Bad value 'MM' for mount option 'size=MM'
-> ------------[ cut here ]------------
-> kernel BUG at fs/super.c:996!
+	warning: symbol 'node' shadows an earlier one
 
-I can't tell where this BUG (or WARN?) is happening unless I know
-exactly which kernel version was tested.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Acked-by: Jesper Juhl <jj@chaosbits.net>
 
-I assume that it is BUG_ON(!mnt->mnt_sb); in vfs_kern_mount()?
+---
 
-> Also, remove unused #include <linux/quotaops.h>
-> 
-> Cc: William Irwin <wli@holomorphy.com>
-> Cc: stable@kernel.org
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> ---
-> 
-> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-> index 23a3c76..153d968 100644
-> --- a/fs/hugetlbfs/inode.c
-> +++ b/fs/hugetlbfs/inode.c
-> @@ -26,7 +26,6 @@
->  #include <linux/pagevec.h>
->  #include <linux/parser.h>
->  #include <linux/mman.h>
-> -#include <linux/quotaops.h>
->  #include <linux/slab.h>
->  #include <linux/dnotify.h>
->  #include <linux/statfs.h>
-> @@ -842,7 +841,7 @@ hugetlbfs_parse_options(char *options, struct hugetlbfs_config *pconfig)
->  bad_val:
->   	printk(KERN_ERR "hugetlbfs: Bad value '%s' for mount option '%s'\n",
->  	       args[0].from, p);
-> - 	return 1;
-> + 	return -EINVAL;
->  }
->  
->  static int
-
+diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+index 8847add..e781135 100644
+--- a/net/sunrpc/svc.c
++++ b/net/sunrpc/svc.c
+@@ -122,7 +122,7 @@ module_param_call(pool_mode, param_set_pool_mode,
+param_get_pool_mode,
+ static int
+ svc_pool_map_choose_mode(void)
+ {
+-	unsigned int node;
++	unsigned int nid;
+ 
+ 	if (num_online_nodes() > 1) {
+ 		/*
+@@ -132,8 +132,8 @@ svc_pool_map_choose_mode(void)
+ 		return SVC_POOL_PERNODE;
+ 	}
+ 
+-	node = any_online_node(node_online_map);
+-	if (nr_cpus_node(node) > 2) {
++	nid = any_online_node(node_online_map);
++	if (nr_cpus_node(nid) > 2) {
+ 		/*
+ 		 * Non-trivial SMP, or CONFIG_NUMA on
+ 		 * non-NUMA hardware, e.g. with a generic
