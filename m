@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZDOAbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbZDOAcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbZDOAbp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 20:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZDOAbd
+	id S1756875AbZDOAcU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 20:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbZDOAcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 20:31:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36393 "EHLO hera.kernel.org"
+	Tue, 14 Apr 2009 20:32:04 -0400
+Received: from mga14.intel.com ([143.182.124.37]:14387 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbZDOAbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 20:31:32 -0400
-Message-ID: <49E52A7A.4070607@kernel.org>
-Date: Tue, 14 Apr 2009 17:29:46 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752920AbZDOAcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 20:32:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,188,1239001200"; 
+   d="scan'208";a="131519792"
+Date: Wed, 15 Apr 2009 08:31:46 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] readahead: remove redundant test in
+	shrink_readahead_size_eio()
+Message-ID: <20090415003145.GA5737@localhost>
+References: <20090414013730.GA8951@localhost> <1239726034.32203.129.camel@localhost>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: [PATCH] x86/pci: make pci_mem_start to be aligned only -v2
-References: <bug-11103-13546@http.bugzilla.kernel.org/> <200904101913.n3AJDhMm018684@demeter.kernel.org> <49DFABCC.3070001@kernel.org> <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239726034.32203.129.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 15, 2009 at 12:20:33AM +0800, Joe Perches wrote:
+> On Tue, 2009-04-14 at 09:37 +0800, Wu Fengguang wrote:
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  mm/filemap.c |    3 ---
+> >  1 file changed, 3 deletions(-)
+> > 
+> > --- mm.orig/mm/filemap.c
+> > +++ mm/mm/filemap.c
+> > @@ -1072,9 +1072,6 @@ EXPORT_SYMBOL(grab_cache_page_nowait);
+> >  static void shrink_readahead_size_eio(struct file *filp,
+> >  					struct file_ra_state *ra)
+> >  {
+> > -	if (!ra->ra_pages)
+> > -		return;
+> > -
+> >  	ra->ra_pages /= 4;
+> >  }
+> 
+> I'm not sure this is redundant.
+> 
+> Perhaps it was seen as an optimization
+> given the expense of division.
 
-Impact: make more big space below 4g for assigning to unassigned pci devices
+Nope. It was mainly a way to avoid extra warning messages.
+There used to be a printk() between the testing and division.
 
-don't need to reserved one round after the gapstart.
+The division shall be optimized by gcc into a bit shift op.
+Anyway this is a very cold execution path, so code size is
+much more relevant than its efficiency.
 
-v2: Linus said: "
-	We've definitely seen ACPI code or integrated graphics stuff 
-	that steals a lot of memory at the end, which means that end-of-RAM might 
-	be not at 2GB, but at 2GB-16MB-1MB, for example (1MB of "ACPI data", and 
-	16MB of "stolen video ram").
+Thanks,
+Fengguang
 
-	At a minimum, if we do this, I'd like to make sure we round up to a big 
-	boundary (eg 32MB or something - exactly because a missing 16MB can easily 
-	be some integrated stolen video memory).
-
-	Sure, we do that whole
-
-		while ((gapsize >> 4) > round)
-			round += round;
-
-	thing, so that if the gap is large, then we'll certainly get to 32MB too, 
-	but I think your patch matters the most exactly when the gap is small. 
-	Maybe we could just raise the initial minimum rounding from 1MB to 32MB?
-	...
-	Alternatively, maybe we can make sure that we round up to at least X bytes
-	from the end of RAM, and to at least Y bytes from the end of some RESERVED 
-	thing."
-
-
-Reported-and-tested-by: Yannick <yannick.roehlly@free.fr>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/e820.c |   23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -619,6 +619,7 @@ __init void e820_setup_gap(void)
- {
- 	unsigned long gapstart, gapsize, round;
- 	int found;
-+	unsigned long low_top_ram;
- 
- 	gapstart = 0x10000000;
- 	gapsize = 0x400000;
-@@ -636,14 +637,32 @@ __init void e820_setup_gap(void)
- 
- 	/*
- 	 * See how much we want to round up: start off with
--	 * rounding to the next 1MB area.
-+	 * rounding to the next 32MB area.
- 	 */
--	round = 0x100000;
-+	round = 0x2000000;
- 	while ((gapsize >> 4) > round)
- 		round += round;
-+
-+	pci_mem_start = roundup(gapstart, round);
-+
-+	low_top_ram = e820_end_of_low_ram_pfn() << PAGE_SHIFT;
-+	/* try to check if there is gap between last RAM below 4g to that start */
-+	if (pci_mem_start > low_top_ram) {
-+		if (e820_any_mapped(low_top_ram, pci_mem_start, E820_RESERVED))
-+			goto out;
-+		if (e820_any_mapped(low_top_ram, pci_mem_start, E820_ACPI))
-+			goto out;
-+		if (e820_any_mapped(low_top_ram, pci_mem_start, E820_NVS))
-+			goto out;
-+
-+		if ((pci_mem_start - low_top_ram) > round)
-+			goto out;
-+	}
-+
- 	/* Fun with two's complement */
- 	pci_mem_start = (gapstart + round) & -round;
- 
-+out:
- 	printk(KERN_INFO
- 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
- 	       pci_mem_start, gapstart, gapsize);
