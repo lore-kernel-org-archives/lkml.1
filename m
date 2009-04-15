@@ -1,101 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZDOBgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbZDOBhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbZDOBgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 21:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZDOBgX
+	id S1757052AbZDOBhQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 21:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZDOBgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 21:36:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49913 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbZDOBgW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 21:36:22 -0400
-Date: Tue, 14 Apr 2009 18:38:07 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB storage no-boot regression (bisected)
-Message-ID: <20090414183807.3baf72ed@infradead.org>
-In-Reply-To: <49E4FAC6.1030400@garzik.org>
-References: <49E4FAC6.1030400@garzik.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 14 Apr 2009 21:36:52 -0400
+Received: from mga14.intel.com ([143.182.124.37]:14161 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757600AbZDOBgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 21:36:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,188,1239001200"; 
+   d="scan'208";a="131534633"
+Date: Wed, 15 Apr 2009 09:36:34 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "xcf@ustc.edu.cn" <xcf@ustc.edu.cn>, linux-nfs@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [RFC][PATCH] vfs: check inode size on no_cached_page
+Message-ID: <20090415013634.GB6143@localhost>
+References: <20090412071605.GA14058@localhost> <20090414171114.04a47932.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Content-Disposition: inline
+In-Reply-To: <20090414171114.04a47932.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 17:06:14 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
-
+On Wed, Apr 15, 2009 at 08:11:14AM +0800, Andrew Morton wrote:
+> On Sun, 12 Apr 2009 15:16:05 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> Once of the x86-64 machines I use for testing runs off of two 2GB USB 
-> flash drives, one for Fedora 10 userland, and one for kernel
-> repository 
-> + builds.
-> 
-> It boots correctly in 2.6.27, but fails with the same symptoms in 
-> 2.6.28, 2.6.29 and 2.6.30-rc1:
-> 
-> 	1) The kernel boots
-> 	2) After time passes, kernel begins executing initramfs
-> 	   userland
-> 	3) the kernel prints out probe messages for the USB keyboard,
-> 	   SCSI probe messages for the two USB flash drives
-> 
-> Or IOW, the keyboard and two SCSI drives appear after initramfs
-> begins booting.  And this is for drivers built into the kernel
-> (though same behavior with modules).
-> 
-> This no-boot regression is 100% reproducible, and neatly bisects down
-> to
-> 
-> > commit 8520f38099ccfdac2147a0852f84ee7a8ee5e197
-> > Author: Alan Stern <stern@rowland.harvard.edu>
-> > Date:   Mon Sep 22 14:44:26 2008 -0400
+> > [This patch may not necessarily be merged, but at least we should
+> >  be aware of the problem.]
 > > 
-> >     USB: change hub initialization sleeps to delayed_work
-> >     
-> >     This patch (as1137) changes the hub_activate() routine,
-> > replacing the power-power-up and debounce delays with delayed_work
-> > calls.  The idea is that on systems where the USB stack is compiled
-> > into the kernel rather than built as modules, these delays will no
-> > longer block the boot thread.  At least 100 ms is saved for each
-> > root hub, which can add up to a significant savings in total boot
-> > time. 
-> >     Arjan van de Ven was very pleased to see that this shaved 700
-> > ms off his computer's boot time.  Since his total boot time is on
-> > the order of two seconds, the improvement is considerable.
-> >     
-> >     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> >     Tested-by: Arjan van de Ven <arjan@infradead.org>
-> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > When user space requests past-EOF data, do_generic_file_read() will
+> > issue a bonus readpage call, which may be unfavorable.
+> > 
+> > do_generic_file_read:
+> >         -> find_page:
+> >         -> find_get_page()             = NULL
+> >         -> page_cache_sync_readahead()
+> >         -> find_get_page()             = NULL
+> >         -> no_cached_page:
+> >         -> readpage:
+
+> >                 -> nfs_readpage()      = error
+> >         -> readpage_error:
+
+Sorry nfs_readpage() will actually return 0 now. See below.
+
+> > 
+> > Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  mm/filemap.c |    5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > --- mm.orig/mm/filemap.c
+> > +++ mm/mm/filemap.c
+> > @@ -1269,6 +1269,11 @@ readpage_error:
+> >  		goto out;
+> >  
+> >  no_cached_page:
+> > +		isize = i_size_read(inode);
+> > +		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
+> > +		if (unlikely(!isize || index > end_index))
+> > +			goto out;
+> > +
+> >  		/*
+> >  		 * Ok, it wasn't cached, so we need to create a new
+> >  		 * page..
 > 
-> 
-> My preliminary guess is that this made things --too-- asynchronous,
-> and for some reason userland begins executing before the SCSI core 
-> initializes the USB storage as Linux block devices.
-> 
-> In any case, I cannot boot because of the above commit :)
+> Is this a problem which needs to be solved?  userspace does something
+> silly and the kernel behaves a bit suboptimally?
+>
+> If thats the only problem here then it's not worth adding fastpath
+> cycles to fix it?
 
-the fundamental problem with USB is that you don'tm know when you're
-done probing ... devices show up when they feel like or more or less.
+Yeah just some inefficiency in theory, so no fixing is necessary.
 
-This change just made it go faster enough for you to be out of luck;
-fundamentally your userland needs to wait if the device it wants is not
-there. 
+The underlying fs code shall be able to do the right thing - just
+as if a concurrent truncate happened.
 
-Or you pass a kernel boot parameter to wait.. there is one (root_delay
-or something, haven't used it in a while).
+The NFS case goes like this:
 
+        nfs_readpage()
+        {
+                # some bonus accountings:
+                nfs_inc_stats(inode, NFSIOS_VFSREADPAGE);
+                nfs_add_stats(inode, NFSIOS_READPAGES, 1);
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+                nfs_readpage_async(page)
+                  nfs_return_empty_page(page)
+                    zero_user(page) # will zero the page
+
+                return 0;
+        }
+
+After it returns 0, do_generic_file_read() will goto page_ok and check
+i_size there, and free the past-EOF page.
+
+I wonder if NFS could be improved to:
+- move the NFSIOS_READPAGES accounting _after_ a successful read
+- return AOP_TRUNCATED_PAGE instead of zeroing the past-EOF page
+The following untested patch demonstrates the ideas.
+
+Thanks,
+Fengguang
+---
+
+diff --git a/fs/nfs/read.c b/fs/nfs/read.c
+index 96c4ebf..6688b46 100644
+--- a/fs/nfs/read.c
++++ b/fs/nfs/read.c
+@@ -76,15 +76,6 @@ void nfs_readdata_release(void *data)
+ 	nfs_readdata_free(rdata);
+ }
+ 
+-static
+-int nfs_return_empty_page(struct page *page)
+-{
+-	zero_user(page, 0, PAGE_CACHE_SIZE);
+-	SetPageUptodate(page);
+-	unlock_page(page);
+-	return 0;
+-}
+-
+ static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
+ {
+ 	unsigned int remainder = data->args.count - data->res.count;
+@@ -123,7 +114,8 @@ int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
+ 
+ 	len = nfs_page_length(page);
+ 	if (len == 0)
+-		return nfs_return_empty_page(page);
++		return AOP_TRUNCATED_PAGE;
++
+ 	new = nfs_create_request(ctx, inode, page, 0, len);
+ 	if (IS_ERR(new)) {
+ 		unlock_page(page);
+@@ -516,7 +508,6 @@ int nfs_readpage(struct file *file, struct page *page)
+ 	dprintk("NFS: nfs_readpage (%p %ld@%lu)\n",
+ 		page, PAGE_CACHE_SIZE, page->index);
+ 	nfs_inc_stats(inode, NFSIOS_VFSREADPAGE);
+-	nfs_add_stats(inode, NFSIOS_READPAGES, 1);
+ 
+ 	/*
+ 	 * Try to flush any pending writes to the file..
+@@ -550,6 +541,8 @@ int nfs_readpage(struct file *file, struct page *page)
+ 	}
+ 
+ 	error = nfs_readpage_async(ctx, inode, page);
++	if (!error)
++		nfs_add_stats(inode, NFSIOS_READPAGES, 1);
+ 
+ out:
+ 	put_nfs_open_context(ctx);
+@@ -575,7 +568,7 @@ readpage_async_filler(void *data, struct page *page)
+ 
+ 	len = nfs_page_length(page);
+ 	if (len == 0)
+-		return nfs_return_empty_page(page);
++		return AOP_TRUNCATED_PAGE;
+ 
+ 	new = nfs_create_request(desc->ctx, inode, page, 0, len);
+ 	if (IS_ERR(new))
