@@ -1,110 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbZDOIXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZDOIX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbZDOIXD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 04:23:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbZDOIWn
+	id S1753726AbZDOIX0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 04:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbZDOIWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 04:22:43 -0400
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:45936 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752218AbZDOIWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 04:22:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=HLE8xHTrq4boCv8vIp7nhr0GkOzDJxXGxw+CZ0+JtQbMTe8SkrS91VfJAgDPCa/x0TSB+eh6i48sdzDazvAfEDv+Av4atgMTCN+QymzEV4KRK7leMGsBdcojsYOGekvXB12aTEoNVzV5l/qwbkU6Z65sNJ1e7rKzV9KmFasSASg=  ;
-X-YMail-OSG: Lu_1LkUVM1mC3gq0BVD3Ff3ZXO_N7NqM74MO656IR0vVAzjqwbEeVJZT8e8dHXgQl5LlImMnXI7Z9mD2IunDCoU7OSbn9zsb_B_IsKWThYLth6AJpsDGcqIMAsfyUR8VJlMW7A5OUfeiRGQvBM4LSMLar.LCTWRRQE3APWxmZpMz8tZ9xCHanHPM9eOeywvM0xOP33j6SN3izXIgchuF0ZlqLE2Qk0DhY0wMmmUxbN2SSQL5IEhmezfJGvSICmrDGB4zUKTRxKoSTyMYDDdFJyMfmX.1.m5KERPmPNv.yI4FS4iJoaEm
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH v3 1/6] mm: Don't unmap gup()ed page
-Date: Wed, 15 Apr 2009 18:22:32 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
-References: <20090414143252.GE28265@random.random> <200904150042.15653.nickpiggin@yahoo.com.au> <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090415165431.AC4C.A69D9226@jp.fujitsu.com>
+	Wed, 15 Apr 2009 04:22:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54060 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756888AbZDOIWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 04:22:46 -0400
+Date: Wed, 15 Apr 2009 10:21:18 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: [PATCH 2/3] net: bridge: use device address list instead of
+	dev_addr
+Message-ID: <20090415082118.GC21342@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090415081720.GA21342@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904151822.33478.nickpiggin@yahoo.com.au>
+In-Reply-To: <20090415081720.GA21342@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 April 2009 18:05:54 KOSAKI Motohiro wrote:
-> Hi
-> 
-> > On Wednesday 15 April 2009 00:32:52 Andrea Arcangeli wrote:
-> > > On Wed, Apr 15, 2009 at 12:26:34AM +1000, Nick Piggin wrote:
-> > > > Andrea: I didn't veto that set_bit change of yours as such. I just
-> > > 
-> > > I know you didn't ;)
-> > > 
-> > > > noted there could be more atomic operations. Actually I would
-> > > > welcome more comparison between our two approaches, but they seem
-> > > 
-> > > Agree about the welcome of comparison, it'd be nice to measure it the
-> > > enterprise workloads that showed the gup_fast gain in the first place.
-> > 
-> > I think we should be able to ask IBM to run some tests, provided
-> > they still have machines available to do so. Although I don't want
-> > to waste their time so we need to have something that has got past
-> > initial code review and has a chance of being merged.
-> > 
-> > If we get that far, then I can ask them to run tests definitely.
-> 
-> Oh, it seem very charming idea.
-> Nick, I hope to help your patch's rollup. It makes good comparision, I think.
-> Is there my doable thing?
+This patch changes the handling of mac addresses of bridge port devices. Now
+it uses previously introduced list of device addresses. It allows the bridge to
+know more then one local mac address per port which is mandatory for the right
+work in some cases.
 
-Well, I guess review and testing. There are few possibilities for
-reducing the cases where we have to de-cow (or increasing the
-cases where we can WP-on-fork), which I'd like to experiment with,
-but I don't know how much it will help...
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+---
+ net/bridge/br_fdb.c     |  101 ++++++++++++++++++++++++++++++----------------
+ net/bridge/br_if.c      |    2 +-
+ net/bridge/br_notify.c  |    2 +-
+ net/bridge/br_private.h |    4 +-
+ 4 files changed, 70 insertions(+), 39 deletions(-)
 
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index a48f5ef..1e63f76 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -77,10 +77,26 @@ static inline void fdb_delete(struct net_bridge_fdb_entry *f)
+ 	br_fdb_put(f);
+ }
+ 
+-void br_fdb_changeaddr(struct net_bridge_port *p, const unsigned char *newaddr)
++static bool another_port_has_addr(const struct net_bridge_port *p,
++				  struct net_bridge_fdb_entry *f)
++{
++	struct net_bridge *br = p->br;
++	struct net_bridge_port *op;
++
++	list_for_each_entry(op, &br->port_list, list) {
++		if (op != p && is_etherdev_addr(op->dev, f->addr.addr)) {
++			f->dst = op;
++			return 1;
++		}
++	}
++	return 0;
++}
++
++void br_fdb_changeaddr(struct net_bridge_port *p, struct net_device *dev)
+ {
+ 	struct net_bridge *br = p->br;
+ 	int i;
++	struct netdev_hw_addr *ha;
+ 
+ 	spin_lock_bh(&br->hash_lock);
+ 
+@@ -92,26 +108,23 @@ void br_fdb_changeaddr(struct net_bridge_port *p, const unsigned char *newaddr)
+ 
+ 			f = hlist_entry(h, struct net_bridge_fdb_entry, hlist);
+ 			if (f->dst == p && f->is_local) {
+-				/* maybe another port has same hw addr? */
+-				struct net_bridge_port *op;
+-				list_for_each_entry(op, &br->port_list, list) {
+-					if (op != p &&
+-					    !compare_ether_addr(op->dev->dev_addr,
+-								f->addr.addr)) {
+-						f->dst = op;
+-						goto insert;
+-					}
+-				}
+-
+-				/* delete old one */
+-				fdb_delete(f);
+-				goto insert;
++				/*
++				 * maybe another port has same hw addr?,
++				 * if not then delete it
++				 */
++				if (!another_port_has_addr(p, f))
++					fdb_delete(f);
+ 			}
+ 		}
+ 	}
+- insert:
+-	/* insert new address,  may fail if invalid address or dup. */
+-	fdb_insert(br, p, newaddr);
++
++	/* insert device addresses, may fail if invalid address. */
++
++	rcu_read_lock();
++	for_each_dev_addr(dev, ha) {
++		fdb_insert(br, p, ha->addr);
++	}
++	rcu_read_unlock();
+ 
+ 	spin_unlock_bh(&br->hash_lock);
+ }
+@@ -189,20 +202,9 @@ void br_fdb_delete_by_port(struct net_bridge *br,
+ 			 * then when one port is deleted, assign
+ 			 * the local entry to other port
+ 			 */
+-			if (f->is_local) {
+-				struct net_bridge_port *op;
+-				list_for_each_entry(op, &br->port_list, list) {
+-					if (op != p &&
+-					    !compare_ether_addr(op->dev->dev_addr,
+-								f->addr.addr)) {
+-						f->dst = op;
+-						goto skip_delete;
+-					}
+-				}
+-			}
+-
+-			fdb_delete(f);
+-		skip_delete: ;
++			if (!f->is_local ||
++			    !another_port_has_addr(p, f))
++				fdb_delete(f);
+ 		}
+ 	}
+ 	spin_unlock_bh(&br->hash_lock);
+@@ -338,7 +340,7 @@ static struct net_bridge_fdb_entry *fdb_create(struct hlist_head *head,
+ }
+ 
+ static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+-		  const unsigned char *addr)
++		      const unsigned char *addr)
+ {
+ 	struct hlist_head *head = &br->hash[br_mac_hash(addr)];
+ 	struct net_bridge_fdb_entry *fdb;
+@@ -366,13 +368,42 @@ static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+ 	return 0;
+ }
+ 
++static int fdb_insert_dev(struct net_bridge *br, struct net_bridge_port *source,
++			  struct net_device *dev)
++{
++	struct netdev_hw_addr *ha, *ha2;
++	struct net_bridge_fdb_entry *fdb;
++	struct hlist_head *head;
++	int ret = 0;
++
++	rcu_read_lock();
++	for_each_dev_addr(dev, ha) {
++		ret = fdb_insert(br, source, ha->addr);
++		if (ret)
++			goto unroll;
++	}
++	goto unlock;
++unroll:
++	for_each_dev_addr(dev, ha2) {
++		if (ha2 == ha)
++			break;
++		head = &br->hash[br_mac_hash(ha2->addr)];
++		fdb = fdb_find(head, ha2->addr);
++		if (fdb && fdb->is_local)
++			fdb_delete(fdb);
++	}
++unlock:
++	rcu_read_unlock();
++	return ret;
++}
++
+ int br_fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+-		  const unsigned char *addr)
++		  struct net_device *dev)
+ {
+ 	int ret;
+ 
+ 	spin_lock_bh(&br->hash_lock);
+-	ret = fdb_insert(br, source, addr);
++	ret = fdb_insert_dev(br, source, dev);
+ 	spin_unlock_bh(&br->hash_lock);
+ 	return ret;
+ }
+diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
+index 8a96672..789cb30 100644
+--- a/net/bridge/br_if.c
++++ b/net/bridge/br_if.c
+@@ -392,7 +392,7 @@ int br_add_if(struct net_bridge *br, struct net_device *dev)
+ 	if (err)
+ 		goto err0;
+ 
+-	err = br_fdb_insert(br, p, dev->dev_addr);
++	err = br_fdb_insert(br, p, dev);
+ 	if (err)
+ 		goto err1;
+ 
+diff --git a/net/bridge/br_notify.c b/net/bridge/br_notify.c
+index 763a3ec..1423541 100644
+--- a/net/bridge/br_notify.c
++++ b/net/bridge/br_notify.c
+@@ -48,7 +48,7 @@ static int br_device_event(struct notifier_block *unused, unsigned long event, v
+ 
+ 	case NETDEV_CHANGEADDR:
+ 		spin_lock_bh(&br->lock);
+-		br_fdb_changeaddr(p, dev->dev_addr);
++		br_fdb_changeaddr(p, dev);
+ 		br_stp_recalculate_bridge_id(br);
+ 		spin_unlock_bh(&br->lock);
+ 		break;
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index b6c3b71..65ffe3d 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -148,7 +148,7 @@ extern int br_fdb_init(void);
+ extern void br_fdb_fini(void);
+ extern void br_fdb_flush(struct net_bridge *br);
+ extern void br_fdb_changeaddr(struct net_bridge_port *p,
+-			      const unsigned char *newaddr);
++			      struct net_device *dev);
+ extern void br_fdb_cleanup(unsigned long arg);
+ extern void br_fdb_delete_by_port(struct net_bridge *br,
+ 				  const struct net_bridge_port *p, int do_all);
+@@ -161,7 +161,7 @@ extern int br_fdb_fillbuf(struct net_bridge *br, void *buf,
+ 			  unsigned long count, unsigned long off);
+ extern int br_fdb_insert(struct net_bridge *br,
+ 			 struct net_bridge_port *source,
+-			 const unsigned char *addr);
++			 struct net_device *dev);
+ extern void br_fdb_update(struct net_bridge *br,
+ 			  struct net_bridge_port *source,
+ 			  const unsigned char *addr);
+-- 
+1.6.0.6
 
-> And, I changed my patch.
-> How about this? I added simple twice check.
-> 
-> because, both do_wp_page and try_to_unmap_one grab ptl. then,
-> page-fault routine can't change pte while try_to_unmap nuke pte.
-
-Hmm,
-
-> @@ -790,7 +796,19 @@ static int try_to_unmap_one(struct page 
->  
->  	/* Nuke the page table entry. */
->  	flush_cache_page(vma, address, page_to_pfn(page));
-> -	pteval = ptep_clear_flush_notify(vma, address, pte);
-> +	pteval = ptep_clear_flush(vma, address, pte);
-> +
-> +	if (!migration) {
-> +		/* re-check */
-> +		if (PageSwapCache(page) &&
-> +		    page_count(page) != page_mapcount(page) + 2) {
-> +			/* We lose race against get_user_pages_fast() */
-> +			set_pte_at(mm, address, pte, pteval);
-> +			ret = SWAP_FAIL;
-> +			goto out_unmap;
-> +		}
-> +	}
-> +	mmu_notifier_invalidate_page(vma->vm_mm, address);
-
-Hmm, in the case of powerpc-style gup_fast where the arch
-does not send IPIs to flush TLBs, either the speculative
-reference there should find the pte cleared, or the page_count
-check here should find the speculative reference.
-
-In the case of CPUs that do send IPIs and have x86-style
-gup_fast, the TLB flush should ensure all gup_fast()s that
-could have seen the pte will complete before we check
-page_count.
-
-Yes I think it might work.
