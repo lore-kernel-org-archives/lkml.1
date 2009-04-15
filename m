@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbZDOGas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZDOGbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbZDOGas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 02:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbZDOG24
+	id S1758640AbZDOGbK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 02:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbZDOG25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 02:28:56 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:49600 "EHLO
+	Wed, 15 Apr 2009 02:28:57 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:49599 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753753AbZDOG2y (ORCPT
+	with ESMTP id S1753682AbZDOG2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Apr 2009 02:28:54 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
        David Kiliani <mail@davidkiliani.de>
-Subject: [PATCH resend 7/8] staging: meilhaus, annotate cpi functions
-Date: Wed, 15 Apr 2009 08:28:46 +0200
-Message-Id: <1239776927-16168-7-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH resend 8/8] staging: meilhaus, move tables to .c
+Date: Wed, 15 Apr 2009 08:28:47 +0200
+Message-Id: <1239776927-16168-8-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <1239776927-16168-1-git-send-email-jirislaby@gmail.com>
 References: <1239776927-16168-1-git-send-email-jirislaby@gmail.com>
@@ -24,52 +24,350 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __devinit and __devexit to pci probe/remove. Also make pci_driver
-static.
+Remove pci and usb tables from the header and place them directly in
+the code.
+
+While at it, use PCI_VDEVICE() to shorten the code.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Cc: David Kiliani <mail@davidkiliani.de>
 ---
- drivers/staging/meilhaus/memain.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/staging/meilhaus/memain.c |  109 ++++++++++++++++++++-
+ drivers/staging/meilhaus/memain.h |  194 -------------------------------------
+ 2 files changed, 108 insertions(+), 195 deletions(-)
 
 diff --git a/drivers/staging/meilhaus/memain.c b/drivers/staging/meilhaus/memain.c
-index d5aacdd..2631587 100644
+index 2631587..0dc2878 100644
 --- a/drivers/staging/meilhaus/memain.c
 +++ b/drivers/staging/meilhaus/memain.c
-@@ -103,11 +103,11 @@ static const struct file_operations me_file_operations = {
+@@ -103,6 +103,107 @@ static const struct file_operations me_file_operations = {
  	.release = me_release,
  };
  
--struct pci_driver me_pci_driver = {
-+static struct pci_driver me_pci_driver = {
++static const struct pci_device_id me_pci_table[] = {
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1000) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1000_A) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1000_B) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1400) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140A) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140B) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME14E0) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME14EA) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME14EB) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140C) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140D) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_4U) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_8U) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_12U) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_16U) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_16U_8I) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4610) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4650) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4660) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4660I) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670I) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670S) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670IS) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680I) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680S) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680IS) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6004) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6008) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME600F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6014) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6018) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME601F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6034) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6038) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME603F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6104) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6108) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME610F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6114) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6118) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME611F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6134) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6138) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME613F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6044) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6048) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME604F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6054) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6058) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME605F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6074) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6078) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME607F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6144) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6148) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME614F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6154) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6158) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME615F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6174) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6178) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME617F) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6259) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6359) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0630) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8100_A) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8100_B) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8200_A) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8200_B) },
++
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0940) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0950) },
++	{ PCI_VDEVICE(MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0960) },
++
++	{ }
++};
++MODULE_DEVICE_TABLE(pci, me_pci_table);
++
+ static struct pci_driver me_pci_driver = {
  	.name = MEMAIN_NAME,
  	.id_table = me_pci_table,
- 	.probe = me_probe_pci,
--	.remove = me_remove_pci
-+	.remove = __devexit_p(me_remove_pci),
+@@ -110,7 +211,13 @@ static struct pci_driver me_pci_driver = {
+ 	.remove = __devexit_p(me_remove_pci),
  };
  
- /* //me_usb_driver
-@@ -384,7 +384,8 @@ static me_device_t *get_dummy_instance(unsigned short vendor_id,
- 	return instance;
- }
- 
--static int me_probe_pci(struct pci_dev *dev, const struct pci_device_id *id)
-+static int __devinit me_probe_pci(struct pci_dev *dev,
-+		const struct pci_device_id *id)
+-/* //me_usb_driver
++/*
++static struct usb_device_id me_usb_table[] = {
++	{ USB_DEVICE(USB_VENDOR_ID_MEPHISTO_S1, USB_DEVICE_ID_MEPHISTO_S1) },
++	{ 0 }
++};
++MODULE_DEVICE_TABLE (usb, me_usb_table);
++
+ static struct usb_driver me_usb_driver =
  {
- 	int err;
- 	me_pci_constructor_t constructor = NULL;
-@@ -582,7 +583,7 @@ static int insert_to_device_list(me_device_t *n_device)
- 	return 0;
- }
+ 	.name = MEMAIN_NAME,
+diff --git a/drivers/staging/meilhaus/memain.h b/drivers/staging/meilhaus/memain.h
+index 7616ff7..48f8367 100644
+--- a/drivers/staging/meilhaus/memain.h
++++ b/drivers/staging/meilhaus/memain.h
+@@ -28,200 +28,6 @@
+ #ifdef __KERNEL__
  
--static void me_remove_pci(struct pci_dev *dev)
-+static void __devexit me_remove_pci(struct pci_dev *dev)
- {
- 	int vendor_id = dev->vendor;
- 	int device_id = dev->device;
+ /*=============================================================================
+-  PCI device table.
+-  This is used by modprobe to translate PCI IDs to drivers.
+-  ===========================================================================*/
+-
+-static struct pci_device_id me_pci_table[] __devinitdata = {
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1000, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1000_A, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1000_B, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1400, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140A, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140B, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME14E0, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME14EA, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME14EB, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140C, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME140D, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_4U, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_8U, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_12U, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_16U, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME1600_16U_8I,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4610, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4650, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4660, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4660I, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670I, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670S, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4670IS, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680I, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680S, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME4680IS, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6004, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6008, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME600F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6014, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6018, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME601F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6034, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6038, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME603F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6104, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6108, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME610F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6114, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6118, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME611F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6134, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6138, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME613F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6044, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6048, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME604F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6054, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6058, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME605F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6074, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6078, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME607F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6144, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6148, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME614F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6154, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6158, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME615F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6174, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6178, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME617F, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6259, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME6359, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0630, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8100_A, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8100_B, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8200_A, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME8200_B, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0940, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0950, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_MEILHAUS, PCI_DEVICE_ID_MEILHAUS_ME0960, PCI_ANY_ID,
+-	 PCI_ANY_ID, 0, 0, 0},
+-
+-	{0}
+-};
+-
+-MODULE_DEVICE_TABLE(pci, me_pci_table);
+-
+-/*=============================================================================
+-  USB device table.
+-  This is used by modprobe to translate USB IDs to drivers.
+-  ===========================================================================*/
+-/*
+-static struct usb_device_id me_usb_table[] __devinitdata = {
+-	{ USB_DEVICE(USB_VENDOR_ID_MEPHISTO_S1, USB_DEVICE_ID_MEPHISTO_S1) },
+-	{ 0 }
+-};
+-
+-MODULE_DEVICE_TABLE (usb, me_usb_table);
+-*/
+-
+-/*=============================================================================
+   Templates
+   ===========================================================================*/
+ 
 -- 
 1.6.2
 
