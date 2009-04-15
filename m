@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZDONzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZDON7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbZDONzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 09:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbZDONy6
+	id S1753374AbZDON7b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 09:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZDON7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 09:54:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55862 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbZDONy5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 09:54:57 -0400
-Date: Wed, 15 Apr 2009 15:57:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090415135749.GD14687@one.firstfloor.org>
-References: <20090414133448.C645.A69D9226@jp.fujitsu.com> <20090414064132.GB5746@localhost> <20090414154606.C665.A69D9226@jp.fujitsu.com> <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost>
-Mime-Version: 1.0
+	Wed, 15 Apr 2009 09:59:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36642 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752474AbZDON7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 09:59:22 -0400
+Date: Wed, 15 Apr 2009 15:59:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stanislaw Gruszka <sgruszka@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] itimers: periodic timers fixes
+Message-ID: <20090415135902.GC12760@elte.hu>
+References: <20090402141135.655d1b2b@dhcp-lab-109.englab.brq.redhat.com> <20090402165753.GA12793@elte.hu> <20090415142232.46a97f70@dhcp-lab-109.englab.brq.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090415131800.GA11191@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090415142232.46a97f70@dhcp-lab-109.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's pretty good separations. I guess it would be convenient to make the
-> extra kernel flags available under CONFIG_DEBUG_KERNEL?
 
-Yes.
+* Stanislaw Gruszka <sgruszka@redhat.com> wrote:
 
-BTW an alternative would be just someone implementing a suitable
-command/macro in crash(1) and tell the kernel hackers to run that on
-/proc/kcore. That would have the advantage to not require code.
-
-> > > > > > - PG_compound
+> Hi Ingo.
+> 
+> On Thu, 2 Apr 2009 18:57:53 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> > > We found the periodic timers ITIMER_PROF and ITIMER_VIRT are 
+> > > unreliable, they have systematic timing error. For example period 
+> > > of 10000 us will not be represented by the kernel as 10 ticks, but 
+> > > 11 (for HZ=1000). The reason is that the frequency of the hardware 
+> > > timer can only be chosen in discrete steps and the actual 
+> > > frequency is about 1000.152 Hz. So 10 ticks would take only about 
+> > > 9.9985 ms, the kernel decides it must never return earlier than 
+> > > requested, so it rounds the period up to 11 ticks. This results in 
+> > > a systematic multiplicative timing error of -10 %. The situation 
+> > > is even worse where application try to request with 1 thick 
+> > > period. It will get the signal once per two kernel ticks, not on 
+> > > every tick. The systematic multiplicative timing error is -50 %. 
+> > > He have program [1] that shows itimers systematic error, results 
+> > > are below [2].
+> > > 
+> > > To fix situation we wrote two patches. First one just simplify 
+> > > code related with itimers. Second is fix, it change intervals 
+> > > measurement resolutions and correct times when signal is 
+> > > generated. However this add some drawback, that I'm not sure if 
+> > > are acceptable:
+> > > 
+> > > - the time between two consecutive tics can be smaller than 
+> > >   requested interval
+> > > 
+> > > - intervals values which are returned to user by getitimer() are 
+> > >   not rounded up
+> > > 
+> > > Second drawback mean that applications which first call 
+> > > setitimer() then call getitimer() to see if interval was round up 
+> > > and to correct timings, will potentially stop works. However this 
+> > > can be only problem with requested interval smaller than 1/HZ, as 
+> > > for intervals > 1/Hz we can generate signals with proper 
+> > > resolution.
 > > 
-> > I would combine these three into a pseudo "large page" flag.
-> 
-> Very neat idea! Patch updated accordingly.
->  
-> However - one pity I observed:
-> 
-> # ./page-areas 0x008000
->     offset      len         KB
->       3088        4       16KB
-> 
-> We can no longer tell if the above line means one 4-page hugepage, or two
-> 2-page hugepages... Adding PG_COMPOUND_TAIL into the CONFIG_DEBUG_KERNEL block
-
-There's only a single size (2 or 4MB), at worst two.
-
+> > Converting those to GTOD sampling instead of jiffies sampling is a 
+> > worthwile change IMO and a good concept.
 > > 
-> > PG_poison is also useful to export. But since it depends on my
-> > patchkit I will pull a patch for that into the HWPOISON series.
+> > The unificaton of ITIMER_PROF and ITIMER_VIRT is a nice observation 
+> > and a good patch.
+> > 
+> > The second one, changing all the sampling from cputime to ktime_t is 
+> > nicely done too:
+> > 
+> > We could do more though, there's still a bit of cputime legacies 
+> > around:
+> > 
+> > +	cputime_t cval, nval;
+> > 
+> > Couldnt all of that go over into the ktime_t space as well, phasing 
+> > out cputime logic from the itimer code?
+> > 
+> > The user ABI is struct timeval based, so there's no need to have 
+> > cputime anywhere. The scheduler does nanoseconds accurate stats so 
+> > it can be connected up there too.
 > 
-> That's not a problem - since the PG_poison line is be protected by
-> #ifdef CONFIG_MEMORY_FAILURE :-) 
+> Could the patches be merged and possible other work done in later 
+> time? Or perhaps I should rework on them?
 
-Good point. I added a patch to only add it to my pile,
-but I can drop that again.
+It's up to Thomas - but they certainly looked good to me.
 
--Andi
+	Ingo
