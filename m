@@ -1,91 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZDOVgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZDOVkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbZDOVgR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 17:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbZDOVgB
+	id S1754839AbZDOVkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 17:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZDOVkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 17:36:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42301 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754104AbZDOVgA (ORCPT
+	Wed, 15 Apr 2009 17:40:25 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:60919 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZDOVkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 17:36:00 -0400
-Date: Wed, 15 Apr 2009 14:32:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zhenwen Xu <helight.xu@gmail.com>
-Cc: sean.hefty@intel.com, hal.rosenstock@gmail.com,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix a warning on
- drivers/infiniband/hw/nes/nes_cm.c:862:
-Message-Id: <20090415143228.d57a0201.akpm@linux-foundation.org>
-In-Reply-To: <20090412122317.GA4787@helight>
-References: <20090412122317.GA4787@helight>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 15 Apr 2009 17:40:24 -0400
+Message-ID: <49E653C0.7020907@cs.columbia.edu>
+Date: Wed, 15 Apr 2009 17:38:08 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: containers@lists.osdl.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: C/R without "leaks"
+References: <49E40662.2040508@cs.columbia.edu> <20090414163633.GE27461@x200.localdomain> <49E4D89D.9060903@cs.columbia.edu> <20090415195629.GD26994@x200.localdomain>
+In-Reply-To: <20090415195629.GD26994@x200.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Apr 2009 20:23:17 +0800
-Zhenwen Xu <helight.xu@gmail.com> wrote:
 
-> Fix this warning:
-> drivers/infiniband/hw/nes/nes_cm.c:862: warning: unused variable ___tmp_addr___
+
+Alexey Dobriyan wrote:
+>> Again, so to checkpoint one task in the topmost pid-ns you need to
+>> checkpoint (if at all possible) the entire system ?!
 > 
-> the 'tmp_addr' is defined for debug, so it should be defined in
-> CONFIG_INFINIBAND_NES_DEBUG
+> One more argument to not allow "leaks" and checkpoint whole container,
+> no ifs, buts and woulditbenices.
+> 
+> Just to clarify, C/R with "leak" is for example when process has separate
+> pidns, but shares, for example, netns with other process not involved in
+> checkpoint.
+> 
+> If you allow this, you lose one important property of checkpoint part,
+> namely, almost everything is frozen. Losing this property means suddenly
+> much more stuff is alive during dump and you has to account to more stuff
+> when checkpointing. You effectively checkpointing on live data structures
+> and there is no guarantee you'll get it right.
+
+Alexey, we're entirely on par about this: everyone agrees that if you
+want the maximal guarantee (if one exists) you must checkpoint entire
+container and have no leaks.
+
+The point I'm stressing is that there are other use cases, and other
+users, that can do great things even without full container. And my
+goal is to provide them this capability. Specially since the mechanism
+is shared by both cases.
+
+> 
+> Example 1: utsns is shared with the rest of the world.
+> 
+> utsns content is modifiable only by tasks (current->nsproxy->uts_ns).
+> Consequently, someone can modify utsns content while you're dumping it
+> if you allow "leaks".
+> 
+> Did you take precautions? Where?
+> 
+> 	static int cr_write_utsns(struct cr_ctx *ctx, struct uts_namespace *uts_ns)
+> 	{
+> 	        struct cr_hdr h;
+> 	        struct cr_hdr_utsns *hh;
+> 	        int domainname_len;
+> 	        int nodename_len;
+> 	        int ret;
+> 
+> 	        h.type = CR_HDR_UTSNS;
+> 	        h.len = sizeof(*hh);
+> 
+> 	        hh = cr_hbuf_get(ctx, sizeof(*hh));
+> 	        if (!hh)
+> 	                return -ENOMEM;
+> 
+> 	        nodename_len = strlen(uts_ns->name.nodename) + 1;
+> 	        domainname_len = strlen(uts_ns->name.domainname) + 1;
+> 
+> 	        hh->nodename_len = nodename_len;
+> 	        hh->domainname_len = domainname_len;
+> 
+> 	        ret = cr_write_obj(ctx, &h, hh);
+> 	        cr_hbuf_put(ctx, sizeof(*hh));
+> 	        if (ret < 0)
+> 	                return ret;
+> 
+> 	        ret = cr_write_string(ctx, uts_ns->name.nodename, nodename_len);
+> 	        if (ret < 0)
+> 	                return ret;
+> 
+> 	        ret = cr_write_string(ctx, uts_ns->name.domainname, domainname_len);
+> 	        return ret;
+> 	}
+> 
+> You should take uts_sem.
+
+Fair enough. Will fix :)
+
+However, even with leaks count you need the uts_sem, because it if
+this is shared by another task when you start the checkpoint, but
+not shared by the time you do the leak check - then you missed it.
+
+And then, even the semaphore won't work unless you keep it for the
+entire duration of the checkpoint:  if task A and B inside the
+container both know something about the UTS contents, and task C
+outside modified it before the checkpoint was taken, then, at least
+potentially, we have an inconsistency that neither you or I detect.
+
+The best part of it, however, it is unlikely that either A or B
+would ever *care* about that, especially in the case of UTS.
+
+And that brings me to the moral: in so many cases the user will live
+happily ever after even if the UTS is changes 50 times during the
+checkpoint. Because her tasks don't care about it.
+
+Remember that "flexibility" argument in my first post to this thread:
+the next step is that the user can say "cradvise(UTS, I_DONT_CARE)":
+during checkpoint the kernel won't save it, during restart the kernel
+won't restore it. Voila, so little effort to make people happy :)
+
 > 
 > 
-> >From 5f67884bcda5450807dcd080378d829628e4db1c Mon Sep 17 00:00:00 2001
-> From: Zhenwen Xu <Helight.Xu@gmail.com>
-> Date: Sun, 12 Apr 2009 20:12:18 +0800
-> Subject: [PATCH] fix a warning on drivers/infiniband/hw/nes/nes_cm.c:862:
+> Example 2: ipcns is shared with the rest of the world
 > 
-> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
-> ---
->  drivers/infiniband/hw/nes/nes_cm.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+> Consequently, shm segment is visible outside and live. Someone already
+> shmatted to it. What will end up in shm segment content? Anything.
+
+This is another excellent example. You are _so_ right that it doesn't
+make much sense to try to restart a program that relies on something
+that isn't part of the checkpoint.
+
+And yet, there are a handful programs, applications, processes that
+do not depend on the outside world in any important way, tasks that
+frankly, my dear, don't give a ...
+
 > 
-> diff --git a/drivers/infiniband/hw/nes/nes_cm.c b/drivers/infiniband/hw/nes/nes_cm.c
-> index dbd9a75..1bad93b 100644
-> --- a/drivers/infiniband/hw/nes/nes_cm.c
-> +++ b/drivers/infiniband/hw/nes/nes_cm.c
-> @@ -854,8 +854,9 @@ static struct nes_cm_listener *find_listener(struct nes_cm_core *cm_core,
->  {
->  	unsigned long flags;
->  	struct nes_cm_listener *listen_node;
-> +#ifdef CONFIG_INFINIBAND_NES_DEBUG
->  	__be32 tmp_addr = cpu_to_be32(dst_addr);
-> -
-> +#endif
->  	/* walk list and find cm_node associated with this session ID */
->  	spin_lock_irqsave(&cm_core->listen_list_lock, flags);
->  	list_for_each_entry(listen_node, &cm_core->listen_list.list, list) {
+> You should check struct file refcount or something and disable attaching
+> while dumping or something.
 
-eek, an ugly ifdef.  And we can't just remove tmp_addr because
-printk(%p) wants to be passed an address rather than a value.
+Yes, yes, yes !
 
-It'd be nice if we had a handy macro to squish the warning, like
-uninitialized_var.
+But -- when you focus solely on the full-container-only case.
 
-As it happens, uninitialized_var() _does_ suppress the unused-var warning:
+Deciding what's best for the users is a two-edged-sword. It works
+well to achieve foolproof operation with the less knowledgeable,
+but it's a bit of an arrogant approach for the more sophisticated
+ones.
 
---- a/drivers/infiniband/hw/nes/nes_cm.c~drivers-infiniband-hw-nes-nes_cmc-fix-unused-var-warning-cleanup
-+++ a/drivers/infiniband/hw/nes/nes_cm.c
-@@ -854,9 +854,8 @@ static struct nes_cm_listener *find_list
- {
- 	unsigned long flags;
- 	struct nes_cm_listener *listen_node;
--#ifdef CONFIG_INFINIBAND_NES_DEBUG
--	__be32 tmp_addr = cpu_to_be32(dst_addr);
--#endif
-+	__be32 uninitialized_var(tmp_addr) = cpu_to_be32(dst_addr);
-+
- 	/* walk list and find cm_node associated with this session ID */
- 	spin_lock_irqsave(&cm_core->listen_list_lock, flags);
- 	list_for_each_entry(listen_node, &cm_core->listen_list.list, list) {
+If you limit c/r to a full-container-only, you take away a freedom
+from the users - you take away a huge opportunity to use the c/r
+to its full potential. And you have this extra functionality for
+nearly free !  It's like giving the user a full blown linux laptop
+but disallowing use of the command line :p
 
+> 
+> Moral: Every time you do dump on something live you get complications.
+> Every single time.
 
-but that seems a bit abusive ;)
+"while(1);"  will never have complications... :)
+
+And seriously, yes, you can bring endless examples of when it won't
+work. And others will bring their examples of when it will be ok
+even with "complications", because if you don't care about certain
+stuff, the "complication" becomes void.
+
+We can always restrict c/r later, either by code, or privileges, or
+system config, sysadmin policy, flag to checkpoint(2), you name it.
+So those who seek general case guarantee are happy. Why do it a-priori
+and block all other users ?  is it of everyone's best interest to
+decide now that no-one should ever do so ?
+
+Oren.
+
+> 
+> 
+> There are sockets and live netns as the most complex example. I'm not
+> prepared to describe it exactly, but people wishing to do C/R with
+> "leaks" should be very careful with their wishes.
+> 
