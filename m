@@ -1,76 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbZDOAOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZDOAOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757274AbZDOAOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Apr 2009 20:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbZDOAOH
+	id S1757452AbZDOAOr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Apr 2009 20:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZDOAON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Apr 2009 20:14:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33480 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755263AbZDOAOF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Apr 2009 20:14:05 -0400
-Date: Tue, 14 Apr 2009 17:11:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       xcf@ustc.edu.cn
-Subject: Re: [RFC][PATCH] vfs: check inode size on no_cached_page
-Message-Id: <20090414171114.04a47932.akpm@linux-foundation.org>
-In-Reply-To: <20090412071605.GA14058@localhost>
-References: <20090412071605.GA14058@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Apr 2009 20:14:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:48162 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755872AbZDOAOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Apr 2009 20:14:11 -0400
+Date: Tue, 14 Apr 2009 17:14:10 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, dipankar@in.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH] rculist: use list_entry_rcu in places where it's
+	appropriate
+Message-ID: <20090415001410.GR6753@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090414181715.GA3634@psychotron.englab.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090414181715.GA3634@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Apr 2009 15:16:05 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Tue, Apr 14, 2009 at 08:17:16PM +0200, Jiri Pirko wrote:
+> Use previously introduced list_entry_rcu instead of list_entry + rcu_dereference
+> combination.
+> 
+> Jirka
 
-> [This patch may not necessarily be merged, but at least we should
->  be aware of the problem.]
-> 
-> When user space requests past-EOF data, do_generic_file_read() will
-> issue a bonus readpage call, which may be unfavorable.
-> 
-> do_generic_file_read:
->         -> find_page:
->         -> find_get_page()             = NULL
->         -> page_cache_sync_readahead()
->         -> find_get_page()             = NULL
->         -> no_cached_page:
->         -> readpage:
->                 -> nfs_readpage()      = error
->         -> readpage_error:
-> 
-> Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Looks good!
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 > ---
->  mm/filemap.c |    5 +++++
->  1 file changed, 5 insertions(+)
+>  include/linux/sched.h           |    8 +++++---
+>  ipc/sem.c                       |    4 ++--
+>  security/integrity/ima/ima_fs.c |    4 ++--
+>  security/smack/smackfs.c        |    8 ++++----
+>  4 files changed, 13 insertions(+), 11 deletions(-)
 > 
-> --- mm.orig/mm/filemap.c
-> +++ mm/mm/filemap.c
-> @@ -1269,6 +1269,11 @@ readpage_error:
->  		goto out;
->  
->  no_cached_page:
-> +		isize = i_size_read(inode);
-> +		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-> +		if (unlikely(!isize || index > end_index))
-> +			goto out;
-> +
->  		/*
->  		 * Ok, it wasn't cached, so we need to create a new
->  		 * page..
-
-Is this a problem which needs to be solved?  userspace does something
-silly and the kernel behaves a bit suboptimally?
-
-If thats the only problem here then it's not worth adding fastpath
-cycles to fix it?
-
-
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index b4c38bc..886df41 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -77,6 +77,7 @@ struct sched_param {
+>  #include <linux/proportions.h>
+>  #include <linux/seccomp.h>
+>  #include <linux/rcupdate.h>
+> +#include <linux/rculist.h>
+>  #include <linux/rtmutex.h>
+> 
+>  #include <linux/time.h>
+> @@ -2010,7 +2011,8 @@ static inline unsigned long wait_task_inactive(struct task_struct *p,
+>  }
+>  #endif
+> 
+> -#define next_task(p)	list_entry(rcu_dereference((p)->tasks.next), struct task_struct, tasks)
+> +#define next_task(p) \
+> +	list_entry_rcu((p)->tasks.next, struct task_struct, tasks)
+> 
+>  #define for_each_process(p) \
+>  	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
+> @@ -2049,8 +2051,8 @@ int same_thread_group(struct task_struct *p1, struct task_struct *p2)
+> 
+>  static inline struct task_struct *next_thread(const struct task_struct *p)
+>  {
+> -	return list_entry(rcu_dereference(p->thread_group.next),
+> -			  struct task_struct, thread_group);
+> +	return list_entry_rcu(p->thread_group.next,
+> +			      struct task_struct, thread_group);
+>  }
+> 
+>  static inline int thread_group_empty(struct task_struct *p)
+> diff --git a/ipc/sem.c b/ipc/sem.c
+> index 16a2189..87c2b64 100644
+> --- a/ipc/sem.c
+> +++ b/ipc/sem.c
+> @@ -1290,8 +1290,8 @@ void exit_sem(struct task_struct *tsk)
+>  		int i;
+> 
+>  		rcu_read_lock();
+> -		un = list_entry(rcu_dereference(ulp->list_proc.next),
+> -					struct sem_undo, list_proc);
+> +		un = list_entry_rcu(ulp->list_proc.next,
+> +				    struct sem_undo, list_proc);
+>  		if (&un->list_proc == &ulp->list_proc)
+>  			semid = -1;
+>  		 else
+> diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
+> index ffbe259..510186f 100644
+> --- a/security/integrity/ima/ima_fs.c
+> +++ b/security/integrity/ima/ima_fs.c
+> @@ -84,8 +84,8 @@ static void *ima_measurements_next(struct seq_file *m, void *v, loff_t *pos)
+>  	 * against concurrent list-extension
+>  	 */
+>  	rcu_read_lock();
+> -	qe = list_entry(rcu_dereference(qe->later.next),
+> -			struct ima_queue_entry, later);
+> +	qe = list_entry_rcu(qe->later.next,
+> +			    struct ima_queue_entry, later);
+>  	rcu_read_unlock();
+>  	(*pos)++;
+> 
+> diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+> index e03a7e1..11d2cb1 100644
+> --- a/security/smack/smackfs.c
+> +++ b/security/smack/smackfs.c
+> @@ -734,8 +734,8 @@ static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
+>  		return;
+>  	}
+> 
+> -	m = list_entry(rcu_dereference(smk_netlbladdr_list.next),
+> -			 struct smk_netlbladdr, list);
+> +	m = list_entry_rcu(smk_netlbladdr_list.next,
+> +			   struct smk_netlbladdr, list);
+> 
+>  	/* the comparison '>' is a bit hacky, but works */
+>  	if (new->smk_mask.s_addr > m->smk_mask.s_addr) {
+> @@ -748,8 +748,8 @@ static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
+>  			list_add_rcu(&new->list, &m->list);
+>  			return;
+>  		}
+> -		m_next = list_entry(rcu_dereference(m->list.next),
+> -				 struct smk_netlbladdr, list);
+> +		m_next = list_entry_rcu(m->list.next,
+> +					struct smk_netlbladdr, list);
+>  		if (new->smk_mask.s_addr > m_next->smk_mask.s_addr) {
+>  			list_add_rcu(&new->list, &m->list);
+>  			return;
+> -- 
+> 1.6.0.6
+> 
