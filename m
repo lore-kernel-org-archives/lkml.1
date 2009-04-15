@@ -1,101 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZDOG0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZDOG0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbZDOG0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 02:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZDOG0L
+	id S1755566AbZDOG0h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 02:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZDOG0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 02:26:11 -0400
-Received: from smtp5.tech.numericable.fr ([82.216.111.41]:47481 "EHLO
-	smtp5.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbZDOG0K (ORCPT
+	Wed, 15 Apr 2009 02:26:17 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:34703 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510AbZDOG0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 02:26:10 -0400
-Message-ID: <49E57DFF.9030207@numericable.fr>
-Date: Wed, 15 Apr 2009 08:26:07 +0200
-From: Etienne Basset <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 15 Apr 2009 02:26:16 -0400
+Message-ID: <49E57E05.60400@petalogix.com>
+Date: Wed, 15 Apr 2009 08:26:13 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: LSM <linux-security-module@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Smack: check for SMACK xattr max size in  smack_inode_setxattr
-References: <49E4D5B6.80202@numericable.fr> <49E561C8.90306@schaufler-ca.com>
-In-Reply-To: <49E561C8.90306@schaufler-ca.com>
+To: David Miller <davem@davemloft.net>
+CC: arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: struct exception_table_entry
+References: <49DE0EC4.4010409@petalogix.com>	<200904141636.11676.arnd@arndb.de> <20090414.151415.267444590.davem@davemloft.net>
+In-Reply-To: <20090414.151415.267444590.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> Etienne Basset wrote:
->> the following patch move the check for SMACK xattr size >= SMK_LABELLEN
->> from  smack_inode_post_setxattr (which cannot return an error to the user)
->> to smack_inode_setxattr (which can return an error).
+David Miller wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Tue, 14 Apr 2009 16:36:11 +0200
+>
+>   
+>> On Thursday 09 April 2009, Michal Simek wrote:
 >>
->> without patch a SMACK setxattr with size >= SMK_LABELLEN returns success although it doesn't 
->>   
-> 
-> How about an early call to smk_import() to determine if the
-> label if legitimate, rather than checking the length? That
-> could save grief for other "invalid label" issues.
-
-Hi,
-
-both are needed. And we'll need one call in setxattr to check the validity and one in
-postsetxattr/ inode_setsecurity (to set the security blob)
-(which make me think we should split smk_import in 2,  smk_check/smk_import_nocheck or whatever)
-
-The harder issue is that smk_import can change the value/size of the xattr
-and smk_import can fail for 2 reasons : ENOMEM or EINVAL (not sure this is an issue though)
-(we should really split)
-
-root@etienne-desktop:/tmp# attr -S -s SMACK64 -V '123////' toto
-Attribute "SMACK64" set to a 7 byte value for toto:
-123////
-root@etienne-desktop:/tmp# attr -S -g SMACK64 toto
-Attribute "SMACK64" had a 4 byte value for toto:
-123
-
-maybe it would be nicer to fail than change the label under the foot of the-user-who-hasnt-read-the-doc?
-
-Etienne
-> 
->> Signed-off-by: Etienne Basset <etienne.basset@numericable.fr>
->> ---
->> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
->> index 9215149..da6954d 100644
->> --- a/security/smack/smack_lsm.c
->> +++ b/security/smack/smack_lsm.c
->> @@ -610,7 +610,8 @@ static int smack_inode_setxattr(struct dentry *dentry, const char *name,
->>  		if (!capable(CAP_MAC_ADMIN))
->>  			rc = -EPERM;
->>  		/* a label cannot be void and cannot begin with '-' */
->> -		if (size == 0 || (size > 0 && ((char *)value)[0] == '-'))
->> +		if (size == 0 || size >= SMK_LABELLEN ||
->> +		   (size > 0 && ((char *)value)[0] == '-'))
->>  			rc = -EINVAL;
->>  	} else
->>  		rc = cap_inode_setxattr(dentry, name, value, size, flags);
->> @@ -644,9 +645,6 @@ static void smack_inode_post_setxattr(struct dentry *dentry, const char *name,
->>  	if (strcmp(name, XATTR_NAME_SMACK))
->>  		return;
->>  
->> -	if (size >= SMK_LABELLEN)
->> -		return;
->> -
->>  	isp = dentry->d_inode->i_security;
->>  
->>  	/*
+>>     
+>>> I am doing some cleanup things in MB MMU kernel and I looked at
+>>> exception_table_entry structure.
+>>> Only alpha use different types among others. Some arch use only
+>>> different names and types int/long.
+>>> I think that this structure could be moved to any generic location ->
+>>> asm-generic/uaccess.h folder.
+>>>
+>>> I think that this structure types should be acceptable for every archs?
+>>>
+>>> #ifndef exception_table_entry
+>>> struct exception_table_entry {
+>>>     unsigned long insn;
+>>>     unsigned long fixup;
+>>> };
+>>> #endif
+>>>
+>>> What do you think?
+>>>       
+>> Yes, sounds good to me. Have you tried using my generic version of
+>> uaccess.h on microblaze? It already contains a definition like this,
+>> though most of the header doesn't apply for MMU-based architectures.
 >>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->>
->>   
-> 
-> 
+>> I suppose it can be improved a bit, but should do the basic job.
+>>     
+>
+> Note that for space saving several 64-bit architectures use plain
+> "int" here when they know that all kernel addresses are in the low
+> 32-bits of the address space.
+>   
+Just one my note: use u32 instead of int.
+
+Michal
+> sparc64 is one such architecture and I'd prefer if the size of these
+> tables does not bloat up when you guys try to make this thing generic.
+>   
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
 
