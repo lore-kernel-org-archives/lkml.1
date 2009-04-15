@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758452AbZDOLDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZDOLEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758452AbZDOLDu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 07:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZDOLDk
+	id S1758619AbZDOLEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 07:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756449AbZDOLEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 07:03:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47632 "EHLO mx1.suse.de"
+	Wed, 15 Apr 2009 07:04:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47653 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752919AbZDOLDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 07:03:40 -0400
-Date: Wed, 15 Apr 2009 13:03:38 +0200
-Message-ID: <s5hiql618mt.wl%tiwai@suse.de>
+	id S1753289AbZDOLEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 07:04:24 -0400
+Date: Wed, 15 Apr 2009 13:04:23 +0200
+Message-ID: <s5hhc0q18lk.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-Subject: Re: [alsa-devel] [PATCH] add missing definitions(letters) to	HD-Audio.txt
-In-Reply-To: <dd18b0c30904141431x231a3251v438e365d512f9f95@mail.gmail.com>
-References: <dd18b0c30904141431x231a3251v438e365d512f9f95@mail.gmail.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       alsa-devel@vger.kernel.org
+Subject: Re: [alsa-devel] General protection fault when unloading	snd_hda_intel on	2.6.30-rc1+
+In-Reply-To: <20090414162119.GA4748@Pilar.aei.mpg.de>
+References: <20090411193630.GA16968@Pilar.aei.mpg.de>
+	<s5h63h72tuf.wl%tiwai@suse.de>
+	<20090414162119.GA4748@Pilar.aei.mpg.de>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -27,56 +29,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Tue, 14 Apr 2009 14:31:21 -0700,
-Justin Mattock wrote:
+At Tue, 14 Apr 2009 18:21:19 +0200,
+Carlos R. Mafra wrote:
 > 
-> impact: Add missing definitions(letters).
+> On Tue 14.Apr'09 at 16:27:52 +0200, Takashi Iwai wrote:
+> > 
+> > This seems happening in the path exciting the codec again in the
+> > release due to restoration of the pin defcfg values.
+> > 
+> > Could you try the patch below, or merge for-next or master branch
+> > of sound git tree?
+> >     git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
 > 
-> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+> 
+> I tested the patch below and now the module unloads correctly, so the
+> problem is fixed.
+> 
+> Tested-by: Carlos R. Mafra <crmafra2@gmail.com>
+> 
+> Thanks Takashi!
 
-Thanks, applied now.
-
-(BTW, your patch couldn't be applied cleanly, partly because of
- a wrong format and partly because of your MUA breaking the lines...)
+Thanks for testing.  I'll give a pull request soon later.
 
 
 Takashi
-
-> 
-> ---
->  Documentation/sound/alsa/HD-Audio.txt | 3 +++
->  1 files changed,3 insertions(+),0 deletions(-)
-> 
-> ===========================================================================================
-> ---- Documentation/sound/alsa/HD-Audio.txt        2009-04-14
-> 17:03:14.000000000 -0700
-> ++++ Documentation/sound/alsa/HD-Audio.txt        2009-04-14
-> 21:15:22.000000000 -0700
-> @@ -162,7 +162,7 @@
->  What `model` option values are available depends on the codec chip.
->  Check your codec chip from the codec proc file (see "Codec Proc-File"
->  section below).  It will show the vendor/product name of your codec
-> -chip.  Then, see Documentation/sound/alsa/HD-Audio-Modelstxt file,
-> +chip.  Then, see Documentation/sound/alsa/HD-Audio-Models.txt file,
->  the section of HD-audio driver.  You can find a list of codecs
->  and `model` options belonging to each codec.  For example, for Realtek
->  ALC262 codec chip, pass `model=ultra` for devices that are compatible
-> @@ -170,7 +170,7 @@
-> 
->  Thus, the first thing you can do for any brand-new, unsupported and
->  non-working HD-audio hardware is to check HD-audio codec and several
-> -different `model` option values.  If you have a luck, some of them
-> +different `model` option values.  If you have any luck, some of them
->  might suit with your device well.
-> 
->  Some codecs such as ALC880 have a special model option `model=test`.
-> 
-> 
-> 
-> -- 
-> Justin P. Mattock
-> _______________________________________________
-> Alsa-devel mailing list
-> Alsa-devel@alsa-project.org
-> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
-> 
