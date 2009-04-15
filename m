@@ -1,118 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZDOShm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZDOSiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbZDOShm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 14:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbZDOSgY
+	id S1756057AbZDOSiZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 14:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZDOSiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 14:36:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60236 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754412AbZDOSgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 14:36:23 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 5/5] RCU: Don't try and predeclare inline funcs as it upsets
-	some versions of gcc
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Date: Wed, 15 Apr 2009 19:35:01 +0100
-Message-ID: <20090415183501.11029.81607.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090415183441.11029.30619.stgit@warthog.procyon.org.uk>
-References: <20090415183441.11029.30619.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Wed, 15 Apr 2009 14:38:11 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:44410 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754945AbZDOSiJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 14:38:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=elctF2FkURfYYY/wSD/4PK5VfalrA56Hnb1se+GWWqBBwX2hKh1TsnXjaC9uh5UwHJ
+         MBtu7KWFEuApu+kJ0LV8f1ck0duEYU6feRvs/yw0dRmBAA5+frB005o9dKk8xqll0Ihk
+         Bh6u0jYcxCruC7mwhTcufKwuj0R7ooRXqcDSU=
+Message-ID: <49E6295F.80009@gmail.com>
+Date: Wed, 15 Apr 2009 20:37:19 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] phylib: Fix delay argument of schedule_delayed_work
+References: <1239811551-6101-1-git-send-email-anemo@mba.ocn.ne.jp>
+In-Reply-To: <1239811551-6101-1-git-send-email-anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't try and predeclare inline funcs like this:
+Atsushi Nemoto wrote:
+> The commit a390d1f3 ("phylib: convert state_queue work to
+> delayed_work") missed converting 'expires' value to 'delay' value.
 
-	static inline void wait_migrated_callbacks(void)
-	...
-	static void _rcu_barrier(enum rcu_barrier type)
-	{
-		...
-		wait_migrated_callbacks();
-	}
-	...
-	static inline void wait_migrated_callbacks(void)
-	{
-		wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
-	}
+Yeah, sorry about that.
 
-as it upsets some versions of gcc under some circumstances:
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-	kernel/rcupdate.c: In function `_rcu_barrier':
-	kernel/rcupdate.c:125: sorry, unimplemented: inlining failed in call to 'wait_migrated_callbacks': function body not available
-	kernel/rcupdate.c:152: sorry, unimplemented: called from here
+Acked-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 
-This can be dealt with by simply putting the static variables (rcu_migrate_*)
-at the top, and moving the implementation of the function up so that it
-replaces its forward declaration.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-Cc: Dipankar Sarma <dipankar@in.ibm.com>
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- kernel/rcupdate.c |   18 ++++++++----------
- 1 files changed, 8 insertions(+), 10 deletions(-)
-
-
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 2c7b845..a967c9f 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -58,6 +58,10 @@ static DEFINE_MUTEX(rcu_barrier_mutex);
- static struct completion rcu_barrier_completion;
- int rcu_scheduler_active __read_mostly;
- 
-+static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
-+static struct rcu_head rcu_migrate_head[3];
-+static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
-+
- /*
-  * Awaken the corresponding synchronize_rcu() instance now that a
-  * grace period has elapsed.
-@@ -122,7 +126,10 @@ static void rcu_barrier_func(void *type)
- 	}
- }
- 
--static inline void wait_migrated_callbacks(void);
-+static inline void wait_migrated_callbacks(void)
-+{
-+	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
-+}
- 
- /*
-  * Orchestrate the specified type of RCU barrier, waiting for all
-@@ -179,21 +186,12 @@ void rcu_barrier_sched(void)
- }
- EXPORT_SYMBOL_GPL(rcu_barrier_sched);
- 
--static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
--static struct rcu_head rcu_migrate_head[3];
--static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
--
- static void rcu_migrate_callback(struct rcu_head *notused)
- {
- 	if (atomic_dec_and_test(&rcu_migrate_type_count))
- 		wake_up(&rcu_migrate_wq);
- }
- 
--static inline void wait_migrated_callbacks(void)
--{
--	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
--}
--
- static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
- 		unsigned long action, void *hcpu)
- {
+> ---
+>  drivers/net/phy/phy.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+> index 3ff1f42..5737b85 100644
+> --- a/drivers/net/phy/phy.c
+> +++ b/drivers/net/phy/phy.c
+> @@ -434,7 +434,7 @@ void phy_start_machine(struct phy_device *phydev,
+>  	phydev->adjust_state = handler;
+>  
+>  	INIT_DELAYED_WORK(&phydev->state_queue, phy_state_machine);
+> -	schedule_delayed_work(&phydev->state_queue, jiffies + HZ);
+> +	schedule_delayed_work(&phydev->state_queue, HZ);
+>  }
+>  
+>  /**
+> @@ -937,6 +937,5 @@ static void phy_state_machine(struct work_struct *work)
+>  	if (err < 0)
+>  		phy_error(phydev);
+>  
+> -	schedule_delayed_work(&phydev->state_queue,
+> -				jiffies + PHY_STATE_TIME * HZ);
+> +	schedule_delayed_work(&phydev->state_queue, PHY_STATE_TIME * HZ);
+>  }
 
