@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZDOPUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752341AbZDOPXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbZDOPUR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 11:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZDOPUE
+	id S1752341AbZDOPXO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 11:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZDOPW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 11:20:04 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48581 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZDOPUC (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 11:20:02 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-04-14-17-24 uploaded
-In-Reply-To: Your message of "Tue, 14 Apr 2009 17:24:57 PDT."
-             <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200904150024.n3F0Ovdo019569@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1239773374_19907P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 15 Apr 2009 01:29:34 -0400
-Message-ID: <22518.1239773374@turing-police.cc.vt.edu>
+	Wed, 15 Apr 2009 11:22:58 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:44942 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZDOPW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 11:22:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=K7zXTM/BheSQQLSUA4PCtPX4OUZ339ds0bujgWHe5a7MgQbDabtg+cG5qCypLmP8LJ
+         Poq7cAOFLrpyfKtaNJKEin8+VmtG/7FcMlDRpY9J7UvkH1iPWvGQOvKmA6sITkjJGxtR
+         rqYgW9bUw95kLbihwF1xU31QqUlnX/7lT+qOM=
+Date: Wed, 15 Apr 2009 19:52:37 +0430
+From: Ali Gholami Rudi <ali@rudi.ir>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+Message-ID: <20090415152237.GA2846@lilem.mirepesht>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <20090414020544.GA3738@elte.hu> <20090415054417.GA5272@elte.hu> <alpine.LFD.2.00.0904150755170.4132@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904150755170.4132@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-04-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1239773374_19907P
-Content-Type: text/plain; charset=us-ascii
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> index 837c2c4..ecdb682 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> @@ -204,7 +204,13 @@ static void drv_read(struct drv_cmd *cmd)
+>  
+>  static void drv_write(struct drv_cmd *cmd)
+>  {
+> +	int this_cpu;
+> +
+> +	this_cpu = get_cpu();
+> +	if (cpumask_test_cpu(this_cpu, cmd->mask))
+> +		do_drv_write(cmd);
+>  	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
+> +	put_cpu();
+>  }
+>  
+>  static u32 get_cur_val(const struct cpumask *mask)
 
-On Tue, 14 Apr 2009 17:24:57 PDT, akpm@linux-foundation.org said:
-> The mm-of-the-moment snapshot 2009-04-14-17-24 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
+Tested it and works.
 
-patch input-add-a-dmi-table-for-the-i8042reset-option-make-msi-wind-u-100-work.patch
-is horribly busticated - was this dependent on another patch that was dropped?
-The reference to 'i8042_nonfatal' is odd, I can't find it defined anywhere in the tree.
-
-  CC      drivers/input/serio/i8042.o
-In file included from drivers/input/serio/i8042.h:28,
-                 from drivers/input/serio/i8042.c:85:
-drivers/input/serio/i8042-x86ia64io.h:501: error: redefinition of 'i8042_dmi_reset_table'
-drivers/input/serio/i8042-x86ia64io.h:380: note: previous definition of 'i8042_dmi_reset_table' was here
-drivers/input/serio/i8042-x86ia64io.h: In function 'i8042_pnp_init':
-drivers/input/serio/i8042-x86ia64io.h:619: error: 'i8042_nonfatal' undeclared (first use in this function)
-drivers/input/serio/i8042-x86ia64io.h:619: error: (Each undeclared identifier is reported only once
-drivers/input/serio/i8042-x86ia64io.h:619: error: for each function it appears in.)
-make[2]: *** [drivers/input/serio/i8042.o] Error 1
-
-
---==_Exmh_1239773374_19907P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJ5XC+cC3lWbTT17ARAlgfAKDsEvkmnFVltT3KWzvKjZGYpqTjfwCg9uHi
-D9NdR0sv4JH7RXUSRcE8ews=
-=xPLs
------END PGP SIGNATURE-----
-
---==_Exmh_1239773374_19907P--
+Regards,
+Ali
