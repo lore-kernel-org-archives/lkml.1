@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZDPMwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZDPM4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbZDPMwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 08:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbZDPMwJ
+	id S1755367AbZDPM4l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 08:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZDPM4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 08:52:09 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:42595 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753054AbZDPMwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 08:52:08 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: UV BAU distribution and payload MMRs
-Cc: mingo@elte.hu
-Message-Id: <E1LuR5Z-0007An-B8@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Thu, 16 Apr 2009 07:53:09 -0500
+	Thu, 16 Apr 2009 08:56:32 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:58703 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752695AbZDPM4b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 08:56:31 -0400
+Date: Thu, 16 Apr 2009 21:56:30 +0900 (JST)
+Message-Id: <20090416.215630.183034963.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: dm-devel@redhat.com, vivek.goyal2008@gmail.com,
+       linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: [dm-devel] Re: dm-ioband: Test results.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090415170415.GE15067@redhat.com>
+References: <20090413144626.GF18007@redhat.com>
+	<20090414.183022.71120459.ryov@valinux.co.jp>
+	<20090415170415.GE15067@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Vivek,
 
-From: Cliff Wickman <cpw@sgi.com>
+> How does your ioband setup looks like. Have you created at least one more
+> competing ioband device? Because I think only in that case you have got
+> this ad-hoc logic of waiting for the group which has not finished the
+> tokens yet and you will end up buffering the bio in a FIFO.
 
-This patch correctly sets BAU memory mapped registers to point
-to the sending activation descriptor table and target payload table.
+I created two ioband devices and ran the dd commands only on the first
+device.
 
-The "Broadcast Assist Unit" is used for TLB shootdown in UV.
+> Do let me know if you think there is something wrong with my
+> configuration.
 
-The memory mapped registers that point to sending and receiving
-memory structures contain node numbers.
-In one case the __pa() function did not provide the node id of
-memory on blade zero in configurations where that id is nonzero.
-In another case, it was assumed that memory was allocated on
-the local node.  That assumption is not true in a configuration
-in which the node has no memory.
+>From a quick look at your configuration, there seems to be no problem.
 
-Tested on the UV hardware simulator.
+> Can you also send bio-cgroup patches which apply to 2.6.30-rc1 so that
+> I can do testing for async writes.
 
-Diffed against 2.6.29
+I've just posted the patches to related mailing lists. Please try it.
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
+> Why have you split the regular patch and bio-cgroup patch? Do you want
+> to address only reads and sync writes?
 
----
- arch/x86/kernel/tlb_uv.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+For the first step, my goal is to merge dm-ioband into device-mapper,
+and bio-cgroup is not necessary for all situations such as bandwidth
+control on a per partition basis.
 
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -718,7 +718,7 @@ uv_activation_descriptor_init(int node, 
- 	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
- 	BUG_ON(!adp);
- 
--	pa = __pa((unsigned long)adp);
-+	pa = uv_gpa(adp); /* need the real nasid*/
- 	n = pa >> uv_nshift;
- 	m = pa & uv_mmask;
- 
-@@ -755,6 +755,8 @@ static struct bau_payload_queue_entry * 
- uv_payload_queue_init(int node, int pnode, struct bau_control *bau_tablesp)
- {
- 	struct bau_payload_queue_entry *pqp;
-+	unsigned long pa;
-+	int pn;
- 	char *cp;
- 
- 	pqp = (struct bau_payload_queue_entry *) kmalloc_node(
-@@ -765,10 +767,14 @@ uv_payload_queue_init(int node, int pnod
- 	cp = (char *)pqp + 31;
- 	pqp = (struct bau_payload_queue_entry *)(((unsigned long)cp >> 5) << 5);
- 	bau_tablesp->va_queue_first = pqp;
-+	/*
-+	 * need the pnode of where the memory was really allocated
-+	 */
-+	pa = uv_gpa(pqp);
-+	pn = pa >> uv_nshift;
- 	uv_write_global_mmr64(pnode,
- 			      UVH_LB_BAU_INTD_PAYLOAD_QUEUE_FIRST,
--			      ((unsigned long)pnode <<
--			       UV_PAYLOADQ_PNODE_SHIFT) |
-+			      ((unsigned long)pn << UV_PAYLOADQ_PNODE_SHIFT) |
- 			      uv_physnodeaddr(pqp));
- 	uv_write_global_mmr64(pnode, UVH_LB_BAU_INTD_PAYLOAD_QUEUE_TAIL,
- 			      uv_physnodeaddr(pqp));
+I'll also try to do more test and report you back.
+
+Thank you for your help,
+Ryo Tsuruta
