@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZDPP3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbZDPPdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbZDPP3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 11:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZDPP3W
+	id S1757431AbZDPPdb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 11:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbZDPPdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 11:29:22 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:50269 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbZDPP3W (ORCPT
+	Thu, 16 Apr 2009 11:33:22 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:48159 "EHLO
+	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754746AbZDPPdV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 11:29:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MkyDvaLgT549s+azTrOmyBZ0aX1MF2ErniQ2oLeUkGS5Fp6B+b+gfSNSquInXNafFI
-         Kdvt5Eqe5IPFCfB5YlKtsIQz2bZxIhS+SMNWVu9IWUEWd8B08Zzq2Siim3xSnwKl3Rhg
-         EhZQ/87/EmS1Lu7Nmh6U8KWxrZCc2Ue642F5A=
-Date: Thu, 16 Apr 2009 17:29:17 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] tracing/filters: allow on-the-fly filter switching
-Message-ID: <20090416152916.GA6004@nowhere>
-References: <1239610670.6660.49.camel@tropicana> <20090414205635.GA5968@nowhere> <1239769945.7852.21.camel@tropicana> <20090415162151.GH5989@nowhere> <49E681B5.8070505@cn.fujitsu.com>
+	Thu, 16 Apr 2009 11:33:21 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [PATCH 05/14] DRBD: request
+Date: Thu, 16 Apr 2009 17:32:23 +0200
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
+       "Lars Marowsky-Bree" <lmb@suse.de>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com> <1239365545-10356-6-git-send-email-philipp.reisner@linbit.com> <e2e108260904160006g359b11aj2714a3df2dfe7bdb@mail.gmail.com>
+In-Reply-To: <e2e108260904160006g359b11aj2714a3df2dfe7bdb@mail.gmail.com>
+X-OTRS-FollowUp-SenderType: agent
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <49E681B5.8070505@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904161732.24321.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 08:54:13AM +0800, Li Zefan wrote:
-> Frederic Weisbecker wrote:
-> >>> Also, is filter_add_pred() supposed to be available for in-kernel
-> >>> uses by other tracers or something?
-> >> No, the current callers were the only ones I'd planned on (it's not
-> >> static because code in trace_events.c needs to call it).  But, do you
-> >> see a use for it by other tracers?
-> > 
-> > 
-> > 
-> > May be in the future, it's possible that a tracer might want to
-> > set filters by itself.
-> > But I don't think it has to be fixed now because there are nothing
-> > like that for now.
-> > 
-> > So, no problem :-)
-> > 
-> 
-> If we restricted the mutex in trace_events_filters.c only, all the
-> extern functions can be called without lock, and this is what I did
-> in my previous patch.
+On Thursday 16 April 2009 09:06:49 Bart Van Assche wrote:
+> On Fri, Apr 10, 2009 at 2:12 PM, Philipp Reisner
+>
+> <philipp.reisner@linbit.com> wrote:
+> > + * See also documentation/drbd-request-state-overview.dot
+> > + *  (dot -Tps2 documentation/drbd-request-state-overview.dot | display
+> > -)
+>
+> Hello Philipp,
+>
+> Where can the file drbd-request-state-overview.dot be found ? It's
+> neither included in this patch series nor in drbd-8.3.1.tar.gz.
+>
+> As far as I know documentation for new kernel components should be
+> included in the kernel patch itself as a new file under the
+> Documentation directory.
+>
 
+Hi Bart,
 
-Indeed, sounds better.
+That is unfortunately an other outdated comment. I will remove it. 
+I can not find that file either. 
 
- 
-> >  
-> >>> If this is planned, the locking could be even deeper than my comments.
-> 
+But, when we are at it, there are some files that probably fall
+into this category. Some diagrams about the main state engine
+.dot files, Two diagrams showing an overview how the packets
+on the wire are used.
+
+Those are too specific that they where never published as a part
+of one of the papers, but they provide valuable information for 
+someone who wants to work on the DRBD code.
+
+I have put it into git...
+http://git.drbd.org/?p=linux-2.6-drbd.git;a=commit;h=220212f3be921da5ce275e7b4f874490c22236f0
+
+it will be included in future incarnations of the patch set.
+
+-Phil
+-- 
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
+
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
 
