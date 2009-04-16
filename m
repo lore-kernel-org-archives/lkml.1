@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZDPUzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZDPU4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbZDPUzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbZDPUzL
+	id S1757551AbZDPU4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZDPU4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:55:11 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35944 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754251AbZDPUzK (ORCPT
+	Thu, 16 Apr 2009 16:56:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41162 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753408AbZDPU4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:55:10 -0400
-Date: Thu, 16 Apr 2009 15:55:03 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
-       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 19/30] cr: deal with nsproxy
-Message-ID: <20090416205503.GA28928@us.ibm.com>
-References: <20090410023809.GT27788@x200.localdomain>
+	Thu, 16 Apr 2009 16:56:05 -0400
+Date: Thu, 16 Apr 2009 13:53:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Documentation: Add "how to write a good patch summary"
+ to SubmittingPatches
+In-Reply-To: <20090416204650.GN7138@mit.edu>
+Message-ID: <alpine.LFD.2.00.0904161350310.4042@localhost.localdomain>
+References: <1239882285-4994-1-git-send-email-tytso@mit.edu> <20090416201255.GA21608@elte.hu> <20090416204650.GN7138@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090410023809.GT27788@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> To save nsproxy, or to not save nsproxy?
+
+
+On Thu, 16 Apr 2009, Theodore Tso wrote:
+
+> On Thu, Apr 16, 2009 at 10:12:55PM +0200, Ingo Molnar wrote:
+> > as a bug triager i can, within 1 minute, sort all the commits by 
+> > risk:
+> > 
+> > Low risk cleanups:
+> >     ...
+> > Runtime crash fixes:
+> >     ...
+> > Robustness enhancements:
+> >     ...
+> > Low-risk features:
+> >     ...
+> > High-risk features:
+> >     ...
 > 
-> Don't think much, save it.
+> Sure, but if that's the goal, maybe instead we should have some
+> keywords that we tag onto one-line summary, i.e.
 > 
-> I argue that nsproxy should be removed totally, if someone thinks otherwise. ;-)
+> ext4 <LR,cleanup>: 
 
-You've got Oren starting to agree with you too.  I personally don't
-much care in principle, and your code looks very nice.
+Hell no.
 
-The way you do this and the uts patch, though, you (of course) bypass
-the CAP_SYS_ADMIN check in copy_namespaces().  Which is fine for your
-patchset, but a problem if we were to base a compromise patchset on
-your patchset.
+The fact is, those "low risk cleanups" break things.
 
-It of course also enforces the 'leakage' checks, which again is
-subject to our whole-container c/r discussion.
+People who think that you can assess the risk of a commit before-hand and 
+then rely on it are clueless morons.
 
-But again, the code is nice, and I see no problems in it.
+Stop doing this. If we're just talking about some machine-readable pattern 
+matching, JUST DON'T DO IT. It's going to be wrong. It's going to be wrong 
+because people don't do it right, but it's going to be wrong because even 
+when people _do_ mark everything right, they'll still be wrong.
 
--serge
+Write English. Don't maek some idiotic commit markers that will make 
+things harder to read AND WILL BE WRONG.
+
+			Linus
