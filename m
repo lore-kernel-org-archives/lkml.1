@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZDPKGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbZDPKG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbZDPKGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 06:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbZDPKEv
+	id S1757938AbZDPKG2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 06:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757854AbZDPKFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 06:04:51 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:57956 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753745AbZDPKEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 06:04:48 -0400
-From: monstr@monstr.eu
-To: linux-kernel@vger.kernel.org
-Cc: microblaze-uclinux@itee.uq.edu.au, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 08/11] microblaze: Add missing preadv and pwritev syscalls
-Date: Thu, 16 Apr 2009 11:56:35 +0200
-Message-Id: <a3f7086da43a5d4f994344a07a75568f679095d6.1239874968.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <f87119e246276eb41047985c97b74a5b79adc259.1239874968.git.monstr@monstr.eu>
-References: <1239875798-10523-1-git-send-email-monstr@monstr.eu>
- <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
- <11ed83a6ecbedc74fc543dad9cb81157ce5771ee.1239874968.git.monstr@monstr.eu>
- <f62690af2276b3fb111af2adae91e65ba1587c11.1239874968.git.monstr@monstr.eu>
- <708dba6c793117ed9ee1036cae48ed9288d328b8.1239874968.git.monstr@monstr.eu>
- <1f1874e0192d8481356551ffbeeebcecce951afc.1239874968.git.monstr@monstr.eu>
- <157375351273eacf9b552e677447505542f90521.1239874968.git.monstr@monstr.eu>
- <f87119e246276eb41047985c97b74a5b79adc259.1239874968.git.monstr@monstr.eu>
-In-Reply-To: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
-References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
+	Thu, 16 Apr 2009 06:05:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38534 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757842AbZDPKFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 06:05:47 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090413214513.GA1119@redhat.com>
+References: <20090413214513.GA1119@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rework/fix is_single_threaded()
+Date: Thu, 16 Apr 2009 11:04:32 +0100
+Message-ID: <14878.1239876272@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/include/asm/unistd.h   |    4 +++-
- arch/microblaze/kernel/syscall_table.S |    2 ++
- 2 files changed, 5 insertions(+), 1 deletions(-)
+> - Fix the comment, is_single_threaded(p) actually means that nobody shares
+>   ->mm with p.
+> 
+>   I think this helper should be renamed,
 
-diff --git a/arch/microblaze/include/asm/unistd.h b/arch/microblaze/include/asm/unistd.h
-index d9d3903..b5e2f5f 100644
---- a/arch/microblaze/include/asm/unistd.h
-+++ b/arch/microblaze/include/asm/unistd.h
-@@ -378,8 +378,10 @@
- #define __NR_sendmsg		360 /* new */
- #define __NR_recvmsg		361 /* new */
- #define __NR_accept04		362 /* new */
-+#define __NR_preadv		363 /* new */
-+#define __NR_pwritev		364 /* new */
- 
--#define __NR_syscalls		363
-+#define __NR_syscalls		365
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-diff --git a/arch/microblaze/kernel/syscall_table.S b/arch/microblaze/kernel/syscall_table.S
-index 529b0db..3bb42ec 100644
---- a/arch/microblaze/kernel/syscall_table.S
-+++ b/arch/microblaze/kernel/syscall_table.S
-@@ -363,3 +363,5 @@ ENTRY(sys_call_table)
- 	.long sys_sendmsg		/* 360 */
- 	.long sys_recvmsg
- 	.long sys_ni_syscall
-+	.long sys_ni_syscall
-+	.long sys_ni_syscall
--- 
-1.5.5.1
+What we want to know when we ask this function is whether or not a process is
+single-threaded, hence the name.  The fact that because:
 
+	CLONE_THREAD => CLONE_SIGHAND => CLONE_VM
+
+we can work this out purely by checking that there aren't any processes that
+share VM space with us is immaterial.
+
+> and it should not have arguments.  With or without this patch it must not be
+> used unless p == current, otherwise we can't safely use p->signal or p->mm.
+
+Well, I can live with that, but you need to check with the SELinux people too.
+Whilst they do currently limit the selinux_setprocattr() to current only, they
+still hand the task pointer that function is given around.
+
+> - Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
+>   to iterate over the process list. If there is another CLONE_VM process
+>   it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
+>   a freshly forked CLONE_VM task, but this doesn't matter because we must
+>   see its parent and return false.
+
+Hmmm...  I'd quite like to avoid using down_write() if possible.  Why do we
+need to do this?  Is it just to stop processes that might cease using mm from
+doing so until we've finished?
+
+David
