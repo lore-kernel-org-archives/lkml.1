@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbZDPQvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbZDPQwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758607AbZDPQvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbZDPQvF
+	id S1757649AbZDPQwG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:52:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbZDPQvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:51:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:55543 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756197AbZDPQvE (ORCPT
+	Thu, 16 Apr 2009 12:51:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34204 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756381AbZDPQvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:51:04 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: last remaining asm/ header moves: h8300 and m32r
-Date: Thu, 16 Apr 2009 18:49:25 +0200
-User-Agent: KMail/1.9.9
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, takata@linux-m32r.org,
-       linux-kernel@vger.kernel.org, torvalds@osdl.org
-References: <20090416150707.GA941@lst.de>
-In-Reply-To: <20090416150707.GA941@lst.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 16 Apr 2009 12:51:52 -0400
+Date: Thu, 16 Apr 2009 09:44:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v3
+In-Reply-To: <20090416093152.6605612d@hobbes>
+Message-ID: <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain>
+References: <bug-11103-13546@http.bugzilla.kernel.org/> <200904101913.n3AJDhMm018684@demeter.kernel.org> <49DFABCC.3070001@kernel.org> <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain>
+ <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904161849.26417.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19eg10ujoSQB4AJVIrnAHDtY5F3XlY8lwF1Q35
- opYj2VwvwXofqPTZTDUZ7xTXd3tq5Ss8gNvc2AlvYOmNSCypJ6
- tNyye93mWW3AM8c4RXyhA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 April 2009, Christoph Hellwig wrote:
 
-> h8300 and m32r are the last two architectures still having their asm/
-> headers in include/ instead of arch/$arch/include.  Any chance you could
-> do the move for 2.6.30 so we're only left with one way of doing it?
 
-Seconded. Note that Linus has already done the move himself for
-h8300 back in August, but a new timer.h file was added in a patch
-that got merged at the same time, so the directory is there again,
-with a single file in it.
+On Thu, 16 Apr 2009, Jesse Barnes wrote:
+> 
+> Any comments on this one, Linus?  Should I include your ack?
 
-	Arnd <><
+I'm not ready to ack it, no. I don't think the suggested patch is very 
+clean or necessarily sensible as-is. It seems very ad-hoc. 
+
+I was literally thinking of something like 
+ "round up from the last RAM by X"
+ "round up from the last reserved region by Y"
+ "pick the bigger of the two"
+
+with helper functions for the two cases and comments along the lines of 
+why we do it. Something that was a bit more obvious about what it's doing 
+and why.
+
+And no, I realize that the old code isn't that way. But the old code isn't 
+the issue - the old code is proven over _years_ and years of testing, and 
+works wonderfully well for a ton of very different machines. It has _one_ 
+single known failure case, and while there clearly must be others, the 
+point is, the old code is not what needs to be worried about. 
+
+So when changing that code that has all that testing, and when the 
+failures are so nasty and hard to debug and likely only happen on some 
+random old laptop that has crap e820 tables and _just_ the right amount 
+of memory, I'd really like the replacement code to be better.
+
+			Linus
