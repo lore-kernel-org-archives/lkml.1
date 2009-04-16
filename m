@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZDPMp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZDPMwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZDPMp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 08:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZDPMpP
+	id S1755625AbZDPMwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 08:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbZDPMwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 08:45:15 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:35566 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754472AbZDPMpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 08:45:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=i5c5gmalU7C2ZNMeDrBtLDxwIoiAyRGvSOX6XzKN7zxIHFgcpk/sg3tGq85maiwORv
-         EEuuqA+rGkPEB/tisu/7fWonsQvFvHMrMwg8lMb5send6Gm0DoM08RMD7b15nQMZ7KL5
-         PN8N1ECNoN7/pGk2cWo3wNC3DXT3Mr9CMGEh4=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LRH.2.00.0904161210450.10907@twin.jikos.cz>
-References: <4e5e476b0904091453m61ec4e81j7cfdef918bb3dfb3@mail.gmail.com>
-	 <alpine.LRH.2.00.0904161210450.10907@twin.jikos.cz>
-Date: Thu, 16 Apr 2009 14:45:12 +0200
-Message-ID: <4e5e476b0904160545h1f384dbdx4161a0a304ad4c80@mail.gmail.com>
-Subject: Re: linux-2.6.30rc1 mouse stuck with usb autosuspend enabled
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: oliver@neukum.name, Linux-Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 08:52:09 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:42595 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753054AbZDPMwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 08:52:08 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: UV BAU distribution and payload MMRs
+Cc: mingo@elte.hu
+Message-Id: <E1LuR5Z-0007An-B8@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Thu, 16 Apr 2009 07:53:09 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 12:15 PM, Jiri Kosina <jkosina@suse.cz> wrote:
->
-> [ added Oliver to CC ]
->
-> On Thu, 9 Apr 2009, Corrado Zoccolo wrote:
->
->> I found this regression w.r.t. 2.6.29.
->> When enabling usb automatic power management for all usb peripherals, with:
->> > for i in /sys/bus/usb/devices/*/power/level; do echo auto > $i; done
->
-> Well, it's difficult to consider this to be a regression. With default
-> settings (USB autosuspend turned off), the system behaves the same way as
-> it did before (ie. no mouse autosuspend).
->
->> after 2 seconds of inactivity (my autosuspend threshold), the mouse
->> gets stuck under X.
->
-> That's because it got suspended, as you have configured it to do so.
->
->> Pushing a mouse button will revive it (and the event is passed to X).
->
-> Which is expected behavior.
->
-> Your mouse (as many other mice out there) doesn't emit wakeup event on
-> movement, it only does on button click. There is nothing kernel can do
-> about it. This is one of the reasons why autosuspend is disabled by
-> default (other reason being many devices broken beyond hope when it comes
-> to waking up).
 
-Well, to me it seems a regression since it worked correctly in 2.6.29, i.e.
-* it was suspended after inactivity (at least according to powertop),
-* it resumed operation when it was moved (no need to push a button to
-have it working again).
-unless 2.6.29 just lied about suspending the mouse.
+From: Cliff Wickman <cpw@sgi.com>
 
-BTW, I find autosuspend useful to increase the battery life, so at
-least with good devices, we should make sure it works.
+This patch correctly sets BAU memory mapped registers to point
+to the sending activation descriptor table and target payload table.
 
-Corrado
+The "Broadcast Assist Unit" is used for TLB shootdown in UV.
 
->
-> --
-> Jiri Kosina
-> SUSE Labs
->
->
+The memory mapped registers that point to sending and receiving
+memory structures contain node numbers.
+In one case the __pa() function did not provide the node id of
+memory on blade zero in configurations where that id is nonzero.
+In another case, it was assumed that memory was allocated on
+the local node.  That assumption is not true in a configuration
+in which the node has no memory.
 
+Tested on the UV hardware simulator.
 
+Diffed against 2.6.29
 
--- 
-__________________________________________________________________________
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
+---
+ arch/x86/kernel/tlb_uv.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c
++++ linux/arch/x86/kernel/tlb_uv.c
+@@ -718,7 +718,7 @@ uv_activation_descriptor_init(int node, 
+ 	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
+ 	BUG_ON(!adp);
+ 
+-	pa = __pa((unsigned long)adp);
++	pa = uv_gpa(adp); /* need the real nasid*/
+ 	n = pa >> uv_nshift;
+ 	m = pa & uv_mmask;
+ 
+@@ -755,6 +755,8 @@ static struct bau_payload_queue_entry * 
+ uv_payload_queue_init(int node, int pnode, struct bau_control *bau_tablesp)
+ {
+ 	struct bau_payload_queue_entry *pqp;
++	unsigned long pa;
++	int pn;
+ 	char *cp;
+ 
+ 	pqp = (struct bau_payload_queue_entry *) kmalloc_node(
+@@ -765,10 +767,14 @@ uv_payload_queue_init(int node, int pnod
+ 	cp = (char *)pqp + 31;
+ 	pqp = (struct bau_payload_queue_entry *)(((unsigned long)cp >> 5) << 5);
+ 	bau_tablesp->va_queue_first = pqp;
++	/*
++	 * need the pnode of where the memory was really allocated
++	 */
++	pa = uv_gpa(pqp);
++	pn = pa >> uv_nshift;
+ 	uv_write_global_mmr64(pnode,
+ 			      UVH_LB_BAU_INTD_PAYLOAD_QUEUE_FIRST,
+-			      ((unsigned long)pnode <<
+-			       UV_PAYLOADQ_PNODE_SHIFT) |
++			      ((unsigned long)pn << UV_PAYLOADQ_PNODE_SHIFT) |
+ 			      uv_physnodeaddr(pqp));
+ 	uv_write_global_mmr64(pnode, UVH_LB_BAU_INTD_PAYLOAD_QUEUE_TAIL,
+ 			      uv_physnodeaddr(pqp));
