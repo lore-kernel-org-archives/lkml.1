@@ -1,91 +1,1125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbZDPCk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZDPCmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbZDPCk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 22:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZDPCkM
+	id S1753280AbZDPCmI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 22:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZDPCly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 22:40:12 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:49786 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZDPCkK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 22:40:10 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsMFAJA05klMQW1W/2dsb2JhbACBUc84g30G
-Date: Wed, 15 Apr 2009 22:34:56 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 2/8] tracing: create automated trace defines
-Message-ID: <20090416023456.GC22378@Krystal>
-References: <20090414172337.280621613@goodmis.org> <20090414172640.796858018@goodmis.org> <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org>
-Mime-Version: 1.0
+	Wed, 15 Apr 2009 22:41:54 -0400
+Received: from mga03.intel.com ([143.182.124.21]:33572 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbZDPClx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 22:41:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,196,1239001200"; 
+   d="scan'208";a="132000911"
+Date: Thu, 16 Apr 2009 10:41:33 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090416024133.GA20162@localhost>
+References: <20090414133448.C645.A69D9226@jp.fujitsu.com> <20090414064132.GB5746@localhost> <20090414154606.C665.A69D9226@jp.fujitsu.com> <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090415135749.GD14687@one.firstfloor.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49E6065B.7080409@goop.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:31:00 up 46 days, 22:57,  1 user,  load average: 0.93, 0.64,
-	0.43
+In-Reply-To: <20090415135749.GD14687@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Mathieu Desnoyers wrote:
->> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
->>> -#define __DO_TRACE(tp, proto, args)					\
->>> -	do {								\
->>> +#define DEFINE_DO_TRACE(name, proto, args)				\
->>> +	void __do_trace_##name(struct tracepoint *tp, TP_PROTO(proto))	\
->>>     
->>
->> I fear that won't work with "void" prototype. If we need this kind of
->> flexibility, we will need to create a special case for empty prototype.
->>   
->
-> Yes, that has been a bit awkward.  I couldn't find a way to create a  
-> no-param tracepoint, and so ended up passing a dummy arg.  Stupid C 
-> syntax.
->
-> On the other hand, I can get something that actually compiles this way...
->
->    J
+On Wed, Apr 15, 2009 at 09:57:49PM +0800, Andi Kleen wrote:
+> > That's pretty good separations. I guess it would be convenient to make the
+> > extra kernel flags available under CONFIG_DEBUG_KERNEL?
+> 
+> Yes.
+> 
+> BTW an alternative would be just someone implementing a suitable
+> command/macro in crash(1) and tell the kernel hackers to run that on
+> /proc/kcore. That would have the advantage to not require code.
 
-Is your only problem the fact that tracepoints include rcupdate.h ? This
-can easily be solved by moving rcu_read_(un)lock_sched_notrace to a
-rcu-update-<insert meaningful name here> and include this header in
-rcupdate.h and tracepoint.h.
+Hmm, that would be horrible to code/maintain. One major purpose of
+/proc/kpageflags is to export the unstable kernel page flag bits as
+stable ones to user space. Note that the exact internal flag bits can
+not only change slowly with kernel versions, but more likely with
+different kconfig combinations.
 
-We could keep the indirection layer you proposed for synchronize_sched()
-though, even if it adds an unnecessary function call. It's a slow path
-anyway.
+> > > > > > > - PG_compound
+> > > 
+> > > I would combine these three into a pseudo "large page" flag.
+> > 
+> > Very neat idea! Patch updated accordingly.
+> >  
+> > However - one pity I observed:
+> > 
+> > # ./page-areas 0x008000
+> >     offset      len         KB
+> >       3088        4       16KB
+> > 
+> > We can no longer tell if the above line means one 4-page hugepage, or two
+> > 2-page hugepages... Adding PG_COMPOUND_TAIL into the CONFIG_DEBUG_KERNEL block
+> 
+> There's only a single size (2 or 4MB), at worst two.
 
-If by doing these modifications we succeed in keeping the "void"
-parameters working _and_ make your stuff to compile, I think we would
-have done something great. :-)
+Sorry I was not only referring to the CPU huge pages, but also the
+more general compound pages retrieved with __GFP_COMP, by SLUB and
+many drivers, in various orders.
 
-Mathieu
+After adding PG_COMPOUND_TAIL:
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+# ./page-types
+         flags  page-count       MB  symbolic-flags                     long-symbolic-flags
+0x000000004000      491394     1919  ______________r____________        reserved
+0x000000008000          15        0  _______________o___________        compound
+0x004000008000        4293       16  _______________o__________T        compound,compound_tail
+0x000000008014           1        0  __R_D__________o___________        referenced,dirty,compound
+0x004000008014           4        0  __R_D__________o__________T        referenced,dirty,compound,compound_tail
+0x000000000020           1        0  _____l_____________________        lru
+0x000000000028        2630       10  ___U_l_____________________        uptodate,lru
+0x00000000002c        5244       20  __RU_l_____________________        referenced,uptodate,lru
+0x000000000068         240        0  ___U_lA____________________        uptodate,lru,active
+0x00000000006c         924        3  __RU_lA____________________        referenced,uptodate,lru,active
+0x000000002078           1        0  ___UDlA______b_____________        uptodate,dirty,lru,active,swapbacked
+0x00000000207c          17        0  __RUDlA______b_____________        referenced,uptodate,dirty,lru,active,swapbacked
+0x000000000228          49        0  ___U_l___x_________________        uptodate,lru,reclaim
+0x000000000400         528        2  __________B________________        buddy
+0x000000000804           1        0  __R________m_______________        referenced,mmap
+0x000000002808          10        0  ___U_______m_b_____________        uptodate,mmap,swapbacked
+0x000000000828        1140        4  ___U_l_____m_______________        uptodate,lru,mmap
+0x00000000082c         280        1  __RU_l_____m_______________        referenced,uptodate,lru,mmap
+0x000000002868        3658       14  ___U_lA____m_b_____________        uptodate,lru,active,mmap,swapbacked
+0x000000000868         367        1  ___U_lA____m_______________        uptodate,lru,active,mmap
+0x00000000086c         622        2  __RU_lA____m_______________        referenced,uptodate,lru,active,mmap
+0x00000000286c          28        0  __RU_lA____m_b_____________        referenced,uptodate,lru,active,mmap,swapbacked
+0x000000002878           2        0  ___UDlA____m_b_____________        uptodate,dirty,lru,active,mmap,swapbacked
+0x000000000880        1497        5  _______S___m_______________        slab,mmap
+0x000000008880         914        3  _______S___m___o___________        slab,mmap,compound
+0x0000000008c0          49        0  ______AS___m_______________        active,slab,mmap
+0x0000000088c0          59        0  ______AS___m___o___________        active,slab,mmap,compound
+         total      513968     2007
+
+It's interesting that the compound heads and compound tails don't match
+(even closely). There are 16 compound head pages, but 989 segments of
+compound tails:
+root@hp /home/wfg# ./page-areas =0x000000008000|wc -l
+16
+root@hp /home/wfg# ./page-areas =0x004000008000|wc -l
+989
+
+Followed are their detailed locations. Did we found a bug? ;-)
+
+Thanks,
+Fengguang
+---
+
+root@hp /home/wfg# ./page-areas =0x000000008000
+    offset      len         KB
+      3088        1        4KB
+    497664        1        4KB
+    500128        1        4KB
+    502952        1        4KB
+    503056        1        4KB
+    503264        1        4KB
+    504860        1        4KB
+    504960        1        4KB
+    504964        1        4KB
+    506204        1        4KB
+    506272        1        4KB
+    506304        1        4KB
+    509088        1        4KB
+    509964        1        4KB
+    512988        1        4KB
+root@hp /home/wfg# ./page-areas =0x004000008000
+    offset      len         KB
+      3089        3       12KB
+    487437        3       12KB
+    487441        3       12KB
+    487445        3       12KB
+    487449        3       12KB
+    487453        3       12KB
+    487457        3       12KB
+    487491        1        4KB
+    487497        7       28KB
+    487505        7       28KB
+    487513        7       28KB
+    487521        7       28KB
+    487529        7       28KB
+    487537        7       28KB
+    487545        7       28KB
+    487577        1        4KB
+    490497        3       12KB
+    490509        3       12KB
+    490521        7       28KB
+    490529        3       12KB
+    490533        3       12KB
+    490537        3       12KB
+    490541        3       12KB
+    490545        3       12KB
+    490549        3       12KB
+    490557        3       12KB
+    490565        3       12KB
+    490569        3       12KB
+    490573        3       12KB
+    490577        3       12KB
+    490581        3       12KB
+    490585        3       12KB
+    490593        3       12KB
+    490597        3       12KB
+    490601        3       12KB
+    490605        3       12KB
+    490609        3       12KB
+    490613        3       12KB
+    490617        3       12KB
+    490633        3       12KB
+    490637        3       12KB
+    490641        3       12KB
+    490645        3       12KB
+    490649        3       12KB
+    490653        3       12KB
+    490665        7       28KB
+    490673        7       28KB
+    490713        1        4KB
+    490715        1        4KB
+    490717        3       12KB
+    490721        7       28KB
+    490729        7       28KB
+    490737        1        4KB
+    490739        1        4KB
+    490741        3       12KB
+    490745        7       28KB
+    490753        3       12KB
+    490757        3       12KB
+    490761        7       28KB
+    490769        7       28KB
+    490777        7       28KB
+    490785        7       28KB
+    490793        7       28KB
+    490801        3       12KB
+    490823        1        4KB
+    490825        7       28KB
+    490833        7       28KB
+    490841        3       12KB
+    490845        1        4KB
+    490847        1        4KB
+    490849        7       28KB
+    490857        7       28KB
+    490865        1        4KB
+    490873        7       28KB
+    490881        7       28KB
+    490889        7       28KB
+    490897        7       28KB
+    490905        7       28KB
+    490913        7       28KB
+    490921        7       28KB
+    490929        7       28KB
+    490937        7       28KB
+    490945        7       28KB
+    490953        7       28KB
+    490961        7       28KB
+    490969        7       28KB
+    490977        7       28KB
+    490985        7       28KB
+    490993        7       28KB
+    491001        7       28KB
+    491009        7       28KB
+    491033        7       28KB
+    491067        1        4KB
+    491069        1        4KB
+    491073        7       28KB
+    491081        7       28KB
+    491089        7       28KB
+    491097        7       28KB
+    491105        7       28KB
+    491113        7       28KB
+    491121        7       28KB
+    491129        7       28KB
+    491137        7       28KB
+    491145        7       28KB
+    491153        7       28KB
+    491161        7       28KB
+    491169        7       28KB
+    491177        7       28KB
+    491185        7       28KB
+    491193        7       28KB
+    491201        7       28KB
+    491209        7       28KB
+    491217        7       28KB
+    491225        7       28KB
+    491233        7       28KB
+    491241        7       28KB
+    491249        7       28KB
+    491257        7       28KB
+    491265        7       28KB
+    491273        7       28KB
+    491281        7       28KB
+    491289        7       28KB
+    491297        7       28KB
+    491305        7       28KB
+    491313        7       28KB
+    491321        7       28KB
+    491329        7       28KB
+    491337        7       28KB
+    491345        7       28KB
+    491353        7       28KB
+    491361        7       28KB
+    491369        7       28KB
+    491377        7       28KB
+    491385        7       28KB
+    491393        7       28KB
+    491401        7       28KB
+    491409        7       28KB
+    491417        7       28KB
+    491457        7       28KB
+    491465        7       28KB
+    496657        7       28KB
+    496677        3       12KB
+    496681        7       28KB
+    496689        7       28KB
+    496713        7       28KB
+    496721        7       28KB
+    496735        1        4KB
+    497665       31      124KB
+    497697        7       28KB
+    497705        7       28KB
+    497775        1        4KB
+    497777        7       28KB
+    497853        3       12KB
+    497865        7       28KB
+    498761        3       12KB
+    498765        3       12KB
+    498777        1        4KB
+    498817        7       28KB
+    498825        7       28KB
+    498865        1        4KB
+    498877        3       12KB
+    498881        1        4KB
+    498883        1        4KB
+    498889        7       28KB
+    498901        3       12KB
+    498911        1        4KB
+    498913        7       28KB
+    498925        3       12KB
+    498929        7       28KB
+    498937        7       28KB
+    498945        3       12KB
+    498949        3       12KB
+    498953        3       12KB
+    498957        3       12KB
+    498969        7       28KB
+    498981        3       12KB
+    498985        3       12KB
+    499001        7       28KB
+    499009        7       28KB
+    499021        1        4KB
+    499025        7       28KB
+    499033        7       28KB
+    499041        7       28KB
+    499049        7       28KB
+    499057        7       28KB
+    499065        7       28KB
+    499079        1        4KB
+    499081        3       12KB
+    499085        3       12KB
+    499091        1        4KB
+    499105        7       28KB
+    499113        7       28KB
+    499121        7       28KB
+    499129        7       28KB
+    499137        3       12KB
+    499141        1        4KB
+    499143        1        4KB
+    499145        7       28KB
+    499163        1        4KB
+    499165        3       12KB
+    499169        3       12KB
+    499175        1        4KB
+    499177        7       28KB
+    499185        3       12KB
+    499189        3       12KB
+    499193        7       28KB
+    499201        7       28KB
+    499209        7       28KB
+    499217        7       28KB
+    499225        3       12KB
+    499229        3       12KB
+    499233        7       28KB
+    499241        3       12KB
+    499249        3       12KB
+    499253        3       12KB
+    499257        3       12KB
+    499261        3       12KB
+    499265        3       12KB
+    499269        3       12KB
+    499273        3       12KB
+    499277        3       12KB
+    499281        3       12KB
+    499285        3       12KB
+    499289        3       12KB
+    499293        3       12KB
+    499297        3       12KB
+    499301        3       12KB
+    499305        3       12KB
+    499309        3       12KB
+    499313        3       12KB
+    499317        3       12KB
+    499321        3       12KB
+    499325        3       12KB
+    499329        3       12KB
+    499333        3       12KB
+    499337        3       12KB
+    499341        3       12KB
+    499345        3       12KB
+    499349        3       12KB
+    499353        3       12KB
+    499357        3       12KB
+    499361        3       12KB
+    499365        3       12KB
+    499369        3       12KB
+    499373        3       12KB
+    499377        3       12KB
+    499381        3       12KB
+    499385        3       12KB
+    499419        1        4KB
+    499421        3       12KB
+    499425        3       12KB
+    499429        3       12KB
+    499433        3       12KB
+    499437        3       12KB
+    499441        3       12KB
+    499445        3       12KB
+    499481        3       12KB
+    499485        3       12KB
+    499489        3       12KB
+    499493        3       12KB
+    499497        3       12KB
+    499501        3       12KB
+    499505        3       12KB
+    499509        3       12KB
+    499513        1        4KB
+    499517        3       12KB
+    499521        3       12KB
+    499557        3       12KB
+    499561        3       12KB
+    499565        3       12KB
+    499569        3       12KB
+    499573        3       12KB
+    499577        3       12KB
+    499581        3       12KB
+    499585        3       12KB
+    499589        3       12KB
+    499593        3       12KB
+    499629        3       12KB
+    499633        3       12KB
+    499637        3       12KB
+    499641        3       12KB
+    499645        3       12KB
+    499649        3       12KB
+    499653        3       12KB
+    499689        3       12KB
+    499693        3       12KB
+    499697        3       12KB
+    499701        3       12KB
+    499705        3       12KB
+    499709        3       12KB
+    499713        7       28KB
+    499721        7       28KB
+    499729        7       28KB
+    499737        7       28KB
+    499745        7       28KB
+    499753        7       28KB
+    499761        7       28KB
+    499769        7       28KB
+    499777        7       28KB
+    499785        7       28KB
+    499793        7       28KB
+    499801        7       28KB
+    499825        7       28KB
+    499833        7       28KB
+    499841        7       28KB
+    499849        7       28KB
+    499865        7       28KB
+    499873        7       28KB
+    499881        7       28KB
+    499889        7       28KB
+    499897        7       28KB
+    499913        7       28KB
+    499929        7       28KB
+    499937        7       28KB
+    499953        7       28KB
+    499961        7       28KB
+    499969        7       28KB
+    499977        7       28KB
+    499993        7       28KB
+    500001        7       28KB
+    500009        7       28KB
+    500025        7       28KB
+    500033        7       28KB
+    500041        7       28KB
+    500049        7       28KB
+    500057        7       28KB
+    500069       11       44KB
+    500081        7       28KB
+    500089        7       28KB
+    500105        7       28KB
+    500113        7       28KB
+    500121        7       28KB
+    500129       15       60KB
+    500145        7       28KB
+    500153        7       28KB
+    500161        7       28KB
+    500185        7       28KB
+    500193        7       28KB
+    500209        7       28KB
+    500217        7       28KB
+    500233        7       28KB
+    500289        7       28KB
+    500297        7       28KB
+    500305        7       28KB
+    500313        7       28KB
+    500321        7       28KB
+    500329        7       28KB
+    500337        7       28KB
+    500345        7       28KB
+    500353        7       28KB
+    500361        7       28KB
+    500369        7       28KB
+    500377        7       28KB
+    500385        7       28KB
+    500393        7       28KB
+    500401        7       28KB
+    500409        7       28KB
+    500417        7       28KB
+    500425        7       28KB
+    500433        7       28KB
+    500441        7       28KB
+    500743        1        4KB
+    500745        7       28KB
+    500753        7       28KB
+    500769        7       28KB
+    500795        1        4KB
+    500817        7       28KB
+    500841        7       28KB
+    500849        7       28KB
+    500857        7       28KB
+    500873        7       28KB
+    500881        7       28KB
+    500889        7       28KB
+    500911        1        4KB
+    500921        7       28KB
+    500937        7       28KB
+    500961        7       28KB
+    500977        7       28KB
+    500985        7       28KB
+    501001        7       28KB
+    501017        7       28KB
+    501025        7       28KB
+    501057        7       28KB
+    501071        1        4KB
+    501081        7       28KB
+    501129        7       28KB
+    501145        7       28KB
+    501153        7       28KB
+    501169        7       28KB
+    501177        7       28KB
+    501185        7       28KB
+    501225        7       28KB
+    501241        7       28KB
+    501305        1        4KB
+    501309        3       12KB
+    501313        1        4KB
+    501761        3       12KB
+    501765        3       12KB
+    501769        3       12KB
+    501773        3       12KB
+    501777        3       12KB
+    501781        3       12KB
+    501785        3       12KB
+    501789        3       12KB
+    501793        3       12KB
+    501797        3       12KB
+    501801        3       12KB
+    501805        3       12KB
+    501809        3       12KB
+    501813        3       12KB
+    501817        3       12KB
+    501821        3       12KB
+    501825        3       12KB
+    501829        3       12KB
+    501833        3       12KB
+    501837        3       12KB
+    501841        3       12KB
+    501845        3       12KB
+    501849        3       12KB
+    501853        3       12KB
+    501857        3       12KB
+    501861        3       12KB
+    501865        3       12KB
+    501869        3       12KB
+    501873        3       12KB
+    501877        3       12KB
+    501881        3       12KB
+    501885        3       12KB
+    501917        3       12KB
+    501921        3       12KB
+    501925        3       12KB
+    501929        3       12KB
+    501933        3       12KB
+    501937        3       12KB
+    501941        3       12KB
+    501945        3       12KB
+    501949        3       12KB
+    501953        3       12KB
+    501957        3       12KB
+    501961        3       12KB
+    501965        3       12KB
+    501969        3       12KB
+    501973        3       12KB
+    501977        3       12KB
+    501981        3       12KB
+    501985        3       12KB
+    501989        3       12KB
+    501993        3       12KB
+    501997        3       12KB
+    502001        3       12KB
+    502005        3       12KB
+    502009        3       12KB
+    502013        3       12KB
+    502017        3       12KB
+    502021        3       12KB
+    502025        3       12KB
+    502029        3       12KB
+    502033        3       12KB
+    502037        3       12KB
+    502041        3       12KB
+    502045        3       12KB
+    502049        3       12KB
+    502053        3       12KB
+    502077        3       12KB
+    502081        3       12KB
+    502085        3       12KB
+    502089        3       12KB
+    502093        3       12KB
+    502097        3       12KB
+    502101        3       12KB
+    502105        3       12KB
+    502109        3       12KB
+    502113        3       12KB
+    502117        3       12KB
+    502121        3       12KB
+    502125        3       12KB
+    502129        3       12KB
+    502133        3       12KB
+    502137        3       12KB
+    502141        3       12KB
+    502145        3       12KB
+    502149        3       12KB
+    502153        3       12KB
+    502157        3       12KB
+    502161        3       12KB
+    502165        3       12KB
+    502169        3       12KB
+    502173        3       12KB
+    502177        3       12KB
+    502181        3       12KB
+    502185        3       12KB
+    502201        3       12KB
+    502205        3       12KB
+    502219        1        4KB
+    502229        3       12KB
+    502233        3       12KB
+    502237        1        4KB
+    502241        3       12KB
+    502245        3       12KB
+    502253        3       12KB
+    502265        3       12KB
+    502289        3       12KB
+    502293        3       12KB
+    502297        3       12KB
+    502301        3       12KB
+    502305        3       12KB
+    502309        3       12KB
+    502313        3       12KB
+    502317        3       12KB
+    502321        3       12KB
+    502329        3       12KB
+    502369        3       12KB
+    502373        3       12KB
+    502377        3       12KB
+    502385        7       28KB
+    502405        3       12KB
+    502409        3       12KB
+    502445        3       12KB
+    502529        1        4KB
+    502531        1        4KB
+    502533        3       12KB
+    502595        1        4KB
+    502597        3       12KB
+    502833        7       28KB
+    502841        7       28KB
+    502849        7       28KB
+    502857        7       28KB
+    502869        1        4KB
+    502873        7       28KB
+    502913        7       28KB
+    502921        7       28KB
+    502945        7       28KB
+    502953        3       12KB
+    502963        1        4KB
+    502993        7       28KB
+    503041        7       28KB
+    503049        7       28KB
+    503057        7       28KB
+    503069        3       12KB
+    503073        7       28KB
+    503087        1        4KB
+    503089        7       28KB
+    503101        3       12KB
+    503105        7       28KB
+    503113        1        4KB
+    503137        7       28KB
+    503149        1        4KB
+    503155        1        4KB
+    503157        3       12KB
+    503161        7       28KB
+    503173        1        4KB
+    503177        7       28KB
+    503185        7       28KB
+    503195        1        4KB
+    503225        7       28KB
+    503249        7       28KB
+    503265        3       12KB
+    503273        7       28KB
+    503281        3       12KB
+    503287        1        4KB
+    503289        7       28KB
+    503813        3       12KB
+    503821        3       12KB
+    503825        7       28KB
+    503833        1        4KB
+    503837        1        4KB
+    503869        3       12KB
+    503897        7       28KB
+    503905        7       28KB
+    503925        3       12KB
+    503929        7       28KB
+    503937        7       28KB
+    503953        7       28KB
+    503985        7       28KB
+    503993        7       28KB
+    504001        7       28KB
+    504009        3       12KB
+    504029        3       12KB
+    504033        7       28KB
+    504041        7       28KB
+    504049        7       28KB
+    504057        7       28KB
+    504065        7       28KB
+    504073        7       28KB
+    504081        7       28KB
+    504089        7       28KB
+    504097        7       28KB
+    504105        7       28KB
+    504113        1        4KB
+    504115        1        4KB
+    504121        7       28KB
+    504161        7       28KB
+    504169        7       28KB
+    504187        1        4KB
+    504193        7       28KB
+    504201        7       28KB
+    504209        7       28KB
+    504217        7       28KB
+    504225        7       28KB
+    504233        7       28KB
+    504241        7       28KB
+    504257        7       28KB
+    504265        7       28KB
+    504281        1        4KB
+    504295        1        4KB
+    504297        7       28KB
+    504309        3       12KB
+    504313        7       28KB
+    504833        7       28KB
+    504851        1        4KB
+    504861        3       12KB
+    504873        7       28KB
+    504881        1        4KB
+    504883        1        4KB
+    504889        7       28KB
+    504897        7       28KB
+    504909        3       12KB
+    504913        3       12KB
+    504917        1        4KB
+    504919        1        4KB
+    504921        1        4KB
+    504953        7       28KB
+    504961        3       12KB
+    504965        3       12KB
+    504977        7       28KB
+    504985        7       28KB
+    504993        7       28KB
+    505025        7       28KB
+    505033        7       28KB
+    505041        7       28KB
+    505065        3       12KB
+    505073        3       12KB
+    505081        7       28KB
+    505089        7       28KB
+    505137        7       28KB
+    505153        7       28KB
+    505169        7       28KB
+    505177        7       28KB
+    505185        7       28KB
+    505209        7       28KB
+    505217        7       28KB
+    505225        7       28KB
+    505233        7       28KB
+    505241        7       28KB
+    505249        7       28KB
+    505293        3       12KB
+    505297        7       28KB
+    505309        3       12KB
+    505313        7       28KB
+    505321        7       28KB
+    505337        1        4KB
+    505341        1        4KB
+    505343        1        4KB
+    505875        1        4KB
+    505877        1        4KB
+    505879        1        4KB
+    505885        3       12KB
+    505889        7       28KB
+    505899        1        4KB
+    505901        1        4KB
+    505905        7       28KB
+    505919        1        4KB
+    505921        7       28KB
+    505929        1        4KB
+    505933        3       12KB
+    505937        7       28KB
+    505947        1        4KB
+    505953        7       28KB
+    505969        7       28KB
+    505977        7       28KB
+    505985        1        4KB
+    505987        1        4KB
+    505989        1        4KB
+    505991        1        4KB
+    505993        1        4KB
+    505995        1        4KB
+    506005        1        4KB
+    506039        1        4KB
+    506041        7       28KB
+    506053        1        4KB
+    506055        1        4KB
+    506073        7       28KB
+    506089        1        4KB
+    506091        1        4KB
+    506093        1        4KB
+    506095        1        4KB
+    506101        1        4KB
+    506109        1        4KB
+    506111        1        4KB
+    506159        1        4KB
+    506169        1        4KB
+    506171        1        4KB
+    506173        3       12KB
+    506177        7       28KB
+    506185        7       28KB
+    506193        7       28KB
+    506201        1        4KB
+    506203        1        4KB
+    506205        3       12KB
+    506221        1        4KB
+    506233        1        4KB
+    506235        1        4KB
+    506237        1        4KB
+    506239        1        4KB
+    506241        1        4KB
+    506249        7       28KB
+    506257        7       28KB
+    506273        3       12KB
+    506289        7       28KB
+    506305        3       12KB
+    506309        3       12KB
+    506313        7       28KB
+    506327        1        4KB
+    506329        7       28KB
+    506337        3       12KB
+    506345        7       28KB
+    506353        1        4KB
+    506357        3       12KB
+    506361        7       28KB
+    506401        7       28KB
+    506417        7       28KB
+    506485        3       12KB
+    506489        3       12KB
+    506493        3       12KB
+    507625        7       28KB
+    507857        7       28KB
+    507873        7       28KB
+    507881        7       28KB
+    507905        7       28KB
+    507921        7       28KB
+    507937        7       28KB
+    507949        3       12KB
+    507961        3       12KB
+    507993        7       28KB
+    508009        7       28KB
+    508017        7       28KB
+    508929        7       28KB
+    508937        7       28KB
+    508953        7       28KB
+    509049        7       28KB
+    509089        3       12KB
+    509093        3       12KB
+    509097        3       12KB
+    509193        7       28KB
+    509201        7       28KB
+    509209        7       28KB
+    509225        7       28KB
+    509245        3       12KB
+    509253        3       12KB
+    509273        7       28KB
+    509489        7       28KB
+    509497        7       28KB
+    509965        3       12KB
+    509969        7       28KB
+    509985        7       28KB
+    510023        1        4KB
+    510025        7       28KB
+    510037        3       12KB
+    510041        7       28KB
+    510049        7       28KB
+    510057        7       28KB
+    510065        7       28KB
+    510081        7       28KB
+    510089        7       28KB
+    510117        3       12KB
+    510121        7       28KB
+    510287        1        4KB
+    510293        3       12KB
+    510319        1        4KB
+    510327        1        4KB
+    510417        7       28KB
+    510433        7       28KB
+    510633        7       28KB
+    510657        3       12KB
+    510749        1        4KB
+    510873        7       28KB
+    510957        3       12KB
+    510977        3       12KB
+    511013        3       12KB
+    511017        7       28KB
+    511033        7       28KB
+    511041        3       12KB
+    511049        7       28KB
+    511057        3       12KB
+    511061        3       12KB
+    511065        3       12KB
+    511069        3       12KB
+    511073        3       12KB
+    511077        3       12KB
+    511081        3       12KB
+    511085        3       12KB
+    511089        3       12KB
+    511093        3       12KB
+    511097        3       12KB
+    511101        3       12KB
+    511105        3       12KB
+    511109        3       12KB
+    511113        3       12KB
+    511117        3       12KB
+    511121        3       12KB
+    511125        3       12KB
+    511129        3       12KB
+    511133        3       12KB
+    511137        3       12KB
+    511141        3       12KB
+    511145        3       12KB
+    511149        3       12KB
+    511153        7       28KB
+    511161        1        4KB
+    511163        1        4KB
+    511165        3       12KB
+    511169        3       12KB
+    511173        1        4KB
+    511177        7       28KB
+    511185        7       28KB
+    511193        7       28KB
+    511207        1        4KB
+    511215        1        4KB
+    511217        7       28KB
+    511225        7       28KB
+    511233        1        4KB
+    511241        7       28KB
+    511249        7       28KB
+    511257        7       28KB
+    511265        3       12KB
+    511269        3       12KB
+    511273        7       28KB
+    511281        3       12KB
+    511285        3       12KB
+    511289        3       12KB
+    511293        3       12KB
+    511297        3       12KB
+    511301        1        4KB
+    511305        7       28KB
+    511325        3       12KB
+    511329        3       12KB
+    511333        3       12KB
+    511337        3       12KB
+    511341        3       12KB
+    511345        3       12KB
+    511349        3       12KB
+    511353        3       12KB
+    511357        3       12KB
+    511361        3       12KB
+    511365        3       12KB
+    511369        3       12KB
+    511373        3       12KB
+    511377        3       12KB
+    511381        3       12KB
+    511385        3       12KB
+    511389        3       12KB
+    511393        3       12KB
+    511397        3       12KB
+    511401        3       12KB
+    511405        3       12KB
+    511409        3       12KB
+    511413        3       12KB
+    511417        3       12KB
+    511421        3       12KB
+    511425        3       12KB
+    511429        3       12KB
+    511433        3       12KB
+    511437        3       12KB
+    511465        3       12KB
+    511469        3       12KB
+    511473        3       12KB
+    511477        3       12KB
+    511481        3       12KB
+    511485        3       12KB
+    511489        3       12KB
+    511493        3       12KB
+    511497        3       12KB
+    511501        3       12KB
+    511505        3       12KB
+    511509        3       12KB
+    511513        3       12KB
+    511517        3       12KB
+    511521        3       12KB
+    511525        3       12KB
+    511529        3       12KB
+    511533        3       12KB
+    511537        3       12KB
+    511541        3       12KB
+    511545        3       12KB
+    511549        3       12KB
+    511553        3       12KB
+    511557        3       12KB
+    511561        3       12KB
+    511565        3       12KB
+    511569        3       12KB
+    511573        3       12KB
+    511577        3       12KB
+    511581        3       12KB
+    511585        3       12KB
+    511589        3       12KB
+    511593        3       12KB
+    511597        3       12KB
+    511601        3       12KB
+    511605        3       12KB
+    511641        3       12KB
+    511645        3       12KB
+    511649        3       12KB
+    511653        3       12KB
+    511657        3       12KB
+    511661        3       12KB
+    511665        3       12KB
+    511669        3       12KB
+    511673        3       12KB
+    511677        3       12KB
+    511681        3       12KB
+    511685        3       12KB
+    511689        3       12KB
+    511693        3       12KB
+    511697        3       12KB
+    511701        3       12KB
+    511705        3       12KB
+    511709        3       12KB
+    511713        3       12KB
+    511717        3       12KB
+    511721        3       12KB
+    511725        3       12KB
+    511729        3       12KB
+    511733        3       12KB
+    511737        3       12KB
+    511741        3       12KB
+    511745        3       12KB
+    511749        3       12KB
+    511753        3       12KB
+    511757        3       12KB
+    511761        3       12KB
+    511765        3       12KB
+    511769        3       12KB
+    511773        3       12KB
+    511777        3       12KB
+    511813        3       12KB
+    511817        3       12KB
+    511821        3       12KB
+    511825        3       12KB
+    511829        3       12KB
+    511833        3       12KB
+    511837        3       12KB
+    511841        3       12KB
+    511845        3       12KB
+    511849        3       12KB
+    511853        3       12KB
+    511857        3       12KB
+    511861        3       12KB
+    511865        3       12KB
+    511869        3       12KB
+    511873        3       12KB
+    511877        3       12KB
+    511881        3       12KB
+    511885        3       12KB
+    511889        3       12KB
+    511893        3       12KB
+    511897        3       12KB
+    511901        3       12KB
+    511905        3       12KB
+    511909        3       12KB
+    511913        3       12KB
+    511917        3       12KB
+    511921        3       12KB
+    511925        3       12KB
+    511929        3       12KB
+    511933        3       12KB
+    511937        3       12KB
+    511941        3       12KB
+    511945        3       12KB
+    511949        3       12KB
+    511985        3       12KB
+    511989        3       12KB
+    511993        3       12KB
+    511997        3       12KB
+    512005        3       12KB
+    512045        1        4KB
+    512049        7       28KB
+    512553        7       28KB
+    512837        1        4KB
+    512839        1        4KB
+    512841        1        4KB
+    512843        1        4KB
+    512845        3       12KB
+    512945        7       28KB
+    512953        3       12KB
+    512957        3       12KB
+    512969        7       28KB
+    512977        7       28KB
+    512989        3       12KB
+    512993        7       28KB
