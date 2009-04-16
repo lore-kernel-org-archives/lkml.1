@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbZDPDKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZDPDQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbZDPDKm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 23:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZDPDKd
+	id S1754093AbZDPDQN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 23:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZDPDP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 23:10:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:29406 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZDPDKc (ORCPT
+	Wed, 15 Apr 2009 23:15:57 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:43094 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbZDPDP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 23:10:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=Afvo2uy6IE9nEBmI/lRSeGvWvujLQbPr4mw7objdPOO0drkvSwwQMOAZbvCgk3wbvG
-         YscuGqZtavnqgeqvT6a8A1hh/0e7JlwPrLl6/PDlnmfe3Sy+BhJazySBqyYw2i1G6ZTE
-         uK8wn/DOF8MaoHXxgzKML4iFfkZKfameMH5io=
-MIME-Version: 1.0
-In-Reply-To: <200904161130.28129.rusty@rustcorp.com.au>
-References: <200904140159.n3E1x1K1014705@hera.kernel.org> <alpine.LFD.2.00.0904151013260.4132@localhost.localdomain> 
-	<49E62BD5.6090508@zytor.com> <200904161130.28129.rusty@rustcorp.com.au>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Wed, 15 Apr 2009 20:10:16 -0700
-X-Google-Sender-Auth: 63b159bb13062c78
-Message-ID: <2c0942db0904152010y4fc4b08dyca50dac3965e5ffa@mail.gmail.com>
-Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Wed, 15 Apr 2009 23:15:56 -0400
+Date: Thu, 16 Apr 2009 08:45:04 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Dan Malek <dan@embeddedalley.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Paul Menage <menage@google.com>
+Subject: Re: [PATCH] Memory usage limit notification addition to memcg
+Message-ID: <20090416031504.GC7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com> <20090415093555.d84b6655.kamezawa.hiroyu@jp.fujitsu.com> <20090415082446.GT7082@balbir.in.ibm.com> <9272A08E-4928-486D-84D3-4593300B017A@embeddedalley.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <9272A08E-4928-486D-84D3-4593300B017A@embeddedalley.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 7:00 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> Anyone want to try to write a guide on writing good commit messages?
+* Dan Malek <dan@embeddedalley.com> [2009-04-15 10:35:20]:
 
-To me at least, this is no different than journalism (a commit message
-is reporting on the facts, right?). So one can get some rough guidance
-from thinking about who, what, where, when, why, how.
+>
+> On Apr 15, 2009, at 1:24 AM, Balbir Singh wrote:
+>
+>> Welcome! I've taken a cursory look at the patches, but I'll come back
+>> with more review comments.
+>
+> I'm going to submit a new patch shortly, so let's wait and review that
+> one.  Too many updates since the first time I sent it.
+>
+
+OK, I was going to advice using cgroupstats for notification.
+cgroupstats builds on top of taskstats
+
+Please see
+
+1. Documentation/accounting/*
+2. kernel/taskstats.c
+
+getdelays.c (available under (1)) provides the user space application
+to make use of taskstats and cgroupstats.
+
+Using that will allow you to
+
+1. Provide type information with every event (extensible)
+2. Reuses existing well tested code in the form of genetlink and
+netlink
 
 
-- Who is doing the work (from: lines)
-- who will benefit from it. (ie, 'scope')
+>> ...   Could you point me to your
+>> presentation/paper? I could not find the PDF at
+>> http://www.celinuxforum.org/CelfPubWiki/ELC2009Presentations
+>
+> Apologies.  I just uploaded it now.  There was an hour of
+> talking that goes along with that, which I hope will explain some
+> of the points on the slides.  The video was recorded, I assume it
+> will show up someplace, someday :-)
+>
 
-- What is the intended result? (feature? Bug-fix? Clean-up of the
-foundations to prepare for future work?)
-- What are you *doing*? (Not how -- which is the patch -- but what: a
-human-understandable description of the patch.)
+I was able to download it, Thanks!
 
-- Where is the feature or bug-fix needed or wanted? (Particular
-laptops? hardware that is yet to hit the market? And -stable? -head?)
-
-- When does the patch need to be applied? (This merge window, next
-cycle, or as soon as possible for a root hole? After another set of
-patches?)
-
-- Why was it done *this* way, instead of another?
-- Why does mainline want this? (For features. Bug fixes are self-explanatory.)
-
-- how it was tested or validated (tested-by:, reviewed-by: tags).
-- how it was implemented (which is satisfied by the patch itself)
-
-
-Obviously not every patch needs all that crap. But every patch
-*series* should probably have some thought put into all those, and the
-ones that aren't obvious from the patch should be mentioned. The
-trick, of course, is varying levels of 'obvious.' The measure of
-'obvious' for journal articles is "someone who is versed in all the
-necessary skills, but unfamiliar with the specifics of the topic."
-
-Don't get me wrong, I don't want changelogs to be mini versions of war
-and peace. But thinking about the above can put one in a better
-context to then sit down and write a *nice* changelog.
+-- 
+	Balbir
