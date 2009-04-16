@@ -1,26 +1,22 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZDPPUa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 16 Apr 2009 11:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZDPPUN
+	id S1756972AbZDPPyM (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 16 Apr 2009 11:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZDPPx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 11:20:13 -0400
-Received: from 207.155.137.34.ptr.us.xo.net ([207.155.137.34]:55058 "HELO
-	207.155.137.34.ptr.us.xo.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754393AbZDPPUM (ORCPT
+	Thu, 16 Apr 2009 11:53:56 -0400
+Received: from xm18.infosec.fedex.com ([199.81.216.42]:53794 "EHLO
+	xm18.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767AbZDPPxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 11:20:12 -0400
-Message-ID: <20090416075305.8030603@ocps.net>
-Date: Thu, 16 Apr 2009 07:53:05 -0800
-From: "Jean Gilmore" <akellyville@ocps.net>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Ancient secret of pleasing woman 10 times a day has been discovered.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 11:53:55 -0400
+X-Greylist: delayed 2262 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Apr 2009 11:53:55 EDT
+X-AuditID: c751815b-a3566bb000000bc7-a7-49e74bb8cf21
+Message-Id: <20090416151559.C57104A0009@xm15.infosec.fedex.com>
+Date: Thu, 16 Apr 2009 10:15:59 -0500 (CDT)
+From: zxifqfomoyrae@nifty.com
+To: undisclosed-recipients:;
+X-Brightmail-Tracker: AAAABA5ke1sOZUlzDmVJdA5lSrw=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Get humongous fang power http://ow.bojudvonho.com/
 
