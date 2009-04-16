@@ -1,107 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZDPS3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbZDPS3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbZDPS3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 14:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbZDPS3E
+	id S1758618AbZDPS3n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 14:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbZDPS3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 14:29:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33706 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755992AbZDPS3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 14:29:02 -0400
-Message-ID: <49E77814.6030306@redhat.com>
-Date: Thu, 16 Apr 2009 21:25:24 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       aarcange@redhat.com, chrisw@redhat.com, mtosatti@redhat.com,
-       hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v3
-References: <1239249521-5013-1-git-send-email-ieidus@redhat.com> <20090414150903.b01fa3b9.akpm@linux-foundation.org> <200904170355.26294.nickpiggin@yahoo.com.au>
-In-Reply-To: <200904170355.26294.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 16 Apr 2009 14:29:32 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:62724 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756261AbZDPS3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 14:29:31 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiAFABcV50lMQW1W/2dsb2JhbACBU9Alg30G
+Date: Thu, 16 Apr 2009 14:29:28 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
+	recursive protection
+Message-ID: <20090416182928.GB13940@Krystal>
+References: <20090416161543.199331330@goodmis.org> <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop> <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com> <1239902407.23397.3197.camel@laptop> <alpine.DEB.2.00.0904161335400.20429@gandalf.stny.rr.com> <1239904165.23397.3265.camel@laptop> <alpine.DEB.2.00.0904161351380.20429@gandalf.stny.rr.com> <1239905164.23397.3300.camel@laptop> <alpine.DEB.2.00.0904161411320.20429@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0904161411320.20429@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:25:13 up 47 days, 14:51,  1 user,  load average: 0.29, 0.48,
+	0.46
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Wednesday 15 April 2009 08:09:03 Andrew Morton wrote:
->   
->> On Thu,  9 Apr 2009 06:58:37 +0300
->> Izik Eidus <ieidus@redhat.com> wrote:
->>
->>     
->>> KSM is a linux driver that allows dynamicly sharing identical memory
->>> pages between one or more processes.
->>>       
->> Generally looks OK to me.  But that doesn't mean much.  We should rub
->> bottles with words like "hugh" and "nick" on them to be sure.
->>     
->
-> I haven't looked too closely at it yet sorry. Hugh has a great eye for
-> these details, though, hint hint :)
->
-> As everyone knows, my favourite thing is to say nasty things about any
-> new feature that adds complexity to common code.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Thu, 16 Apr 2009, Peter Zijlstra wrote:
+> > 
+> > > That is, at thread context, you are at level 0, if an interrupt comes
+> > > in, it sets you to level 1, if another interrupt comes in, it sets you to 
+> > > level 2, and so on.
+> > > 
+> > > I guess we could add this into the irq_enter/exit sofirq_enter/exit and 
+> > > nmi_enter/exit.
+> > > 
+> > > Thus we can have each task with a bitmask. When we start to trace, we set 
+> > > the bit coresponding to the level the task is at.
+> > > 
+> > > Ie. in thread context, we set bit 0, if we are interrupted by a 
+> > > softirq/irq/nmi, we set the level bit we are at. Hmm, we might be able to 
+> > > do this via the preempt count already :-/
+> > > 
+> > > Just add the softirq/irq/nmi bits together.
+> > > 
+> > > The if the bit is already set we can dump out a warning.
+> > > 
+> > > I'll try that out.
+> > 
+> > static int *perf_swcounter_recursion_context(struct perf_cpu_context *cpuctx)
+> > {
+> >         if (in_nmi())
+> >                 return &cpuctx->recursion[3];
+> > 
+> >         if (in_irq())
+> >                 return &cpuctx->recursion[2];
+> > 
+> >         if (in_softirq())
+> >                 return &cpuctx->recursion[1];
+> > 
+> >         return &cpuctx->recursion[0];
+> > }
+> > 
+> > Is what I use for perf-counters.
+> 
+> But does that allow multi nested interrupts?
+> 
+> I'll try the preempt_count and let you know.
+> 
+> Thanks,
+> 
+> -- Steve
+> 
 
-The whole idea and the way i wrote it so it wont touch common code, i 
-didnt change the linux mm logic no where.
-The worst thing that we have add is helper functions.
+In practice, I have used a "tracing nesting level" detection counter in
+LTTng which drops events if they are at a nesting level of about 5 or
+more if my memory serves me well. This should be enough to detect
+recursive tracer calls before filling the stack while handling some of
+the worse nesting we can think of (thread + softirq + irq + nmi).
 
->  I feel like crying to
-> hear about how many more instances of MS Office we can all run, if only
-> we apply this patch.
+And it's _really_ easy to implement, arch-independant, and has no
+special corner-case.
 
-And more instances of linux guests...
+Mathieu
 
->  And the poorly written HPC app just sounds like
-> scrapings from the bottom of justification barrel.
->   
-
-So if you have a big rendering application that load gigas of 
-geometrical data that is handled by many threads
-and you have a case that each thread sometimes change this geometrical 
-data and you dont want the other threads will notice it.
-How would you share it in traditional way?, after one time shared data 
-will get cowed, how will you recollect it again when it become identical?
-KSM do it for applications transparently
-
-KSM writing motivation indeed was KVM where there it is highly needed 
-you may check what VMware say about the fact that they have much better 
-overcommit than Hyper-V / XEN:
-
-http://blogs.vmware.com/virtualreality/2008/03/cheap-hyperviso.html
-
-It is important to understand that in virtualization enviorments there 
-are cases where memory is much more critical than any other resource for 
-higher density.
-
-Together with KSM, KVM will have the same memory overcommit abilitys 
-such as VMware have.
-> I'm sorry, maybe I'm way off with my understanding of how important
-> this is. There isn't too much help in the changelog. A discussion of
-> where the memory savings comes from,
-
-Memory saving come from identical librarys, identical kernels, zeroed 
-pages -> that is for virtualization.
-The Librarys code will always be identical among similar guests, so why 
-have this code at multiple places on the host memory?
-
->  and how far does things like
-> sharing of fs image, or ballooning goes and how much extra savings we
-> get from this...
-
-Ballooning is much worse when it come to performance, beacuse what it 
-does is shrink the guest memory, with KSM we find identical pages and 
-merge them into one page, so we dont get guest performance lose
-
->  with people from other hypervisors involved as well.
-> Have I missed this kind of discussion?
->
-> Careful what you wish for, ay? :)
->   
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
