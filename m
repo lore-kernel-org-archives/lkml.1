@@ -1,80 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZDPU56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZDPU7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbZDPU56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZDPU5s
+	id S1757268AbZDPU7R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZDPU7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:57:48 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:34151 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754194AbZDPU5r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:57:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Fr32zZqKOVTP9lOQrMSPAv3SGWnMTwDEy3+fawV29QFKnJhxgf4v6JWfvK39m1XTFi
-         RWv6EN26bRZC75eyswtnFAthwKhChK3dlsRA7PMiWULicAwCV1JQL3tgXzuhWWI/DZCI
-         pPQH7NK1pYOGmYVoKgWfu77XC9EdyL9NInw7w=
-Message-ID: <49E79BCA.70703@gmail.com>
-Date: Thu, 16 Apr 2009 22:57:46 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Thu, 16 Apr 2009 16:59:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:32788 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753212AbZDPU67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:58:59 -0400
+Date: Thu, 16 Apr 2009 16:57:20 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Nauman Rafique <nauman@google.com>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Andrea Righi <righi.andrea@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Moyer Jeff Moyer <jmoyer@redhat.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: dm-ioband: Test results.
+Message-ID: <20090416205720.GI8896@redhat.com>
+References: <20090413.130552.226792299.ryov@valinux.co.jp>
 MIME-Version: 1.0
-To: airlied@linux.ie, thomas@shipmail.org, dri-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drm: count reaches -1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413.130552.226792299.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I previously sent this patch, was it lost?
------------------------------->8-------------8<---------------------------------
-With a postfix decrement in the test count will reach -1 rather than 0,
-subsequent tests fail.
+On Mon, Apr 13, 2009 at 01:05:52PM +0900, Ryo Tsuruta wrote:
+> Hi Alasdair and all,
+> 
+> I did more tests on dm-ioband and I've posted the test items and
+> results on my website. The results are very good.
+> http://people.valinux.co.jp/~ryov/dm-ioband/test/test-items.xls
+> 
+> I hope someone will test dm-ioband and report back to the dm-devel
+> mailing list.
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/gpu/drm/via/via_dma.c b/drivers/gpu/drm/via/via_dma.c
-index 7a339db..bfb92d2 100644
---- a/drivers/gpu/drm/via/via_dma.c
-+++ b/drivers/gpu/drm/via/via_dma.c
-@@ -481,11 +481,13 @@ static int via_wait_idle(drm_via_private_t * dev_priv)
- {
- 	int count = 10000000;
- 
--	while (!(VIA_READ(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY) && count--);
-+	while (!(VIA_READ(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY) && --count)
-+		;
- 
--	while (count-- && (VIA_READ(VIA_REG_STATUS) &
-+	while (count && (VIA_READ(VIA_REG_STATUS) &
- 			   (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY |
--			    VIA_3D_ENG_BUSY))) ;
-+			    VIA_3D_ENG_BUSY)))
-+		--count;
- 	return count;
- }
- 
-@@ -705,7 +707,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
- 	switch (d_siz->func) {
- 	case VIA_CMDBUF_SPACE:
- 		while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz->size)
--		       && count--) {
-+		       && --count) {
- 			if (!d_siz->wait) {
- 				break;
- 			}
-@@ -717,7 +719,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
- 		break;
- 	case VIA_CMDBUF_LAG:
- 		while (((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz->size)
--		       && count--) {
-+		       && --count) {
- 			if (!d_siz->wait) {
- 				break;
- 			}
+Ok, here are more test results. This time I am trying to see how fairness
+is provided for async writes and how does it impact throughput.
+
+I have created two partitions /dev/sda1 and /dev/sda2. Two ioband devices
+ioband1 and ioband2 on /dev/sda1 and /dev/sda2 respectively with weights
+40 and 40.
+
+#dmsetup status
+ioband2: 0 38025855 ioband 1 -1 150 8 186 1 0 8
+ioband1: 0 40098177 ioband 1 -1 150 8 186 1 0 8
+
+I ran following two fio jobs. One job in each partition.
+
+************************************************************
+echo cfq > /sys/block/sdd/queue/scheduler
+sync
+echo 3 > /proc/sys/vm/drop_caches
+
+fio_args="--size=64m --rw=write --numjobs=50 --group_reporting"
+time fio $fio_args --name=test1 --directory=/mnt/sdd1/fio/
+--output=test1.log &
+time fio $fio_args --name=test2 --directory=/mnt/sdd2/fio/
+--output=test2.log &
+wait
+*****************************************************************
+
+Following are fio job finish times with and without dm-ioband
+		
+			first job		second job
+without dm-ioband	3m29.947s		4m1.436s 	
+with dm-ioband		8m42.532s		8m43.328s
+
+This sounds like 100% performance regression in this particular setup.
+
+I think this regression is introduced because we are waiting for too
+long for slower group to catch up to make sure proportionate numbers
+look right and choke the writes even if deviec is free.
+
+It is an hard to solve problem because the async writes traffic is 
+bursty when seen at block layer and we not necessarily see higher amount of
+writer traffic dispatched from higher prio process/group. So what does one
+do? Wait for other groups to catch up to show right proportionate numbers
+and hence let the disk be idle and kill the performance. Or just continue
+and not idle too much (a small amount of idling like 8ms for sync queue 
+might still be ok).
+
+I think there might not be much benefit in providing artificial notion
+of maintaining proportionate ratio and kill the performance. We should
+instead try to audit async write path and see where the higher weight
+application/group is stuck.
+
+In my simple two dd test, I could see bursty traffic from high prio app and
+then it would sometimes disappear for .2 to .8 seconds. In that duration if I
+wait for higher priority group to catch up that I will end up keeping disk
+idle for .8 seconds and kill performance. I guess better way is to not wait
+that long (even if it means that to application it might give the impression
+that io scheduler is not doing the job right in assiginig proportionate disk)
+and over a period of time see if we can fix some things in async write path
+for more smooth traffic to io scheduler.
+
+Thoughts?
+
+Thanks
+Vivek
+
+
+> Alasdair, could you please merge dm-ioband into upstream? Or could
+> you please tell me why dm-ioband can't be merged?
+> 
+> Thanks,
+> Ryo Tsuruta
+> 
+> To know the details of dm-ioband:
+> http://people.valinux.co.jp/~ryov/dm-ioband/
+> 
+> RPM packages for RHEL5 and CentOS5 are available:
+> http://people.valinux.co.jp/~ryov/dm-ioband/binary.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
