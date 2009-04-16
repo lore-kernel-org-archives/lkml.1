@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZDPXuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbZDPXuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbZDPXuT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZDPXuA
+	id S1758215AbZDPXuo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbZDPXuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:50:00 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53593 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbZDPXt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:49:59 -0400
-Date: Thu, 16 Apr 2009 16:49:55 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: kaber@trash.net, torvalds@linux-foundation.org, shemminger@vyatta.com,
-       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-Message-ID: <20090416234955.GL6924@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net>
+	Thu, 16 Apr 2009 19:50:06 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51568 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756780AbZDPXuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 19:50:04 -0400
+Date: Fri, 17 Apr 2009 00:49:57 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090416234957.GE26366@ZenIV.linux.org.uk>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090416.153354.170676392.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1239892078-6039-1-git-send-email-abogani@texware.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 03:33:54PM -0700, David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Thu, 16 Apr 2009 15:11:31 +0200
-> 
-> > Linus Torvalds wrote:
-> >> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
-> >>> The counters are the bigger problem, otherwise we could just free
-> >>> table
-> >>> info via rcu.  Do we really have to support: replace where the counter
-> >>> values coming out to user space are always exactly accurate, or is it
-> >>> allowed to replace a rule and maybe lose some counter ticks (worst
-> >>> case
-> >>> NCPU-1).
-> >> Why not just read the counters fromt he old one at RCU free time (they
-> >> are guaranteed to be stable at that point, since we're all done with
-> >> those entries), and apply them at that point to the current setup?
-> > 
-> > We need the counters immediately to copy them to userspace, so waiting
-> > for an asynchronous RCU free is not going to work.
-> 
-> It just occurred to me that since all netfilter packet handling
-> goes through one place, we could have a sort-of "netfilter RCU"
-> of sorts to solve this problem.
+On Thu, Apr 16, 2009 at 04:27:58PM +0200, Alessio Igor Bogani wrote:
+> Replace ths BKL in sys_mount()/sys_umount() syscalls with a regular mutex.
 
-OK, I am putting one together...
-
-It will be needed sooner or later, though I suspect per-CPU locking
-would work fine in this case.
-
-							Thanx, Paul
+NAK.  Push BKL into instances if you care and deal with those one by one.
+New and unwarranted system-wide exclusion around hell knows what code
+(we *are* talking about the stuff that is very likely to do at least some
+IO, dependent on fs internals, phase of moon and amount of farting gnats
+in the vicinity) is right out.
