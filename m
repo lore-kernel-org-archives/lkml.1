@@ -1,131 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZDPStp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbZDPTCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbZDPStp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 14:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757231AbZDPStd
+	id S1757131AbZDPTCe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 15:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbZDPTCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 14:49:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53709 "EHLO mx2.suse.de"
+	Thu, 16 Apr 2009 15:02:25 -0400
+Received: from mail.windriver.com ([147.11.1.11]:63541 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757106AbZDPStc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 14:49:32 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: djwong@us.ibm.com
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot even when ignore_ppc=0
-Date: Thu, 16 Apr 2009 20:49:26 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20090415225348.GW8311@plum> <200904161201.13409.trenn@suse.de> <20090416174217.GY8311@plum>
-In-Reply-To: <20090416174217.GY8311@plum>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904162049.27588.trenn@suse.de>
+	id S1754950AbZDPTCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 15:02:24 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: corbet@lwn.net
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, tytso@mit.edu
+Subject: [PATCH] documentation: list common guidelines for commit log content
+Date: Thu, 16 Apr 2009 15:00:56 -0400
+Message-Id: <1239908456-24871-1-git-send-email-paul.gortmaker@windriver.com>
+X-Mailer: git-send-email 1.6.2.3
+X-OriginalArrivalTime: 16 Apr 2009 19:01:03.0366 (UTC) FILETIME=[B05F9A60:01C9BEC5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 April 2009 19:42:18 Darrick J. Wong wrote:
-> On Thu, Apr 16, 2009 at 12:01:11PM +0200, Thomas Renninger wrote:
-> > Hi,
-> > 
-> > be careful, this could break the T60 again.
-> 
-> So long as T60 owners boot with ignore_ppc=1, they should still be fine.
-That would be a regression :)
-But as said, I hope with Yakui's patch and your patch,
-everything might work out fine for everyone.
-Let me send a cleanup on top (your's is in already if I understood Ingo correctly)
-in some days and people with affected machines should give it a try.
- 
-> > Can you and Ingo place acpidump of your machines somewhere, please.
-> > 
-> > On Thursday 16 April 2009 02:27:12 Darrick J. Wong wrote:
-> > > Earlier, Ingo Molnar posted a patch to make it so that the kernel would avoid
-> > > reading _PPC on his broken T60.  Unfortunately, it seems that with Thomas
-> > > Renninger's patch last July to eliminate _PPC evaluations when the processor
-> > > driver loads, the kernel never actually reads _PPC at all!
-> > This is wrong. _PPC is only evaluated when a cpufreq driver got registered.
-> 
-> I put a printk just before the call to acpi_evaluate_integer in
-> acpi_processor_get_platform_limit.  The printk did not appear unless (a)
-> I triggered the Notify event to get the kernel to reevaluate _PPC or (b)
-> I took a CPU offline and online.
-> 
-> An alternate way to describe the situation, I think, is that ignore_ppc
-> doesn't go from -1 to 0 until acpi_processor_ppc_notifier gets called,
-> and that only seems to happen during an ACPI Notify event.
-> 
-> > > This is problematic
-> > > if you happen to boot your non-T60 computer in a state where the BIOS _wants_
-> > > _PPC to be something other than zero.
-> > Your machine should suffer from that since Ingo's T60 patch?
-> 
-> Yes, but the particular machine I have didn't exist until a couple of
-> weeks ago, and before that our BIOSes were written so that _PPC always
-> returned zero, which masked the problem.
-> 
-> The _PPC method in this (preproduction) machine's BIOS also sets a flag
-> that enables the sending of _PPC Notify events.
-Oh dear, I hope this is not for specific Windows OSes.
+Recent discussions on lkml have brought to light that it is
+probably worthwhile documenting some of the common (yet up to
+now implicit) requirements that exist for commit log content.
+This is by no means exhaustive, but it is a start.
 
-> I'm not sure if that's
-> the proper way to do such things, though it seems logical that if an OS
-> never reads _PPC then sending Notify events for it is pointless.
-No it's not.
-There is the _PDC call which the OS calls and tells the BIOS that it
-has a cpufreq driver. I expect (hope) from this point on (when OS called this
-function and told the BIOS that it can do cpufreq) the T60 does
-return a sane (zero) _PPC value.
-That was what my patch was doing in an ugly way. Making sure cpufreq drivers
-were loaded first (and _PDC was called), before any _PPC notifications
-are evaluated.
-But Yakui's patch moved ACPI function calls in a way, that calling _PDC
-is done before _PPC. So everybody (with your patch added) could be happy
-in the end.
- 
-> > Reading the _PPC part of the ACPI spec again:
-> > ---
-> > In order to support dynamic changes of _PPC object, Notify events on
-> > the processor object. Notify events of type 0x80 will cause OSPM to
-> > reevaluate any _PPC objects residing under the particular processor object
-> > notified.
-> > ---
-> > The *reevaluate* implies that the _PPC value has been evaluated/initialized
-> > by the OS already and Ingo's patch would be wrong then.
-> > I'd like to have a look at the T60's ACPI parts and find out what exactly
-> > (or if at all) makes _PPC to return sane values, I expect it's _PDC.
-> 
-> I recall that on the T60 BIOS, the _PPC was programmed to read the value
-> out of some register in the embedded controller, but I'll have to go
-> find a T60 to see what the latest BIOSes do.  There's nothing in the T60
-> BIOS update changelogs to indicate that they found and corrected a
-> problem with _PPC... but that doesn't eliminate the possibility that
-> they "forgot" to document one.
-> 
-> Though I do recall seeing some weird bug with that T60 where putting the
-> machine to sleep would confuse it into "1ghz only" mode, though I never
-> noticed this symptom after a fresh boot.
-Yeah, really weird things can happen on really weird (and tons of different)
-BIOS implementations.
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
 
-    Thomas
-> 
-> > Hmm, I could also imagine that Ingo's T60 patch is not needed anymore since
-> > Yakui's patch (0ac3c571315a53c14d2733564f14ebdb911fe903).
-> > This one could make sure that _PDC is evaluated first making the internal
-> > ACPI _PPC state initialize and makes sure _PPC gets only called afterwards.
-> > 
-> > If this patch does not break Ingo's T60, I think this should go in.
-> > Due to Yakui's reordering/cleanup of ACPI function calls, I think also
-> > the notifier chain I introduced is not needed anymore and I can clean this
-> > up if I find some time.
-> 
-> > You are more or less reverting Ingo's patch (e4233dec749a3519069d9390561b5636a75c7579):
-> 
-> Yes, but preserving the ignore_ppc=1 override.
+[I've added some folks to the CC who I thought might be interested
+ based on their input to the original discussion in the quilt/ACPI thread...]
+
+ Documentation/development-process/5.Posting |   80 +++++++++++++++++++++++++--
+ 1 files changed, 75 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/development-process/5.Posting b/Documentation/development-process/5.Posting
+index dd48132..5aa1622 100644
+--- a/Documentation/development-process/5.Posting
++++ b/Documentation/development-process/5.Posting
+@@ -133,15 +133,27 @@ that end, each patch will be composed of the following:
+  - A one-line description of what the patch does.  This message should be
+    enough for a reader who sees it with no other context to figure out the
+    scope of the patch; it is the line that will show up in the "short form"
+-   changelogs.  This message is usually formatted with the relevant
+-   subsystem name first, followed by the purpose of the patch.  For
+-   example:
++   changelogs.
+ 
+-	gpio: fix build on CONFIG_GPIO_SYSFS=n
++   Always capture the most significant part of your change in the words of
++   this subject/shortlog.  For example, don't say "fix compile warning in
++   foo" when the compiler warning was really telling us that we were
++   dereferencing complete garbage off in the weeds that could possibly
++   cause an OOPS under some circumstances.  When people are choosing
++   commits for backports to stable or distro kernels, the shortlog will be
++   what they use for an initial sorting selection.  If they see "Fix possible
++   OOPS in...." then these people will look closer, whereas they will most
++   likely skip over simple warning fixes.
++
++   This subject/shortlog message is usually formatted with the relevant
++   subsystem name first, followed by the purpose of the patch.  For example:
++
++	gpio: fix build of libpins.c for CONFIG_GPIO_SYSFS=n
+ 
+  - A blank line followed by a detailed description of the contents of the
+    patch.  This description can be as long as is required; it should say
+-   what the patch does and why it should be applied to the kernel.
++   what the patch does and why it should be applied to the kernel.  More
++   information and recommendations on patch descriptions are given below.
+ 
+  - One or more tag lines, with, at a minimum, one Signed-off-by: line from
+    the author of the patch.  Tags will be described in more detail below.
+@@ -158,6 +170,64 @@ the build process, for example, or editor backup files) in the patch.  The
+ file "dontdiff" in the Documentation directory can help in this regard;
+ pass it to diff with the "-X" option.
+ 
++The detailed patch description is not something to be treated as a mere
++transient bit of information that only goes out with your e-mail.  It will
++be permanently stored in the kernel archive along with your source changes.
++As such, you should try to make the description as useful as possible.
++Here are some general guidelines that should assist you in making your
++patch description the best that it can be.
++
++  - Don't simply translate your C code change into English for a commit
++    log.  The log "Change compare from zero to one" is bad because it
++    describes only the code change in the patch; we can see that from
++    reading the patch itself.  Let the code tell the story of the mechanics
++    of the change (as much as possible), and let your comment tell the
++    other details -- i.e. what the problem was, how it manifested itself
++    (symptoms), and if necessary, the justification for why the fix was
++    done in the manner that it was.
++
++  - Don't start your commit log with "This patch..."   -- we already know
++    it is a patch.
++
++  - Don't repeat your short log in the long log.  If you really really
++    don't have anything new and informational to add in as a long log,
++    then don't put a long log at all.  This should be uncommon -- i.e.
++    the only acceptable cases for no long log would be something like
++    "Documentation: Fix spelling mistakes in foo/README" or similar.
++
++  - Don't put data in that is meaningless to others (i.e. internal tracking
++    numbers, commit IDs from private or rebased repositories, etc.)
++
++  - Don't put absolute paths to source files that are specific to your site,
++    i.e. if you get a compile error on "fs/exec.c" then tidy up the parts
++    of the compile output to just show that portion.  We don't need to see
++    that it was /home/wally/src/git/linux/devel/2009/Nov/linux-2.6/fs/exec.c
++    or similar - that full path has no value to others.
++
++  - Don't put in the full 20 or more lines of a backtrace when really it is
++    just the last 5 or so function calls that are relevant to the crash/fix.
++    If the entry point, or start of the trace is relevant (i.e. a syscall
++    or similar), you can leave that, and then replace a chunk of the
++    intermediate calls in the middle with a single [...]
++
++  - Don't include timestamps on a chunk of a printk log, unless they are
++    relevant to the situation (i.e. indicating an unacceptable delay in
++    a driver initialization etc.)
++
++  - If a complex change is likely to cause a maintainer to inquire about
++    the testing that you've done, or you feel that your testing is relevant
++    in terms of proving the validity of the change then summarize what
++    testing you have done.
++
++  - If there are known limitations (i.e. patch is a temporary work around
++    for some problem, or doesn't work on all architectures) then list them.
++
++  - Limit yourself to a reasonsable line length for wrapping lines on your
++    commit log.  Most developers will use something like "git show" to
++    look at your patch (once it has been accepted) and that adds an
++    indent of 4 spaces.  So if you push line lengths out beyond 75 chars,
++    chances are it won't appear as professional as you'd have liked it to.
++
+ The tags mentioned above are used to describe how various developers have
+ been associated with the development of this patch.  They are described in
+ detail in the SubmittingPatches document; what follows here is a brief
+-- 
+1.6.2.3
 
