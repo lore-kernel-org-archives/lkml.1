@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbZDPQ67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbZDPQ72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758886AbZDPQ67 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbZDPQ6t
+	id S1758918AbZDPQ72 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZDPQ7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:58:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48149 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756058AbZDPQ6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:58:48 -0400
-Date: Thu, 16 Apr 2009 18:58:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090416165833.GA21704@elte.hu>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu>
+	Thu, 16 Apr 2009 12:59:13 -0400
+Received: from stinky.trash.net ([213.144.137.162]:61290 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756236AbZDPQ7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:59:12 -0400
+Message-ID: <49E763DB.1000706@trash.net>
+Date: Thu, 16 Apr 2009 18:59:07 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416160645.GB17804@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, paulmck@linux.vnet.ibm.com,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com,
+       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu recursive spinlock  (v6)
+References: <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <20090415.164811.19905145.davem@davemloft.net> <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com> <alpine.LFD.2.00.0904160926520.4042@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904160926520.4042@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Alessio Igor Bogani <abogani@texware.it> wrote:
+Linus Torvalds wrote:
+> Guys, this whole discussion has just been filled with crazy crap. Can 
+> somebody even explain why we care so deeply about some counters for 
+> something that we just _deleted_ and that have random values anyway?
 > 
-> > Replace ths BKL in sys_mount()/sys_umount() syscalls with a regular mutex.
-> > 
-> > Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
-> > ---
-> >  fs/namespace.c |   16 +++++++++-------
-> >  fs/super.c     |    9 ++++-----
-> >  2 files changed, 13 insertions(+), 12 deletions(-)
-> 
-> Ok, this patch needs to be flamed^W commented on by Al.
-> 
-> Al: this patch is very likely broken as i cannot imagine you 
-> leaving the BKL there just so. So lets accept that (and your NAK) 
-> as a given and not get upset about it too much.
-> 
-> We are willing to fix any side effects and preconditions before 
-> this can be done [...]
+> I can see the counters being interesting while a firewall is active, but I 
+> sure don't see what's so wonderfully interesting after-the-fact about a 
+> counter on something that NO LONGER EXISTS that it has to be somehow 
+> "exactly right".
 
-this == remove the BKL. Not introduce a needless mutex like this 
-patch does.
+They're copied to userspace after replacing the ruleset, associated with
+the rules that are still active after the change and then added to the
+current counters in a second operation. The end result is that the
+counters are accurate for rules not changed.
 
-	Ingo
+> Show of hands, here: tell me a single use that really _requires_ those 
+> exact counters of a netfilter rule that got deleted and is no longer 
+> active?
+
+People use netfilter for accounting quite a lot. Having dynamic updates
+is also not uncommon, so this might actually matter.
+
+
