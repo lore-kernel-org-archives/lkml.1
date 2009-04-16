@@ -1,53 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZDPAxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZDPAyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbZDPAxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZDPAx0
+	id S1757433AbZDPAyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZDPAyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 20:53:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64441 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbZDPAx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 20:53:26 -0400
-Message-ID: <49E681B5.8070505@cn.fujitsu.com>
-Date: Thu, 16 Apr 2009 08:54:13 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] tracing/filters: allow on-the-fly filter switching
-References: <1239610670.6660.49.camel@tropicana> <20090414205635.GA5968@nowhere> <1239769945.7852.21.camel@tropicana> <20090415162151.GH5989@nowhere>
-In-Reply-To: <20090415162151.GH5989@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Apr 2009 20:54:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39722 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbZDPAyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 20:54:35 -0400
+Date: Thu, 16 Apr 2009 09:53:03 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+ controller (v2)
+Message-Id: <20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090415120510.GX7082@balbir.in.ibm.com>
+References: <20090415120510.GX7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
->>> Also, is filter_add_pred() supposed to be available for in-kernel
->>> uses by other tracers or something?
->> No, the current callers were the only ones I'd planned on (it's not
->> static because code in trace_events.c needs to call it).  But, do you
->> see a use for it by other tracers?
-> 
-> 
-> 
-> May be in the future, it's possible that a tracer might want to
-> set filters by itself.
-> But I don't think it has to be fixed now because there are nothing
-> like that for now.
-> 
-> So, no problem :-)
-> 
+On Wed, 15 Apr 2009 17:35:10 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-If we restricted the mutex in trace_events_filters.c only, all the
-extern functions can be called without lock, and this is what I did
-in my previous patch.
-
+> +void mem_cgroup_update_mapped_file_stat(struct page *page, struct mm_struct *mm,
+> +					int val)
+> +{
+> +	struct mem_cgroup *mem;
+> +	struct mem_cgroup_stat *stat;
+> +	struct mem_cgroup_stat_cpu *cpustat;
+> +	int cpu = get_cpu();
+> +
+> +	if (!page_is_file_cache(page))
+> +		return;
+> +
+> +	if (unlikely(!mm))
+> +		mm = &init_mm;
+> +
+> +	mem = try_get_mem_cgroup_from_mm(mm);
+> +	if (!mem)
+> +		return;
+> +
+> +	stat = &mem->stat;
+> +	cpustat = &stat->cpustat[cpu];
+> +
+> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
+> +}
 >  
->>> If this is planned, the locking could be even deeper than my comments.
+put_cpu() is necessary.
+
+
+
+>  /*
+>   * Call callback function against all cgroup under hierarchy tree.
+> @@ -1096,6 +1124,9 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+>  	struct mem_cgroup_per_zone *from_mz, *to_mz;
+>  	int nid, zid;
+>  	int ret = -EBUSY;
+> +	struct mem_cgroup_stat *stat;
+> +	struct mem_cgroup_stat_cpu *cpustat;
+> +	int cpu;
+>  
+>  	VM_BUG_ON(from == to);
+>  	VM_BUG_ON(PageLRU(pc->page));
+> @@ -1116,6 +1147,18 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+>  
+>  	res_counter_uncharge(&from->res, PAGE_SIZE);
+>  	mem_cgroup_charge_statistics(from, pc, false);
+> +
+> +	cpu = get_cpu();
+> +	/* Update mapped_file data for mem_cgroup "from" */
+> +	stat = &from->stat;
+> +	cpustat = &stat->cpustat[cpu];
+> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, -1);
+> +
+> +	/* Update mapped_file data for mem_cgroup "to" */
+> +	stat = &to->stat;
+> +	cpustat = &stat->cpustat[cpu];
+> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, 1);
+> +
+here, too.
+
+Seems no troubles in other parts.
+
+Regards,
+-Kame
+
+>  	if (do_swap_account)
+>  		res_counter_uncharge(&from->memsw, PAGE_SIZE);
+>  	css_put(&from->css);
+> @@ -2051,6 +2094,7 @@ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+>  enum {
+>  	MCS_CACHE,
+>  	MCS_RSS,
+> +	MCS_MAPPED_FILE,
+>  	MCS_PGPGIN,
+>  	MCS_PGPGOUT,
+>  	MCS_INACTIVE_ANON,
+> @@ -2071,6 +2115,7 @@ struct {
+>  } memcg_stat_strings[NR_MCS_STAT] = {
+>  	{"cache", "total_cache"},
+>  	{"rss", "total_rss"},
+> +	{"mapped_file", "total_mapped_file"},
+>  	{"pgpgin", "total_pgpgin"},
+>  	{"pgpgout", "total_pgpgout"},
+>  	{"inactive_anon", "total_inactive_anon"},
+> @@ -2091,6 +2136,8 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
+>  	s->stat[MCS_CACHE] += val * PAGE_SIZE;
+>  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
+>  	s->stat[MCS_RSS] += val * PAGE_SIZE;
+> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_MAPPED_FILE);
+> +	s->stat[MCS_MAPPED_FILE] += val * PAGE_SIZE;
+>  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
+>  	s->stat[MCS_PGPGIN] += val;
+>  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
+> diff --git a/mm/memory.c b/mm/memory.c
+> index a715b19..95a9ded 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -822,7 +822,7 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
+>  					mark_page_accessed(page);
+>  				file_rss--;
+>  			}
+> -			page_remove_rmap(page);
+> +			page_remove_rmap(page, vma);
+>  			if (unlikely(page_mapcount(page) < 0))
+>  				print_bad_pte(vma, addr, ptent, page);
+>  			tlb_remove_page(tlb, page);
+> @@ -1421,7 +1421,7 @@ static int insert_page(struct vm_area_struct *vma, unsigned long addr,
+>  	/* Ok, finally just insert the thing.. */
+>  	get_page(page);
+>  	inc_mm_counter(mm, file_rss);
+> -	page_add_file_rmap(page);
+> +	page_add_file_rmap(page, vma);
+>  	set_pte_at(mm, addr, pte, mk_pte(page, prot));
+>  
+>  	retval = 0;
+> @@ -2080,7 +2080,7 @@ gotten:
+>  			 * mapcount is visible. So transitively, TLBs to
+>  			 * old page will be flushed before it can be reused.
+>  			 */
+> -			page_remove_rmap(old_page);
+> +			page_remove_rmap(old_page, vma);
+>  		}
+>  
+>  		/* Free the old page.. */
+> @@ -2718,7 +2718,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+>  			page_add_new_anon_rmap(page, vma, address);
+>  		} else {
+>  			inc_mm_counter(mm, file_rss);
+> -			page_add_file_rmap(page);
+> +			page_add_file_rmap(page, vma);
+>  			if (flags & FAULT_FLAG_WRITE) {
+>  				dirty_page = page;
+>  				get_page(dirty_page);
+> diff --git a/mm/migrate.c b/mm/migrate.c
+> index 068655d..098d365 100644
+> --- a/mm/migrate.c
+> +++ b/mm/migrate.c
+> @@ -131,7 +131,7 @@ static void remove_migration_pte(struct vm_area_struct *vma,
+>  	if (PageAnon(new))
+>  		page_add_anon_rmap(new, vma, addr);
+>  	else
+> -		page_add_file_rmap(new);
+> +		page_add_file_rmap(new, vma);
+>  
+>  	/* No need to invalidate - it was non-present before */
+>  	update_mmu_cache(vma, addr, pte);
+> diff --git a/mm/rmap.c b/mm/rmap.c
+> index 1652166..3e29864 100644
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -686,10 +686,12 @@ void page_add_new_anon_rmap(struct page *page,
+>   *
+>   * The caller needs to hold the pte lock.
+>   */
+> -void page_add_file_rmap(struct page *page)
+> +void page_add_file_rmap(struct page *page, struct vm_area_struct *vma)
+>  {
+> -	if (atomic_inc_and_test(&page->_mapcount))
+> +	if (atomic_inc_and_test(&page->_mapcount)) {
+>  		__inc_zone_page_state(page, NR_FILE_MAPPED);
+> +		mem_cgroup_update_mapped_file_stat(page, vma->vm_mm, 1);
+> +	}
+>  }
+>  
+>  #ifdef CONFIG_DEBUG_VM
+> @@ -719,7 +721,7 @@ void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long
+>   *
+>   * The caller needs to hold the pte lock.
+>   */
+> -void page_remove_rmap(struct page *page)
+> +void page_remove_rmap(struct page *page, struct vm_area_struct *vma)
+>  {
+>  	if (atomic_add_negative(-1, &page->_mapcount)) {
+>  		/*
+> @@ -738,6 +740,7 @@ void page_remove_rmap(struct page *page)
+>  			mem_cgroup_uncharge_page(page);
+>  		__dec_zone_page_state(page,
+>  			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+> +		mem_cgroup_update_mapped_file_stat(page, vma->vm_mm, -1);
+>  		/*
+>  		 * It would be tidy to reset the PageAnon mapping here,
+>  		 * but that might overwrite a racing page_add_anon_rmap
+> @@ -835,7 +838,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+>  		dec_mm_counter(mm, file_rss);
+>  
+>  
+> -	page_remove_rmap(page);
+> +	page_remove_rmap(page, vma);
+>  	page_cache_release(page);
+>  
+>  out_unmap:
+> @@ -950,7 +953,7 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
+>  		if (pte_dirty(pteval))
+>  			set_page_dirty(page);
+>  
+> -		page_remove_rmap(page);
+> +		page_remove_rmap(page, vma);
+>  		page_cache_release(page);
+>  		dec_mm_counter(mm, file_rss);
+>  		(*mapcount)--;
+> 
+> -- 
+> 	Balbir
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
