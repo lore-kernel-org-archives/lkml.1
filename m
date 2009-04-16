@@ -1,54 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZDPUTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbZDPUWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbZDPUTP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZDPUS5
+	id S1754177AbZDPUWw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZDPUWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:18:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35685 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579AbZDPUS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:18:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
-Date: Thu, 16 Apr 2009 22:18:25 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904151402460.4042@localhost.localdomain> <s5hfxg92kwa.wl%tiwai@suse.de>
-In-Reply-To: <s5hfxg92kwa.wl%tiwai@suse.de>
+	Thu, 16 Apr 2009 16:22:43 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:45070 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbZDPUWm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:22:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=rg9oe/HRtII8hdgy/SvaoqlQmgDJd0RENZWzH2B/gTtfAF6NtayKbyDnQyZAHqxLce
+         mzrSWrndz/rVnulS6shqY1EJ/Z4JXy6rO47NVUcYyoqeUDRKNHM0Xest0vE+STPXt9vr
+         UIT3Dr9CIPNQBofDdAJFsZqR5UIDTpZWxRr1M=
+Message-ID: <49E79390.7070809@gmail.com>
+Date: Thu, 16 Apr 2009 22:22:40 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Greg KH <gregkh@suse.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: operator precedence errors
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904162218.26340.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 April 2009, Takashi Iwai wrote:
-> At Wed, 15 Apr 2009 14:05:20 -0700 (PDT),
-> Linus Torvalds wrote:
-> > 
-> > 
-> > 
-> > On Wed, 15 Apr 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > I'm going to try 2.6.30-rc2-git in a while.  If I have the time, I'll also test
-> > > the sound git tree.
-> > 
-> > There's a sound merge today (ie post-rc2) which hopefully contains the 
-> > relevant fixes. 
-> 
-> Yep, they are in.
+`!' has a higher precedence than `&' and `|' has a higher precedence than `?'
 
-I've been running the post-rc2 kernel containing these changes for several
-hours without any visible problems.
-
-Thanks,
-Rafael
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/staging/comedi/drivers/pcl816.c b/drivers/staging/comedi/drivers/pcl816.c
+index 515ba74..cf3bc49 100644
+--- a/drivers/staging/comedi/drivers/pcl816.c
++++ b/drivers/staging/comedi/drivers/pcl816.c
+@@ -482,7 +482,7 @@ static int pcl816_ai_cmdtest(struct comedi_device * dev, struct comedi_subdevice
+ 	if (!cmd->scan_begin_src || tmp != cmd->scan_begin_src)
+ 		err++;
+ 
+-	if (!cmd->convert_src & (TRIG_EXT | TRIG_TIMER))
++	if (!(cmd->convert_src & (TRIG_EXT | TRIG_TIMER)))
+ 		err++;
+ 
+ 	tmp = cmd->scan_end_src;
+diff --git a/drivers/staging/pohmelfs/trans.c b/drivers/staging/pohmelfs/trans.c
+index bcb5942..6855224 100644
+--- a/drivers/staging/pohmelfs/trans.c
++++ b/drivers/staging/pohmelfs/trans.c
+@@ -101,7 +101,8 @@ static int netfs_trans_send_pages(struct netfs_trans *t, struct netfs_state *st)
+ 			goto err_out;
+ 		}
+ 
+-		msg.msg_flags = MSG_WAITALL|(attached_pages == 1)?0:MSG_MORE;
++		msg.msg_flags = MSG_WAITALL | (attached_pages == 1 ? 0 :
++				MSG_MORE);
+ 
+ 		err = kernel_sendpage(st->socket, page, 0, size, msg.msg_flags);
+ 		if (err <= 0) {
+diff --git a/drivers/staging/rt2870/tmp60 b/drivers/staging/rt2870/tmp60
+index 975e444..eb50243 100644
+--- a/drivers/staging/rt2870/tmp60
++++ b/drivers/staging/rt2870/tmp60
+@@ -1776,7 +1776,7 @@ int rt_ioctl_siwencode(struct net_device *dev,
+             }
+         else
+ 			/* Don't complain if only change the mode */
+-			if(!erq->flags & IW_ENCODE_MODE) {
++			if(!(erq->flags & IW_ENCODE_MODE)) {
+ 				return -EINVAL;
+ 		}
+ 	}
+diff --git a/drivers/staging/rt2870/tmp61 b/drivers/staging/rt2870/tmp61
+index 975e444..eb50243 100644
+--- a/drivers/staging/rt2870/tmp61
++++ b/drivers/staging/rt2870/tmp61
+@@ -1776,7 +1776,7 @@ int rt_ioctl_siwencode(struct net_device *dev,
+             }
+         else
+ 			/* Don't complain if only change the mode */
+-			if(!erq->flags & IW_ENCODE_MODE) {
++			if(!(erq->flags & IW_ENCODE_MODE)) {
+ 				return -EINVAL;
+ 		}
+ 	}
+diff --git a/drivers/staging/rt3070/sta_ioctl.c b/drivers/staging/rt3070/sta_ioctl.c
+index 0794548..9373ae8 100644
+--- a/drivers/staging/rt3070/sta_ioctl.c
++++ b/drivers/staging/rt3070/sta_ioctl.c
+@@ -1725,10 +1725,8 @@ int rt_ioctl_siwencode(struct net_device *dev,
+             }
+         else
+ 			/* Don't complain if only change the mode */
+-		if(!erq->flags & IW_ENCODE_MODE)
+-		{
++		if (!(erq->flags & IW_ENCODE_MODE))
+ 				return -EINVAL;
+-		}
+ 	}
+ 
+ done:
