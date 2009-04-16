@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZDPI17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZDPIcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbZDPI17 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 04:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZDPI1o
+	id S1752990AbZDPIcw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 04:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZDPIcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 04:27:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55667 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751821AbZDPI1n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 04:27:43 -0400
-Date: Thu, 16 Apr 2009 01:24:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Zankel <chris@zankel.net>
-Cc: Johannes Weiner <jw@emlix.com>, linux-kernel@vger.kernel.org
-Subject: Re: Xtensa patches
-Message-Id: <20090416012447.fd6e6dee.akpm@linux-foundation.org>
-In-Reply-To: <49E6E155.6090000@zankel.net>
-References: <1239702080-14355-1-git-send-email-jw@emlix.com>
-	<49E6E155.6090000@zankel.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 16 Apr 2009 04:32:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49424 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751931AbZDPIcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 04:32:42 -0400
+Message-ID: <49E6ED5A.6080003@cn.fujitsu.com>
+Date: Thu, 16 Apr 2009 16:33:30 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Tom Zanussi <tzanussi@gmail.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] tracing/filters: add filter_mutex to protect filter predicates
+References: <1239863904.6903.12.camel@tropicana>
+In-Reply-To: <1239863904.6903.12.camel@tropicana>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 00:42:13 -0700 Chris Zankel <chris@zankel.net> wrote:
-
-> Hi Andrew,
+Tom Zanussi wrote:
+> This patch adds a filter_mutex to prevent the filter predicates from
+> being accessed concurrently by various external functions.
 > 
-> I will look over those patches and commit them to xtensa-2.6.
+> It's based on a previous patch by Li Zefan:
+>         "[PATCH 7/7] tracing/filters: make filter preds RCU safe"
+> 
+> but any problems with it were added by me. ;-)
+> 
+> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 > 
 
-OK.  I have a random pile if i-dont-know-what xtensa stuff here.
+Reviewed-and-tested-by: Li Zefan <lizf@cn.fujitsu.com>
 
-xtensa-add-flat-support-checkpatch-fixes.patch
-xtensa-variant-specific-code.patch
-xtensa-cache-inquiry-and-unaligned-cache-handling-functions.patch
-xtensa-s6000-dma-engine-support.patch
-xtensa-allow-platform-and-variant-to-initialize-own-irq-chips.patch
-xtensa-support-s6000-gpio-irqs-and-alternate-function-selection.patch
-s6gmac-xtensa-s6000-on-chip-ethernet-driver.patch
-s6gmac-xtensa-s6000-on-chip-ethernet-driver-fix.patch
-xtensa-s6105-specific-configuration-for-s6gmac.patch
-xtensa-enable-s6gmac-in-s6105_defconfig.patch
-xtensa-add-m41t62-rtc-to-s6105-platform.patch
-xtensa-enable-m41t80-driver-in-s6105_defconfig.patch
+except:
 
-I'll drop xtensa-add-flat-support-checkpatch-fixes.patch (as I usually
-do when someone merges the base patch but doesn't run checkpatch on it
-- hint) and I'll send the rest over at you.
+> @@ -348,17 +399,15 @@ int filter_add_subsystem_pred(struct event_subsystem *system,
+>  		if (strcmp(call->system, system->name))
+>  			continue;
+>  
+> -		if (!find_event_field(call, pred->field_name))
+> -			continue;
+> -
+> -		err = filter_add_pred(call, pred);
+> +		err = __filter_add_pred(call, pred);
+>  		if (err == -ENOMEM) {
+>  			system->preds[system->n_preds] = NULL;
+> -			return err;
+> +			system->n_preds--;
+> +			break;
+
+now we return 0 but not ENOMEM in this failure case.
+
+>  		}
+>  	}
+>  
+> -	system->n_preds++;
+> +	mutex_unlock(&filter_mutex);
+>  
+>  	return 0;
+>  }
 
