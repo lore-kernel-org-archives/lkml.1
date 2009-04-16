@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbZDPUB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758982AbZDPUFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758886AbZDPUB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758245AbZDPUA4
+	id S1758982AbZDPUFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbZDPUF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:00:56 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:34990 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757900AbZDPUAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=beJjRbWgsB3Vw708+gFib5g8pZxagxUbl080lQ/tYlRKMixDa6DCWWnBiuC2NrVcdL
-         I/RP2952PcI3K57a5SqIDHXpAsVxS2lkBh5H0EtHcJ3aWrwsR9T2/wXtPIx/v+cC02h5
-         zDszz8DuvOJSFvCcMts27DkbZOko6bAu0+jvE=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Thu, 16 Apr 2009 16:05:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36683 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757942AbZDPUF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:05:28 -0400
+Subject: [PATCH -tip] x86: mm/numa_32.c calculate_numa_remap_pages should
+ use __init
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/2 v2] tracing/lock: provide lock_acquired event support for dynamic size string
-Date: Thu, 16 Apr 2009 22:00:47 +0200
-Message-Id: <1239912047-6282-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.1
-In-Reply-To: <1239912047-6282-1-git-send-email-fweisbec@gmail.com>
-References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com>
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 01:34:03 +0530
+Message-Id: <1239912243.10567.10.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we can support the dynamic sized string, make the lock tracing
-able to use it, making it safe against modules removal and consuming
-the right amount of memory needed for each lock name
+Impact: fix Section mismatch warnings
+ WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
+ The function calculate_numa_remap_pages() references
+ the function __init find_e820_area().
+ This is often because calculate_numa_remap_pages lacks a __init
+ annotation or the annotation of find_e820_area is wrong.
 
-Changes in v2:
-adapt to the __ending_string() updates and the opening_string() removal.
+ WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
+ The function calculate_numa_remap_pages() references
+ the function __init reserve_early().
+ This is often because calculate_numa_remap_pages lacks a __init
+ annotation or the annotation of reserve_early is wrong.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- include/trace/events/lockdep.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/mm/numa_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/trace/events/lockdep.h b/include/trace/events/lockdep.h
-index 45e326b..e649fbc 100644
---- a/include/trace/events/lockdep.h
-+++ b/include/trace/events/lockdep.h
-@@ -38,14 +38,14 @@ TRACE_EVENT(lock_acquired,
- 	TP_ARGS(lock, ip, waittime),
+diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
+index 3daefa0..d253006 100644
+--- a/arch/x86/mm/numa_32.c
++++ b/arch/x86/mm/numa_32.c
+@@ -257,7 +257,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
+ }
+ #endif
  
- 	TP_STRUCT__entry(
--		__field(const char *, name)
- 		__field(unsigned long, wait_usec)
- 		__field(unsigned long, wait_nsec_rem)
-+		__ending_string(name, lock->name)
- 	),
- 	TP_fast_assign(
--		__entry->name = lock->name;
- 		__entry->wait_nsec_rem = do_div(waittime, NSEC_PER_USEC);
- 		__entry->wait_usec = (unsigned long) waittime;
-+		strcpy(__entry->name, lock->name);
- 	),
- 	TP_printk("%s (%lu.%03lu us)", __entry->name, __entry->wait_usec,
- 				       __entry->wait_nsec_rem)
+-static unsigned long calculate_numa_remap_pages(void)
++static __init unsigned long calculate_numa_remap_pages(void)
+ {
+ 	int nid;
+ 	unsigned long size, reserve_pages = 0;
 -- 
-1.6.1
+1.6.0.6
+
+
 
