@@ -1,144 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbZDPRFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbZDPRGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758255AbZDPRFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZDPRFo
+	id S1757976AbZDPRGS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbZDPRF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:05:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53573 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755243AbZDPRFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:05:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Insert PCI root bus resources for the MB93090 devel
-	motherboard
-To: torvalds@osdl.org, akpm@linux-foundation.org, matthew@wil.cx
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 16 Apr 2009 18:04:20 +0100
-Message-ID: <20090416170420.22108.34374.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Thu, 16 Apr 2009 13:05:58 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:49097 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757467AbZDPRF6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 13:05:58 -0400
+Date: Thu, 16 Apr 2009 18:05:56 +0100
+From: Andrew Price <andy@andrewprice.me.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: BUG: using rootfstype=ext4 causes oops
+Message-ID: <20090416170556.GA24066@sucs.org>
+Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linux-kernel@vger.kernel.org
+References: <20090415205926.GA28246@sucs.org> <20090416104758.GA433@sucs.org> <20090416145357.GM21586@mit.edu> <200904161802.21302.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904161802.21302.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Insert PCI root bus resources for the FRV-based MB93090 development kit
-motherboard.  This is required because the CPU's window onto the PCI bus
-address space is considerably smaller than the CPU's full address space and
-non-PCI devices lie outside of the PCI window that we might want to access.
+On Thu, Apr 16, 2009 at 06:02:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Freeing non-slab objects is bad.
+> 
+> Andrew, does this patch help?
 
-Without this patch, the PCI root bus uses the platform-level bus resources, and
-these are then confined to the PCI window, thus making platform_device_add()
-reject devices outside of this window.
+Yes, that seems to fix it. I tested it with gfs2 and ext4 the usual way
+and I couldn't reproduce the panic.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Thanks Bartlomiej.
 
- arch/frv/mb93090-mb00/pci-vdk.c |   63 +++++++++++++++++++++++++++++++--------
- 1 files changed, 50 insertions(+), 13 deletions(-)
+> ---
+>  drivers/ide/ide-io.c |   11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+> 
+> Index: b/drivers/ide/ide-io.c
+> ===================================================================
+> --- a/drivers/ide/ide-io.c
+> +++ b/drivers/ide/ide-io.c
+> @@ -102,11 +102,14 @@ void ide_complete_cmd(ide_drive_t *drive
+>  			drive->dev_flags |= IDE_DFLAG_PARKED;
+>  	}
+>  
+> -	if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
+> -		memcpy(rq->special, cmd, sizeof(*cmd));
+> +	if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
+> +		struct ide_cmd *orig_cmd = rq->special;
+>  
+> -	if (cmd->tf_flags & IDE_TFLAG_DYN)
+> -		kfree(cmd);
+> +		if (cmd->tf_flags & IDE_TFLAG_DYN)
+> +			kfree(orig_cmd);
+> +		else
+> +			memcpy(orig_cmd, cmd, sizeof(*cmd));
+> +	}
+>  }
+>  
+>  /* obsolete, blk_rq_bytes() should be used instead */
+> 
 
-
-diff --git a/arch/frv/mb93090-mb00/pci-vdk.c b/arch/frv/mb93090-mb00/pci-vdk.c
-index 0f41c3a..c0dcec6 100644
---- a/arch/frv/mb93090-mb00/pci-vdk.c
-+++ b/arch/frv/mb93090-mb00/pci-vdk.c
-@@ -31,6 +31,29 @@ struct pci_bus *__nongpreldata pci_root_bus;
- struct pci_ops *__nongpreldata pci_root_ops;
- 
- /*
-+ * The accessible PCI window does not cover the entire CPU address space, but
-+ * there are devices we want to access outside of that window, so we need to
-+ * insert specific PCI bus resources instead of using the platform-level bus
-+ * resources directly for the PCI root bus.
-+ *
-+ * These are configured and inserted by pcibios_init() and are attached to the
-+ * root bus by pcibios_fixup_bus().
-+ */
-+static struct resource pci_ioport_resource = {
-+	.name	= "PCI IO",
-+	.start	= 0,
-+	.end	= IO_SPACE_LIMIT,
-+	.flags	= IORESOURCE_IO,
-+};
-+
-+static struct resource pci_iomem_resource = {
-+	.name	= "PCI mem",
-+	.start	= 0,
-+	.end	= -1,
-+	.flags	= IORESOURCE_MEM,
-+};
-+
-+/*
-  * Functions for accessing PCI configuration space
-  */
- 
-@@ -304,6 +327,12 @@ void __init pcibios_fixup_bus(struct pci_bus *bus)
- #if 0
- 	printk("### PCIBIOS_FIXUP_BUS(%d)\n",bus->number);
- #endif
-+
-+	if (bus->number == 0) {
-+		bus->resource[0] = &pci_ioport_resource;
-+		bus->resource[1] = &pci_iomem_resource;
-+	}
-+
- 	pci_read_bridge_bases(bus);
- 
- 	if (bus->number == 0) {
-@@ -350,28 +379,36 @@ int __init pcibios_init(void)
- 	/* enable PCI arbitration */
- 	__reg_MB86943_pci_arbiter	= MB86943_PCIARB_EN;
- 
--	ioport_resource.start	= (__reg_MB86943_sl_pci_io_base << 9) & 0xfffffc00;
--	ioport_resource.end	= (__reg_MB86943_sl_pci_io_range << 9) | 0x3ff;
--	ioport_resource.end	+= ioport_resource.start;
-+	pci_ioport_resource.start	= (__reg_MB86943_sl_pci_io_base << 9) & 0xfffffc00;
-+	pci_ioport_resource.end		= (__reg_MB86943_sl_pci_io_range << 9) | 0x3ff;
-+	pci_ioport_resource.end		+= pci_ioport_resource.start;
- 
- 	printk("PCI IO window:  %08llx-%08llx\n",
--	       (unsigned long long) ioport_resource.start,
--	       (unsigned long long) ioport_resource.end);
-+	       (unsigned long long) pci_ioport_resource.start,
-+	       (unsigned long long) pci_ioport_resource.end);
- 
--	iomem_resource.start	= (__reg_MB86943_sl_pci_mem_base << 9) & 0xfffffc00;
-+	pci_iomem_resource.start	= (__reg_MB86943_sl_pci_mem_base << 9) & 0xfffffc00;
-+	pci_iomem_resource.end		= (__reg_MB86943_sl_pci_mem_range << 9) | 0x3ff;
-+	pci_iomem_resource.end		+= pci_iomem_resource.start;
- 
--	/* Reserve somewhere to write to flush posted writes. */
--	iomem_resource.start += 0x400;
--
--	iomem_resource.end	= (__reg_MB86943_sl_pci_mem_range << 9) | 0x3ff;
--	iomem_resource.end	+= iomem_resource.start;
-+	/* Reserve somewhere to write to flush posted writes.  This is used by
-+	 * __flush_PCI_writes() from asm/io.h to force the write FIFO in the
-+	 * CPU-PCI bridge to flush as this doesn't happen automatically when a
-+	 * read is performed on the MB93090 development kit motherboard.
-+	 */
-+	pci_iomem_resource.start	+= 0x400;
- 
- 	printk("PCI MEM window: %08llx-%08llx\n",
--	       (unsigned long long) iomem_resource.start,
--	       (unsigned long long) iomem_resource.end);
-+	       (unsigned long long) pci_iomem_resource.start,
-+	       (unsigned long long) pci_iomem_resource.end);
- 	printk("PCI DMA memory: %08lx-%08lx\n",
- 	       dma_coherent_mem_start, dma_coherent_mem_end);
- 
-+	if (insert_resource(&iomem_resource, &pci_iomem_resource) < 0)
-+		panic("Unable to insert PCI IOMEM resource\n");
-+	if (insert_resource(&ioport_resource, &pci_ioport_resource) < 0)
-+		panic("Unable to insert PCI IOPORT resource\n");
-+
- 	if (!pci_probe)
- 		return -ENXIO;
- 
-
+--
+Andrew Price
