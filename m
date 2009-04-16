@@ -1,64 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbZDPVqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbZDPVzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbZDPVqR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 17:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbZDPVp7
+	id S1755144AbZDPVzr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 17:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZDPVzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 17:45:59 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:52914 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754134AbZDPVp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 17:45:58 -0400
-Date: Thu, 16 Apr 2009 17:45:45 -0400
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "hooanon05@yahoo.co.jp" <hooanon05@yahoo.co.jp>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: Q: NFSD readdir in linux-2.6.28
-Message-ID: <20090416214545.GA2237@fieldses.org>
-References: <8036.1237474444@jrobl> <1237475837.16359.106.camel@macbook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237475837.16359.106.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Thu, 16 Apr 2009 17:55:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49473 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbZDPVzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 17:55:37 -0400
+Subject: [git-pull -tip] x86: fix section mismatch warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 03:25:02 +0530
+Message-Id: <1239918902.10567.22.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 03:17:17PM +0000, David Woodhouse wrote:
-> On Thu, 2009-03-19 at 14:54 +0000, hooanon05@yahoo.co.jp wrote:
-> > 
-> > Hello David and Al,
-> > I have a question about NFSD readdir.
-> > 
-> > By the commit 14f7dd632011bb89c035722edd6ea0d90ca6b078
-> > "[PATCH] Copy XFS readdir hack into nfsd code", nfsd_buffered_filldir()
-> > was introduced and nfs3svc_encode_entry_plus() (the 'func' parameter) is
-> > not called from vfs_readdir().
-> > 
-> > In 2.6.27, when nfs3svc_encode_entry_plus() calls lookup_one_len(), the
-> > i_mutex lock was acquired by vfs_readdir() and it was not a problem.
-> > 
-> > After the commit (above), nfsd_readdir/nfsd_buffered_readdir/vfs_readdir
-> > calls nfsd_buffered_filldir(), and nfs3svc_encode_entry_plus() is called
-> > later.
-> > In this sequence, lookup_one_len() is called without i_mutex held.
-> > 
-> > Isn't it a problem?
-> 
-> Yes, well spotted. It didn't matter when the buffered readdir() was
-> purely internal to XFS, because it didn't matter there that we called
-> ->lookup() without i_mutex set. But now we're exposing arbitrary file
-> systems to it, we need to make sure we follow the locking rules. 
-> 
-> I _think_ it's sufficient to make the affected callers of
-> lookup_one_len() lock the parent's i_mutex for themselves before calling
-> it. I'll take a closer look...
+The following changes since commit 88dc4c8e38d64db32907e0bd605f8c1ec4c4d1bd:
+  Ingo Molnar (1):
+        Merge branch 'tracing/ftrace'
 
-Yipes--is this problem still here?
+are available in the git repository at:
 
---b.
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
+
+Jaswinder Singh Rajput (3):
+      x86: mm/numa_32.c calculate_numa_remap_pages should use __init
+      x86: apic/es7000_32.c find_unisys_acpi_oem_table and es7000_acpi_madt_oem_check should use __init
+      x86: smpboot.c wakeup_secondary_cpu_via_nmi do not required __devinit
+
+ arch/x86/kernel/apic/es7000_32.c |    6 +++---
+ arch/x86/kernel/smpboot.c        |    3 +--
+ arch/x86/mm/numa_32.c            |    2 +-
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+Complete diff:
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index 1c11b81..a7a7bbe 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -254,7 +254,7 @@ static int parse_unisys_oem(char *oemptr)
+ }
+ 
+ #ifdef CONFIG_ACPI
+-static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
++static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ {
+ 	struct acpi_table_header *header = NULL;
+ 	struct es7000_oem_table *table;
+@@ -306,7 +306,7 @@ static int es7000_check_dsdt(void)
+ static int es7000_acpi_ret;
+ 
+ /* Hook from generic ACPI tables.c */
+-static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+ 	unsigned long oem_addr = 0;
+ 	int check_dsdt;
+@@ -717,7 +717,7 @@ struct apic apic_es7000_cluster = {
+ 	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+ 
+-struct apic apic_es7000 = {
++struct apic __initdata apic_es7000 = {
+ 
+ 	.name				= "es7000",
+ 	.probe				= probe_es7000,
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index bf8ad63..483c2d3 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -504,8 +504,7 @@ void __inquire_remote_apic(int apicid)
+  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
+  * won't ... remember to clear down the APIC, etc later.
+  */
+-int __devinit
+-wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
++int wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
+ {
+ 	unsigned long send_status, accept_status = 0;
+ 	int maxlvt;
+diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
+index 3daefa0..d253006 100644
+--- a/arch/x86/mm/numa_32.c
++++ b/arch/x86/mm/numa_32.c
+@@ -257,7 +257,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
+ }
+ #endif
+ 
+-static unsigned long calculate_numa_remap_pages(void)
++static __init unsigned long calculate_numa_remap_pages(void)
+ {
+ 	int nid;
+ 	unsigned long size, reserve_pages = 0;
+
+
