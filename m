@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZDPQFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbZDPQH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbZDPQFy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbZDPQFp
+	id S1757918AbZDPQH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZDPQHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:05:45 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64339 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755283AbZDPQFo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:05:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jRkJvosz151yk0QM3fjPy4EFMOgdgs0rbSD9aFHNy/+z3afmlaGIlTNKktp+dQZpPh
-         Bu3gfTL2m0MxL1InA39/RluXs6QyPatYaCOAeUwCZiRjrl6CVYvbF5PJs0zAhdaYes/a
-         /0EoN1OrrbufYpEbpHKI7tiyxNuOtqLR0TIm4=
-Date: Thu, 16 Apr 2009 18:05:39 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Avadh Patel <avadh4all@gmail.com>
-Subject: Re: [PATCH 5/5] tracing: add saved_cmdlines file to show cached
-	task comms
-Message-ID: <20090416160538.GF6004@nowhere>
-References: <20090416021830.556671772@goodmis.org> <20090416021928.956953374@goodmis.org> <20090416155444.GD6004@nowhere> <alpine.DEB.2.00.0904161156070.20429@gandalf.stny.rr.com>
+	Thu, 16 Apr 2009 12:07:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40661 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754888AbZDPQHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:07:13 -0400
+Date: Thu, 16 Apr 2009 18:06:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090416160645.GB17804@elte.hu>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904161156070.20429@gandalf.stny.rr.com>
+In-Reply-To: <1239892078-6039-1-git-send-email-abogani@texware.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 11:58:44AM -0400, Steven Rostedt wrote:
+
+* Alessio Igor Bogani <abogani@texware.it> wrote:
+
+> Replace ths BKL in sys_mount()/sys_umount() syscalls with a regular mutex.
 > 
-> On Thu, 16 Apr 2009, Frederic Weisbecker wrote:
-> 
-> > On Wed, Apr 15, 2009 at 10:18:35PM -0400, Steven Rostedt wrote:
-> > > From: Avadh Patel <avadh4all@gmail.com>
-> > > 
-> > > Export the cached task comms to userspace. This allows user apps to translate
-> > > the pids from a trace into their respective task command lines.
-> > 
-> > 
-> > Hi,
-> > 
-> > I don't understand why this is needed. The pid is already resolved
-> > to its task comm into the trace.
-> 
-> Nope, it is not. The trace buffer does not hold the comm. It is in an 
-> internal cache within ftrace. This exports this table.
+> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
+> ---
+>  fs/namespace.c |   16 +++++++++-------
+>  fs/super.c     |    9 ++++-----
+>  2 files changed, 13 insertions(+), 12 deletions(-)
 
+Ok, this patch needs to be flamed^W commented on by Al.
 
-Ah ok, it's about the ring buffer direct fetching. I've only thought
-about ftrace.
+Al: this patch is very likely broken as i cannot imagine you leaving 
+the BKL there just so. So lets accept that (and your NAK) as a given 
+and not get upset about it too much.
 
+We are willing to fix any side effects and preconditions before this 
+can be done - and it would be nice if you could donate a few minutes 
+to this effort by enumerating those preconditions for us, so that we 
+can provide the real fixes. No-one knows this code better than you 
+so even if we could guess our way around to a certain degree, some 
+maintainer guidance and insight would be deeply appreciated.
 
- 
-> > 
-> > Or is there another reason?
-> 
-> If you were to perform a trace, and then stop it. Only the pids are in the 
-> trace buffer. If those processes end, there's no way to find out what 
-> process were attached to those pids. This table maps the pids in the 
-> buffer to the comms saved in the cache. As long as you don't run another 
-> trace, the cache will hold the pids in the trace.
+I'm wondering how much the BKL use here is made necessary by the 
+sys_open() BKL use in device drivers. Jonathan has done extensive 
+work on the sys_open front (and there's more such work in 
+tip:core/kill-the-BKL) - perhaps that has largely paved the way for 
+this change?
 
+There's also ioctl BKL use - is the BKL use here in sys_mount 
+necessiated by the (naked) BKL use in those handlers?
 
-Ok.
+Thanks,
 
-
-> 
-> Note, this is for reading the binary data files.
-
-
-And I missed that too.
-Thanks for the explanations!
-
-
-> -- Steve
-> 
-
+	Ingo
