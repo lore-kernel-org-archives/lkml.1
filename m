@@ -1,94 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbZDPNgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZDPNlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbZDPNgW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 09:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZDPNgM
+	id S1756925AbZDPNlx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 09:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZDPNlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 09:36:12 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:59980 "EHLO
-	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755653AbZDPNgL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 09:36:11 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH 07/14] DRBD: internal_data_structures
-Date: Thu, 16 Apr 2009 15:35:13 +0200
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com> <1239365545-10356-8-git-send-email-philipp.reisner@linbit.com> <e2e108260904120944t1d0fec44yccbc50b6246988d0@mail.gmail.com>
-In-Reply-To: <e2e108260904120944t1d0fec44yccbc50b6246988d0@mail.gmail.com>
-X-OTRS-FollowUp-SenderType: agent
+	Thu, 16 Apr 2009 09:41:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40032 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753133AbZDPNln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 09:41:43 -0400
+Date: Thu, 16 Apr 2009 15:36:58 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rework/fix is_single_threaded()
+Message-ID: <20090416133658.GA6532@redhat.com>
+References: <20090413214513.GA1119@redhat.com> <14878.1239876272@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904161535.14501.philipp.reisner@linbit.com>
+In-Reply-To: <14878.1239876272@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 April 2009 18:44:53 Bart Van Assche wrote:
-> On Fri, Apr 10, 2009 at 2:12 PM, Philipp Reisner
+On 04/16, David Howells wrote:
 >
-> <philipp.reisner@linbit.com> wrote:
-> > diff -uNrp linux-2.6.30-rc1/drivers/block/drbd/drbd_int.h
-> > linux-2.6.30-rc1-drbd/drivers/block/drbd/drbd_int.h
+> Oleg Nesterov <oleg@redhat.com> wrote:
 >
-> ...
+> > - Fix the comment, is_single_threaded(p) actually means that nobody shares
+> >   ->mm with p.
+> >
+> >   I think this helper should be renamed,
 >
-> > +#define PRINTK(level, fmt, args...) \
-> > +       printk(level "drbd%d: " fmt, \
-> > +               mdev->minor , ##args)
+> What we want to know when we ask this function is whether or not a process is
+> single-threaded, hence the name.  The fact that because:
 >
-> The above looks similar to dev_printk() from <linux/device.h>. It
-> would be great if some of the DRBD-specific macro's could be replaced
-> by existing Linux macro's. This would improve the readability of the
-> DRBD source code.
+> 	CLONE_THREAD => CLONE_SIGHAND => CLONE_VM
 >
+> we can work this out purely by checking that there aren't any processes that
+> share VM space with us is immaterial.
 
-Ok. I have done that. Although the dev_err() family of function produce
-log that precedes each line with the word "block". Rather useless, but
-okay. No more DRBD specific INFO() ERR() macros.
+Confused... I already asked this in http://marc.info/?t=123853355800001
+"what is_single_threaded() does?" and perhaps I misunderstood you.
 
-http://git.drbd.org/?p=linux-2.6-drbd.git;a=commit;h=54d19bcccce597742c8883c2b372f0d799dd3c67
+So, once again, what it should do? If we only care about CLONE_THREAD (implies
+CLONE_VM), then we can just do
 
-> ...
+	bool is_single_threaded(struct task_struct *p)
+	{
+		return atomic_read(&p->signal->live) == 1;
+	}
+
+But, if it should check p doesn't share VM space (this is what it does
+with or without the patch), then we have to scan all processes.
+
+> > and it should not have arguments.  With or without this patch it must not be
+> > used unless p == current, otherwise we can't safely use p->signal or p->mm.
 >
-> > +#define D_ASSERT(exp)  if (!(exp)) \
-> > +        ERR("ASSERT( " #exp " ) in %s:%d\n", __FILE__, __LINE__)
-> > +
-> > +#define ERR_IF(exp) if (({                             \
-> > +       int _b = (exp) != 0;                            \
-> > +       if (_b) ERR("%s: (%s) in %s:%d\n",              \
-> > +               __func__, #exp, __FILE__, __LINE__);    \
-> > +        _b;                                            \
-> > +       }))
+> Well, I can live with that, but you need to check with the SELinux people too.
+> Whilst they do currently limit the selinux_setprocattr() to current only, they
+> still hand the task pointer that function is given around.
+
+Yes, I see. But (apart from "not safe" above), from the security pov it doesn't
+make sense to call is_single_threaded(p) unless p == current ? The task can
+fork right after the check.
+
+> > - Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
+> >   to iterate over the process list. If there is another CLONE_VM process
+> >   it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
+> >   a freshly forked CLONE_VM task, but this doesn't matter because we must
+> >   see its parent and return false.
 >
-> How about replacing invocations of D_ASSERT() and/or ERR_IF() by WARN_ON()
-> ?
+> Hmmm...  I'd quite like to avoid using down_write() if possible.
 
-I would rather prefer to keep the ASSERT() semantic, since that is a 
-widely used concept. -- The existing kernel code already has quite a
-few definition of subsystem's incarnation of ASSERTS variants. ;)
+Cough. And I'd like to avoid taking tasklist_lock as much as possible ;)
+tasklist is the global and overused lock. Not good to take it to scan the
+process list.
 
-Removing ERR_IF() goes onto the TODO list.
+> Why do we
+> need to do this?  Is it just to stop processes that might cease using mm from
+> doing so until we've finished?
 
--phil
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
+Suppose we have a process P which shares ->mm with "task" (the argument), so
+we should return "false".
 
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+P does clone(CLONE_VM) and exits. rcu_read_lock() can't guarantee we will
+see the new task with the same ->mm. And without ->mmap_sem P can call
+exit_mm() and set P->mm = NULL.
+
+Hmm. But we can just add a barrier?
+
+	bool is_single_threaded(struct task_struct *task)
+	{
+		struct mm_struct *mm = task->mm;
+		struct task_struct *p, *t;
+		bool ret;
+
+		if (atomic_read(&task->signal->live) != 1)
+			return false;
+
+		if (atomic_read(&mm->mm_users) == 1)
+			return true;
+
+		ret = false;
+		rcu_read_lock();
+		for_each_process(p) {
+			if (unlikely(p->flags & PF_KTHREAD))
+				continue;
+			if (unlikely(p == task->group_leader))
+				continue;
+
+			t = p;
+			do {
+				if (unlikely(t->mm == mm))
+					goto found;
+				if (likely(t->mm))
+					break;
+
+				/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				   t->mm == NULL. Perhaps it had the same ->mm ?
+				   If t has forked CLONE_VM task and called exit_mm(),
+				   make sure next_thread() or for_each_process()->next_task()
+				   will see it.
+				   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				*/
+				smp_rmb();
+
+			} while_each_thread(p, t);
+		}
+		ret = true;
+	found:
+		rcu_read_unlock();
+
+		return ret;
+	}
+
+What do you think?
+
+Oleg.
 
