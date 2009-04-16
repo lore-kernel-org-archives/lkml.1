@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZDPA2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZDPAeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbZDPA2B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZDPA1v
+	id S1752679AbZDPAeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZDPAek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 20:27:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34114 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755158AbZDPA1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 20:27:50 -0400
-Date: Wed, 15 Apr 2009 17:23:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       tglx@linutronix.de, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-In-Reply-To: <20090416000841.GA18185@elte.hu>
-Message-ID: <alpine.LFD.2.00.0904151717040.4042@localhost.localdomain>
-References: <alpine.LFD.2.00.0904150822020.4132@localhost.localdomain> <20090415162627.GA32254@elte.hu> <alpine.LFD.2.00.0904151013260.4132@localhost.localdomain> <49E62BD5.6090508@zytor.com> <alpine.LFD.2.00.0904151241490.4132@localhost.localdomain>
- <20090415133255.b6a33bfe.akpm@linux-foundation.org> <20090415210353.GA27368@elte.hu> <alpine.LFD.2.00.0904151406380.4042@localhost.localdomain> <20090415224017.GA18764@elte.hu> <alpine.LFD.2.00.0904151607010.4042@localhost.localdomain>
- <20090416000841.GA18185@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 15 Apr 2009 20:34:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:58361 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751362AbZDPAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 20:34:40 -0400
+Message-ID: <49E67D1D.8020704@goop.org>
+Date: Wed, 15 Apr 2009 17:34:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Problem with CREATE_TRACE_POINTS and recursion safety
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm having a problem with CREATE_TRACE_POINTS being too indiscriminate.  
+The trouble is that it not only creates tracepoint definitions for the 
+intended tracepoints, but any other tracepoint definitions which get 
+included incidentally.
 
+For example, I'm seeing my paravirt tracepoints being instantiated in 
+both kernel/sched.o and kernel/irq/manage.o as side-effects of the 
+scheduler and irq tracepoints being instantiated.
 
-On Thu, 16 Apr 2009, Ingo Molnar wrote:
-> 
-> Is there any other way for us to get the benefits of the impact 
-> line, without actually adding one?
-> 
-> They are:
-> 
->  - Better split-up patches from contributors.
-> 
->  - Increased maintainer and developer attention on the effects of
->    patches.
-> 
->  - Less time we have to spend on patches we get with impact-lines.
->    Both hpa and me reported this.
-> 
->  - easy regression post-mortems
+I'm experimenting with a different scheme, wherein a subsystem defines 
+CREATE_FOO_TRACE_POINTS in the .c file where it wants to instantiate the 
+tracepoints - rather than CREATE_TRACE_POINTS - and its 
+trace/events/foo.h does:
 
-None of this has anything to do with "Impact:" per se, and everything to 
-do with just trying to tach people to talk about their patches better.
+    #ifdef CREATE_FOO_TRACE_POINTS
+    #undef CREATE_FOO_TRACE_POINTS	/* avoid infinite recursion */
+    #include <trace/instantiate_trace.h>
+    #else
+    #include <trace/define_trace.h>
+    #endif
 
-By all means, when you see a patch that doesn't describe what it does or 
-why it does so, ask people to say so.
+where instantiate_trace.h is:
 
-Ask people "What's the impact of this patch?"
+    #define CREATE_TRACE_POINTS
+    #include <trace/define_trace.h>
+    #undef CREATE_TRACE_POINTS
 
-But don't ask them to then say
+(Just to prevent a bit more repeated boilerplate in each events 
+definition file.)
 
-	Impact: cleanup.
+This seems to work.  (Update: no it doesn't.  WTF has paravirt-trace.o 
+got duplicate kmem tracepoints?!)
 
-Teach them to say
+A related problem is that the TRACE_INCLUDE_FILE mechanism doesn't work, 
+because if any tracepoint definition header sets it, it overrides the 
+setting for all others, so, for example, arch/x86/include/asm/paravirt.h 
+ends up being included as the source of definitions for events/sched.h.  
+I gave up and moved paravirt-trace.h to trace/events/pvops.h rather than 
+try to deal with it.
 
-	This cleans up the code by doing xyz.
+Lucky for you Steven, none of this is getting any more pretty, so you 
+may yet get your prize.
 
-and yes, by all means teach people to write succint and to-the-point 
-messages.
-
-Teach people to not write a novel, but instead give them rules like:
-
- - the subject line has to descibe the over-all patch.
-
- - Then write a line or two that is about what the patch really does
-
- - if needed, write a longer detailed explanation with actual error 
-   messages that it fixes etc.
-
-Now THAT is somethign that I think we can all get behind. Example of a 
-good patch log:
-
-    kprobes: move EXPORT_SYMBOL_GPL just after function definitions
-    
-    Clean up positions of EXPORT_SYMBOL_GPL in kernel/kprobes.c according to
-    checkpatch.pl.
-
-wouldn't you agree? Adding a "Impact: cleanup" wouldn't do anything to it, 
-except make it not read as good English any more.
-
-I like seeing explanations that read well. 
-
-			Linus
+    J
