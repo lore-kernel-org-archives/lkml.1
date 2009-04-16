@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbZDPQSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbZDPQTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbZDPQSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbZDPQSH
+	id S1758158AbZDPQTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZDPQT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:18:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54254 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758224AbZDPQSG (ORCPT
+	Thu, 16 Apr 2009 12:19:26 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:61158 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754837AbZDPQTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:18:06 -0400
-Message-Id: <20090416161543.199331330@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 16 Apr 2009 12:15:43 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 0/2] [GIT PULL] updates for event tester and lockdep tracer
+	Thu, 16 Apr 2009 12:19:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PL9F/NY96p2jd4dI2iJluZri7drbFW9b7Nx8dyDQ5/OjZgqLYlZoT5/t0+nLDbdHR+
+         3/BrqS71Wh3spKGuwdsY7nheu6PqnffmdJ7+Km76snJweUYSkRG7jPh4bU1Y3hdqMY1y
+         XJh/0R2an7ZjMDykR50AfsTQgzt2rtNd5d1mM=
+Date: Thu, 16 Apr 2009 18:19:21 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][PATCH 1/2] tracing/events: provide string with undefined
+	size support
+Message-ID: <20090416161920.GI6004@nowhere>
+References: <1239838050-8567-1-git-send-email-fweisbec@gmail.com> <49E68635.8050404@cn.fujitsu.com> <20090416074250.GB6021@nowhere> <49E6E439.1090607@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E6E439.1090607@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+On Thu, Apr 16, 2009 at 03:54:33PM +0800, Li Zefan wrote:
+> >>> +	entry	= ring_buffer_event_data(event);			       \
+> >> small nits, below is better since we have only one assignment:
+> >>
+> >> 	entry = ring_buffer_event_data(event);
+> > 
+> > 
+> > 
+> > Hm, I don't understand what you are suggesting.
+> > 
+> 
+> I meant just add a ' ' before '=' instead of a tab:
+> 
+> entry = ring_buffer_event_data(event);
+> entry	= ring_buffer_event_data(event);
+> 
+> since we don't need to align with other assignment statement.
+> 
+> but this is just a trivial issue. :)
 
-I did not add your delay.h fix, since I was not sure if you added it 
-(I saw a commit sha1 in the email).
 
-I actually wrote the function trace event tester last night. But because
-it would sometimes lock up the system on bootup I held off.
+Ah ok :)
+Will fix it (unless I remove this part to address Steven's comment.
 
-But I also found that the lockdep trace points where they are would lock up
-my system too. If I placed them inside the current->lockdep_recursion,
-everything ran stable.
+Thanks.
 
-I ran the lockdep trace points enabled all night with the second patch.
-Without the second patch, it would lockup within a few minutes.
+ 
+> --
+> Zefan
 
-Please pull the latest tip/tracing/core-v2 tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core-v2
-
-
-Steven Rostedt (2):
-      tracing/events: perform function tracing in event selftests
-      tracing/events/lockdep: move tracepoints within recursive protection
-
-----
- kernel/lockdep.c            |   14 ++++----
- kernel/trace/trace_events.c |   80 +++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 80 insertions(+), 14 deletions(-)
--- 
