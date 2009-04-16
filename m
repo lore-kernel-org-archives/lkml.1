@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbZDPRUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbZDPRVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbZDPRUi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZDPRU3
+	id S1757543AbZDPRVK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbZDPRUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:20:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47137 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754683AbZDPRU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:20:28 -0400
-Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
- recursive protection
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Thu, 16 Apr 2009 13:20:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42842 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754965AbZDPRUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 13:20:53 -0400
+Message-ID: <49E76864.9060309@kernel.org>
+Date: Thu, 16 Apr 2009 10:18:28 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com>
-References: <20090416161543.199331330@goodmis.org>
-	 <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop>
-	 <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Thu, 16 Apr 2009 19:20:07 +0200
-Message-Id: <1239902407.23397.3197.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v3
+References: <200904101913.n3AJDhMm018684@demeter.kernel.org> <49DFABCC.3070001@kernel.org> <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes> <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu>
+In-Reply-To: <20090416165640.GA13927@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-16 at 13:03 -0400, Steven Rostedt wrote:
-> On Thu, 16 Apr 2009, Peter Zijlstra wrote:
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> > On Thu, 2009-04-16 at 12:15 -0400, Steven Rostedt wrote:
-> > > plain text document attachment
-> > > (0002-tracing-events-lockdep-move-tracepoints-within-recu.patch)
-> > > From: Steven Rostedt <srostedt@redhat.com>
-> > > 
-> > > With the current location of the tracepoints in lockdep, the system
-> > > can hard lockup in minutes when the tracepoints are enabled.
-> > > 
-> > > Moving the tracepoints outside inside the lockdep protection solves
-> > > the issue.
-> > 
-> > NAK
-> > 
-> > the idea is to eventually move lockdep on top of the tracepoints. The
-> > tracer should grow to be more robust and handle recursion itself.
-> > 
-> > Its likely a case of the tracer using a spinlock or mutex in the
-> > tracepoint code. When I did the tracepoints I converted one such to a
-> > raw_spinlock_t in the trace_print code.
+>> On Thu, 16 Apr 2009, Jesse Barnes wrote:
+>>> Any comments on this one, Linus?  Should I include your ack?
+>> I'm not ready to ack it, no. I don't think the suggested patch is very 
+>> clean or necessarily sensible as-is. It seems very ad-hoc. 
+>>
+>> I was literally thinking of something like 
+>>  "round up from the last RAM by X"
+>>  "round up from the last reserved region by Y"
+>>  "pick the bigger of the two"
+>>
+>> with helper functions for the two cases and comments along the 
+>> lines of why we do it. Something that was a bit more obvious about 
+>> what it's doing and why.
 > 
-> Note, that the ring buffer and events are made to be recursive. That is, 
-> it allows one event to trace within another event.
+> That's sensible - but i'd also like to inject hpa's add-on idea: if 
+> we do that then we should do it _explicitly_ and _visibly_, by 
+> injecting an artificial e820 reservation range to all expected 
+> "vulnerable" holes we cannot fully trust.
+> 
+> We'd do that after all the fixed resources are allocated, but before 
+> dynamic PCI allocations.
+> 
+> That prevents the PCI layer from dynamically allocating anything 
+> into that protective zone, and documents it as well (and makes it 
+> visible in boot logs, etc.) - instead of just a silent rule 
+> somewhere that no-one will really see if it breaks.
 
-But surely not in the same context. You could do a 4 level recursion
-protection like I did in perf-counter, not allowing recursion in:
+that need to do done much earlier, and much simple, just need to make that range to be reserved in e820.
+and later e820_setup_gap even don't need to be aligned again.
 
- nmi, irq, softirq, process - context.
-
-That allows you to trace an irq while you're tracing something in
-process context, etc.. But not allow recursion on the same level.
-
->  If the tracepoint is 
-> triggered by something within the trace point handler, then we are 
-> screwed. That needs to be fixed.
-
-Exactly the thing you want to detect and warn about, preferably with a
-nice stack trace.
-
-> I have not seen what is triggering back into locking. The ring buffer and 
-> what I can see by the event code, does not grab any locks besides raw 
-> ones.
-
-Well, it used to all work, so something snuck in.
-
+YH
