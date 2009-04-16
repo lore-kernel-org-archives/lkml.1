@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbZDPAsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbZDPAtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbZDPAsc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZDPAsF
+	id S1757299AbZDPAtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZDPAtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 20:48:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:47057 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755621AbZDPAsE (ORCPT
+	Wed, 15 Apr 2009 20:49:11 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45419 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752902AbZDPAtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 20:48:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=h7fG9LwN0wsnZV+gzgxH9PebQ+T+9+Ired1lkRy3IMamV4r1gEU37J2UIOjxf6Cgbg
-         lHL3CUAJTbEAkalo3o/27sLtHLqt7DMqtGcT0vBkIk23xmSBOfVZ2cZQjVjzDNTYRcNZ
-         TTNgvFMgOllE7JaydP+dYRAbS3rG3BVxqopbQ=
-Message-ID: <49E6803C.6010602@gmail.com>
-Date: Wed, 15 Apr 2009 18:47:56 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Fast testing
-References: <49E5D0C1.6010608@wpkg.org> <49E5D6D9.3040903@imap.cc>
-In-Reply-To: <49E5D6D9.3040903@imap.cc>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 15 Apr 2009 20:49:10 -0400
+Date: Thu, 16 Apr 2009 09:47:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH] memcg remove warning at DEBUG_VM=off
+Message-Id: <20090416094738.2904c799.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090415101317.GA3240@linux>
+References: <20090408142042.3fb62eea.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408052715.GX7082@balbir.in.ibm.com>
+	<20090409222512.bd026a40.akpm@linux-foundation.org>
+	<20090410153335.b52c5f74.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090415101317.GA3240@linux>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> Tomasz Chmielewski schrieb:
->>> Wow. Nice machine. I wish I had one like that. And how long until
->>> the GUI is usable again and you can actually continue working?
->>>
->>> For comparison: my 3.4 GHz Pentium D takes 30 secs for kernel start
->>> (ie. until it begins looking for the filesystems),
->> Including all BIOS routines?
-> 
-> No - from hitting Enter in the GRUB menu.
+On Wed, 15 Apr 2009 12:13:17 +0200
+Andrea Righi <righi.andrea@gmail.com> wrote:
 
-That seems really high, unless you're using some storage driver that 
-takes a really long time to initialize or something..
+> The warning is still there actually. I've just written a fix and seen
+> this discussion, maybe I can offload a little bit Kame. ;)
+> 
+> -Andrea
 
+Thank you.
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+> ---
+> memcg: remove warning when CONFIG_DEBUG_VM is not set
 > 
->>>  2 mins until the graphical login screen appears, and
->>> 5 mins from logging in to the GUI being completely present.
->> I have an old 366 MHz / 192 MB machine which boots to GUI much faster.
+> Fix the following warning removing mem_cgroup_is_obsolete():
 > 
-> Might depend on the value of "GUI". Mine wouldn't even load in 192 MB.
-> Anyway, my preceding P3/700 MHz/512 MB box hasn't been much worse,
-> either.
+>   mm/memcontrol.c:318: warning: ‘mem_cgroup_is_obsolete’ defined but not used
 > 
->> Something's wrong with your setup (unless you start really lots of 
->> things or have some other, "uncommon" things).
+> Moreover, split the VM_BUG_ON() checks in two parts to be aware of which
+> one triggered the bug.
 > 
-> Hmm, it's always been like that. As for "uncommon", this is a more
-> or less out of the box openSUSE 10.3 installation. (Without Beagle,
-> in case you were wondering.) Perhaps that's what's wrong? :-)
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> ---
+>  mm/memcontrol.c |   11 ++---------
+>  1 files changed, 2 insertions(+), 9 deletions(-)
 > 
-> OTOH, even the GUIless CentOS server boxes I look after for a
-> living take about 5 mins until they are up and running again after
-> a kernel update - including BIOS, but without the fsck penalty.
-> 
-> Thanks,
-> Tilman
-> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index e44fb0f..8cd6358 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -314,14 +314,6 @@ static struct mem_cgroup *try_get_mem_cgroup_from_mm(struct mm_struct *mm)
+>  	return mem;
+>  }
+>  
+> -static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
+> -{
+> -	if (!mem)
+> -		return true;
+> -	return css_is_removed(&mem->css);
+> -}
+> -
+> -
+>  /*
+>   * Call callback function against all cgroup under hierarchy tree.
+>   */
+> @@ -932,7 +924,8 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>  	if (unlikely(!mem))
+>  		return 0;
+>  
+> -	VM_BUG_ON(!mem || mem_cgroup_is_obsolete(mem));
+> +	VM_BUG_ON(!mem);
+> +	VM_BUG_ON(css_is_removed(&mem->css));
+>  
+>  	while (1) {
+>  		int ret;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
