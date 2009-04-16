@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZDPPST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZDPPTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbZDPPST (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 11:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZDPPSI
+	id S1756316AbZDPPTq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 11:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZDPPTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 11:18:08 -0400
-Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:65362 "EHLO
-	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZDPPSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 11:18:07 -0400
-X-Greylist: delayed 2021 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Apr 2009 11:18:07 EDT
-Subject: Re: [PATCH] rework/fix is_single_threaded()
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090416133658.GA6532@redhat.com>
-References: <20090413214513.GA1119@redhat.com> <14878.1239876272@redhat.com>
-	 <20090416133658.GA6532@redhat.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 16 Apr 2009 10:36:12 -0400
-Message-Id: <1239892572.7591.43.camel@localhost.localdomain>
+	Thu, 16 Apr 2009 11:19:36 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34320 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754272AbZDPPTg (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 11:19:36 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fast testing
+In-Reply-To: Your message of "Wed, 15 Apr 2009 14:45:13 +0200."
+             <49E5D6D9.3040903@imap.cc>
+From: Valdis.Kletnieks@vt.edu
+References: <49E5D0C1.6010608@wpkg.org>
+            <49E5D6D9.3040903@imap.cc>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: multipart/signed; boundary="==_Exmh_1239895173_6564P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 16 Apr 2009 11:19:33 -0400
+Message-ID: <23524.1239895173@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-16 at 15:36 +0200, Oleg Nesterov wrote:
-> On 04/16, David Howells wrote:
-> >
-> > Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > - Fix the comment, is_single_threaded(p) actually means that nobody shares
-> > >   ->mm with p.
-> > >
-> > >   I think this helper should be renamed,
-> >
-> > What we want to know when we ask this function is whether or not a process is
-> > single-threaded, hence the name.  The fact that because:
-> >
-> > 	CLONE_THREAD => CLONE_SIGHAND => CLONE_VM
-> >
-> > we can work this out purely by checking that there aren't any processes that
-> > share VM space with us is immaterial.
-> 
-> Confused... I already asked this in http://marc.info/?t=123853355800001
-> "what is_single_threaded() does?" and perhaps I misunderstood you.
-> 
-> So, once again, what it should do? If we only care about CLONE_THREAD (implies
-> CLONE_VM), then we can just do
-> 
-> 	bool is_single_threaded(struct task_struct *p)
-> 	{
-> 		return atomic_read(&p->signal->live) == 1;
-> 	}
-> 
-> But, if it should check p doesn't share VM space (this is what it does
-> with or without the patch), then we have to scan all processes.
+--==_Exmh_1239895173_6564P
+Content-Type: text/plain; charset=us-ascii
 
-In the SELinux case, we care about shared VM space.   The purpose of the
-check for SELinux is to prevent the security contexts of tasks that
-share a VM from diverging from one another, as we cannot enforce any
-separation among them.
-
-> > > and it should not have arguments.  With or without this patch it must not be
-> > > used unless p == current, otherwise we can't safely use p->signal or p->mm.
-> >
-> > Well, I can live with that, but you need to check with the SELinux people too.
-> > Whilst they do currently limit the selinux_setprocattr() to current only, they
-> > still hand the task pointer that function is given around.
+On Wed, 15 Apr 2009 14:45:13 +0200, Tilman Schmidt said:
+> > Something's wrong with your setup (unless you start really lots of=
+> > things or have some other, "uncommon" things).
 > 
-> Yes, I see. But (apart from "not safe" above), from the security pov it doesn't
-> make sense to call is_single_threaded(p) unless p == current ? The task can
-> fork right after the check.
+> Hmm, it's always been like that. As for "uncommon", this is a more
+> or less out of the box openSUSE 10.3 installation. (Without Beagle,
+> in case you were wondering.) Perhaps that's what's wrong? :-)
 
-Right.  In the SELinux case, we will only ever call it with p ==
-current, and if you want to make that explicit by dropping the task
-argument and directly acting on current, feel free.
+Umm... shot in the dark - memory incorrectly flagged as non-cachable
+by an mtrr?
 
--- 
-Stephen Smalley
-National Security Agency
+--==_Exmh_1239895173_6564P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ50yFcC3lWbTT17ARAgKcAKCaSYUBwH9cdBB2/Zy7u1LS0KXX6gCgnvC9
+fCIrouAi6ho0Blxy/WHQn1E=
+=tYBK
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1239895173_6564P--
