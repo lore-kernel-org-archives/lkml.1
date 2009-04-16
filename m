@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZDPGoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZDPGpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZDPGoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 02:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZDPGnu
+	id S1755094AbZDPGpA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 02:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbZDPGou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 02:43:50 -0400
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:38942 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbZDPGnt (ORCPT
+	Thu, 16 Apr 2009 02:44:50 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:43821 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZDPGou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 02:43:49 -0400
-Date: Thu, 16 Apr 2009 12:13:26 +0530
+	Thu, 16 Apr 2009 02:44:50 -0400
+Date: Thu, 16 Apr 2009 12:14:37 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
@@ -21,8 +21,8 @@ Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
        Jesper Nilsson <jesper.nilsson@axis.com>,
        Tony Luck <tony.luck@intel.com>, Kyle McMartin <kyle@mcmartin.ca>,
        Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v6 PATCH 1/4] timers: Framework for identifying pinned timers
-Message-ID: <20090416064326.GB7510@linux.vnet.ibm.com>
+Subject: [v6 PATCH 2/4] timers: Identifying the existing pinned timers
+Message-ID: <20090416064437.GC7510@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 References: <20090416064136.GA7510@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -36,233 +36,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-16 12:11:36]:
 
-This patch creates a new framework for identifying cpu-pinned timers
-and hrtimers.
-
-
-This framework is needed because pinned timers are expected to fire on
-the same CPU on which they are queued. So it is essential to identify
-these and not migrate them, in case there are any.
-
-For regular timers, the currently existing add_timer_on() can be used
-queue pinned timers and subsequently mod_timer_pinned() can be used
-to modify the 'expires' field.
-
-For hrtimers, a new interface hrtimer_start_pinned() is created,
-which can be used to queue cpu-pinned hrtimer.
-
+The following pinned hrtimers have been identified and marked:
+1)sched_rt_period_timer
+2)tick_sched_timer
+3)stack_trace_timer_fn
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- include/linux/hrtimer.h |   24 ++++++++++++++++++++----
- include/linux/timer.h   |    3 +++
- kernel/hrtimer.c        |   34 ++++++++++++++++++++++++++++------
- kernel/timer.c          |   31 +++++++++++++++++++++++++++----
- 4 files changed, 78 insertions(+), 14 deletions(-)
+ arch/x86/kernel/apic/x2apic_uv_x.c |    2 +-
+ kernel/sched.c                     |    5 +++--
+ kernel/time/tick-sched.c           |    7 ++++---
+ kernel/trace/trace_sysprof.c       |    3 ++-
+ 4 files changed, 10 insertions(+), 7 deletions(-)
 
-Index: linux.trees.git/include/linux/hrtimer.h
+Index: linux.trees.git/kernel/sched.c
 ===================================================================
---- linux.trees.git.orig/include/linux/hrtimer.h
-+++ linux.trees.git/include/linux/hrtimer.h
-@@ -331,23 +331,39 @@ static inline void hrtimer_init_on_stack
- static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
- #endif
+--- linux.trees.git.orig/kernel/sched.c
++++ linux.trees.git/kernel/sched.c
+@@ -236,7 +236,7 @@ static void start_rt_bandwidth(struct rt
  
-+#define HRTIMER_NOT_PINNED	0
-+#define HRTIMER_PINNED		1
- /* Basic timer operations: */
- extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
- 			 const enum hrtimer_mode mode);
-+extern int hrtimer_start_pinned(struct hrtimer *timer, ktime_t tim,
-+			const enum hrtimer_mode mode);
- extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
--			unsigned long range_ns, const enum hrtimer_mode mode);
-+	unsigned long range_ns, const enum hrtimer_mode mode, int pinned);
- extern int hrtimer_cancel(struct hrtimer *timer);
- extern int hrtimer_try_to_cancel(struct hrtimer *timer);
- 
--static inline int hrtimer_start_expires(struct hrtimer *timer,
--						enum hrtimer_mode mode)
-+static inline int __hrtimer_start_expires(struct hrtimer *timer,
-+					enum hrtimer_mode mode, int pinned)
- {
- 	unsigned long delta;
- 	ktime_t soft, hard;
- 	soft = hrtimer_get_softexpires(timer);
- 	hard = hrtimer_get_expires(timer);
- 	delta = ktime_to_ns(ktime_sub(hard, soft));
--	return hrtimer_start_range_ns(timer, soft, delta, mode);
-+	return hrtimer_start_range_ns(timer, soft, delta, mode, pinned);
-+}
-+
-+static inline int hrtimer_start_expires(struct hrtimer *timer,
-+						enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_expires(timer, mode, HRTIMER_NOT_PINNED);
-+}
-+
-+static inline int hrtimer_start_expires_pinned(struct hrtimer *timer,
-+						enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_expires(timer, mode, HRTIMER_PINNED);
- }
- 
- static inline int hrtimer_restart(struct hrtimer *timer)
-Index: linux.trees.git/kernel/hrtimer.c
-===================================================================
---- linux.trees.git.orig/kernel/hrtimer.c
-+++ linux.trees.git/kernel/hrtimer.c
-@@ -193,7 +193,8 @@ struct hrtimer_clock_base *lock_hrtimer_
-  * Switch the timer base to the current CPU when possible.
+ 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
+ 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
+-		hrtimer_start_expires(&rt_b->rt_period_timer,
++		hrtimer_start_expires_pinned(&rt_b->rt_period_timer,
+ 				HRTIMER_MODE_ABS);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+@@ -1156,7 +1156,8 @@ static __init void init_hrtick(void)
   */
- static inline struct hrtimer_clock_base *
--switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base)
-+switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
-+	int pinned)
+ static void hrtick_start(struct rq *rq, u64 delay)
  {
- 	struct hrtimer_clock_base *new_base;
- 	struct hrtimer_cpu_base *new_cpu_base;
-@@ -897,9 +898,8 @@ remove_hrtimer(struct hrtimer *timer, st
-  *  0 on success
-  *  1 when the timer was active
-  */
--int
--hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
--			const enum hrtimer_mode mode)
-+int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+	unsigned long delta_ns, const enum hrtimer_mode mode, int pinned)
- {
- 	struct hrtimer_clock_base *base, *new_base;
- 	unsigned long flags;
-@@ -911,7 +911,7 @@ hrtimer_start_range_ns(struct hrtimer *t
- 	ret = remove_hrtimer(timer, base);
- 
- 	/* Switch the timer base, if necessary: */
--	new_base = switch_hrtimer_base(timer, base);
-+	new_base = switch_hrtimer_base(timer, base, pinned);
- 
- 	if (mode == HRTIMER_MODE_REL) {
- 		tim = ktime_add_safe(tim, new_base->get_time());
-@@ -948,6 +948,12 @@ hrtimer_start_range_ns(struct hrtimer *t
+-	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
++	hrtimer_start_pinned(&rq->hrtick_timer, ns_to_ktime(delay),
++				HRTIMER_MODE_REL);
  }
- EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
  
-+int __hrtimer_start(struct hrtimer *timer, ktime_t tim,
-+	const enum hrtimer_mode mode, int pinned)
-+{
-+	return hrtimer_start_range_ns(timer, tim, 0, mode, pinned);
-+}
-+
- /**
-  * hrtimer_start - (re)start an hrtimer on the current CPU
-  * @timer:	the timer to be added
-@@ -961,10 +967,26 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns
- int
- hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- {
--	return hrtimer_start_range_ns(timer, tim, 0, mode);
-+	return __hrtimer_start(timer, tim, mode, HRTIMER_NOT_PINNED);
- }
- EXPORT_SYMBOL_GPL(hrtimer_start);
- 
-+/**
-+ * hrtimer_start_pinned - start a CPU-pinned hrtimer
-+ * @timer:      the timer to be added
-+ * @tim:        expiry time
-+ * @mode:       expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-+ *
-+ * Returns:
-+ *  0 on success
-+ *  1 when the timer was active
-+ */
-+int hrtimer_start_pinned(struct hrtimer *timer,
-+	ktime_t tim, const enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start(timer, tim, mode, HRTIMER_PINNED);
-+}
-+EXPORT_SYMBOL_GPL(hrtimer_start_pinned);
- 
- /**
-  * hrtimer_try_to_cancel - try to deactivate a timer
-Index: linux.trees.git/include/linux/timer.h
+ static inline void init_hrtick(void)
+Index: linux.trees.git/kernel/time/tick-sched.c
 ===================================================================
---- linux.trees.git.orig/include/linux/timer.h
-+++ linux.trees.git/include/linux/timer.h
-@@ -163,7 +163,10 @@ extern void add_timer_on(struct timer_li
- extern int del_timer(struct timer_list * timer);
- extern int mod_timer(struct timer_list *timer, unsigned long expires);
- extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
-+extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
+--- linux.trees.git.orig/kernel/time/tick-sched.c
++++ linux.trees.git/kernel/time/tick-sched.c
+@@ -348,7 +348,7 @@ void tick_nohz_stop_sched_tick(int inidl
+ 		ts->idle_expires = expires;
  
-+#define TIMER_NOT_PINNED	0
-+#define TIMER_PINNED		1
- /*
-  * The jiffies value which is added to now, when there is no timer
-  * in the timer wheel:
-Index: linux.trees.git/kernel/timer.c
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+-			hrtimer_start(&ts->sched_timer, expires,
++			hrtimer_start_pinned(&ts->sched_timer, expires,
+ 				      HRTIMER_MODE_ABS);
+ 			/* Check, if the timer was already in the past */
+ 			if (hrtimer_active(&ts->sched_timer))
+@@ -394,7 +394,7 @@ static void tick_nohz_restart(struct tic
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+ 
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+-			hrtimer_start_expires(&ts->sched_timer,
++			hrtimer_start_expires_pinned(&ts->sched_timer,
+ 				      HRTIMER_MODE_ABS);
+ 			/* Check, if the timer was already in the past */
+ 			if (hrtimer_active(&ts->sched_timer))
+@@ -698,7 +698,8 @@ void tick_setup_sched_timer(void)
+ 
+ 	for (;;) {
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+-		hrtimer_start_expires(&ts->sched_timer, HRTIMER_MODE_ABS);
++		hrtimer_start_expires_pinned(&ts->sched_timer,
++						HRTIMER_MODE_ABS);
+ 		/* Check, if the timer was already in the past */
+ 		if (hrtimer_active(&ts->sched_timer))
+ 			break;
+Index: linux.trees.git/kernel/trace/trace_sysprof.c
 ===================================================================
---- linux.trees.git.orig/kernel/timer.c
-+++ linux.trees.git/kernel/timer.c
-@@ -601,7 +601,8 @@ static struct tvec_base *lock_timer_base
+--- linux.trees.git.orig/kernel/trace/trace_sysprof.c
++++ linux.trees.git/kernel/trace/trace_sysprof.c
+@@ -203,7 +203,8 @@ static void start_stack_timer(void *unus
+ 	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	hrtimer->function = stack_trace_timer_fn;
+ 
+-	hrtimer_start(hrtimer, ns_to_ktime(sample_period), HRTIMER_MODE_REL);
++	hrtimer_start_pinned(hrtimer, ns_to_ktime(sample_period),
++				HRTIMER_MODE_REL);
  }
  
- static inline int
--__mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
-+__mod_timer(struct timer_list *timer, unsigned long expires,
-+						bool pending_only, int pinned)
- {
- 	struct tvec_base *base, *new_base;
- 	unsigned long flags;
-@@ -665,7 +666,7 @@ out_unlock:
-  */
- int mod_timer_pending(struct timer_list *timer, unsigned long expires)
- {
--	return __mod_timer(timer, expires, true);
-+	return __mod_timer(timer, expires, true, TIMER_NOT_PINNED);
+ static void start_stack_timers(void)
+Index: linux.trees.git/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux.trees.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux.trees.git/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -455,7 +455,7 @@ static void uv_heartbeat(unsigned long i
+ 	uv_set_scir_bits(bits);
+ 
+ 	/* enable next timer period */
+-	mod_timer(timer, jiffies + SCIR_CPU_HB_INTERVAL);
++	mod_timer_pinned(timer, jiffies + SCIR_CPU_HB_INTERVAL);
  }
- EXPORT_SYMBOL(mod_timer_pending);
  
-@@ -699,11 +700,33 @@ int mod_timer(struct timer_list *timer, 
- 	if (timer->expires == expires && timer_pending(timer))
- 		return 1;
- 
--	return __mod_timer(timer, expires, false);
-+	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
- }
- EXPORT_SYMBOL(mod_timer);
- 
- /**
-+ * mod_timer_pinned - modify a timer's timeout
-+ * @timer: the timer to be modified
-+ * @expires: new timeout in jiffies
-+ *
-+ * mod_timer_pinned() is a way to update the expire field of an
-+ * active timer (if the timer is inactive it will be activated)
-+ * and not allow the timer to be migrated to a different CPU.
-+ *
-+ * mod_timer_pinned(timer, expires) is equivalent to:
-+ *
-+ *     del_timer(timer); timer->expires = expires; add_timer(timer);
-+ */
-+int mod_timer_pinned(struct timer_list *timer, unsigned long expires)
-+{
-+	if (timer->expires == expires && timer_pending(timer))
-+		return 1;
-+
-+	return __mod_timer(timer, expires, false, TIMER_PINNED);
-+}
-+EXPORT_SYMBOL(mod_timer_pinned);
-+
-+/**
-  * add_timer - start a timer
-  * @timer: the timer to be added
-  *
-@@ -1350,7 +1373,7 @@ signed long __sched schedule_timeout(sig
- 	expire = timeout + jiffies;
- 
- 	setup_timer_on_stack(&timer, process_timeout, (unsigned long)current);
--	__mod_timer(&timer, expire, false);
-+	__mod_timer(&timer, expire, false, TIMER_NOT_PINNED);
- 	schedule();
- 	del_singleshot_timer_sync(&timer);
- 
+ static void __cpuinit uv_heartbeat_enable(int cpu)
