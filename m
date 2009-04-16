@@ -1,121 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZDPXYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZDPX1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZDPXYz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZDPXYq
+	id S1755929AbZDPX1E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZDPX0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:24:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54918 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751751AbZDPXYp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:24:45 -0400
-Date: Thu, 16 Apr 2009 16:18:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
+	Thu, 16 Apr 2009 19:26:53 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36055 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754022AbZDPX0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 19:26:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,200,1239001200"; 
+   d="scan'208";a="507157229"
+Subject: Re: [PATCH 4/8] irq: only update affinity in chip set_affinity()
+ -v3
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
 To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
-In-Reply-To: <49E7916C.7050701@kernel.org>
-Message-ID: <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain>
-References: <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes>
- <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu> <49E76864.9060309@kernel.org> <20090416172803.GB16618@elte.hu> <49E7916C.7050701@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49E68CD8.7060009@kernel.org>
+References: <49E68C41.4020801@kernel.org>  <49E68CD8.7060009@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 16 Apr 2009 16:25:38 -0700
+Message-Id: <1239924338.27006.8458.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 16 Apr 2009, Yinghai Lu wrote:
->
-> please check.
+On Wed, 2009-04-15 at 18:41 -0700, Yinghai Lu wrote:
+> Impact: keep affinity consistent
 > 
-> [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
+> irq_set_affinity() and move_masked_irq() try to assign affinity
+> before calling chip set_affinity(). some archs are assigning again in set_affinity
+> again.
+> 
+> something like:
+> cpumask_cpy(desc->affinity, mask);
+> desc->chip->set_affinity(mask);
+> 
+> in the failing path, affinity should not be touched.
+> 
+> also set_extra_move_desc() ( called by set_affinity)  will rely on the old
+> affinity to decide if need to move irq_desc to different node when logical
+> flat apic mode is used.
+> 
+> So try remove those assignment, and make some missed arch to assign affinity
+> in their set_affinity.
+> 
 
-I like the approach. That said, I think that rather than do the "modify 
-the e820 array" thing, why not just do it in the in the resource tree, and 
-do it at "e820_reserve_resources_late()" time?
+I don't see any arch specific changes in this patchset regarding this.
+Did I miss or currently there are no arch's that needs to get fixed?
 
-IOW, something like this.
+thanks,
+suresh
 
-TOTALLY UNTESTED! The point is to take all RAM resources we haev, and 
-_after_ we've added all the resources we've seen in the E820 tree, we then 
-_also_ try to add fake reserved entries for any "round up to X" at the end 
-of the RAM resources.
-
-NOTE! I really didn't want to use "reserve_region_with_split()". I didn't 
-want to recurse into any conflicting resources, I really wanted to just do 
-the other failure cases. 
-
-THIS PATCH IS NOT MEANT TO BE USED. Just a rough "almost like this" kind 
-of thing. That includes the rough draft of how much to round things up to 
-based on where the end of RAM region is etc. I'm really throwing this out 
-more as a "wouldn't this be a readable way to handle any missing reserved 
-entries" kind of thing..
-
-			Linus
-
----
- arch/x86/kernel/e820.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index ef2c356..e8b8d33 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1370,6 +1370,23 @@ void __init e820_reserve_resources(void)
- 	}
- }
- 
-+/* How much should we pad RAM ending depending on where it is? */
-+static unsigned long ram_alignment(resource_size_t pos)
-+{
-+	unsigned long mb = pos >> 20;
-+
-+	/* To 64kB in the first megabyte */
-+	if (!mb)
-+		return 64*1024;
-+
-+	/* To 1MB in the first 16MB */
-+	if (mb < 16)
-+		return 1024*1024;
-+
-+	/* To 32MB for anything above that */
-+	return 32*1024*1024;
-+}
-+
- void __init e820_reserve_resources_late(void)
- {
- 	int i;
-@@ -1381,6 +1398,23 @@ void __init e820_reserve_resources_late(void)
- 			insert_resource_expand_to_fit(&iomem_resource, res);
- 		res++;
- 	}
-+
-+	/*
-+	 * Try to bump up RAM regions to reasonable boundaries to
-+	 * avoid stolen RAM
-+	 */
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *entry = &e820_saved.map[i];
-+		resource_size_t start, end;
-+
-+		if (entry->type != E820_RAM)
-+			continue;
-+		start = entry->addr + entry->size;
-+		end = round_up(start, ram_alignment(start));
-+		if (start == end)
-+			continue;
-+		reserve_region_with_split(&iomem_resource, start, end, "RAM buffer");
-+	}
- }
- 
- char *__init default_machine_specific_memory_setup(void)
