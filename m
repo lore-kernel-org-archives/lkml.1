@@ -1,44 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751867AbZDPDnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbZDPDtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751867AbZDPDnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 23:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZDPDnA
+	id S1753261AbZDPDtu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 23:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDPDtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 23:43:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51664 "EHLO mail.dvmed.net"
+	Wed, 15 Apr 2009 23:49:41 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44074 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbZDPDm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 23:42:59 -0400
-Message-ID: <49E6A937.706@garzik.org>
-Date: Wed, 15 Apr 2009 23:42:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1750966AbZDPDtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 23:49:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,196,1239001200"; 
+   d="scan'208";a="132017267"
+Date: Thu, 16 Apr 2009 11:49:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090416034918.GB20162@localhost>
+References: <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090416111108.AC55.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB storage no-boot regression (bisected)
-References: <49E4FAC6.1030400@garzik.org>	<20090415014930.GA29413@kroah.com>	<49E5480F.10501@garzik.org>	<20090415050947.GB3462@kroah.com>	<49E5EE41.3090505@rtr.ca>	<20090415073001.503b0361@infradead.org>	<49E5FF48.3030809@rtr.ca>	<20090415125813.34c9a151@infradead.org>	<49E657BC.6000707@rtr.ca> <20090415183213.7962d929@infradead.org>
-In-Reply-To: <20090415183213.7962d929@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090416111108.AC55.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> .... who would boot their server from a USB stick for production use?
+On Thu, Apr 16, 2009 at 10:26:51AM +0800, KOSAKI Motohiro wrote:
+> tatus: RO
+> Content-Length: 13245
+> Lines: 380
+> 
+> Hi
+> 
+> > > > > On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
+> > > > > > > Export the following page flags in /proc/kpageflags,
+> > > > > > > just in case they will be useful to someone:
+> > > > > > >
+> > > > > > > - PG_swapcache
+> > > > > > > - PG_swapbacked
+> > > > > > > - PG_mappedtodisk
+> > > > > > > - PG_reserved
+> > >
+> > > PG_reserved should be exported as PG_KERNEL or somesuch.
+> >
+> > PG_KERNEL could be misleading. PG_reserved obviously do not cover all
+> > (or most) kernel pages. So I'd prefer to export PG_reserved as it is.
+> >
+> > It seems that the vast amount of free pages are marked PG_reserved:
+> 
+> Can I review the document at first?
+> if no good document for administrator, I can't ack exposing PG_reserved.
 
-Whole distros have chosen to do so.  the real world doesn't care about 
-USB enumeration details, they just want to boot off their $9 Wal-Mart 
-USB sticks... :)
+btw, is this the expected behavior to mark so many free pages as PG_reserved?
+Last time I looked at it, in 2.6.27, the free pages simply don't have
+any flags set.
 
-	Jeff
+//Or maybe it's a false reporting of my tool. Will double check.
 
+> > # uname -a
+> > Linux hp 2.6.30-rc2 #157 SMP Wed Apr 15 19:37:49 CST 2009 x86_64 GNU/Linux
+> > # echo 1 > /proc/sys/vm/drop_caches
+> > # ./page-types
+> >    flags        page-count       MB  symbolic-flags             long-symbolic-flags
+> > 0x004000            497474     1943  ______________r_____       reserved
+> > 0x008000              4454       17  _______________o____       compound
+> > 0x008014                 5        0  __R_D__________o____       referenced,dirty,compound
+> > 0x000020                 1        0  _____l______________       lru
+> > 0x000028               310        1  ___U_l______________       uptodate,lru
+> > 0x00002c                18        0  __RU_l______________       referenced,uptodate,lru
+> > 0x000068                80        0  ___U_lA_____________       uptodate,lru,active
+> > 0x00006c               157        0  __RU_lA_____________       referenced,uptodate,lru,active
+> > 0x002078                 1        0  ___UDlA______b______       uptodate,dirty,lru,active,swapbacked
+> > 0x00207c                17        0  __RUDlA______b______       referenced,uptodate,dirty,lru,active,swapbacked
+> > 0x000228                13        0  ___U_l___x__________       uptodate,lru,reclaim
+> > 0x000400              2085        8  __________B_________       buddy
+> 
+> "freed" is better?
+> buddy is implementation technique name.
 
+Not compellingly better :-)  I'd expect BUDDY to be a well recognized
+technique, something close to LRU.  PG_BUDDY could be documented as:
+this page is owned by the buddy system, which manages free memory.
+
+PG_FREED may seem more newbie friendly, but there will be the classical
+newbie question: "Why so few freed pages?!" ;-)
+
+It's not likely that an administrator not understanding BUDDY will
+understand many of the other exported page flags. He will have to
+query the document anyway.  And exporting PG_buddy as it is could
+be the best option for proficient users.
+
+> > 0x000804                 1        0  __R________m________       referenced,mmap
+> > 0x002808                10        0  ___U_______m_b______       uptodate,mmap,swapbacked
+> > 0x000828              1060        4  ___U_l_____m________       uptodate,lru,mmap
+> > 0x00082c               215        0  __RU_l_____m________       referenced,uptodate,lru,mmap
+> > 0x000868               189        0  ___U_lA____m________       uptodate,lru,active,mmap
+> > 0x002868              4187       16  ___U_lA____m_b______       uptodate,lru,active,mmap,swapbacked
+> > 0x00286c                30        0  __RU_lA____m_b______       referenced,uptodate,lru,active,mmap,swapbacked
+> > 0x00086c              1012        3  __RU_lA____m________       referenced,uptodate,lru,active,mmap
+> > 0x002878                 3        0  ___UDlA____m_b______       uptodate,dirty,lru,active,mmap,swapbacked
+> > 0x008880               936        3  _______S___m___o____       slab,mmap,compound
+> > 0x000880              1602        6  _______S___m________       slab,mmap
+> 
+> please don't display mmap and coumpound. it expose SLUB implentation detail.
+> IOW, if slab flag on, please ignore following flags and mapcount.
+>         - PG_active
+>         - PG_error
+>         - PG_private
+>         - PG_compound
+> 
+> BTW, if the page don't have PG_lru, following member and flags can be used another meanings.
+>         - PG_active
+>         - PG_referenced
+>         - page::_mapcount
+>         - PG_swapbacked
+>         - PG_reclaim
+>         - PG_unevictable
+>         - PG_mlocked
+> 
+> and, if the page never interact IO layer, following flags can be used another meanings.
+>         - PG_uptodate
+>         - PG_dirty
+
+Good point. I also noticed many of these conditional flags.
+The perceived solution would be to do some filtering if
+!CONFIG_DEBUG_KERNEL, to not confuse too many administrators.
+For kernel developers we want to be faithful :-)
+
+> 
+> > 0x0088c0                59        0  ______AS___m___o____       active,slab,mmap,compound
+> > 0x0008c0                49        0  ______AS___m________       active,slab,mmap
+> >    total            513968     2007
+> 
+> 
+> And, PageAnon() result seems provide good information if the page stay in lru.
+
+Good point! Will add this bit.
+
+> > # ./page-areas 0x004000
+> >     offset      len         KB
+> >          0       15       60KB
+> >         31        4       16KB
+> >        159       97      388KB
+> >       4096     2213     8852KB
+> >       6899     2385     9540KB
+> >       9497        3       12KB
+> >       9728    14528    58112KB
+> >
+> > > > > > > - PG_private
+> > > > > > > - PG_private_2
+> > > > > > > - PG_owner_priv_1
+> > > > > > >
+> > > > > > > - PG_head
+> > > > > > > - PG_tail
+> > > > > > > - PG_compound
+> > >
+> > > I would combine these three into a pseudo "large page" flag.
+> >
+> > Very neat idea! Patch updated accordingly.
+> >
+> > However - one pity I observed:
+> >
+> > # ./page-areas 0x008000
+> >     offset      len         KB
+> >       3088        4       16KB
+> >
+> > We can no longer tell if the above line means one 4-page hugepage, or two
+> > 2-page hugepages... Adding PG_COMPOUND_TAIL into the CONFIG_DEBUG_KERNEL block
+> > can help kernel developers. Or will it be ever cared by administrators?
+> >
+> >     341196        2        8KB
+> >     341202        2        8KB
+> >     341262        2        8KB
+> >     341272        8       32KB
+> >     341296        8       32KB
+> >     488448       24       96KB
+> >     488490        2        8KB
+> >     488496      320     1280KB
+> >     488842        2        8KB
+> >     488848       40      160KB
+> >
+> > > > > > >
+> > > > > > > - PG_unevictable
+> > > > > > > - PG_mlocked
+> > > > > > >
+> > > > > > > - PG_poison
+> > >
+> > > PG_poison is also useful to export. But since it depends on my
+> > > patchkit I will pull a patch for that into the HWPOISON series.
+> >
+> > That's not a problem - since the PG_poison line is be protected by
+> > #ifdef CONFIG_MEMORY_FAILURE :-)
+> >
+> > > > > > > - PG_unevictable
+> > > > > > > - PG_mlocked
+> > > >
+> > > > this 9 flags shouldn't exported.
+> > > > I can't imazine administrator use what purpose those flags.
+> > >
+> > > I think an abstraced "PG_pinned" or somesuch flag that combines
+> > > page lock, unevictable, mlocked would be useful for the administrator.
+> >
+> > The PG_PINNED abstraction risks hiding useful information.
+> > The administrator may not only care about the pinned pages,
+> > but also care _why_ they are pinned, i.e. ramfs.. or mlock?
+> >
+> > So it might be good to export them as is, with proper document.
+> >
+> > Here is the v2 patch, with flags for kernel hackers numbered from 32.
+> > Comments are welcome!
+> 
+> if you can write good document, PG_unevictable is exportable.
+> but PG_mlock isn't.
+> 
+> that's implementation tecknique of efficient unevictable pages for mlock.
+> we can change the future.
+
+Yup. That's in line with my vague feeling. For PG_unevictable we can
+say that the page is owned by the unevictable (non-)lru and not a
+candidate for LRU page reclaims. But for PG_mlock it's more about an
+assistant for kernel optimizations and there are no guarantees...
+
+Thanks,
+Fengguang
 
