@@ -1,101 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZDPRfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbZDPRgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbZDPRfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbZDPRfJ
+	id S1758032AbZDPRgc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbZDPRgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:35:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42543 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754306AbZDPRfI (ORCPT
+	Thu, 16 Apr 2009 13:36:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:11245 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755018AbZDPRgW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:35:08 -0400
-Date: Thu, 16 Apr 2009 13:34:46 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Christoph Hellwig <hch@lst.de>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 4/4] tracing/events: add trace-events-sample
-In-Reply-To: <20090416165849.GF5933@lst.de>
-Message-ID: <alpine.DEB.2.00.0904161331050.20429@gandalf.stny.rr.com>
-References: <20090415031511.128139334@goodmis.org> <20090415031605.445499740@goodmis.org> <20090416165849.GF5933@lst.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 16 Apr 2009 13:36:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,199,1239001200"; 
+   d="scan'208";a="448546153"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>,
+       "davidjon@xenontk.org" <davidjon@xenontk.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Thu, 16 Apr 2009 10:38:14 -0700
+Subject: RE: X freezes intermittently with 2.6.29.1
+Thread-Topic: X freezes intermittently with 2.6.29.1
+Thread-Index: Acm+Y4diAOfNvMk6QJOnWJZ1jsuLnwAVlZCA
+Message-ID: <7E82351C108FA840AB1866AC776AEC46587A0784@orsmsx505.amr.corp.intel.com>
+References: <49E6D8FE.80908@xenontk.org>
+ <86802c440904160018j5c4842d8t92742b6a1b2e4514@mail.gmail.com>
+In-Reply-To: <86802c440904160018j5c4842d8t92742b6a1b2e4514@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 16 Apr 2009, Christoph Hellwig wrote:
 
-> On Tue, Apr 14, 2009 at 11:15:15PM -0400, Steven Rostedt wrote:
-> > +++ b/samples/trace_events/Makefile
-> > @@ -0,0 +1,8 @@
-> > +# builds the trace events example kernel modules;
-> > +# then to use one (as root):  insmod <module_name.ko>
-> > +
-> > +PWD := $(shell pwd)
-> > +
-> > +CFLAGS_trace-events-sample.o := -I$(PWD)/samples/trace_events/
-> 
-> CFLAGS_trace-events-sample.o += -I$(src)
+Specifically the patch here will help (not sure whether it cleanly applies over 29.1.
 
-Is $(src) defined to be where the object is compiled?
+http://marc.info/?l=linux-kernel&m=123923026401648&w=2
 
-> 
-> That should better be written as.  But you'd easily get rid of that
-> by just including the file using #include "foo.h" instead of <foo.h>,
-> no?
+Thanks,
+Venki
+ 
 
-That is for the define_trace.h to find the file. The define_trace.h will 
-look from where it is located. ie. include/trace
-
-
-> 
-> > --- /dev/null
-> > +++ b/samples/trace_events/trace-events-sample.h
-> > @@ -0,0 +1,124 @@
-> > +/*
-> > + * Notice that this file is not protected like a normal header.
-> > + * We also must allow for rereading of this file. The
-> > + *
-> > + *  || defined(TRACE_HEADER_MULTI_READ)
-> > + *
-> > + * serves this purpose.
-> > + */
-> > +#if !defined(_TRACE_EVENT_SAMPLE_H) || defined(TRACE_HEADER_MULTI_READ)
-> > +#define _TRACE_EVENT_SAMPLE_H
-> 
-> Why do we need this protection at all?  It only be included by the users
-> of the tracepoints, and it seems just fair to take some more than normal
-> precaution for more than unusual magic headers.
-
-This was needed for kmem.h because it was causing header recursive hell.
-But instead of doing this for just a few headers, having it in all was a 
-way to be:
-
-1) safe
-
-2) descriptive
-
-#2 is because people are use to the #ifndef _MY_HEADER_H  and seeing that 
-there is also a TRACE_HEADER_MULTI_READ it makes it obvious that this 
-header may be included more than once, purposefully.
-
--- Steve
-
+>-----Original Message-----
+>From: Yinghai Lu [mailto:yhlu.kernel@gmail.com] 
+>Sent: Thursday, April 16, 2009 12:18 AM
+>To: davidjon@xenontk.org
+>Cc: linux-kernel@vger.kernel.org; Pallipadi, Venkatesh; Ingo 
+>Molnar; Jesse Barnes
+>Subject: Re: X freezes intermittently with 2.6.29.1
+>
+>On Thu, Apr 16, 2009 at 12:06 AM, David John 
+><davidjon@xenontk.org> wrote:
+>> Hi All,
+>>
+>> With 2.6.29.1 (stock kernel), on my Dell Inspiron 1545, X freezes for
+>> 15-20 seconds at a time randomly every 10 seconds or so making it
+>> unusable. Currently, I use the 2.6.29.1-54.fc11.x86_64 
+>kernel that comes
+>> with Fedora 11 Beta which has the same problem but only when 
+>X is left
+>> idle for a period of time. The kernel log is overrun by 
+>messages of the
+>> type:
+>>
+>> X:2802 freeing invalid memtype e4b42000-e4b43000
+>> X:2802 freeing invalid memtype e4b43000-e4b44000
+>> X:2802 freeing invalid memtype e4b44000-e4b45000
+>
+>can you try tip?
+>http://people.redhat.com/mingo/tip.git/readme.txt
+>
+>it seems include one patch for that.
+>
+>>
+>> This I believe is related to this:
+>>
+>> mtrr: type mismatch for e0000000,10000000 old: write-back new:
+>> write-combining
+>> [drm] MTRR allocation failed.  Graphics performance may suffer.
+>>
+>> The MTRR setup is below:
+>> reg00: base=0x000000000 (    0MB), size=32768MB, count=1: write-back
+>> reg01: base=0x0e0000000 ( 3584MB), size=  512MB, count=1: uncachable
+>> reg02: base=0x07dc00000 ( 2012MB), size=    4MB, count=1: uncachable
+>> reg03: base=0x07e000000 ( 2016MB), size=   32MB, count=1: uncachable
+>>
+>> I think the first entry is bogus. Both kernels come with the
+>> MTRR sanitize option enabled but the code is unable to find an
+>> optimal value. Is there any way to correct this? What values for
+>> mtrr_gran_size and mtrr_chunk_size would be appropriate?
+>
+>gran_size: 32M 	chunk_size: 128M 	num_reg: 7  	
+>lose cover RAM: 28M
+>
+>YH
+>
