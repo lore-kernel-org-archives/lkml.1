@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbZDPTsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZDPTtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758713AbZDPTsQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 15:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZDPTr7
+	id S1758798AbZDPTtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 15:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZDPTtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 15:47:59 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:35111
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756606AbZDPTr6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 15:47:58 -0400
-X-Greylist: delayed 902 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Apr 2009 15:47:58 EDT
-X-BigFish: VPS-37(zz98dR936eQ1447R9371Pzz1202hzzz2fh6bh14bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <49E787DC.2050800@am.sony.com>
-Date: Thu, 16 Apr 2009 12:32:44 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 16 Apr 2009 15:49:33 -0400
+Received: from gwu.lbox.cz ([62.245.111.132]:48152 "EHLO gwu.lbox.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757756AbZDPTtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 15:49:32 -0400
+X-Greylist: delayed 1918 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Apr 2009 15:49:32 EDT
+Date: Thu, 16 Apr 2009 21:18:02 +0200
+From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
+To: David Rientjes <rientjes@google.com>
+Cc: Nikola Ciprich <extmaillist@linuxbox.cz>,
+       David Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29.1: BUG: sleeping function called from invalid context
+	at mm/slub.c:1599
+Message-ID: <20090416191802.GC5024@nik-comp.linuxbox.cz>
+References: <20090415145841.GA5106@nik-comp.linuxbox.cz> <alpine.DEB.2.00.0904151127430.14961@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: subrata@linux.vnet.ibm.com
-CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next <linux-next@vger.kernel.org>,
-       sachinp <sachinp@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUILD FAILURE 03/12] Next April 14 : PPC64 randconfig	[arch/powerpc/platforms/ps3/setup.c]
-References: <1239733704.5344.75.camel@subratamodak.linux.ibm.com>
-In-Reply-To: <1239733704.5344.75.camel@subratamodak.linux.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset="UTF-8"
-X-OriginalArrivalTime: 16 Apr 2009 19:32:45.0407 (UTC) FILETIME=[1E1406F0:01C9BECA]
-X-SEL-encryption-scan: scanned
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="kfjH4zxOES6UT95V"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0904151127430.14961@chino.kir.corp.google.com>
+"X-PGP-Key: http://nik.lbox.cz/downloads/nikola.ciprich.asc"
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 1855283 records(16-04-2009)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/14/2009 11:28 AM, Subrata Modak wrote:
-> Observed the following build error:
-> ---
-> arch/powerpc/platforms/ps3/setup.c:49: error: redefinition of
-> ‘smp_send_stop’
-> include/linux/smp.h:125: error: previous definition of ‘smp_send_stop’
-> was here
 
-Hi Subrata,
+--kfjH4zxOES6UT95V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the report.  I submitted a fix to the powerpc ML:
+Hi David,
+thanks for a reply.
+I've also created a SGI bugzilla report:
+http://oss.sgi.com/bugzilla/show_bug.cgi?id=3D819
+BR
+nik
 
- http://patchwork.ozlabs.org/patch/26084/
+On Wed, Apr 15, 2009 at 11:33:54AM -0700, David Rientjes wrote:
 
--Geoff
+> David, do you think this could be related to holding pag->pag_ici_lock=20
+> while calling xfs_iget_cache_hit() in=20
+> 6441e549157b749bae003cce70b4c8b62e4801fa?
 
+
+--=20
+-------------------------------------
+Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
+
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
+
+www.linuxbox.cz
+
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
+
+--kfjH4zxOES6UT95V
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFJ54Rq3xdJJrLygV4RAt5cAJwIhhbLn5PYD74PPQqWMMgAnVOXVQCgwJGx
+pjZ5iQrLM3IuEZbdkMlcHXM=
+=HtBB
+-----END PGP SIGNATURE-----
+
+--kfjH4zxOES6UT95V--
