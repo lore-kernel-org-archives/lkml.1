@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZDPWuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZDPW5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZDPWuT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 18:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZDPWuF
+	id S1756136AbZDPW5J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 18:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZDPW4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 18:50:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37319 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752302AbZDPWuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 18:50:03 -0400
-Date: Thu, 16 Apr 2009 22:48:36 GMT
-From: tip-bot for Gautham R Shenoy <ego@in.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, ego@in.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tony.luck@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, tony.luck@intel.com,
-       mingo@elte.hu
-In-Reply-To: <20090414033936.GA534@in.ibm.com>
-References: <20090414033936.GA534@in.ibm.com>
-Subject: [tip:sched/urgent] sched: Avoid printing sched_group::__cpu_power for default case
-Message-ID: <tip-381512cf3d27f63f7a45b1bbe7d2d609c2ea3b74@git.kernel.org>
-Git-Commit-ID: 381512cf3d27f63f7a45b1bbe7d2d609c2ea3b74
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 22:48:38 +0000 (UTC)
+	Thu, 16 Apr 2009 18:56:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38867
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753472AbZDPW4v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 18:56:51 -0400
+Date: Thu, 16 Apr 2009 15:56:43 -0700 (PDT)
+Message-Id: <20090416.155643.06066521.davem@davemloft.net>
+To: kay.sievers@vrfy.org
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sparc: struct device - replace bus_id with dev_name(),
+ dev_set_name()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1239898912.17211.7.camel@poy>
+References: <ac3eb2510903270521i113df787u7ac5d842ece83740@mail.gmail.com>
+	<20090327.172743.30040617.davem@davemloft.net>
+	<1239898912.17211.7.camel@poy>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  381512cf3d27f63f7a45b1bbe7d2d609c2ea3b74
-Gitweb:     http://git.kernel.org/tip/381512cf3d27f63f7a45b1bbe7d2d609c2ea3b74
-Author:     Gautham R Shenoy <ego@in.ibm.com>
-AuthorDate: Tue, 14 Apr 2009 09:09:36 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 00:46:05 +0200
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 16 Apr 2009 18:21:52 +0200
 
-sched: Avoid printing sched_group::__cpu_power for default case
+> On Fri, 2009-03-27 at 17:27 -0700, David Miller wrote:
+>> From: Kay Sievers <kay.sievers@vrfy.org>
+>> Date: Fri, 27 Mar 2009 13:21:56 +0100
+>> 
+>> > it took a while, but it happened now, so this issue is coming back. :)
+>> > 
+>> > The name size limit is gone, there is no BUS_ID_SIZE thing anymore in
+>> > the driver core. BUS_ID_SIZE should go away in the 2.6.30 timeframe.
+>> > 
+>> > Could you please convert/remove BUS_ID_SIZE value from:
+>> >   drivers/net/gianfar.h:	char	phy_bus_id[BUS_ID_SIZE];
+>> >   drivers/net/ucc_geth.h:	char phy_bus_id[BUS_ID_SIZE];
+>> >   drivers/net/pasemi_mac.h:	char	phy_id[BUS_ID_SIZE];
+>> >   include/linux/phy.h:#define MII_BUS_ID_SIZE	(BUS_ID_SIZE - 3)
+>> >   include/linux/phy.h:	char bus_id[BUS_ID_SIZE];
+>> > 
+>> > Or let me know how you want to convert it, so I can do it?
+>> 
+>> Thanks a lot Kay, I'll look into these cases and take care
+>> of it.
+> 
+> This moves the 20 into the netdevice header, we need to get rid
+> of the driver core define now, otherwise people start adding new
+> code using it, and we want to finish this thankless job finally. :)
 
-Commit 46e0bb9c12f4 ("sched: Print sched_group::__cpu_power
-in sched_domain_debug") produces a messy dmesg output while
-attempting to print the sched_group::__cpu_power for each
-group in the sched_domain hierarchy.
+I was working on fixing this properly Kay, please be patient.
 
-Fix this by avoid printing the __cpu_power for default cases.
-(i.e, __cpu_power == SCHED_LOAD_SCALE).
-
-[ Impact: reduce syslog clutter ]
-
-Reported-by: Tony Luck <tony.luck@intel.com>
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Fixed-by: Tony Luck <tony.luck@intel.com>
-Cc: a.p.zijlstra@chello.nl
-LKML-Reference: <20090414033936.GA534@in.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/sched.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e90e70e..b902e58 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7367,8 +7367,12 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 		cpumask_or(groupmask, groupmask, sched_group_cpus(group));
- 
- 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
--		printk(KERN_CONT " %s (__cpu_power = %d)", str,
--						group->__cpu_power);
-+
-+		printk(KERN_CONT " %s", str);
-+		if (group->__cpu_power != SCHED_LOAD_SCALE) {
-+			printk(KERN_CONT " (__cpu_power = %d)",
-+				group->__cpu_power);
-+		}
- 
- 		group = group->next;
- 	} while (group != sd->groups);
+I'll have it killed off in net-next-2.6 soon enough.
