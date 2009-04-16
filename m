@@ -1,107 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbZDPRqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZDPRtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbZDPRqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZDPRqa
+	id S1756920AbZDPRtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbZDPRth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:46:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38737 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755928AbZDPRq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:46:29 -0400
-Date: Thu, 16 Apr 2009 17:45:39 GMT
-From: tip-bot for Cliff Wickman <cpw@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, cpw@sgi.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <E1LuR5Z-0007An-B8@eag09.americas.sgi.com>
-References: <E1LuR5Z-0007An-B8@eag09.americas.sgi.com>
-Subject: [tip:x86/uv] x86: UV BAU distribution and payload MMRs
-Message-ID: <tip-4ea3c51d5bd3bb4eea7d7d3a1f80d1a48c2a6f92@git.kernel.org>
-Git-Commit-ID: 4ea3c51d5bd3bb4eea7d7d3a1f80d1a48c2a6f92
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 17:45:44 +0000 (UTC)
+	Thu, 16 Apr 2009 13:49:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37422 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755173AbZDPRtg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 13:49:36 -0400
+Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
+ recursive protection
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <alpine.DEB.2.00.0904161335400.20429@gandalf.stny.rr.com>
+References: <20090416161543.199331330@goodmis.org>
+	 <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop>
+	 <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com>
+	 <1239902407.23397.3197.camel@laptop>
+	 <alpine.DEB.2.00.0904161335400.20429@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 16 Apr 2009 19:49:25 +0200
+Message-Id: <1239904165.23397.3265.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4ea3c51d5bd3bb4eea7d7d3a1f80d1a48c2a6f92
-Gitweb:     http://git.kernel.org/tip/4ea3c51d5bd3bb4eea7d7d3a1f80d1a48c2a6f92
-Author:     Cliff Wickman <cpw@sgi.com>
-AuthorDate: Thu, 16 Apr 2009 07:53:09 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 16 Apr 2009 19:44:16 +0200
+On Thu, 2009-04-16 at 13:38 -0400, Steven Rostedt wrote:
 
-x86: UV BAU distribution and payload MMRs
+> > > Note, that the ring buffer and events are made to be recursive. That is, 
+> > > it allows one event to trace within another event.
+> > 
+> > But surely not in the same context. You could do a 4 level recursion
+> > protection like I did in perf-counter, not allowing recursion in:
+> > 
+> >  nmi, irq, softirq, process - context.
+> 
+> Why not allow a nested interrupt to trace?
+> 
+> I don't want to add this logic to the lower levels, where only a few
+> users need the protection. The protecting should be at the user level.
 
-This patch correctly sets BAU memory mapped registers to point
-to the sending activation descriptor table and target payload table.
+wouldn't you want to disable preemption/softirq/irqs in the tracer -- to
+avoid such recursion to begin with (preemption isn't even strictly
+needed if you put the recursion count in the task struct, as each task
+has a new stack anyway).
 
-The "Broadcast Assist Unit" is used for TLB shootdown in UV.
+I think having a recursion detection in place is far more valuable than
+being able to recursively trace interrupts and the like, which are
+exceedingly rare (on x86, and power and other arch with multiple
+interrupt levels that each have their own stack can extend the recursion
+levels too).
 
-The memory mapped registers that point to sending and receiving
-memory structures contain node numbers.
+> > That allows you to trace an irq while you're tracing something in
+> > process context, etc.. But not allow recursion on the same level.
+> > 
+> > >  If the tracepoint is 
+> > > triggered by something within the trace point handler, then we are 
+> > > screwed. That needs to be fixed.
+> > 
+> > Exactly the thing you want to detect and warn about, preferably with a
+> > nice stack trace.
+> 
+> Its hard when you want to allow nesting.
 
-In one case the __pa() function did not provide the node id of
-memory on blade zero in configurations where that id is nonzero.
-In another case, it was assumed that memory was allocated on
-the local node.  That assumption is not true in a configuration
-in which the node has no memory.
+Hard never stopped us before, did it ;-)
 
-Tested on the UV hardware simulator.
+> > > I have not seen what is triggering back into locking. The ring buffer and 
+> > > what I can see by the event code, does not grab any locks besides raw 
+> > > ones.
+> > 
+> > Well, it used to all work, so something snuck in.
+> 
+> Note, it seems only the lockdep has issues with nesting. Perhaps when I 
+> can publish the lockless ring buffer this will all go away?
 
-[ Impact: fix possible runtime crash due to incorrect TLB logic ]
+I doubt it, it shouldn't happen as it stands -- so this patch only hides
+the real issue.
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-LKML-Reference: <E1LuR5Z-0007An-B8@eag09.americas.sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/tlb_uv.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index 98307f9..7842233 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -717,7 +717,7 @@ uv_activation_descriptor_init(int node, int pnode)
- 	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
- 	BUG_ON(!adp);
- 
--	pa = __pa((unsigned long)adp);
-+	pa = uv_gpa(adp); /* need the real nasid*/
- 	n = pa >> uv_nshift;
- 	m = pa & uv_mmask;
- 
-@@ -754,6 +754,8 @@ static struct bau_payload_queue_entry * __init
- uv_payload_queue_init(int node, int pnode, struct bau_control *bau_tablesp)
- {
- 	struct bau_payload_queue_entry *pqp;
-+	unsigned long pa;
-+	int pn;
- 	char *cp;
- 
- 	pqp = (struct bau_payload_queue_entry *) kmalloc_node(
-@@ -764,10 +766,14 @@ uv_payload_queue_init(int node, int pnode, struct bau_control *bau_tablesp)
- 	cp = (char *)pqp + 31;
- 	pqp = (struct bau_payload_queue_entry *)(((unsigned long)cp >> 5) << 5);
- 	bau_tablesp->va_queue_first = pqp;
-+	/*
-+	 * need the pnode of where the memory was really allocated
-+	 */
-+	pa = uv_gpa(pqp);
-+	pn = pa >> uv_nshift;
- 	uv_write_global_mmr64(pnode,
- 			      UVH_LB_BAU_INTD_PAYLOAD_QUEUE_FIRST,
--			      ((unsigned long)pnode <<
--			       UV_PAYLOADQ_PNODE_SHIFT) |
-+			      ((unsigned long)pn << UV_PAYLOADQ_PNODE_SHIFT) |
- 			      uv_physnodeaddr(pqp));
- 	uv_write_global_mmr64(pnode, UVH_LB_BAU_INTD_PAYLOAD_QUEUE_TAIL,
- 			      uv_physnodeaddr(pqp));
