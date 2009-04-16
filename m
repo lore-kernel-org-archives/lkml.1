@@ -1,109 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZDPEoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZDPEqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZDPEoB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 00:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZDPEnw
+	id S1753199AbZDPEqS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 00:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZDPEqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 00:43:52 -0400
-Received: from mga14.intel.com ([143.182.124.37]:43279 "EHLO mga14.intel.com"
+	Thu, 16 Apr 2009 00:46:06 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36901 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbZDPEnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 00:43:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,196,1239001200"; 
-   d="scan'208";a="132030065"
-Date: Thu, 16 Apr 2009 12:43:06 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090416044306.GA21153@localhost>
-References: <20090414133448.C645.A69D9226@jp.fujitsu.com> <20090414064132.GB5746@localhost> <20090414154606.C665.A69D9226@jp.fujitsu.com> <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090415135749.GD14687@one.firstfloor.org> <20090416024133.GA20162@localhost> <20090416035443.GH14687@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416035443.GH14687@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750914AbZDPEqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 00:46:04 -0400
+Date: Thu, 16 Apr 2009 14:45:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 16
+Message-Id: <20090416144556.a9afa9d9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__16_Apr_2009_14_45_56_+1000_8JsiCJ3CML0Fo1TH"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 11:54:43AM +0800, Andi Kleen wrote:
-> On Thu, Apr 16, 2009 at 10:41:33AM +0800, Wu Fengguang wrote:
-> > On Wed, Apr 15, 2009 at 09:57:49PM +0800, Andi Kleen wrote:
-> > > > That's pretty good separations. I guess it would be convenient to make the
-> > > > extra kernel flags available under CONFIG_DEBUG_KERNEL?
-> > > 
-> > > Yes.
-> > > 
-> > > BTW an alternative would be just someone implementing a suitable
-> > > command/macro in crash(1) and tell the kernel hackers to run that on
-> > > /proc/kcore. That would have the advantage to not require code.
-> > 
-> > Hmm, that would be horrible to code/maintain. i
-> 
-> Actually the bits are enums and crash is able to read C type 
-> information.
+--Signature=_Thu__16_Apr_2009_14_45_56_+1000_8JsiCJ3CML0Fo1TH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Great! That dismissed my main concern with crash.
+Hi all,
 
-> > One major purpose of
-> > /proc/kpageflags is to export the unstable kernel page flag bits as
-> > stable ones to user space. 
-> 
-> That's the first case ("administrator"), but not the second one
-> ("kernel hacker")
-> 
-> BTW not saying that crash is the best solution for this, but
-> it's certainly an serious alternative for the kernel hacker
-> case. 
+Changes since 20090415:
 
-OK.
+This tree will not build a powerpc allyesconfig.
 
-> > Note that the exact internal flag bits can
-> > not only change slowly with kernel versions, but more likely with
-> > different kconfig combinations.
-> 
-> Really? The numbers should be the same, at least for a given
-> architecture with 32bit/64bit.
+The rr tree gained a conflict against Linus' tree.
 
-For example, the presence of CONFIG_PAGEFLAGS_EXTENDED will shift
-all the following flag bits by 1.
+The cifs tree lost its build failure.
 
-        #ifdef CONFIG_PAGEFLAGS_EXTENDED
-                PG_head,                /* A head page */
-                PG_tail,                /* A tail page */
-        #else  
-                PG_compound,            /* A compound page */
-        #endif 
-                PG_swapcache,           /* Swap page: swp_entry_t in private */
-                PG_mappedtodisk,        /* Has blocks allocated on-disk */
-                PG_reclaim,             /* To be reclaimed asap */
-                PG_buddy,               /* Page is free, on buddy lists */
-                PG_swapbacked,          /* Page is backed by RAM/swap */
-        #ifdef CONFIG_UNEVICTABLE_LRU
-                PG_unevictable,         /* Page is "unevictable"  */
-        #endif
-        #ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
-                PG_mlocked,             /* Page is vma mlocked */
-        #endif
-        #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
-                PG_uncached,            /* Page has been mapped as uncached */
-        #endif  
-                __NR_PAGEFLAGS,
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-> > Followed are their detailed locations. Did we found a bug? ;-)
-> 
-> I think all pages > 0 in a larger page are tails.  But I don't
-> claim to understand all the finer details of compound pages.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
-Right. Tail pages will outnumber head pages. But I found that the
-tail page _ranges_ greatly outnumber head pages. There should be
-exactly one tail page range for one head page. 
+Below is a summary of the state of the merge.
 
-Thanks,
-Fengguang
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+CONFLICT (content): Merge conflict in drivers/ide/ide-disk.c
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/serial/8250_pci.c
+CONFLICT (content): Merge conflict in fs/devpts/inode.c
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slob.c
+Merging suspend/linux-next
+Merging nilfs2/for-next
+Merging quilt/driver-core
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Thu__16_Apr_2009_14_45_56_+1000_8JsiCJ3CML0Fo1TH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknmuAQACgkQjjKRsyhoI8zZ/ACfa1CyxIgBtw9TTVMCugbrIjiA
+6xIAoIBNPmUs9LsjX9MxKyQDNiDafUW9
+=s5cX
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__16_Apr_2009_14_45_56_+1000_8JsiCJ3CML0Fo1TH--
