@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZDPRiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZDPRjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbZDPRiz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756915AbZDPRip
+	id S1758358AbZDPRjc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZDPRjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:38:45 -0400
-Received: from verein.lst.de ([213.95.11.210]:39176 "EHLO verein.lst.de"
+	Thu, 16 Apr 2009 13:39:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53997 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756757AbZDPRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:38:44 -0400
-Date: Thu, 16 Apr 2009 19:36:29 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+	id S1756486AbZDPRjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 13:39:21 -0400
+Date: Thu, 16 Apr 2009 19:38:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 4/4] tracing/events: add trace-events-sample
-Message-ID: <20090416173629.GA10206@lst.de>
-References: <20090415031511.128139334@goodmis.org> <20090415031605.445499740@goodmis.org> <20090416165849.GF5933@lst.de> <alpine.DEB.2.00.0904161331050.20429@gandalf.stny.rr.com>
-Mime-Version: 1.0
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v3
+Message-ID: <20090416173805.GC16618@elte.hu>
+References: <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes> <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu> <49E76864.9060309@kernel.org> <49E76A92.7040203@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904161331050.20429@gandalf.stny.rr.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_40
+In-Reply-To: <49E76A92.7040203@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 01:34:46PM -0400, Steven Rostedt wrote:
-> > On Tue, Apr 14, 2009 at 11:15:15PM -0400, Steven Rostedt wrote:
-> > > +++ b/samples/trace_events/Makefile
-> > > @@ -0,0 +1,8 @@
-> > > +# builds the trace events example kernel modules;
-> > > +# then to use one (as root):  insmod <module_name.ko>
-> > > +
-> > > +PWD := $(shell pwd)
-> > > +
-> > > +CFLAGS_trace-events-sample.o := -I$(PWD)/samples/trace_events/
+
+* H. Peter Anvin <hpa@zytor.com> wrote:
+
+> Yinghai Lu wrote:
 > > 
-> > CFLAGS_trace-events-sample.o += -I$(src)
+> > that need to do done much earlier, and much simple, just need to make that range to be reserved in e820.
+> > and later e820_setup_gap even don't need to be aligned again.
+> > 
 > 
-> Is $(src) defined to be where the object is compiled?
+> As long as that doesn't cause the PCI layer to move devices 
+> already assigned in this range out of it.  What we want is really 
+> a "weak reserve".  On the other hand, that may very well be the 
+> semantics of the existing reserved space, too (I honestly haven't 
+> looked lately.)
 
-$(src) is the source directory, $(obj) is the directory where the
-compiled object ends up.
+We have reserve_region_with_split(), which 'wraps around' existing 
+resources non-intrusively by creating split-up resources - 
+preventing their forced reallocation (and preventing their possible 
+breakage - a number of BARs dont like dynamic reallocations at all).
 
+	Ingo
