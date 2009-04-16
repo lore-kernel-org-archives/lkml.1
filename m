@@ -1,242 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZDPAyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZDPA4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbZDPAyp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZDPAyg
+	id S1757254AbZDPA4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZDPA4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 20:54:36 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39722 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbZDPAyf (ORCPT
+	Wed, 15 Apr 2009 20:56:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46680 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752052AbZDPA4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 20:54:35 -0400
-Date: Thu, 16 Apr 2009 09:53:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add file based RSS accounting for memory resource
- controller (v2)
-Message-Id: <20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090415120510.GX7082@balbir.in.ibm.com>
-References: <20090415120510.GX7082@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Apr 2009 20:56:31 -0400
+Date: Wed, 15 Apr 2009 20:56:28 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with CREATE_TRACE_POINTS and recursion safety
+In-Reply-To: <49E67D1D.8020704@goop.org>
+Message-ID: <alpine.DEB.2.00.0904152042350.4459@gandalf.stny.rr.com>
+References: <49E67D1D.8020704@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 17:35:10 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> +void mem_cgroup_update_mapped_file_stat(struct page *page, struct mm_struct *mm,
-> +					int val)
-> +{
-> +	struct mem_cgroup *mem;
-> +	struct mem_cgroup_stat *stat;
-> +	struct mem_cgroup_stat_cpu *cpustat;
-> +	int cpu = get_cpu();
-> +
-> +	if (!page_is_file_cache(page))
-> +		return;
-> +
-> +	if (unlikely(!mm))
-> +		mm = &init_mm;
-> +
-> +	mem = try_get_mem_cgroup_from_mm(mm);
-> +	if (!mem)
-> +		return;
-> +
-> +	stat = &mem->stat;
-> +	cpustat = &stat->cpustat[cpu];
-> +
-> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
-> +}
->  
-put_cpu() is necessary.
+On Wed, 15 Apr 2009, Jeremy Fitzhardinge wrote:
 
-
-
->  /*
->   * Call callback function against all cgroup under hierarchy tree.
-> @@ -1096,6 +1124,9 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
->  	struct mem_cgroup_per_zone *from_mz, *to_mz;
->  	int nid, zid;
->  	int ret = -EBUSY;
-> +	struct mem_cgroup_stat *stat;
-> +	struct mem_cgroup_stat_cpu *cpustat;
-> +	int cpu;
->  
->  	VM_BUG_ON(from == to);
->  	VM_BUG_ON(PageLRU(pc->page));
-> @@ -1116,6 +1147,18 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
->  
->  	res_counter_uncharge(&from->res, PAGE_SIZE);
->  	mem_cgroup_charge_statistics(from, pc, false);
-> +
-> +	cpu = get_cpu();
-> +	/* Update mapped_file data for mem_cgroup "from" */
-> +	stat = &from->stat;
-> +	cpustat = &stat->cpustat[cpu];
-> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, -1);
-> +
-> +	/* Update mapped_file data for mem_cgroup "to" */
-> +	stat = &to->stat;
-> +	cpustat = &stat->cpustat[cpu];
-> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, 1);
-> +
-here, too.
-
-Seems no troubles in other parts.
-
-Regards,
--Kame
-
->  	if (do_swap_account)
->  		res_counter_uncharge(&from->memsw, PAGE_SIZE);
->  	css_put(&from->css);
-> @@ -2051,6 +2094,7 @@ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
->  enum {
->  	MCS_CACHE,
->  	MCS_RSS,
-> +	MCS_MAPPED_FILE,
->  	MCS_PGPGIN,
->  	MCS_PGPGOUT,
->  	MCS_INACTIVE_ANON,
-> @@ -2071,6 +2115,7 @@ struct {
->  } memcg_stat_strings[NR_MCS_STAT] = {
->  	{"cache", "total_cache"},
->  	{"rss", "total_rss"},
-> +	{"mapped_file", "total_mapped_file"},
->  	{"pgpgin", "total_pgpgin"},
->  	{"pgpgout", "total_pgpgout"},
->  	{"inactive_anon", "total_inactive_anon"},
-> @@ -2091,6 +2136,8 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
->  	s->stat[MCS_CACHE] += val * PAGE_SIZE;
->  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
->  	s->stat[MCS_RSS] += val * PAGE_SIZE;
-> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_MAPPED_FILE);
-> +	s->stat[MCS_MAPPED_FILE] += val * PAGE_SIZE;
->  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
->  	s->stat[MCS_PGPGIN] += val;
->  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
-> diff --git a/mm/memory.c b/mm/memory.c
-> index a715b19..95a9ded 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -822,7 +822,7 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
->  					mark_page_accessed(page);
->  				file_rss--;
->  			}
-> -			page_remove_rmap(page);
-> +			page_remove_rmap(page, vma);
->  			if (unlikely(page_mapcount(page) < 0))
->  				print_bad_pte(vma, addr, ptent, page);
->  			tlb_remove_page(tlb, page);
-> @@ -1421,7 +1421,7 @@ static int insert_page(struct vm_area_struct *vma, unsigned long addr,
->  	/* Ok, finally just insert the thing.. */
->  	get_page(page);
->  	inc_mm_counter(mm, file_rss);
-> -	page_add_file_rmap(page);
-> +	page_add_file_rmap(page, vma);
->  	set_pte_at(mm, addr, pte, mk_pte(page, prot));
->  
->  	retval = 0;
-> @@ -2080,7 +2080,7 @@ gotten:
->  			 * mapcount is visible. So transitively, TLBs to
->  			 * old page will be flushed before it can be reused.
->  			 */
-> -			page_remove_rmap(old_page);
-> +			page_remove_rmap(old_page, vma);
->  		}
->  
->  		/* Free the old page.. */
-> @@ -2718,7 +2718,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
->  			page_add_new_anon_rmap(page, vma, address);
->  		} else {
->  			inc_mm_counter(mm, file_rss);
-> -			page_add_file_rmap(page);
-> +			page_add_file_rmap(page, vma);
->  			if (flags & FAULT_FLAG_WRITE) {
->  				dirty_page = page;
->  				get_page(dirty_page);
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index 068655d..098d365 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -131,7 +131,7 @@ static void remove_migration_pte(struct vm_area_struct *vma,
->  	if (PageAnon(new))
->  		page_add_anon_rmap(new, vma, addr);
->  	else
-> -		page_add_file_rmap(new);
-> +		page_add_file_rmap(new, vma);
->  
->  	/* No need to invalidate - it was non-present before */
->  	update_mmu_cache(vma, addr, pte);
-> diff --git a/mm/rmap.c b/mm/rmap.c
-> index 1652166..3e29864 100644
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -686,10 +686,12 @@ void page_add_new_anon_rmap(struct page *page,
->   *
->   * The caller needs to hold the pte lock.
->   */
-> -void page_add_file_rmap(struct page *page)
-> +void page_add_file_rmap(struct page *page, struct vm_area_struct *vma)
->  {
-> -	if (atomic_inc_and_test(&page->_mapcount))
-> +	if (atomic_inc_and_test(&page->_mapcount)) {
->  		__inc_zone_page_state(page, NR_FILE_MAPPED);
-> +		mem_cgroup_update_mapped_file_stat(page, vma->vm_mm, 1);
-> +	}
->  }
->  
->  #ifdef CONFIG_DEBUG_VM
-> @@ -719,7 +721,7 @@ void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long
->   *
->   * The caller needs to hold the pte lock.
->   */
-> -void page_remove_rmap(struct page *page)
-> +void page_remove_rmap(struct page *page, struct vm_area_struct *vma)
->  {
->  	if (atomic_add_negative(-1, &page->_mapcount)) {
->  		/*
-> @@ -738,6 +740,7 @@ void page_remove_rmap(struct page *page)
->  			mem_cgroup_uncharge_page(page);
->  		__dec_zone_page_state(page,
->  			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
-> +		mem_cgroup_update_mapped_file_stat(page, vma->vm_mm, -1);
->  		/*
->  		 * It would be tidy to reset the PageAnon mapping here,
->  		 * but that might overwrite a racing page_add_anon_rmap
-> @@ -835,7 +838,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
->  		dec_mm_counter(mm, file_rss);
->  
->  
-> -	page_remove_rmap(page);
-> +	page_remove_rmap(page, vma);
->  	page_cache_release(page);
->  
->  out_unmap:
-> @@ -950,7 +953,7 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
->  		if (pte_dirty(pteval))
->  			set_page_dirty(page);
->  
-> -		page_remove_rmap(page);
-> +		page_remove_rmap(page, vma);
->  		page_cache_release(page);
->  		dec_mm_counter(mm, file_rss);
->  		(*mapcount)--;
+> I'm having a problem with CREATE_TRACE_POINTS being too indiscriminate.  The
+> trouble is that it not only creates tracepoint definitions for the intended
+> tracepoints, but any other tracepoint definitions which get included
+> incidentally.
 > 
-> -- 
-> 	Balbir
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> For example, I'm seeing my paravirt tracepoints being instantiated in both
+> kernel/sched.o and kernel/irq/manage.o as side-effects of the scheduler and
+> irq tracepoints being instantiated.
+> 
+> I'm experimenting with a different scheme, wherein a subsystem defines
+> CREATE_FOO_TRACE_POINTS in the .c file where it wants to instantiate the
+> tracepoints - rather than CREATE_TRACE_POINTS - and its trace/events/foo.h
+> does:
+> 
+>    #ifdef CREATE_FOO_TRACE_POINTS
+>    #undef CREATE_FOO_TRACE_POINTS	/* avoid infinite recursion */
+>    #include <trace/instantiate_trace.h>
+>    #else
+>    #include <trace/define_trace.h>
+>    #endif
+> 
+> where instantiate_trace.h is:
+> 
+>    #define CREATE_TRACE_POINTS
+>    #include <trace/define_trace.h>
+>    #undef CREATE_TRACE_POINTS
+> 
+> (Just to prevent a bit more repeated boilerplate in each events definition
+> file.)
+> 
+> This seems to work.  (Update: no it doesn't.  WTF has paravirt-trace.o got
+> duplicate kmem tracepoints?!)
+
+kmem was a PITA.  Looks like we might need to do a:
+
+#ifdef CREATE_FOO_TRACE_POINTS
+#include <trace/define_trace.h>
+#endif
+
+type of thing, and have each user define their own CREATE_FOO_TRACE_POINTS 
+that they want to instantiate. This should be a requirement on any 
+trace point header that is used in other headers.
+
+Does just adding the above to the kmem.h header and your header fix it for 
+you?
+
+-- Steve
+
+
+
+
+> 
+> A related problem is that the TRACE_INCLUDE_FILE mechanism doesn't work,
+> because if any tracepoint definition header sets it, it overrides the setting
+> for all others, so, for example, arch/x86/include/asm/paravirt.h ends up being
+> included as the source of definitions for events/sched.h.  I gave up and moved
+> paravirt-trace.h to trace/events/pvops.h rather than try to deal with it.
+
+Those that define TRACE_INCLUDE_FILE need to undef it too. :-/
+
+> 
+> Lucky for you Steven, none of this is getting any more pretty, so you may yet
+> get your prize.
 
