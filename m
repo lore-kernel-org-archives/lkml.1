@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZDPB1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZDPBaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740AbZDPB1f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 21:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZDPB1M
+	id S1755576AbZDPBaB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 21:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZDPB3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 21:27:12 -0400
-Received: from ozlabs.org ([203.10.76.45]:36382 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbZDPB1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 21:27:11 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-Date: Thu, 16 Apr 2009 10:57:05 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>
-References: <200904140159.n3E1x1K1014705@hera.kernel.org> <200904152014.11717.rusty@rustcorp.com.au> <alpine.LFD.2.00.0904150822020.4132@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904150822020.4132@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 15 Apr 2009 21:29:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55636 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbZDPB3w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 21:29:52 -0400
+Date: Wed, 15 Apr 2009 18:31:37 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: How to completely disable async fastboot?
+Message-ID: <20090415183137.4d19a7c8@infradead.org>
+In-Reply-To: <49E679D0.7050600@garzik.org>
+References: <49E679D0.7050600@garzik.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904161057.07108.rusty@rustcorp.com.au>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 12:58:45 am Linus Torvalds wrote:
+On Wed, 15 Apr 2009 20:20:32 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> The following commit
 > 
-> On Wed, 15 Apr 2009, Rusty Russell wrote:
+> > commit 9710794383ee5008d67f1a6613a4717bf6de47bc
+> > Author: Arjan van de Ven <arjan@linux.intel.com>
+> > Date:   Sun Mar 15 11:11:44 2009 -0700
 > > 
-> >    The API is screwy.  It excludes the current CPU from the mask,
-> > unconditionally.  It's a tlb flush helper masquerading as a general function.
-> > 
-> > (smp_call_function has the same issue).
-> > 
-> > Something like this?
-> > 
-> > Subject: smp_call_function_many: add explicit exclude_self flag
+> >     async: remove the temporary (2.6.29) "async is off by default"
+> > code
 > 
-> No. This just makes the API even screwier. It fixes the 
-> "smp_processor_id()" thing, but it is 
+> not only changes a default, it completely removes the ability to turn 
+> off async AFAICS.
+
+this is on the request of Andrew and others who want to be able to use
+these API's (soon) in an "forced offload" scenario. 
+
 > 
->  (a) horribly buggy
+> At present, I need to turn this off to debug boot-time operation.
 
-Sure.  Did it even compile?
+can you give some details? Maybe I can help suggest things...
 
->      Those 
-> 
-> 	if (exclude_self && cpu == this_cpu)
-> 		cpu = cpumask_next_and(cpu, mask, cpu_online_mask);
-> 
->      things are wrong - we need to do that "jump over our own CPU" thing 
->      regardless of whether 'exclude_self' is set or not, since we're going 
->      to special-case our own CPU anyway.
 
-I don't think so (smp_call_function_single will DTRT if 
-cpu == smp_processor_id).  But I didn't test to be sure.
-
->  (c) Wrong, even if it wasn't (horribly buggy)^2
-> 
->      Adding "flags" to an interface doesn't make it better. Quite the 
->      reverse. It makes it worse.
-
-Uglier.  Worse?  It would have prevented Andrew's mistake.
-
->      It also makes it even MORE different from 
->      all the other smp_call_function's, which just do the 'self' cpu 
->      without any stupid conditionals and flags.
-
-You've said this twice, but unfortunately that doesn't make it true.
-
-smp_call_function() is the original from which this derives, and it has
-always skipped the current cpu.  Hence on_each_cpu().
-
-I'd love to see a fix which isn't ugly and doesn't put a cpumask on the
-stack.
-
-> > Impact: clarify and extend confusing API
-> 
-> And what the hell is up with these bogus "Impact:" things? Who started 
-> doing that, and why?
-
-Ingo wants them.  Example:
-
-	lguest: don't expect linear addresses in gdt pvops
-
-	Impact: fix guest crash 'lguest: bad read address 0x4800000 len 256'
-
-What's more important in the subject line?  That it fixes a crash, or what it
-does?
-
-Thanks,
-Rusty.
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
