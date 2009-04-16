@@ -1,145 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbZDPQSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZDPQRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758282AbZDPQSA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbZDPQR1
+	id S1758192AbZDPQRq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZDPQRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:17:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54471 "EHLO hera.kernel.org"
+	Thu, 16 Apr 2009 12:17:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54466 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757001AbZDPQRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:17:25 -0400
-Date: Thu, 16 Apr 2009 16:15:54 GMT
+	id S1756080AbZDPQRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:17:15 -0400
+Date: Thu, 16 Apr 2009 16:15:43 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
        mingo@redhat.com, lizf@cn.fujitsu.com, tytso@mit.edu,
-       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
+       jens.axboe@oracle.com, duyuyang@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, tytso@mit.edu,
-       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49E54E60.50408@cn.fujitsu.com>
-References: <49E54E60.50408@cn.fujitsu.com>
-Subject: [tip:tracing/core] blktrace: fix context-info when mixed-using blk tracer and trace events
-Message-ID: <tip-f3948f8857ef5de239f28a61dddb1554a0ae4c2c@git.kernel.org>
-Git-Commit-ID: f3948f8857ef5de239f28a61dddb1554a0ae4c2c
+       jens.axboe@oracle.com, duyuyang@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <49E42665.6020506@cn.fujitsu.com>
+References: <49E42665.6020506@cn.fujitsu.com>
+Subject: [tip:tracing/core] blktrace: add trace/ to /sys/block/sda
+Message-ID: <tip-1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82@git.kernel.org>
+Git-Commit-ID: 1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 16:15:56 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 16:15:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f3948f8857ef5de239f28a61dddb1554a0ae4c2c
-Gitweb:     http://git.kernel.org/tip/f3948f8857ef5de239f28a61dddb1554a0ae4c2c
+Commit-ID:  1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82
+Gitweb:     http://git.kernel.org/tip/1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Wed, 15 Apr 2009 11:02:56 +0800
+AuthorDate: Tue, 14 Apr 2009 14:00:05 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 16 Apr 2009 10:11:01 +0200
+CommitDate: Thu, 16 Apr 2009 10:10:59 +0200
 
-blktrace: fix context-info when mixed-using blk tracer and trace events
+blktrace: add trace/ to /sys/block/sda
 
-When current tracer is set to blk tracer, TRACE_ITER_CONTEXT_INFO is
-unset, but actually context-info is printed:
+Impact: allow ftrace-plugin blktrace to trace device-mapper devices
 
-    pdflush-431   [000]   821.181576:   8,0    P   N [pdflush]
+To trace a single partition:
+  # echo 1 > /sys/block/sda/sda1/enable
 
-And then if we enable TRACE_ITER_CONTEXT_INFO:
+To trace the whole sda instead:
+  # echo 1 > /sys/block/sda/enable
 
-    # echo context-info > trace_options
+Thus we also fix an issue reported by Ted, that ftrace-plugin blktrace
+can't be used to trace device-mapper devices.
 
-We'll see context-info printed twice. What's worse, when we use blk
-tracer and trace events at the same time, we'll see no context-info
-for trace events at all:
+Now:
 
-    jbd2_commit_logging: dev dm-0:8 transaction 333227
-    jbd2_end_commit: dev dm-0:8 transaction 333227 head 332814
-      rm-25433 [001]  9578.307485:   8,18   m   N cfq25433 slice expired t=0
-      rm-25433 [001]  9578.307486:   8,18   m   N cfq25433 put_queue
+  # echo 1 > /sys/block/dm-0/trace/enable
+  echo: write error: No such device or address
+  # mount -t ext4 /dev/dm-0 /mnt
+  # echo 1 > /sys/block/dm-0/trace/enable
+  # echo blk > /debug/tracing/current_tracer
 
-This patch adds blk_tracer->set_flags(), and context-info flag is unset
-only when we set the output to classic mode.
-
-Note after this patch, one should unset context-info explicitly if he
-wants to get binary output that can be parsed by blkparse:
-
-    # echo nocontext-info > trace_options
-    # echo bin > trace_options
-    # echo blk > current_tracer
-    # cat trace_pipe | blkparse -i -
-
-Reported-by: Theodore Ts'o <tytso@mit.edu>
+Reported-by: Theodore Tso <tytso@mit.edu>
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <49E54E60.50408@cn.fujitsu.com>
+Cc: Shawn Du <duyuyang@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+LKML-Reference: <49E42665.6020506@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/blktrace.c |   18 +++++++++++++-----
- 1 files changed, 13 insertions(+), 5 deletions(-)
+ block/blk-sysfs.c            |    7 ++++++-
+ include/linux/blktrace_api.h |    6 ++++++
+ kernel/trace/blktrace.c      |    5 +++++
+ 3 files changed, 17 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 8e7c5da..c32062b 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1211,7 +1211,6 @@ static void blk_tracer_print_header(struct seq_file *m)
- static void blk_tracer_start(struct trace_array *tr)
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index 73f36be..8653d71 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -387,16 +387,21 @@ struct kobj_type blk_queue_ktype = {
+ int blk_register_queue(struct gendisk *disk)
  {
- 	blk_tracer_enabled = true;
--	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
- }
+ 	int ret;
++	struct device *dev = disk_to_dev(disk);
  
- static int blk_tracer_init(struct trace_array *tr)
-@@ -1224,7 +1223,6 @@ static int blk_tracer_init(struct trace_array *tr)
- static void blk_tracer_stop(struct trace_array *tr)
- {
- 	blk_tracer_enabled = false;
--	trace_flags |= TRACE_ITER_CONTEXT_INFO;
- }
+ 	struct request_queue *q = disk->queue;
  
- static void blk_tracer_reset(struct trace_array *tr)
-@@ -1289,9 +1287,6 @@ out:
- static enum print_line_t blk_trace_event_print(struct trace_iterator *iter,
- 					       int flags)
- {
--	if (!trace_print_context(iter))
--		return TRACE_TYPE_PARTIAL_LINE;
--
- 	return print_one_line(iter, false);
- }
+ 	if (WARN_ON(!q))
+ 		return -ENXIO;
  
-@@ -1326,6 +1321,18 @@ static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
- 	return print_one_line(iter, true);
- }
++	ret = blk_trace_init_sysfs(dev);
++	if (ret)
++		return ret;
++
+ 	if (!q->request_fn)
+ 		return 0;
  
-+static int blk_tracer_set_flag(u32 old_flags, u32 bit, int set)
+-	ret = kobject_add(&q->kobj, kobject_get(&disk_to_dev(disk)->kobj),
++	ret = kobject_add(&q->kobj, kobject_get(&dev->kobj),
+ 			  "%s", "queue");
+ 	if (ret < 0)
+ 		return ret;
+diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+index 267edc4..62763c9 100644
+--- a/include/linux/blktrace_api.h
++++ b/include/linux/blktrace_api.h
+@@ -198,6 +198,7 @@ extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 			   char __user *arg);
+ extern int blk_trace_startstop(struct request_queue *q, int start);
+ extern int blk_trace_remove(struct request_queue *q);
++extern int blk_trace_init_sysfs(struct device *dev);
+ 
+ extern struct attribute_group blk_trace_attr_group;
+ 
+@@ -210,6 +211,11 @@ extern struct attribute_group blk_trace_attr_group;
+ # define blk_trace_startstop(q, start)			(-ENOTTY)
+ # define blk_trace_remove(q)				(-ENOTTY)
+ # define blk_add_trace_msg(q, fmt, ...)			do { } while (0)
++static inline int blk_trace_init_sysfs(struct device *dev)
 +{
-+	/* don't output context-info for blk_classic output */
-+	if (bit == TRACE_BLK_OPT_CLASSIC) {
-+		if (set)
-+			trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
-+		else
-+			trace_flags |= TRACE_ITER_CONTEXT_INFO;
-+	}
 +	return 0;
 +}
 +
- static struct tracer blk_tracer __read_mostly = {
- 	.name		= "blk",
- 	.init		= blk_tracer_init,
-@@ -1335,6 +1342,7 @@ static struct tracer blk_tracer __read_mostly = {
- 	.print_header	= blk_tracer_print_header,
- 	.print_line	= blk_tracer_print_line,
- 	.flags		= &blk_tracer_flags,
-+	.set_flag	= blk_tracer_set_flag,
- };
+ #endif /* CONFIG_BLK_DEV_IO_TRACE */
  
- static struct trace_event trace_blk_event = {
+ #endif /* __KERNEL__ */
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index d109898..8e7c5da 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1644,3 +1644,8 @@ out:
+ 	return ret ? ret : count;
+ }
+ 
++int blk_trace_init_sysfs(struct device *dev)
++{
++	return sysfs_create_group(&dev->kobj, &blk_trace_attr_group);
++}
++
