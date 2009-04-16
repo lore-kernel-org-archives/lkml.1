@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZDPU0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZDPU21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbZDPU0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbZDPUZr
+	id S1755157AbZDPU21 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZDPU2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:25:47 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:17305 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754503AbZDPUZq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:25:46 -0400
-Date: Thu, 16 Apr 2009 22:25:45 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: "Theodore Ts'o" <tytso@mit.edu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Documentation: Add "how to write a good patch summary"
- to SubmittingPatches
-In-Reply-To: <1239882285-4994-1-git-send-email-tytso@mit.edu>
-Message-ID: <alpine.LNX.2.00.0904162223280.32544@swampdragon.chaosbits.net>
-References: <1239882285-4994-1-git-send-email-tytso@mit.edu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 16 Apr 2009 16:28:17 -0400
+Received: from rtr.ca ([76.10.145.34]:49595 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751975AbZDPU2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:28:16 -0400
+Message-ID: <49E794DF.8050001@rtr.ca>
+Date: Thu, 16 Apr 2009 16:28:15 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+References: <20090416193924.GA27823@havoc.gtf.org>
+In-Reply-To: <20090416193924.GA27823@havoc.gtf.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009, Theodore Ts'o wrote:
+Jeff Garzik wrote:
+> Various minor fixes, and a small libata.h cleanup.
+..
 
-> Unfortunately many patch submissions are arriving with painfully poor
-> patch descriptions.   As a result of the discussion on LKML:
-> 
->       http://lkml.org/lkml/2009/4/15/296
-> 
-> explain how to submit a better patch description, in the (perhaps
-> vain) hope that maintainers won't end up having to rewrite the git
-> commit logs as often as they do today.
-> 
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
+Any chance you could also push out the last of the sata_mv errata workarounds?
+That's the one that prevents data corruption for multisector WRITEs.
 
-Read through your diff. Looks good to me - nice additions.
+[PATCH 01/02] sata_mv: tidy up qc->tf usage in qc_prep() functions
+[PATCH 02/02] sata_mv: workaround for multi_count errata sata24
 
-Feel free to add
- Acked-by: Jesper Juhl <jj@chaosbits.net>
-or
- Reviewed-by: Jesper Juhl <jj@chaosbits.net>
-if you like...
-
-Don't really know what's most appropriate here, but I like the patch.
-
-
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-
+Thanks
