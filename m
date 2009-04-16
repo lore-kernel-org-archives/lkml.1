@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbZDPQ72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbZDPRA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbZDPQ72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZDPQ7N
+	id S1758937AbZDPRA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZDPRAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:59:13 -0400
-Received: from stinky.trash.net ([213.144.137.162]:61290 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756236AbZDPQ7M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:59:12 -0400
-Message-ID: <49E763DB.1000706@trash.net>
-Date: Thu, 16 Apr 2009 18:59:07 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, paulmck@linux.vnet.ibm.com,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com,
-       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu recursive spinlock  (v6)
-References: <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <20090415.164811.19905145.davem@davemloft.net> <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com> <alpine.LFD.2.00.0904160926520.4042@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904160926520.4042@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 13:00:48 -0400
+Received: from verein.lst.de ([213.95.11.210]:37891 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752671AbZDPRAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 13:00:47 -0400
+Date: Thu, 16 Apr 2009 18:58:49 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>
+Subject: Re: [PATCH 4/4] tracing/events: add trace-events-sample
+Message-ID: <20090416165849.GF5933@lst.de>
+References: <20090415031511.128139334@goodmis.org> <20090415031605.445499740@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090415031605.445499740@goodmis.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Guys, this whole discussion has just been filled with crazy crap. Can 
-> somebody even explain why we care so deeply about some counters for 
-> something that we just _deleted_ and that have random values anyway?
-> 
-> I can see the counters being interesting while a firewall is active, but I 
-> sure don't see what's so wonderfully interesting after-the-fact about a 
-> counter on something that NO LONGER EXISTS that it has to be somehow 
-> "exactly right".
+On Tue, Apr 14, 2009 at 11:15:15PM -0400, Steven Rostedt wrote:
+> +++ b/samples/trace_events/Makefile
+> @@ -0,0 +1,8 @@
+> +# builds the trace events example kernel modules;
+> +# then to use one (as root):  insmod <module_name.ko>
+> +
+> +PWD := $(shell pwd)
+> +
+> +CFLAGS_trace-events-sample.o := -I$(PWD)/samples/trace_events/
 
-They're copied to userspace after replacing the ruleset, associated with
-the rules that are still active after the change and then added to the
-current counters in a second operation. The end result is that the
-counters are accurate for rules not changed.
+CFLAGS_trace-events-sample.o += -I$(src)
 
-> Show of hands, here: tell me a single use that really _requires_ those 
-> exact counters of a netfilter rule that got deleted and is no longer 
-> active?
+That should better be written as.  But you'd easily get rid of that
+by just including the file using #include "foo.h" instead of <foo.h>,
+no?
 
-People use netfilter for accounting quite a lot. Having dynamic updates
-is also not uncommon, so this might actually matter.
+> --- /dev/null
+> +++ b/samples/trace_events/trace-events-sample.h
+> @@ -0,0 +1,124 @@
+> +/*
+> + * Notice that this file is not protected like a normal header.
+> + * We also must allow for rereading of this file. The
+> + *
+> + *  || defined(TRACE_HEADER_MULTI_READ)
+> + *
+> + * serves this purpose.
+> + */
+> +#if !defined(_TRACE_EVENT_SAMPLE_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_EVENT_SAMPLE_H
 
+Why do we need this protection at all?  It only be included by the users
+of the tracepoints, and it seems just fair to take some more than normal
+precaution for more than unusual magic headers.
 
