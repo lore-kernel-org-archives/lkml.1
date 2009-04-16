@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZDPQnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZDPQr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZDPQnK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZDPQmz
+	id S1757699AbZDPQr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZDPQrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:42:55 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48217 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753745AbZDPQmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:42:55 -0400
-Date: Thu, 16 Apr 2009 18:42:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: simplify I/O stat accounting
-Message-ID: <20090416164253.GU5178@kernel.dk>
-References: <49E72F19.1030400@redhat.com> <20090416163456.GR5178@kernel.dk> <20090416163728.GS5178@kernel.dk> <20090416163831.GT5178@kernel.dk>
+	Thu, 16 Apr 2009 12:47:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55371 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756812AbZDPQrj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:47:39 -0400
+Date: Thu, 16 Apr 2009 09:37:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: paulmck@linux.vnet.ibm.com, Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com,
+       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu recursive spinlock  (v6)
+In-Reply-To: <49E75876.10509@cosmosbay.com>
+Message-ID: <alpine.LFD.2.00.0904160926520.4042@localhost.localdomain>
+References: <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <20090415.164811.19905145.davem@davemloft.net> <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+ <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416163831.GT5178@kernel.dk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16 2009, Jens Axboe wrote:
-> On Thu, Apr 16 2009, Jens Axboe wrote:
-> > On Thu, Apr 16 2009, Jens Axboe wrote:
-> > > On Thu, Apr 16 2009, Jerome Marchand wrote:
-> > > > 
-> > > > This simplifies I/O stat accounting switching code and separates it
-> > > > completely from I/O scheduler switch code.
-> > > > 
-> > > > Requests are accounted according to the state of their request queue
-> > > > at the time of the request allocation. There is no need anymore to
-> > > > flush the request queue when switching I/O accounting state.
-> > > 
-> > > This is cleaner, I like it. I'll apply it, but I'm changing this one:
-> > > 
-> > > > @@ -792,9 +792,10 @@ static struct request *get_request(struct
-> > > > request_queue *q, int rw_flags,
-> > > >  	if (priv)
-> > > >  		rl->elvpriv++;
-> > > > 
-> > > > +	iostat = blk_queue_io_stat(q) ? REQ_IO_STAT : 0;
-> > > >  	spin_unlock_irq(q->queue_lock);
-> > > 
-> > > to a regular if, I hate these ?: constructs. An if is much more
-> > > readable, imho.
-> > 
-> > Grmbl, your patch is line wrapped. Please fix your mailer.
-> 
-> And it doesn't apply to current -git. Looks like a hand apply, but
-> please be a little more careful in the future.
 
-OK, it doesn't even compile either:
 
-+#define blk_rq_io_stat(rq)     ((rq)->flags & REQ_IO_STAT)
+On Thu, 16 Apr 2009, Eric Dumazet wrote:
+>  
+> +struct rec_lock {
+> +	spinlock_t lock;
+> +	int	   count; /* recursion count */
+> +};
+> +static DEFINE_PER_CPU(struct rec_lock, arp_tables_lock);
 
-that wants to be ->cmd_flags.
+What the _fuck_ are you doing?
 
-Please resend when you have something that at least compiles. If you
-send untested stuff my way, at least tell me.
+Stop sending these shit-for-brains crazy patches out. That's not a lock, 
+that's a messy way of saying "I don't know what the hell I'm doing, but 
+I'll mess things up".
 
--- 
-Jens Axboe
+Don't do recursive locks (or your own locking primitives in general), but 
+goddammit, if you have to, at least know what the hell you're doing. Your 
+thing is a piece of shit.
 
+A recursive lock needs an owner, or it's not a lock at all. It's some 
+random data structure that contains a lock that may or may not be taken, 
+and that may actually _work_ depending on the exact patterns of taking the 
+lock, but that's not an excuse.
+
+The fact that code "happens to work by mistake" (and I'm not saying that 
+your does - but it might just because of the per-cpu'ness of it, and I'm 
+not even going to look at crap like that it closer to try to prove it one 
+way or the other) does not make that code acceptable.
+
+Because even if it works today, it's just a bug waiting to happen. The 
+thing you did is _not_ a generic recursive lock, and it does _not_ work in 
+general. Don't call it a "rec_lock". Don't write code that accesses it 
+without any comments as if it was simple. Just DON'T.
+
+Guys, this whole discussion has just been filled with crazy crap. Can 
+somebody even explain why we care so deeply about some counters for 
+something that we just _deleted_ and that have random values anyway?
+
+I can see the counters being interesting while a firewall is active, but I 
+sure don't see what's so wonderfully interesting after-the-fact about a 
+counter on something that NO LONGER EXISTS that it has to be somehow 
+"exactly right".
+
+And it's certainly not interesting enough to merit this kind of random 
+fragile crazy code.
+
+Please. Get a grip, people!
+
+Show of hands, here: tell me a single use that really _requires_ those 
+exact counters of a netfilter rule that got deleted and is no longer 
+active?
+
+			Linus
