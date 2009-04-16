@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZDPFBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZDPFWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbZDPFBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 01:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbZDPFBg
+	id S1753247AbZDPFWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 01:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZDPFWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 01:01:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:61760 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbZDPFBf (ORCPT
+	Thu, 16 Apr 2009 01:22:16 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47363 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750889AbZDPFWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 01:01:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rcydT3uIkUP1W44gllUoCeFpyLHFYzaXsYB8Eg0lZY7ilw5KXybOlSvCsAH/qvRUuQ
-         6V1VF/nUSBeHd+ibMLHIWgpvbQP1/TuhKlpB31rnKQFPdwDKe4GMuoctzYuW7jN+Yu04
-         6EeAtH6jp6pfFAKZviPgOEFsIO+oEm8iYbM0Q=
-Date: Thu, 16 Apr 2009 14:01:29 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] hugetlbfs: return negative error code for bad mount
-	option
-Message-ID: <20090416050129.GA4083@localhost.localdomain>
-References: <20090413035623.GA4156@localhost.localdomain> <20090415145910.22910363.akpm@linux-foundation.org>
+	Thu, 16 Apr 2009 01:22:15 -0400
+Date: Thu, 16 Apr 2009 06:15:13 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+cc: arjan@linux.intel.com, gregkh@suse.de, alan@lxorguk.ukuu.org.uk,
+       viro@ZenIV.linux.org.uk, jmorris@namei.org, akpm@linux-foundation.org,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+In-Reply-To: <200904160046.n3G0ki9o028612@www262.sakura.ne.jp>
+Message-ID: <Pine.LNX.4.64.0904160551080.28048@blonde.anvils>
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp>
+ <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk>
+ <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp>
+ <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk>
+ <200904130048.n3D0mw1f077050@www262.sakura.ne.jp>
+ <Pine.LNX.4.64.0904141801300.24679@blonde.anvils>
+ <200904150328.n3F3S0F9083222@www262.sakura.ne.jp>
+ <Pine.LNX.4.64.0904152036150.27354@blonde.anvils>
+ <200904160046.n3G0ki9o028612@www262.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415145910.22910363.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 02:59:10PM -0700, Andrew Morton wrote:
-> On Mon, 13 Apr 2009 12:56:23 +0900
-> Akinobu Mita <akinobu.mita@gmail.com> wrote:
+On Thu, 16 Apr 2009, Tetsuo Handa wrote:
+> Indeed, we can't use "argv" put on stack memory if we use "no wait" mode.
+> We need to ensure that memory region pointed by "argv" is valid until
+> do_execve() finishes. However,
+> | 
+> | exit:
+> | 	kfree(devpath);
+> | 	kfree(env);
+> | 	return retval;
+> | }
+> "env" can be overwritten as well as "argv".
+> We need to ensure that memory region pointed by "env" is valid until
+> do_execve() finishes, don't we?
 > 
-> > This fixes the following BUG:
-> > 
-> > # mount -o size=MM -t hugetlbfs none /huge
-> > hugetlbfs: Bad value 'MM' for mount option 'size=MM'
-> > ------------[ cut here ]------------
-> > kernel BUG at fs/super.c:996!
-> 
-> I can't tell where this BUG (or WARN?) is happening unless I know
-> exactly which kernel version was tested.
+> I think we need to use UMH_WAIT_EXEC instead of UMH_NO_WAIT.
 
-Oh, sorry.
+Yes, of course you're right, silly me.
 
-> I assume that it is BUG_ON(!mnt->mnt_sb); in vfs_kern_mount()?
+It could be worked around using call_usermodehelper_setcleanup()
+to arrange for the freeing there instead of here in this case;
+but if CONFIG_UEVENT_HELPER_PATH="" is the better answer anyway,
+let's not waste any more time on this, just revert the broken patch
+(which is what simply changing UMH_NO_WAIT to UMH_WAIT_EXEC does).
 
-Yes. In vfs_kern_mount(), type->get_sb() returns 1 then BUG_ON(!mnt->mnt_sb);
+I'd hoped to get confirmation that the mmap.c part of the patch
+was all the extra needed; but never mind, that's clearly good.
+
+Thanks a lot: I'll send in a revert request,
+and the acct_stack_growth patch, later today.
+
+Hugh
