@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbZDPSln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbZDPSml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758727AbZDPSln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 14:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758096AbZDPSlU
+	id S1758806AbZDPSml (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 14:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbZDPSm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 14:41:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43161 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757505AbZDPSlT (ORCPT
+	Thu, 16 Apr 2009 14:42:27 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:40743 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755977AbZDPSm0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 14:41:19 -0400
-Date: Thu, 16 Apr 2009 11:37:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: Mike Galbraith <efault@gmx.de>, Jan Kara <jack@suse.cz>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH RFC] ext3 data=guarded v3
-In-Reply-To: <1239901977.4346.3.camel@think.oraclecorp.com>
-Message-ID: <alpine.LFD.2.00.0904161129460.4042@localhost.localdomain>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>  <1239881953.20254.17.camel@marge.simson.net>  <1239893771.4346.0.camel@think.oraclecorp.com> <1239901977.4346.3.camel@think.oraclecorp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 16 Apr 2009 14:42:26 -0400
+Message-ID: <49E77BF6.1080206@cosmosbay.com>
+Date: Thu, 16 Apr 2009 20:41:58 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulmck@linux.vnet.ibm.com
+CC: Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com,
+       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu recursive spinlock  (v6)
+References: <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <20090415.164811.19905145.davem@davemloft.net> <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com> <20090416175850.GH6924@linux.vnet.ibm.com>
+In-Reply-To: <20090416175850.GH6924@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 16 Apr 2009 20:41:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Thu, 16 Apr 2009, Chris Mason wrote:
+Paul E. McKenney a écrit :
 > 
-> Ah ok, it is just a missed i_size update.  Basically because file_write
-> doesn't wait for page writeback to finish, someone can be updating
-> i_size at the same time the end_io handler for the last page is running.
+> But if some other CPU holds the lock, this code would fail to wait for
+> that other CPU to release the lock, right?  It also might corrupt the
+> rl->count field due to two CPUs accessing it concurrently non-atomically.
+
+If another cpu holds the lock, this cpu will spin on its own lock.
+
+Remember other cpus dont touch rl->count. This is a private field, only touched
+by the cpu on its own per_cpu data. There is no possible 'corruption'
+
+
+So the owner of the per_cpu data does :
+
+/*
+ * disable preemption, get rl = &__get_cpu_var(arp_tables_lock);
+ * then :
+ */
+lock_time :
+if (++rl->count == 0)
+	spin_lock(&rl->lock);
+
+unlock_time:
+if (likely(--rl->count == 0))
+	spin_unlock(&rl->lock);
+
+
+while other cpus only do :
+
+spin_lock(&rl->lock);
+/* work on data */
+spin_unlock(&rl->lock);
+
+So they cannot corrupt 'count' stuff.
+
 > 
-> Git triggers this when it does the sha1flush just before closing the
-> file.
+> I suggest the following, preferably in a function or macro or something:
+> 
+> 	cur_cpu = smp_processor_id();
+> 	if (likely(rl->owner != cur_cpu) {
+> 		spin_lock(&rl->lock);
+> 		rl->owner = smp_processor_id();
+> 		rl->count = 1;
+> 	} else {
+> 		rl->count++;
+> 	}
+> 
+> And the inverse for unlock.
+> 
+> Or am I missing something subtle?
 
-Can you say exactly what the IO pattern is?
+Apparently Linus missed it too, and reacted badly to my mail.
+I dont know why we discuss of this stuff on lkml either...
 
-One of the original git design issues was to actually never _ever_ do 
-anything even half-way strange in the filesystem patterns, exactly because 
-I've seen so many filesystem bugs over the years.
+I stop working on this subject and consider drinking dome hard stuf and
+watching tv :)
 
-Now, it turns ou that "original design intent" and "actual code" then 
-don't always match, and git did some things that are unusual and triggered 
-bugs.
+See you
 
-Example: in order to be extra safe, git does "fchown()" after doing all 
-the writes to file descriptor just before closing it. I wanted git to make 
-it hard to corrupt things by mistake, and marking all the files that only 
-get written once (which is most of them) read-only as soon as possible 
-seemed to be a great safety feature.
-
-Except, in the process it triggers a network filesystem bug where earlier 
-writes were still writeback cached data hadn't made it to the server yet, 
-and then the client would do the whole "mark it read-only" before the 
-writes had even been done. Oops.
-
-We had a few other issues with just renaming files around (basic rule: 
-only rename files _within_ one directory if you want to avoid filesystem 
-bugs) and with using "pread/pwrite" (basic rule: pread/pwrite is unusual, 
-and is apparently buggy on some operating systems. So avoid them).
-
-Anyway, what was the exact pattern that caused this to show, and maybe I 
-can find yet another place where git could just be even more anally safe 
-by not doing anything half-way odd?
-
-			Linus
