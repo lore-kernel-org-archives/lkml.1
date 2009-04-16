@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbZDPQcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbZDPQdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbZDPQcS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZDPQb6
+	id S1757958AbZDPQdM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZDPQc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:31:58 -0400
-Received: from outbound-mail-106.bluehost.com ([69.89.22.6]:37192 "HELO
-	outbound-mail-106.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756816AbZDPQb5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:31:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=STBc3W6VMqPs1Aksc/f3yq+s6oqGXicGPi7zkrvjMPhz8l4Gy5Jsz/xbE/kpfgrP/Lz6f+PdvuHnmf7PLZTpvZvZmpS/PP/LEFF9pKHp1szDWQZoWNCi3rdgrvaLmFST;
-Date: Thu, 16 Apr 2009 09:31:52 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v3
-Message-ID: <20090416093152.6605612d@hobbes>
-In-Reply-To: <49E52D3F.1090206@kernel.org>
-References: <bug-11103-13546@http.bugzilla.kernel.org/>
-	<200904101913.n3AJDhMm018684@demeter.kernel.org>
-	<49DFABCC.3070001@kernel.org>
-	<49E00E9F.8030605@kernel.org>
-	<49E4F6D6.6030709@kernel.org>
-	<49E4F71F.10107@kernel.org>
-	<alpine.LFD.2.00.0904141359020.18124@localhost.localdomain>
-	<49E52A7A.4070607@kernel.org>
-	<49E52D3F.1090206@kernel.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Thu, 16 Apr 2009 12:32:56 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:39579 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581AbZDPQcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:32:55 -0400
+Date: Thu, 16 Apr 2009 18:32:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] make hd_struct->in_flight atomic to avoid
+	diskstat  corruption
+Message-ID: <20090416163254.GQ5178@kernel.dk>
+References: <200904161254.41433.knikanth@suse.de> <20090416073557.GU5178@kernel.dk> <200904161445.03955.knikanth@suse.de> <49E74377.6050209@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E74377.6050209@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Apr 2009 17:41:35 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
+On Thu, Apr 16 2009, Tejun Heo wrote:
+> Hello, Nikanth, Jens.
+> 
+> Nikanth Karthikesan wrote:
+> >> Hmm. Did you observe this behaviour?
+> > 
+> > Sorry, not on current kernels. But on a very old 2.6.5 kernel.
+> > 
+> > Reading Documentation/iostats.txt and the changelog of commit 
+> > e71bf0d0ee89e51b92776391c5634938236977d5 made me assume that this could be a 
+> > problem even today.
+> 
+> The only problem we can run into there is if a request doesn't get
+> attributed to a partition on issue but gets attributed to a partition
+> on completion, which seems to be possible if a new partition is added
+> while IO on the whole device which fell into the new partition area is
+> already in progress, which, on the first glance, seems possible if the
+> admin tries really hard.  I think we can get around the problem by
+> doing part->in_flight = min(max(new_val, part0->in_flight), 0) in
+> dec_in_flight().  This is pretty extreme corner case tho.
 
-> 
-> Impact: make more big space below 4g for assigning to unassigned pci
-> devices
-> 
-> don't need to reserved one round after the gapstart.
-> 
-> v2: Linus said: "
-> 	We've definitely seen ACPI code or integrated graphics stuff 
-> 	that steals a lot of memory at the end, which means that
-> end-of-RAM might be not at 2GB, but at 2GB-16MB-1MB, for example (1MB
-> of "ACPI data", and 16MB of "stolen video ram").
-> 
-> 	At a minimum, if we do this, I'd like to make sure we round
-> up to a big boundary (eg 32MB or something - exactly because a
-> missing 16MB can easily be some integrated stolen video memory).
-> 
-> 	Sure, we do that whole
-> 
-> 		while ((gapsize >> 4) > round)
-> 			round += round;
-> 
-> 	thing, so that if the gap is large, then we'll certainly get
-> to 32MB too, but I think your patch matters the most exactly when the
-> gap is small. Maybe we could just raise the initial minimum rounding
-> from 1MB to 32MB? ...
-> 	Alternatively, maybe we can make sure that we round up to at
-> least X bytes from the end of RAM, and to at least Y bytes from the
-> end of some RESERVED thing."
-> v3: take pci_mem_start - low_top_ram bigger than half around, aka 16M
-> at least
+Heh, that is pretty extreme. I'd prefer just quiescing the queue,
+perhaps we should do that for partition map swaps.
 
-Any comments on this one, Linus?  Should I include your ack?
+> >> A quick glance at the code reveals
+> >> that the callers of part_inc_in_flight() and part_dec_in_flight() in the
+> >> block layer are always done under the queue lock. Ditto
+> >> part_round_stats(), which calls part_round_stats_single() and also needs
+> >> protection for in_flight.
+> >>
+> >> That basically just leaves the code reading this out and reporting, and
+> >> driver calls to part_round_stats(). I'd suggest looking there instead,
+> >> we're not going to make ->in_flight an atomic just because of some
+> >> silliness there that could be fixed.
+> > 
+> > Isn't this also true for the stats protected by the
+> > part_stat_lock()? Only places where we are only reading seems to be
+> > called without the queue lock.
+> 
+> part_stat_lock() doesn't protect against simultaneous access.  I don't
+> think we have any place where in_flight is updated without queuelock
+> and the counters being equal to or smaller then ulong, reading
+> shouldn't be a problem.
+> 
+> I don't think the bug you saw in 2.6.5 kernel applies to upstream
+> kernel.  The minus in_flight value was seen on the diskstats of the
+> whole device which can't be affected by partition coming up while IOs
+> are in progress.
 
-Thanks,
+Plus at least early versions of the SLES9 kernel had a missing lock
+around io stat updates for SCSI. But that has been plugged for a long
+time, so probably unrelated to this case as well.
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Jens Axboe
+
