@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZDPKW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbZDPKd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZDPKW7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 06:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZDPKWt
+	id S1754601AbZDPKd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 06:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZDPKdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 06:22:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45032 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbZDPKWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 06:22:48 -0400
-Date: Thu, 16 Apr 2009 11:21:42 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Mike Travis <travis@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] percpu + mutex fixes
-Message-ID: <20090416102142.GA26366@ZenIV.linux.org.uk>
-References: <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk> <20090410171415.GA6033@ZenIV.linux.org.uk> <20090410180532.GA4419@jurassic.park.msu.ru> <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain> <49DF935E.8030607@kernel.org> <49DF97D0.9090506@kernel.org> <20090410193444.GA18039@elte.hu> <20090410194055.GA21133@elte.hu>
+	Thu, 16 Apr 2009 06:33:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35799 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752571AbZDPKdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 06:33:13 -0400
+Date: Thu, 16 Apr 2009 12:32:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Renninger <trenn@suse.de>
+Cc: djwong@us.ibm.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
+	even when ignore_ppc=0
+Message-ID: <20090416103258.GR9813@elte.hu>
+References: <20090415225348.GW8311@plum> <20090416002712.GX8311@plum> <200904161201.13409.trenn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090410194055.GA21133@elte.hu>
+In-Reply-To: <200904161201.13409.trenn@suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 09:40:55PM +0200, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > Now i understand the rush ...
-> > 
-> > Yes, moving the APIs to the generic header should properly expose 
-> > the wrapped default implementations. I'll test your patch in a 
-> > minute.
-> 
-> Alpha builds fine with your patch:
-> 
->   LD      .tmp_vmlinux2
->   KSYM    .tmp_kallsyms2.S
->   AS      .tmp_kallsyms2.o
->   LD      vmlinux
->   SYSMAP  System.map
-> 
-> Linus,
-> 
-> If that patch is OK to you too, please pull the latest 
-> core-fixes-for-linus git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
-> 
-> it includes this fix and a pending mutex fixlet.
 
-(Belated) ACK.  As for unification of that stuff, I'll gladly leave that
-as SEP...
+* Thomas Renninger <trenn@suse.de> wrote:
+
+> The *reevaluate* implies that the _PPC value has been 
+> evaluated/initialized by the OS already and Ingo's patch would be 
+> wrong then. I'd like to have a look at the T60's ACPI parts and 
+> find out what exactly (or if at all) makes _PPC to return sane 
+> values, I expect it's _PDC.
+> 
+> Hmm, I could also imagine that Ingo's T60 patch is not needed 
+> anymore since Yakui's patch 
+> (0ac3c571315a53c14d2733564f14ebdb911fe903). This one could make 
+> sure that _PDC is evaluated first making the internal ACPI _PPC 
+> state initialize and makes sure _PPC gets only called afterwards.
+> 
+> If this patch does not break Ingo's T60, I think this should go 
+> in. Due to Yakui's reordering/cleanup of ACPI function calls, I 
+> think also the notifier chain I introduced is not needed anymore 
+> and I can clean this up if I find some time.
+
+Feel free to do so, if it's expected to work. I'll let you know if 
+it breaks the T60 box - i still have it in the -tip test mix.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
