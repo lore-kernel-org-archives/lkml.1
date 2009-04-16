@@ -1,128 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZDPU7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbZDPVAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbZDPU7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZDPU7A
+	id S1757869AbZDPVAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 17:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZDPU76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:59:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32788 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753212AbZDPU67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:58:59 -0400
-Date: Thu, 16 Apr 2009 16:57:20 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Nauman Rafique <nauman@google.com>,
-       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Andrea Righi <righi.andrea@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Moyer Jeff Moyer <jmoyer@redhat.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: dm-ioband: Test results.
-Message-ID: <20090416205720.GI8896@redhat.com>
-References: <20090413.130552.226792299.ryov@valinux.co.jp>
+	Thu, 16 Apr 2009 16:59:58 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:44493 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbZDPU76 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:59:58 -0400
+Date: Thu, 16 Apr 2009 21:58:12 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, arjan@linux.intel.com,
+       gregkh@suse.de, alan@lxorguk.ukuu.org.uk, viro@ZenIV.linux.org.uk,
+       jmorris@namei.org, akpm@linux-foundation.org,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] mm: pass correct mm when growing stack
+In-Reply-To: <Pine.LNX.4.64.0904162145130.645@blonde.anvils>
+Message-ID: <Pine.LNX.4.64.0904162156310.645@blonde.anvils>
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp>
+ <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk>
+ <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp>
+ <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk>
+ <200904130048.n3D0mw1f077050@www262.sakura.ne.jp>
+ <Pine.LNX.4.64.0904141801300.24679@blonde.anvils>
+ <200904150328.n3F3S0F9083222@www262.sakura.ne.jp>
+ <Pine.LNX.4.64.0904152036150.27354@blonde.anvils>
+ <200904160046.n3G0ki9o028612@www262.sakura.ne.jp>
+ <Pine.LNX.4.64.0904160551080.28048@blonde.anvils>
+ <200904160535.n3G5ZBIE006724@www262.sakura.ne.jp> <Pine.LNX.4.64.0904162145130.645@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090413.130552.226792299.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 13, 2009 at 01:05:52PM +0900, Ryo Tsuruta wrote:
-> Hi Alasdair and all,
-> 
-> I did more tests on dm-ioband and I've posted the test items and
-> results on my website. The results are very good.
-> http://people.valinux.co.jp/~ryov/dm-ioband/test/test-items.xls
-> 
-> I hope someone will test dm-ioband and report back to the dm-devel
-> mailing list.
-> 
+Tetsuo Handa reports seeing the WARN_ON(current->mm == NULL) in
+security_vm_enough_memory(), when do_execve() is touching the
+target mm's stack, to set up its args and environment.
 
-Ok, here are more test results. This time I am trying to see how fairness
-is provided for async writes and how does it impact throughput.
+Yes, a UMH_NO_WAIT or UMH_WAIT_PROC call_usermodehelper() spawns
+an mm-less kernel thread to do the exec.  And in any case, that
+vm_enough_memory check when growing stack ought to be done on the
+target mm, not on the execer's mm (though apart from the warning,
+it only makes a slight tweak to OVERCOMMIT_NEVER behaviour).
 
-I have created two partitions /dev/sda1 and /dev/sda2. Two ioband devices
-ioband1 and ioband2 on /dev/sda1 and /dev/sda2 respectively with weights
-40 and 40.
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Cc: stable@kernel.org
+---
+Commoner in 2.6.30-rc, but needs fixing in 2.6.28.N and 2.6.29.N too.
 
-#dmsetup status
-ioband2: 0 38025855 ioband 1 -1 150 8 186 1 0 8
-ioband1: 0 40098177 ioband 1 -1 150 8 186 1 0 8
+ mm/mmap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I ran following two fio jobs. One job in each partition.
-
-************************************************************
-echo cfq > /sys/block/sdd/queue/scheduler
-sync
-echo 3 > /proc/sys/vm/drop_caches
-
-fio_args="--size=64m --rw=write --numjobs=50 --group_reporting"
-time fio $fio_args --name=test1 --directory=/mnt/sdd1/fio/
---output=test1.log &
-time fio $fio_args --name=test2 --directory=/mnt/sdd2/fio/
---output=test2.log &
-wait
-*****************************************************************
-
-Following are fio job finish times with and without dm-ioband
-		
-			first job		second job
-without dm-ioband	3m29.947s		4m1.436s 	
-with dm-ioband		8m42.532s		8m43.328s
-
-This sounds like 100% performance regression in this particular setup.
-
-I think this regression is introduced because we are waiting for too
-long for slower group to catch up to make sure proportionate numbers
-look right and choke the writes even if deviec is free.
-
-It is an hard to solve problem because the async writes traffic is 
-bursty when seen at block layer and we not necessarily see higher amount of
-writer traffic dispatched from higher prio process/group. So what does one
-do? Wait for other groups to catch up to show right proportionate numbers
-and hence let the disk be idle and kill the performance. Or just continue
-and not idle too much (a small amount of idling like 8ms for sync queue 
-might still be ok).
-
-I think there might not be much benefit in providing artificial notion
-of maintaining proportionate ratio and kill the performance. We should
-instead try to audit async write path and see where the higher weight
-application/group is stuck.
-
-In my simple two dd test, I could see bursty traffic from high prio app and
-then it would sometimes disappear for .2 to .8 seconds. In that duration if I
-wait for higher priority group to catch up that I will end up keeping disk
-idle for .8 seconds and kill performance. I guess better way is to not wait
-that long (even if it means that to application it might give the impression
-that io scheduler is not doing the job right in assiginig proportionate disk)
-and over a period of time see if we can fix some things in async write path
-for more smooth traffic to io scheduler.
-
-Thoughts?
-
-Thanks
-Vivek
-
-
-> Alasdair, could you please merge dm-ioband into upstream? Or could
-> you please tell me why dm-ioband can't be merged?
-> 
-> Thanks,
-> Ryo Tsuruta
-> 
-> To know the details of dm-ioband:
-> http://people.valinux.co.jp/~ryov/dm-ioband/
-> 
-> RPM packages for RHEL5 and CentOS5 are available:
-> http://people.valinux.co.jp/~ryov/dm-ioband/binary.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--- 2.6.30-rc2/mm/mmap.c	2009-04-08 18:20:25.000000000 +0100
++++ linux/mm/mmap.c	2009-04-16 20:31:17.000000000 +0100
+@@ -1575,7 +1575,7 @@ static int acct_stack_growth(struct vm_a
+ 	 * Overcommit..  This must be the final test, as it will
+ 	 * update security statistics.
+ 	 */
+-	if (security_vm_enough_memory(grow))
++	if (security_vm_enough_memory_mm(mm, grow))
+ 		return -ENOMEM;
+ 
+ 	/* Ok, everything looks good - let it rip */
