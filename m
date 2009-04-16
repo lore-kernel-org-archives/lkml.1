@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZDPX5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZDPX7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbZDPX5J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZDPX4y
+	id S1758141AbZDPX7K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbZDPX64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:56:54 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46581 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756429AbZDPX4x (ORCPT
+	Thu, 16 Apr 2009 19:58:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53874 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756027AbZDPX6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:56:53 -0400
-Date: Fri, 17 Apr 2009 00:56:49 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090416235649.GF26366@ZenIV.linux.org.uk>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416160645.GB17804@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Apr 2009 19:58:55 -0400
+Date: Fri, 17 Apr 2009 08:57:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+ controller (v2)
+Message-Id: <20090417085720.1fc8cc86.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090416121407.GH7082@balbir.in.ibm.com>
+References: <20090415120510.GX7082@balbir.in.ibm.com>
+	<20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416015955.GB7082@balbir.in.ibm.com>
+	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416121407.GH7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 06:06:45PM +0200, Ingo Molnar wrote:
+On Thu, 16 Apr 2009 17:44:07 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 16:40:36]:
 > 
-> * Alessio Igor Bogani <abogani@texware.it> wrote:
-> 
-> > Replace ths BKL in sys_mount()/sys_umount() syscalls with a regular mutex.
+> > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
+> > (Because it's file cache, pc->mem_cgroup is not NULL always.)
 > > 
-> > Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
-> > ---
-> >  fs/namespace.c |   16 +++++++++-------
-> >  fs/super.c     |    9 ++++-----
-> >  2 files changed, 13 insertions(+), 12 deletions(-)
+> > I saw this very easily.
+> > ==
+> > Cache: 4096
+> > mapped_file: 20480
+> > ==
+> >
 > 
-> Ok, this patch needs to be flamed^W commented on by Al.
+> May I ask how and what was expected?
+>  
+
+Mapped_file <= Cache,
+
+Thanks,
+-Kame
+
+
+> -- 
+> 	Balbir
 > 
-> Al: this patch is very likely broken as i cannot imagine you leaving 
-> the BKL there just so. So lets accept that (and your NAK) as a given 
-> and not get upset about it too much.
 
-NAK is certainly given.  Dealing with force-umount is laughable - there
-are so few instances, that we simply ought to take (all two? of) them
-individually.
-
-remount is potentially nastier, but then it *is* nasty.  Again, it's only
-per-fs stuff, so the obvious first step is taking BKL down into the instances.
-It doesn't protect anything in VFS; all uses are fs internal, so that'll
-take review of individual filesystems.
-
-NOTE: do not assume that code in fs/foo/* is correct; "it doesn't take BKL
-elsewhere" does _not_ mean that we don't have races.  IOW, the same review
-ought to look for such beasts and deal with them.  Mere "oh, no BKL anywhere
-in that fs" is not enough to discard the ->remount_fs() instance.
- 
-> I'm wondering how much the BKL use here is made necessary by the 
-> sys_open() BKL use in device drivers. Jonathan has done extensive 
-> work on the sys_open front (and there's more such work in 
-> tip:core/kill-the-BKL) - perhaps that has largely paved the way for 
-> this change?
-> 
-> There's also ioctl BKL use - is the BKL use here in sys_mount 
-> necessiated by the (naked) BKL use in those handlers?
-
-No.  It's all about fs internals protected from themselves.  ->remount_fs()
-tends to be grotty shite, so nobody had enough courage to do proper review
-and fixes.  And it's not a place where we would really suffer from contention,
-so it didn't get high priority that way either.
