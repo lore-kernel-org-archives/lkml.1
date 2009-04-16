@@ -1,191 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbZDPBpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZDPBpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbZDPBpT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 21:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZDPBo7
+	id S1757644AbZDPBpl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 21:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbZDPBpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 21:44:59 -0400
-Received: from exprod6og105.obsmtp.com ([64.18.1.189]:57989 "HELO
-	exprod6og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752244AbZDPBo6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 21:44:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 15 Apr 2009 21:45:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46338 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757169AbZDPBpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 21:45:02 -0400
+Message-ID: <49E68D64.6060301@kernel.org>
+Date: Wed, 15 Apr 2009 18:44:04 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH]  usb/core/hub.c: fix sparse warnings
-Date: Wed, 15 Apr 2009 21:44:44 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8DF9@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH]  usb/core/hub.c: fix sparse warnings
-Thread-Index: Acm+NOsVfKgQN1NDRaifb7COSG57Ig==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Apr 2009 01:44:56.0227 (UTC) FILETIME=[F1DEFF30:01C9BE34]
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 7/8] x86/irq: make MSI irq_desc numa aware
+References: <49E68C41.4020801@kernel.org>
+In-Reply-To: <49E68C41.4020801@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse warning in drivers/usb/core/hub.c.
 
-	warning: symbol 'temp' shadows an earlier one
+Impact: use irq_desc_alloc_node
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+try to get irq_desc on the node in create_irq_nr
 
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
+ arch/x86/kernel/apic/io_apic.c |   15 +++++++++++----
+ include/linux/irq.h            |    2 +-
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index be86ae3..8ab98c9 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -457,13 +457,13 @@ static void hub_tt_kevent (struct work_struct
-*work)
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -3065,14 +3065,13 @@ static int nr_irqs_gsi = NR_IRQS_LEGACY;
+ /*
+  * Dynamic irq allocate and deallocation
+  */
+-unsigned int create_irq_nr(unsigned int irq_want)
++unsigned int create_irq_nr(unsigned int irq_want, int node)
+ {
+ 	/* Allocate an unused irq */
+ 	unsigned int irq;
+ 	unsigned int new;
+ 	unsigned long flags;
+ 	struct irq_cfg *cfg_new = NULL;
+-	int node = cpu_to_node(boot_cpu_id);
+ 	struct irq_desc *desc_new = NULL;
  
- 	spin_lock_irqsave (&hub->tt.lock, flags);
- 	while (--limit && !list_empty (&hub->tt.clear_list)) {
--		struct list_head	*temp;
-+		struct list_head	*next;
- 		struct usb_tt_clear	*clear;
- 		struct usb_device	*hdev = hub->hdev;
- 		int			status;
+ 	irq = 0;
+@@ -3090,6 +3089,11 @@ unsigned int create_irq_nr(unsigned int
  
--		temp = hub->tt.clear_list.next;
--		clear = list_entry (temp, struct usb_tt_clear,
-clear_list);
-+		next = hub->tt.clear_list.next;
-+		clear = list_entry (next, struct usb_tt_clear,
-clear_list);
- 		list_del (&clear->clear_list);
+ 		if (cfg_new->vector != 0)
+ 			continue;
++
++		/* different node ?*/
++		if (desc_new->node != node)
++			continue;
++
+ 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
+ 			irq = new;
+ 		break;
+@@ -3107,11 +3111,12 @@ unsigned int create_irq_nr(unsigned int
  
- 		/* drop lock so HCD can concurrently report other TT
-errors */
-@@ -518,7 +518,7 @@ void usb_hub_tt_clear_buffer (struct usb_device
-*udev, int pipe)
- 			: (USB_ENDPOINT_XFER_BULK << 11);
- 	if (usb_pipein (pipe))
- 		clear->devinfo |= 1 << 15;
--	
-+
- 	/* tell keventd to clear state for this TT */
- 	spin_lock_irqsave (&tt->lock, flags);
- 	list_add_tail (&clear->clear_list, &tt->clear_list);
-@@ -571,7 +571,7 @@ static int hub_hub_status(struct usb_hub *hub,
- 			"%s failed (err = %d)\n", __func__, ret);
- 	else {
- 		*status = le16_to_cpu(hub->status->hub.wHubStatus);
--		*change = le16_to_cpu(hub->status->hub.wHubChange); 
-+		*change = le16_to_cpu(hub->status->hub.wHubChange);
- 		ret = 0;
- 	}
- 	mutex_unlock(&hub->status_mutex);
-@@ -2330,7 +2330,7 @@ static inline int remote_wakeup(struct usb_device
-*udev)
-  * Between connect detection and reset signaling there must be a delay
-  * of 100ms at least for debounce and power-settling.  The
-corresponding
-  * timer shall restart whenever the downstream port detects a
-disconnect.
-- * 
-+ *
-  * Apparently there are some bluetooth and irda-dongles and a number of
-  * low-speed devices for which this debounce period may last over a
-second.
-  * Not covered by the spec - but easy to deal with.
-@@ -2490,7 +2490,7 @@ hub_port_init (struct usb_hub *hub, struct
-usb_device *udev, int port1,
- 	default:
- 		goto fail;
- 	}
-- 
-+
- 	type = "";
- 	switch (udev->speed) {
- 	case USB_SPEED_LOW:	speed = "low";	break;
-@@ -2516,7 +2516,7 @@ hub_port_init (struct usb_hub *hub, struct
-usb_device *udev, int port1,
- 		udev->tt = &hub->tt;
- 		udev->ttport = port1;
- 	}
-- 
-+
- 	/* Why interleave GET_DESCRIPTOR and SET_ADDRESS this way?
- 	 * Because device hardware and firmware is sometimes buggy in
- 	 * this area, and this is how Linux has done it for ages.
-@@ -2647,7 +2647,7 @@ hub_port_init (struct usb_hub *hub, struct
-usb_device *udev, int port1,
- 		udev->ep0.desc.wMaxPacketSize = cpu_to_le16(i);
- 		usb_ep0_reinit(udev);
- 	}
--  
-+
- 	retval = usb_get_device_descriptor(udev, USB_DT_DEVICE_SIZE);
- 	if (retval < (signed)sizeof(udev->descriptor)) {
- 		dev_err(&udev->dev, "device descriptor read/all, error
-%d\n",
-@@ -2894,7 +2894,7 @@ static void hub_port_connect_change(struct usb_hub
-*hub, int port1,
- 				goto loop_disable;
- 			}
- 		}
-- 
-+
- 		/* check for devices running slower than they could */
- 		if (le16_to_cpu(udev->descriptor.bcdUSB) >= 0x0200
- 				&& udev->speed == USB_SPEED_FULL
-@@ -2951,7 +2951,7 @@ loop:
- 			!(hcd->driver->port_handed_over)(hcd, port1))
- 		dev_err(hub_dev, "unable to enumerate USB device on port
-%d\n",
- 				port1);
-- 
-+
- done:
- 	hub_port_disable(hub, port1, 1);
- 	if (hcd->driver->relinquish_port && !hub->hdev->parent)
-@@ -3077,7 +3077,7 @@ static void hub_events(void)
- 				 * EM interference sometimes causes
-badly
- 				 * shielded USB devices to be shutdown
-by
- 				 * the hub, this hack enables them
-again.
--				 * Works at least with mouse driver. 
-+				 * Works at least with mouse driver.
- 				 */
- 				if (!(portstatus & USB_PORT_STAT_ENABLE)
- 				    && !connect_change
-@@ -3112,7 +3112,7 @@ static void hub_events(void)
- 					"resume on port %d, status
-%d\n",
- 					i, ret);
- 			}
--			
-+
- 			if (portchange & USB_PORT_STAT_C_OVERCURRENT) {
- 				dev_err (hub_dev,
- 					"over-current change on port
-%d\n",
-@@ -3386,7 +3386,7 @@ static int usb_reset_and_verify_device(struct
-usb_device *udev)
+ int create_irq(void)
+ {
++	int node = cpu_to_node(boot_cpu_id);
+ 	unsigned int irq_want;
+ 	int irq;
  
- 	if (ret < 0)
- 		goto re_enumerate;
-- 
-+
- 	/* Device might have changed firmware (DFU or similar) */
- 	if (descriptors_changed(udev, &descriptor)) {
- 		dev_info(&udev->dev, "device firmware changed\n");
-@@ -3440,7 +3440,7 @@ static int usb_reset_and_verify_device(struct
-usb_device *udev)
+ 	irq_want = nr_irqs_gsi;
+-	irq = create_irq_nr(irq_want);
++	irq = create_irq_nr(irq_want, node);
  
- done:
- 	return 0;
-- 
-+
- re_enumerate:
- 	hub_port_logical_disconnect(parent_hub, port1);
- 	return -ENODEV; 
+ 	if (irq == 0)
+ 		irq = -1;
+@@ -3369,15 +3374,17 @@ int arch_setup_msi_irqs(struct pci_dev *
+ 	unsigned int irq_want;
+ 	struct intel_iommu *iommu = NULL;
+ 	int index = 0;
++	int node;
+ 
+ 	/* x86 doesn't support multiple MSI yet */
+ 	if (type == PCI_CAP_ID_MSI && nvec > 1)
+ 		return 1;
+ 
++	node = dev_to_node(&dev->dev);
+ 	irq_want = nr_irqs_gsi;
+ 	sub_handle = 0;
+ 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+-		irq = create_irq_nr(irq_want);
++		irq = create_irq_nr(irq_want, node);
+ 		if (irq == 0)
+ 			return -1;
+ 		irq_want = irq + 1;
+Index: linux-2.6/include/linux/irq.h
+===================================================================
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -374,7 +374,7 @@ extern void set_irq_noprobe(unsigned int
+ extern void set_irq_probe(unsigned int irq);
+ 
+ /* Handle dynamic irq creation and destruction */
+-extern unsigned int create_irq_nr(unsigned int irq_want);
++extern unsigned int create_irq_nr(unsigned int irq_want, int node);
+ extern int create_irq(void);
+ extern void destroy_irq(unsigned int irq);
+ 
