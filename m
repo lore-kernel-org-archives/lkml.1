@@ -1,117 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbZDPCU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZDPCVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757630AbZDPCU5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 22:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbZDPCTc
+	id S1757480AbZDPCVY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 22:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZDPCTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 22:19:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63297 "EHLO
+	Wed, 15 Apr 2009 22:19:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51972 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbZDPCTa (ORCPT
+	with ESMTP id S1752578AbZDPCTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Apr 2009 22:19:30 -0400
-Message-Id: <20090416021928.956953374@goodmis.org>
+Message-Id: <20090416021928.702433445@goodmis.org>
 References: <20090416021830.556671772@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 15 Apr 2009 22:18:35 -0400
+Date: Wed, 15 Apr 2009 22:18:34 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Avadh Patel <avadh4all@gmail.com>
-Subject: [PATCH 5/5] tracing: add saved_cmdlines file to show cached task comms
-Content-Disposition: inline; filename=0005-tracing-add-saved_cmdlines-file-to-show-cached-task.patch
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 4/5] tracing/events/ring-buffer: expose format of ring buffer headers to users
+Content-Disposition: inline; filename=0004-tracing-events-ring-buffer-expose-format-of-ring-bu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Avadh Patel <avadh4all@gmail.com>
+From: Steven Rostedt <srostedt@redhat.com>
 
-Export the cached task comms to userspace. This allows user apps to translate
-the pids from a trace into their respective task command lines.
+Currently, every thing needed to read the binary output from the
+ring buffers is available, with the exception of the way the ring
+buffers handles itself internally.
 
-[ added error checking and use of buf pointer to index file_buf
-    - Steven Rostedt ]
+This patch creates two special files in the debugfs/tracing/events
+directory:
 
-Signed-off-by: Avadh Patel <avadh4all@gmail.com>
+ # cat /debug/tracing/events/header_page
+        field: u64 timestamp;   offset:0;       size:8;
+        field: local_t commit;  offset:8;       size:8;
+        field: char data;       offset:16;      size:4080;
+
+ # cat /debug/tracing/events/header_event
+        type        :    2 bits
+        len         :    3 bits
+        time_delta  :   27 bits
+        array       :   32 bits
+
+        padding     : type == 0
+        time_extend : type == 1
+        data        : type == 3
+
+This is to allow a userspace app to see if the ring buffer format changes
+or not.
+
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 53 insertions(+), 0 deletions(-)
+ include/linux/ring_buffer.h |    5 ++++
+ kernel/trace/ring_buffer.c  |   44 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_events.c |   38 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 87 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 2d69b26..031c46f 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2422,6 +2422,56 @@ static const struct file_operations tracing_readme_fops = {
- };
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index f0aa486..fac8f1a 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -166,6 +166,11 @@ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data);
+ int ring_buffer_read_page(struct ring_buffer *buffer, void **data_page,
+ 			  size_t len, int cpu, int full);
  
- static ssize_t
-+tracing_saved_cmdlines_read(struct file *file, char __user *ubuf,
-+				size_t cnt, loff_t *ppos)
++struct trace_seq;
++
++int ring_buffer_print_entry_header(struct trace_seq *s);
++int ring_buffer_print_page_header(struct trace_seq *s);
++
+ enum ring_buffer_flags {
+ 	RB_FL_OVERWRITE		= 1 << 0,
+ };
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index f935bd5..84a6055 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -22,6 +22,28 @@
+ #include "trace.h"
+ 
+ /*
++ * The ring buffer header is special. We must manually up keep it.
++ */
++int ring_buffer_print_entry_header(struct trace_seq *s)
 +{
-+	char *buf_comm;
-+	char *file_buf;
-+	char *buf;
-+	int len = 0;
-+	int pid;
-+	int i;
++	int ret;
 +
-+	file_buf = kmalloc(SAVED_CMDLINES*(16+TASK_COMM_LEN), GFP_KERNEL);
-+	if (!file_buf)
-+		return -ENOMEM;
++	ret = trace_seq_printf(s, "\ttype        :    2 bits\n");
++	ret = trace_seq_printf(s, "\tlen         :    3 bits\n");
++	ret = trace_seq_printf(s, "\ttime_delta  :   27 bits\n");
++	ret = trace_seq_printf(s, "\tarray       :   32 bits\n");
++	ret = trace_seq_printf(s, "\n");
++	ret = trace_seq_printf(s, "\tpadding     : type == %d\n",
++			       RINGBUF_TYPE_PADDING);
++	ret = trace_seq_printf(s, "\ttime_extend : type == %d\n",
++			       RINGBUF_TYPE_TIME_EXTEND);
++	ret = trace_seq_printf(s, "\tdata        : type == %d\n",
++			       RINGBUF_TYPE_DATA);
 +
-+	buf_comm = kmalloc(TASK_COMM_LEN, GFP_KERNEL);
-+	if (!buf_comm) {
-+		kfree(file_buf);
-+		return -ENOMEM;
-+	}
-+
-+	buf = file_buf;
-+
-+	for (i = 0; i < SAVED_CMDLINES; i++) {
-+		int r;
-+
-+		pid = map_cmdline_to_pid[i];
-+		if (pid == -1 || pid == NO_CMDLINE_MAP)
-+			continue;
-+
-+		trace_find_cmdline(pid, buf_comm);
-+		r = sprintf(buf, "%d %s\n", pid, buf_comm);
-+		buf += r;
-+		len += r;
-+	}
-+
-+	len = simple_read_from_buffer(ubuf, cnt, ppos,
-+				      file_buf, len);
-+
-+	kfree(file_buf);
-+	kfree(buf_comm);
-+
-+	return len;
++	return ret;
 +}
 +
-+static const struct file_operations tracing_saved_cmdlines_fops = {
-+    .open       = tracing_open_generic,
-+    .read       = tracing_saved_cmdlines_read,
++/*
+  * The ring buffer is made up of a list of pages. A separate list of pages is
+  * allocated for each CPU. A writer may only write to a buffer that is
+  * associated with the CPU it is currently executing on.  A reader may read
+@@ -340,6 +362,28 @@ static inline int test_time_stamp(u64 delta)
+ 
+ #define BUF_PAGE_SIZE (PAGE_SIZE - BUF_PAGE_HDR_SIZE)
+ 
++int ring_buffer_print_page_header(struct trace_seq *s)
++{
++	struct buffer_data_page field;
++	int ret;
++
++	ret = trace_seq_printf(s, "\tfield: u64 timestamp;\t"
++			       "offset:0;\tsize:%u;\n",
++			       (unsigned int)sizeof(field.time_stamp));
++
++	ret = trace_seq_printf(s, "\tfield: local_t commit;\t"
++			       "offset:%u;\tsize:%u;\n",
++			       (unsigned int)offsetof(typeof(field), commit),
++			       (unsigned int)sizeof(field.commit));
++
++	ret = trace_seq_printf(s, "\tfield: char data;\t"
++			       "offset:%u;\tsize:%u;\n",
++			       (unsigned int)offsetof(typeof(field), data),
++			       (unsigned int)BUF_PAGE_SIZE);
++
++	return ret;
++}
++
+ /*
+  * head_page == tail_page && head == tail then buffer is empty.
+  */
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 6d5b1bd..96934f0 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -609,6 +609,30 @@ subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 	return cnt;
+ }
+ 
++static ssize_t
++show_header(struct file *filp, char __user *ubuf, size_t cnt, loff_t *ppos)
++{
++	int (*func)(struct trace_seq *s) = filp->private_data;
++	struct trace_seq *s;
++	int r;
++
++	if (*ppos)
++		return 0;
++
++	s = kmalloc(sizeof(*s), GFP_KERNEL);
++	if (!s)
++		return -ENOMEM;
++
++	trace_seq_init(s);
++
++	func(s);
++	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
++
++	kfree(s);
++
++	return r;
++}
++
+ static const struct seq_operations show_event_seq_ops = {
+ 	.start = t_start,
+ 	.next = t_next,
+@@ -666,6 +690,11 @@ static const struct file_operations ftrace_subsystem_filter_fops = {
+ 	.write = subsystem_filter_write,
+ };
+ 
++static const struct file_operations ftrace_show_header_fops = {
++	.open = tracing_open_generic,
++	.read = show_header,
 +};
 +
-+static ssize_t
- tracing_ctrl_read(struct file *filp, char __user *ubuf,
- 		  size_t cnt, loff_t *ppos)
+ static struct dentry *event_trace_events_dir(void)
  {
-@@ -3973,6 +4023,9 @@ static __init int tracer_init_debugfs(void)
- 	trace_create_file("trace_marker", 0220, d_tracer,
- 			NULL, &tracing_mark_fops);
+ 	static struct dentry *d_tracer;
+@@ -908,6 +937,15 @@ static __init int event_trace_init(void)
+ 	if (!d_events)
+ 		return 0;
  
-+	trace_create_file("saved_cmdlines", 0444, d_tracer,
-+			NULL, &tracing_saved_cmdlines_fops);
++	/* ring buffer internal formats */
++	trace_create_file("header_page", 0444, d_events,
++			  ring_buffer_print_page_header,
++			  &ftrace_show_header_fops);
 +
- #ifdef CONFIG_DYNAMIC_FTRACE
- 	trace_create_file("dyn_ftrace_total_info", 0444, d_tracer,
- 			&ftrace_update_tot_cnt, &tracing_dyn_info_fops);
++	trace_create_file("header_event", 0444, d_events,
++			  ring_buffer_print_entry_header,
++			  &ftrace_show_header_fops);
++
+ 	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
+ 		/* The linker may leave blanks */
+ 		if (!call->name)
 -- 
 1.6.2.1
 
