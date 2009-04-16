@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbZDPKG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZDPKPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbZDPKG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 06:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757854AbZDPKFt
+	id S1754451AbZDPKPm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 06:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZDPKPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 06:05:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38534 "EHLO mx2.redhat.com"
+	Thu, 16 Apr 2009 06:15:33 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37398 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757842AbZDPKFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 06:05:47 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090413214513.GA1119@redhat.com>
-References: <20090413214513.GA1119@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rework/fix is_single_threaded()
-Date: Thu, 16 Apr 2009 11:04:32 +0100
-Message-ID: <14878.1239876272@redhat.com>
+	id S1751579AbZDPKPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 06:15:32 -0400
+Date: Thu, 16 Apr 2009 12:15:22 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Corrado Zoccolo <czoccolo@gmail.com>, oliver@neukum.name
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: linux-2.6.30rc1 mouse stuck with usb autosuspend enabled
+In-Reply-To: <4e5e476b0904091453m61ec4e81j7cfdef918bb3dfb3@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0904161210450.10907@twin.jikos.cz>
+References: <4e5e476b0904091453m61ec4e81j7cfdef918bb3dfb3@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> wrote:
 
-> - Fix the comment, is_single_threaded(p) actually means that nobody shares
->   ->mm with p.
-> 
->   I think this helper should be renamed,
+[ added Oliver to CC ]
 
-What we want to know when we ask this function is whether or not a process is
-single-threaded, hence the name.  The fact that because:
+On Thu, 9 Apr 2009, Corrado Zoccolo wrote:
 
-	CLONE_THREAD => CLONE_SIGHAND => CLONE_VM
+> I found this regression w.r.t. 2.6.29.
+> When enabling usb automatic power management for all usb peripherals, with:
+> > for i in /sys/bus/usb/devices/*/power/level; do echo auto > $i; done
 
-we can work this out purely by checking that there aren't any processes that
-share VM space with us is immaterial.
+Well, it's difficult to consider this to be a regression. With default 
+settings (USB autosuspend turned off), the system behaves the same way as 
+it did before (ie. no mouse autosuspend).
 
-> and it should not have arguments.  With or without this patch it must not be
-> used unless p == current, otherwise we can't safely use p->signal or p->mm.
+> after 2 seconds of inactivity (my autosuspend threshold), the mouse
+> gets stuck under X.
 
-Well, I can live with that, but you need to check with the SELinux people too.
-Whilst they do currently limit the selinux_setprocattr() to current only, they
-still hand the task pointer that function is given around.
+That's because it got suspended, as you have configured it to do so.
 
-> - Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
->   to iterate over the process list. If there is another CLONE_VM process
->   it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
->   a freshly forked CLONE_VM task, but this doesn't matter because we must
->   see its parent and return false.
+> Pushing a mouse button will revive it (and the event is passed to X).
 
-Hmmm...  I'd quite like to avoid using down_write() if possible.  Why do we
-need to do this?  Is it just to stop processes that might cease using mm from
-doing so until we've finished?
+Which is expected behavior.
 
-David
+Your mouse (as many other mice out there) doesn't emit wakeup event on 
+movement, it only does on button click. There is nothing kernel can do 
+about it. This is one of the reasons why autosuspend is disabled by 
+default (other reason being many devices broken beyond hope when it comes 
+to waking up).
+
+-- 
+Jiri Kosina
+SUSE Labs
+
