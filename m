@@ -1,38 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbZDPAAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZDPABb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbZDPAAB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZDOX7v
+	id S1754668AbZDPABb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZDPABT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 19:59:51 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43241 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbZDOX7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 19:59:50 -0400
-Date: Thu, 16 Apr 2009 08:58:14 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-Message-Id: <20090416085814.8b6d077f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090415132356.GA19270@linux>
-References: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
-	<20090415111528.b796519a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090415093716.GA5968@linux>
-	<20090415.213850.226770691.ryov@valinux.co.jp>
-	<20090415132356.GA19270@linux>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 15 Apr 2009 20:01:19 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:59803 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752097AbZDPABS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 20:01:18 -0400
+Date: Wed, 15 Apr 2009 17:01:11 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: dada1@cosmosbay.com, kaber@trash.net, jeff.chua.linux@gmail.com,
+       paulmck@linux.vnet.ibm.com, paulus@samba.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+Message-ID: <20090415170111.6e1ca264@nehalam>
+In-Reply-To: <20090415.164811.19905145.davem@davemloft.net>
+References: <49E5BDF7.8090502@trash.net>
+	<20090415135526.2afc4d18@nehalam>
+	<49E64C91.5020708@cosmosbay.com>
+	<20090415.164811.19905145.davem@davemloft.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -40,192 +34,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Apr 2009 15:23:57 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
+On Wed, 15 Apr 2009 16:48:11 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> On Wed, Apr 15, 2009 at 09:38:50PM +0900, Ryo Tsuruta wrote:
-> > Hi Andrea and Kamezawa-san,
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Wed, 15 Apr 2009 23:07:29 +0200
+> 
+> > Well, it seems original patch was not so bad after all
 > > 
-> > > Ryo, it would be great if you can look at this and fix/integrate into
-> > > the mainstream bio-cgroup. Otherwise I can try to to schedule this in my
-> > > work.
+> > http://lists.netfilter.org/pipermail/netfilter-devel/2006-January/023175.html
 > > 
-> > O.K. I'll apply those fixes and post patches as soon as I can.
+> > So change per-cpu spinlocks to per-cpu rwlocks 
 > > 
+> > and use read_lock() in ipt_do_table() to allow recursion...
 > 
-> Very good! I've just tested the bio_cgroup_id inclusion in
-> page_cgroup->flags. I'm posting the patch on-top-of my patchset.
-> 
-> If you're interested, it should apply cleanly to the original
-> bio-cgroup, except for the get/put_cgroup_from_page() part.
-> 
-> Thanks,
-> -Andrea
-> ---
-> bio-cgroup: encode bio_cgroup_id in page_cgroup->flags
-> 
-> Encode the bio_cgroup_id into the flags argument of page_cgroup as
-> suggested by Kamezawa.
-> 
-> Lower 16-bits of the flags attribute are used for the actual page_cgroup
-> flags. The rest is reserved to store the bio-cgroup id.
-> 
-> This allows to save 4 bytes (in 32-bit architectures) or 8 bytes (in
-> 64-bit) for each page_cgroup element.
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  include/linux/biotrack.h    |    2 +-
->  include/linux/page_cgroup.h |   24 +++++++++++++++++++++---
->  mm/biotrack.c               |   26 ++++++++++++--------------
->  3 files changed, 34 insertions(+), 18 deletions(-)
-> 
-> diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
-> index 25b8810..4bd0242 100644
-> --- a/include/linux/biotrack.h
-> +++ b/include/linux/biotrack.h
-> @@ -28,7 +28,7 @@ struct bio_cgroup {
->  
->  static inline void __init_bio_page_cgroup(struct page_cgroup *pc)
->  {
-> -	pc->bio_cgroup_id = 0;
-> +	page_cgroup_set_bio_id(pc, 0);
->  }
->  
->  extern struct cgroup *get_cgroup_from_page(struct page *page);
-> diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
-> index 00a49c5..af780a4 100644
-> --- a/include/linux/page_cgroup.h
-> +++ b/include/linux/page_cgroup.h
-> @@ -16,12 +16,30 @@ struct page_cgroup {
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  	struct mem_cgroup *mem_cgroup;
->  #endif
-> -#ifdef CONFIG_CGROUP_BIO
-> -	int bio_cgroup_id;
-> -#endif
->  	struct list_head lru;		/* per cgroup LRU list */
->  };
->  
-> +#ifdef CONFIG_CGROUP_BIO
-> +/*
-> + * use lower 16 bits for flags and reserve the rest for the bio-cgroup id
-> + */
-> +#define BIO_CGROUP_ID_SHIFT	(16)
-> +#define BIO_CGROUP_ID_BITS (8 * sizeof(unsigned long) - BIO_CGROUP_ID_SHIFT)
-> +
-> +static inline unsigned long page_cgroup_get_bio_id(struct page_cgroup *pc)
-> +{
-> +	return pc->flags >> BIO_CGROUP_ID_SHIFT;
-> +}
-> +
-> +static inline void page_cgroup_set_bio_id(struct page_cgroup *pc,
-> +				unsigned long id)
-> +{
-> +	WARN_ON(id >= (1UL << BIO_CGROUP_ID_BITS));
-> +	pc->flags &= (1UL << BIO_CGROUP_ID_SHIFT) - 1;
-> +	pc->flags |= (unsigned long)(id << BIO_CGROUP_ID_SHIFT);
-> +}
-> +#endif
-> +
-Ah, there is "Lock" bit in pc->flags and above "set" code does read-modify-write
-without lock_page_cgroup().
+> Grumble, one more barrier to getting rid of rwlocks in the whole
+> tree. :-/
 
-Could you use lock_page_cgroup() or cmpxchg ? (or using something magical technique ?)
+Hey, we are reinventing your brwlock ;-<
 
-Thanks,
--Kame
+The other option is use spinlock, over a smaller area (only counters),
+and other mechanism to synchronize on replace.
 
->  void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
->  void __init page_cgroup_init(void);
->  struct page_cgroup *lookup_page_cgroup(struct page *page);
-> diff --git a/mm/biotrack.c b/mm/biotrack.c
-> index 431056c..4cca3bf 100644
-> --- a/mm/biotrack.c
-> +++ b/mm/biotrack.c
-> @@ -74,7 +74,7 @@ void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
->  	struct bio_cgroup *biog;
->  	struct page_cgroup *pc;
->  
-> -	WARN_ON_ONCE(test_bit(PG_locked, &page->flags));
-> +	WARN_ON_ONCE(!test_bit(PG_locked, &page->flags));
->  
->  	if (bio_cgroup_disabled())
->  		return;
-> @@ -82,7 +82,7 @@ void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
->  	if (unlikely(!pc))
->  		return;
->  
-> -	pc->bio_cgroup_id = 0;	/* 0: default bio_cgroup id */
-> +	__init_bio_page_cgroup(pc);
->  	if (!mm)
->  		return;
->  	/*
-> @@ -95,11 +95,11 @@ void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
->  		goto out;
->  	/*
->  	 * css_get(&bio->css) isn't called to increment the reference
-> -	 * count of this bio_cgroup "biog" so pc->bio_cgroup_id might turn
-> -	 * invalid even if this page is still active.
-> -	 * This approach is chosen to minimize the overhead.
-> +	 * count of this bio_cgroup "biog" so the bio-cgroup id might turn
-> +	 * invalid even if this page is still active. This approach is chosen
-> +	 * to minimize the overhead.
->  	 */
-> -	pc->bio_cgroup_id = biog->id;
-> +	page_cgroup_set_bio_id(pc, biog->id);
->  out:
->  	rcu_read_unlock();
->  }
-> @@ -112,7 +112,7 @@ void bio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
->  	/*
->  	 * A little trick:
->  	 * Just call bio_cgroup_set_owner() for pages which are already
-> -	 * active since the bio_cgroup_id member of page_cgroup can be
-> +	 * active since the bio-cgroup id member of page_cgroup can be
->  	 * updated without any locks. This is because an integer type of
->  	 * variable can be set a new value at once on modern cpus.
->  	 */
-> @@ -148,12 +148,10 @@ void bio_cgroup_copy_owner(struct page *npage, struct page *opage)
->  	opc = lookup_page_cgroup(opage);
->  	if (unlikely(!opc))
->  		return;
-> -
->  	/*
-> -	 * Do this without any locks. The reason is the same as
-> -	 * bio_cgroup_reset_owner().
-> +	 * XXX: is it safe to do this without locking?
->  	 */
-> -	npc->bio_cgroup_id = opc->bio_cgroup_id;
-> +	page_cgroup_set_bio_id(npc, page_cgroup_get_bio_id(opc));
->  }
->  
->  /* Create a new bio-cgroup. */
-> @@ -250,7 +248,7 @@ struct cgroup *get_cgroup_from_page(struct page *page)
->  	if (!pc)
->  		return NULL;
->  	lock_page_cgroup(pc);
-> -	biog = find_bio_cgroup(pc->bio_cgroup_id);
-> +	biog = find_bio_cgroup(page_cgroup_get_bio_id(pc));
->  	if (biog) {
->  		css_get(&biog->css);
->  		cgrp = biog->css.cgroup;
-> @@ -268,7 +266,7 @@ void put_cgroup_from_page(struct page *page)
->  	if (!pc)
->  		return;
->  	lock_page_cgroup(pc);
-> -	biog = find_bio_cgroup(pc->bio_cgroup_id);
-> +	biog = find_bio_cgroup(page_cgroup_get_bio_id(pc));
->  	if (biog)
->  		css_put(&biog->css);
->  	unlock_page_cgroup(pc);
-> @@ -283,7 +281,7 @@ int get_bio_cgroup_id(struct bio *bio)
->  
->  	pc = lookup_page_cgroup(page);
->  	if (pc)
-> -		id = pc->bio_cgroup_id;
-> +		id = page_cgroup_get_bio_id(pc);
->  	return id;
->  }
->  EXPORT_SYMBOL(get_bio_cgroup_id);
+> I really think we should entertain the idea where we don't RCU quiesce
+> when adding rules.  That was dismissed as not workable because the new
+> rule must be "visible" as soon as we return to userspace but let's get
+> real, effectively it will be.
+
+The counters are the bigger problem, otherwise we could just free table
+info via rcu.  Do we really have to support: replace where the counter
+values coming out to user space are always exactly accurate, or is it
+allowed to replace a rule and maybe lose some counter ticks (worst case
+NCPU-1).
+
+> If there are any stale object reference issues, we can use RCU object
+> destruction to handle that kind of thing.
+
+The problem is pulling the counter values out of the object in the
+replace case. It could be changed to use some form of counting semaphore
+like thing but that gets expensive.
+ 
+> I almost cringed when the per-spinlock idea was proposed, but per-cpu
+> rwlocks just takes things too far for my tastes.
 
