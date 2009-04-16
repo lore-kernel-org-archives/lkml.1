@@ -1,273 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZDPBd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZDPBfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZDPBd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 21:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbZDPBdS
+	id S1754879AbZDPBfF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 21:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZDPBey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 21:33:18 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:50506 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbZDPBdR (ORCPT
+	Wed, 15 Apr 2009 21:34:54 -0400
+Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:36666 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751294AbZDPBex convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 21:33:17 -0400
-Date: Wed, 15 Apr 2009 21:33:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC][PATCH 1/2] tracing/events: provide string with undefined
- size support
-In-Reply-To: <1239838050-8567-1-git-send-email-fweisbec@gmail.com>
-Message-ID: <alpine.DEB.2.00.0904152118040.4459@gandalf.stny.rr.com>
-References: <1239838050-8567-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 15 Apr 2009 21:34:53 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] usb/core/sysfs: fix sparse warnings
+Date: Wed, 15 Apr 2009 21:34:40 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8DF8@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] usb/core/sysfs: fix sparse warnings
+Thread-Index: Acm+M4MAS6CrU1DeRZemqv3pdHiHJA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 Apr 2009 01:34:51.0266 (UTC) FILETIME=[89494620:01C9BE33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix 3 sparse warning in drivers/usb/core/sysfs.c.
 
-On Thu, 16 Apr 2009, Frederic Weisbecker wrote:
+	warning: symbol '__mptr' shadows an earlier one
 
-> Impact: less memory usage for tracing
-> 
-> This patch provides the support for dynamic size strings on
-> event tracing.
-> 
-> The key concept is to use a structure with an ending char array field of
-> undefined size and use such ability to allocate the minimal size on the ring
-> buffer to make the entry fit inside as opposite to a fixed length strings with
-> upper bound.
-> 
-> This patch provides two new macros:
-> 
-> -__ending_string(name)
-> 
-> This one declares the string to the structure inside TP_STRUCT__entry.
-> Only the name is needed.
-> Two constraints: only one __ending_string() per TRACE_EVENT can be added and
-> it must be the last field to be declared. Hence the __ending prefix.
-> 
-> - open_string_assign(call, dst, src)
-> 
-> This one does the copy inside TP__fast_assign() of the source
-> string to the destination. The name of the tracepoint (call) must be provided
-> for now. Hopefully I will find a solution to avoid it later.
-> 
-> Two constraint: can be used only once and always on the beginning because
-> it needs to manage the ring buffer reservation by itself. Hence the open prefix.
-> 
-> How does it works?
-> 
-> A new has_ending_string field has been added to struct ftrace_event_call and is
-> false by default.
-> Once a TRACE_EVENT uses an __ending_string field, it is set to 1.
-> 
-> Until now, the ring buffer reservation was done in ftrace_raw_event_##call().
-> It is still the case if we don't have an __ending_string() field. If we have one,
-> open_string_assign() will manage it itself to allocate the appropriate size,
-> depending of the size of the string to be copied for each trace.
-> 
-> The choice between the usual static allocation and the new dynamic one depends
-> on the "has_ending_string" value.
-> 
-> It also support filtering because these strings behave essentially
-> like usual fixed length string.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-And I thought I was the only one that could master CPP wackiness ;-)
+---
 
-BTW, I was confused on IRC, because I was thinking this was printf like, 
-but no, we only need to be concerned about a string.
-
-But I have another idea:
-
-
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  include/linux/ftrace_event.h |    1 +
->  include/trace/ftrace.h       |   62 ++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 55 insertions(+), 8 deletions(-)
-> 
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 75f3ac0..b49bfbf 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -100,6 +100,7 @@ struct ftrace_event_call {
->  	int			n_preds;
->  	struct filter_pred	**preds;
->  	void			*mod;
-> +	bool			has_ending_string;
->  
->  #ifdef CONFIG_EVENT_PROFILE
->  	atomic_t	profile_count;
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 60c5323..8ea750e 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -27,6 +27,9 @@
->  #undef __field
->  #define __field(type, item)		type	item;
->  
-> +#undef __ending_string
-> +#define __ending_string(item)			char	item[];
-> +
->  #undef TP_STRUCT__entry
->  #define TP_STRUCT__entry(args...) args
->  
-> @@ -146,12 +149,23 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
->  	if (!ret)							\
->  		return 0;
->  
-> +#undef __ending_string
-> +#define __ending_string(item)						      \
-> +	ret = trace_seq_printf(s, "\tfield: char " #item "[];\t"	      \
-> +			       "offset:%u;\n",				      \
-> +			       (unsigned int)offsetof(typeof(field), item));   \
-> +	if (!ret)							      \
-> +		return 0;
-> +
->  #undef __entry
->  #define __entry REC
->  
->  #undef TP_printk
->  #define TP_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
->  
-> +#undef open_string_assign
-> +#define open_string_assign(call, dst, src)	strcpy(__entry->dst, src)
-> +
->  #undef TP_fast_assign
->  #define TP_fast_assign(args...) args
->  
-> @@ -189,6 +203,19 @@ ftrace_format_##call(struct trace_seq *s)				\
->  	if (ret)							\
->  		return ret;
->  
-> +/*
-> + * We choose a size of MAX_FILTER_STR_VAL, then we behave like
-> + * a usual string with the maximum size to keep being filterable.
-> + */
-> +#undef __ending_string
-> +#define __ending_string(item)						\
-> +	ret = trace_define_field(event_call, "char []", #item,		\
-> +				 offsetof(typeof(field), item),		\
-> +				 MAX_FILTER_STR_VAL);			\
-> +	if (ret)							\
-> +		return ret;						\
-> +	event_call->has_ending_string = true;
-> +
->  #undef TRACE_EVENT
->  #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
->  int									\
-> @@ -409,6 +436,22 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
->  #undef __entry
->  #define __entry entry
->  
-> +/*
-> + * If we have and ending undefined string size, then the size of
-> + * the entry is dynamic. In such case we override the ring buffer
-> + * reservation to manage it ourselves with our dynamic string size.
-> + */
-> +#undef open_string_assign
-> +#define open_string_assign(call, dst, src)				       \
-> +	event = trace_current_buffer_lock_reserve(			       \
-> +			event_##call.id,				       \
-> +			sizeof(struct ftrace_raw_##call) + strlen(src) + 1,    \
-> +			irq_flags, pc);					       \
-> +	if (!event)							       \
-> +		return;							       \
-> +	entry	= ring_buffer_event_data(event);			       \
-> +	strcpy(entry->dst, src);
-> +
->  #undef TRACE_EVENT
->  #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
->  _TRACE_PROFILE(call, PARAMS(proto), PARAMS(args))			\
-> @@ -418,20 +461,23 @@ static struct ftrace_event_call event_##call;				\
->  static void ftrace_raw_event_##call(proto)				\
->  {									\
->  	struct ftrace_event_call *call = &event_##call;			\
-> -	struct ring_buffer_event *event;				\
-> -	struct ftrace_raw_##call *entry;				\
-> +	struct ring_buffer_event *event = NULL;				\
-> +	struct ftrace_raw_##call *entry = NULL;				\
->  	unsigned long irq_flags;					\
->  	int pc;								\
->  									\
->  	local_save_flags(irq_flags);					\
->  	pc = preempt_count();						\
->  									\
-> -	event = trace_current_buffer_lock_reserve(event_##call.id,	\
-> -				  sizeof(struct ftrace_raw_##call),	\
-> -				  irq_flags, pc);			\
-> -	if (!event)							\
-> -		return;							\
-> -	entry	= ring_buffer_event_data(event);			\
-> +	if (!call->has_ending_string) {					\
-> +		event = trace_current_buffer_lock_reserve(		\
-> +				event_##call.id,			\
-> +				sizeof(struct ftrace_raw_##call),	\
-> +				irq_flags, pc);				\
-> +		if (!event)						\
-> +			return;						\
-> +		entry	= ring_buffer_event_data(event);		\
-> +	}								\
->  									\
->  	assign;								\
->  									\
-
-
-We can get rid of the has_ending_string and open_string_assign and have 
-this:
-
+diff --git a/drivers/usb/core/sysfs.c b/drivers/usb/core/sysfs.c
+index c667891..b5c72e4 100644
+--- a/drivers/usb/core/sysfs.c
++++ b/drivers/usb/core/sysfs.c
+@@ -552,8 +552,8 @@ static struct attribute *dev_string_attrs[] = {
+ static mode_t dev_string_attrs_are_visible(struct kobject *kobj,
+ 		struct attribute *a, int n)
+ {
+-	struct usb_device *udev = to_usb_device(
+-			container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct usb_device *udev = to_usb_device(dev);
  
-        TP_STRUCT__entry(
-                __field(unsigned long, wait_usec)
-                __field(unsigned long, wait_nsec_rem)
-                __ending_string(name)
-        ),
-        TP_fast_assign(
-                __entry->wait_nsec_rem = do_div(waittime, NSEC_PER_USEC);
-                __entry->wait_usec = (unsigned long) waittime;
-                strcpy(__entry->name, lock->name);
-        ),
-
-
-Then we could do the following in the print the assign:
-
-#undef __field
-#define __field(a,b)
-#undef __array
-#define __array(a,b,c)
-#undef __ending_sting
-#define __ending_string(name) __str_size__ += strlen(name) + 1;
-
-#define TRACE_EVENT(call, proto, args, tstruct, assign, print)
-static void ftrace_raw_event_##call(proto)
-{
-	int __str_size__ = 0;
-
-	tstruct
-
-	event = trace_current_buffer_lock_reserve(event_##call.id,
-				sizeof(struct ftrace_raw_##call) +
-				__str_size__,
-				irq_flags, pc)
-	if (!event)
-		return;
-
-	entry = ring_buffer_event_data(event);
-
-	assign
-}
-
-
-Yes, I did not add other declarations nor the backslashes for the macro, 
-but you get what I'm doing, right?
-
--- Steve
-
+ 	if (a == &dev_attr_manufacturer.attr) {
+ 		if (udev->manufacturer == NULL)
+@@ -585,8 +585,8 @@ static ssize_t
+ read_descriptors(struct kobject *kobj, struct bin_attribute *attr,
+ 		char *buf, loff_t off, size_t count)
+ {
+-	struct usb_device *udev = to_usb_device(
+-			container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct usb_device *udev = to_usb_device(dev);
+ 	size_t nleft = count;
+ 	size_t srclen, n;
+ 	int cfgno;
+@@ -786,8 +786,8 @@ static struct attribute *intf_assoc_attrs[] = {
+ static mode_t intf_assoc_attrs_are_visible(struct kobject *kobj,
+ 		struct attribute *a, int n)
+ {
+-	struct usb_interface *intf = to_usb_interface(
+-			container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct usb_interface *intf = to_usb_interface(dev);
+ 
+ 	if (intf->intf_assoc == NULL)
+ 		return 0; 
