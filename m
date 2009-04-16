@@ -1,60 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZDPVKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZDPVKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZDPVKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 17:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZDPVKO
+	id S1755837AbZDPVKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 17:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZDPVKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 17:10:14 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:60501 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbZDPVKM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 17:10:12 -0400
-Message-ID: <49E79E58.9000606@nortel.com>
-Date: Thu, 16 Apr 2009 15:08:40 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Thu, 16 Apr 2009 17:10:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35880 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756254AbZDPVKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 17:10:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Justin Madru <jdm64@gawab.com>
+Subject: Re: 2.6.30-rc1: OOPS on usb disk insert
+Date: Thu, 16 Apr 2009 23:10:02 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+References: <49DC3094.5010607@gawab.com>
+In-Reply-To: <49DC3094.5010607@gawab.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Trenton Adams <trenton.d.adams@gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain> <200904070035.00784.rjw@sisk.pl>
-In-Reply-To: <200904070035.00784.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Apr 2009 21:08:43.0944 (UTC) FILETIME=[866F0A80:01C9BED7]
+Content-Disposition: inline
+Message-Id: <200904162310.02477.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday 06 April 2009, Linus Torvalds wrote:
->> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13019
->>> Subject		: /proc/<pid>/maps offset output broken in 2.6.29
->>> Submitter	: "Chris Friesen" <cfriesen@nortel.com>
->>> Date		: 2009-04-01 23:18 (6 days old)
->>> References	: http://marc.info/?l=linuxppc-embedded&m=123862902916059&w=4
->>> Handled-By	: Hugh Dickins <hugh@veritas.com>
->> I don't think that's a regression, nor really a bug. It looks cosmetic, 
->> and likely to be fixed, but not really worth worrying about.
+On Wednesday 08 April 2009, Justin Madru wrote:
+> Hello,
+
+Hi,
+
+> Testing out .30-rc1 and usb devises don't work. I insert my flash disk 
+> and get this oops.
+> More information (dmesg, config, etc.) at 
+> http://jdserver.homelinux.org/bugreports/003/
+
+I suppose this has been fixed in -rc2 or current git.  Have you tried
+after -rc1?
+
+> usb 5-3: new high speed USB device using ehci_hcd and address 2
+> usb 5-3: configuration #1 chosen from 1 choice
+> Initializing USB Mass Storage driver...
+> scsi2 : SCSI emulation for USB Mass Storage devices
+> usb-storage: device found at 2
+> usb-storage: waiting for device to settle before scanning
+> usbcore: registered new interface driver usb-storage
+> USB Mass Storage support registered.
+> usb-storage: device scan complete
+> scsi 2:0:0:0: Direct-Access     SanDisk  Cruzer Micro     8.01 PQ: 0 
+> ANSI: 0 CCS
+> BUG: unable to handle kernel NULL pointer dereference at (null)
+> IP: [<(null)>] (null)
+> *pde = 00000000
+> Oops: 0000 [#2] PREEMPT SMP
+> last sysfs file: 
+> /sys/devices/pci0000:00/0000:00:1e.0/0000:03:00.0/ssb0:0/net/eth0/statistics/collisions
+> Modules linked in: usb_storage i915 cfbcopyarea cfbimgblt cfbfillrect 
+> binfmt_misc acpi_cpufreq container sbs cpufreq_powersave pci_slot 
+> cpufreq_stats cpufreq_userspace sbshc cpufreq_conservative ext3 jbd 
+> mbcache firewire_sbp2 ecb cryptomgr aead pcompress crypto_blkcipher 
+> crypto_hash crypto_algapi dell_laptop snd_hda_codec_idt evdev iwl3945 
+> iwlcore rfkill sdhci_pci dcdbas video backlight rtc_cmos snd_hda_intel 
+> fb output sdhci rtc_core rtc_lib mac80211 snd_hda_codec snd_hwdep 
+> snd_pcm_oss snd_mixer_oss mmc_core psmouse snd_pcm battery ac button 
+> processor intel_agp snd_page_alloc reiserfs crc32 sr_mod cdrom sg 
+> firewire_ohci firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore 
+> thermal fan
 > 
-> OK, I've dropped it from the list.
+> Pid: 5579, comm: scsi_scan_2 Tainted: G      D    (2.6.30-rc1-git #1) 
+> MM061                          
+> EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 0
+> EIP is at 0x0
+> EAX: f7117fb0 EBX: f7117fb0 ECX: 00000000 EDX: 00000003
+> ESI: b8023874 EDI: 00000000 EBP: e4432dd4 ESP: e4432dac
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process scsi_scan_2 (pid: 5579, ti=e4432000 task=ee7b3bb0 task.ti=e4432000)
+> Stack:
+>  c012a8af 00000000 00000001 00000003 c04f22d8 00000282 c04f22dc 00000005
+>  00000000 ee42ea20 e4432e00 c015e8b9 00000000 c0240d8d c04f22f8 f6527b00
+>  c02ff2d0 00000080 ffffffff f6527b00 e445c60e e4432e08 c015e93d e4432e44
+> Call Trace:
+>  [<c012a8af>] ? __wake_up+0x4f/0x80
+>  [<c015e8b9>] ? __async_schedule+0x139/0x1a0
+>  [<c0240d8d>] ? ida_pre_get+0x11d/0x150
+>  [<c02ff2d0>] ? sd_probe_async+0x0/0x270
+>  [<c015e93d>] ? async_schedule+0xd/0x10
+>  [<c02ff748>] ? sd_probe+0x208/0x2a0
+>  [<c02e6df6>] ? really_probe+0x156/0x220
+>  [<c02e6fbc>] ? __device_attach+0x4c/0x60
+>  [<c02e5b0b>] ? bus_for_each_drv+0x5b/0x80
+>  [<c02e6c7b>] ? device_attach+0xeb/0x110
+>  [<c02e6f70>] ? __device_attach+0x0/0x60
+>  [<c02e5a7f>] ? bus_attach_device+0x3f/0x70
+>  [<c02e442e>] ? device_add+0x65e/0x830
+>  [<c02ea8e0>] ? transport_configure+0x0/0x30
+>  [<c02fb3b2>] ? scsi_sysfs_add_sdev+0x62/0x2a0
+>  [<c0241592>] ? kobject_get+0x12/0x20
+>  [<c02f779d>] ? scsi_finish_async_scan+0x11d/0x160
+>  [<c02f9920>] ? do_scan_async+0x0/0x90
+>  [<c02f9978>] ? do_scan_async+0x58/0x90
+>  [<c02f9920>] ? do_scan_async+0x0/0x90
+>  [<c015558c>] ? kthread+0x3c/0x70
+>  [<c0155550>] ? kthread+0x0/0x70
+>  [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:e4432dac
+> CR2: 0000000000000000
+> ---[ end trace fefef3dd1f6b4bd0 ]---
+> note: scsi_scan_2[5579] exited with preempt_count 1
 
-I'm okay with that.  The problem causes some backwards compatibility 
-problems with existing apps that get confused by the large "offset" 
-number.  The fix is going to cause problems too, but in a different way.
-
-We'll work around it.
-
-Chris
+Rafael
