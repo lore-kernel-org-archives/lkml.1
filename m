@@ -1,74 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbZDPRGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbZDPRNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbZDPRGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbZDPRF6
+	id S1756566AbZDPRNI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZDPRMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:05:58 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:49097 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757467AbZDPRF6 (ORCPT
+	Thu, 16 Apr 2009 13:12:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60311 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756004AbZDPRMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:05:58 -0400
-Date: Thu, 16 Apr 2009 18:05:56 +0100
-From: Andrew Price <andy@andrewprice.me.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: BUG: using rootfstype=ext4 causes oops
-Message-ID: <20090416170556.GA24066@sucs.org>
-Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linux-kernel@vger.kernel.org
-References: <20090415205926.GA28246@sucs.org> <20090416104758.GA433@sucs.org> <20090416145357.GM21586@mit.edu> <200904161802.21302.bzolnier@gmail.com>
+	Thu, 16 Apr 2009 13:12:54 -0400
+Message-ID: <49E766F3.60800@vlnb.net>
+Date: Thu, 16 Apr 2009 21:12:19 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904161802.21302.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chenfeng Xu <xcf@ustc.edu.cn>, linux-mm@kvack.org
+Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
+References: <20090412071950.166891982@intel.com> <20090412072052.686760755@intel.com> <20090412084819.GA25314@elte.hu> <20090412123518.GA5599@localhost>
+In-Reply-To: <20090412123518.GA5599@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19zsAWinxv7mM3h+jB4cRF9dNu4SvjhXmK5QGZ
+ xVzHS0dGZJesRZkBSHwB7R2nU/XWKN4i0jg18fkjmDw54WvbT3
+ D4Y029I+6Jp0NrFNr8Yzg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 06:02:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> Freeing non-slab objects is bad.
+Wu Fengguang, on 04/12/2009 04:35 PM wrote:
+> On Sun, Apr 12, 2009 at 04:48:19PM +0800, Ingo Molnar wrote:
+>> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+>>
+>>> Introduce page cache context based readahead algorithm.
+>>> This is to better support concurrent read streams in general.
+>>>  /*
+>>> + * Count contiguously cached pages from @offset-1 to @offset-@max,
+>>> + * this count is a conservative estimation of
+>>> + * 	- length of the sequential read sequence, or
+>>> + * 	- thrashing threshold in memory tight systems
+>>> + */
+>>> +static pgoff_t count_history_pages(struct address_space *mapping,
+>>> +				   struct file_ra_state *ra,
+>>> +				   pgoff_t offset, unsigned long max)
+>>> +{
+>>> +	pgoff_t head;
+>>> +
+>>> +	rcu_read_lock();
+>>> +	head = radix_tree_prev_hole(&mapping->page_tree, offset - 1, max);
+>>> +	rcu_read_unlock();
+>>> +
+>>> +	return offset - 1 - head;
+>>> +}
+>> Very elegant method! I suspect this will work far better 
+>> than adding various increasingly more complex heuristics.
+>>
+>> Emphatically-Acked-by: Ingo Molnar <mingo@elte.hu>
 > 
-> Andrew, does this patch help?
-
-Yes, that seems to fix it. I tested it with gfs2 and ext4 the usual way
-and I couldn't reproduce the panic.
-
-Thanks Bartlomiej.
-
-> ---
->  drivers/ide/ide-io.c |   11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
+> Thank you Ingo!
 > 
-> Index: b/drivers/ide/ide-io.c
-> ===================================================================
-> --- a/drivers/ide/ide-io.c
-> +++ b/drivers/ide/ide-io.c
-> @@ -102,11 +102,14 @@ void ide_complete_cmd(ide_drive_t *drive
->  			drive->dev_flags |= IDE_DFLAG_PARKED;
->  	}
->  
-> -	if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
-> -		memcpy(rq->special, cmd, sizeof(*cmd));
-> +	if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
-> +		struct ide_cmd *orig_cmd = rq->special;
->  
-> -	if (cmd->tf_flags & IDE_TFLAG_DYN)
-> -		kfree(cmd);
-> +		if (cmd->tf_flags & IDE_TFLAG_DYN)
-> +			kfree(orig_cmd);
-> +		else
-> +			memcpy(orig_cmd, cmd, sizeof(*cmd));
-> +	}
->  }
->  
->  /* obsolete, blk_rq_bytes() should be used instead */
+> The only pity is that this heuristic can be defeated by some user
+> space program that tries to do aggressive drop-behind via
+> fadvise(DONTNEED) calls. But as long as the drop-behind algorithm
+> be a bit lazy and does not try to squeeze the last page at @offset-1,
+> this patch will work just OK.
 > 
+> The context readahead idea is so fundamental, that a slightly modified
+> algorithm can be used for all kinds of sequential patterns, and it can
+> automatically adapt to the thrashing threshold.
+> 
+>         1 if (probe_page(index - 1)) {
+>         2          begin = next_hole(index, max);
+>         3          H     = index - prev_hole(index, 2*max);
+>         4          end   = index + H;
+>         5          update_window(begin, end);
+>         6          submit_io();
+>         7 }
+> 
+>             [=] history [#] current [_] readahead [.] new readahead
+>             ==========================#____________..............
+>         1                            ^index-1
+>         2                             |----------->[begin
+>         3  |<----------- H -----------|
+>         4                             |----------- H ----------->]end
+>         5                                          [ new window ]
+> 
+> 
+> We didn't do that because we want to
+> - avoid unnecessary page cache lookups for normal cases
+> - be more aggressive when thrashings are not a concern
+> 
+> However, readahead thrashings are far more prevalent than one would
+> expect in a FTP/HTTP file streaming server. It can happen in a modern
+> server with 16GB memory, 1Gbps outbound bandwidth and 1MB readahead
+> size, due to the existences of slow streams.
+> 
+> Let's do a coarse calculation. The 8GB inactive_list pages will be
+> cycled in 64Gb/1Gbps=64 seconds. This means an async readahead window
+> must be consumed in 64s, or it will be thrashed.  That's a speed of
+> 2048KB/64s=32KB/s. Any client below this speed will create thrashings
+> in the server. In practice, those poor slow clients could amount to
+> half of the total connections(partly because it will take them more
+> time to download anything). The frequent thrashings will in return
+> speedup the LRU cycling/aging speed...
+> 
+> We need a thrashing safe mode which do
+> - the above modified context readahead algorithm
+> - conservative ramp up of readahead size
+> - conservative async readahead size
+> 
+> The main problem is: when shall we switch into the mode?
 
---
-Andrew Price
+More I think about an ideal readahead, more it looks like page cache 
+should also keep fairness between its users, similarly as it's done for 
+CPU (CFS) and disk (CFQ). A slow user should have a chance to use its 
+chunk the cache in face of too fast thrasher.
+
+The main problems with it are to define what "user" is and how to 
+implement the fairness in an acceptably simple way.
+
+Maybe something like that: "user" is IO context (or IO stream?) and, if 
+there would be a need to get some pages for "user" A, pages belonging to 
+other "users" would be evicted with additional wight W, so A's pages 
+would be preferred during eviction.
+
+Just my 0.05c.
+
+> We can start with aggressive readahead and try to detect readahead
+> thrashings and switch into thrashing safe mode automatically. This
+> will work for non-interleaved reads.  However the big file streamer -
+> lighttpd - does interleaved reads.  The current data structure is not
+> able to detect most readahead thrashings for lighttpd.
+> 
+> Luckily, the non-resident page tracking facility could help this case.
+> There the thrashed pages with their timing info can be found, based on
+> which we can have some extended context readahead algorithm that could
+> even overcome the drop-behind problem :)
+> 
+> Thanks,
+> Fengguang
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
