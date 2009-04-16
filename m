@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZDPAsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbZDPAsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbZDPAsQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZDPAsA
+	id S1755360AbZDPAsc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZDPAsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 20:48:00 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:56924 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577AbZDPAr7 (ORCPT
+	Wed, 15 Apr 2009 20:48:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:47057 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755621AbZDPAsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 20:47:59 -0400
-Message-Id: <200904160046.n3G0ki9o028612@www262.sakura.ne.jp>
-Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: hugh@veritas.com
-Cc: arjan@linux.intel.com, gregkh@suse.de, alan@lxorguk.ukuu.org.uk,
-       viro@ZenIV.linux.org.uk, jmorris@namei.org, akpm@linux-foundation.org,
-       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+	Wed, 15 Apr 2009 20:48:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=h7fG9LwN0wsnZV+gzgxH9PebQ+T+9+Ired1lkRy3IMamV4r1gEU37J2UIOjxf6Cgbg
+         lHL3CUAJTbEAkalo3o/27sLtHLqt7DMqtGcT0vBkIk23xmSBOfVZ2cZQjVjzDNTYRcNZ
+         TTNgvFMgOllE7JaydP+dYRAbS3rG3BVxqopbQ=
+Message-ID: <49E6803C.6010602@gmail.com>
+Date: Wed, 15 Apr 2009 18:47:56 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
+To: Tilman Schmidt <tilman@imap.cc>
+CC: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fast testing
+References: <49E5D0C1.6010608@wpkg.org> <49E5D6D9.3040903@imap.cc>
+In-Reply-To: <49E5D6D9.3040903@imap.cc>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Apr 2009 09:46:44 +0900
-References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk> <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp> <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk> <200904130048.n3D0mw1f077050@www262.sakura.ne.jp> <Pine.LNX.4.64.0904141801300.24679@blonde.anvils> <200904150328.n3F3S0F9083222@www262.sakura.ne.jp> <Pine.LNX.4.64.0904152036150.27354@blonde.anvils>
-In-Reply-To: <Pine.LNX.4.64.0904152036150.27354@blonde.anvils>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 15042009 #1852660, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Tilman Schmidt wrote:
+> Tomasz Chmielewski schrieb:
+>>> Wow. Nice machine. I wish I had one like that. And how long until
+>>> the GUI is usable again and you can actually continue working?
+>>>
+>>> For comparison: my 3.4 GHz Pentium D takes 30 secs for kernel start
+>>> (ie. until it begins looking for the filesystems),
+>> Including all BIOS routines?
+> 
+> No - from hitting Enter in the GRUB menu.
 
-Hugh Dickins wrote:
-> --- 2.6.30-rc1/lib/kobject_uevent.c	2009-04-08 18:20:24.000000000 +0100
-> +++ linux/lib/kobject_uevent.c	2009-04-15 19:59:33.000000000 +0100
-> @@ -244,11 +244,9 @@ int kobject_uevent_env(struct kobject *k
->  
->  	/* call uevent_helper, usually only enabled during early boot */
->  	if (uevent_helper[0]) {
-> -		char *argv [3];
-> -
-> -		argv [0] = uevent_helper;
-> -		argv [1] = (char *)subsystem;
-> -		argv [2] = NULL;
-> +		env->argv[0] = uevent_helper;
-> +		env->argv[1] = (char *)subsystem;
-> +		env->argv[2] = NULL;
->  		retval = add_uevent_var(env, "HOME=/");
->  		if (retval)
->  			goto exit;
-> @@ -257,7 +255,7 @@ int kobject_uevent_env(struct kobject *k
->  		if (retval)
->  			goto exit;
->  
-> -		retval = call_usermodehelper(argv[0], argv,
-> +		retval = call_usermodehelper(env->argv[0], env->argv,
->  					     env->envp, UMH_NO_WAIT);
->  	}
->  
-Indeed, we can't use "argv" put on stack memory if we use "no wait" mode.
-We need to ensure that memory region pointed by "argv" is valid until
-do_execve() finishes. However,
-| 
-| exit:
-| 	kfree(devpath);
-| 	kfree(env);
-| 	return retval;
-| }
-"env" can be overwritten as well as "argv".
-We need to ensure that memory region pointed by "env" is valid until
-do_execve() finishes, don't we?
+That seems really high, unless you're using some storage driver that 
+takes a really long time to initialize or something..
 
-I think we need to use UMH_WAIT_EXEC instead of UMH_NO_WAIT.
+> 
+>>>  2 mins until the graphical login screen appears, and
+>>> 5 mins from logging in to the GUI being completely present.
+>> I have an old 366 MHz / 192 MB machine which boots to GUI much faster.
+> 
+> Might depend on the value of "GUI". Mine wouldn't even load in 192 MB.
+> Anyway, my preceding P3/700 MHz/512 MB box hasn't been much worse,
+> either.
+> 
+>> Something's wrong with your setup (unless you start really lots of 
+>> things or have some other, "uncommon" things).
+> 
+> Hmm, it's always been like that. As for "uncommon", this is a more
+> or less out of the box openSUSE 10.3 installation. (Without Beagle,
+> in case you were wondering.) Perhaps that's what's wrong? :-)
+> 
+> OTOH, even the GUIless CentOS server boxes I look after for a
+> living take about 5 mins until they are up and running again after
+> a kernel update - including BIOS, but without the fsck penalty.
+> 
+> Thanks,
+> Tilman
+> 
 
-Regards.
