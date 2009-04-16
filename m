@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZDPM4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbZDPNLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbZDPM4l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 08:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZDPM4c
+	id S1756250AbZDPNLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 09:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZDPNLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 08:56:32 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:58703 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752695AbZDPM4b (ORCPT
+	Thu, 16 Apr 2009 09:11:37 -0400
+Received: from stinky.trash.net ([213.144.137.162]:56048 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754771AbZDPNLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 08:56:31 -0400
-Date: Thu, 16 Apr 2009 21:56:30 +0900 (JST)
-Message-Id: <20090416.215630.183034963.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: dm-devel@redhat.com, vivek.goyal2008@gmail.com,
-       linux-kernel@vger.kernel.org, agk@redhat.com
-Subject: Re: [dm-devel] Re: dm-ioband: Test results.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090415170415.GE15067@redhat.com>
-References: <20090413144626.GF18007@redhat.com>
-	<20090414.183022.71120459.ryov@valinux.co.jp>
-	<20090415170415.GE15067@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 16 Apr 2009 09:11:36 -0400
+Message-ID: <49E72E83.50702@trash.net>
+Date: Thu, 16 Apr 2009 15:11:31 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, dada1@cosmosbay.com,
+       jeff.chua.linux@gmail.com, paulmck@linux.vnet.ibm.com, paulus@samba.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+References: <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <20090415.164811.19905145.davem@davemloft.net> <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+Linus Torvalds wrote:
+> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
+>> The counters are the bigger problem, otherwise we could just free table
+>> info via rcu.  Do we really have to support: replace where the counter
+>> values coming out to user space are always exactly accurate, or is it
+>> allowed to replace a rule and maybe lose some counter ticks (worst case
+>> NCPU-1).
+> 
+> Why not just read the counters fromt he old one at RCU free time (they are 
+> guaranteed to be stable at that point, since we're all done with those 
+> entries), and apply them at that point to the current setup?
 
-> How does your ioband setup looks like. Have you created at least one more
-> competing ioband device? Because I think only in that case you have got
-> this ad-hoc logic of waiting for the group which has not finished the
-> tokens yet and you will end up buffering the bio in a FIFO.
-
-I created two ioband devices and ran the dd commands only on the first
-device.
-
-> Do let me know if you think there is something wrong with my
-> configuration.
-
->From a quick look at your configuration, there seems to be no problem.
-
-> Can you also send bio-cgroup patches which apply to 2.6.30-rc1 so that
-> I can do testing for async writes.
-
-I've just posted the patches to related mailing lists. Please try it.
-
-> Why have you split the regular patch and bio-cgroup patch? Do you want
-> to address only reads and sync writes?
-
-For the first step, my goal is to merge dm-ioband into device-mapper,
-and bio-cgroup is not necessary for all situations such as bandwidth
-control on a per partition basis.
-
-I'll also try to do more test and report you back.
-
-Thank you for your help,
-Ryo Tsuruta
+We need the counters immediately to copy them to userspace, so waiting
+for an asynchronous RCU free is not going to work.
