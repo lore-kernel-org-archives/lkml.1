@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbZDPNpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZDPNtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbZDPNpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 09:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZDPNpX
+	id S1756550AbZDPNtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 09:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZDPNt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 09:45:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40163 "EHLO mx2.redhat.com"
+	Thu, 16 Apr 2009 09:49:29 -0400
+Received: from rtr.ca ([76.10.145.34]:39172 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbZDPNpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 09:45:22 -0400
-Date: Thu, 16 Apr 2009 15:40:40 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, jmorris@namei.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rework/fix is_single_threaded()
-Message-ID: <20090416134040.GB6532@redhat.com>
-References: <20090413214513.GA1119@redhat.com> <20090415163243.94a00ba6.akpm@linux-foundation.org>
+	id S1752152AbZDPNt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 09:49:28 -0400
+Message-ID: <49E73766.9090205@rtr.ca>
+Date: Thu, 16 Apr 2009 09:49:26 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090415163243.94a00ba6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: USB storage no-boot regression (bisected)
+References: <20090415014930.GA29413@kroah.com>	<49E5480F.10501@garzik.org>	<20090415050947.GB3462@kroah.com>	<49E5EE41.3090505@rtr.ca>	<20090415073001.503b0361@infradead.org>	<49E5FF48.3030809@rtr.ca>	<20090415125813.34c9a151@infradead.org>	<49E657BC.6000707@rtr.ca>	<20090415183213.7962d929@infradead.org>	<49E6948E.3040901@rtr.ca>	<20090416025408.GE4806@kroah.com>	<20090416115153.68589464@lxorguk.ukuu.org.uk> <20090416063401.32ced22a@infradead.org>
+In-Reply-To: <20090416063401.32ced22a@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/15, Andrew Morton wrote:
->
-> On Mon, 13 Apr 2009 23:45:13 +0200
-> Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > - Fix the comment, is_single_threaded(p) actually means that nobody shares
-> >   ->mm with p.
-> >
-> >   I think this helper should be renamed, and it should not have arguments.
-> >   With or without this patch it must not be used unless p == current,
-> >   otherwise we can't safely use p->signal or p->mm.
-> >
-> > - "if (atomic_read(&p->signal->count) != 1)" is not right when we have a
-> >   zombie group leader, use signal->live instead.
-> >
-> > - Add PF_KTHREAD check to skip kernel threads which may borrow p->mm,
-> >   otherwise we can return the wrong "false".
-> >
-> > - Use for_each_process() instead of do_each_thread(), all threads must use
-> >   the same ->mm.
-> >
-> > - Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
-> >   to iterate over the process list. If there is another CLONE_VM process
-> >   it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
-> >   a freshly forked CLONE_VM task, but this doesn't matter because we must
-> >   see its parent and return false.
->
-> hum.  I'm searching for a reason to merge this into 2.6.30 but I'm not
-> seeing one?
+Arjan van de Ven wrote:
+> On Thu, 16 Apr 2009 11:51:53 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+>>>> Though it's an onboard USB SSD, not a pluggable stick.
+>>> Wow, that's insane.  Leave it to a hardware designer to use a bus
+>>> that you never know if you have discovered all the devices to be
+>>> the primary device to boot from.
+>> Let me see:
+>>
+>> - Standardised small component
+>> - Low pin count and low wire count bus
+>> - Cheap
+>>
+>> In an embedded environment where you know the device is wired in at
+>> software level that strikes me not as insane but very sensible.
+> 
+> I'm not surprised usb is used for storage. What I am surprised at is
+> that USB is used in such high end environments that rootwait is not
+> sufficient and that the panic-rebooter is needed for the reliability.
+..
 
-No reasons to merge.
+Failover and redundancy are standard requirements for really reliable systems.
+As good as a component may be, there's always anticipation that it will fail
+someday, and multiple ways of detecting/overcoming failures must be built-in.
 
-Also, David seem to have valid concerns about using ->mmap_sem. Most probably
-this patch should be changed anyway. Let's see what David thinks.
-
-Oleg.
-
+In this case, imagine *two* such SSDs.
