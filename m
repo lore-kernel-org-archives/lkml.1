@@ -1,62 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZDPW5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZDPXFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbZDPW5J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 18:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZDPW4w
+	id S1756634AbZDPXFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZDPXFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 18:56:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38867
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753472AbZDPW4v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 18:56:51 -0400
-Date: Thu, 16 Apr 2009 15:56:43 -0700 (PDT)
-Message-Id: <20090416.155643.06066521.davem@davemloft.net>
-To: kay.sievers@vrfy.org
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: sparc: struct device - replace bus_id with dev_name(),
- dev_set_name()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1239898912.17211.7.camel@poy>
-References: <ac3eb2510903270521i113df787u7ac5d842ece83740@mail.gmail.com>
-	<20090327.172743.30040617.davem@davemloft.net>
-	<1239898912.17211.7.camel@poy>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 19:05:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53117 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754536AbZDPXFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 19:05:30 -0400
+Date: Fri, 17 Apr 2009 01:04:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, paulmck@linux.vnet.ibm.com,
+       Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
+       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH[] netfilter: use per-cpu reader-writer lock (v0.7)
+Message-ID: <20090416230457.GA16226@elte.hu>
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com> <20090416175850.GH6924@linux.vnet.ibm.com> <49E77BF6.1080206@cosmosbay.com> <20090416134956.6c1f0087@nehalam> <alpine.LFD.2.00.0904161353370.4042@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904161353370.4042@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 16 Apr 2009 18:21:52 +0200
 
-> On Fri, 2009-03-27 at 17:27 -0700, David Miller wrote:
->> From: Kay Sievers <kay.sievers@vrfy.org>
->> Date: Fri, 27 Mar 2009 13:21:56 +0100
->> 
->> > it took a while, but it happened now, so this issue is coming back. :)
->> > 
->> > The name size limit is gone, there is no BUS_ID_SIZE thing anymore in
->> > the driver core. BUS_ID_SIZE should go away in the 2.6.30 timeframe.
->> > 
->> > Could you please convert/remove BUS_ID_SIZE value from:
->> >   drivers/net/gianfar.h:	char	phy_bus_id[BUS_ID_SIZE];
->> >   drivers/net/ucc_geth.h:	char phy_bus_id[BUS_ID_SIZE];
->> >   drivers/net/pasemi_mac.h:	char	phy_id[BUS_ID_SIZE];
->> >   include/linux/phy.h:#define MII_BUS_ID_SIZE	(BUS_ID_SIZE - 3)
->> >   include/linux/phy.h:	char bus_id[BUS_ID_SIZE];
->> > 
->> > Or let me know how you want to convert it, so I can do it?
->> 
->> Thanks a lot Kay, I'll look into these cases and take care
->> of it.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Thu, 16 Apr 2009, Stephen Hemminger wrote:
+> >
+> > This version of x_tables (ip/ip6/arp) locking uses a per-cpu
+> > rwlock that can be nested. It is sort of like earlier brwlock 
+> > (fast reader, slow writer). The locking is isolated so future improvements
+> > can concentrate on measuring/optimizing xt_table_info_lock. I tried
+> > other versions based on recursive spin locks and sequence counters and 
+> > for me, the risk of inventing own locking primitives not worth it at this time.
 > 
-> This moves the 20 into the netdevice header, we need to get rid
-> of the driver core define now, otherwise people start adding new
-> code using it, and we want to finish this thankless job finally. :)
+> This is stil scary.
+> 
+> Do we guarantee that read-locks nest in the presense of a waiting 
+> writer on another CPU? Now, I know we used to (ie readers always 
+> nested happily with readers even if there were pending writers), 
+> and then we broke it. I don't know that we ever unbroke it.
+> 
+> IOW, at least at some point we deadlocked on this (due to trying 
+> to be fair, and not lettign in readers while earlier writers were 
+> waiting):
+> 
+> 	CPU#1			CPU#2
+> 
+> 	read_lock
+> 
+> 				write_lock
+> 				.. spins with write bit set, waiting for
+> 				   readers to go away ..
+> 
+> 	recursive read_lock
+> 	.. spins due to the write bit
+> 	   being. BOOM: deadlock  ..
+> 
+> Now, I _think_ we avoid this, but somebody should double-check.
 
-I was working on fixing this properly Kay, please be patient.
+This is a narrow special-case where the spin-rwlock is safe, and the 
+rwsem is unsafe.
 
-I'll have it killed off in net-next-2.6 soon enough.
+But it should work for rwlocks - it always worked and the networking 
+code always relied on that AFAIK.
+
+Here's the x86 assembly code of the write-side slowpath:
+
+ENTRY(__write_lock_failed)
+        CFI_STARTPROC
+        LOCK_PREFIX
+        addl $RW_LOCK_BIAS,(%rdi)
+1:      rep
+        nop
+        cmpl $RW_LOCK_BIAS,(%rdi)
+        jne 1b
+        LOCK_PREFIX
+        subl $RW_LOCK_BIAS,(%rdi)
+        jnz  __write_lock_failed
+        ret
+        CFI_ENDPROC
+
+the fastpath decreased the value with RW_LOCK_BIAS, and when we 
+enter this function we undo that effect by adding RW_LOCK_BIAS. Then 
+we spin (without signalling our write-intent) passively until the 
+count reaches RW_LOCK_BIAS. Then we try to lock it again and bring 
+it to zero (meaning no other readers or writers - we got the lock).
+
+This is pretty much the most unfair strategy possible for writers - 
+but this is how rwlocks always behaved - and they do so mostly for 
+recursive use within networking.
+
+This is why the tasklist_lock was always so suspect to insane 
+starvation symptoms on really large SMP systems, and this is why 
+write_lock_irq(&tasklist_lock) was always a dangerous operation to 
+do. (it can spin for a _long_ time with irqs off.)
+
+It's not the most optimal of situations. Some patches are in the 
+works to fix the irqs-off artifact (on ia64 - no x86 patches yet 
+AFAICS) - but that's just papering it over.
+
+	Ingo
