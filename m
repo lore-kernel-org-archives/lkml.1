@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZDPAeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZDPAmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbZDPAeu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 20:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZDPAek
+	id S1753082AbZDPAmg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 20:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZDPAm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 20:34:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:58361 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbZDPAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 20:34:40 -0400
-Message-ID: <49E67D1D.8020704@goop.org>
-Date: Wed, 15 Apr 2009 17:34:37 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Problem with CREATE_TRACE_POINTS and recursion safety
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 15 Apr 2009 20:42:27 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:52978
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752535AbZDPAm0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 20:42:26 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArgBALcb5kl8qNY8/2dsb2JhbAAI0S6DfQY
+X-IronPort-AV: E=Sophos;i="4.40,195,1238947200"; 
+   d="scan'208";a="482979595"
+Subject: [PATCH] ads7846: fix unsafe disable_irq (was [REGRESSION] threaded
+	interrupt handler support breaks (some) irq handling on AVR32)
+From: Ben Nizette <bn@niasdigital.com>
+To: dmitry.torokhov@gmail.com
+Cc: tglx@linutronix.de, David Brownell <david-b@pacbell.net>,
+       hskinnemoen@atmel.com, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org, imre.deak@nokia.com, mingo@elte.hu,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+In-Reply-To: <20090415095710.5c853a7f@hskinnemoen-d830>
+References: <1239685153.19815.12.camel@linux-51e8.site>
+	 <1239698225.29831.14.camel@linux-51e8.site>
+	 <1239759053.29831.37.camel@linux-51e8.site>
+	 <20090415095710.5c853a7f@hskinnemoen-d830>
+Content-Type: text/plain
+Date: Thu, 16 Apr 2009 10:41:57 +1000
+Message-Id: <1239842517.29831.47.camel@linux-51e8.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm having a problem with CREATE_TRACE_POINTS being too indiscriminate.  
-The trouble is that it not only creates tracepoint definitions for the 
-intended tracepoints, but any other tracepoint definitions which get 
-included incidentally.
+On Wed, 2009-04-15 at 09:57 +0200, Haavard Skinnemoen wrote:
+> Shouldn't that be disable_irq_nosync()?
 
-For example, I'm seeing my paravirt tracepoints being instantiated in 
-both kernel/sched.o and kernel/irq/manage.o as side-effects of the 
-scheduler and irq tracepoints being instantiated.
+Indeed, good catch.  That fixes it.
 
-I'm experimenting with a different scheme, wherein a subsystem defines 
-CREATE_FOO_TRACE_POINTS in the .c file where it wants to instantiate the 
-tracepoints - rather than CREATE_TRACE_POINTS - and its 
-trace/events/foo.h does:
+--------------8<--------------------
 
-    #ifdef CREATE_FOO_TRACE_POINTS
-    #undef CREATE_FOO_TRACE_POINTS	/* avoid infinite recursion */
-    #include <trace/instantiate_trace.h>
-    #else
-    #include <trace/define_trace.h>
-    #endif
+The use of disable_irq inside the handler for the interrupt being
+disabled has always been dangerous.  disable_irq should wait for that
+handler to complete before returning -> deadlock.
 
-where instantiate_trace.h is:
+For some reason this wasn't actually the case until 3aa551c9b was merged
+but since this time, the ads7846 driver has deadlocked the system on
+first interrupt.
 
-    #define CREATE_TRACE_POINTS
-    #include <trace/define_trace.h>
-    #undef CREATE_TRACE_POINTS
+Convert the driver to use the handler-safe _nosync variant.
 
-(Just to prevent a bit more repeated boilerplate in each events 
-definition file.)
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
 
-This seems to work.  (Update: no it doesn't.  WTF has paravirt-trace.o 
-got duplicate kmem tracepoints?!)
+---
 
-A related problem is that the TRACE_INCLUDE_FILE mechanism doesn't work, 
-because if any tracepoint definition header sets it, it overrides the 
-setting for all others, so, for example, arch/x86/include/asm/paravirt.h 
-ends up being included as the source of definitions for events/sched.h.  
-I gave up and moved paravirt-trace.h to trace/events/pvops.h rather than 
-try to deal with it.
+diff --git a/drivers/input/touchscreen/ads7846.c b/drivers/input/touchscreen/ads7846.c
+index 61b4a02..f2513e6 100644
+--- a/drivers/input/touchscreen/ads7846.c
++++ b/drivers/input/touchscreen/ads7846.c
+@@ -746,7 +746,7 @@ static irqreturn_t ads7846_irq(int irq, void *handle)
+ 			 * that here.  (The "generic irq" framework may help...)
+ 			 */
+ 			ts->irq_disabled = 1;
+-			disable_irq(ts->spi->irq);
++			disable_irq_nosync(ts->spi->irq);
+ 			ts->pending = 1;
+ 			hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
+ 					HRTIMER_MODE_REL);
 
-Lucky for you Steven, none of this is getting any more pretty, so you 
-may yet get your prize.
 
-    J
