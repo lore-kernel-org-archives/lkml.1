@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbZDPXaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZDPXbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756429AbZDPXaz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbZDPXam
+	id S1757287AbZDPXbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbZDPXaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:30:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57774 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbZDPXam (ORCPT
+	Thu, 16 Apr 2009 19:30:52 -0400
+Received: from exprod6og110.obsmtp.com ([64.18.1.25]:48598 "HELO
+	exprod6og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755718AbZDPXav convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:30:42 -0400
-Message-ID: <49E7BF34.6060002@zytor.com>
-Date: Thu, 16 Apr 2009 16:28:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 16 Apr 2009 19:30:51 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Ingo Molnar <mingo@elte.hu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Oruba <peter.oruba@amd.com>, amd64-microcode@amd64.org,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: microcode driver newly spews warnings
-References: <49E38331.3090808@garzik.org> <49E38393.8000700@garzik.org> <20090413182746.GA9954@elte.hu> <49E5EABB.9010402@garzik.org> <b647ffbd0904150751u64e69097q79c511533f949c00@mail.gmail.com> <20090416230731.GA19553@elte.hu> <49E7BD64.7060507@garzik.org>
-In-Reply-To: <49E7BD64.7060507@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] kernel/softirq.c: fix sparse warning
+Date: Thu, 16 Apr 2009 19:30:18 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F9033@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] kernel/softirq.c: fix sparse warning
+Thread-Index: Acm+603XlYHhWhTzQcCfj6thX9S2aw==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 Apr 2009 23:30:49.0860 (UTC) FILETIME=[60469440:01C9BEEB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->> Jeff, did this do the trick for you?
-> 
-> Yes -- but I worry about keeping sysfs files around too long?
-> 
->     Jeff
+Fix sparse warning in kernel/softirq.c.
 
-OK, what isn't clear to me is what the proper return value is in this 
-case.  In particular, how with the caller react to mc_sysdev_add() 
-returning a nonzero value, but still have the sysdev devices created and 
-retained?
+  warning: do-while statement is not a compound statement
 
-What I would expect happen would be that sysdev_register_driver() would 
-return an error and we would unregister the notifier, which really isn't 
-the right thing -- if the intent is to keep the sysdev devices around 
-for a possible later update then we should presumably return zero there, 
-i.e. ignore the return value from microcode_init_cpu(); completely?
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-	-hpa
+---
 
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 2fecefa..b525dd3 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -472,9 +472,9 @@ void tasklet_kill(struct tasklet_struct *t)
+ 		printk("Attempt to kill tasklet from interrupt\n");
+ 
+ 	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
+-		do
++		do {
+ 			yield();
+-		while (test_bit(TASKLET_STATE_SCHED, &t->state));
++		} while (test_bit(TASKLET_STATE_SCHED, &t->state));
+ 	}
+ 	tasklet_unlock_wait(t);
+ 	clear_bit(TASKLET_STATE_SCHED, &t->state); 
