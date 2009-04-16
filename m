@@ -1,223 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZDPMbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZDPMcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756054AbZDPMbV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 08:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbZDPMbH
+	id S1757201AbZDPMcF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 08:32:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbZDPMbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 08:31:07 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:46211 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756081AbZDPMbG (ORCPT
+	Thu, 16 Apr 2009 08:31:52 -0400
+Received: from stinky.trash.net ([213.144.137.162]:55048 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754771AbZDPMbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 08:31:06 -0400
-Date: Thu, 16 Apr 2009 21:31:05 +0900 (JST)
-Message-Id: <20090416.213105.189713999.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: [PATCH 4/5] bio-cgroup: Page tracking hooks
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090416.213019.104045053.ryov@valinux.co.jp>
-References: <20090416.212836.226792104.ryov@valinux.co.jp>
-	<20090416.212931.71100972.ryov@valinux.co.jp>
-	<20090416.213019.104045053.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 16 Apr 2009 08:31:51 -0400
+Message-ID: <49E72534.1060302@trash.net>
+Date: Thu, 16 Apr 2009 14:31:48 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, paulus@samba.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+References: <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com> <20090412173108.GO6822@linux.vnet.ibm.com> <20090412.181330.23529546.davem@davemloft.net> <20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam> <49E48136.5060700@trash.net> <49E49C65.8060808@cosmosbay.com> <20090414074554.7fa73e2f@nehalam> <49E4B0A5.70404@cosmosbay.com> <b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com> <20090414111716.28585806@nehalam> <49E4E3E8.5090201@cosmosbay.com> <20090414141351.0f63ac98@nehalam> <49E502B5.7070700@cosmosbay.com> <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <alpine.LSU.2.00.0904152354330.5844@fbirervta.pbzchgretzou.qr> <49E720BE.2000200@trash.net> <alpine.LSU.2.00.0904161423240.22333@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LSU.2.00.0904161423240.22333@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains several hooks that let the bio-cgroup framework to know
-which bio-group is the owner of a page before starting I/O against the page.
+Jan Engelhardt wrote:
+> On Thursday 2009-04-16 14:12, Patrick McHardy wrote:
+>> Jan Engelhardt wrote:
+>>>> So change per-cpu spinlocks to per-cpu rwlocks 
+>>>> and use read_lock() in ipt_do_table() to allow recursion...
+>>>>
+>>> iptables cannot quite recurse into itself due to the comefrom stuff.
+>> Actually it can by using the REJECT target:
+> 
+> Yes, but it has to return an absolute verdict (which REJECT does),
+> so it's not really a recursion, it's more like a goto without return.
 
-Based on 2.6.30-rc1
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+Its recursion in the sense that we reenter the same code path,
+while holding a lock. The verdict is issued *after* recursing.
 
----
- fs/buffer.c         |    2 ++
- fs/direct-io.c      |    2 ++
- mm/Makefile         |    1 +
- mm/bounce.c         |    2 ++
- mm/filemap.c        |    2 ++
- mm/memory.c         |    5 +++++
- mm/page-writeback.c |    2 ++
- mm/swap_state.c     |    2 ++
- 8 files changed, 18 insertions(+)
+A (quite ugly) workaround would be to have ipt_REJECT queue
+the packets to a temporary queue and have ipt_do_table call
+dst_output() after dropping the lock.
 
-Index: linux-2.6.30-rc1/fs/buffer.c
-===================================================================
---- linux-2.6.30-rc1.orig/fs/buffer.c
-+++ linux-2.6.30-rc1/fs/buffer.c
-@@ -36,6 +36,7 @@
- #include <linux/buffer_head.h>
- #include <linux/task_io_accounting_ops.h>
- #include <linux/bio.h>
-+#include <linux/biotrack.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/bitops.h>
-@@ -655,6 +656,7 @@ static void __set_page_dirty(struct page
- 	if (page->mapping) {	/* Race with truncate? */
- 		WARN_ON_ONCE(warn && !PageUptodate(page));
- 		account_page_dirtied(page, mapping);
-+		bio_cgroup_reset_owner_pagedirty(page, current->mm);
- 		radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
- 	}
-Index: linux-2.6.30-rc1/fs/direct-io.c
-===================================================================
---- linux-2.6.30-rc1.orig/fs/direct-io.c
-+++ linux-2.6.30-rc1/fs/direct-io.c
-@@ -33,6 +33,7 @@
- #include <linux/err.h>
- #include <linux/blkdev.h>
- #include <linux/buffer_head.h>
-+#include <linux/biotrack.h>
- #include <linux/rwsem.h>
- #include <linux/uio.h>
- #include <asm/atomic.h>
-@@ -799,6 +800,7 @@ static int do_direct_IO(struct dio *dio)
- 			ret = PTR_ERR(page);
- 			goto out;
- 		}
-+		bio_cgroup_reset_owner(page, current->mm);
- 
- 		while (block_in_page < blocks_per_page) {
- 			unsigned offset_in_page = block_in_page << blkbits;
-Index: linux-2.6.30-rc1/mm/bounce.c
-===================================================================
---- linux-2.6.30-rc1.orig/mm/bounce.c
-+++ linux-2.6.30-rc1/mm/bounce.c
-@@ -14,6 +14,7 @@
- #include <linux/hash.h>
- #include <linux/highmem.h>
- #include <linux/blktrace_api.h>
-+#include <linux/biotrack.h>
- #include <trace/block.h>
- #include <asm/tlbflush.h>
- 
-@@ -212,6 +213,7 @@ static void __blk_queue_bounce(struct re
- 		to->bv_len = from->bv_len;
- 		to->bv_offset = from->bv_offset;
- 		inc_zone_page_state(to->bv_page, NR_BOUNCE);
-+		bio_cgroup_copy_owner(to->bv_page, page);
- 
- 		if (rw == WRITE) {
- 			char *vto, *vfrom;
-Index: linux-2.6.30-rc1/mm/filemap.c
-===================================================================
---- linux-2.6.30-rc1.orig/mm/filemap.c
-+++ linux-2.6.30-rc1/mm/filemap.c
-@@ -33,6 +33,7 @@
- #include <linux/cpuset.h>
- #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
- #include <linux/memcontrol.h>
-+#include <linux/biotrack.h>
- #include <linux/mm_inline.h> /* for page_is_file_cache() */
- #include "internal.h"
- 
-@@ -463,6 +464,7 @@ int add_to_page_cache_locked(struct page
- 					gfp_mask & GFP_RECLAIM_MASK);
- 	if (error)
- 		goto out;
-+	bio_cgroup_set_owner(page, current->mm);
- 
- 	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
- 	if (error == 0) {
-Index: linux-2.6.30-rc1/mm/Makefile
-===================================================================
---- linux-2.6.30-rc1.orig/mm/Makefile
-+++ linux-2.6.30-rc1/mm/Makefile
-@@ -39,3 +39,4 @@ endif
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
- obj-$(CONFIG_CGROUP_PAGE) += page_cgroup.o
-+obj-$(CONFIG_CGROUP_BIO) += biotrack.o
-Index: linux-2.6.30-rc1/mm/memory.c
-===================================================================
---- linux-2.6.30-rc1.orig/mm/memory.c
-+++ linux-2.6.30-rc1/mm/memory.c
-@@ -51,6 +51,7 @@
- #include <linux/init.h>
- #include <linux/writeback.h>
- #include <linux/memcontrol.h>
-+#include <linux/biotrack.h>
- #include <linux/mmu_notifier.h>
- #include <linux/kallsyms.h>
- #include <linux/swapops.h>
-@@ -2053,6 +2054,7 @@ gotten:
- 		 */
- 		ptep_clear_flush_notify(vma, address, page_table);
- 		page_add_new_anon_rmap(new_page, vma, address);
-+		bio_cgroup_set_owner(new_page, mm);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
- 		if (old_page) {
-@@ -2497,6 +2499,7 @@ static int do_swap_page(struct mm_struct
- 	flush_icache_page(vma, page);
- 	set_pte_at(mm, address, page_table, pte);
- 	page_add_anon_rmap(page, vma, address);
-+	bio_cgroup_reset_owner(page, mm);
- 	/* It's better to call commit-charge after rmap is established */
- 	mem_cgroup_commit_charge_swapin(page, ptr);
- 
-@@ -2560,6 +2563,7 @@ static int do_anonymous_page(struct mm_s
- 		goto release;
- 	inc_mm_counter(mm, anon_rss);
- 	page_add_new_anon_rmap(page, vma, address);
-+	bio_cgroup_set_owner(page, mm);
- 	set_pte_at(mm, address, page_table, entry);
- 
- 	/* No need to invalidate - it was non-present before */
-@@ -2712,6 +2716,7 @@ static int __do_fault(struct mm_struct *
- 		if (anon) {
- 			inc_mm_counter(mm, anon_rss);
- 			page_add_new_anon_rmap(page, vma, address);
-+			bio_cgroup_set_owner(page, mm);
- 		} else {
- 			inc_mm_counter(mm, file_rss);
- 			page_add_file_rmap(page);
-Index: linux-2.6.30-rc1/mm/page-writeback.c
-===================================================================
---- linux-2.6.30-rc1.orig/mm/page-writeback.c
-+++ linux-2.6.30-rc1/mm/page-writeback.c
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/biotrack.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
- #include <linux/rmap.h>
-@@ -1243,6 +1244,7 @@ int __set_page_dirty_nobuffers(struct pa
- 			BUG_ON(mapping2 != mapping);
- 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
- 			account_page_dirtied(page, mapping);
-+			bio_cgroup_reset_owner_pagedirty(page, current->mm);
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
- 		}
-Index: linux-2.6.30-rc1/mm/swap_state.c
-===================================================================
---- linux-2.6.30-rc1.orig/mm/swap_state.c
-+++ linux-2.6.30-rc1/mm/swap_state.c
-@@ -18,6 +18,7 @@
- #include <linux/pagevec.h>
- #include <linux/migrate.h>
- #include <linux/page_cgroup.h>
-+#include <linux/biotrack.h>
- 
- #include <asm/pgtable.h>
- 
-@@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_e
- 		 */
- 		__set_page_locked(new_page);
- 		SetPageSwapBacked(new_page);
-+		bio_cgroup_set_owner(new_page, current->mm);
- 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
- 		if (likely(!err)) {
- 			/*
+
+
