@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZDPSJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZDPSM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbZDPSJY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 14:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbZDPSJL
+	id S1758174AbZDPSM2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 14:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZDPSMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 14:09:11 -0400
-Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:43520 "HELO
-	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755033AbZDPSJJ (ORCPT
+	Thu, 16 Apr 2009 14:12:20 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:45069 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754347AbZDPSMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 14:09:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pi8QDIo1exWz6j46/kwEoKMG6iBJJcH0RLNl2QmNNWyNVb7u6ZomkHuvMMjszRuXvldT3/hQuyabBjz+2wN25MNleh2YaSPlW1bVA5egGXXxmLRB4X6sANeFQOJFp2qqB+QcR8WxtGmtxuPSybUeJtAAuL4gcJbSQ47rbKpHsKE=  ;
-X-YMail-OSG: 9deCvtoVM1mkGd_EXbZ5_khhsqavaktp6nuAa7Jm1AUwdRmijU8xZvxXkilX9W3WA4QsDRZkxk4KcCU3yrhMuWhrK_3tkPTMExu6X91aaT7DNH_14BpSmwAjL53rdhg2zCC00IbRcqo7r8MGFTkRsZoMw6N9q_e5bMIC5LrtRcBglRGNvAE5DOCuZ9r8G9qKDsoSzySy5OlOW7weKlxlMkQkNz9xBioVphMPYiaWIkbo21QniGqT_zmBKGHk.Z.jqFSrcm6iEslWRRyh2IMPwlCUcwI26FzwelBvySZuUw3hhw4sKNcm
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH RFC] ext3 data=guarded v3
-Date: Fri, 17 Apr 2009 04:09:01 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <alpine.LFD.2.00.0904151333020.4042@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904151333020.4042@localhost.localdomain>
+	Thu, 16 Apr 2009 14:12:19 -0400
+Message-ID: <49E774B1.5060505@nortel.com>
+Date: Thu, 16 Apr 2009 12:10:57 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Greg Kurz <gkurz@fr.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: C/R without "leaks"
+References: <49E40662.2040508@cs.columbia.edu> <20090414163633.GE27461@x200.localdomain> <49E4D89D.9060903@cs.columbia.edu> <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia> <20090416161215.GA8505@x200.localdomain>
+In-Reply-To: <20090416161215.GA8505@x200.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904170409.02222.nickpiggin@yahoo.com.au>
+X-OriginalArrivalTime: 16 Apr 2009 18:11:00.0415 (UTC) FILETIME=[B279A4F0:01C9BEBE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 April 2009 06:35:23 Linus Torvalds wrote:
+Alexey Dobriyan wrote:
+> On Thu, Apr 16, 2009 at 12:42:17AM +0200, Greg Kurz wrote:
+>> On Wed, 2009-04-15 at 23:56 +0400, Alexey Dobriyan wrote:
 > 
-> On Wed, 15 Apr 2009, Chris Mason wrote:
-> > 
-> > Here is another version of the data=guarded work for ext3.  The main
-> > difference between this code and yesterday's is the guarded writepage
-> > function now sends any newly allocated block through the old data=ordered code.
+>>> There are sockets and live netns as the most complex example. I'm not
+>>> prepared to describe it exactly, but people wishing to do C/R with
+>>> "leaks" should be very careful with their wishes.
+>> They should close their sockets before checkpoint and find/have some way
+>> to reconnect after. This implies some kind of C/R awareness in the code
+>> to be checkpointed.
 > 
-> I'm inclined to apply the first two patches as infrastructure, since they 
-> seem to make sense regardless of data=ordered. The ability to get a 
-> callback when IO ends sounds like something that a number of cases might 
-> find intriguing, and it's obviously how the actual IO has worked 
-> internally anyway.
-> 
-> Comments?
+> How do you imagine sshd closing sockets and reconnecting?
 
-I think also fscache really should be using proper read completed notifications
-rather than hijacking the page lock waitqueue for this.
+Don't you already have to handle the case where an sshd connection is 
+checkpointed, then the system is shutdown and the restore doesn't happen 
+until after the TCP timeout?
+
+Chris
