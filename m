@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZDPPTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZDPPXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbZDPPTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 11:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZDPPTg
+	id S1756619AbZDPPXo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 11:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZDPPXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 11:19:36 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34320 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272AbZDPPTg (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 11:19:36 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Fast testing
-In-Reply-To: Your message of "Wed, 15 Apr 2009 14:45:13 +0200."
-             <49E5D6D9.3040903@imap.cc>
-From: Valdis.Kletnieks@vt.edu
-References: <49E5D0C1.6010608@wpkg.org>
-            <49E5D6D9.3040903@imap.cc>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1239895173_6564P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Apr 2009 11:19:33 -0400
-Message-ID: <23524.1239895173@turing-police.cc.vt.edu>
+	Thu, 16 Apr 2009 11:23:35 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:39231 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbZDPPXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 11:23:34 -0400
+Date: Thu, 16 Apr 2009 10:23:27 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
+       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/30] cr: extend arch_setup_additional_pages()
+Message-ID: <20090416152327.GA19077@us.ibm.com>
+References: <20090410023739.GR27788@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410023739.GR27788@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1239895173_6564P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 15 Apr 2009 14:45:13 +0200, Tilman Schmidt said:
-> > Something's wrong with your setup (unless you start really lots of=
-> > things or have some other, "uncommon" things).
+Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> Add "start" argument, it will be used to map vDSO to exactly same place
+> on restart(2).
 > 
-> Hmm, it's always been like that. As for "uncommon", this is a more
-> or less out of the box openSUSE 10.3 installation. (Without Beagle,
-> in case you were wondering.) Perhaps that's what's wrong? :-)
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-Umm... shot in the dark - memory incorrectly flagged as non-cachable
-by an mtrr?
+IIRC the first (bprm) argument is actually completely unused.  So in my
+version of this patch (in mid-march) I dropped that argument.
 
---==_Exmh_1239895173_6564P
-Content-Type: application/pgp-signature
+> ---
+> 
+>  arch/powerpc/include/asm/elf.h     |    1 +
+>  arch/powerpc/kernel/vdso.c         |    2 +-
+>  arch/s390/include/asm/elf.h        |    2 +-
+>  arch/s390/kernel/vdso.c            |    2 +-
+>  arch/sh/include/asm/elf.h          |    1 +
+>  arch/sh/kernel/vsyscall/vsyscall.c |    2 +-
+>  arch/x86/include/asm/elf.h         |    3 ++-
+>  arch/x86/vdso/vdso32-setup.c       |    2 +-
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+You didn't get arch/x86/vdso/vma.c.
 
-iD8DBQFJ50yFcC3lWbTT17ARAgKcAKCaSYUBwH9cdBB2/Zy7u1LS0KXX6gCgnvC9
-fCIrouAi6ho0Blxy/WHQn1E=
-=tYBK
------END PGP SIGNATURE-----
+But otherwise:
 
---==_Exmh_1239895173_6564P--
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+thanks,
+-serge
