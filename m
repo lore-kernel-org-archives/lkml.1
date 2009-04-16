@@ -1,97 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZDPSEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbZDPSGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbZDPSEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 14:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZDPSEn
+	id S1758575AbZDPSGc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 14:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZDPSGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 14:04:43 -0400
-Received: from exprod6ob114.obsmtp.com ([64.18.1.32]:40316 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1755992AbZDPSEm convert rfc822-to-8bit (ORCPT
+	Thu, 16 Apr 2009 14:06:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46100 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755992AbZDPSGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 14:04:42 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] block/genhd.c: fix sparse warning
-Date: Thu, 16 Apr 2009 14:03:39 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8F6D@mi8nycmail19.Mi8.com>
-In-Reply-To: <19f34abd0904152146l3db9961bt3b52f224abc8d960@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] block/genhd.c: fix sparse warning
-Thread-Index: Acm+TlJsOPUNtDdxRZmcQpF5RIb0qAAa8Qjg
-References: <BD79186B4FD85F4B8E60E381CAEE1909015F8DFA@mi8nycmail19.Mi8.com> <19f34abd0904152146l3db9961bt3b52f224abc8d960@mail.gmail.com>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Apr 2009 18:04:39.0760 (UTC) FILETIME=[CF964D00:01C9BEBD]
+	Thu, 16 Apr 2009 14:06:22 -0400
+Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
+ recursive protection
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <alpine.DEB.2.00.0904161351380.20429@gandalf.stny.rr.com>
+References: <20090416161543.199331330@goodmis.org>
+	 <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop>
+	 <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com>
+	 <1239902407.23397.3197.camel@laptop>
+	 <alpine.DEB.2.00.0904161335400.20429@gandalf.stny.rr.com>
+	 <1239904165.23397.3265.camel@laptop>
+	 <alpine.DEB.2.00.0904161351380.20429@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 16 Apr 2009 20:06:04 +0200
+Message-Id: <1239905164.23397.3300.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, April 15, 2009 9:47 PM, Vegard Nossum wrote:
->> Fix sparse warning in block/genhd.c.
->>
->>        warning: symbol '__mptr' shadows an earlier one
->>
->> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->
-> Hi,
->
-> Just a heads up: There seems to be some sort of consensus that
-> this type of patch title is not a very good one. (What about
-> "remove variable shadowing"?)
+On Thu, 2009-04-16 at 13:58 -0400, Steven Rostedt wrote:
+> 
+> [ added Maitheu, since he likes things like this ]
+> 
+> On Thu, 16 Apr 2009, Peter Zijlstra wrote:
+> 
+> > On Thu, 2009-04-16 at 13:38 -0400, Steven Rostedt wrote:
+> > 
+> > > > > Note, that the ring buffer and events are made to be recursive. That is, 
+> > > > > it allows one event to trace within another event.
+> > > > 
+> > > > But surely not in the same context. You could do a 4 level recursion
+> > > > protection like I did in perf-counter, not allowing recursion in:
+> > > > 
+> > > >  nmi, irq, softirq, process - context.
+> > > 
+> > > Why not allow a nested interrupt to trace?
+> > > 
+> > > I don't want to add this logic to the lower levels, where only a few
+> > > users need the protection. The protecting should be at the user level.
+> > 
+> > wouldn't you want to disable preemption/softirq/irqs in the tracer -- to
+> > avoid such recursion to begin with (preemption isn't even strictly
+> > needed if you put the recursion count in the task struct, as each task
+> > has a new stack anyway).
+> 
+> No, we only disable preemption, nothing more. Interrupts and softirqs are 
+> free to happen. Also, we allow tracing of NMIs.
 
-Sorry, I wasn't aware of that. I just started using sparse and was
-cleaning up some warnings in the arch/arm/mach-ep93xx branch. I
-noticed this warning and it seemed like a simple fix.
+Right.
 
-> It would also be nice to have an explanation of where the __mptr
-> symbol comes into play, because it doesn't even appear in the
-> patch, and reviewers would likely have an easier job if they
-> knew where to look it up.
+> > I think having a recursion detection in place is far more valuable than
+> > being able to recursively trace interrupts and the like, which are
+> > exceedingly rare (on x86, and power and other arch with multiple
+> > interrupt levels that each have their own stack can extend the recursion
+> > levels too).
+> 
+> Is there any arch generic way to tell what level you are at?
 
-The only __mptr symbol in the source is in the container_of() macro
-in include/linux/kernel.h:
+No, on x86 there are a few broken ass pieces of hardware/drivers that
+require interrupts enabled in the interrupt handler, and can cause
+interrupt recursion -- these should be rare and IMHO can be ignored, esp
+for a FTRACE_DEBUG option that detects recursion -- that is, simply
+disable interrupts when entering the tracer in irq context.
 
-	#define container_of(ptr, type, member) ({			\
-		const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-		(type *)( (char *)__mptr - offsetof(type,member) );})
+IRQ level nesting like on power would need some arch support.
 
-The sparse warning shows up when a macro expansion ends up with
-something like:
+> That is, at thread context, you are at level 0, if an interrupt comes
+> in, it sets you to level 1, if another interrupt comes in, it sets you to 
+> level 2, and so on.
+> 
+> I guess we could add this into the irq_enter/exit sofirq_enter/exit and 
+> nmi_enter/exit.
+> 
+> Thus we can have each task with a bitmask. When we start to trace, we set 
+> the bit coresponding to the level the task is at.
+> 
+> Ie. in thread context, we set bit 0, if we are interrupted by a 
+> softirq/irq/nmi, we set the level bit we are at. Hmm, we might be able to 
+> do this via the preempt count already :-/
+> 
+> Just add the softirq/irq/nmi bits together.
+> 
+> The if the bit is already set we can dump out a warning.
+> 
+> I'll try that out.
 
-	type1 val = container_of(container_of(ptr2, type2, member2),
-						type1, member1);
+static int *perf_swcounter_recursion_context(struct perf_cpu_context *cpuctx)
+{
+        if (in_nmi())
+                return &cpuctx->recursion[3];
 
-> Was this warning harmless, or was the code in fact broken?
+        if (in_irq())
+                return &cpuctx->recursion[2];
 
-Should be harmless, the scope of __mptr should only be in the macro.
+        if (in_softirq())
+                return &cpuctx->recursion[1];
 
-> Can we rewrite container_of() to not use an extra variable (__mptr),
-> or perhaps using an inline function for part of the computation?
+        return &cpuctx->recursion[0];
+}
 
-Maybe something like:
+Is what I use for perf-counters.
 
-	#define container_of(ptr, type, member) ({			\
-		const typeof( ((type *)0)->member ) *__m_##ptr = (ptr);	\
-		(type *)( (char *)__m_##ptr - offsetof(type,member) );})
-
-I don't know if that actually works. ;-)
-
-
-> Do we also have this problem in expressions like max(max(x, y), z)?
-
-That should generate the same sparse warning since each max() has a
-couple of local variables (_min1 and _min2).
-
-> Thanks :-)
-
-Not a problem. Just trying to help!
-
-Regards,
-Hartley
