@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbZDPSl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbZDPSln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758372AbZDPSl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 14:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbZDPSlS
+	id S1758727AbZDPSln (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 14:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758096AbZDPSlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 14:41:18 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:65143 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756810AbZDPSlR (ORCPT
+	Thu, 16 Apr 2009 14:41:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43161 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757505AbZDPSlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 14:41:17 -0400
-Message-ID: <49E77B49.3020102@cs.columbia.edu>
-Date: Thu, 16 Apr 2009 14:39:05 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Thu, 16 Apr 2009 14:41:19 -0400
+Date: Thu, 16 Apr 2009 11:37:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Chris Mason <chris.mason@oracle.com>
+cc: Mike Galbraith <efault@gmx.de>, Jan Kara <jack@suse.cz>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH RFC] ext3 data=guarded v3
+In-Reply-To: <1239901977.4346.3.camel@think.oraclecorp.com>
+Message-ID: <alpine.LFD.2.00.0904161129460.4042@localhost.localdomain>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>  <1239881953.20254.17.camel@marge.simson.net>  <1239893771.4346.0.camel@think.oraclecorp.com> <1239901977.4346.3.camel@think.oraclecorp.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Alexey Dobriyan <adobriyan@gmail.com>, Greg Kurz <gkurz@fr.ibm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: C/R without "leaks"
-References: <49E40662.2040508@cs.columbia.edu> <20090414163633.GE27461@x200.localdomain> <49E4D89D.9060903@cs.columbia.edu> <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia> <20090416161215.GA8505@x200.localdomain> <49E774B1.5060505@nortel.com>
-In-Reply-To: <49E774B1.5060505@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Chris Friesen wrote:
-> Alexey Dobriyan wrote:
->> On Thu, Apr 16, 2009 at 12:42:17AM +0200, Greg Kurz wrote:
->>> On Wed, 2009-04-15 at 23:56 +0400, Alexey Dobriyan wrote:
->>
->>>> There are sockets and live netns as the most complex example. I'm not
->>>> prepared to describe it exactly, but people wishing to do C/R with
->>>> "leaks" should be very careful with their wishes.
->>> They should close their sockets before checkpoint and find/have some way
->>> to reconnect after. This implies some kind of C/R awareness in the code
->>> to be checkpointed.
->>
->> How do you imagine sshd closing sockets and reconnecting?
+On Thu, 16 Apr 2009, Chris Mason wrote:
 > 
-> Don't you already have to handle the case where an sshd connection is
-> checkpointed, then the system is shutdown and the restore doesn't happen
-> until after the TCP timeout?
+> Ah ok, it is just a missed i_size update.  Basically because file_write
+> doesn't wait for page writeback to finish, someone can be updating
+> i_size at the same time the end_io handler for the last page is running.
+> 
+> Git triggers this when it does the sha1flush just before closing the
+> file.
 
-Any connection in that case is, of course, lost, and it's up to the
-application to do something about it. If the application relies on
-the state of the connection, it will have to give up (e.g. sshd, and
-ssh, die).
+Can you say exactly what the IO pattern is?
 
-However, there are many application that can withstand connection
-lost without crashing. They simply retry (web browser, irc client,
-db clients). With time, there may be more applications that are
-'c/r-aware'.
+One of the original git design issues was to actually never _ever_ do 
+anything even half-way strange in the filesystem patterns, exactly because 
+I've seen so many filesystem bugs over the years.
 
-Moreover, in some cases you could, on restart, use a wrapper to
-create a new connection to somewhere (*), then ask restart(2) to
-use that socket instead of the original, such that from the user
-point of view things continue to work well, transparently.
+Now, it turns ou that "original design intent" and "actual code" then 
+don't always match, and git did some things that are unusual and triggered 
+bugs.
 
-(*) that somewhere, could be the original peer, or another server,
-if it has a way to somehow continue a cut connection, or a special
-wrapper server that you right for that purpose.
+Example: in order to be extra safe, git does "fchown()" after doing all 
+the writes to file descriptor just before closing it. I wanted git to make 
+it hard to corrupt things by mistake, and marking all the files that only 
+get written once (which is most of them) read-only as soon as possible 
+seemed to be a great safety feature.
 
-Oren.
+Except, in the process it triggers a network filesystem bug where earlier 
+writes were still writeback cached data hadn't made it to the server yet, 
+and then the client would do the whole "mark it read-only" before the 
+writes had even been done. Oops.
 
+We had a few other issues with just renaming files around (basic rule: 
+only rename files _within_ one directory if you want to avoid filesystem 
+bugs) and with using "pread/pwrite" (basic rule: pread/pwrite is unusual, 
+and is apparently buggy on some operating systems. So avoid them).
+
+Anyway, what was the exact pattern that caused this to show, and maybe I 
+can find yet another place where git could just be even more anally safe 
+by not doing anything half-way odd?
+
+			Linus
