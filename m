@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbZDPGa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZDPGbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbZDPGa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 02:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbZDPGap
+	id S1755609AbZDPGbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 02:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZDPGbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 02:30:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40016 "EHLO hera.kernel.org"
+	Thu, 16 Apr 2009 02:31:08 -0400
+Received: from mga03.intel.com ([143.182.124.21]:64581 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZDPGap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 02:30:45 -0400
-Message-ID: <49E6D085.3050601@kernel.org>
-Date: Thu, 16 Apr 2009 15:30:29 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1753510AbZDPGbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 02:31:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,197,1239001200"; 
+   d="scan'208";a="132057854"
+Date: Thu, 16 Apr 2009 14:30:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090416063024.GA5803@localhost>
+References: <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090416111108.AC55.A69D9226@jp.fujitsu.com> <20090416034918.GB20162@localhost>
 MIME-Version: 1.0
-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       axboe@kernel.dk, bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/17] scsi: replace custom rq mapping with	blk_rq_map_kern_sgl()
-References: <49E6A0B5.2090704@kernel.org> <20090416054457.GA13226@liondog.tnic> <49E6CB0D.3060307@kernel.org> <20090416062904.GA13487@liondog.tnic>
-In-Reply-To: <20090416062904.GA13487@liondog.tnic>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 06:30:33 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090416034918.GB20162@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> Hi Tejun,
+On Thu, Apr 16, 2009 at 11:49:18AM +0800, Wu Fengguang wrote:
+> On Thu, Apr 16, 2009 at 10:26:51AM +0800, KOSAKI Motohiro wrote:
+> > tatus: RO
+> > Content-Length: 13245
+> > Lines: 380
+> > 
+> > Hi
+> > 
+> > > > > > On Tue, Apr 14, 2009 at 12:37:10PM +0800, KOSAKI Motohiro wrote:
+> > > > > > > > Export the following page flags in /proc/kpageflags,
+> > > > > > > > just in case they will be useful to someone:
+> > > > > > > >
+> > > > > > > > - PG_swapcache
+> > > > > > > > - PG_swapbacked
+> > > > > > > > - PG_mappedtodisk
+> > > > > > > > - PG_reserved
+> > > >
+> > > > PG_reserved should be exported as PG_KERNEL or somesuch.
+> > >
+> > > PG_KERNEL could be misleading. PG_reserved obviously do not cover all
+> > > (or most) kernel pages. So I'd prefer to export PG_reserved as it is.
+> > >
+> > > It seems that the vast amount of free pages are marked PG_reserved:
+> > 
+> > Can I review the document at first?
+> > if no good document for administrator, I can't ack exposing PG_reserved.
 > 
-> On Thu, Apr 16, 2009 at 03:07:09PM +0900, Tejun Heo wrote:
+> btw, is this the expected behavior to mark so many free pages as PG_reserved?
+> Last time I looked at it, in 2.6.27, the free pages simply don't have
+> any flags set.
 > 
-> [..]
-> 
->> There was another problem.  If we use blk_rq_map_kern() the failed rq
->> must be finished after the sense rq is finished because that's when
->> the bio is copied back if it was copied.  Before sense_rq completion,
->> the sense buffer doesn't contain any valid data.
-> 
-> Well, as an idea, we could just postpone the completion of the failed rq
-> in:
-> 
-> if (sense && uptodate)
->         ide_cd_complete_failed_rq(drive, rq);
-> 
-> and put that just after
-> 
-> ide_complete_rq(drive, uptodate ? 0 : -EIO, nsectors << 9);
-> 
-> line in cdrom_newpc_intr(). This way, we can copy back the sense data
-> safely and then kill the rq.
+> //Or maybe it's a false reporting of my tool. Will double check.
 
-Yeah, already have that in my patch.
+Ah it's my fault. Something goes wrong when I convert the page-types data
+structure from a huge array to hash table. Here is the correct output:
 
-> The only problem I fear with changes like that is that later some subtle
-> interactions come about with some device which shouldn't normally
-> happen. This is old code, you know, which still needs lots of scrubbing.
-> It's like walking on a minefield :).
+# echo 1 > /proc/sys/vm/drop_caches 
+# ./page-types                      
+         flags  page-count       MB  symbolic-flags                     long-symbolic-flags
+0x000000000000      479149     1871  ___________________________        
+0x000000004000       19258       75  ______________r____________        reserved
+0x000000008000          16        0  _______________o___________        compound
+0x004000008000        3655       14  _______________o__________T        compound,compound_tail
+0x000000008014           1        0  __R_D__________o___________        referenced,dirty,compound
+0x004000008014           4        0  __R_D__________o__________T        referenced,dirty,compound,compound_tail
+0x000000000020           1        0  _____l_____________________        lru
+0x000000000028          58        0  ___U_l_____________________        uptodate,lru
+0x00000000203c          17        0  __RUDl_______b_____________        referenced,uptodate,dirty,lru,swapbacked
+0x000200000064          20        0  __R__lA______________P_____        referenced,lru,active,private
+0x000200000068           5        0  ___U_lA______________P_____        uptodate,lru,active,private
+0x00000000006c          17        0  __RU_lA____________________        referenced,uptodate,lru,active
+0x00020000006c           2        0  __RU_lA______________P_____        referenced,uptodate,lru,active,private
+0x000000002078           1        0  ___UDlA______b_____________        uptodate,dirty,lru,active,swapbacked
+0x000000000228           1        0  ___U_l___x_________________        uptodate,lru,reclaim
+0x000000000400        3600       14  __________B________________        buddy
+0x000000000804           1        0  __R________m_______________        referenced,mmap
+0x000000002808           6        0  ___U_______m_b_____________        uptodate,mmap,swapbacked
+0x000000002828         974        3  ___U_l_____m_b_____________        uptodate,lru,mmap,swapbacked
+0x00000000082c           1        0  __RU_l_____m_______________        referenced,uptodate,lru,mmap
+0x000000000868        1501        5  ___U_lA____m_______________        uptodate,lru,active,mmap
+0x000000002868        2696       10  ___U_lA____m_b_____________        uptodate,lru,active,mmap,swapbacked
+0x00000000086c         969        3  __RU_lA____m_______________        referenced,uptodate,lru,active,mmap
+0x00000000286c          17        0  __RU_lA____m_b_____________        referenced,uptodate,lru,active,mmap,swapbacked
+0x000000002878           2        0  ___UDlA____m_b_____________        uptodate,dirty,lru,active,mmap,swapbacked
+0x000000008880         694        2  _______S___m___o___________        slab,mmap,compound
+0x000000000880        1183        4  _______S___m_______________        slab,mmap
+0x0000000088c0          62        0  ______AS___m___o___________        active,slab,mmap,compound
+0x0000000008c0          57        0  ______AS___m_______________        active,slab,mmap
+         total      513968     2007
 
-:-)
-
--- 
-tejun
+Thanks,
+Fengguang
