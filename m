@@ -1,128 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbZDPC3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZDPCb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742AbZDPC3n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 22:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZDPC3c
+	id S1757820AbZDPCb0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 22:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZDPCbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 22:29:32 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:39700 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751284AbZDPC3b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 22:29:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsMFABc05klMQW1W/2dsb2JhbACBUc9Fg30G
-Date: Wed, 15 Apr 2009 22:29:28 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: [PATCH 0/8] [GIT PULL] TRACE_EVENT for modules
-Message-ID: <20090416022928.GB22378@Krystal>
-References: <20090414172337.280621613@goodmis.org> <20090414210445.GM955@mit.edu> <49E504C1.9010401@goop.org> <alpine.DEB.2.00.0904141753500.31421@gandalf.stny.rr.com> <49E50F2F.5070507@goop.org> <20090415082931.GF18192@elte.hu>
-Mime-Version: 1.0
+	Wed, 15 Apr 2009 22:31:17 -0400
+Received: from thunk.org ([69.25.196.29]:52005 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751029AbZDPCbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 22:31:16 -0400
+Date: Wed, 15 Apr 2009 22:31:03 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+Message-ID: <20090416023103.GI21586@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Dave Jones <davej@redhat.com>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <200904152014.11717.rusty@rustcorp.com.au> <alpine.LFD.2.00.0904150822020.4132@localhost.localdomain> <200904161057.07108.rusty@rustcorp.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090415082931.GF18192@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:26:50 up 46 days, 22:53,  1 user,  load average: 0.27, 0.28,
-	0.31
+In-Reply-To: <200904161057.07108.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+On Thu, Apr 16, 2009 at 10:57:05AM +0930, Rusty Russell wrote:
+> Ingo wants them.  Example:
 > 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> 	lguest: don't expect linear addresses in gdt pvops
 > 
-> > Steven Rostedt wrote:
-> >> On Tue, 14 Apr 2009, Jeremy Fitzhardinge wrote:
-> >>
-> >>   
-> >>> Theodore Tso wrote:
-> >>>     
-> >>>> Any chance you could support something like this?
-> >>>>
-> >>>>         
-> >>> I think that's already there.  I'm defining
-> >>> arch/x86/include/asm/paravirt-trace.h with:
-> >>>
-> >>> #ifndef _ASM_X86_PARAVIRT_TRACE_H
-> >>> #define _ASM_X86_PARAVIRT_TRACE_H
-> >>>
-> >>> #include <linux/tracepoint.h>
-> >>> #include <asm/paravirt_types.h>
-> >>>
-> >>> #undef TRACE_SYSTEM
-> >>> #define TRACE_SYSTEM pvops
-> >>>
-> >>> #define TRACE_INCLUDE_FILE	paravirt-trace
-> >>> #define TRACE_INCLUDE_PATH	asm
-> >>> [...]
-> >>>
-> >>>
-> >>> Which ends up including <asm/paravirt-trace.h>
-> >>>     
-> >>
-> >> Not quite. It ends up looking like
-> >>
-> >> #include "asm/paravirt-trace.h"
-> >>
-> >> As long as there is no "asm" directory in the include/trace directory, 
-> >> I think that is fine.
-> >
-> > OK.
-> >
-> > I'm having a bit of trouble with paravirt-trace.h when I actually 
-> > include it in paravirt.h.  asm/paravirt.h is itself included in 
-> > lots of places, and so its fairly easy to end up with cyclic 
-> > include dependencies which are fairly painful.  In this case I'm 
-> > seeing asm/paravirt.h -> linux/tracepoint.h -> linux/rcupate.h -> 
-> > {lots of stuff}, which gives errors like:
+> 	Impact: fix guest crash 'lguest: bad read address 0x4800000 len 256'
 > 
-> tracepoint.h should not include any complex headers like rcupdate.h.
-> 
-> > I'm wondering if there's much downside in making the code 
-> > __DO_TRACE() out of line so that we can make tracepoint.h have 
-> > absolutely minimal include dependencies?
-> 
-> yeah.
-> 
-> And besides, the rcu_read_lock_sched_notrace() there should probably 
-> be a preempt_disable_notrace() / preempt_enable_notrace() variant. 
-> (it's sligtly faster that way and we better be atomic and 
-> self-sufficient in tracepoints anyway)
-> 
+> What's more important in the subject line?  That it fixes a crash, or what it
+> does?
 
-Yes, rcu_read_(un)lock_sched_notrace maps directly to
-preempt_(en/dis)able_notrace. But for RCU verifiability's sake, I made
-sure to create rcu_read_lock versions of these primitives instead of
-simply using preempt_disable. Maybe we should simply take those
-low-level primitives out of rcupdate.h and put them in a simpler header?
+Well, consider that 2 or 3 months later, when we're trying to find a
+potential commit (say, because we're trying to find a potential fix
+that needs to be forward ported to a distro kernel, or some such), the
+initial summary line is what is going to be visible in gitk or via
+"git log --oneline" (or "git log --pretty=oneline --abbrev-commit" for
+older git versions).
 
-Mathieu
+So when I try to create git log messages, I try to make the first line
+useful for folks who might be sorting through potentially thousands of
+patches via gitk or git log --oneline.  So I might do something like
 
+lguest: fix crash caused by expecting linear address in gdt pvops
 
-> 	Ingo
-> 
+and then making sure the body of the message goes into detail about
+the oops message so that someone who is searching "git log" might find
+the commit.  I also try to include relevant bugzilla numbers (for
+distro's as well as the kernel bugzilla system).[1]
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I think it was you who once quoted Will Strunk, "Always write with
+deep sympathy for the reader"?  This definitely applies to git commit
+messages, both the initial one-line summary as well as the body.
+
+[1] I tend to use "Addresses-Debian-bug: #12345" in e2fsprogs git
+repository, but the convention in the kernel commit logs seems to be
+to use the URL to the bugzilla entry.  Since it's stuff that's
+intended to be grep'ed, I put it at the end of the commit body, just
+before the Signed-off-by: messages.
+
+						- Ted
+
+P.S.  One thing wihch I'd like to suggest is for folks to use "fix
+lock ordering" instead of "fix lockdep warning".  I've been guilty of
+using "lockdep warning" mmyself, and I've realized that when searching
+to see if a reported hang might have been fixed, the brain has a
+tendency to skip over a summary line that says "warning"; and a commit
+that fixes a lockdep warning is more serious, than say, for example,
+fixing some whining warning message from gcc.
