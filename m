@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZDPJpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZDPJs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbZDPJpK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 05:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDPJo5
+	id S1754272AbZDPJs2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 05:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDPJsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 05:44:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58248 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbZDPJo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 05:44:56 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090413220201.GA1368@redhat.com>
-References: <20090413220201.GA1368@redhat.com> <20090413201348.GA16661@redhat.com> <20090413201306.GA16653@redhat.com> <32305.1239659266@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Serge Hallyn <serue@us.ibm.com>,
-       Steve Dickson <steved@redhat.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Daire Byrne <Daire.Byrne@framestore.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slow_work_execute() needs mb() before test_bit(SLOW_WORK_PENDING)
-Date: Thu, 16 Apr 2009 10:43:42 +0100
-Message-ID: <14774.1239875022@redhat.com>
+	Thu, 16 Apr 2009 05:48:20 -0400
+Received: from fmmailgate09.web.de ([217.72.192.184]:44713 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754025AbZDPJsT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 05:48:19 -0400
+Date: Thu, 16 Apr 2009 11:48:16 +0200
+Message-Id: <672927818@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+Subject: Re: Linux image boot 
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+p8bXoBZ5pWLuqjqJJoL/tVjUOGjvzFJ+awQDRn3U6rXzwg
+ 6VK1iTSLtW6cPPcK1j4afFSqKFTyNJtgw7J2ObZ1SKUJo4S02E=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> wrote:
+Linux could directly boot from floppy in the past, but that feature has been obsoleted and removed in 2003 - see http://lkml.org/lkml/2003/1/29/197
 
-> But why do we need the barrier before clear_bit(SLOW_WORK_EXECUTING) ?
-> We do have one after test_and_clear_bit(SLOW_WORK_PENDING) above, and it
-> should be enough, no?
+Afaik, you always need a bootloader to boot Linux nowadays.
 
-No.  There lock is covering work->ops->execute(work) too, and that is after
-the clearance of SLOW_WORK_PENDING.  The UNLOCK-class barrier must go between
-execution and clearance of the execution lock bit.
+Only exception coming to my mind is booting a UserModeLinux kernel. That one can directly boot from the commandline.
 
-David
+regards
+roland
+
+
+
+Date Thu, 16 Apr 2009 09:45:14 +0200 
+Subject Linux image boot 
+>From Dragoslav Zaric <> 
+
+Can you boot linux without GRUB or LILO loader
+if it is only OS on your computer ?
+
+I mean does kernel image can boot it-self and if can,
+where you should put it ?
+
+thanks
+
+Dragoslav Zaric
+[Programmer; M Sc Astrophysics]
+
+
+
+______________________________________________________
+GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
+Jetzt freischalten unter http://movieflat.web.de
+
