@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZDPRPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbZDPRUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbZDPRPQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 13:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbZDPRPA
+	id S1758092AbZDPRUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 13:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZDPRU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 13:15:00 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:30870 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbZDPRO7 (ORCPT
+	Thu, 16 Apr 2009 13:20:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47137 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754683AbZDPRU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 13:14:59 -0400
-Subject: Re: [PATCH RFC] ext3 data=guarded v3
-From: Chris Mason <chris.mason@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <1239893771.4346.0.camel@think.oraclecorp.com>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
-	 <1239881953.20254.17.camel@marge.simson.net>
-	 <1239893771.4346.0.camel@think.oraclecorp.com>
+	Thu, 16 Apr 2009 13:20:28 -0400
+Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
+ recursive protection
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com>
+References: <20090416161543.199331330@goodmis.org>
+	 <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop>
+	 <alpine.DEB.2.00.0904161259460.20429@gandalf.stny.rr.com>
 Content-Type: text/plain
-Date: Thu, 16 Apr 2009 13:12:56 -0400
-Message-Id: <1239901977.4346.3.camel@think.oraclecorp.com>
+Date: Thu, 16 Apr 2009 19:20:07 +0200
+Message-Id: <1239902407.23397.3197.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.49E76750.00BF:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-16 at 10:56 -0400, Chris Mason wrote:
-> On Thu, 2009-04-16 at 13:39 +0200, Mike Galbraith wrote:
-> > On Wed, 2009-04-15 at 13:22 -0400, Chris Mason wrote:
-> > > Hello everyone,
-> > 
-> > Greetings,
-> > 
-> > > This passed a longer stress test and generally seems to be working.  I
-> > > don't think anyone would recommend it as a default for 2.6.30, but it
-> > > may be a good idea to have a review party and decide if it is safe enough
-> > > to include so people can experiment with it.
-> > 
-> > I know you didn't say RFT, but I did some anyway, and found a 100%
-> > repeatable corruption scenario wrt git+umount.
-> > 
+On Thu, 2009-04-16 at 13:03 -0400, Steven Rostedt wrote:
+> On Thu, 16 Apr 2009, Peter Zijlstra wrote:
 > 
-> Well, that's a surprise.  I can trigger it here too, trying to figure
-> out how this is different from the fsx and fsstress hammering.  It looks
-> like git is just going good old fashioned writes, so I must be losing
-> one or two of them.
+> > On Thu, 2009-04-16 at 12:15 -0400, Steven Rostedt wrote:
+> > > plain text document attachment
+> > > (0002-tracing-events-lockdep-move-tracepoints-within-recu.patch)
+> > > From: Steven Rostedt <srostedt@redhat.com>
+> > > 
+> > > With the current location of the tracepoints in lockdep, the system
+> > > can hard lockup in minutes when the tracepoints are enabled.
+> > > 
+> > > Moving the tracepoints outside inside the lockdep protection solves
+> > > the issue.
+> > 
+> > NAK
+> > 
+> > the idea is to eventually move lockdep on top of the tracepoints. The
+> > tracer should grow to be more robust and handle recursion itself.
+> > 
+> > Its likely a case of the tracer using a spinlock or mutex in the
+> > tracepoint code. When I did the tracepoints I converted one such to a
+> > raw_spinlock_t in the trace_print code.
+> 
+> Note, that the ring buffer and events are made to be recursive. That is, 
+> it allows one event to trace within another event.
 
-Ah ok, it is just a missed i_size update.  Basically because file_write
-doesn't wait for page writeback to finish, someone can be updating
-i_size at the same time the end_io handler for the last page is running.
+But surely not in the same context. You could do a 4 level recursion
+protection like I did in perf-counter, not allowing recursion in:
 
-Git triggers this when it does the sha1flush just before closing the
-file.
+ nmi, irq, softirq, process - context.
 
-I'm testing the fixes here, will resend in a little bit.
+That allows you to trace an irq while you're tracing something in
+process context, etc.. But not allow recursion on the same level.
 
-Thanks!
+>  If the tracepoint is 
+> triggered by something within the trace point handler, then we are 
+> screwed. That needs to be fixed.
 
--chris
+Exactly the thing you want to detect and warn about, preferably with a
+nice stack trace.
 
+> I have not seen what is triggering back into locking. The ring buffer and 
+> what I can see by the event code, does not grab any locks besides raw 
+> ones.
+
+Well, it used to all work, so something snuck in.
 
