@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZDPTtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbZDPUA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbZDPTtm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 15:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZDPTtd
+	id S1757948AbZDPUA3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbZDPUAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 15:49:33 -0400
-Received: from gwu.lbox.cz ([62.245.111.132]:48152 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757756AbZDPTtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 15:49:32 -0400
-X-Greylist: delayed 1918 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Apr 2009 15:49:32 EDT
-Date: Thu, 16 Apr 2009 21:18:02 +0200
-From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
-To: David Rientjes <rientjes@google.com>
-Cc: Nikola Ciprich <extmaillist@linuxbox.cz>,
-       David Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29.1: BUG: sleeping function called from invalid context
-	at mm/slub.c:1599
-Message-ID: <20090416191802.GC5024@nik-comp.linuxbox.cz>
-References: <20090415145841.GA5106@nik-comp.linuxbox.cz> <alpine.DEB.2.00.0904151127430.14961@chino.kir.corp.google.com>
+	Thu, 16 Apr 2009 16:00:19 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:54758 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756973AbZDPUAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:00:18 -0400
+Date: Thu, 16 Apr 2009 15:53:09 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org
+Subject: Scheduler regression: Too frequent timer interrupts(?)
+Message-ID: <alpine.DEB.1.10.0904161539130.23632@qirst.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="kfjH4zxOES6UT95V"
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904151127430.14961@chino.kir.corp.google.com>
-"X-PGP-Key: http://nik.lbox.cz/downloads/nikola.ciprich.asc"
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 1855283 records(16-04-2009)
-X-Spam-Score: N/A (trusted relay)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since 2.6.22 the Linux scheduler interrupts programs with increasing
+frequency. The interrupts cause run time variances that are affecting HPC
+jobs. Various low latency jobs show increasing runtimes because of these
+additional interrupts by the scheduler.
 
---kfjH4zxOES6UT95V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi David,
-thanks for a reply.
-I've also created a SGI bugzilla report:
-http://oss.sgi.com/bugzilla/show_bug.cgi?id=3D819
-BR
-nik
-
-On Wed, Apr 15, 2009 at 11:33:54AM -0700, David Rientjes wrote:
-
-> David, do you think this could be related to holding pag->pag_ici_lock=20
-> while calling xfs_iget_cache_hit() in=20
-> 6441e549157b749bae003cce70b4c8b62e4801fa?
+In the following test a simple program was run that continually retrieves
+TSC and measures the times between the TSC retrievals. A run time variance
+is noted whenever the time between two TSC retrievals is larger than 1
+usec (on a 3.3Ghz Xeon box quad cores dual processor). The numbers given
+are the interrupts occuring in a 10 second measurement period. The tests
+can be downloaded from http://gentwo.org/ll .
 
 
---=20
--------------------------------------
-Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
+Kernel		Test 1	Test 2	Test 3	Variances(SUM)
+2.6.22		383	540	667	1590
+2.6.23		2738	2019	2303	7060
+2.6.24		2503	573	583	3659
+2.6.25		302	359	241	902
+2.6.26		2503	2501	2503	7507
+2.6.27		2502	2503	2478	7483
+2.6.28		2502	2504	2502	7508
+2.6.29		2502	2490	2503	7495
+2.6.30-rc2	2504	2503	2502	7509
 
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
+The kernel was compiled with high res timer support and a HZ of 250.
 
-www.linuxbox.cz
+The 2.6.22 kernel has only about 38.3 disruptions per second. That likely
+means that HRTIMER is able to eliminate the timer interrupt.
 
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
+In .23 this is no longer possible and we get the full number of 250 timer
+interrupts per second. Fixed again in .25 but .26 looses it again.
 
---kfjH4zxOES6UT95V
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Can we restore the .22 situation where a running task without any
+competitor on the same cpu does not need the timer interrupt?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJ54Rq3xdJJrLygV4RAt5cAJwIhhbLn5PYD74PPQqWMMgAnVOXVQCgwJGx
-pjZ5iQrLM3IuEZbdkMlcHXM=
-=HtBB
------END PGP SIGNATURE-----
-
---kfjH4zxOES6UT95V--
