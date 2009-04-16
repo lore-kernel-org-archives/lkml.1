@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZDPF4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbZDPF5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbZDPF4i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 01:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbZDPFzV
+	id S1757527AbZDPF5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 01:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZDPFzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 01:55:21 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:7409
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756164AbZDPFzT (ORCPT
+	Thu, 16 Apr 2009 01:55:35 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:26626
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754043AbZDPFze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 01:55:19 -0400
+	Thu, 16 Apr 2009 01:55:34 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArgBAJxk5kl8qNY8/2dsb2JhbAAI0BuDfQY
+X-IronPort-Anti-Spam-Result: ArgBANdk5kl8qNY8/2dsb2JhbAAI0B6DfQY
 X-IronPort-AV: E=Sophos;i="4.40,197,1238947200"; 
-   d="scan'208";a="419598370"
-Subject: [PATCH 5/9] tsc2007: Use disable_irq_nosync() from within irq
+   d="scan'208";a="343073512"
+Subject: [PATCH] rtc-ds1305: Use disable_irq_nosync() from within irq
 	handlers.
 From: Ben Nizette <bn@niasdigital.com>
-To: dmitry.torokhov@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+To: p_gortmaker@yahoo.com
+Cc: David Brownell <david-b@pacbell.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 16 Apr 2009 15:54:51 +1000
-Message-Id: <1239861291.29831.122.camel@linux-51e8.site>
+Date: Thu, 16 Apr 2009 15:55:06 +1000
+Message-Id: <1239861306.29831.126.camel@linux-51e8.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -38,19 +39,19 @@ have this problem.
 
 Signed-off-by: Ben Nizette <bn@niasdigital.com>
 ---
-diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscreen/tsc2007.c
-index 4ab0702..536668f 100644
---- a/drivers/input/touchscreen/tsc2007.c
-+++ b/drivers/input/touchscreen/tsc2007.c
-@@ -235,7 +235,7 @@ static irqreturn_t tsc2007_irq(int irq, void *handle)
- 	spin_lock_irqsave(&ts->lock, flags);
+diff --git a/drivers/rtc/rtc-ds1305.c b/drivers/rtc/rtc-ds1305.c
+index fc372df..5c4f789 100644
+--- a/drivers/rtc/rtc-ds1305.c
++++ b/drivers/rtc/rtc-ds1305.c
+@@ -514,7 +514,7 @@ static irqreturn_t ds1305_irq(int irq, void *p)
+ {
+ 	struct ds1305		*ds1305 = p;
  
- 	if (likely(ts->get_pendown_state())) {
--		disable_irq(ts->irq);
-+		disable_irq_nosync(ts->irq);
- 		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
- 					HRTIMER_MODE_REL);
- 	}
+-	disable_irq(irq);
++	disable_irq_nosync(irq);
+ 	schedule_work(&ds1305->work);
+ 	return IRQ_HANDLED;
+ }
 -- 
 1.6.0.2
 
