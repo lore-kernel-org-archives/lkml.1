@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZDPByT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbZDPB6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbZDPByT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 21:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZDPByG
+	id S1752901AbZDPB6q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 21:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZDPB6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 21:54:06 -0400
-Received: from exprod6og106.obsmtp.com ([64.18.1.191]:40205 "HELO
-	exprod6og106.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751362AbZDPByF convert rfc822-to-8bit (ORCPT
+	Wed, 15 Apr 2009 21:58:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:44354 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZDPB6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 21:54:05 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 15 Apr 2009 21:58:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W8hEHs7WLu2GtK6IWhI69JBmL1MVZFLNsa3WXbQmnYpdRAw/PHudsIRjku+ax2BhsD
+         L/QjHo4XsIB4n1zkw+Dhg0ZbEeEtsEAhYBckLFKkmZsvCj6dGbkJV/pdqwhErn00NEem
+         zL9vmMu/Uyz6PDKRQHH5HXm7L7gifu7MISu9o=
+Date: Wed, 15 Apr 2009 18:58:27 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: tglx@linutronix.de, David Brownell <david-b@pacbell.net>,
+       hskinnemoen@atmel.com, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org, imre.deak@nokia.com, mingo@elte.hu,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] ads7846: fix unsafe disable_irq (was [REGRESSION]
+	threaded interrupt handler support breaks (some) irq handling on
+	AVR32)
+Message-ID: <20090416015826.GA2413@dtor-d630.eng.vmware.com>
+References: <1239685153.19815.12.camel@linux-51e8.site> <1239698225.29831.14.camel@linux-51e8.site> <1239759053.29831.37.camel@linux-51e8.site> <20090415095710.5c853a7f@hskinnemoen-d830> <1239842517.29831.47.camel@linux-51e8.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] block/genhd.c: fix sparse warning
-Date: Wed, 15 Apr 2009 21:53:54 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F8DFA@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] block/genhd.c: fix sparse warning
-Thread-Index: Acm+NjJ1YN9GnToJSN2pigJH40T+OA==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Apr 2009 01:54:02.0112 (UTC) FILETIME=[373E7000:01C9BE36]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239842517.29831.47.camel@linux-51e8.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse warning in block/genhd.c.
+On Thu, Apr 16, 2009 at 10:41:57AM +1000, Ben Nizette wrote:
+> On Wed, 2009-04-15 at 09:57 +0200, Haavard Skinnemoen wrote:
+> > Shouldn't that be disable_irq_nosync()?
+> 
+> Indeed, good catch.  That fixes it.
+> 
+> --------------8<--------------------
+> 
+> The use of disable_irq inside the handler for the interrupt being
+> disabled has always been dangerous.  disable_irq should wait for that
+> handler to complete before returning -> deadlock.
+> 
+> For some reason this wasn't actually the case until 3aa551c9b was merged
+> but since this time, the ads7846 driver has deadlocked the system on
+> first interrupt.
+> 
+> Convert the driver to use the handler-safe _nosync variant.
+> 
 
-	warning: symbol '__mptr' shadows an earlier one
+Applied, thank you very much Ben.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-
----
-
-diff --git a/block/genhd.c b/block/genhd.c
-index a9ec910..ca3eedb 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -576,8 +576,10 @@ struct gendisk *get_gendisk(dev_t devt, int
-*partno)
- 		struct kobject *kobj;
- 
- 		kobj = kobj_lookup(bdev_map, devt, partno);
--		if (kobj)
--			disk = dev_to_disk(kobj_to_dev(kobj));
-+		if (kobj) {
-+			struct device *dev = kobj_to_dev(kobj);
-+			disk = dev_to_disk(dev);
-+		}
- 	} else {
- 		struct hd_struct *part;
- 
-@@ -1010,7 +1012,7 @@ static int diskstats_show(struct seq_file *seqf,
-void *v)
- 				"wsect wuse running use aveq"
- 				"\n\n");
- 	*/
-- 
-+
- 	disk_part_iter_init(&piter, gp, DISK_PITER_INCL_PART0);
- 	while ((hd = disk_part_iter_next(&piter))) {
- 		cpu = part_stat_lock();
-@@ -1034,7 +1036,7 @@ static int diskstats_show(struct seq_file *seqf,
-void *v)
- 			);
- 	}
- 	disk_part_iter_exit(&piter);
-- 
-+
- 	return 0;
- }
-  
+-- 
+Dmitry
