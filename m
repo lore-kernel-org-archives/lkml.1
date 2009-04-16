@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZDPXFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZDPXIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbZDPXFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZDPXFc
+	id S1757163AbZDPXIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbZDPXIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:05:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53117 "EHLO mx2.mail.elte.hu"
+	Thu, 16 Apr 2009 19:08:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59905 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754536AbZDPXFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:05:30 -0400
-Date: Fri, 17 Apr 2009 01:04:57 +0200
+	id S1755285AbZDPXII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 19:08:08 -0400
+Date: Fri, 17 Apr 2009 01:07:31 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, paulmck@linux.vnet.ibm.com,
-       Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
-       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH[] netfilter: use per-cpu reader-writer lock (v0.7)
-Message-ID: <20090416230457.GA16226@elte.hu>
-References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com> <20090416175850.GH6924@linux.vnet.ibm.com> <49E77BF6.1080206@cosmosbay.com> <20090416134956.6c1f0087@nehalam> <alpine.LFD.2.00.0904161353370.4042@localhost.localdomain>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Peter Oruba <peter.oruba@amd.com>,
+       amd64-microcode@amd64.org, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: microcode driver newly spews warnings
+Message-ID: <20090416230731.GA19553@elte.hu>
+References: <49E38331.3090808@garzik.org> <49E38393.8000700@garzik.org> <20090413182746.GA9954@elte.hu> <49E5EABB.9010402@garzik.org> <b647ffbd0904150751u64e69097q79c511533f949c00@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904161353370.4042@localhost.localdomain>
+In-Reply-To: <b647ffbd0904150751u64e69097q79c511533f949c00@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,81 +36,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
 
-> On Thu, 16 Apr 2009, Stephen Hemminger wrote:
+> 2009/4/15 Jeff Garzik <jeff@garzik.org>:
+> > Ingo Molnar wrote:
+> >>
+> >> (added Cc:s)
+> >>
+> >> * Jeff Garzik <jeff@garzik.org> wrote:
+> >>
+> >>> Jeff Garzik wrote:
+> >>>>
+> >>>> Kernel: 2.6.30-rc1-00306-g8371f87
+> >>>> Hardware: ICH10 x86-64
+> >>>>
+> >>>> This is a regression from 2.6.29.  Microcode spews the following WARNING
+> >>>> multiple times during boot:
+> >>>>
+> >>>>> ------------[ cut here ]------------
+> >>>>> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0xeb/0xf0()
+> >>>>> Hardware name:         sysfs group ffffffffa0209700 not found for
+> >>>>>  kobject 'cpu0'
 > >
-> > This version of x_tables (ip/ip6/arp) locking uses a per-cpu
-> > rwlock that can be nested. It is sort of like earlier brwlock 
-> > (fast reader, slow writer). The locking is isolated so future improvements
-> > can concentrate on measuring/optimizing xt_table_info_lock. I tried
-> > other versions based on recursive spin locks and sequence counters and 
-> > for me, the risk of inventing own locking primitives not worth it at this time.
+> >
+> > Update:  Regression occurs in 2.6.30-rc2.
+> >
+> > I've now reproduced this on ICH9/Core2 as well as ICH10/Nahelem.
 > 
-> This is stil scary.
+> Hi,
 > 
-> Do we guarantee that read-locks nest in the presense of a waiting 
-> writer on another CPU? Now, I know we used to (ie readers always 
-> nested happily with readers even if there were pending writers), 
-> and then we broke it. I don't know that we ever unbroke it.
 > 
-> IOW, at least at some point we deadlocked on this (due to trying 
-> to be fair, and not lettign in readers while earlier writers were 
-> waiting):
-> 
-> 	CPU#1			CPU#2
-> 
-> 	read_lock
-> 
-> 				write_lock
-> 				.. spins with write bit set, waiting for
-> 				   readers to go away ..
-> 
-> 	recursive read_lock
-> 	.. spins due to the write bit
-> 	   being. BOOM: deadlock  ..
-> 
-> Now, I _think_ we avoid this, but somebody should double-check.
+> the following patch should eliminate the problem (and revert to 
+> the old behavior that was altered by Rusty's patch).
 
-This is a narrow special-case where the spin-rwlock is safe, and the 
-rwsem is unsafe.
-
-But it should work for rwlocks - it always worked and the networking 
-code always relied on that AFAIK.
-
-Here's the x86 assembly code of the write-side slowpath:
-
-ENTRY(__write_lock_failed)
-        CFI_STARTPROC
-        LOCK_PREFIX
-        addl $RW_LOCK_BIAS,(%rdi)
-1:      rep
-        nop
-        cmpl $RW_LOCK_BIAS,(%rdi)
-        jne 1b
-        LOCK_PREFIX
-        subl $RW_LOCK_BIAS,(%rdi)
-        jnz  __write_lock_failed
-        ret
-        CFI_ENDPROC
-
-the fastpath decreased the value with RW_LOCK_BIAS, and when we 
-enter this function we undo that effect by adding RW_LOCK_BIAS. Then 
-we spin (without signalling our write-intent) passively until the 
-count reaches RW_LOCK_BIAS. Then we try to lock it again and bring 
-it to zero (meaning no other readers or writers - we got the lock).
-
-This is pretty much the most unfair strategy possible for writers - 
-but this is how rwlocks always behaved - and they do so mostly for 
-recursive use within networking.
-
-This is why the tasklist_lock was always so suspect to insane 
-starvation symptoms on really large SMP systems, and this is why 
-write_lock_irq(&tasklist_lock) was always a dangerous operation to 
-do. (it can spin for a _long_ time with irqs off.)
-
-It's not the most optimal of situations. Some patches are in the 
-works to fix the irqs-off artifact (on ia64 - no x86 patches yet 
-AFAICS) - but that's just papering it over.
+Jeff, did this do the trick for you?
 
 	Ingo
