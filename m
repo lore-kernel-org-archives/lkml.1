@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZDPCBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZDPCDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756238AbZDPCBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 22:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZDPCA6
+	id S1753602AbZDPCDD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 22:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZDPCCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 22:00:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:35831 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753072AbZDPCA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 22:00:58 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-Date: Thu, 16 Apr 2009 11:30:26 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>
-References: <200904140159.n3E1x1K1014705@hera.kernel.org> <alpine.LFD.2.00.0904151013260.4132@localhost.localdomain> <49E62BD5.6090508@zytor.com>
-In-Reply-To: <49E62BD5.6090508@zytor.com>
+	Wed, 15 Apr 2009 22:02:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47465 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbZDPCCw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 22:02:52 -0400
+Date: Wed, 15 Apr 2009 22:02:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with CREATE_TRACE_POINTS and recursion safety
+In-Reply-To: <49E6847B.9000003@goop.org>
+Message-ID: <alpine.DEB.2.00.0904152201390.4459@gandalf.stny.rr.com>
+References: <49E67D1D.8020704@goop.org> <alpine.DEB.2.00.0904152042350.4459@gandalf.stny.rr.com> <49E6847B.9000003@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904161130.28129.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 04:17:49 am H. Peter Anvin wrote:
-> Linus Torvalds wrote:
-> "build fix" is valid and proper use: it tells that it
-> fixes a compilation error, which succinctly communicates both the
-> priority of the fix and how it needs to be validated.
 
-Side note: I really prefer to see the compile error output in this case: great
-for googling.  It annoys me when people skip this.
+On Wed, 15 Apr 2009, Jeremy Fitzhardinge wrote:
 
-Anyway, Impact: had lead me to think harder about my messages than the
-free-form commit style did.  Perhaps it's too rigid, but it helped.
+> Steven Rostedt wrote:
+> > On Wed, 15 Apr 2009, Jeremy Fitzhardinge wrote:
+> > 
+> >   
+> > > I'm having a problem with CREATE_TRACE_POINTS being too indiscriminate.
+> > > The
+> > > trouble is that it not only creates tracepoint definitions for the
+> > > intended
+> > > tracepoints, but any other tracepoint definitions which get included
+> > > incidentally.
+> > > 
+> > > For example, I'm seeing my paravirt tracepoints being instantiated in both
+> > > kernel/sched.o and kernel/irq/manage.o as side-effects of the scheduler
+> > > and
+> > > irq tracepoints being instantiated.
+> > > 
+> > > I'm experimenting with a different scheme, wherein a subsystem defines
+> > > CREATE_FOO_TRACE_POINTS in the .c file where it wants to instantiate the
+> > > tracepoints - rather than CREATE_TRACE_POINTS - and its trace/events/foo.h
+> > > does:
+> > > 
+> > >    #ifdef CREATE_FOO_TRACE_POINTS
+> > >    #undef CREATE_FOO_TRACE_POINTS	/* avoid infinite recursion */
+> > >    #include <trace/instantiate_trace.h>
+> > >    #else
+> > >    #include <trace/define_trace.h>
+> > >    #endif
+> > > 
+> > > where instantiate_trace.h is:
+> > > 
+> > >    #define CREATE_TRACE_POINTS
+> > >    #include <trace/define_trace.h>
+> > >    #undef CREATE_TRACE_POINTS
 
-Let's get concrete.  Here's the top 3 non-merge commits in gitk:
+Have you tried:
 
-    ALSA: hda - Fix the cmd cache keys for amp verbs
-    
-    Fix the key value generation for get/set amp verbs.  The upper bits of
-    the parameter have to be combined with the verb value to be unique for
-    each direction/index of amp access.
-    
-    This fixes the resume problem on some hardwares like Macbook after
-    the channel mode is changed.
+#ifdef CREATE_PVOPS_TRACE_POINTS
+#define CREATE_TRACE_POINTS
+#include <trace/define_trace.h>
+#undef CREATE_TRACE_POINTS
+#endif
 
-I have no idea what this patch does.  It seems to be a fix; what are the
-symptoms of the problem, and how long has it been there? 
+And in your C file do:
 
-    ALSA: add missing definitions(letters) to HD-Audio.txt
-    
-    impact: Add missing definitions(letters).
+#define CREATE_PVOPS_TRACE_POINTS
+#include <trace/pvops.h>
 
-This is actually a pure documentation patch.  "Fix typos" or "Documentation
-fixes" would seem sufficient for subject, and no body needed.
+??
 
-    ALSA: sound/pci: use memdup_user()
-    
-    Remove open-coded memdup_user().
-
-Again, the body seems gratuitous.
-
-Anyone want to try to write a guide on writing good commit messages?
-Rusty.
+-- Steve
