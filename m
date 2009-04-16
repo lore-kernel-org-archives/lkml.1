@@ -1,39 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbZDPXuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbZDPXu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbZDPXuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbZDPXuG
+	id S1758309AbZDPXu6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZDPXuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:50:06 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51568 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756780AbZDPXuE (ORCPT
+	Thu, 16 Apr 2009 19:50:08 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:41027 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756927AbZDPXuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:50:04 -0400
-Date: Fri, 17 Apr 2009 00:49:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090416234957.GE26366@ZenIV.linux.org.uk>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239892078-6039-1-git-send-email-abogani@texware.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Apr 2009 19:50:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:content-type:content-transfer-encoding
+         :mime-version:subject:date:x-mailer;
+        b=NDaHbSUhcTS4xPYybx/kGqWJkgUWN7w9Phmn7lIv2lreVaBMOCy5RJ9DVG9ZKCycEH
+         ALsIzIuT9a9kbSOiYzCOsvaZyRZnlSAx/mUV1UGF0ItC/2qx6EYWb1wC+nzYHyDd34rD
+         oSuT5nW9vCsG+S/9bfiob2OXYm4/Sd7cpCesY=
+Message-Id: <CC1C24F4-B448-4453-BA6C-EF436231B267@gmail.com>
+From: Robert Nicholson <robert.nicholson@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Does the linux kernel contain support for ATA Security feature set?
+Date: Thu, 16 Apr 2009 18:49:59 -0500
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 04:27:58PM +0200, Alessio Igor Bogani wrote:
-> Replace ths BKL in sys_mount()/sys_umount() syscalls with a regular mutex.
+So, I've got an X-25M that I want to securely erase and it turns out  
+on a Mac I'm not going to be able to issue the command because it  
+doesn't support legacy IDE mode from what I understand. So the idea of  
+a any boot CD that I could boot and run a program that can issue a  
+SECURE_ERASE (SE) to the drive is only applicable to PC's.
 
-NAK.  Push BKL into instances if you care and deal with those one by one.
-New and unwarranted system-wide exclusion around hell knows what code
-(we *are* talking about the stuff that is very likely to do at least some
-IO, dependent on fs internals, phase of moon and amount of farting gnats
-in the vicinity) is right out.
+So does the Linux kernel support the ATA security set then? or does  
+it, like OSX have protective measures to stop abuse of those features.
