@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbZDPF4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZDPF4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbZDPF4y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 01:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZDPFz1
+	id S1757114AbZDPF4i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 01:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbZDPFzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 01:55:27 -0400
-Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:64546
-	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756207AbZDPFzZ (ORCPT
+	Thu, 16 Apr 2009 01:55:21 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:7409
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756164AbZDPFzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 01:55:25 -0400
+	Thu, 16 Apr 2009 01:55:19 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: ArgBAJxk5kl8qNY8/2dsb2JhbAAI0BuDfQY
 X-IronPort-AV: E=Sophos;i="4.40,197,1238947200"; 
-   d="scan'208";a="467881930"
-Subject: [PATCH 6/9] ucb1400: Use disable_irq_nosync() from within irq
+   d="scan'208";a="419598370"
+Subject: [PATCH 5/9] tsc2007: Use disable_irq_nosync() from within irq
 	handlers.
 From: Ben Nizette <bn@niasdigital.com>
 To: dmitry.torokhov@gmail.com
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 Content-Type: text/plain
-Date: Thu, 16 Apr 2009 15:54:58 +1000
-Message-Id: <1239861298.29831.124.camel@linux-51e8.site>
+Date: Thu, 16 Apr 2009 15:54:51 +1000
+Message-Id: <1239861291.29831.122.camel@linux-51e8.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -38,19 +38,19 @@ have this problem.
 
 Signed-off-by: Ben Nizette <bn@niasdigital.com>
 ---
-diff --git a/drivers/input/touchscreen/ucb1400_ts.c b/drivers/input/touchscreen/ucb1400_ts.c
-index e868264..f100c7f 100644
---- a/drivers/input/touchscreen/ucb1400_ts.c
-+++ b/drivers/input/touchscreen/ucb1400_ts.c
-@@ -256,7 +256,7 @@ static irqreturn_t ucb1400_hard_irq(int irqnr, void *devid)
- 	struct ucb1400_ts *ucb = devid;
+diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscreen/tsc2007.c
+index 4ab0702..536668f 100644
+--- a/drivers/input/touchscreen/tsc2007.c
++++ b/drivers/input/touchscreen/tsc2007.c
+@@ -235,7 +235,7 @@ static irqreturn_t tsc2007_irq(int irq, void *handle)
+ 	spin_lock_irqsave(&ts->lock, flags);
  
- 	if (irqnr == ucb->irq) {
--		disable_irq(ucb->irq);
-+		disable_irq_nosync(ucb->irq);
- 		ucb->irq_pending = 1;
- 		wake_up(&ucb->ts_wait);
- 		return IRQ_HANDLED;
+ 	if (likely(ts->get_pendown_state())) {
+-		disable_irq(ts->irq);
++		disable_irq_nosync(ts->irq);
+ 		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
+ 					HRTIMER_MODE_REL);
+ 	}
 -- 
 1.6.0.2
 
