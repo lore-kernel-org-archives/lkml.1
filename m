@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZDPGHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZDPGUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbZDPGHg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 02:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZDPGHY
+	id S1753967AbZDPGUA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 02:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZDPGTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 02:07:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53865 "EHLO hera.kernel.org"
+	Thu, 16 Apr 2009 02:19:51 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55291 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbZDPGHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 02:07:23 -0400
-Message-ID: <49E6CB0D.3060307@kernel.org>
-Date: Thu, 16 Apr 2009 15:07:09 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751676AbZDPGTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 02:19:50 -0400
+Date: Thu, 16 Apr 2009 08:19:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, petkovbb@googlemail.com
+Subject: Re: [block #for-next] block: clear req->errors on bio completion
+	only  for fs requests
+Message-ID: <20090416061949.GQ5178@kernel.dk>
+References: <49E671D8.1090002@kernel.org>
 MIME-Version: 1.0
-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       axboe@kernel.dk, bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/17] scsi: replace custom rq mapping with	blk_rq_map_kern_sgl()
-References: <49E6A0B5.2090704@kernel.org> <20090416054457.GA13226@liondog.tnic>
-In-Reply-To: <20090416054457.GA13226@liondog.tnic>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 06:07:14 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E671D8.1090002@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Borislav.
-
-Borislav Petkov wrote:
-> Hi,
+On Thu, Apr 16 2009, Tejun Heo wrote:
+> Impact: subtle behavior change
 > 
-> On Thu, Apr 16, 2009 at 12:06:29PM +0900, Tejun Heo wrote:
->> I updated the patch a bit and folded it into the series after patch
->> 10.  I hope I didn't butcher the patch too bad.  Can I add your
->> Signed-off-by: on the modified patch?  Also, I just started working on
->> the atapi version.  Do you already have something?
+> For fs requests, rq is only carrier of bios and rq error status as a
+> whole doesn't mean much.  This is the reason why rq->errors is being
+> cleared on each partial completion of a request as on each partial
+> completion the error status is transferred to the respective bios.
 > 
-> Ok here's what I got: I went and converted all ide-cd and ide-atapi to
-> using a common routine ide_prep_sense, see following patches for that.
-> Preliminary testing is promising but you never know :).
-
-Cool.  I'll take a look.
-
-> I put the request_sense buffer as defined in <linux/cdrom.h> into the
-> drive struct so that each device can have its own buffer. IMHO, request
-> sense standard data should be pretty identical across most ATAPI devices
-> (yeah, I'm sure there are exceptions :)). We might move the struct
-> request_sense to a more generic location instead of <linux/cdrom.h> if
-> we decide to go with that.
-
-Okay.
-
->>     * Both user and kernel PC requests expect sense data to be stored
->>       in separate storage other than info->sense_data.  Copy sense
->>       data to rq->sense on completion if rq->sense is not NULL.  This
->>       fixes bogus sense data on PC requests.
+> For pc requests, rq->errors is used to carry error status to the
+> issuer and thus __end_that_request_first() doesn't clear it on such
+> cases.
 > 
-> I took that into my version of the patch.
+> The condition was fine till now as only fs and pc requests have used
+> bio and thus the bio completion path.  However, future changes will
+> unify data accesses to bio and all non fs users care about rq error
+> status.  Clear rq->errors on bio completion only for fs requests.
 > 
-> Anyway, please do have a closer look in case I've missed something. Of
-> course you can split them the way you see fit, there's more to be done
-> there anyways but should suffice for your block layer stuff, I hope.
+> In general, the implicit clearing is a bit too subtle especially as
+> the meaning of rq->errors is completely dependent on low level
+> drivers.  Unifying / cleaning up rq->errors usage and letting llds
+> manage it would be better.  TODO comment added.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Jens Axboe <axboe@kernel.dk>
+> ---
+> Jens, can you please ack this patch?  With FUJITA's scsi_lib cleanup
+> and Borislav's patch to make ide not use preallocated data structures,
+> this is the only block bit which is necessary for ide cleanup
+> patchets.  If you're okay with it, I'd like to push this through
+> Bartlomiej's tree.
 
-There was another problem.  If we use blk_rq_map_kern() the failed rq
-must be finished after the sense rq is finished because that's when
-the bio is copied back if it was copied.  Before sense_rq completion,
-the sense buffer doesn't contain any valid data.
-
-Anyways, I'll review your patchset and integrate it with mine.  Please
-standby a bit.
-
-Thanks.
+Sure, you can add my acked-by.
 
 -- 
-tejun
+Jens Axboe
+
