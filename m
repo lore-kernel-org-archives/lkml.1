@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbZDPXqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZDPXuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbZDPXqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 19:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZDPXqY
+	id S1755232AbZDPXuT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 19:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZDPXuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 19:46:24 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:63694 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbZDPXqY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 19:46:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :subject:x-enigmail-version:content-type;
-        b=SE11j7HP6hfDOeMNu6+htGNGKus12vICBA7TEJ5JVygHJrlqUxkJpcRQS7nUbh3NrT
-         ePB13sJLZRerq6XZfzTzwjX/WRoeMI/aon/Z9Q/4BoIWFbTEZBLbHJ8mxH2xQbg2Why7
-         vI6gcAMmQFkGmB0HemiKNHUkAX/jqW9kwBi+E=
-Message-ID: <49E7C34A.60007@googlemail.com>
-Date: Fri, 17 Apr 2009 01:46:18 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Thu, 16 Apr 2009 19:50:00 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53593 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753516AbZDPXt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 19:49:59 -0400
+Date: Thu, 16 Apr 2009 16:49:55 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: kaber@trash.net, torvalds@linux-foundation.org, shemminger@vyatta.com,
+       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+Message-ID: <20090416234955.GL6924@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Enable coretemp driver on Intel Atom
-X-Enigmail-Version: 0.91.0.0
-Content-Type: multipart/mixed;
- boundary="------------040603040301010104070709"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090416.153354.170676392.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040603040301010104070709
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+On Thu, Apr 16, 2009 at 03:33:54PM -0700, David Miller wrote:
+> From: Patrick McHardy <kaber@trash.net>
+> Date: Thu, 16 Apr 2009 15:11:31 +0200
+> 
+> > Linus Torvalds wrote:
+> >> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
+> >>> The counters are the bigger problem, otherwise we could just free
+> >>> table
+> >>> info via rcu.  Do we really have to support: replace where the counter
+> >>> values coming out to user space are always exactly accurate, or is it
+> >>> allowed to replace a rule and maybe lose some counter ticks (worst
+> >>> case
+> >>> NCPU-1).
+> >> Why not just read the counters fromt he old one at RCU free time (they
+> >> are guaranteed to be stable at that point, since we're all done with
+> >> those entries), and apply them at that point to the current setup?
+> > 
+> > We need the counters immediately to copy them to userspace, so waiting
+> > for an asynchronous RCU free is not going to work.
+> 
+> It just occurred to me that since all netfilter packet handling
+> goes through one place, we could have a sort-of "netfilter RCU"
+> of sorts to solve this problem.
 
-Hi!
+OK, I am putting one together...
 
-This small patch enables the coretemp driver on an Intel Atom. I'm not
-sure if the readings are correct, however - on my 330, the driver
-reports values between 27 and 41 °C (with core1 being about 8°C hotter
-than core0, given the same load). Maybe the maximum temperature of 100
-°C is wrong for Atom CPUs.
+It will be needed sooner or later, though I suspect per-CPU locking
+would work fine in this case.
 
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
-
---------------040603040301010104070709
-Content-Type: text/plain;
- name="linux-2.6.29.1-coretemp-atom.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6.29.1-coretemp-atom.diff"
-
-Signed-off-by: Michael Riepe <michael.riepe@googlemail.com>
-
-Index: drivers/hwmon/coretemp.c
-===================================================================
-RCS file: /var/cvs/sys/kernel/linux-2.6/drivers/hwmon/coretemp.c,v
-retrieving revision 1.1.1.5
-diff -u -r1.1.1.5 coretemp.c
---- drivers/hwmon/coretemp.c	11 Jan 2009 21:29:23 -0000	1.1.1.5
-+++ drivers/hwmon/coretemp.c	16 Apr 2009 23:02:40 -0000
-@@ -185,7 +185,7 @@
- 		}
- 	}
- 
--	if (ismobile) {
-+	if (ismobile || c->x86_model == 0x1c) {
- 
- 		err = rdmsr_safe_on_cpu(id, 0xee, &eax, &edx);
- 		if (err) {
-@@ -417,7 +417,7 @@
- 		if ((c->cpuid_level < 0) || (c->x86 != 0x6) ||
- 		    !((c->x86_model == 0xe) || (c->x86_model == 0xf) ||
- 			(c->x86_model == 0x16) || (c->x86_model == 0x17) ||
--			(c->x86_model == 0x1A))) {
-+			(c->x86_model == 0x1A) || (c->x86_model == 0x1c))) {
- 
- 			/* supported CPU not found, but report the unknown
- 			   family 6 CPU */
-
---------------040603040301010104070709--
+							Thanx, Paul
