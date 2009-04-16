@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbZDPUZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZDPU0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbZDPUZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 16:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZDPUZo
+	id S1754938AbZDPU0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 16:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbZDPUZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 16:25:44 -0400
-Received: from rtr.ca ([76.10.145.34]:59324 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbZDPUZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 16:25:43 -0400
-Message-ID: <49E79445.3080806@rtr.ca>
-Date: Thu, 16 Apr 2009 16:25:41 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Thu, 16 Apr 2009 16:25:47 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:17305 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754503AbZDPUZq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 16:25:46 -0400
+Date: Thu, 16 Apr 2009 22:25:45 +0200 (CEST)
+From: Jesper Juhl <jj@chaosbits.net>
+To: "Theodore Ts'o" <tytso@mit.edu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Documentation: Add "how to write a good patch summary"
+ to SubmittingPatches
+In-Reply-To: <1239882285-4994-1-git-send-email-tytso@mit.edu>
+Message-ID: <alpine.LNX.2.00.0904162223280.32544@swampdragon.chaosbits.net>
+References: <1239882285-4994-1-git-send-email-tytso@mit.edu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com
-Subject: Re: [PATCH 5/5] libata: Add support for TRIM
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <1238683047-13588-4-git-send-email-willy@linux.intel.com> <1238683047-13588-5-git-send-email-willy@linux.intel.com>
-In-Reply-To: <1238683047-13588-5-git-send-email-willy@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> ---
->  drivers/ata/libata-scsi.c |   46 +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 46 insertions(+), 0 deletions(-)
+On Thu, 16 Apr 2009, Theodore Ts'o wrote:
+
+> Unfortunately many patch submissions are arriving with painfully poor
+> patch descriptions.   As a result of the discussion on LKML:
 > 
-> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-> index b9747fa..d4c8b8b 100644
-> --- a/drivers/ata/libata-scsi.c
-> +++ b/drivers/ata/libata-scsi.c
-...
+>       http://lkml.org/lkml/2009/4/15/296
+> 
+> explain how to submit a better patch description, in the (perhaps
+> vain) hope that maintainers won't end up having to rewrite the git
+> commit logs as often as they do today.
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
+> 
 
-It works.  :)
+Read through your diff. Looks good to me - nice additions.
 
-I'm using TRIM on a 120GB OCZ Vertex SSD here now,
-and instrumented ata_discard_fn() to log what it does.
-Seems to work perfectly, and the sector ranges for TRIM
-match those given by "hdparm --fibmap" for the files I've tried.
+Feel free to add
+ Acked-by: Jesper Juhl <jj@chaosbits.net>
+or
+ Reviewed-by: Jesper Juhl <jj@chaosbits.net>
+if you like...
 
-Does this also TRIM metadata (eg. block bitmaps and the like) ?
+Don't really know what's most appropriate here, but I like the patch.
 
-Thanks Matthew (and others).
+
+-- 
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+
