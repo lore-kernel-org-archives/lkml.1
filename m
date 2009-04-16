@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZDPCn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014AbZDPCpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbZDPCn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Apr 2009 22:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZDPCns
+	id S1753014AbZDPCpv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Apr 2009 22:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZDPCpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Apr 2009 22:43:48 -0400
-Received: from ip-64-139-1-69.sjc.megapath.net ([64.139.1.69]:51464 "EHLO
-	ip-64-139-1-69.sjc.megapath.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750966AbZDPCns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Apr 2009 22:43:48 -0400
-X-Greylist: delayed 1598 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Apr 2009 22:43:47 EDT
-X-Mailer: exmh version 2.4 06/23/2000 with nmh-1.0.4
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux USB kernel mailing list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       hmurray@megapathdsl.net
-From: Hal Murray <hmurray@megapathdsl.net>
-Subject: Re: USB storage no-boot regression (bisected) 
-In-Reply-To: Message from Arjan van de Ven <arjan@infradead.org> 
-   of "Wed, 15 Apr 2009 18:32:13 PDT." <20090415183213.7962d929@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 15 Apr 2009 19:17:07 -0700
-Message-Id: <20090416021708.6A713BCE2@ip-64-139-1-69.sjc.megapath.net>
+	Wed, 15 Apr 2009 22:45:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:60463 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750924AbZDPCpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Apr 2009 22:45:41 -0400
+Message-ID: <49E69BD2.9060509@goop.org>
+Date: Wed, 15 Apr 2009 19:45:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with CREATE_TRACE_POINTS and recursion safety
+References: <49E67D1D.8020704@goop.org> <alpine.DEB.2.00.0904152042350.4459@gandalf.stny.rr.com> <49E6847B.9000003@goop.org> <alpine.DEB.2.00.0904152201390.4459@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0904152201390.4459@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> .... who would boot their server from a USB stick for production use?
+Steven Rostedt wrote:
+> Have you tried:
+>
+> #ifdef CREATE_PVOPS_TRACE_POINTS
+> #define CREATE_TRACE_POINTS
+> #include <trace/define_trace.h>
+> #undef CREATE_TRACE_POINTS
+> #endif
+>
+> And in your C file do:
+>
+> #define CREATE_PVOPS_TRACE_POINTS
+> #include <trace/pvops.h>
+>   
 
-I've worked on a project that was doing that.  Think of embedded computing 
-rather than a typical box in a server farm.
+Yes, that's precisely what I do.
 
-If you want to do something slightly more complicated than monitor 
-temperature, it's sometimes simpler/cheaper to trim down a real OS than it is 
-to build up an environment that has everything you need, especially if you 
-want to do any networking.  With enough RAM, LInux runs fine without a disk, 
-and if you don't need a GUI, "enough RAM" isn't much by modern standards.
-
-There are several distributions targeted at running out of RAM after booting 
-from an USB thumb drive or Compact Flash or CD or whatever.
-
-Google for >Linux on a Stick< or >Puppy Linux< for a few starters.
-
-
--- 
-These are my opinions, not necessarily my employer's.  I hate spam.
-
-
-
+    J
