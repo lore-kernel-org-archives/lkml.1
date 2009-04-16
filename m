@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZDPMNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZDPMPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbZDPMNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 08:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZDPMMw
+	id S1753537AbZDPMPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 08:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZDPMOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 08:12:52 -0400
-Received: from stinky.trash.net ([213.144.137.162]:54559 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZDPMMv (ORCPT
+	Thu, 16 Apr 2009 08:14:51 -0400
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:33169 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZDPMOv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 08:12:51 -0400
-Message-ID: <49E720BE.2000200@trash.net>
-Date: Thu, 16 Apr 2009 14:12:46 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 16 Apr 2009 08:14:51 -0400
+Date: Thu, 16 Apr 2009 17:44:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+	controller (v2)
+Message-ID: <20090416121407.GH7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090415120510.GX7082@balbir.in.ibm.com> <20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com> <20090416015955.GB7082@balbir.in.ibm.com> <20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com> <20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, paulus@samba.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-References: <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com> <20090412173108.GO6822@linux.vnet.ibm.com> <20090412.181330.23529546.davem@davemloft.net> <20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam> <49E48136.5060700@trash.net> <49E49C65.8060808@cosmosbay.com> <20090414074554.7fa73e2f@nehalam> <49E4B0A5.70404@cosmosbay.com> <b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com> <20090414111716.28585806@nehalam> <49E4E3E8.5090201@cosmosbay.com> <20090414141351.0f63ac98@nehalam> <49E502B5.7070700@cosmosbay.com> <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <alpine.LSU.2.00.0904152354330.5844@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LSU.2.00.0904152354330.5844@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Wednesday 2009-04-15 23:07, Eric Dumazet wrote:
->> Stephen Hemminger a écrit :
->>> Looks like there is some recursive path into ip_tables that makes the
->>> per-cpu spinlock break.  I get lockup's with KVM networking.
->>>
->>> Suggestions?
->> Well, it seems original patch was not so bad after all
->>
->> http://lists.netfilter.org/pipermail/netfilter-devel/2006-January/023175.html
->>
->> So change per-cpu spinlocks to per-cpu rwlocks 
->>
->> and use read_lock() in ipt_do_table() to allow recursion...
->>
-> iptables cannot quite recurse into itself due to the comefrom stuff.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 16:40:36]:
 
-Actually it can by using the REJECT target:
+> 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
+> (Because it's file cache, pc->mem_cgroup is not NULL always.)
+> 
+> I saw this very easily.
+> ==
+> Cache: 4096
+> mapped_file: 20480
+> ==
+>
 
-> [ 2106.068550]  [<ffffffff804b0195>] ? nf_hook_slow+0x89/0x104
-> [ 2106.068552]  [<ffffffff804b8ed0>] ? dst_output+0x0/0xb
-> [ 2106.068555]  [<ffffffff80393925>] ? _raw_spin_unlock+0x8b/0x92
-> [ 2106.068557]  [<ffffffff804ba8c7>] ? __ip_local_out+0x98/0x9a
-> [ 2106.068559]  [<ffffffff804ba8d2>] ? ip_local_out+0x9/0x1f
-> [ 2106.068562]  [<ffffffff804babb4>] ? ip_push_pending_frames+0x2cc/0x33e
-> [ 2106.068566]  [<ffffffff804dac79>] ? icmp_send+0x559/0x588
-> [ 2106.068569]  [<ffffffff8022d3a0>] ? task_rq_lock+0x46/0x79
-> [ 2106.068571]  [<ffffffff8023004f>] ? enqueue_task_fair+0x23b/0x293
-> [ 2106.068575]  [<ffffffffa00f5083>] ? reject_tg+0x41/0x30e [ipt_REJECT]
-> [ 2106.068578]  [<ffffffffa024084f>] ? ipt_do_table+0x534/0x5f1 [ip_tables]
-
-
-
+May I ask how and what was expected?
+ 
+-- 
+	Balbir
