@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZDPFgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZDPFmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753757AbZDPFgQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 01:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZDPFf7
+	id S1753757AbZDPFmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 01:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZDPFmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 01:35:59 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:65033 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752039AbZDPFf6 (ORCPT
+	Thu, 16 Apr 2009 01:42:08 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34435 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbZDPFmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 01:35:58 -0400
-Message-Id: <200904160535.n3G5ZBIE006724@www262.sakura.ne.jp>
-Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: hugh@veritas.com
-Cc: arjan@linux.intel.com, gregkh@suse.de, alan@lxorguk.ukuu.org.uk,
-       viro@ZenIV.linux.org.uk, jmorris@namei.org, akpm@linux-foundation.org,
-       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+	Thu, 16 Apr 2009 01:42:07 -0400
+Date: Thu, 16 Apr 2009 06:42:05 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block/genhd.c: fix sparse warning
+Message-ID: <20090416054205.GX26366@ZenIV.linux.org.uk>
+References: <BD79186B4FD85F4B8E60E381CAEE1909015F8DFA@mi8nycmail19.Mi8.com> <19f34abd0904152146l3db9961bt3b52f224abc8d960@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Apr 2009 14:35:11 +0900
-References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk> <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp> <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk> <200904130048.n3D0mw1f077050@www262.sakura.ne.jp> <Pine.LNX.4.64.0904141801300.24679@blonde.anvils> <200904150328.n3F3S0F9083222@www262.sakura.ne.jp> <Pine.LNX.4.64.0904152036150.27354@blonde.anvils> <200904160046.n3G0ki9o028612@www262.sakura.ne.jp> <Pine.LNX.4.64.0904160551080.28048@blonde.anvils>
-In-Reply-To: <Pine.LNX.4.64.0904160551080.28048@blonde.anvils>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 16042009 #1853576, status: clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0904152146l3db9961bt3b52f224abc8d960@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Apr 16, 2009 at 06:46:32AM +0200, Vegard Nossum wrote:
+> 2009/4/16 H Hartley Sweeten <hartleys@visionengravers.com>:
+> > Fix sparse warning in block/genhd.c.
+> >
+> > ?? ?? ?? ??warning: symbol '__mptr' shadows an earlier one
+> >
+> > Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> 
+> Hi,
+> 
+> Just a heads up: There seems to be some sort of consensus that this
+> type of patch title is not a very good one. (What about "remove
+> variable shadowing"?)
 
-Hugh Dickins wrote:
-> I'd hoped to get confirmation that the mmap.c part of the patch
-> was all the extra needed; but never mind, that's clearly good.
-Yes. The mmap.c part solved khelper's current->mm == NULL warning.
-
-> Thanks a lot: I'll send in a revert request,
-> and the acct_stack_growth patch, later today.
-Yes, please.
-
-Thank you.
+Indeed.  Speaking of other kind of unpleasantness, could you please
+configure your mail-luser-agent to *NOT* replace tabs with series
+of spaces/nbsp?  That crap is very annoying - these strings of
+U+00A0 U+00A0 U+00A0 et sodding cetera are gratuitously making life
+painful for non-UTF8 terminals.
