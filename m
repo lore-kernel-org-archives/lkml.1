@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbZDPQ6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbZDPQ67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbZDPQ6Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbZDPQ57
+	id S1758886AbZDPQ67 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbZDPQ6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:57:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44502 "EHLO mx3.mail.elte.hu"
+	Thu, 16 Apr 2009 12:58:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48149 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756035AbZDPQ56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:57:58 -0400
-Date: Thu, 16 Apr 2009 18:56:40 +0200
+	id S1756058AbZDPQ6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:58:48 -0400
+Date: Thu, 16 Apr 2009 18:58:33 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Yinghai Lu <yinghai@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v3
-Message-ID: <20090416165640.GA13927@elte.hu>
-References: <200904101913.n3AJDhMm018684@demeter.kernel.org> <49DFABCC.3070001@kernel.org> <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes> <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain>
+To: Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090416165833.GA21704@elte.hu>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain>
+In-Reply-To: <20090416160645.GB17804@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,37 +38,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Thu, 16 Apr 2009, Jesse Barnes wrote:
+> * Alessio Igor Bogani <abogani@texware.it> wrote:
+> 
+> > Replace ths BKL in sys_mount()/sys_umount() syscalls with a regular mutex.
 > > 
-> > Any comments on this one, Linus?  Should I include your ack?
+> > Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
+> > ---
+> >  fs/namespace.c |   16 +++++++++-------
+> >  fs/super.c     |    9 ++++-----
+> >  2 files changed, 13 insertions(+), 12 deletions(-)
 > 
-> I'm not ready to ack it, no. I don't think the suggested patch is very 
-> clean or necessarily sensible as-is. It seems very ad-hoc. 
+> Ok, this patch needs to be flamed^W commented on by Al.
 > 
-> I was literally thinking of something like 
->  "round up from the last RAM by X"
->  "round up from the last reserved region by Y"
->  "pick the bigger of the two"
+> Al: this patch is very likely broken as i cannot imagine you 
+> leaving the BKL there just so. So lets accept that (and your NAK) 
+> as a given and not get upset about it too much.
 > 
-> with helper functions for the two cases and comments along the 
-> lines of why we do it. Something that was a bit more obvious about 
-> what it's doing and why.
+> We are willing to fix any side effects and preconditions before 
+> this can be done [...]
 
-That's sensible - but i'd also like to inject hpa's add-on idea: if 
-we do that then we should do it _explicitly_ and _visibly_, by 
-injecting an artificial e820 reservation range to all expected 
-"vulnerable" holes we cannot fully trust.
-
-We'd do that after all the fixed resources are allocated, but before 
-dynamic PCI allocations.
-
-That prevents the PCI layer from dynamically allocating anything 
-into that protective zone, and documents it as well (and makes it 
-visible in boot logs, etc.) - instead of just a silent rule 
-somewhere that no-one will really see if it breaks.
-
-Or would this be a bad idea for some obvious reason i missed?
+this == remove the BKL. Not introduce a needless mutex like this 
+patch does.
 
 	Ingo
