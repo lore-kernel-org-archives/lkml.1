@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbZDPK4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZDPLCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbZDPK4a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 06:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZDPK4V
+	id S1755448AbZDPLCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 07:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZDPLCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 06:56:21 -0400
-Received: from smtpauth.net4india.com ([202.71.129.139]:57872 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752923AbZDPK4U (ORCPT
+	Thu, 16 Apr 2009 07:02:34 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:54640
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753946AbZDPLCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 06:56:20 -0400
-Message-ID: <49E70EA3.1050804@xenontk.org>
-Date: Thu, 16 Apr 2009 16:25:31 +0530
-From: David John <davidjon@xenontk.org>
-Reply-To: davidjon@xenontk.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
+	Thu, 16 Apr 2009 07:02:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAEmt5kl8qNw9/2dsb2JhbADQYoN9Bg
+X-IronPort-AV: E=Sophos;i="4.40,198,1238947200"; 
+   d="scan'208";a="468047455"
+Message-ID: <49E71044.30801@eyal.emu.id.au>
+Date: Thu, 16 Apr 2009 21:02:28 +1000
+From: Eyal Lebedinsky <eyal@eyal.emu.id.au>
+Organization: Eyal at Home
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: mjg59@srcf.ucam.org
-CC: linux-kernel@vger.kernel.org, eric@anholt.net, len.brown@intel.com
-Subject: 2.6.30-rc2 Build Broken
-Content-Type: text/plain; charset=UTF-8
+To: list linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.30-rc2: undefined reference to `__udivdi3'
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[a repeat, my first report failed to attract attention]
 
-Your commit 74a365b3f354fafc537efa5867deb7a9fadbfe27 breaks the latest
-git if ACPI video is selected as a module and i915 is compiled in.
+I get a build failure:
 
-Here is the error:
+   LD      vmlinux.o
+   MODPOST vmlinux.o
+WARNING: modpost: Found 1 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+   GEN     .version
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CC      init/version.o
+   LD      init/built-in.o
+   LD      .tmp_vmlinux1
+arch/x86/mm/built-in.o(.init.text+0x178a): In function `memtest':
+: undefined reference to `__udivdi3'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [sub-make] Error 2
 
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `intel_opregion_init':
-/home/david/Builds/kernels/linux-2.6/drivers/gpu/drm/i915/i915_opregion.c:376:
-undefined reference to `acpi_video_register'
-make: *** [.tmp_vmlinux1] Error 1
+I use
+     gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
 
-Regards,
-David.
+I know, very old Debian... but the doco says required version is 3.2.
+
+A quick search indicates that this type of failure may be related to
+gcc optimization (inlining?). I saw a similar report in linux-next recently.
+
+-- 
+Eyal Lebedinsky	(eyal@eyal.emu.id.au)
