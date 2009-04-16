@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZDPMcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZDPMc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbZDPMcF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 08:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbZDPMbw
+	id S1757362AbZDPMc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 08:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757264AbZDPMb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 08:31:52 -0400
-Received: from stinky.trash.net ([213.144.137.162]:55048 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754771AbZDPMbv (ORCPT
+	Thu, 16 Apr 2009 08:31:58 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:52743 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757241AbZDPMb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 08:31:51 -0400
-Message-ID: <49E72534.1060302@trash.net>
-Date: Thu, 16 Apr 2009 14:31:48 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, paulus@samba.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, laijs@cn.fujitsu.com, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-References: <20090411174801.GG6822@linux.vnet.ibm.com> <18913.53699.544083.320542@cargo.ozlabs.ibm.com> <20090412173108.GO6822@linux.vnet.ibm.com> <20090412.181330.23529546.davem@davemloft.net> <20090413040413.GQ6822@linux.vnet.ibm.com> <20090413095309.631cf395@nehalam> <49E48136.5060700@trash.net> <49E49C65.8060808@cosmosbay.com> <20090414074554.7fa73e2f@nehalam> <49E4B0A5.70404@cosmosbay.com> <b6a2187b0904140951r3c6a41fdnc26b149202bdfa84@mail.gmail.com> <20090414111716.28585806@nehalam> <49E4E3E8.5090201@cosmosbay.com> <20090414141351.0f63ac98@nehalam> <49E502B5.7070700@cosmosbay.com> <49E5BDF7.8090502@trash.net> <20090415135526.2afc4d18@nehalam> <49E64C91.5020708@cosmosbay.com> <alpine.LSU.2.00.0904152354330.5844@fbirervta.pbzchgretzou.qr> <49E720BE.2000200@trash.net> <alpine.LSU.2.00.0904161423240.22333@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LSU.2.00.0904161423240.22333@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 16 Apr 2009 08:31:57 -0400
+Date: Thu, 16 Apr 2009 21:31:56 +0900 (JST)
+Message-Id: <20090416.213156.112612071.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 5/5] bio-cgroup: Add a cgroup support to dm-ioband
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090416.213105.189713999.ryov@valinux.co.jp>
+References: <20090416.212931.71100972.ryov@valinux.co.jp>
+	<20090416.213019.104045053.ryov@valinux.co.jp>
+	<20090416.213105.189713999.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Thursday 2009-04-16 14:12, Patrick McHardy wrote:
->> Jan Engelhardt wrote:
->>>> So change per-cpu spinlocks to per-cpu rwlocks 
->>>> and use read_lock() in ipt_do_table() to allow recursion...
->>>>
->>> iptables cannot quite recurse into itself due to the comefrom stuff.
->> Actually it can by using the REJECT target:
-> 
-> Yes, but it has to return an absolute verdict (which REJECT does),
-> so it's not really a recursion, it's more like a goto without return.
+With this patch, dm-ioband can work with the bio cgroup.
 
-Its recursion in the sense that we reenter the same code path,
-while holding a lock. The verdict is issued *after* recursing.
+Based on 2.6.30-rc1
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 
-A (quite ugly) workaround would be to have ipt_REJECT queue
-the packets to a temporary queue and have ipt_do_table call
-dst_output() after dropping the lock.
+---
+ drivers/md/dm-ioband-type.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-
-
+Index: linux-2.6.30-rc1/drivers/md/dm-ioband-type.c
+===================================================================
+--- linux-2.6.30-rc1.orig/drivers/md/dm-ioband-type.c
++++ linux-2.6.30-rc1/drivers/md/dm-ioband-type.c
+@@ -6,6 +6,7 @@
+  * This file is released under the GPL.
+  */
+ #include <linux/bio.h>
++#include <linux/biotrack.h>
+ #include "dm.h"
+ #include "dm-bio-list.h"
+ #include "dm-ioband.h"
+@@ -53,14 +54,7 @@ static int ioband_node(struct bio *bio)
+ 
+ static int ioband_cgroup(struct bio *bio)
+ {
+-	/*
+-	 * This function should return the ID of the cgroup which
+-	 * issued "bio". The ID of the cgroup which the current
+-	 * process belongs to won't be suitable ID for this purpose,
+-	 * since some BIOs will be handled by kernel threads like aio
+-	 * or pdflush on behalf of the process requesting the BIOs.
+-	 */
+-	return 0;	/* not implemented yet */
++	return get_bio_cgroup_id(bio);
+ }
+ 
+ struct group_type dm_ioband_group_type[] = {
