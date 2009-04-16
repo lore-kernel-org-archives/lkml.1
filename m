@@ -1,160 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbZDPQR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbZDPQSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757791AbZDPQR0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 12:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbZDPQRQ
+	id S1758282AbZDPQSA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 12:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbZDPQR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 12:17:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54465 "EHLO hera.kernel.org"
+	Thu, 16 Apr 2009 12:17:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54471 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbZDPQRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 12:17:15 -0400
-Date: Thu, 16 Apr 2009 16:15:31 GMT
+	id S1757001AbZDPQRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 12:17:25 -0400
+Date: Thu, 16 Apr 2009 16:15:54 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
        mingo@redhat.com, lizf@cn.fujitsu.com, tytso@mit.edu,
-       jens.axboe@oracle.com, duyuyang@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
+       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, tytso@mit.edu,
-       jens.axboe@oracle.com, duyuyang@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <49E42646.4060608@cn.fujitsu.com>
-References: <49E42646.4060608@cn.fujitsu.com>
-Subject: [tip:tracing/core] blktrace: support per-partition tracing for ftrace plugin
-Message-ID: <tip-9908c30997b8a73c95f836170b9998dae9aa3f4a@git.kernel.org>
-Git-Commit-ID: 9908c30997b8a73c95f836170b9998dae9aa3f4a
+       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49E54E60.50408@cn.fujitsu.com>
+References: <49E54E60.50408@cn.fujitsu.com>
+Subject: [tip:tracing/core] blktrace: fix context-info when mixed-using blk tracer and trace events
+Message-ID: <tip-f3948f8857ef5de239f28a61dddb1554a0ae4c2c@git.kernel.org>
+Git-Commit-ID: f3948f8857ef5de239f28a61dddb1554a0ae4c2c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 16:15:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Apr 2009 16:15:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9908c30997b8a73c95f836170b9998dae9aa3f4a
-Gitweb:     http://git.kernel.org/tip/9908c30997b8a73c95f836170b9998dae9aa3f4a
+Commit-ID:  f3948f8857ef5de239f28a61dddb1554a0ae4c2c
+Gitweb:     http://git.kernel.org/tip/f3948f8857ef5de239f28a61dddb1554a0ae4c2c
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 14 Apr 2009 13:59:34 +0800
+AuthorDate: Wed, 15 Apr 2009 11:02:56 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 16 Apr 2009 10:10:58 +0200
+CommitDate: Thu, 16 Apr 2009 10:11:01 +0200
 
-blktrace: support per-partition tracing for ftrace plugin
+blktrace: fix context-info when mixed-using blk tracer and trace events
 
-The previous patch adds support to trace a single partition for
-relay+ioctl blktrace, and this patch is for ftrace plugin blktrace:
+When current tracer is set to blk tracer, TRACE_ITER_CONTEXT_INFO is
+unset, but actually context-info is printed:
 
-  # echo 1 > /sys/block/sda/sda7/enable
-  # cat start_lba
-  102398373
-  # cat end_lba
-  102703545
+    pdflush-431   [000]   821.181576:   8,0    P   N [pdflush]
 
+And then if we enable TRACE_ITER_CONTEXT_INFO:
+
+    # echo context-info > trace_options
+
+We'll see context-info printed twice. What's worse, when we use blk
+tracer and trace events at the same time, we'll see no context-info
+for trace events at all:
+
+    jbd2_commit_logging: dev dm-0:8 transaction 333227
+    jbd2_end_commit: dev dm-0:8 transaction 333227 head 332814
+      rm-25433 [001]  9578.307485:   8,18   m   N cfq25433 slice expired t=0
+      rm-25433 [001]  9578.307486:   8,18   m   N cfq25433 put_queue
+
+This patch adds blk_tracer->set_flags(), and context-info flag is unset
+only when we set the output to classic mode.
+
+Note after this patch, one should unset context-info explicitly if he
+wants to get binary output that can be parsed by blkparse:
+
+    # echo nocontext-info > trace_options
+    # echo bin > trace_options
+    # echo blk > current_tracer
+    # cat trace_pipe | blkparse -i -
+
+Reported-by: Theodore Ts'o <tytso@mit.edu>
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Shawn Du <duyuyang@gmail.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
-LKML-Reference: <49E42646.4060608@cn.fujitsu.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <49E54E60.50408@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/blktrace.c |   39 +++++++++++++++++++++++++--------------
- 1 files changed, 25 insertions(+), 14 deletions(-)
+ kernel/trace/blktrace.c |   18 +++++++++++++-----
+ 1 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index e932654..d109898 100644
+index 8e7c5da..c32062b 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -403,6 +403,23 @@ static struct rchan_callbacks blk_relay_callbacks = {
- 	.remove_buf_file	= blk_remove_buf_file_callback,
- };
+@@ -1211,7 +1211,6 @@ static void blk_tracer_print_header(struct seq_file *m)
+ static void blk_tracer_start(struct trace_array *tr)
+ {
+ 	blk_tracer_enabled = true;
+-	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
+ }
  
-+static void blk_trace_setup_lba(struct blk_trace *bt,
-+				struct block_device *bdev)
+ static int blk_tracer_init(struct trace_array *tr)
+@@ -1224,7 +1223,6 @@ static int blk_tracer_init(struct trace_array *tr)
+ static void blk_tracer_stop(struct trace_array *tr)
+ {
+ 	blk_tracer_enabled = false;
+-	trace_flags |= TRACE_ITER_CONTEXT_INFO;
+ }
+ 
+ static void blk_tracer_reset(struct trace_array *tr)
+@@ -1289,9 +1287,6 @@ out:
+ static enum print_line_t blk_trace_event_print(struct trace_iterator *iter,
+ 					       int flags)
+ {
+-	if (!trace_print_context(iter))
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+ 	return print_one_line(iter, false);
+ }
+ 
+@@ -1326,6 +1321,18 @@ static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
+ 	return print_one_line(iter, true);
+ }
+ 
++static int blk_tracer_set_flag(u32 old_flags, u32 bit, int set)
 +{
-+	struct hd_struct *part = NULL;
-+
-+	if (bdev)
-+		part = bdev->bd_part;
-+
-+	if (part) {
-+		bt->start_lba = part->start_sect;
-+		bt->end_lba = part->start_sect + part->nr_sects;
-+	} else {
-+		bt->start_lba = 0;
-+		bt->end_lba = -1ULL;
++	/* don't output context-info for blk_classic output */
++	if (bit == TRACE_BLK_OPT_CLASSIC) {
++		if (set)
++			trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
++		else
++			trace_flags |= TRACE_ITER_CONTEXT_INFO;
 +	}
++	return 0;
 +}
 +
- /*
-  * Setup everything required to start tracing
-  */
-@@ -413,7 +430,6 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	struct blk_trace *old_bt, *bt = NULL;
- 	struct dentry *dir = NULL;
- 	int ret, i;
--	struct hd_struct *part = NULL;
+ static struct tracer blk_tracer __read_mostly = {
+ 	.name		= "blk",
+ 	.init		= blk_tracer_init,
+@@ -1335,6 +1342,7 @@ static struct tracer blk_tracer __read_mostly = {
+ 	.print_header	= blk_tracer_print_header,
+ 	.print_line	= blk_tracer_print_line,
+ 	.flags		= &blk_tracer_flags,
++	.set_flag	= blk_tracer_set_flag,
+ };
  
- 	if (!buts->buf_size || !buts->buf_nr)
- 		return -EINVAL;
-@@ -482,14 +498,7 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	if (!bt->act_mask)
- 		bt->act_mask = (u16) -1;
- 
--	if (bdev)
--		part = bdev->bd_part;
--
--	if (part) {
--		bt->start_lba = part->start_sect;
--		bt->end_lba = part->start_sect + part->nr_sects;
--	} else
--		bt->end_lba = -1ULL;
-+	blk_trace_setup_lba(bt, bdev);
- 
- 	/* overwrite with user settings */
- 	if (buts->start_lba)
-@@ -1370,7 +1379,8 @@ static int blk_trace_remove_queue(struct request_queue *q)
- /*
-  * Setup everything required to start tracing
-  */
--static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
-+static int blk_trace_setup_queue(struct request_queue *q,
-+				 struct block_device *bdev)
- {
- 	struct blk_trace *old_bt, *bt = NULL;
- 	int ret = -ENOMEM;
-@@ -1383,9 +1393,10 @@ static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
- 	if (!bt->msg_data)
- 		goto free_bt;
- 
--	bt->dev = dev;
-+	bt->dev = bdev->bd_dev;
- 	bt->act_mask = (u16)-1;
--	bt->end_lba = -1ULL;
-+
-+	blk_trace_setup_lba(bt, bdev);
- 
- 	old_bt = xchg(&q->blk_trace, bt);
- 	if (old_bt != NULL) {
-@@ -1602,7 +1613,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 
- 	if (attr == &dev_attr_enable) {
- 		if (value)
--			ret = blk_trace_setup_queue(q, bdev->bd_dev);
-+			ret = blk_trace_setup_queue(q, bdev);
- 		else
- 			ret = blk_trace_remove_queue(q);
- 		goto out_unlock_bdev;
-@@ -1610,7 +1621,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 
- 	ret = 0;
- 	if (q->blk_trace == NULL)
--		ret = blk_trace_setup_queue(q, bdev->bd_dev);
-+		ret = blk_trace_setup_queue(q, bdev);
- 
- 	if (ret == 0) {
- 		if (attr == &dev_attr_act_mask)
+ static struct trace_event trace_blk_event = {
