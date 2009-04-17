@@ -1,46 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761089AbZDQNuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbZDQNxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761089AbZDQNuv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 09:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761087AbZDQNug
+	id S1761262AbZDQNxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 09:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846AbZDQNxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 09:50:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32902 "EHLO mx3.mail.elte.hu"
+	Fri, 17 Apr 2009 09:53:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43981 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760010AbZDQNue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 09:50:34 -0400
-Date: Fri, 17 Apr 2009 15:49:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/9] x86/irq: remove NUMA_MIGRATE_IRQ_DESC
-Message-ID: <20090417134934.GB23493@elte.hu>
-References: <49E68C41.4020801@kernel.org> <20090416090315.GF9813@elte.hu> <49E802CE.5030406@kernel.org>
+	id S1753188AbZDQNxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 09:53:02 -0400
+Date: Fri, 17 Apr 2009 09:49:24 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       menage@google.com, peterz@infradead.org
+Subject: IO Controller discussion (Was: Re: [PATCH 01/10] Documentation)
+Message-ID: <20090417134924.GC29086@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417053517.GC26437@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49E802CE.5030406@kernel.org>
+In-Reply-To: <20090417053517.GC26437@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 17, 2009 at 11:05:17AM +0530, Dhaval Giani wrote:
+> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+> > On Wed, Apr 08, 2009 at 10:37:59PM +0200, Andrea Righi wrote:
+> > 
+> > [..]
+> > > > 
+> > > > - I can think of atleast one usage of uppper limit controller where we
+> > > >   might have spare IO resources still we don't want to give it to a
+> > > >   cgroup because customer has not paid for that kind of service level. In
+> > > >   those cases we need to implement uppper limit also.
+> > > > 
+> > > >   May be prportional weight and max bw controller can co-exist depending
+> > > >   on what user's requirements are.
+> > > >  
+> > > >   If yes, then can't this control be done at the same layer/level where
+> > > >   proportional weight control is being done? IOW, this set of patches is
+> > > >   trying to do prportional weight control at IO scheduler level. I think
+> > > >   we should be able to store another max rate as another feature in 
+> > > >   cgroup (apart from weight) and not dispatch requests from the queue if
+> > > >   we have exceeded the max BW as specified by the user?
+> > > 
+> > > The more I think about a "perfect" solution (at least for my
+> > > requirements), the more I'm convinced that we need both functionalities.
+> > > 
+> 
+> hard limits vs work conserving argument again :). I agree, we need
+> both of the functionalities. I think first the aim should be to get the
+> proportional weight functionality and then look at doing hard limits.
+> 
 
-OK, this series looks very nice now.
+Agreed.
 
-Suresh, Eric, does it look good to you too? (please send Acks if so)
+> [..]
+> 
+> > > > 
+> > > > - Have you thought of doing hierarchical control? 
+> > > > 
+> > > 
+> > > Providing hiearchies in cgroups is in general expensive, deeper
+> > > hierarchies imply checking all the way up to the root cgroup, so I think
+> > > we need to be very careful and be aware of the trade-offs before
+> > > providing such feature. For this particular case (IO controller)
+> > > wouldn't it be simpler and more efficient to just ignore hierarchies in
+> > > the kernel and opportunely handle them in userspace? for absolute
+> > > limiting rules this isn't difficult at all, just imagine a config file
+> > > and a script or a deamon that dynamically create the opportune cgroups
+> > > and configure them accordingly to what is defined in the configuration
+> > > file.
+> > > 
+> > > I think we can simply define hierarchical dependencies in the
+> > > configuration file, translate them in absolute values and use the
+> > > absolute values to configure the cgroups' properties.
+> > > 
+> > > For example, we can just check that the BW allocated for a particular
+> > > parent cgroup is not greater than the total BW allocated for the
+> > > children. And for each child just use the min(parent_BW, BW) or equally
+> > > divide the parent's BW among the children, etc.
+> > 
+> > IIUC, you are saying that allow hiearchy in user space and then flatten it
+> > out and pass it to kernel?
+> > 
+> > Hmm.., agree that handling hierarchies is hard and expensive. But at the
+> > same time rest of the controllers like cpu and memory are handling it in
+> > kernel so it probably makes sense to keep the IO controller also in line.
+> > 
+> > In practice I am not expecting deep hiearchices. May be 2- 3 levels would
+> > be good for most of the people.
+> > 
+> 
+> FWIW, even in the CPU controller having deep hierarchies is not a good idea.
+> I think this can be documented for IO Controller as well. Beyond that,
+> we realized that having a proportional system and doing it in userspace
+> is not a good idea. It would require a lot of calculations dependending
+> on the system load. (Because, the sub-group should be just the same as a
+> process in the parent group). Having hierarchy in the kernel just makes it way
+> more easier and way more accurate.
 
-	Ingo
+Agreed. I will prefer to keep hierarchical support in kernel inline with
+other controllers.
+
+> 
+> > > 
+> > > > - What happens to the notion of CFQ task classes and task priority. Looks
+> > > >   like max bw rule supercede everything. There is no way that an RT task
+> > > >   get unlimited amount of disk BW even if it wants to? (There is no notion
+> > > >   of RT cgroup etc)
+> > > 
+> > > What about moving all the RT tasks in a separate cgroup with unlimited
+> > > BW?
+> > 
+> > Hmm.., I think that should work. I have yet to look at your patches in
+> > detail but it looks like unlimited BW group will not be throttled at all
+> > hence RT tasks can just go right through without getting impacted.
+> > 
+> 
+> This is where the cpu scheduler design helped a lot :). Having different
+> classes for differnet types of processes allowed us to handle them
+> separately.
+
+In common layer scheduling approach, we do have separate classes (RT, BE
+and IDLE) and scheduling is done accordingly. Code primarily taken fro
+bfq and cfq.
+
+dm-ioband has no notion of separate classes and everything was being
+treated at same level which is a problem as end level IO scheduler will
+loose its capability to differentiate we mixup he things above it.
+
+Time to play with max bw controller patches and then I can probably have
+more insights into it.
+
+Thanks
+Vivek
