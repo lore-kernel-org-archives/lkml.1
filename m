@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbZDQB0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbZDQB1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758929AbZDQB0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbZDQB0o
+	id S1759058AbZDQB1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbZDQB1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:26:44 -0400
-Received: from exprod6og103.obsmtp.com ([64.18.1.185]:41111 "HELO
-	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754736AbZDQB0n convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:26:43 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 16 Apr 2009 21:27:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55057 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754736AbZDQB1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 21:27:39 -0400
+Date: Fri, 17 Apr 2009 03:25:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Message-ID: <20090417012544.GB16126@elte.hu>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <alpine.LFD.2.00.0904161738030.4042@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] mm/page-writeback.c: fix sparse warnings
-Date: Thu, 16 Apr 2009 21:26:35 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F9049@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] mm/page-writeback.c: fix sparse warnings
-Thread-Index: Acm++4xMOosYje54QLSGaLOhcbeBEQ==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 17 Apr 2009 01:26:42.0351 (UTC) FILETIME=[904883F0:01C9BEFB]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904161738030.4042@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix two sparse warnings in mm/page-writeback.c.
 
-get_dirty_limits() calls clip_bdi_dirty_limit() and task_dirty_limit()
-with variable pbdi_dirty as one of the arguments. This variable is
-an unsigned long * but both functions expect it to be a long *. This
-causes the following sparse warnings:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-  warning: incorrect type in argument 3 (different signedness)
-     expected long *pbdi_dirty
-     got unsigned long *pbdi_dirty
-  warning: incorrect type in argument 2 (different signedness)
-     expected long *pdirty
-     got unsigned long *pbdi_dirty
+> 
+> 
+> I think you put this in the wrong regression pile:
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13112
+> > Subject		: Oops in drain_array
+> > Submitter	: Bart <mmx@riz.pl>
+> > Date		: 2009-04-14 10:21 (3 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123970493224628&w=4
+> 
+> Hmm. This one seems like it should be in the "since 2.6.28" camp, since if 
+> I read that one right, it happens with 2.6.29.1.
+> 
+> (I mean sure, it might be new since 2.6.29, but it sounds more likely that 
+> it's already in 2.6.29)
 
-Fix the warnings by changing the long * to unsigned long * in both
-functions.
+I'd suspect it's possibly hardware related:
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+  http://www.kerneloops.org/search.php?search=free_block&btnG=Function+Search
 
----
+Look at the very similar call signatures - spanning almost all 
+kernels back to v2.6.16. There's one spike at .27 - perhaps the same 
+box trying up hard and crashing several times - or a popular distro 
+kernel?
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 30351f0..e40b3e3 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -265,18 +265,20 @@ static void bdi_writeout_fraction(struct
-backing_dev_info *bdi,
-  * This avoids exceeding the total dirty_limit when the floating
-averages
-  * fluctuate too quickly.
-  */
--static void
--clip_bdi_dirty_limit(struct backing_dev_info *bdi, long dirty, long
-*pbdi_dirty)
-+static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
-+		unsigned long dirty, unsigned long *pbdi_dirty)
- {
--	long avail_dirty;
-+	unsigned long avail_dirty;
-+	unsigned long nr_pages;
- 
--	avail_dirty = dirty -
--		(global_page_state(NR_FILE_DIRTY) +
-+	nr_pages = global_page_state(NR_FILE_DIRTY) +
- 		 global_page_state(NR_WRITEBACK) +
- 		 global_page_state(NR_UNSTABLE_NFS) +
--		 global_page_state(NR_WRITEBACK_TEMP));
-+		 global_page_state(NR_WRITEBACK_TEMP);
- 
--	if (avail_dirty < 0)
-+	if (nr_pages < dirty)
-+		avail_dirty = dirty - nr_pages;
-+	else
- 		avail_dirty = 0;
- 
- 	avail_dirty += bdi_stat(bdi, BDI_RECLAIMABLE) +
-@@ -299,10 +301,10 @@ static inline void task_dirties_fraction(struct
-task_struct *tsk,
-  *
-  *   dirty -= (dirty/8) * p_{t}
-  */
--static void task_dirty_limit(struct task_struct *tsk, long *pdirty)
-+static void task_dirty_limit(struct task_struct *tsk, unsigned long
-*pdirty)
- {
- 	long numerator, denominator;
--	long dirty = *pdirty;
-+	unsigned long dirty = *pdirty;
- 	u64 inv = dirty >> 3;
- 
- 	task_dirties_fraction(tsk, &numerator, &denominator); 
+Or it's a really ancient bug going back to v2.6.16.
+
+	Ingo
