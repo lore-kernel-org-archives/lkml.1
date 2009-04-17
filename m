@@ -1,98 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbZDQMaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759167AbZDQMfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758564AbZDQMaf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 08:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZDQMa1
+	id S1759167AbZDQMfh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 08:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZDQMf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 08:30:27 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:50353 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435AbZDQMa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 08:30:26 -0400
-Date: Fri, 17 Apr 2009 14:30:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: [PATCH v2] block: simplify I/O stat accounting
-Message-ID: <20090417123025.GW4593@kernel.dk>
-References: <49E72F19.1030400@redhat.com> <49E8662D.5010607@redhat.com> <20090417113756.GU4593@kernel.dk> <20090417115449.GV4593@kernel.dk> <49E87502.3050806@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E87502.3050806@redhat.com>
+	Fri, 17 Apr 2009 08:35:29 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:40176 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbZDQMf2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 08:35:28 -0400
+Subject: Re: C/R without "leaks"
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Chris Friesen <cfriesen@nortel.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <49E85059.8070400@cs.columbia.edu>
+References: <49E40662.2040508@cs.columbia.edu>
+	 <20090414163633.GE27461@x200.localdomain>
+	 <49E4D89D.9060903@cs.columbia.edu>
+	 <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia>
+	 <20090416161215.GA8505@x200.localdomain> <49E774B1.5060505@nortel.com>
+	 <49E77B49.3020102@cs.columbia.edu> <1239959746.6143.66.camel@bahia>
+	 <49E85059.8070400@cs.columbia.edu>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 14:25:21 +0200
+Message-Id: <1239971121.6143.217.camel@bahia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17 2009, Jerome Marchand wrote:
-> Jens Axboe wrote:
-> > On Fri, Apr 17 2009, Jens Axboe wrote:
-> >> On second thought, not sure why you add 'iostat' for this. It would be
-> >> OK to just do
-> >>
-> >>         if (blk_queue_io_stat(q))
-> >>                 rw_flags |= REQ_IO_STAT;
-> >>
-> >> since it's just used for the allocation call, and the trace call (which
-> >> does & 1 on it anyway).
-> >>
-> OK.
+On Fri, 2009-04-17 at 05:48 -0400, Oren Laadan wrote:
+> You mean an sshd with an open connection probably; the server itself
+> is clearly useful to be able to c/r.
 > 
-> >>> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> >>> index 63760ca..6a05270 100644
-> >>> --- a/block/blk-merge.c
-> >>> +++ b/block/blk-merge.c
-> >>> @@ -338,9 +338,9 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
-> >>>  	return 1;
-> >>>  }
-> >>>
-> >>> -static void blk_account_io_merge(struct request *req)
-> >>> +static void blk_account_io_merge(struct request *req, struct request *next)
-> >>>  {
-> >>> -	if (blk_do_io_stat(req)) {
-> >>> +	if (req->rq_disk && blk_rq_io_stat(next)) {
-> >> This at least needs a comment, it's not at all directly clear why we are
-> >> checking 'next' for io stat and ->rq_disk in 'req'. Since it's just
-> >> called from that one spot, it would be cleaner to do:
-> >>
-> >>         /*
-> >>          * 'next' is going away, so update stats accordingly
-> >>          */
-> >>         if (blk_rq_io_stat(next))
-> >>                 blk_account_io_merge(req->rq_disk, req->sector);
-> >>
-> >> and have blk_account_io_merge() be more ala:
-> >>
-> >> static void blk_account_io_merge(struct request *req)
-> >> {
-> >>         struct hd_struct *part;
-> >>         int cpu;
-> >>
-> >>         cpu = part_stat_lock();
-> >>         part = disk_map_sector_rcu(disk, sector);
-> >>         ...
-> >> }
-> >
-> > BTW, it seems there's a current problem with this construct. If 'req'
-> > and 'next' reside on different partitions, the accounting will be wrong.
-> > This wont happen with normal fs activity of course, but it's definitely
-> > possible with buffered (or O_DIRECT) IO on the full device.
-> >
-> 
-> You're right. We may end up decrease in_flight on the wrong partition.
-> I think having blk_account_io_merge() unchanged but call it for next
-> request would solve that:
-> 
-> -	blk_account_io_merge(req)
-> +	blk_account_io_merge(next)
-> 
-> We would still have the request payload accounted to the wrong partition
-> (as it always was), but I don't think that small inaccuracy really matters.
 
-Yes, just using 'next' is clearly the better approach here. It still not
-perfect, but it's probably not worth it to do anything about this. It
-should be commented, though :-)
+Yes I mean C/R of sshd with active connections.
+
+> 
+> A canonical example would a virtual-private-server: instead of doing
+> server consolidation with a virtual machine, your do with containers.
+> In a sense, containers lets you chop the OS into independent isolated
+> pieces. You ca use a linux box to run multiple virtual execution
+> environments (containers), each running services of your choice. They
+> could range from a sshd for users, to apache servers, to database
+> servers to users' vnc sessions, etc.
+> 
+
+Indeed, containers allow to implement VPS just like virtual machines: we
+call them system containers. Not much to say about that since they don't
+introduce new concepts to users.
+
+> Now comes the that you really need to take the machine down, for
+> whatever reason. With c/r of live connections you can live-migrate
+> these containers to another machine (on the same subnet) that will
+> "steal" the IP as well, and voila - no service disruption.
+> 
+
+Theorically, yes. Practicaly, you need a lot more than *simply* capturing
+and restoring socket states for such a migration to be usable in the real
+world.
+
+> 
+> Such scenarios are the focus of Alexey.
+> 
+
+So Alexey should provide some realistic examples, with several hosts,
+routers, switches and overall network infrastructure.
+
+> I'm also very interested in these scenarios, and I'm _also_ thinking
+> of other scenarios, where either (a) an entire container is not
+> necessary (example: user running long computation on laptop and wants
+> to save it before a reboot), or (b) the program would like to make
+> adjustments to its state compared to the time it was saved (example:
+> change the location of an output log file depending on the machine
+> on which your are running).
+> 
+
+I'm _only_ interested in these other scenarios for the moment.
+
+> Unfortunately, if we plan for and require, as per Alexey, that c/r
+> would only work for whole-containers, these two cases will not be
+> addressed.
+> 
+
+Discussion must go on then. There's no hurry in getting C/R
+mainlined. :)
 
 -- 
-Jens Axboe
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
 
