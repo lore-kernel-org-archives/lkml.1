@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbZDQB2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZDQB3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759297AbZDQB2r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbZDQB2Y
+	id S1759493AbZDQB3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbZDQB26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:28:24 -0400
-Received: from n22.bullet.mail.mud.yahoo.com ([68.142.206.161]:20812 "HELO
-	n22.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758950AbZDQB2W (ORCPT
+	Thu, 16 Apr 2009 21:28:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:6922 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759007AbZDQB24 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:28:22 -0400
-X-Yahoo-Newman-Id: 121337.4155.bm@omp425.mail.mud.yahoo.com
-X-YMail-OSG: ZUF.tYcVM1kJI846s8tLMim_53XBu_ViQnTIz1EeWoJd82ejhko2bfiqHUotkJTEc01iQH.j__Gr.3tlJmuPrwnh30VhzJivUdKt_dnlmjnLhxPX44cpOgQqad3fvRaW1HRsTtttNrIhErG1JRK1xvn.kxExgzIOsLrn_zNeRHux5RMzxXAwDcteNXsev.YTpqMLy_V2agjhOmDQF.7Jx9ccC7SaGqT4uOnpQA9J_WkpxCnTjnGlBRv9NupO3O.C71V.pDQcw52IiDSDuvqiew79ZddPhgI9VVeUj1eeXTy8a_vlTnXf31QKxfwl7CsN1rmkDvrSPmR4TGTuyWCVxKkZZA--
-X-Yahoo-Newman-Property: ymail-3
-Subject: LIO-Target/ConfigFS v3.0 on ppc64 for Playstation3
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Thu, 16 Apr 2009 18:28:17 -0700
-Message-Id: <1239931697.4176.593.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 21:28:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vHLlTGcFJnZuiF5gZuMBqkrNGCkH2tt5DEl3u9ILskZKnk2jdLSbkz5ew6REl3za6s
+         7ZIFKxmINbb5eA1MDqy+MCa8NG5ptye+VyYLSIJ6dnkhRry22BiPHsSrbvFWZRN/dO9z
+         aYkex9s1B6v0p9wotpSU2b8jpoBo1a9NVCD/0=
+MIME-Version: 1.0
+In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+Date: Fri, 17 Apr 2009 09:28:54 +0800
+Message-ID: <b6a2187b0904161828h33ad84d4y8074c993a43dd146@mail.gmail.com>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+On Fri, Apr 17, 2009 at 5:42 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-I have recently been updating my Playstation3s to use the
-lio-core-2.6.git v3.0 codebase, and I am happy to report all of v3.0
-functionality is now up and running with Target_Core_Mod/ConfigFS and
-LIO-Target v3.0 on v2.6.29 ppc64 including SCSI-3 compliant emulation.
-Persistent Reservations, full ConfigFS operation, and hardware device
-export is up and running.  
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13118
+> Subject         : iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
+> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+> Date            : 2009-04-10 16:05 (7 days old)
+> References      : http://lkml.org/lkml/2009/4/10/111
+> Handled-By      : Eric Dumazet <dada1@cosmosbay.com>
 
-http://linux-iscsi.org/index.php/Playstation3/iSCSI
-
-Currently, this requires folks to build a v2.6.29 ppc kernel and modules
-from the lio-core-2.6.git tree.  You will need to be comfortable
-checking cloning a git repository and building/install from source on
-your PS3-Linux installation..
-
->From there, the export of storage objects using the v3.0 ConfigFS is
-quite straightforward, here is an excerpt from the URL above to
-configure iscsi_target_mod in 'demo mode' for /dev/sr0 to allow any
-iSCSI Initiators to login and perform I/O to the target_core_mod/pSCSI
-configured storage object.
-
-       modprobe target_core_mod
-       export CONFIGFS=/sys/kernel/config/
-       export TARGET=/sys/kernel/config/target/core/
-       export FABRIC=/sys/kernel/config/target/iscsi/
-
-       # Create PSCSI ConfigFS storage object from HTCL 0:0:0:0
-       mkdir -p $TARGET/pscsi_0/sr0
-       echo scsi_channel_id=0,scsi_target_id=0,scsi_lun_id=0 > $TARGET/pscsi_0/sr0/control
-       echo 1 > $TARGET/pscsi_0/sr0/enable
-
-       export DEF_IQN="iqn.2003-01.org.linux-iscsi.playstation3.cell:sn.73b073c4e157"
-       export PORTAL="192.168.0.160:3260"
-
-       # The first mkdir(2) to $FABRIC will load iscsi_target_mod
-       mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/np/$PORTAL"
-       echo 8 > "$FABRIC/$DEF_IQN/tpgt_1/param/MaxConnections"
-       # Create the SCSI Target Port from PSCSI storage object
-       mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0"
-       ln -s $TARGET/pscsi_0/sr0 "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0/lio_bdrom_port"
-       # Allow demo mode R/W access for the iSCSI target portal group
-       echo 0 > $FABRIC/$DEF_IQN/tpgt_1/attrib/authentication
-       echo 1 > $FABRIC/$DEF_IQN/tpgt_1/attrib/generate_node_acls
-       echo 0 > $FABRIC/$DEF_IQN/tpgt_1/attrib/demo_mode_write_protect
-       # Enable the TPG Endpoint so initiators can login
-       echo 1 > $FABRIC/$DEF_IQN/tpgt_1/enable
-
-Also, you can find more information about Target_Core_Mod/ConfigFS and LIO-Target/ConfigFS at:
-
-http://linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
-http://linux-iscsi.org/index.php/LIO-Target/ConfigFS
-
---nab
+Several iterations of patches in progress. See
+[PATCH] netfilter: per-cpu spin-lock with recursion (v0.8)
 
 
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13066
+> Subject         : Intel HD Audio oops
+> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+> Date            : 2009-04-01 8:28 (16 days old)
+> References      : http://marc.info/?l=linux-kernel&m=123857454625829&w=4
 
+Fixed as of April 09 2009 git pull.
+
+
+Thanks,
+Jeff
