@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZDQVPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbZDQVP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760771AbZDQVPe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 17:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZDQVPS
+	id S1759699AbZDQVP6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZDQVPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 17:15:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42919 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbZDQVPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 17:15:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #13099] net, sky2: BUG: unable to handle kernel NULL pointer dereference, pci_vpd_truncate()
-Date: Fri, 17 Apr 2009 23:14:49 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Stephen Hemminger <shemminger@vyatta.com>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.Q2.cw85JB@chimera> <20090417004517.GB1988@elte.hu>
-In-Reply-To: <20090417004517.GB1988@elte.hu>
+	Fri, 17 Apr 2009 17:15:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42876 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752930AbZDQVPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 17:15:46 -0400
+Date: Fri, 17 Apr 2009 14:12:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13058] First hibernation attempt fails
+In-Reply-To: <200904172258.58783.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0904171408081.4042@localhost.localdomain>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <alpine.LFD.2.00.0904170856460.4042@localhost.localdomain> <49E8C06A.5080605@tuffmail.co.uk> <200904172258.58783.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904172314.50380.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 April 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.29.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13099
-> > Subject		: net, sky2: BUG: unable to handle kernel NULL pointer dereference, pci_vpd_truncate()
-> > Submitter	: Ingo Molnar <mingo@elte.hu>
-> > Date		: 2009-04-06 9:03 (11 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123900867611321&w=4
-> > Handled-By	: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> I think this can be closed as the fix has been merged upstream 
-> already (via the PCI tree):
-> 
->  commit d407e32efe060afa2b9a797a91376ebc65b4ce11
->  Author: Anton Vorontsov <avorontsov@ru.mvista.com>
->  Date:   Wed Apr 1 02:23:41 2009 +0400
-> 
->     PCI: Fix oops in pci_vpd_truncate
 
-Thanks, closed.
 
-Rafael
+On Fri, 17 Apr 2009, Rafael J. Wysocki wrote:
+> 
+> Can you please try to reproduce the problem with the appended debug patch
+> applied and send the output of dmesg to me?
+
+Maybe something like this instead (or in addition to).
+
+It does "show_mem()" when memory shrinking fails. It will show a _lot_ of 
+data.
+
+Untested, but trivial.
+
+		Linus
+---
+ kernel/power/swsusp.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
+index 78c3504..6e70efd 100644
+--- a/kernel/power/swsusp.c
++++ b/kernel/power/swsusp.c
+@@ -207,9 +207,16 @@ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+ #define SHRINK_BITE	10000
+ static inline unsigned long __shrink_memory(long tmp)
+ {
++	unsigned long ret;
++
+ 	if (tmp > SHRINK_BITE)
+ 		tmp = SHRINK_BITE;
+-	return shrink_all_memory(tmp);
++	ret = shrink_all_memory(tmp);
++	if (!ret) {
++		printk("shrink_all_memory(%ld) failed\n", tmp);
++		show_mem();
++	}
++	return ret;
+ }
+ 
+ int swsusp_shrink_memory(void)
