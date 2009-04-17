@@ -1,262 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbZDQOhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbZDQOjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761360AbZDQOhf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbZDQOhS
+	id S1761504AbZDQOjV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZDQOjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:37:18 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:48202 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753145AbZDQOhQ (ORCPT
+	Fri, 17 Apr 2009 10:39:12 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:48212 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754867AbZDQOjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:37:16 -0400
-Date: Fri, 17 Apr 2009 10:37:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, <maneesh@linux.vnet.ibm.com>,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch 00/11] Hardware Breakpoint interfaces
-In-Reply-To: <20090417031221.GA4837@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0904171000470.6220-100000@iolanthe.rowland.org>
+	Fri, 17 Apr 2009 10:39:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=jr8HXulz0yHftrneexaR0pDcBhj9uze2HZ593KpG9aam6mvkI8dd9dLh8ACv1C5aPh
+         fbpSBFL3r8tGQOxyaNED3pDuKGiqoWavNBSubE6Q6F2V9+Ipxyigztli9JXdHfudBLjm
+         wgTZt0tYqtfDGVFhbLB5pkjqpNndyi7A4wZBo=
+Date: Fri, 17 Apr 2009 16:39:05 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Theodore Tso <tytso@mit.edu>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090417143903.GA30365@linux>
+Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
+	Theodore Tso <tytso@mit.edu>, Paul Menage <menage@google.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	agk@sourceware.org, akpm@linux-foundation.org,
+	baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+	dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+	eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+	Hirokazu Takahashi <taka@valinux.co.jp>,
+	Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+	dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+	roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+	Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+	yoshikawa.takuya@oss.ntt.co.jp,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-10-git-send-email-righi.andrea@gmail.com> <20090417123805.GC7117@mit.edu> <20090417125004.GY4593@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090417125004.GY4593@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009, K.Prasad wrote:
-
-> > > +void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-> > > +{
-> > > +	int i, j;
-> > > +
-> > > +	mutex_lock(&hw_breakpoint_mutex);
-> > > +
-> > > +	/* Find the 'bp' in our list of breakpoints for kernel */
-> > > +	for (i = hbp_kernel_pos; i < HB_NUM; i++)
-> > > +		if (bp == hbp_kernel[i])
-> > > +			break;
-> > > +
-> > > +	/* Check if we did not find a match for 'bp'. If so return early */
-> > > +	if (i == HB_NUM) {
-> > > +		mutex_unlock(&hw_breakpoint_mutex);
-> > > +		return;
-> > > +	}
-> > > +
-> > > +	/*
-> > > +	 * We'll shift the breakpoints one-level above to compact if
-> > > +	 * unregistration creates a hole
-> > > +	 */
-> > > +	for (j = i; j > hbp_kernel_pos; j--)
-> > > +		hbp_kernel[j] = hbp_kernel[j-1];
-> > > +
-> > > +	hbp_kernel[hbp_kernel_pos] = 0;
+On Fri, Apr 17, 2009 at 02:50:04PM +0200, Jens Axboe wrote:
+> On Fri, Apr 17 2009, Theodore Tso wrote:
+> > On Tue, Apr 14, 2009 at 10:21:20PM +0200, Andrea Righi wrote:
+> > > Delaying journal IO can unnecessarily delay other independent IO
+> > > operations from different cgroups.
+> > > 
+> > > Add BIO_RW_META flag to the ext3 journal IO that informs the io-throttle
+> > > subsystem to account but not delay journal IO and avoid potential
+> > > priority inversion problems.
 > > 
-> > s/0/NULL/
-> > 
+> > So this worries me for two reasons.  First of all, the meaning of
+> > BIO_RW_META is not well defined, but I'm concerned that you are using
+> > the flag in a manner that in a way that wasn't its original intent.
+> > I've included Jens on the cc list so he can comment on that score.
 > 
-> Ok.
+> I was actually already on the cc, though with my private mail address! I
+> did read the patch this morning and initially thought it was a bad idea
+> as well, but then I thought that perhaps it's not that different to view
+> journal IO as a form of meta data to some extent.
 > 
-> > > +	on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
-> > > +	hbp_kernel_pos++;
-> > 
-> > Don't you want to increment hbp_kernel_pos _before_ calling
-> > on_each_cpu()?  Otherwise you're telling the other CPUs to install an
-> > empty breakpoint.
-> > 
+> But still, putting any sort of value into the meta flag is a bad idea.
+> It's assuming that it will get you some sort of extra guarantee, which
+> isn't the case. If journal IO is that much more important than other IO,
+> it should be prioritized explicitly. I'm not sure there's a good
+> solution to this problem.
+
+Exactly, the purpose here is is to prioritize the dispatching of journal
+IO requests in the IO controller. I may have used an inappropriate flag
+or a quick&dirty solution, but without this, any cgroup/process that
+generates a lot of journal activity may be throttled and cause other
+cgroups/processes to be incorrectly blocked when they try to write to
+disk.
+
 > 
-> Incrementing hbp_kernel_pos after arch_update_kernel_hw_breakpoints()
-> during unregister_kernel_ is of the following significance:
+> > Secondly, there are many more locations than these which can end up
+> > causing I/O which will ending up causing the journal commit to block
+> > until they are completed.  I've done a lot of work in the past few
+> > weeks to make sure those writes get marked using BIO_RW_SYNC.  In
+> > data=ordered mode, the journal commit will block waiting for data
+> > blocks to be written out, and that implies you really need to treat as
+> > high priority all of the block writes that are marked with the
+> > BIO_RW_SYNC flag.
+> > 
+> > The flip side of this is it may end up making your I/O controller to
+> > leaky; that is, someone might be able to evade your I/O controller's
+> > attempt to impose limits by using fsync() all the time.  This is a
+> > hard problem, though, because filesystem I/O is almost always
+> > intertwined.
+> > 
+> > What sort of scenarios and workloads are you envisioning might use
+> > this I/O controller?  And can you say more about the specifics about
+> > the priority inversion problem you are concerned about?
 > 
-> - The 'pos' numbered debug register is reset to 0 through the code 
->   "set_debugreg(hbp_kernel[i]->info.address, i)" where 'i' ranges from
->   hbp_kernel_pos to HB_NUM. This is necessary during unregister operation.
+> I'm assuming it's the "usual" problem with lower priority IO getting
+> access to fs exclusive data. It's quite trivial to cause problems with
+> higher IO priority tasks then getting stuck waiting for the low priority
+> process, since they also need to access that fs exclusive data.
 
-It _isn't_ necessary.  The contents of that debug register don't matter 
-at all if it isn't enabled.  (And there's nothing special about 0; if 
-the breakpoint were enabled then you would get a breakpoint interrupt 
-whenever something tried to access address 0.)
+Right. I thought about using the BIO_RW_SYNC flag instead, but as Ted
+pointed out, some cgroups/processes might be able to evade the IO
+control issuing a lot of fsync()s. We could also limit the fsync()-rate
+into the IO controller, but it sounds like a dirty workaround...
 
-Besides, the "set_debugreg" line of code in
-arch_update_kernel_hw_breakpoints doesn't get executed when
-hbp_kernel[i] is NULL.  So this whole point is moot; the debug register
-wouldn't be affected anyway.
-
-> - The following statements would reset the bits corresponding to
->   unregistered breakpoint only then.
-> 	kdr7 &= ~kdr7_masks[hbp_kernel_pos];
-> 	dr7 &= ~kdr7_masks[hbp_kernel_pos];
-
-But if hbp_kernel_pos is wrong (i.e., if it hasn't been incremented)
-then these statements will set kdr7 and dr7 incorrectly.
-
-> - Helps keep the arch_update_kernel_hw_breakpoints() code generic enough
->   to be invoked during register and unregister operations.
-
-This is another moot point.  Your code is _wrong_ -- how generic it is
-doesn't matter.
-
-
-> > > +/* Unmasked kernel DR7 value */
-> > > +static unsigned long kdr7;
-> > > +static const unsigned long	kdr7_masks[HB_NUM] = {
-> > > +	0xffff00ff,	/* Same for 3, 2, 1, 0 */
-> > > +	0xfff000fc,	/* Same for 3, 2, 1 */
-> > > +	0xff0000f0,	/* Same for 3, 2 */
-> > > +	0xf00f00c0	/* LEN3, R/W3, G3, L3 */
-> > > +};
-> > 
-> > It looks like you took out the first line of assignments.  Isn't
-> > kdr7_masks supposed to contain HB_NUM + 1 elements?  Not to mention
-> > that reordering the lines has mixed up the comments.
-> > 
 > 
-> The kdr7_masks array is slightly different from your implementation
-> earlier.
-> 
-> The element zero in the array is 0xffff00ff, which has all bits
-> corresponding to DRs 0, 1, 2 and 3 'set', and hence the comment.
+> CFQ includes a vain attempt at boosting the priority of such a low
+> priority process if that happens, see the get_fs_excl() stuff in
+> lock_super(). reiserfs also marks the process as holding fs exclusive
+> resources, but it was never added to any of the other file systems. But
+> we could improve that situation. The file system is really the only one
+> that can inform us of such an issue.
 
-The comment is "Same for 3, 2, 1, 0".  But that is an incomplete 
-thought -- same as _what_?  The answer is: Same as "LEN3, R/W3, G3, 
-L3".  But you have messed up the logical order of the comments by 
-reversing the lines.
+What about writeback IO? get_fs_excl() only refers to the current
+process. At least for the cgroup io-throttle controller we can't delay
+writeback requests that hold exclusive access resources. For this reason
+encoding this information in the IO request (or better using a flag in
+struct bio) seems to me a better solution.
 
-Look at this:
-
-	/* LEN3, R/W3, G3, L3 */
-	/* Same for 3, 2 */
-	/* Same for 3, 2, 1 */
-	/* Same for 3, 2, 1, 0 */
-
-That makes sense.  For instance, it's clear that the second line means 
-LEN3, LEN2, R/W3, R/W2, G3, G2, L3, L2.  Now look at yours:
-
-	/* Same for 3, 2, 1, 0 */
-	/* Same for 3, 2, 1 */
-	/* Same for 3, 2 */
-	/* LEN3, R/W3, G3, L3 */
-
-That doesn't make sense.  It's a general fact of human language: If you 
-reverse the order of a bunch of sentences, you will mess up the 
-meaning.
-
-
-> > > +void arch_update_kernel_hw_breakpoints(void *unused)
-> > > +{
-> > > +	struct hw_breakpoint *bp;
-> > > +	unsigned long dr7;
-> > > +	int i;
-> > > +
-> > > +	/* Check if there is nothing to update */
-> > > +	if (hbp_kernel_pos == HB_NUM)
-> > > +		return;
-> > 
-> > This is wrong; you have to set DR7 to 0 first.  Might as well leave
-> > out this test and just go through the whole routine.  The "for" loop
-> > will be skipped entirely if hbp_kernel_pos == HB_NUM, so you don't
-> > save much by returning early.
-> > 
-> > Ah, now I see this is why you removed a line from kdr7_masks.
-> > 
-> 
-> This check is added to help the load_debug_registers() call during
-> boot-time which is when hbp_kernel_pos = HB_NUM. If we don't return
-> early, then assignments such as  these "kdr7 &= ~kdr7_masks[hbp_kernel_pos];"
-> will cause array-out-of-bounds. Otherwise we have to circumvent it by
-> adding a dummy HB_NUM element in kdr7_masks[] array. I would prefer
-> retaining the "if (hbp_kernel_pos == HB_NUM)" check instead.
-
-It's up to you.  But consider this:
-
-     1. You have replaced a single array element (4 bytes of data)
-	with a conditional test and jump (probably around 7 bytes
-	of code, not to mention that the conditional jump will slow
-	down the CPU even when it isn't taken).
-
-     2. If hbp_kernel_pos is equal to HB_NUM then the early return 
-	causes you to skip the line setting kdr7.  It will end up 
-	having an incorrect value.
-
-
-> > > +int __kprobes hw_breakpoint_handler(struct die_args *args)
-> > > +{
-> > > +	int i, rc = NOTIFY_STOP;
-> > > +	struct hw_breakpoint *bp;
-> > > +	/* The DR6 value is stored in args->err */
-> > > +	unsigned long dr7, dr6 = args->err;
-> > > +
-> > > +	/*
-> > > +	 * We are here because BT, BS or BD bit is set and no trap bits are set
-> > > +	 * in dr6 register. Do an early return
-> > > +	 */
-> > 
-> > I don't like such comments.  It says that BT, BS, or BD is set, but
-> > they don't necessarily have to be.  You should say:
-> > 
-> > 	/* Do an early return if no trap bits are set in DR6 */
-> > 
-> 
-> Since we enter hw_breakpoint_handler() code only if DIE_DEBUG (and not
-> say DIE_INT3), one or more of these bits would be 'set' when we are in
-> hw_breakpoint_handler() - BS, BT, BD or Trap bits, and hence the comment.
-
-But the comment is _wrong_.  We might be here because one of the trap 
-bits is set and BT, BS, and BD are clear, whereas the comment says that 
-can't be the case.
-
-Just read the comment again.  It says: "We are here because ... no trap 
-bits are set".
-
-
-> > >  dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
-> > >  {
-> > >  	struct task_struct *tsk = current;
-> > > -	unsigned long condition;
-> > > +	unsigned long dr6;
-> > >  	int si_code;
-> > >  
-> > > -	get_debugreg(condition, 6);
-> > > +	get_debugreg(dr6, 6);
-> > > +	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
-> > >  
-> > >  	/* Catch kmemcheck conditions first of all! */
-> > > -	if (condition & DR_STEP && kmemcheck_trap(regs))
-> > > +	if ((dr6 & DR_STEP && kmemcheck_trap(regs)) &&
-> > > +		!(dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)))
-> > >  		return;
-> > 
-> > Should this test go before the "set_debugreg(0, 6)" statement?
-> > 
-> 
-> Either way, it doesn't affect the function "kmemcheck_trap()". I don't
-> find it reading directly from DR6 anywhere.
-
-Sure, it doesn't affect kmemcheck_trap().  But it might affect
-something else.  What if some other code later on looks at the contents
-of DR6?
-
-Incidentally, the parenthese in that test are wrong.  It should be:
-
-	if ((dr6 & DR_STEP) && kmemcheck_trap(regs) &&
-			!(dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)))
-
-> On a related node, a patch that modifies dr6 to be passed by reference
-> to the notifier calls will be included in the next iteration.
-> 
-> Let me know, upon receiving the patch, if you still think that such a
-> change i.e. resetting bits in dr6 after handling of the corresponding 
-> breakpoint needs to be done.
-
-At the moment, the only other bits which could be set are BT and BD.  
-Presumably we don't care about BD.  Do you care if BT gets wiped out 
-before anybody has a chance to see it?
-
-Alan Stern
-
+-Andrea
