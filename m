@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932347AbZDQSL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762361AbZDQSM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932347AbZDQSL6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZDQSLF
+	id S1762361AbZDQSM1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbZDQSLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:11:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:52285 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932284AbZDQSLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:11:02 -0400
-Message-ID: <49E8C63D.8090901@vlnb.net>
-Date: Fri, 17 Apr 2009 22:11:09 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
+	Fri, 17 Apr 2009 14:11:51 -0400
+Received: from gw.goop.org ([64.81.55.164]:54209 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932339AbZDQSLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 14:11:50 -0400
+Message-ID: <49E8C663.5010206@goop.org>
+Date: Fri, 17 Apr 2009 11:11:47 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: scst-devel <scst-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [Scst-devel] ISCSI-SCST performance (with also IET and STGT	data)
-References: <49D10256.8030307@vlnb.net>	<e2e108260904011314h1e0cf5c5wcdf210eee24d40d8@mail.gmail.com>	<49D4F2E1.7000507@vlnb.net> <e2e108260904040104u37953ef7x74b8713dfcf3166a@mail.gmail.com>
-In-Reply-To: <e2e108260904040104u37953ef7x74b8713dfcf3166a@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: mathieu.desnoyers@polymtl.ca, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 2/4] x86/pvops: target CREATE_TRACE_POINTS to particular
+ subsystems
+References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-3-git-send-email-jeremy@goop.org> <alpine.DEB.2.00.0904171149100.14919@gandalf.stny.rr.com> <49E8AAC8.5080004@goop.org> <alpine.DEB.2.00.0904171231270.14919@gandalf.stny.rr.com> <49E8B2EB.8030108@goop.org> <alpine.DEB.2.00.0904171251490.14919@gandalf.stny.rr.com> <49E8B907.9000109@goop.org> <alpine.DEB.2.00.0904171330190.14919@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0904171330190.14919@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+igX3ZGkAvVS2JveWvUDZIfpWJCrAqKxeByWt
- xAy8uKOI8l+DDIh2tpKl6oczgBcLGf7I5GLQDbHq0ALMRk9vwj
- SKJFU6W3eaIZ3S4u61WDw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche, on 04/04/2009 12:04 PM wrote:
-> On Thu, Apr 2, 2009 at 7:16 PM, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
->> Bart Van Assche, on 04/02/2009 12:14 AM wrote:
->>> I have repeated some of these performance tests for iSCSI over IPoIB
->>> (two DDR PCIe 1.0 ConnectX HCA's connected back to back). The results
->>> for the buffered I/O test with a block size of 512K (initiator)
->>> against a file of 1GB residing on a tmpfs filesystem on the target are
->>> as follows:
+Steven Rostedt wrote:
+> On Fri, 17 Apr 2009, Jeremy Fitzhardinge wrote:
+>
+>   
+>> Steven Rostedt wrote:
+>>     
+>>> On Fri, 17 Apr 2009, Jeremy Fitzhardinge wrote:
 >>>
->>> write-test: iSCSI-SCST 243 MB/s; IET 192 MB/s.
->>> read-test: iSCSI-SCST 291 MB/s; IET 223 MB/s.
->>>
->>> And for a block size of 4 KB:
->>>
->>> write-test: iSCSI-SCST 43 MB/s; IET 42 MB/s.
->>> read-test: iSCSI-SCST 288 MB/s; IET 221 MB/s.
->> Do you have any thoughts why writes are so bad? It shouldn't be so..
-> 
-> By this time I have run the following variation of the 4 KB write test:
-> * Target: iSCSI-SCST was exporting a 1 GB file residing on a tmpfs filesystem.
-> * Initiator: two processes were writing 4 KB blocks as follows:
-> dd if=/dev/zero of=/dev/sdb bs=4K seek=0 count=131072 oflag=sync &
-> dd if=/dev/zero of=/dev/sdb bs=4K seek=131072 count=131072 oflag=sync &
-> 
-> Results:
-> * Each dd process on the initiator was writing at a speed of 37.8
-> MB/s, or a combined writing speed of 75.6 MB/s.
-> * CPU load on the initiator system during the test: 2.0.
-> * According to /proc/interrupts, about 38000 mlx4-comp-0 interrupts
-> were triggered per second.
-> 
-> These results confirm that the initiator system was the bottleneck
-> during the 4 KB write test, not the target system.
+>>>   
+>>>       
+>>>> Steven Rostedt wrote:
+>>>>     
+>>>>         
+>>>>> Ah yes! It needs to be:
+>>>>>
+>>>>> #ifdef CONFIG_IRQ_TRACE_POINTS
+>>>>> #undef CONFIG_IRQ_TRACE_POINTS
+>>>>> #include <trace/define_trace.h>
+>>>>> #endif
+>>>>>
+>>>>> Otherwise we get into the recursion again.
+>>>>>         
+>>>>>           
+>>>> We should probably also move the #define TRACE_SYS in there as well
+>>>> (without
+>>>> the #undef), as it should only have one definition at a time...
+>>>>     
+>>>>         
+>>> Actually, I'm kind of against that. Just because as it stands, the
+>>> TRACE_SYSTEM macro is up at the top, and it is easy to see.
+>>>   
+>>>       
+>> Yes, but it means that if you're in the middle of CREATE_FOO_TRACE_POINTS and
+>> foo.h happens to include bar.h, suddenly TRACE_SUBSYSTEM becomes bar...
+>>     
+>
+> How so?
+>   
 
-If so with oflag=direct you should have a performance gain, because you 
-will eliminate a data copy.
+Hm, not exactly sure - now that I think of it - but it fixed things when 
+I made the change.  Before I was getting kmem definitions where I was 
+expecting pvops ones...
 
-> Bart.
-> 
-> ------------------------------------------------------------------------------
-> _______________________________________________
-> Scst-devel mailing list
-> Scst-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/scst-devel
-> 
-
+    J
