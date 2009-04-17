@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZDQU3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZDQUfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbZDQU3v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 16:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZDQU3m
+	id S1754431AbZDQUfX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 16:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZDQUfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 16:29:42 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:40320 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbZDQU3l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 16:29:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=H0UvTpzyA/Us75tKcbHEARYXAC65Bpp7nkZ2hg/ucqTP2EG5hacbj3XON5Cj1gonLC
-         8NOFZ9Qb6fAk4o2zSLt7zqSz1jLoUAET4cfpPnFP/DdICeuf+X6VrNfVKhF7Ge4h0zB8
-         k2f9cldWGAQb1sSEJTSJWSyGzb/VE3uPrOw9o=
-Date: Fri, 17 Apr 2009 22:29:37 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/lockdep: turn lock->name into an array
-Message-ID: <20090417202936.GB6331@nowhere>
-References: <1239662166-13208-1-git-send-email-fweisbec@gmail.com> <20090414153035.C662.A69D9226@jp.fujitsu.com> <20090414065303.GA24626@elte.hu> <49E8BB98.3090901@goop.org> <1239989260.23397.4848.camel@laptop> <alpine.DEB.2.00.0904171336030.14919@gandalf.stny.rr.com>
+	Fri, 17 Apr 2009 16:35:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42746 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752259AbZDQUfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 16:35:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #13058] First hibernation attempt fails
+Date: Fri, 17 Apr 2009 22:34:35 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <20090417091321.GP4593@kernel.dk> <alpine.LFD.2.00.0904170813550.4042@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904170813550.4042@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904171336030.14919@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904172234.36366.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 01:36:58PM -0400, Steven Rostedt wrote:
+On Friday 17 April 2009, Linus Torvalds wrote:
 > 
-> 
-> On Fri, 17 Apr 2009, Peter Zijlstra wrote:
-> 
-> > On Fri, 2009-04-17 at 10:25 -0700, Jeremy Fitzhardinge wrote:
-> > > Ingo Molnar wrote:
-> > > > We could zap all pending trace entries on module unload (it is a 
-> > > > rare operation)
-> > > 
-> > > ....Unless you're trying to trace something across a module unload.  I 
-> > > don't know if its at all practical, but it would be nice to just zap the 
-> > > pointers within the buffer, rather than the whole buffer.
+> On Fri, 17 Apr 2009, Jens Axboe wrote:
 > > 
-> > I think the new __string() thing that's in the works will avoid the
-> > whole problem by copying the string into the buffer, instead of keeping
-> > a reference.
+> > Given the somewhat odd nature of the bug and the requirements to trigger
+> > it, how confident are you in the bisection results?
 > 
-> Speaking of which. We have not heard back from Frederic on this yet. I 
-> hope he's taking a break, enjoying the sun, and not stuck on some tricky 
-> macro crap ;-)
+> I suspect it's timing-dependent. 
 > 
-> -- Steve
->
+> The failure case is a ENOMEM returned from the "echo disk > /sys/power/state", 
+> and sadly there are a _lot_ of potential sources of ENOMEM's in the path. 
+> And a numbe of them come from GFP_ATOMIC allocations etc.
+> 
+> Now, that explains why it only happens while in X (more memory being 
+> used), and also why it succeeds the second time (the first try will have 
+> triggered VM activity and then free'd the pages it allocated up to that 
+> point).
+> 
+> IOW, I bet it would work on the first try if you were to just run 
+> something like
+> 
+> 	ptr = malloc(BIGNUM);
+> 	memset(ptr, 0, BIGNUM);
+> 	exit(0);
+> 
+> first - just to make room for stuff.
+> 
+> And the thing is, swsusp_save() really does do odd things. For example, to 
+> get rid of unnecessary memory, it does "drain_local_pages()", where the 
+> "local" is "local cpu". Why does it do that? Likely nobody knows.
+> 
+> Now, that won't matter in Alan's case (he is UP), but the point is, the 
+> swsuspend code does these random things to try to free up memory, and I 
+> suspect it's mostly been a trial-and-error thing. And then subtle changes 
+> in memory usage when allocating or writing things out will change things.
+> 
+> For example, there is a magic "PAGES_FOR_IO" #define, which is somewhat 
+> arbitrarily set to 4MB worth of pages. Where did that number come from? 
+> Who knows? But that's the number the code uses for the _initial_ check of 
+> "do we have enough memory" (the one that must have passed, since it 
+> actually started doing things and didn't print out a warning message).
+> 
+> Anyway, from the dmesg, we can see:
+> 
+> 	[   41.873619] PM: Shrinking memory...  Restarting tasks ... done.
 
+Ah, thanks for pointing this out to me!
+ 
+> and this is a clear indication that it's "swsusp_shrink_memory()" that 
+> failed. If it had succeeded, you'd have seen
+> 
+> 	PM: Shrinking memory... done (xyz pages freed)
+> 
+> but it returned an error case, and then the suspend fails and starts 
+> restarting tasks.
 
+AFAICS, there's only one possible situation in which that can happen,
+which is when shrink_all_memory() returns 0 and there was the assumption
+that this could not happen unless there _really_ was no memory to free.
+Apparently, that has recently changed and it is now possible that
+shrink_all_memory() returns 0, even though there still is some memory to free.
 
-Oh you haven't yet received my mail about that?
-It said I was cheering up about your and Peter's idea of using offsets
-instead of pointer because of the end result:
+At the moment I don't see what change caused that to happen, but shouldn't we
+put .nr_reclaimed = 0 in the definition of sc in shrink_all_memory()?
 
-- We can use as much __string() as we want
-- No need for something else, such as the strcpy bits
-- We are not forced to put it in the end of the patch
-- Which means I will implement that in a v3 very soon ;-)
-
-Frederic.
-
+Rafael
