@@ -1,55 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbZDQLFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbZDQLJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760300AbZDQLFL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 07:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759142AbZDQLEp
+	id S1758956AbZDQLJx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 07:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZDQLJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 07:04:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43593 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759303AbZDQLEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 07:04:44 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+mbTMZx4SmjSTurnB9tvSfNktHHQsVY1/rnDy56B
-	aqtIjOAaDefpi/
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-From: Mike Galbraith <efault@gmx.de>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <1239910921.21233.98.camel@think.oraclecorp.com>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
-	 <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
-	 <1239910921.21233.98.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 13:04:36 +0200
-Message-Id: <1239966276.8806.7.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+	Fri, 17 Apr 2009 07:09:45 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50264 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757897AbZDQLJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 07:09:44 -0400
+Date: Fri, 17 Apr 2009 07:09:42 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
+ recursive protection
+In-Reply-To: <20090417045229.GA30001@Krystal>
+Message-ID: <alpine.DEB.2.00.0904170706510.20429@gandalf.stny.rr.com>
+References: <20090416161543.199331330@goodmis.org> <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop> <alpine.DEB.2.00.0904161343110.20429@gandalf.stny.rr.com> <1239904428.23397.3278.camel@laptop> <alpine.DEB.2.00.0904162254270.20429@gandalf.stny.rr.com>
+ <alpine.DEB.2.00.0904170002030.20429@gandalf.stny.rr.com> <20090417045229.GA30001@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-16 at 15:42 -0400, Chris Mason wrote:
-> Hello everyone,
+
+
+On Fri, 17 Apr 2009, Mathieu Desnoyers wrote:
+> > ---[ end trace 03d889e04bc7a9a7 ]---
+> > possible reason: unannotated irqs-on.
+> > irq event stamp: 12569
+> > hardirqs last  enabled at (12567): [<ffffffff8026206a>] local_bh_enable+0xaa/0x110
+> > hardirqs last disabled at (12569): [<ffffffff80610c76>] int3+0x16/0x40
+> > softirqs last  enabled at (12566): [<ffffffff80514d2b>] lock_sock_nested+0xfb/0x110
+> > softirqs last disabled at (12568): [<ffffffff8058454e>] tcp_prequeue_process+0x2e/0xa0
+> > 
+> > 
+> > Note, for some reason we hit int3 ??
+> > 
+> > Tracepoints do not use int3 does it?
+> > 
 > 
-> Here's an updated (v4) patch for ext3 data=guarded mode.  The first two
-> patches in the series are unchanged, and it looks like Linus pulled them
-> in this morning.
+> Not in your ftrace tree. My LTTng tree includes the immediate values,
+> which brienfly uses the int3 handler when enabling/disabling
+> tracepoints. But this seems unrelated to your problem.
+
+Maybe something else is adding it :-/
+
 > 
-> This version fixes the bug Mike Galbraith hit.  The problem was with
-> writes to the last block in the file that made the file bigger but
-> didn't actually add a new block.  Since the block wasn't new, it
-> wouldn't get sent through the guarded code and the on disk i_size wasn't
-> always updated.
+> > I have kprobes defined but not any kprobe self tests on.
+> > 
+> 
+> Could this be a userspace breakpoint then ?
 
-FWIW, I booted my backup fs drive mounted data=guarded, and have been
-hammering it steadily since 6 A.M. with no hint of trouble.
+Nope, it happens right in the kernel. And the path I describe below points 
+out that we have a bug in irq tracing when we take a int3 in kernel space.
 
-	-Mike
+> 
+> > Anyway, let me describe what the above is and what I found in my 
+> > investigation.
+> > 
+> > The lockdep took a check_flags error when it noticed that interrupts were 
+> > enabled, but the current->hardirqs_enabled was 0. Lockdep thought 
+> > interrupts were disabled but they were in fact enabled.
+> > 
+> > 
+> > The last 4 lines of the warning have the numbers in the parenthesis 
+> > annotate the order of events: (Here they are in order)
+> > 
+> > softirqs last  enabled at (12566): [<ffffffff80514d2b>] lock_sock_nested+0xfb/0x110
+> > hardirqs last  enabled at (12567): [<ffffffff8026206a>] local_bh_enable+0xaa/0x110
+> > softirqs last disabled at (12568): [<ffffffff8058454e>] tcp_prequeue_process+0x2e/0xa0
+> > hardirqs last disabled at (12569): [<ffffffff80610c76>] int3+0x16/0x40
+> > 
+> > The last change that lockdep saw was interrupts being disabled by int3. I 
+> > still don't understand why int3 was enabled. I have startup tests for 
+> > ftrace and the event tracer, but this blob happened when I first ssh'd 
+> > into the box.
+> 
+> Also note that maybe some entry.S annotation could be missing, making
+> kallsyms think it was running within int3 when in fact it was running in
+> a different function. I would double-check with objdump givin the
+> ffffffff80610c76 address to make sure.
 
+Actually, that was the first thing I did. Because I thought int3 was 
+weird.
+
+
+> 
+> Just giving my 2 cents before going to bed. I don't have any more brain
+> left for tonight.
+
+Thanks,
+
+-- Steve
