@@ -1,94 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbZDQJiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759801AbZDQJk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbZDQJiV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 05:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZDQJiI
+	id S1759801AbZDQJk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 05:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbZDQJkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 05:38:08 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:36090 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbZDQJiG (ORCPT
+	Fri, 17 Apr 2009 05:40:47 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:55654 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbZDQJkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 05:38:06 -0400
+	Fri, 17 Apr 2009 05:40:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=hXNTNCyTas+sJM6q3YzS5M+EHSlGF7yWTqq/FGr2tB0Rjuw6hif/zfDiBSr81Gw3sO
-         CqI2B3+PgPUDGxka1ecqzwn6D39LdPSvC3eImuBeoF/yoUoDaFjnD20d47IpdCT1DWdR
-         husSfjGeghaHPq6eKrxZlTPuym9ZV/EFoZSvc=
-Message-ID: <49E84DF8.7030802@tuffmail.co.uk>
-Date: Fri, 17 Apr 2009 10:38:00 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=PsTvecJebPBDPansOJNkzWSjZEtXEqrPuAQfHI4G0eb+3qeXgKEydNuKkCtu82MLWj
+         sQtR/iuh8uZVVzS0bKEFC8pMPj7MpGZmJyO9JgZQ9H4hxoQULaDEmpShlpljzl9TZSXK
+         Qm3FTil6e97rfC1G9hgQbmfgspvntYVmbDVEA=
+Date: Fri, 17 Apr 2009 11:40:42 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: menage@google.com, balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       kamezawa.hiroyu@jp.fujitsu.com, agk@sourceware.org, axboe@kernel.dk,
+       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, ryov@valinux.co.jp, s-uchida@ap.jp.nec.com,
+       subrata@linux.vnet.ibm.com, yoshikawa.takuya@oss.ntt.co.jp,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-ID: <20090417094042.GB8689@linux>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	menage@google.com, balbir@linux.vnet.ibm.com,
+	guijianfeng@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
+	agk@sourceware.org, axboe@kernel.dk, baramsori72@gmail.com,
+	chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+	eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+	lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
+	ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+	ryov@valinux.co.jp, s-uchida@ap.jp.nec.com,
+	subrata@linux.vnet.ibm.com, yoshikawa.takuya@oss.ntt.co.jp,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-4-git-send-email-righi.andrea@gmail.com> <20090416152937.b2188370.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #13058] First hibernation attempt fails
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090417063007.GB4593@kernel.dk> <49E83DC4.8040207@tuffmail.co.uk> <20090417091321.GP4593@kernel.dk> <20090417093359.GQ4593@kernel.dk>
-In-Reply-To: <20090417093359.GQ4593@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090416152937.b2188370.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Fri, Apr 17 2009, Jens Axboe wrote:
->   
->> On Fri, Apr 17 2009, Alan Jenkins wrote:
->>     
->>> Jens Axboe wrote:
->>>       
->>>> On Thu, Apr 16 2009, Rafael J. Wysocki wrote:
->>>>   
->>>>         
->>>>> This message has been generated automatically as a part of a report
->>>>> of recent regressions.
->>>>>
->>>>> The following bug entry is on the current list of known regressions
->>>>> from 2.6.29.  Please verify if it still should be listed and let me know
->>>>> (either way).
->>>>>
->>>>>
->>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13058
->>>>> Subject		: First hibernation attempt fails
->>>>> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
->>>>> Date		: 2009-04-10 10:58 (7 days old)
->>>>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1faa16d22877f4839bd433547d770c676d1d964c
->>>>> References	: http://marc.info/?l=linux-kernel&m=123928022321917&w=2
->>>>>     
->>>>>           
->>>> Alan, is this still a problem?
->>>>   
->>>>         
->>> Yup.  Still present in v2.6.30-rc2-195-g9f76208.
->>>       
->> Given the somewhat odd nature of the bug and the requirements to trigger
->> it, how confident are you in the bisection results?
->>
->> I'll try and reproduce it here.
->>     
->
-> I can't reproduce it here. It seems very odd that an ENOMEM would happen
-> as a consequence of the rq allocation change, it doesn't really change
-> the allocation at all (and it'll never return -ENOMEM).
->
-> Can you please recheck the git bisect results. It'd be nice if the
-> hibernation failure would actually log where the problem occured...
->   
+On Thu, Apr 16, 2009 at 03:29:37PM -0700, Andrew Morton wrote:
+> On Tue, 14 Apr 2009 22:21:14 +0200
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+> 
+> > Subject: [PATCH 3/9] bio-cgroup controller
+> 
+> Sorry, but I have to register extreme distress at the name of this. 
+> The term "bio" is well-established in the kernel and here we have a new
+> definition for the same term: "block I/O".
+> 
+> "bio" was a fine term for you to have chosen from the user's
+> perspective, but from the kernel developer perspective it is quite
+> horrid.  The patch adds a vast number of new symbols all into the
+> existing "bio_" namespace, many of which aren't related to `struct bio'
+> at all.
+> 
+> At least, I think that's what's happening.  Perhaps the controller
+> really _is_ designed to track `struct bio'?  If so, that's an odd thing
+> to tell userspace about.
+> 
+> 
+> > The controller bio-cgroup is used by io-throttle to track writeback IO
+> > and for properly apply throttling.
+> 
+> Presumably it tracks all forms of block-based I/O and not just delayed
+> writeback.
 
-Once I found the right conditions (wireless disabled and a specific KDE
-session), it was 100% reproducible. 
+For the general case bio-cgroup tracks all forms of block IO, in this
+particular case (only for the io-throttle controller) I used bio-cgroup
+to track writeback IO. Synchronous IO is accounted directly in
+submit_bio() and throttled as well, imposing explicit sleeps via
+schedule_timeout_killable().
 
-Reverting your commit fixed the problem.  I can do another test of that
-if you like.
-
-My _bisection_ was not absolute, rock-solid certain because I only found
-the right conditions half-way through.  There's always the possibility I
-would get different results if I redid it properly, from the start.  But
-I have some experience of this and took care to re-validate my upper &
-lower bounds.
+-Andrea
