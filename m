@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbZDQHFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbZDQHIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbZDQHFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZDQHFW
+	id S1759881AbZDQHIW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZDQHIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:05:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46000 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755168AbZDQHFW (ORCPT
+	Fri, 17 Apr 2009 03:08:10 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:33833 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbZDQHIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:05:22 -0400
-Date: Fri, 17 Apr 2009 03:05:13 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Christoph Hellwig <hch@infradead.org>, mathieu.desnoyers@polymtl.ca,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 3/4] tracing: pass proto and args to DEFINE_TRACE
-Message-ID: <20090417070513.GA24860@infradead.org>
-References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-4-git-send-email-jeremy@goop.org> <20090417064820.GA20685@infradead.org> <49E828B0.90402@goop.org>
+	Fri, 17 Apr 2009 03:08:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VL3RjLf+vZIwVcPC5rTkjHJmpj7MwndisO5GS6ZE0DhGUHNfgE71GlKcJJWXVbV8/N
+         mz+GJTpg8Rc4tg3hE4sbB2J3ClwyLW/V4Ijp0jvuX10/q8hEsfrezdzQqgipcyDBXgGF
+         1C12l/ouq6AFmyOaTzPXX5FCRe3XmnVFXpc54=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E828B0.90402@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200904170355.26294.nickpiggin@yahoo.com.au>
+References: <1239249521-5013-1-git-send-email-ieidus@redhat.com>
+	 <20090414150903.b01fa3b9.akpm@linux-foundation.org>
+	 <200904170355.26294.nickpiggin@yahoo.com.au>
+Date: Fri, 17 Apr 2009 00:08:07 -0700
+Message-ID: <6934efce0904170008p45cba2c4l3e9ca9f8775c7bde@mail.gmail.com>
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v3
+From: Jared Hulbert <jaredeh@gmail.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
+       mtosatti@redhat.com, hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 11:58:56PM -0700, Jeremy Fitzhardinge wrote:
-> Christoph Hellwig wrote:
->> On Thu, Apr 16, 2009 at 11:35:38PM -0700, Jeremy Fitzhardinge wrote:
->>   
->>> -DEFINE_TRACE(power_mark);
->>> +DEFINE_TRACE(power_mark,
->>> +	TP_PROTO(struct power_trace *it, unsigned int type, unsigned int state),
->>> +	      TP_ARGS(it, type, state));
->>>     
->>
->> Wrong indentation, the TP_ARGS should have the same level of indentation
->> (one) as the TP_PROTO.  Also true for all others.
->>   
+> As everyone knows, my favourite thing is to say nasty things about any
+> new feature that adds complexity to common code. I feel like crying to
+> hear about how many more instances of MS Office we can all run, if only
+> we apply this patch. And the poorly written HPC app just sounds like
+> scrapings from the bottom of justification barrel.
 >
-> It's just cut+replace+paste from the DECLARE_TRACE() definitions in  
-> trace/power.h.  The proper fix is to not duplicate all that stuff in the  
-> first place, but I didn't want to introduce a gratuitous re-indent in  
-> the process.
+> I'm sorry, maybe I'm way off with my understanding of how important
+> this is. There isn't too much help in the changelog. A discussion of
+> where the memory savings comes from, and how far does things like
+> sharing of fs image, or ballooning goes and how much extra savings we
+> get from this... with people from other hypervisors involved as well.
+> Have I missed this kind of discussion?
 
-When copying it to a new place I don't think that's a good enough
-excuse.
+Nick,
 
-
-Then again I'd really wish we could get Steve's recents bits merged for
-various reasons.  The whole DEFINE_TRACE thing only appeared in 2.6.30
-and releasing that one kernel with the half-baked inferior version
-sounds like a really bad idea.
-
+I don't know about other hypervisors, fs and balloonings, but I have
+tried this out.  It works.  It works on apps I don't consider, "poorly
+written".  I'm very excited about this.  I got >10% saving in a
+roughly off the shelf embedded system.  No user noticeable performance
+impact.
