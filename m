@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbZDQXoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZDQXxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759601AbZDQXoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 19:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZDQXnw
+	id S1756167AbZDQXxk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 19:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZDQXxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 19:43:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43527 "EHLO mga02.intel.com"
+	Fri, 17 Apr 2009 19:53:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:51762 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753007AbZDQXnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 19:43:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,206,1239001200"; 
-   d="scan'208";a="507439202"
-Subject: Re: [PATCH 3/5] x86, intr-remap: enable interrupt remapping early
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Han, Weidong" <weidong.han@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
-       "Kay, Allen M" <allen.m.kay@intel.com>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
-In-Reply-To: <20090417141310.GD23493@elte.hu>
-References: <1239957736-6161-1-git-send-email-weidong.han@intel.com>
-	 <1239957736-6161-4-git-send-email-weidong.han@intel.com>
-	 <20090417141310.GD23493@elte.hu>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 17 Apr 2009 16:42:23 -0700
-Message-Id: <1240011743.27006.8496.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	id S1752964AbZDQXxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 19:53:31 -0400
+Message-ID: <49E91676.4020500@goop.org>
+Date: Fri, 17 Apr 2009 16:53:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 3/5] tracing/events: add rcu locking around trace event
+ prints
+References: <20090416021830.556671772@goodmis.org> <20090416021928.467656424@goodmis.org> <alpine.DEB.2.00.0904171004210.14919@gandalf.stny.rr.com> <49E89E53.2010500@goop.org> <alpine.DEB.2.00.0904171142010.14919@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0904171142010.14919@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 07:13 -0700, Ingo Molnar wrote:
-> * Weidong Han <weidong.han@intel.com> wrote:
-> 
-> > --- a/arch/x86/kernel/apic/apic.c
-> > +++ b/arch/x86/kernel/apic/apic.c
-> > @@ -118,6 +118,8 @@ static int x2apic_preenabled;
-> >  static int disable_x2apic;
-> >  static __init int setup_nox2apic(char *str)
-> >  {
-> > +	if (x2apic_enabled())
-> > +		panic("Bios already enabled x2apic, can't enforce nox2apic");
-> 
-> Could you please turn that into something like:
+Steven Rostedt wrote:
+> Well, this part does not get called when CREATE_TRACE_POINTS is not set. 
+> And when it is called, it undefines it, so that other headers will not 
+> include this part.
+>   
 
-I have couple of patches cleaning these up(including some warnings). I
-will post them shortly.
+Well, I can give it a whirl, I guess.  I've been tending towards 
+emitting my tracepoint definitions into their own .c file anyway, so 
+there's less chance of interference with everything else.
 
-> > +ir_failed:
-> > +	if (x2apic_preenabled)
-> > +		panic("x2apic enabled by bios. But IR enabling failed");
-> 
-> What is the likelyhood that we can continue in compat mode? If 
-> there's some chance, we should rather print a KERN_WARNING and 
-> should try to continue. If IRQs are not coming we'll hang shortly 
-> afterwards anyway.
-
-Typically only on high end platforms we will see x2apic enabled by BIOS
-before OS handover. And in these cases, BIOS should have already enabled
-interrupt-remapping in extended interrupt mode, before handing over
-control to OS. If the extended interrupt mode is set, HW will block  the
-compatibility format interrupts anyway. And I think its better to panic
-rather than hanging at random places(depending on which interrupts are
-already in remapped format and which are not). This way, it will be easy
-for anyone to figure out what is happening.
-
-thanks,
-suresh
-
+    J
