@@ -1,156 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZDQTEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZDQTEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZDQTEb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 15:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZDQTEW
+	id S1758183AbZDQTEx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 15:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbZDQTEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 15:04:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52371 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751710AbZDQTEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 15:04:22 -0400
-Date: Fri, 17 Apr 2009 21:03:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: fix section mismatch warnings
-Message-ID: <20090417190355.GA21614@elte.hu>
-References: <1239918902.10567.22.camel@ht.satnam> <20090417164141.GJ8253@elte.hu> <1239991281.3153.4.camel@ht.satnam>
+	Fri, 17 Apr 2009 15:04:40 -0400
+Received: from kroah.org ([198.145.64.141]:34571 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753843AbZDQTEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 15:04:39 -0400
+Date: Fri, 17 Apr 2009 12:01:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB fixes for 2.6.31-rc2
+Message-ID: <20090417190139.GA3548@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239991281.3153.4.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here's a number of USB fixes for your 2.6.31-rc2 tree.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Lots of little bugfixes, with the majority being in the musb driver,
+which has had a lot of patches queued up for it for quite some time now.
 
-> On Fri, 2009-04-17 at 18:41 +0200, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > 
-> > > The following changes since commit 88dc4c8e38d64db32907e0bd605f8c1ec4c4d1bd:
-> > >   Ingo Molnar (1):
-> > >         Merge branch 'tracing/ftrace'
-> > > 
-> > > are available in the git repository at:
-> > > 
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
-> > > 
-> > > Jaswinder Singh Rajput (3):
-> > >       x86: mm/numa_32.c calculate_numa_remap_pages should use __init
-> > >       x86: apic/es7000_32.c find_unisys_acpi_oem_table and es7000_acpi_madt_oem_check should use __init
-> > >       x86: smpboot.c wakeup_secondary_cpu_via_nmi do not required __devinit
-> > 
-> > The commit logs lack analysis. The suggestions in the warnings are 
-> > advisory and can be wrong. Analysis explaining what happened, maybe 
-> > even when it happened, and what should be done about it to fix that 
-> > issue is needed in such changelogs.
-> > 
-> > The commits might be correct - or they might be bogus. The commit 
-> > logs dont give us any help in deciding that. I.e. if you did that 
-> > work, you should document it. If you _didnt_ do that analysis work, 
-> > you shouldnt send patches addressing these types of warnings.
-> > 
-> 
-> I was busy in another stuff, So I am sending analysis of first 
-> commit. If you want you can apply this patch and ignore others :
-> 
-> [PATCH-tip] x86: mm/numa_32.c calculate_numa_remap_pages should use __init
-> 
-> calculate_numa_remap_pages() is called only by __init initmem_init()
-> further calculate_numa_remap_pages is calling:
-> 	__init find_e820_area() and __init reserve_early()
-> 
-> So calculate_numa_remap_pages() should be __init calculate_numa_remap_pages().
-> 
-> Impact: fix Section mismatch warnings
->  WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
->  The function calculate_numa_remap_pages() references
->  the function __init find_e820_area().
->  This is often because calculate_numa_remap_pages lacks a __init
->  annotation or the annotation of find_e820_area is wrong.
-> 
->  WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
->  The function calculate_numa_remap_pages() references
->  the function __init reserve_early().
->  This is often because calculate_numa_remap_pages lacks a __init
->  annotation or the annotation of reserve_early is wrong.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+It also cleans up the ch341 commit that Alan Cox pointed out was
+incorrect in the last USB merge.
 
-Yes, this one is perfect, it contains precisely the information we 
-need. It's also helpful for other reasons: people looking at such 
-commit logs will learn how to do section warning analysis correct.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Btw., the impact line i added is slightly different:
+All of these patches have been in the -next and -mm releases for a while.
 
-    [ Impact: save memory, address Section mismatch warning ]
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
-Note that the main impact is that we now save a little bit of RAM, 
-by marking one more function __init.
+thanks,
 
-Below is the full commit.
+greg k-h
 
-Thanks,
+------------
 
-	Ingo
+ drivers/block/ub.c                        |   20 +-
+ drivers/isdn/hisax/st5481_usb.c           |    9 +-
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c |    1 -
+ drivers/usb/class/cdc-wdm.c               |    2 +-
+ drivers/usb/core/devio.c                  |    2 +-
+ drivers/usb/core/hcd.c                    |   26 ++
+ drivers/usb/core/hcd.h                    |   14 +
+ drivers/usb/core/message.c                |   58 +++--
+ drivers/usb/core/usb.c                    |    2 +-
+ drivers/usb/gadget/u_ether.c              |    8 +-
+ drivers/usb/host/whci/asl.c               |   15 +-
+ drivers/usb/host/whci/hcd.c               |   23 ++
+ drivers/usb/host/whci/pzl.c               |   16 +-
+ drivers/usb/host/whci/qset.c              |   24 ++-
+ drivers/usb/host/whci/whcd.h              |    1 +
+ drivers/usb/host/whci/whci-hc.h           |    1 +
+ drivers/usb/musb/cppi_dma.c               |   23 +--
+ drivers/usb/musb/musb_core.c              |   12 +-
+ drivers/usb/musb/musb_gadget.c            |   33 ++-
+ drivers/usb/musb/musb_host.c              |  406 ++++++++++++++++-------------
+ drivers/usb/musb/musbhsdma.c              |   66 +++--
+ drivers/usb/serial/ftdi_sio.c             |    1 +
+ drivers/usb/serial/ftdi_sio.h             |    7 +
+ drivers/usb/serial/moto_modem.c           |    1 +
+ drivers/usb/serial/option.c               |    5 +
+ drivers/usb/serial/qcserial.c             |   21 ++
+ drivers/usb/storage/Makefile              |    3 +-
+ drivers/usb/storage/transport.c           |    4 +-
+ drivers/usb/storage/unusual_devs.h        |   14 +-
+ drivers/usb/wusbcore/devconnect.c         |   21 +-
+ drivers/usb/wusbcore/wusbhc.c             |   32 ++--
+ include/linux/usb.h                       |    9 +-
+ 32 files changed, 532 insertions(+), 348 deletions(-)
 
--------------------->
->From 445b9e51e9ebd7eb1b9ba724b38342015769b48e Mon Sep 17 00:00:00 2001
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Date: Fri, 17 Apr 2009 23:31:20 +0530
-Subject: [PATCH] x86: mm/numa_32.c calculate_numa_remap_pages should use __init
+---------------
 
-calculate_numa_remap_pages() is called only by __init initmem_init()
-further calculate_numa_remap_pages is calling:
-	__init find_e820_area() and __init reserve_early()
+Alan Stern (2):
+      USB: usb-storage: augment unusual_devs entry for Simple Tech/Datafab
+      usb-storage: fix mistake in Makefile
 
-So calculate_numa_remap_pages() should be __init calculate_numa_remap_pages().
+David Brownell (2):
+      USB: musb_host, minor enqueue locking fix (v2)
+      USB: musb_host, fix ep0 fifo flushing
 
- WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
- The function calculate_numa_remap_pages() references
- the function __init find_e820_area().
- This is often because calculate_numa_remap_pages lacks a __init
- annotation or the annotation of find_e820_area is wrong.
+David Vrabel (6):
+      USB: add reset endpoint operations
+      USB: whci-hcd: provide a endpoint_reset method
+      USB: whci-hcd: check return value of usb_hcd_link_urb_to_ep()
+      WUSB: disconnect all devices when stopping a WUSB HCD
+      WUSB: fix oops when completing URBs for disconnected devices
+      WUSB: correct format of wusb_chid sysfs file
 
- WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
- The function calculate_numa_remap_pages() references
- the function __init reserve_early().
- This is often because calculate_numa_remap_pages lacks a __init
- annotation or the annotation of reserve_early is wrong.
+Dr. Greg Wettstein (1):
+      USB device codes for Motorola phone.
 
-[ Impact: save memory, address Section mismatch warning ]
+Greg Kroah-Hartman (1):
+      Revert USB: usb-serial ch341: support for DTR/RTS/CTS
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-LKML-Reference: <1239991281.3153.4.camel@ht.satnam>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/numa_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Jonathan McDowell (1):
+      usb gadget: fix ethernet link reports to ethtool
 
-diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
-index 3daefa0..d253006 100644
---- a/arch/x86/mm/numa_32.c
-+++ b/arch/x86/mm/numa_32.c
-@@ -257,7 +257,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
- }
- #endif
- 
--static unsigned long calculate_numa_remap_pages(void)
-+static __init unsigned long calculate_numa_remap_pages(void)
- {
- 	int nid;
- 	unsigned long size, reserve_pages = 0;
+Kim Kyuwon (1):
+      USB: musb: fix possible panic while resuming
+
+Matthew Garrett (1):
+      USB: qcserial: Add extra device IDs
+
+Oliver Neukum (1):
+      USB: fix oops in cdc-wdm in case of malformed descriptors
+
+Pascal Terjan (1):
+      USB: option: Add ids for D-Link DWM-652 3.5G modem
+
+Peter Korsgaard (1):
+      USB: ftdi_sio: add vendor/project id for JETI specbos 1201 spectrometer
+
+Sergei Shtylyov (3):
+      USB: musb: bugfixes for multi-packet TXDMA support
+      USB: musb: sanitize clearing TXCSR DMA bits (take 2)
+      USB: musb: fix isochronous TXDMA (take 2)
+
+Werner Cornelius (1):
+      USB: usb-serial ch341: support for DTR/RTS/CTS
+
