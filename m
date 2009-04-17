@@ -1,111 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbZDQFSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbZDQFTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbZDQFSl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 01:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZDQFS3
+	id S1758234AbZDQFTS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 01:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZDQFTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 01:18:29 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:55552 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZDQFS2 convert rfc822-to-8bit (ORCPT
+	Fri, 17 Apr 2009 01:19:01 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39378 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbZDQFTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 01:18:28 -0400
-Message-ID: <49E810B0.9000906@cosmosbay.com>
-Date: Fri, 17 Apr 2009 07:16:32 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-References: <20090415170111.6e1ca264@nehalam>	<alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com>	<20090417012812.GA25534@linux.vnet.ibm.com> <20090416215033.3e648a7a@nehalam>
-In-Reply-To: <20090416215033.3e648a7a@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 17 Apr 2009 07:16:35 +0200 (CEST)
+	Fri, 17 Apr 2009 01:19:00 -0400
+Date: Fri, 17 Apr 2009 14:17:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+ controller (v2)
+Message-Id: <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090417045623.GA3896@balbir.in.ibm.com>
+References: <20090416015955.GB7082@balbir.in.ibm.com>
+	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416120316.GG7082@balbir.in.ibm.com>
+	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417014042.GB18558@balbir.in.ibm.com>
+	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417034539.GD18558@balbir.in.ibm.com>
+	<20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417045623.GA3896@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger a écrit :
-> On Thu, 16 Apr 2009 18:28:12 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Fri, 17 Apr 2009 10:26:23 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 12:49:51]:
 > 
->> On Thu, Apr 16, 2009 at 04:49:55PM -0700, Paul E. McKenney wrote:
->>> On Thu, Apr 16, 2009 at 03:33:54PM -0700, David Miller wrote:
->>>> From: Patrick McHardy <kaber@trash.net>
->>>> Date: Thu, 16 Apr 2009 15:11:31 +0200
->>>>
->>>>> Linus Torvalds wrote:
->>>>>> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
->>>>>>> The counters are the bigger problem, otherwise we could just free
->>>>>>> table
->>>>>>> info via rcu.  Do we really have to support: replace where the counter
->>>>>>> values coming out to user space are always exactly accurate, or is it
->>>>>>> allowed to replace a rule and maybe lose some counter ticks (worst
->>>>>>> case
->>>>>>> NCPU-1).
->>>>>> Why not just read the counters fromt he old one at RCU free time (they
->>>>>> are guaranteed to be stable at that point, since we're all done with
->>>>>> those entries), and apply them at that point to the current setup?
->>>>> We need the counters immediately to copy them to userspace, so waiting
->>>>> for an asynchronous RCU free is not going to work.
->>>> It just occurred to me that since all netfilter packet handling
->>>> goes through one place, we could have a sort-of "netfilter RCU"
->>>> of sorts to solve this problem.
->>> OK, I am putting one together...
->>>
->>> It will be needed sooner or later, though I suspect per-CPU locking
->>> would work fine in this case.
->> And here is a crude first cut.  Untested, probably does not even compile.
->>
->> Straight conversion of Mathieu Desnoyers's user-space RCU implementation
->> at git://lttng.org/userspace-rcu.git to the kernel (and yes, I did help
->> a little, but he must bear the bulk of the guilt).  Pick on srcu.h
->> and srcu.c out of sheer laziness.  User-space testing gives deep
->> sub-microsecond grace-period latencies, so should be fast enough, at
->> least if you don't mind two smp_call_function() invocations per grace
->> period and spinning on each instance of a per-CPU variable.
->>
->> Again, I believe per-CPU locking should work fine for the netfilter
->> counters, but I guess "friends don't let friends use hashed locks".
->> (I would not know for sure, never having used them myself, except of
->> course to protect hash tables.)
->>
->> Most definitely -not- for inclusion at this point.  Next step is to hack
->> up the relevant rcutorture code and watch it explode on contact.  ;-)
->>
->> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > On Fri, 17 Apr 2009 09:15:39 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 11:03:50]:
+> > > 
+> > > > On Fri, 17 Apr 2009 07:10:42 +0530
+> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
+> > > > > 
+> > > > > > On Thu, 16 Apr 2009 17:33:16 +0530
+> > > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > > Sorry, some troubles found. Ignore above Ack. 3points now.
+> > > > > > > > > 
+> > > > > > > > > 1. get_cpu should be after (*)
+> > > > > > > > > ==mem_cgroup_update_mapped_file_stat()
+> > > > > > > > > +	int cpu = get_cpu();
+> > > > > > > > > +
+> > > > > > > > > +	if (!page_is_file_cache(page))
+> > > > > > > > > +		return;
+> > > > > > > > > +
+> > > > > > > > > +	if (unlikely(!mm))
+> > > > > > > > > +		mm = &init_mm;
+> > > > > > > > > +
+> > > > > > > > > +	mem = try_get_mem_cgroup_from_mm(mm);
+> > > > > > > > > +	if (!mem)
+> > > > > > > > > +		return;
+> > > > > > > > > + ----------------------------------------(*)
+> > > > > > > > > +	stat = &mem->stat;
+> > > > > > > > > +	cpustat = &stat->cpustat[cpu];
+> > > > > > > > > +
+> > > > > > > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
+> > > > > > > > > +	put_cpu();
+> > > > > > > > > +}
+> > > > > > > > > ==
+> > > > > > > 
+> > > > > > > Yes or I should have a goto
+> > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
+> > > > > > > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
+> > > > > > > 
+> > > > > > > Hmmm.. not sure I understand this part. Are you suggesting that mm can
+> > > > > > > be NULL?
+> > > > > > No.
+> > > > > > 
+> > > > > > > I added the check for !mm as a safety check. Since this
+> > > > > > > routine is only called from rmap context, mm is not NULL, hence mem
+> > > > > > > should not be NULL. Did you find a race between mm->owner assignment
+> > > > > > > and lookup via mm->owner?
+> > > > > > > 
+> > > > > > No.
+> > > > > > 
+> > > > > > page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
+> > > > > > 
+> > > > > > For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
+> > > > > > used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
+> > > > > > 
+> > > > > > Then, File_Mapped can be greater than Cached easily if you use mm->owner.
+> > > > > > 
+> > > > > > I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
+> > > > > > other cgroups. It's meaningless.
+> > > > > > Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
+> > > > > > 
+> > > > > > By useing page_cgroup->mem_cgroup, we can avoid above mess.
+> > > > > 
+> > > > > Yes, I see your point. I wanted mapped_file to show up in the cgroup
+> > > > > that mapped the page. But this works for me as well, but that means
+> > > > > we'll nest the page cgroup lock under the PTE lock.
+> > > > 
+> > > > Don't worry. we do that nest at ANON's uncharge(), already.
+> > > > 
+> > > > About cost:
+> > > > 
+> > > > IIUC, the number of "mapcount 0->1/1->0" of file caches are much smaller than
+> > > > that of o Anon. And there will be not very much cache pingpong.
+> > > > 
+> > > > If you use PCG_MAPPED flag in page_cgroup (as my patch), you can use
+> > > > not-atomic version of set/clear when update is only under lock_page_cgroup().
+> > > > If you find better way, plz use it. But we can't avoid some kind of atomic ops
+> > > > for correct accounting, I think.
+> > > >
+> > > 
+> > > Can you sign off on your patch, so that I can take it with your
+> > > signed-off-by. I will also make some minor changes, get_cpu() is not
+> > > needed, since we are in preempt disable context. 
+> > > 
+> > Hmm, 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > But some more clean up is necesarry.
+> > 
+> > === This part ==
+> > +	lock_page_cgroup(pc);
+> > +	mem = pc->mem_cgroup;
+> > +	if (mem) {
+> > +		cpu = get_cpu();
+> > +		stat = &mem->stat;
+> > +		cpustat = &stat->cpustat[cpu];
+> > +		if (map)
+> > 
+> > === Should be ==
+> > +	lock_page_cgroup(pc);
+> > 	if (!PageCgroupUsed(pc)) {
+> > 		unlock_page_cgroup(pc);
+> > 		return;
+> > 	}
 > 
-> I am glad to see this worked on, but would rather not use RCU in this case
-> of iptables. It would be good for some of the other long grace period sutff.
+> Do we need this? If the page is mapped, pc should be used right?
 > 
-> The code to per-cpu entry consolidation by alloc/flip in 2.6.30-rc2 was
-> hard to debug and more convoluted so it probably would be a long term maintaince
-> nightmare.  The issue was the variable size skip structure so it made
-> for lots of iterators, etc. If the non-RCU per-cpu spinlock version is just
-> as fast, it is easier to understand.
 
-I agree that for 2.6.30, we could use a per-cpu spinlock as your last patch did,
-this would be very risky to push this new RCU right now. 
+About file cache, it'd definitely charged at add-to-radix-tree
+regardless of being mapped or not.
 
-But this new stuff looks very promising, (no more locked ops on fast path),
-and considering new percpu_{add|sub...} infra, very fast :
+*But* we still have following code.
+==
+820 static int __mem_cgroup_try_charge(struct mm_struct *mm,
+ 821                         gfp_t gfp_mask, struct mem_cgroup **memcg,
+ 822    
+ 834         /*
+ 835          * We always charge the cgroup the mm_struct belongs to.
+ 836          * The mm_struct's mem_cgroup changes on task migration if the
+ 837          * thread group leader migrates. It's possible that mm is not
+ 838          * set, if so charge the init_mm (happens for pagecache usage).
+ 839          */
+ 840         mem = *memcg;
+ 841         if (likely(!mem)) {
+ 842                 mem = try_get_mem_cgroup_from_mm(mm);
+ 843                 *memcg = mem;
+ 844         } else {
+ 845                 css_get(&mem->css);
+ 846         }
+ 847         if (unlikely(!mem))
+ 848                 return 0;
+==
 
-static inline void rcu_read_unlock_fgp(void)
-{
-	barrier();
-	percpu_sub(rcu_fgp_active_readers, 1); /* one instruction on x86 */
-	preempt_enable();
-}
+So, for _now_, we should use this style of checking page_cgroup is used or not.
+Until we fix/confirm try_charge() does.
 
-I wonder if IPI are really necessary on x86 if we use percpu_sub() since
-it already contains a barrier, and rcu_read_lock_fgp(void) also ends with
-a barrier() call...
+Thanks,
+-Kame
+
 
