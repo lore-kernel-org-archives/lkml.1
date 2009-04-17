@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbZDQRlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbZDQRmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760990AbZDQRlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbZDQRli
+	id S1761552AbZDQRmf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbZDQRmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:41:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39208 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757792AbZDQRli (ORCPT
+	Fri, 17 Apr 2009 13:42:25 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:50451 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758066AbZDQRmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:41:38 -0400
-Date: Fri, 17 Apr 2009 18:41:34 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090417174134.GK26366@ZenIV.linux.org.uk>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu> <20090417003805.GI26366@ZenIV.linux.org.uk> <20090417165643.GL8253@elte.hu> <1239987885.23397.4817.camel@laptop>
+	Fri, 17 Apr 2009 13:42:25 -0400
+Message-ID: <49E8BF87.1040201@vlnb.net>
+Date: Fri, 17 Apr 2009 21:42:31 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239987885.23397.4817.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Daniel Debonzi <debonzi@linux.vnet.ibm.com>,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and 	implementation.
+References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> 	<49E85F1C.7040106@vlnb.net> <49E8832F.6070302@linux.vnet.ibm.com> 	<ac3eb2510904170724l654b00b4k79156138f9fd926d@mail.gmail.com> 	<49E8A551.7050307@linux.vnet.ibm.com> <ac3eb2510904170903n4fa28bfdud80fe25b61be3c2a@mail.gmail.com>
+In-Reply-To: <ac3eb2510904170903n4fa28bfdud80fe25b61be3c2a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19chgFzEewpSLddNrWe0LmD8Ctz8GPmtsAYN9E
+ hOhdO7vKlQhjauDf9TxYznyUGvViwLYUOkn2phx/hH+X+6cKSH
+ zNU74dq/ktty55SQCWhEw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 07:04:45PM +0200, Peter Zijlstra wrote:
-> On Fri, 2009-04-17 at 18:56 +0200, Ingo Molnar wrote:
+Kay Sievers, on 04/17/2009 08:03 PM wrote:
+> On Fri, Apr 17, 2009 at 17:50, Daniel Debonzi
+> <debonzi@linux.vnet.ibm.com> wrote:
+>> Do you mean that uses struct device is the right way to do it instead of
+>> kobjects or it is just a option to get things on right places into sysfs?
 > 
-> > Stupid question regarding c): wouldnt such data structures go via 
-> > the VFS - which you said was free of BKL constraints? Or are there 
-> > interconnected private data structures between certain types of 
-> > closely related filesystems that the VFS does not know about? (and 
-> > hence might have BKL assumptions)
+> You can not put kobjects in /sys/devices/ and there will be no
+> disconnected kobject tree just for scsi, unless the scsi maintainers
+> really want want that, and then they should create their own
+> filesystem instead, and not use kobjects at all.
+
+Perhaps I'm missing something, but why do you think sysfs hierarchy for 
+a SCSI target subsystem can't be put anywhere, but only in /sys/devices?
+
+Consider /sys/class/scsi_host/ as an example. It is very close to what 
+SCST needs.
+
+And don't forget a SCSI target subsystem, basically, has from 
+implementation POV in common with the regular SCSI (initiator) subsystem 
+only some constants for commands and errors and "SCSI" word in the name. 
+All the internal processing is completely different, similarly to 
+difference between Firefox and Apache, mutt and sendmail, NFS client and 
+server.
+
+>> I don't know this struct closely but my first impression looking to the
+>> source code is that it is tied with hardware and has some complexity we
+>> probably don't need. What do you think?
 > 
-> The VFS is stuffed with ->private like pointers for filesystems to flesh
-> out, and I could well imagine some implicit serialization between the
-> various (4?) VFS hooks that are currently still under BKL.
+> If you want to integrate with the current scsi devices/objects, which
+> is the only sensible option I think, you have to use struct device
+> devices, kobjects will not get a classification in sysfs, and will be
+> invisible for userspace tools unless you do random readdir() in
+> /sys/devices/ to find them.
+> 
+> Kay
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Explicit one, TYVM...  Anyway, any fs that dares to use private data of
-objects from another filesystem deserves everything it gets; I'm not
-aware of any that would do that and I have no sympathy whatsoever to
-any that would try.
-
-That's not what I'd been talking about, though; what we want to watch out
-for is sharing of data structures by some (or all) fs instances of given
-type.  I.e. internals of particular fs driver, not cross-driver problems.
