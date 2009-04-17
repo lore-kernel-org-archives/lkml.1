@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbZDQACA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZDQACX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757517AbZDQACA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbZDQABs
+	id S1758702AbZDQACX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbZDQACJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:01:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46992 "EHLO hera.kernel.org"
+	Thu, 16 Apr 2009 20:02:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39907 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755804AbZDQABq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:01:46 -0400
-Date: Fri, 17 Apr 2009 00:00:45 GMT
-From: tip-bot for H Hartley Sweeten <hartleys@visionengravers.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       hartleys@visionengravers.com, tglx@linutronix.de,
-       hsweeten@visionengravers.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, hartleys@visionengravers.com,
-       hsweeten@visionengravers.com, mingo@elte.hu
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909015F9033@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE1909015F9033@mi8nycmail19.Mi8.com>
-Subject: [tip:core/urgent] kernel/softirq.c: fix sparse warning
-Message-ID: <tip-79d381c9f2354b594dcab9b04dfcc0debf7294fe@git.kernel.org>
-Git-Commit-ID: 79d381c9f2354b594dcab9b04dfcc0debf7294fe
-X-Mailer: tip-git-log-daemon
+	id S1758027AbZDQACI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:02:08 -0400
+Date: Fri, 17 Apr 2009 02:01:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090417000142.GF21405@elte.hu>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 00:00:47 +0000 (UTC)
+In-Reply-To: <20090416235649.GF26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  79d381c9f2354b594dcab9b04dfcc0debf7294fe
-Gitweb:     http://git.kernel.org/tip/79d381c9f2354b594dcab9b04dfcc0debf7294fe
-Author:     H Hartley Sweeten <hartleys@visionengravers.com>
-AuthorDate: Thu, 16 Apr 2009 19:30:18 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 01:57:54 +0200
 
-kernel/softirq.c: fix sparse warning
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-Fix sparse warning in kernel/softirq.c.
+> remount is potentially nastier, but then it *is* nasty.  Again, 
+> it's only per-fs stuff, so the obvious first step is taking BKL 
+> down into the instances. It doesn't protect anything in VFS; all 
+> uses are fs internal, so that'll take review of individual 
+> filesystems.
+> 
+> NOTE: do not assume that code in fs/foo/* is correct; "it doesn't 
+> take BKL elsewhere" does _not_ mean that we don't have races.  
+> IOW, the same review ought to look for such beasts and deal with 
+> them.  Mere "oh, no BKL anywhere in that fs" is not enough to 
+> discard the ->remount_fs() instance.
 
-  warning: do-while statement is not a compound statement
+what kind of races do you mean? Timing sensitive ones that are there 
+just are not easy to trigger with the BKL held?
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-LKML-Reference: <BD79186B4FD85F4B8E60E381CAEE1909015F9033@mi8nycmail19.Mi8.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Or actual locking interaction between that body of BKL code and all 
+other BKL using code?
 
-
----
- kernel/softirq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 2fecefa..b525dd3 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -472,9 +472,9 @@ void tasklet_kill(struct tasklet_struct *t)
- 		printk("Attempt to kill tasklet from interrupt\n");
- 
- 	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
--		do
-+		do {
- 			yield();
--		while (test_bit(TASKLET_STATE_SCHED, &t->state));
-+		} while (test_bit(TASKLET_STATE_SCHED, &t->state));
- 	}
- 	tasklet_unlock_wait(t);
- 	clear_bit(TASKLET_STATE_SCHED, &t->state);
+	Ingo
