@@ -1,104 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbZDQVM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbZDQVNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759303AbZDQVM5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 17:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbZDQVMe
+	id S1760003AbZDQVNf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbZDQVMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 17:12:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48487 "EHLO
+	Fri, 17 Apr 2009 17:12:35 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48517 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbZDQVMc (ORCPT
+	with ESMTP id S1755340AbZDQVMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 17:12:32 -0400
-Message-Id: <20090417211231.411979179@goodmis.org>
+	Fri, 17 Apr 2009 17:12:33 -0400
+Message-Id: <20090417211231.649674806@goodmis.org>
 References: <20090417211135.408179566@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 17 Apr 2009 17:11:39 -0400
+Date: Fri, 17 Apr 2009 17:11:40 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 4/5] tracing: protect trace_printk from recursion
-Content-Disposition: inline; filename=0004-tracing-protect-trace_printk-from-recursion.patch
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlsta <a.p.zijlstra@chello.nl>
+Subject: [PATCH 5/5] lockdep,x86: account for irqs enabled in paranoid_exit
+Content-Disposition: inline; filename=0005-lockdep-x86-account-for-irqs-enabled-in-paranoid_ex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-trace_printk can be called from any context, including NMIs.
-If this happens, then we must test for for recursion before
-grabbing any spinlocks.
+I hit the check_flags error of lockdep:
 
-This patch prevents trace_printk from being called recursively.
+WARNING: at kernel/lockdep.c:2893 check_flags+0x1a7/0x1d0()
+[...]
+hardirqs last  enabled at (12567): [<ffffffff8026206a>] local_bh_enable+0xaa/0x110
+hardirqs last disabled at (12569): [<ffffffff80610c76>] int3+0x16/0x40
+softirqs last  enabled at (12566): [<ffffffff80514d2b>] lock_sock_nested+0xfb/0x110
+softirqs last disabled at (12568): [<ffffffff8058454e>] tcp_prequeue_process+0x2e/0xa0
 
-[ Impact: prevent hard lockup in lockdep event tracer ]
+The check_flags warning of lockdep tells me that lockdep thought interrupts
+were disabled, but they were really enabled.
 
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
+The numbers in the above parenthesis show the order of events:
+
+12566: softirqs last enabled:  lock_sock_nested
+12567: hardirqs last enabled:  local_bh_enable
+12568: softirqs last disabled: tcp_prequeue_process
+12566: hardirqs last disabled: int3
+
+int3 is a breakpoint!
+
+Examining this further, I have CONFIG_NET_TCPPROBE enabled which adds
+break points into the kernel.
+
+The paranoid_exit of the return of int3 does not account for enabling
+interrupts on return to kernel. This code is a bit tricky since it
+is also used by the nmi handler (when lockdep is off), and we must be
+careful about the swapgs. We can not call kernel code after the swapgs
+has been performed.
+
+[ Impact: fix lockdep check_flags warning ]
+
+Acked-by: Peter Zijlsta <a.p.zijlstra@chello.nl>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ arch/x86/kernel/entry_64.S |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 183d788..b9a3adc 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1259,6 +1259,7 @@ int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
- 	struct trace_array_cpu *data;
- 	struct bprint_entry *entry;
- 	unsigned long flags;
-+	int disable;
- 	int resched;
- 	int cpu, len = 0, size, pc;
- 
-@@ -1273,7 +1274,8 @@ int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
- 	cpu = raw_smp_processor_id();
- 	data = tr->data[cpu];
- 
--	if (unlikely(atomic_read(&data->disabled)))
-+	disable = atomic_inc_return(&data->disabled);
-+	if (unlikely(disable != 1))
- 		goto out;
- 
- 	/* Lockdep uses trace_printk for lock tracing */
-@@ -1301,6 +1303,7 @@ out_unlock:
- 	local_irq_restore(flags);
- 
- out:
-+	atomic_dec_return(&data->disabled);
- 	ftrace_preempt_enable(resched);
- 	unpause_graph_tracing();
- 
-@@ -1320,6 +1323,7 @@ int trace_vprintk(unsigned long ip, const char *fmt, va_list args)
- 	int cpu, len = 0, size, pc;
- 	struct print_entry *entry;
- 	unsigned long irq_flags;
-+	int disable;
- 
- 	if (tracing_disabled || tracing_selftest_running)
- 		return 0;
-@@ -1329,7 +1333,8 @@ int trace_vprintk(unsigned long ip, const char *fmt, va_list args)
- 	cpu = raw_smp_processor_id();
- 	data = tr->data[cpu];
- 
--	if (unlikely(atomic_read(&data->disabled)))
-+	disable = atomic_inc_return(&data->disabled);
-+	if (unlikely(disable != 1))
- 		goto out;
- 
- 	pause_graph_tracing();
-@@ -1357,6 +1362,7 @@ int trace_vprintk(unsigned long ip, const char *fmt, va_list args)
- 	raw_local_irq_restore(irq_flags);
- 	unpause_graph_tracing();
-  out:
-+	atomic_dec_return(&data->disabled);
- 	preempt_enable_notrace();
- 
- 	return len;
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 1ac9986..987f91f 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -1397,7 +1397,10 @@ ENTRY(paranoid_exit)
+ paranoid_swapgs:
+ 	TRACE_IRQS_IRETQ 0
+ 	SWAPGS_UNSAFE_STACK
++	RESTORE_ALL 8
++	jmp irq_return
+ paranoid_restore:
++	TRACE_IRQS_IRETQ 0
+ 	RESTORE_ALL 8
+ 	jmp irq_return
+ paranoid_userspace:
 -- 
 1.6.2.1
 
