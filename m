@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbZDQJNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbZDQJQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760206AbZDQJNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 05:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760090AbZDQJNX
+	id S1759795AbZDQJQP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 05:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZDQJP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 05:13:23 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:38912 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759769AbZDQJNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 05:13:22 -0400
-Date: Fri, 17 Apr 2009 11:13:21 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #13058] First hibernation attempt fails
-Message-ID: <20090417091321.GP4593@kernel.dk>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090417063007.GB4593@kernel.dk> <49E83DC4.8040207@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E83DC4.8040207@tuffmail.co.uk>
+	Fri, 17 Apr 2009 05:15:58 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:49494 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbZDQJP5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 05:15:57 -0400
+Subject: Re: C/R without "leaks"
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Chris Friesen <cfriesen@nortel.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <49E77B49.3020102@cs.columbia.edu>
+References: <49E40662.2040508@cs.columbia.edu>
+	 <20090414163633.GE27461@x200.localdomain>
+	 <49E4D89D.9060903@cs.columbia.edu>
+	 <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia>
+	 <20090416161215.GA8505@x200.localdomain> <49E774B1.5060505@nortel.com>
+	 <49E77B49.3020102@cs.columbia.edu>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 11:15:46 +0200
+Message-Id: <1239959746.6143.66.camel@bahia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17 2009, Alan Jenkins wrote:
-> Jens Axboe wrote:
-> > On Thu, Apr 16 2009, Rafael J. Wysocki wrote:
-> >   
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >>
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.29.  Please verify if it still should be listed and let me know
-> >> (either way).
-> >>
-> >>
-> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13058
-> >> Subject		: First hibernation attempt fails
-> >> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> >> Date		: 2009-04-10 10:58 (7 days old)
-> >> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1faa16d22877f4839bd433547d770c676d1d964c
-> >> References	: http://marc.info/?l=linux-kernel&m=123928022321917&w=2
-> >>     
-> >
-> > Alan, is this still a problem?
-> >   
+On Thu, 2009-04-16 at 14:39 -0400, Oren Laadan wrote:
+> Any connection in that case is, of course, lost, and it's up to the
+> application to do something about it. If the application relies on
+> the state of the connection, it will have to give up (e.g. sshd, and
+> ssh, die).
 > 
-> Yup.  Still present in v2.6.30-rc2-195-g9f76208.
 
-Given the somewhat odd nature of the bug and the requirements to trigger
-it, how confident are you in the bisection results?
+And that's a good thing since that's exactly what users expect from
+sshd : to give up the connection when something goes wrong. I wouldn't
+trust a sshd with the ability to initiate connections on its own...
 
-I'll try and reproduce it here.
+And anyway, I still don't see the scenario where C/R a sshd is useful...
+Please someone (Alexey ?), provide a detailed use case where people
+would want to checkpoint or migrate live TCP connections... Discussion
+on containers@ is very interesting but really lacks of
+what-is-the-bigger-picture arguments... These huge patchsets are very
+tricky and intrusive... who wants them mainline ? what's the use of
+C/R ?
 
+> However, there are many application that can withstand connection
+> lost without crashing. They simply retry (web browser, irc client,
+> db clients). With time, there may be more applications that are
+> 'c/r-aware'.
+> 
+
+HPC jobs are definitely good candidates.
+
+> Moreover, in some cases you could, on restart, use a wrapper to
+> create a new connection to somewhere (*), then ask restart(2) to
+> use that socket instead of the original, such that from the user
+> point of view things continue to work well, transparently.
+> 
+
+Yes.
+
+> (*) that somewhere, could be the original peer, or another server,
+> if it has a way to somehow continue a cut connection, or a special
+> wrapper server that you right for that purpose.
+> 
+> Oren.
+> 
 -- 
-Jens Axboe
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
 
