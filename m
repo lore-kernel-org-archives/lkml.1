@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761031AbZDQSKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbZDQSLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761031AbZDQSKt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932177AbZDQSK1
+	id S932303AbZDQSLf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932236AbZDQSKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:10:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39210 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932191AbZDQSK0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:10:26 -0400
-Message-ID: <49E8C570.7030708@zytor.com>
-Date: Fri, 17 Apr 2009 11:07:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 17 Apr 2009 14:10:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44939 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932143AbZDQSKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 14:10:35 -0400
+Date: Fri, 17 Apr 2009 23:39:06 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Add ext3 data=guarded mode
+Message-ID: <20090417180906.GA8363@amit-x200.pnq.redhat.com>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com> <1239910921.21233.98.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
-References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com>	 <49D69F39.4010101@zytor.com>  <49D6ABD1.7040704@redhat.com> <1239058135.5212.43.camel@localhost.localdomain> <49DA8857.8030607@zytor.com> <49E7BFDC.8040305@redhat.com> <49E7C1B3.1070000@zytor.com> <49E884C2.9030409@redhat.com>
-In-Reply-To: <49E884C2.9030409@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239910921.21233.98.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
+On (Thu) Apr 16 2009 [15:42:01], Chris Mason wrote:
+> Hello everyone,
 > 
-> Aah, I see. So we'd better make a parser which generates internal
-> data structure from genuine opcode map in compilation time.
-> 
-> And I changed my mind about internal data structure too.
-> In this version, I'll use a smallest bits which are needed
-> for the decoder.
-> 
+> Here's an updated (v4) patch for ext3 data=guarded mode.  The first two
+> patches in the series are unchanged, and it looks like Linus pulled them
+> in this morning.
 
-Yes, and with a proper compile-time parser, that kind of things can be
-done, and be changed later if it is no longer appropriate.
+I had written a small program that calculates the time needed to allocate
+a file and zero it using various methods (posix_fallocate, mmap, 4k-chunk
+writes, 8k-chunk writes). I did this on a 20G partition with each method
+creating a file 4G in size. The system has 3G RAM. The program that does
+this is at
 
-	-hpa
+http://fedorapeople.org/gitweb?p=amitshah/public_git/alloc-perf.git;a=blob;f=test-file-zero-alloc-speed.c;hb=HEAD
+
+with the script to run it for the multiple filesystems at
+
+http://fedorapeople.org/gitweb?p=amitshah/public_git/alloc-perf.git;a=blob;f=run_test.sh;hb=HEAD
+
+I have a few results from those runs, time in seconds:
+
+# 4GiB file, kernel b0cbc861a3c05e634520b049b5cc27ad6febb51f
+
+filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
+ext2		74		96	761		81
+ext3-writeback	87		97	202		93
+ext3-ordered	86		94	134		104
+ext4		0		84	120		91
+xfs		0		84	274		81
+reiserfs	85		84	187		98
+btrfs		0		86	121		85
+
+# 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
+
+filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
+ext3-guarded	85		97	459		90
+ext3-writeback	86		95	140		94
+ext3-ordered	86		96	277		95
+btrfs		0		81	499		93
+xfs		0		79	184		84
+
+These were with a desktop running with a few terminal sessions and one
+konqueror session (to gauge the times a user will actually see while
+working on her desktop).
+
+Running the test in single user mode, I get the following results:
+
+# 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
+
+filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
+ext3-guarded	84		86	163		91
+ext3-writeback	84		88	217		91
+ext3-ordered	84		86	226		91
+btrfs		0		76	86		79
+ext4		0		73	195		76
+
+		Amit
