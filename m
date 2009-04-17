@@ -1,30 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbZDQBBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbZDQBCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759723AbZDQBBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZDQBBg
+	id S1760953AbZDQBCB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758230AbZDQBBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:01:36 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:44253 "EHLO smtp.polymtl.ca"
+	Thu, 16 Apr 2009 21:01:38 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:44257 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754912AbZDQBBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:01:35 -0400
-Message-Id: <20090417003755.276959950@polymtl.ca>
+	id S1755657AbZDQBBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 21:01:37 -0400
+Message-Id: <20090417003931.673284128@polymtl.ca>
+References: <20090417003755.276959950@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 16 Apr 2009 20:37:55 -0400
+Date: Thu, 16 Apr 2009 20:37:56 -0400
 From: mathieu.desnoyers@polymtl.ca
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [patch 0/3] Tracepoints kill rcupdate header dependency (v2)
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [patch 1/3] rcupdate header remove whitespace
+Content-Disposition: inline; filename=rcupdate-header-remove-whitespace.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 17 Apr 2009 01:01:17 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use rcupdate_types.h rather than rcupdate_defines.h to follow standard style.
+Janitor-style whitespace cleanup. Will need to copy this header elsewhere
+anyway.
 
-Mathieu
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+---
+ include/linux/rcupdate.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux.trees.git/include/linux/rcupdate.h
+===================================================================
+--- linux.trees.git.orig/include/linux/rcupdate.h	2009-04-16 19:57:30.000000000 -0400
++++ linux.trees.git/include/linux/rcupdate.h	2009-04-16 19:57:35.000000000 -0400
+@@ -18,7 +18,7 @@
+  * Copyright IBM Corporation, 2001
+  *
+  * Author: Dipankar Sarma <dipankar@in.ibm.com>
+- * 
++ *
+  * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
+  * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
+  * Papers:
 
 -- 
 Mathieu Desnoyers
