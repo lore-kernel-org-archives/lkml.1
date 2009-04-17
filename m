@@ -1,65 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761730AbZDQW4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbZDQXAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761730AbZDQW4d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 18:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760114AbZDQWzz
+	id S1758230AbZDQXAT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 19:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZDQXAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 18:55:55 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39507 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759487AbZDQWzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 18:55:52 -0400
-Subject: Re: Q: NFSD readdir in linux-2.6.28
-From: David Woodhouse <dwmw2@infradead.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: hooanon05@yahoo.co.jp, hch@infradead.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20090417225306.GO26366@ZenIV.linux.org.uk>
-References: <8036.1237474444@jrobl>
-	 <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl>
-	 <1239960739.3428.33.camel@macbook.infradead.org>
-	 <20090417193233.GM26366@ZenIV.linux.org.uk>
-	 <1240006620.19059.41.camel@macbook.infradead.org>
-	 <20090417224350.GN26366@ZenIV.linux.org.uk>
-	 <20090417225306.GO26366@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 23:55:46 +0100
-Message-Id: <1240008946.21423.18.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+	Fri, 17 Apr 2009 19:00:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53349 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752815AbZDQW77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 18:59:59 -0400
+Message-ID: <49E909E7.3070709@pobox.com>
+Date: Fri, 17 Apr 2009 18:59:51 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: IDE/ATA development list <linux-ide@vger.kernel.org>
+CC: Mark Lord <liml@rtr.ca>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: libata git repo guide (was Re: [PATCH 01/02] sata_mv: tidy up qc->tf
+ usage in qc_prep() functions)
+References: <49E359D6.1090309@rtr.ca>
+In-Reply-To: <49E359D6.1090309@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 23:53 +0100, Al Viro wrote:
-> On Fri, Apr 17, 2009 at 11:43:50PM +0100, Al Viro wrote:
-> > On Fri, Apr 17, 2009 at 11:17:00PM +0100, David Woodhouse wrote:
-> > > It sounds like the better answer is to just make sure i_mutex is held
-> > > when nfsd_buffered_readdir() calls back into the provided filldir
-> > > function (we could do it in the various filldir functions themselves,
-> > > _if_ they call lookup_one_len(), but I think I prefer it this way --
-> > > it's simpler). Patch below for comment.
-> > 
-> > Umm...  I can live with that, assuming that we don't have callbacks
-> > that take i_mutex themselves.  AFAICS, everything we call there is
-> > either obviously not touching i_mutex or is already called while we
-> > hold i_mutex elsewhere, but I'd appreciate if somebody actually
-> > tested that sucker for different versions of protocol...
-> 
-> BTW, why mess with taking i_mutex inside the inner loop and not
-> immediately around it?
+Mark Lord wrote:
+> For upstream-linus, please.
 
-Just to avoid making spaghetti of the bail-out cases, really. I did
-consider it (it wouldn't be _that_ bad), but figured that it wasn't such
-a bad thing if we don't hog the lock.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Any volunteers wanna format and post this to the wiki? 
+http://ata.wiki.kernel.org/
+
+For what it's worth, upstream-linus is for Linus only, not for anyone else.
+
+Relevant branches of libata-dev.git:
+
+ALL		All libata code I consider acceptable for public
+		testing.  Intended for Andrew Morton's -mm tree,
+		but I am always looking for people to help test!
+
+NEXT		libata code intended for current kernel + 1
+		This is a subset of ALL, and is intended for
+		the linux-next tree, and even more rigorous
+		public testing.
+
+upstream-fixes	This branch exists when the merge window is NOT open.
+		Fixes queued for Linus go here, during -rc.  Generally
+		I push to Linus pretty rapidly, though, so programmers
+		are encouraged to send patches diff'd against Linus
+		upstream during -rc.
+
+upstream	libata code intended for current kernel + 1.  When the
+		merge window is closed, patches are queued here.  When
+		the merge window is open, fixes for Linus are also
+		queued here.
+
+		Generally upstream==NEXT, but this is not guaranteed.
+
+		i.e. sometimes I will put a fix on a separate git
+		branch, and then merge that into the mix, such that
+
+			NEXT == upstream + fix-that-needs-testing
+
+And then there are individual branches that pop in and out of existence, 
+as I do my own work.  For example, currently active branches are
+
+fixes-eh-freeze	  Freeze ordering fix recently discussed; needs some
+		codepath review before I am sure it is safe. (NEXT)
+
+libahci		libahci patchset recently posted (NEXT, ALL)
+
+sectsize	Variable sector size patch.  Will not go into
+		#upstream branch until I satisfy some request of
+		willy's, which slips my mind at the moment (ALL)
+
+sx4		sata_sx4 new EH conversion (ALL)
+
+And last, but not least,
+
+master		Vanilla Linux kernel, with no changes from me.
+
+		Exists to indicate the root of all above branches,
+		so that "git log master..libahci" or
+		"git diff master..upstream" works as expected.
+
+
+NOTE:  All of the branches except 'master' may be rebased.
 
 
