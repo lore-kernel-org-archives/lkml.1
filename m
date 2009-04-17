@@ -1,108 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZDQC3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbZDQC3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbZDQC3d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 22:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZDQC3Z
+	id S1759484AbZDQC3y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 22:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbZDQC3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 22:29:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:12971 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753225AbZDQC3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 22:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:content-transfer-encoding:user-agent;
-        b=sSEiKcVlzN9tQ2h4Vkpvx6Gesq4V2plcfl3SHuBflb2s2DyIYN9RXnvwzIMFOObATh
-         ZC+o403D2l+DUrVPwwUpdyD3EnuGEsr9ALruDFFhNYXsCgAO6w7ywmTMcJInowSAoL40
-         rIwCq9JqOFphLCUcHo8KZROAF2NC3hHjBr7EY=
-Date: Thu, 16 Apr 2009 19:29:15 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.30-rc2
-Message-ID: <20090417022915.GA7594@dtor-d630.eng.vmware.com>
+	Thu, 16 Apr 2009 22:29:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38662 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753672AbZDQC3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 22:29:43 -0400
+Date: Thu, 16 Apr 2009 22:28:51 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Nauman Rafique <nauman@google.com>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Andrea Righi <righi.andrea@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Moyer Jeff Moyer <jmoyer@redhat.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: dm-ioband: Test results.
+Message-ID: <20090417022851.GC23152@redhat.com>
+References: <20090413.130552.226792299.ryov@valinux.co.jp> <20090416205720.GI8896@redhat.com> <20090417021139.GB23152@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090417021139.GB23152@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Apr 16, 2009 at 10:11:39PM -0400, Vivek Goyal wrote:
+> On Thu, Apr 16, 2009 at 04:57:20PM -0400, Vivek Goyal wrote:
+> > On Mon, Apr 13, 2009 at 01:05:52PM +0900, Ryo Tsuruta wrote:
+> > > Hi Alasdair and all,
+> > > 
+> > > I did more tests on dm-ioband and I've posted the test items and
+> > > results on my website. The results are very good.
+> > > http://people.valinux.co.jp/~ryov/dm-ioband/test/test-items.xls
+> > > 
+> > > I hope someone will test dm-ioband and report back to the dm-devel
+> > > mailing list.
+> > > 
+> > 
+> 
+> Ok, one more test. This time to show that with single queue and FIFO
+> dispatch a writer can easily starve the reader.
+> 
+> I have created two partitions /dev/sda1 and /dev/sda2. Two ioband devices
+> ioband1 and ioband2 on /dev/sda1 and /dev/sda2 respectively with weights
+> 40 and 20.
+> 
+> I am launching an aggressive writer dd with prio 7 (Best effort) and a
+> reader with prio 0 (Best effort).
+> 
+> Following is my script.
+> 
+> ****************************************************************
+> rm /mnt/sdd1/aggressivewriter
+> 
+> sync
+> echo 3 > /proc/sys/vm/drop_caches
+> 
+> #launch an hostile writer
+> ionice -c2 -n7 dd if=/dev/zero of=/mnt/sdd1/aggressivewriter bs=4K count=524288 conv=fdatasync &
+> 
+> # Reader
+> ionice -c 2 -n 0 dd if=/mnt/sdd1/testzerofile1 of=/dev/null &
+> wait $!
+> echo "reader finished"
+> **********************************************************************
 
-Please pull from:
+More results. Same reader writer test as above, the only variation I 
+have done is change the class of reader to RT from BE.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+ionice -c 1 -n 0 dd if=/mnt/sdd1/testzerofile1 of=/dev/null &
 
-to receive updates for the input subsystem.
+Even chaning the class of reader does not help. Writer still starves the
+reader.
 
-Changelog:
----------
+Without dm-ioband
+=================
+First run
+2147483648 bytes (2.1 GB) copied, 43.9096 s, 48.9 MB/s (Reader)
+reader finished
+2147483648 bytes (2.1 GB) copied, 85.9094 s, 25.0 MB/s (Writer)
 
-Alexander Beregalov (1):
-      Input: hp_sdc_rtc should depend on serio
+Second run
+2147483648 bytes (2.1 GB) copied, 40.2446 s, 53.4 MB/s (Reader)
+reader finished
+2147483648 bytes (2.1 GB) copied, 82.723 s, 26.0 MB/s (Writer)
 
-Arjan van de Ven (3):
-      Input: i8042 - introduce a tougher reset
-      Input: i8042 - add a DMI table for the i8042.reset option
-      Input: remove unnecessary synchronize_rcu() call
+With dm-ioband
+==============
+First run
+2147483648 bytes (2.1 GB) copied, 69.0272 s, 31.1 MB/s (Writer)
+2147483648 bytes (2.1 GB) copied, 89.3037 s, 24.0 MB/s (Reader)
+reader finished
 
-Barry Carroll (1):
-      Input: atkbd - add forced release keys quirk for Samsung NC20
+Second run
+2147483648 bytes (2.1 GB) copied, 64.8751 s, 33.1 MB/s (Writer)
+2147483648 bytes (2.1 GB) copied, 89.0273 s, 24.1 MB/s (Reader)
+reader finished
 
-Ben Nizette (1):
-      Input: ads7846 - fix unsafe disable_irq
-
-Dmitry Torokhov (2):
-      Input: gameport - fix attach driver code
-      Input: atkbd - add forced release keys quirk for Samsung Q45
-
-Eric Miao (3):
-      Input: ads7846 - introduce platform specific way to synchronize sampling
-      Input: da9034-ts - add Bin Yang as co-author of the driver
-      Input: da9034-ts - make pen {down,up} events more reliable
-
-Ilpo Järvinen (1):
-      Input: pc110pad - remove unused variable dev
-
-Jiri Slaby (1):
-      Input: mainstone-wm97xx - fix condition in pen_up
-
-Mark Brown (1):
-      Input: wm97xx - don't specify IRQF_SAMPLE_RANDOM
-
-Michael Hennerich (2):
-      Input: ad7877, ad7879 - remove depreciated IRQF_SAMPLE_RANDOM flag
-      Input: bf54x-keys - remove depreciated IRQF_SAMPLE_RANDOM flag
-
-
-Diffstat:
---------
-
- drivers/input/gameport/gameport.c            |   14 ++++-----
- drivers/input/input.c                        |    1 -
- drivers/input/keyboard/atkbd.c               |   20 +++++++++++++-
- drivers/input/keyboard/bf54x-keys.c          |    2 +-
- drivers/input/misc/Kconfig                   |    2 +-
- drivers/input/mouse/pc110pad.c               |    1 -
- drivers/input/serio/i8042-x86ia64io.h        |   28 +++++++++++++++++++
- drivers/input/serio/i8042.c                  |   37 ++++++++++++++++++++-----
- drivers/input/touchscreen/ad7877.c           |    4 +-
- drivers/input/touchscreen/ad7879.c           |    3 +-
- drivers/input/touchscreen/ads7846.c          |   12 +++++++-
- drivers/input/touchscreen/da9034-ts.c        |   29 ++++++++++++-------
- drivers/input/touchscreen/mainstone-wm97xx.c |    7 ++---
- drivers/input/touchscreen/wm97xx-core.c      |    3 +-
- include/linux/spi/ads7846.h                  |    1 +
- 15 files changed, 121 insertions(+), 43 deletions(-)
-
--- 
-Dmitry
-
+Thanks
+Vivek
