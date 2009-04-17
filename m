@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZDQAb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZDQAcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbZDQAb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbZDQAbM
+	id S1759209AbZDQAcX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758523AbZDQAcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:31:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55400 "EHLO mx2.mail.elte.hu"
+	Thu, 16 Apr 2009 20:32:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51960 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756895AbZDQAbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:31:10 -0400
-Date: Fri, 17 Apr 2009 02:30:42 +0200
+	id S1756788AbZDQAcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:32:07 -0400
+Date: Fri, 17 Apr 2009 02:31:43 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] tracing: add #include <linux/delay.h> to fix build
-	failure in test_work()
-Message-ID: <20090417003042.GD29630@elte.hu>
-References: <20090416021830.556671772@goodmis.org> <20090416021928.239106997@goodmis.org> <20090416083934.GB9813@elte.hu> <alpine.DEB.2.00.0904161008080.6495@gandalf.stny.rr.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] tracing/filters: add filter_mutex to protect filter
+	predicates
+Message-ID: <20090417003143.GE29630@elte.hu>
+References: <1239863904.6903.12.camel@tropicana> <49E6ED5A.6080003@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904161008080.6495@gandalf.stny.rr.com>
+In-Reply-To: <49E6ED5A.6080003@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,37 +37,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
+> Tom Zanussi wrote:
+> > This patch adds a filter_mutex to prevent the filter predicates from
+> > being accessed concurrently by various external functions.
+> > 
+> > It's based on a previous patch by Li Zefan:
+> >         "[PATCH 7/7] tracing/filters: make filter preds RCU safe"
+> > 
+> > but any problems with it were added by me. ;-)
+> > 
+> > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > 
 > 
+> Reviewed-and-tested-by: Li Zefan <lizf@cn.fujitsu.com>
 > 
-> On Thu, 16 Apr 2009, Ingo Molnar wrote:
-> > 
-> > ------------------------>
-> > >From 63c14122a54c26122ccdbe596123f8e2b75c3116 Mon Sep 17 00:00:00 2001
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Thu, 16 Apr 2009 10:26:51 +0200
-> > Subject: [PATCH] tracing: add #include <linux/delay.h> to fix build failure in test_work()
-> > MIME-Version: 1.0
-> > Content-Type: text/plain; charset=utf-8
-> > Content-Transfer-Encoding: 8bit
-> > 
-> > This build failure occured on a few rare configs:
-> > 
-> >  kernel/trace/trace_events.c: In function ?test_work?:
-> >  kernel/trace/trace_events.c:975: error: implicit declaration of function ?udelay?
-> >  kernel/trace/trace_events.c:980: error: implicit declaration of function ?msleep?
-> > 
-> > delay.h is included in way too many other headers, hiding cases
-> > where new usage is added without header inclusion.
-> > 
-> > Impact: build fix
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> except:
 > 
-> Thanks Ingo!
+> > @@ -348,17 +399,15 @@ int filter_add_subsystem_pred(struct event_subsystem *system,
+> >  		if (strcmp(call->system, system->name))
+> >  			continue;
+> >  
+> > -		if (!find_event_field(call, pred->field_name))
+> > -			continue;
+> > -
+> > -		err = filter_add_pred(call, pred);
+> > +		err = __filter_add_pred(call, pred);
+> >  		if (err == -ENOMEM) {
+> >  			system->preds[system->n_preds] = NULL;
+> > -			return err;
+> > +			system->n_preds--;
+> > +			break;
 > 
-> I don't see this change in tip, do you want me to apply it in my tree?
+> now we return 0 but not ENOMEM in this failure case.
 
-It's pushed out now.
+ok - i'll wait for this fix.
 
 	Ingo
