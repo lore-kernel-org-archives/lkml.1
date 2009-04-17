@@ -1,285 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbZDQOoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbZDQOoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbZDQOoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761059AbZDQOne
+	id S1761689AbZDQOoe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbZDQOng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:43:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62581 "EHLO
+	Fri, 17 Apr 2009 10:43:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63520 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760837AbZDQOnd (ORCPT
+	with ESMTP id S1761007AbZDQOnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 17 Apr 2009 10:43:33 -0400
-Message-Id: <20090417144331.581166934@goodmis.org>
+Message-Id: <20090417144331.971635220@goodmis.org>
 References: <20090417144055.857407604@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 17 Apr 2009 10:40:56 -0400
+Date: Fri, 17 Apr 2009 10:40:58 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH v2 1/5] ftrace: use module notifier for function tracer
-Content-Disposition: inline; filename=0001-ftrace-use-module-notifier-for-function-tracer.patch
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 3/5] tracing/events/ring-buffer: expose format of ring buffer headers to users
+Content-Disposition: inline; filename=0003-tracing-events-ring-buffer-expose-format-of-ring-bu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The hooks in the module code for the function tracer must be called
-before any of that module code runs. The function tracer hooks
-modify the module (replacing calls to mcount to nops). If the code
-is executed while the change occurs, then the CPU can take a GPF.
+Currently, every thing needed to read the binary output from the
+ring buffers is available, with the exception of the way the ring
+buffers handles itself internally.
 
-To handle the above with a bit of paranoia, I originally implemented
-the hooks as calls directly from the module code.
+This patch creates two special files in the debugfs/tracing/events
+directory:
 
-After examining the notifier calls, it looks as though the start up
-notify is called before any of the module's code is executed. This makes
-the use of the notify safe with ftrace.
+ # cat /debug/tracing/events/header_page
+        field: u64 timestamp;   offset:0;       size:8;
+        field: local_t commit;  offset:8;       size:8;
+        field: char data;       offset:16;      size:4080;
 
-Only the startup notify is required to be "safe". The shutdown simply
-removes the entries from the ftrace function list, and does not modify
-any code.
+ # cat /debug/tracing/events/header_event
+        type        :    2 bits
+        len         :    3 bits
+        time_delta  :   27 bits
+        array       :   32 bits
 
-This change has another benefit. It removes a issue with a reverse dependency
-in the mutexes of ftrace_lock and module_mutex.
+        padding     : type == 0
+        time_extend : type == 1
+        data        : type == 3
 
-Impact: clean up ftrace hooks in module.c
-Impact: removes lock dependency bug between ftrace_lock and module_mutex
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+This is to allow a userspace app to see if the ring buffer format changes
+or not.
+
+Impact: allow userspace apps to know of ringbuffer format changes
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace.h |    7 ----
- include/linux/module.h |    4 ++
- kernel/module.c        |   19 ++++------
- kernel/trace/ftrace.c  |   90 ++++++++++++++++++++++++++++++++++--------------
- 4 files changed, 75 insertions(+), 45 deletions(-)
+ include/linux/ring_buffer.h |    5 ++++
+ kernel/trace/ring_buffer.c  |   44 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_events.c |   38 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 87 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 53869be..97c83e1 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -233,8 +233,6 @@ extern int ftrace_arch_read_dyn_info(char *buf, int size);
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index f0aa486..fac8f1a 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -166,6 +166,11 @@ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data);
+ int ring_buffer_read_page(struct ring_buffer *buffer, void **data_page,
+ 			  size_t len, int cpu, int full);
  
- extern int skip_trace(unsigned long ip);
- 
--extern void ftrace_release(void *start, unsigned long size);
--
- extern void ftrace_disable_daemon(void);
- extern void ftrace_enable_daemon(void);
- #else
-@@ -325,13 +323,8 @@ static inline void __ftrace_enabled_restore(int enabled)
- 
- #ifdef CONFIG_FTRACE_MCOUNT_RECORD
- extern void ftrace_init(void);
--extern void ftrace_init_module(struct module *mod,
--			       unsigned long *start, unsigned long *end);
- #else
- static inline void ftrace_init(void) { }
--static inline void
--ftrace_init_module(struct module *mod,
--		   unsigned long *start, unsigned long *end) { }
- #endif
++struct trace_seq;
++
++int ring_buffer_print_entry_header(struct trace_seq *s);
++int ring_buffer_print_page_header(struct trace_seq *s);
++
+ enum ring_buffer_flags {
+ 	RB_FL_OVERWRITE		= 1 << 0,
+ };
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index f935bd5..84a6055 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -22,6 +22,28 @@
+ #include "trace.h"
  
  /*
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 6155fa4..a8f2c0a 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -341,6 +341,10 @@ struct module
- 	struct ftrace_event_call *trace_events;
- 	unsigned int num_trace_events;
- #endif
-+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
-+	unsigned long *ftrace_callsites;
-+	unsigned int num_ftrace_callsites;
-+#endif
- 
- #ifdef CONFIG_MODULE_UNLOAD
- 	/* What modules depend on me? */
-diff --git a/kernel/module.c b/kernel/module.c
-index a039470..2383e60 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1490,9 +1490,6 @@ static void free_module(struct module *mod)
- 	/* Free any allocated parameters. */
- 	destroy_params(mod->kp, mod->num_kp);
- 
--	/* release any pointers to mcount in this module */
--	ftrace_release(mod->module_core, mod->core_size);
--
- 	/* This may be NULL, but that's OK */
- 	module_free(mod, mod->module_init);
- 	kfree(mod->args);
-@@ -1893,11 +1890,9 @@ static noinline struct module *load_module(void __user *umod,
- 	unsigned int symindex = 0;
- 	unsigned int strindex = 0;
- 	unsigned int modindex, versindex, infoindex, pcpuindex;
--	unsigned int num_mcount;
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
--	unsigned long *mseg;
- 	mm_segment_t old_fs;
- 
- 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
-@@ -2179,7 +2174,13 @@ static noinline struct module *load_module(void __user *umod,
- 					 sizeof(*mod->trace_events),
- 					 &mod->num_trace_events);
- #endif
--
-+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
-+	/* sechdrs[0].sh_size is always zero */
-+	mod->ftrace_callsites = section_objs(hdr, sechdrs, secstrings,
-+					     "__mcount_loc",
-+					     sizeof(*mod->ftrace_callsites),
-+					     &mod->num_ftrace_callsites);
-+#endif
- #ifdef CONFIG_MODVERSIONS
- 	if ((mod->num_syms && !mod->crcs)
- 	    || (mod->num_gpl_syms && !mod->gpl_crcs)
-@@ -2244,11 +2245,6 @@ static noinline struct module *load_module(void __user *umod,
- 			dynamic_debug_setup(debug, num_debug);
- 	}
- 
--	/* sechdrs[0].sh_size is always zero */
--	mseg = section_objs(hdr, sechdrs, secstrings, "__mcount_loc",
--			    sizeof(*mseg), &num_mcount);
--	ftrace_init_module(mod, mseg, mseg + num_mcount);
--
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
- 		goto cleanup;
-@@ -2309,7 +2305,6 @@ static noinline struct module *load_module(void __user *umod,
-  cleanup:
- 	kobject_del(&mod->mkobj.kobj);
- 	kobject_put(&mod->mkobj.kobj);
--	ftrace_release(mod->module_core, mod->core_size);
-  free_unload:
- 	module_unload_free(mod);
- #if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index a234889..5b606f4 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -916,30 +916,6 @@ static void ftrace_free_rec(struct dyn_ftrace *rec)
- 	rec->flags |= FTRACE_FL_FREE;
- }
- 
--void ftrace_release(void *start, unsigned long size)
--{
--	struct dyn_ftrace *rec;
--	struct ftrace_page *pg;
--	unsigned long s = (unsigned long)start;
--	unsigned long e = s + size;
--
--	if (ftrace_disabled || !start)
--		return;
--
--	mutex_lock(&ftrace_lock);
--	do_for_each_ftrace_rec(pg, rec) {
--		if ((rec->ip >= s) && (rec->ip < e)) {
--			/*
--			 * rec->ip is changed in ftrace_free_rec()
--			 * It should not between s and e if record was freed.
--			 */
--			FTRACE_WARN_ON(rec->flags & FTRACE_FL_FREE);
--			ftrace_free_rec(rec);
--		}
--	} while_for_each_ftrace_rec();
--	mutex_unlock(&ftrace_lock);
--}
--
- static struct dyn_ftrace *ftrace_alloc_dyn_node(unsigned long ip)
- {
- 	struct dyn_ftrace *rec;
-@@ -2752,14 +2728,72 @@ static int ftrace_convert_nops(struct module *mod,
- 	return 0;
- }
- 
--void ftrace_init_module(struct module *mod,
--			unsigned long *start, unsigned long *end)
-+#ifdef CONFIG_MODULES
-+void ftrace_release(void *start, void *end)
++ * The ring buffer header is special. We must manually up keep it.
++ */
++int ring_buffer_print_entry_header(struct trace_seq *s)
 +{
-+	struct dyn_ftrace *rec;
-+	struct ftrace_page *pg;
-+	unsigned long s = (unsigned long)start;
-+	unsigned long e = (unsigned long)end;
++	int ret;
 +
-+	if (ftrace_disabled || !start || start == end)
-+		return;
++	ret = trace_seq_printf(s, "\ttype        :    2 bits\n");
++	ret = trace_seq_printf(s, "\tlen         :    3 bits\n");
++	ret = trace_seq_printf(s, "\ttime_delta  :   27 bits\n");
++	ret = trace_seq_printf(s, "\tarray       :   32 bits\n");
++	ret = trace_seq_printf(s, "\n");
++	ret = trace_seq_printf(s, "\tpadding     : type == %d\n",
++			       RINGBUF_TYPE_PADDING);
++	ret = trace_seq_printf(s, "\ttime_extend : type == %d\n",
++			       RINGBUF_TYPE_TIME_EXTEND);
++	ret = trace_seq_printf(s, "\tdata        : type == %d\n",
++			       RINGBUF_TYPE_DATA);
 +
-+	mutex_lock(&ftrace_lock);
-+	do_for_each_ftrace_rec(pg, rec) {
-+		if ((rec->ip >= s) && (rec->ip < e)) {
-+			/*
-+			 * rec->ip is changed in ftrace_free_rec()
-+			 * It should not between s and e if record was freed.
-+			 */
-+			FTRACE_WARN_ON(rec->flags & FTRACE_FL_FREE);
-+			ftrace_free_rec(rec);
-+		}
-+	} while_for_each_ftrace_rec();
-+	mutex_unlock(&ftrace_lock);
++	return ret;
 +}
 +
-+static void ftrace_init_module(struct module *mod,
-+			       unsigned long *start, unsigned long *end)
- {
- 	if (ftrace_disabled || start == end)
- 		return;
- 	ftrace_convert_nops(mod, start, end);
++/*
+  * The ring buffer is made up of a list of pages. A separate list of pages is
+  * allocated for each CPU. A writer may only write to a buffer that is
+  * associated with the CPU it is currently executing on.  A reader may read
+@@ -340,6 +362,28 @@ static inline int test_time_stamp(u64 delta)
+ 
+ #define BUF_PAGE_SIZE (PAGE_SIZE - BUF_PAGE_HDR_SIZE)
+ 
++int ring_buffer_print_page_header(struct trace_seq *s)
++{
++	struct buffer_data_page field;
++	int ret;
++
++	ret = trace_seq_printf(s, "\tfield: u64 timestamp;\t"
++			       "offset:0;\tsize:%u;\n",
++			       (unsigned int)sizeof(field.time_stamp));
++
++	ret = trace_seq_printf(s, "\tfield: local_t commit;\t"
++			       "offset:%u;\tsize:%u;\n",
++			       (unsigned int)offsetof(typeof(field), commit),
++			       (unsigned int)sizeof(field.commit));
++
++	ret = trace_seq_printf(s, "\tfield: char data;\t"
++			       "offset:%u;\tsize:%u;\n",
++			       (unsigned int)offsetof(typeof(field), data),
++			       (unsigned int)BUF_PAGE_SIZE);
++
++	return ret;
++}
++
+ /*
+  * head_page == tail_page && head == tail then buffer is empty.
+  */
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index f81d6ee..7163a2b 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -610,6 +610,30 @@ subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 	return cnt;
  }
  
-+static int ftrace_module_notify(struct notifier_block *self,
-+				unsigned long val, void *data)
++static ssize_t
++show_header(struct file *filp, char __user *ubuf, size_t cnt, loff_t *ppos)
 +{
-+	struct module *mod = data;
++	int (*func)(struct trace_seq *s) = filp->private_data;
++	struct trace_seq *s;
++	int r;
 +
-+	switch (val) {
-+	case MODULE_STATE_COMING:
-+		ftrace_init_module(mod, mod->ftrace_callsites,
-+				   mod->ftrace_callsites +
-+				   mod->num_ftrace_callsites);
-+		break;
-+	case MODULE_STATE_GOING:
-+		ftrace_release(mod->ftrace_callsites,
-+			       mod->ftrace_callsites +
-+			       mod->num_ftrace_callsites);
-+		break;
-+	}
++	if (*ppos)
++		return 0;
 +
-+	return 0;
++	s = kmalloc(sizeof(*s), GFP_KERNEL);
++	if (!s)
++		return -ENOMEM;
++
++	trace_seq_init(s);
++
++	func(s);
++	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
++
++	kfree(s);
++
++	return r;
 +}
-+#else
-+static int ftrace_module_notify(struct notifier_block *self,
-+				unsigned long val, void *data)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_MODULES */
 +
-+struct notifier_block ftrace_module_nb = {
-+	.notifier_call = ftrace_module_notify,
-+	.priority = 0,
+ static const struct seq_operations show_event_seq_ops = {
+ 	.start = t_start,
+ 	.next = t_next,
+@@ -667,6 +691,11 @@ static const struct file_operations ftrace_subsystem_filter_fops = {
+ 	.write = subsystem_filter_write,
+ };
+ 
++static const struct file_operations ftrace_show_header_fops = {
++	.open = tracing_open_generic,
++	.read = show_header,
 +};
 +
- extern unsigned long __start_mcount_loc[];
- extern unsigned long __stop_mcount_loc[];
+ static struct dentry *event_trace_events_dir(void)
+ {
+ 	static struct dentry *d_tracer;
+@@ -909,6 +938,15 @@ static __init int event_trace_init(void)
+ 	if (!d_events)
+ 		return 0;
  
-@@ -2791,6 +2825,10 @@ void __init ftrace_init(void)
- 				  __start_mcount_loc,
- 				  __stop_mcount_loc);
- 
-+	ret = register_module_notifier(&ftrace_module_nb);
-+	if (!ret)
-+		pr_warning("Failed to register trace ftrace module notifier\n");
++	/* ring buffer internal formats */
++	trace_create_file("header_page", 0444, d_events,
++			  ring_buffer_print_page_header,
++			  &ftrace_show_header_fops);
 +
- 	return;
-  failed:
- 	ftrace_disabled = 1;
++	trace_create_file("header_event", 0444, d_events,
++			  ring_buffer_print_entry_header,
++			  &ftrace_show_header_fops);
++
+ 	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
+ 		/* The linker may leave blanks */
+ 		if (!call->name)
 -- 
 1.6.2.1
 
