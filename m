@@ -1,81 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbZDQQDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbZDQQFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759990AbZDQQDU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZDQQDM
+	id S1759885AbZDQQFV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbZDQQFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:03:12 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:46922 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755004AbZDQQDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:03:11 -0400
-Date: Fri, 17 Apr 2009 11:55:50 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-In-Reply-To: <20090417153520.GA29968@elte.hu>
-Message-ID: <alpine.DEB.1.10.0904171142050.13734@qirst.com>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com> <1239951613.23397.4107.camel@laptop> <alpine.DEB.1.10.0904170941020.11877@qirst.com> <1239977776.23397.4590.camel@laptop> <alpine.DEB.1.10.0904171021360.20239@qirst.com> <1239979901.23397.4638.camel@laptop>
- <alpine.DEB.1.10.0904171100510.21575@qirst.com> <20090417153520.GA29968@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 17 Apr 2009 12:05:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42765 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756631AbZDQQFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:05:04 -0400
+Date: Fri, 17 Apr 2009 16:03:33 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1239954049.23397.4156.camel@laptop>
+References: <1239954049.23397.4156.camel@laptop>
+Subject: [tip:core/urgent] lockdep: more robust lockdep_map init sequence
+Message-ID: <tip-c8a250058656495be02c00de61e26b017c86ef00@git.kernel.org>
+Git-Commit-ID: c8a250058656495be02c00de61e26b017c86ef00
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 16:03:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009, Ingo Molnar wrote:
+Commit-ID:  c8a250058656495be02c00de61e26b017c86ef00
+Gitweb:     http://git.kernel.org/tip/c8a250058656495be02c00de61e26b017c86ef00
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Fri, 17 Apr 2009 09:40:49 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 17 Apr 2009 18:00:00 +0200
 
+lockdep: more robust lockdep_map init sequence
+
+Steven Rostedt reported:
+
+> OK, I think I figured this bug out. This is a lockdep issue with respect
+> to tracepoints.
 >
-> * Christoph Lameter <cl@linux.com> wrote:
+> The trace points in lockdep are called all the time. Outside the lockdep
+> logic. But if lockdep were to trigger an error / warning (which this run
+> did) we might be in trouble. For new locks, like the dentry->d_lock, that
+> are created, they will not get a name:
 >
-> > On Fri, 17 Apr 2009, Peter Zijlstra wrote:
-> >
-> > > And a random 1us cutoff, is well, random.
-> >
-> > Its got to be somewhere.
+> void lockdep_init_map(struct lockdep_map *lock, const char *name,
+>                       struct lock_class_key *key, int subclass)
+> {
+>         if (unlikely(!debug_locks))
+>                 return;
 >
-> Sorry, that's not a rational answer that makes any sense.
+> When a problem is found by lockdep, debug_locks becomes false. Thus we
+> stop allocating names for locks. This dentry->d_lock I had, now has no
+> name. Worse yet, I have CONFIG_DEBUG_VM set, that scrambles non
+> initialized memory. Thus, when the trace point was hit, it had junk for
+> the lock->name, and the machine crashed.
 
-There must be criteria for what constitutes a interrupt of the user space
-application that we care about. There are numerous effects (like cacheline
-fetches etc) that also cause holdoffs. So its not only the OS. There are
-also other randomizing influences due to the exact location in the
-measurement code path where the interrupt occurred. The criterion used
-here was that the cpu was not executing code for longer than 1 usec. We
-can discuss if this makes sense or what makes sense. But the measurements
-here are entirely from the perspective of the user space program
-experiencing OS noise.
+Ah, nice catch. I think we should put at least the name in regardless.
 
-> Peter's point is statistics 101: please show absolute values not an
-> event distribution cutoff - how much total time do we spend in the
-> kernel in that workload?
+Ensure we at least initialize the trivial entries of the depmap so that
+they can be relied upon, even when lockdep itself decided to pack up and
+go home.
 
-Futher details are included in the document that I pointed him to. The
-"workload" is a synthetic test of a busy loop continually reading the TSC
-register.
+[ Impact: fix lock tracing after lockdep warnings. ]
 
-http://www.kernel.org/pub/linux/kernel/people/christoph/collab-spring-2009/Latencharts.ods
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1239954049.23397.4156.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> Is the overhead 1%? 2%? 0.5%? And how did it change from 2.6.22
-> onwards? Did it go up by 0.1%, from 1% to 1.1%? Or did the average
-> go down by 0.05%, while increasing the spread of events (thus
-> fooling your cutoff)?
 
-As you see in the diagrams provided there is a 4 fold increase in the
-number of interrupts >1usecs when going from 2.6.22 to 2.6.23. How would
-you measure the overhead? Time spent in the OS? Disturbance of the caches
-by the OS that cause the application to have to refetch data from Ram?
+---
+ kernel/lockdep.c |   22 ++++++++++++++--------
+ 1 files changed, 14 insertions(+), 8 deletions(-)
 
-> These are very simple, very basic, very straightforward questions -
-> and no straight answer was forthcoming from you. Are you not
-> interested in that answer?
-
-Is this goofiness going to continue? I provided measurements from a user
-space perspective and you keep on demanding that I take other
-measurements. I can dig deeper into the reasons for these regressions and
-we can discuss what would be useful to measure but that wont happen
-overnight.
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index b0f0118..accb40c 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2490,13 +2490,20 @@ static int mark_lock(struct task_struct *curr, struct held_lock *this,
+ void lockdep_init_map(struct lockdep_map *lock, const char *name,
+ 		      struct lock_class_key *key, int subclass)
+ {
+-	if (unlikely(!debug_locks))
++	lock->class_cache = NULL;
++#ifdef CONFIG_LOCK_STAT
++	lock->cpu = raw_smp_processor_id();
++#endif
++
++	if (DEBUG_LOCKS_WARN_ON(!name)) {
++		lock->name = "NULL";
+ 		return;
++	}
++
++	lock->name = name;
+ 
+ 	if (DEBUG_LOCKS_WARN_ON(!key))
+ 		return;
+-	if (DEBUG_LOCKS_WARN_ON(!name))
+-		return;
+ 	/*
+ 	 * Sanity check, the lock-class key must be persistent:
+ 	 */
+@@ -2505,12 +2512,11 @@ void lockdep_init_map(struct lockdep_map *lock, const char *name,
+ 		DEBUG_LOCKS_WARN_ON(1);
+ 		return;
+ 	}
+-	lock->name = name;
+ 	lock->key = key;
+-	lock->class_cache = NULL;
+-#ifdef CONFIG_LOCK_STAT
+-	lock->cpu = raw_smp_processor_id();
+-#endif
++
++	if (unlikely(!debug_locks))
++		return;
++
+ 	if (subclass)
+ 		register_lock_class(lock, subclass, 1);
+ }
