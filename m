@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZDQUqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbZDQUqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbZDQUqk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 16:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZDQUqa
+	id S1757283AbZDQUqy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 16:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbZDQUqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 16:46:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35968 "EHLO hera.kernel.org"
+	Fri, 17 Apr 2009 16:46:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35973 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbZDQUq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 16:46:29 -0400
-Date: Fri, 17 Apr 2009 20:45:54 GMT
-From: tip-bot for Jack Steiner <steiner@sgi.com>
+	id S1755455AbZDQUqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 16:46:32 -0400
+Date: Fri, 17 Apr 2009 20:46:06 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+       sam@ravnborg.org, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090417142447.GA23759@sgi.com>
-References: <20090417142447.GA23759@sgi.com>
-Subject: [tip:x86/urgent] x86/uv: fix init of cpu-less nodes
-Message-ID: <tip-27229ca63269c1be0a710f074fa9de4024f283f1@git.kernel.org>
-Git-Commit-ID: 27229ca63269c1be0a710f074fa9de4024f283f1
+       sam@ravnborg.org, tglx@linutronix.de
+In-Reply-To: <20090415234642.GA28531@uranus.ravnborg.org>
+References: <20090415234642.GA28531@uranus.ravnborg.org>
+Subject: [tip:x86/urgent] x86, kbuild: make "make install" not depend on vmlinux
+Message-ID: <tip-1648e4f805063137b55b869666e936ffd4419cdf@git.kernel.org>
+Git-Commit-ID: 1648e4f805063137b55b869666e936ffd4419cdf
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 20:45:56 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 20:46:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  27229ca63269c1be0a710f074fa9de4024f283f1
-Gitweb:     http://git.kernel.org/tip/27229ca63269c1be0a710f074fa9de4024f283f1
-Author:     Jack Steiner <steiner@sgi.com>
-AuthorDate: Fri, 17 Apr 2009 09:24:47 -0500
+Commit-ID:  1648e4f805063137b55b869666e936ffd4419cdf
+Gitweb:     http://git.kernel.org/tip/1648e4f805063137b55b869666e936ffd4419cdf
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Fri, 17 Apr 2009 10:46:37 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 22:43:11 +0200
+CommitDate: Fri, 17 Apr 2009 22:43:12 +0200
 
-x86/uv: fix init of cpu-less nodes
+x86, kbuild: make "make install" not depend on vmlinux
 
-Fix an endcase in the UV initialization code for the "UV large system mode"
-of apicids.  If node zero contains no cpus, cpus on another node will be the
-boot cpu.  The percpu data that contains the extra apicid bits was not
-being initialized early enough.
+It is common to use "make install" in restricted environments which
+differ from the one which was actually used to build the kernel.  In
+such environments it is highly undesirable to trigger a rebuild of any
+part of the system.  Worse, the rebuild may be spurious, triggered by
+differences in the environment.
 
-[ Impact: fix potential boot crash on cpu-less UV nodes ]
-
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-LKML-Reference: <20090417142447.GA23759@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+LKML-Reference: <20090415234642.GA28531@uranus.ravnborg.org>
 
 
 ---
- arch/x86/kernel/apic/x2apic_uv_x.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+ arch/x86/Makefile |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index 1248318..49d2f5c 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -19,6 +19,7 @@
- #include <linux/timer.h>
- #include <linux/cpu.h>
- #include <linux/init.h>
-+#include <linux/io.h>
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index f05d8c9..8c86b72 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -153,7 +153,7 @@ endif
  
- #include <asm/uv/uv_mmrs.h>
- #include <asm/uv/uv_hub.h>
-@@ -34,6 +35,17 @@ DEFINE_PER_CPU(int, x2apic_extra_bits);
+ boot := arch/x86/boot
  
- static enum uv_system_type uv_system_type;
+-BOOT_TARGETS = bzlilo bzdisk fdimage fdimage144 fdimage288 isoimage install
++BOOT_TARGETS = bzlilo bzdisk fdimage fdimage144 fdimage288 isoimage
  
-+static int early_get_nodeid(void)
-+{
-+	union uvh_node_id_u node_id;
-+	unsigned long *mmr;
+ PHONY += bzImage $(BOOT_TARGETS)
+ 
+@@ -171,6 +171,10 @@ bzImage: vmlinux
+ $(BOOT_TARGETS): vmlinux
+ 	$(Q)$(MAKE) $(build)=$(boot) $@
+ 
++PHONY += install
++install:
++	$(Q)$(MAKE) $(build)=$(boot) $@
 +
-+	mmr = early_ioremap(UV_LOCAL_MMR_BASE | UVH_NODE_ID, sizeof(*mmr));
-+	node_id.v = *mmr;
-+	early_iounmap(mmr, sizeof(*mmr));
-+	return node_id.s.node_id;
-+}
-+
- static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	if (!strcmp(oem_id, "SGI")) {
-@@ -42,6 +54,8 @@ static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 		else if (!strcmp(oem_table_id, "UVX"))
- 			uv_system_type = UV_X2APIC;
- 		else if (!strcmp(oem_table_id, "UVH")) {
-+			__get_cpu_var(x2apic_extra_bits) =
-+				early_get_nodeid() << (UV_APIC_PNODE_SHIFT - 1);
- 			uv_system_type = UV_NON_UNIQUE_APIC;
- 			return 1;
- 		}
+ PHONY += vdso_install
+ vdso_install:
+ 	$(Q)$(MAKE) $(build)=arch/x86/vdso $@
