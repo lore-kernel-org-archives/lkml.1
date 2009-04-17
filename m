@@ -1,47 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbZDQJub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZDQJuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758309AbZDQJub (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 05:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbZDQJuR
+	id S1759559AbZDQJuo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 05:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760426AbZDQJu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 05:50:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43141 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754054AbZDQJuP (ORCPT
+	Fri, 17 Apr 2009 05:50:28 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:46144 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760298AbZDQJu1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 05:50:15 -0400
-Date: Fri, 17 Apr 2009 10:50:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] AHCI updates: Marvell AHCI PATA works; pata_marvell
- fate?
-Message-ID: <20090417105031.607a771e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090417023949.GA14469@havoc.gtf.org>
-References: <20090417023949.GA14469@havoc.gtf.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 17 Apr 2009 05:50:27 -0400
+Message-ID: <49E85059.8070400@cs.columbia.edu>
+Date: Fri, 17 Apr 2009 05:48:09 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: Greg Kurz <gkurz@fr.ibm.com>
+CC: Chris Friesen <cfriesen@nortel.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: C/R without "leaks"
+References: <49E40662.2040508@cs.columbia.edu>	 <20090414163633.GE27461@x200.localdomain>	 <49E4D89D.9060903@cs.columbia.edu>	 <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia>	 <20090416161215.GA8505@x200.localdomain> <49E774B1.5060505@nortel.com>	 <49E77B49.3020102@cs.columbia.edu> <1239959746.6143.66.camel@bahia>
+In-Reply-To: <1239959746.6143.66.camel@bahia>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Marvell PATA on 6121 and similar chips should also work, but that hasn't
-> yet been tested.  Here's the full list of what still needs testing:
+
+
+Greg Kurz wrote:
+> On Thu, 2009-04-16 at 14:39 -0400, Oren Laadan wrote:
+>> Any connection in that case is, of course, lost, and it's up to the
+>> application to do something about it. If the application relies on
+>> the state of the connection, it will have to give up (e.g. sshd, and
+>> ssh, die).
+>>
 > 
-> - master + slave devices
-> - ATAPI
-> - 6121 (6123? others?)
-
-LBA48
-
-
+> And that's a good thing since that's exactly what users expect from
+> sshd : to give up the connection when something goes wrong. I wouldn't
+> trust a sshd with the ability to initiate connections on its own...
 > 
-> Also, there is the open question of how to deal with pata_marvell
-> co-existence
+> And anyway, I still don't see the scenario where C/R a sshd is useful...
 
-I think for the moment make PATA support by AHCI a config option and as
-soon as we trust it we can get rid of the option and of pata_marvell.
+You mean an sshd with an open connection probably; the server itself
+is clearly useful to be able to c/r.
 
-Alan
+> Please someone (Alexey ?), provide a detailed use case where people
+> would want to checkpoint or migrate live TCP connections... Discussion
+> on containers@ is very interesting but really lacks of
+> what-is-the-bigger-picture arguments... These huge patchsets are very
+> tricky and intrusive... who wants them mainline ? what's the use of
+> C/R ?
+> 
+
+A canonical example would a virtual-private-server: instead of doing
+server consolidation with a virtual machine, your do with containers.
+In a sense, containers lets you chop the OS into independent isolated
+pieces. You ca use a linux box to run multiple virtual execution
+environments (containers), each running services of your choice. They
+could range from a sshd for users, to apache servers, to database
+servers to users' vnc sessions, etc.
+
+Now comes the that you really need to take the machine down, for
+whatever reason. With c/r of live connections you can live-migrate
+these containers to another machine (on the same subnet) that will
+"steal" the IP as well, and voila - no service disruption.
+
+Such scenarios are the focus of Alexey.
+
+I'm also very interested in these scenarios, and I'm _also_ thinking
+of other scenarios, where either (a) an entire container is not
+necessary (example: user running long computation on laptop and wants
+to save it before a reboot), or (b) the program would like to make
+adjustments to its state compared to the time it was saved (example:
+change the location of an output log file depending on the machine
+on which your are running).
+
+Unfortunately, if we plan for and require, as per Alexey, that c/r
+would only work for whole-containers, these two cases will not be
+addressed.
+
+Oren.
+
+>> However, there are many application that can withstand connection
+>> lost without crashing. They simply retry (web browser, irc client,
+>> db clients). With time, there may be more applications that are
+>> 'c/r-aware'.
+>>
+> 
+> HPC jobs are definitely good candidates.
+> 
+>> Moreover, in some cases you could, on restart, use a wrapper to
+>> create a new connection to somewhere (*), then ask restart(2) to
+>> use that socket instead of the original, such that from the user
+>> point of view things continue to work well, transparently.
+>>
+> 
+> Yes.
+> 
+>> (*) that somewhere, could be the original peer, or another server,
+>> if it has a way to somehow continue a cut connection, or a special
+>> wrapper server that you right for that purpose.
+>>
+>> Oren.
+>>
