@@ -1,194 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbZDQFTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbZDQFVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbZDQFTS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 01:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZDQFTB
+	id S1758560AbZDQFVq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 01:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZDQFVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 01:19:01 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39378 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbZDQFTA (ORCPT
+	Fri, 17 Apr 2009 01:21:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33218 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbZDQFVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 01:19:00 -0400
-Date: Fri, 17 Apr 2009 14:17:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add file based RSS accounting for memory resource
- controller (v2)
-Message-Id: <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090417045623.GA3896@balbir.in.ibm.com>
-References: <20090416015955.GB7082@balbir.in.ibm.com>
-	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416120316.GG7082@balbir.in.ibm.com>
-	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417014042.GB18558@balbir.in.ibm.com>
-	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417034539.GD18558@balbir.in.ibm.com>
-	<20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417045623.GA3896@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 17 Apr 2009 01:21:37 -0400
+Date: Fri, 17 Apr 2009 07:24:37 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Bug #13098] 2.6.29-git12 breaks vga=0x0f07 on MSI/Intel GPU
+Message-ID: <20090417052437.GJ14687@one.firstfloor.org>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.L8.dw85JB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <nY3-4PrO6XH.A.L8.dw85JB@chimera>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 10:26:23 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 12:49:51]:
+On Thu, Apr 16, 2009 at 11:45:03PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> > On Fri, 17 Apr 2009 09:15:39 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 11:03:50]:
-> > > 
-> > > > On Fri, 17 Apr 2009 07:10:42 +0530
-> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
-> > > > > 
-> > > > > > On Thu, 16 Apr 2009 17:33:16 +0530
-> > > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > > > 
-> > > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
-> > > > > > > 
-> > > > > > > > 
-> > > > > > > > > Sorry, some troubles found. Ignore above Ack. 3points now.
-> > > > > > > > > 
-> > > > > > > > > 1. get_cpu should be after (*)
-> > > > > > > > > ==mem_cgroup_update_mapped_file_stat()
-> > > > > > > > > +	int cpu = get_cpu();
-> > > > > > > > > +
-> > > > > > > > > +	if (!page_is_file_cache(page))
-> > > > > > > > > +		return;
-> > > > > > > > > +
-> > > > > > > > > +	if (unlikely(!mm))
-> > > > > > > > > +		mm = &init_mm;
-> > > > > > > > > +
-> > > > > > > > > +	mem = try_get_mem_cgroup_from_mm(mm);
-> > > > > > > > > +	if (!mem)
-> > > > > > > > > +		return;
-> > > > > > > > > + ----------------------------------------(*)
-> > > > > > > > > +	stat = &mem->stat;
-> > > > > > > > > +	cpustat = &stat->cpustat[cpu];
-> > > > > > > > > +
-> > > > > > > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
-> > > > > > > > > +	put_cpu();
-> > > > > > > > > +}
-> > > > > > > > > ==
-> > > > > > > 
-> > > > > > > Yes or I should have a goto
-> > > > > > > 
-> > > > > > > > > 
-> > > > > > > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
-> > > > > > > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
-> > > > > > > 
-> > > > > > > Hmmm.. not sure I understand this part. Are you suggesting that mm can
-> > > > > > > be NULL?
-> > > > > > No.
-> > > > > > 
-> > > > > > > I added the check for !mm as a safety check. Since this
-> > > > > > > routine is only called from rmap context, mm is not NULL, hence mem
-> > > > > > > should not be NULL. Did you find a race between mm->owner assignment
-> > > > > > > and lookup via mm->owner?
-> > > > > > > 
-> > > > > > No.
-> > > > > > 
-> > > > > > page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
-> > > > > > 
-> > > > > > For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
-> > > > > > used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
-> > > > > > 
-> > > > > > Then, File_Mapped can be greater than Cached easily if you use mm->owner.
-> > > > > > 
-> > > > > > I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
-> > > > > > other cgroups. It's meaningless.
-> > > > > > Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
-> > > > > > 
-> > > > > > By useing page_cgroup->mem_cgroup, we can avoid above mess.
-> > > > > 
-> > > > > Yes, I see your point. I wanted mapped_file to show up in the cgroup
-> > > > > that mapped the page. But this works for me as well, but that means
-> > > > > we'll nest the page cgroup lock under the PTE lock.
-> > > > 
-> > > > Don't worry. we do that nest at ANON's uncharge(), already.
-> > > > 
-> > > > About cost:
-> > > > 
-> > > > IIUC, the number of "mapcount 0->1/1->0" of file caches are much smaller than
-> > > > that of o Anon. And there will be not very much cache pingpong.
-> > > > 
-> > > > If you use PCG_MAPPED flag in page_cgroup (as my patch), you can use
-> > > > not-atomic version of set/clear when update is only under lock_page_cgroup().
-> > > > If you find better way, plz use it. But we can't avoid some kind of atomic ops
-> > > > for correct accounting, I think.
-> > > >
-> > > 
-> > > Can you sign off on your patch, so that I can take it with your
-> > > signed-off-by. I will also make some minor changes, get_cpu() is not
-> > > needed, since we are in preempt disable context. 
-> > > 
-> > Hmm, 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > But some more clean up is necesarry.
-> > 
-> > === This part ==
-> > +	lock_page_cgroup(pc);
-> > +	mem = pc->mem_cgroup;
-> > +	if (mem) {
-> > +		cpu = get_cpu();
-> > +		stat = &mem->stat;
-> > +		cpustat = &stat->cpustat[cpu];
-> > +		if (map)
-> > 
-> > === Should be ==
-> > +	lock_page_cgroup(pc);
-> > 	if (!PageCgroupUsed(pc)) {
-> > 		unlock_page_cgroup(pc);
-> > 		return;
-> > 	}
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Do we need this? If the page is mapped, pc should be used right?
 > 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13098
+> Subject		: 2.6.29-git12 breaks vga=0x0f07 on MSI/Intel GPU
+> Submitter	: Andi Kleen <andi@firstfloor.org>
+> Date		: 2009-04-06 01:14 (11 days old)
+> References	: http://lkml.org/lkml/2009/4/5/200
+> Handled-By	: H. Peter Anvin <hpa@zytor.com>
 
-About file cache, it'd definitely charged at add-to-radix-tree
-regardless of being mapped or not.
+That's already fixed with 5f641356127712fbdce0eee120e5ce115860c17f I think.
+At least it works again on my test box with the rcs.
 
-*But* we still have following code.
-==
-820 static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 821                         gfp_t gfp_mask, struct mem_cgroup **memcg,
- 822    
- 834         /*
- 835          * We always charge the cgroup the mm_struct belongs to.
- 836          * The mm_struct's mem_cgroup changes on task migration if the
- 837          * thread group leader migrates. It's possible that mm is not
- 838          * set, if so charge the init_mm (happens for pagecache usage).
- 839          */
- 840         mem = *memcg;
- 841         if (likely(!mem)) {
- 842                 mem = try_get_mem_cgroup_from_mm(mm);
- 843                 *memcg = mem;
- 844         } else {
- 845                 css_get(&mem->css);
- 846         }
- 847         if (unlikely(!mem))
- 848                 return 0;
-==
+-Andi
 
-So, for _now_, we should use this style of checking page_cgroup is used or not.
-Until we fix/confirm try_charge() does.
-
-Thanks,
--Kame
-
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
