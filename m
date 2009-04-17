@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761805AbZDQQPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761933AbZDQQPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761805AbZDQQPZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761773AbZDQQOy
+	id S1761933AbZDQQPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760399AbZDQQPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:14:54 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:41550 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761797AbZDQQOx (ORCPT
+	Fri, 17 Apr 2009 12:15:22 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:41219 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761862AbZDQQPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:14:53 -0400
-X-Greylist: delayed 3083 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 12:14:52 EDT
-Date: Fri, 17 Apr 2009 11:22:38 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: include/linux/compiler-gcc[34].h no longer referenced?
-Message-ID: <alpine.LFD.2.00.0904171120490.16701@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Apr 2009 12:15:21 -0400
+Message-ID: <49E8AB11.4000708@nortel.com>
+Date: Fri, 17 Apr 2009 10:15:13 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Christoph Lameter <cl@linux.com>
+CC: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+Subject: Re: how to tell if arbitrary kernel memory address is backed by physical
+ memory?
+References: <49E750CA.4060300@nortel.com> <alpine.DEB.1.10.0904161654480.7855@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0904161654480.7855@qirst.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Apr 2009 16:15:16.0689 (UTC) FILETIME=[B21AE410:01C9BF77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter wrote:
+> On Thu, 16 Apr 2009, Chris Friesen wrote:
 
-  from my latest cleanup script run on the current source, it would
-appear that neither of those two header files are being included
-anymore.  remove?
+>> Is there a portable way to tell whether a particular virtual address in the
+>> lowmem address range is backed by physical memory and is readable?
+>>
+>> For background...we have some guys working on a software memory scrubber for
+>> an embedded board.  The memory controller supports ECC but doesn't support
+>> scrubbing  in hardware.  What we want to do is walk all of lowmem, reading in
+>> memory.  If a fault is encountered, it will be handled by other code.
+> 
+> Virtual address in the lowmem address range? lowmem address ranges exist
+> for physical addresses.
+> 
+> If you walk lowmem (physical) then you will never see a missing page.
 
-rday
---
+We have a mips board that appears to have holes in the lowmem mappings 
+such that blindly walking all of it causes problems.  I assume the 
+allocator knows about these holes and simply doesn't assign memory at 
+those addresses.
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+We may have found a solution though...it looks like virt_addr_valid() 
+returns false for the problematic addresses.  Would it be reasonable to 
+call this once for each page before trying to access it?
 
-        Linux Consulting, Training and Annoying Kernel Pedantry.
+Chris
 
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
