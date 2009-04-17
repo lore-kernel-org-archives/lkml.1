@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160AbZDQTJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZDQTKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160AbZDQTJs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 15:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZDQTHb
+	id S1752621AbZDQTKm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 15:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZDQTHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 15:07:31 -0400
-Received: from kroah.org ([198.145.64.141]:51224 "EHLO coco.kroah.org"
+	Fri, 17 Apr 2009 15:07:32 -0400
+Received: from kroah.org ([198.145.64.141]:51230 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755028AbZDQTH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 15:07:29 -0400
+	id S1754347AbZDQTHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 15:07:31 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 08/10] driver core: prevent device_for_each_child from oopsing
-Date: Fri, 17 Apr 2009 12:04:32 -0700
-Message-Id: <1239995074-4065-8-git-send-email-gregkh@suse.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 10/10] UIO: fix specific device driver missing statement for depmod
+Date: Fri, 17 Apr 2009 12:04:34 -0700
+Message-Id: <1239995074-4065-10-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <20090417190144.GB3548@kroah.com>
 References: <20090417190144.GB3548@kroah.com>
@@ -22,32 +22,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Vrabel noticed that the wireless usb stack likes to call
-device_for_each_chile() with an empty bus.  This used to work fine, but
-now oopses.  This patch fixes the oops and makes the code behave like it
-used to.
+From: Hans J. Koch <hjk@linutronix.de>
 
-Reported-by: David Vrabel <david.vrabel@csr.com>
-Tested-by: David Vrabel <david.vrabel@csr.com>
+On Fri, Apr 10, 2009 at 01:50:50PM -0700, Andrew Morton wrote:
+> On Fri, 10 Apr 2009 13:32:01 GMT
+> bugzilla-daemon@bugzilla.kernel.org wrote:
+>
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13059
+
+drivers/uio/uio_cif.c misses a MODULE_DEVICE_TABLE, this fixes it.
+
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/uio/uio_cif.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index e73c92d..d230ff4 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1142,6 +1142,9 @@ int device_for_each_child(struct device *parent, void *data,
- 	struct device *child;
- 	int error = 0;
+diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
+index c60b8fc..28034c8 100644
+--- a/drivers/uio/uio_cif.c
++++ b/drivers/uio/uio_cif.c
+@@ -147,5 +147,6 @@ static void __exit hilscher_exit_module(void)
+ module_init(hilscher_init_module);
+ module_exit(hilscher_exit_module);
  
-+	if (!parent->p)
-+		return 0;
-+
- 	klist_iter_init(&parent->p->klist_children, &i);
- 	while ((child = next_device(&i)) && !error)
- 		error = fn(child, data);
++MODULE_DEVICE_TABLE(pci, hilscher_pci_ids);
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Hans J. Koch, Benedikt Spranger");
 -- 
 1.6.2
 
