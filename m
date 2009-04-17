@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZDQRo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZDQRpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758630AbZDQRo6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbZDQRop
+	id S932079AbZDQRpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762233AbZDQRow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:44:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59429 "EHLO
+	Fri, 17 Apr 2009 13:44:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51068 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758961AbZDQRoo (ORCPT
+	by vger.kernel.org with ESMTP id S1762280AbZDQRou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:44:44 -0400
-Date: Fri, 17 Apr 2009 10:37:42 -0700 (PDT)
+	Fri, 17 Apr 2009 13:44:50 -0400
+Date: Fri, 17 Apr 2009 10:32:46 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: takata@linux-m32r.org
-cc: Sam Ravnborg <sam@ravnborg.org>, Christoph Hellwig <hch@lst.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] m32r: move include/asm-m32r to
- arch/m32r/include/asm
-In-Reply-To: <swfmyag9fx8.wl%takata.hirokazu@renesas.com>
-Message-ID: <alpine.LFD.2.00.0904171034140.4042@localhost.localdomain>
-References: <20090416150707.GA941@lst.de> <20090416164050.GB4850@uranus.ravnborg.org> <swfmyag9fx8.wl%takata.hirokazu@renesas.com>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: David Miller <davem@davemloft.net>, paulmck@linux.vnet.ibm.com,
+       dada1@cosmosbay.com, shemminger@vyatta.com, kaber@trash.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org,
+       mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+In-Reply-To: <1239988979.23397.4841.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0904171028070.4042@localhost.localdomain>
+References: <20090416215033.3e648a7a@nehalam>  <49E810B0.9000906@cosmosbay.com> <20090417054032.GD6885@linux.vnet.ibm.com>  <20090417.010710.59150850.davem@davemloft.net> <1239988979.23397.4841.camel@laptop>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,25 +34,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 17 Apr 2009, takata@linux-m32r.org wrote:
+On Fri, 17 Apr 2009, Peter Zijlstra wrote:
 > 
-> I have moved asm-m32r headers and build-checked.
-> 
-> Please pull from the following m32r git tree:
->   git://www.linux-m32r.org/git/takata/linux-2.6_dev.git for-linus
+> Since its a full broadcast, we can do that _today_ using on_each_cpu().
+> But whatever way we turn this, this will be a very expensive operation.
+> Imagine doing that on your 256-way for every iptables rules change.
 
-Ok, pulled.
+Well, you _could_ just have a per-CPU bit of "have I used nf rules since 
+the last update", and skip those CPU's. Use memory ordering to check the 
+bits (set the bit _before_ looking up a NF rule, and check them _after_ 
+doing the update, and have a barrier in between if you really think it 
+matters).
 
-I also removed the last remnants of asm-h8300 (a file that was added after 
-the more of everything else) and asm-arm (a stale .gitignore file).
+Remember: the cost was never about a single filter rule update. The cost 
+of a single one is almost immaterial, as long as it's not in hundreds of 
+milliseconds. It's the cost of people building up things incrementally 
+that caused this thing.
 
-So now the only thing left is the build-time include/asm-$(ARCH) 
-generation usually for just that "<asm/asm-offsets.h> file.
+So if you have 200 "iptables" commands in a sequence, and especially 
+during bootup, a trivial "has the old rule been ever even looked at on 
+this CPU" would already fix the issue. Because it would always be zero in 
+the only case where it matters.
 
-Oh, and the "asm -> asm-$(ARCH)" symlink that the asm-offsets.h thing 
-brings with it.
+This is, of course, what we do for the TLB flushing issue. We don't want 
+to send IPI's to all CPU's, and in 99.999% of all cases we don't need to, 
+because the other CPU's never even loaded the MM.
 
-There may be other auto-generated cases, of course, asm-offsets.h is the 
-only one I happen to see during my regular x86-64 build.
-
-		Linus
+			Linus
