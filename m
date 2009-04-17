@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbZDQBg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbZDQBhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbZDQBg6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZDQBgs
+	id S1758179AbZDQBhb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbZDQBhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:36:48 -0400
-Received: from mga14.intel.com ([143.182.124.37]:26499 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751901AbZDQBgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:36:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,201,1239001200"; 
-   d="scan'208";a="132456183"
-Subject: Re: [PATCH] thermal: Fix polling frequency for systems without
-	passive cooling
-From: Zhang Rui <rui.zhang@intel.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Thu, 16 Apr 2009 21:37:14 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:5887 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756922AbZDQBhL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 21:37:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MV2itfq8KDVCDaTcisYd/bNXysRjGvq2Yt9ui3vfPD4GmJqEsfpB2NNRboeRsIiE7y
+         OHFsTLptXZtpjjZMEQY6+NgVTNFulAmHyCa1VF9mgBWzWNxIQavjRfMRQMaoXwDmsfgt
+         +zSO5DaEXTvFdfQnBF7GvftuucTBZg+gwNsD0=
+MIME-Version: 1.0
+In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+Date: Fri, 17 Apr 2009 09:37:10 +0800
+Message-ID: <d82e647a0904161837w6b6fb652la0da05f9061e95dc@mail.gmail.com>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+From: Ming Lei <tom.leiming@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <20090414191645.GB7940@srcf.ucam.org>
-References: <49DF6835.9040501@tuffmail.co.uk> <49DFE345.3010109@gmail.com>
-	 <49E05F83.2090500@tuffmail.co.uk> <49E20EBA.2090708@tuffmail.co.uk>
-	 <1239588248.5564.19.camel@localhost.localdomain>
-	 <49E3085D.3060403@tuffmail.co.uk> <20090413170531.GA13188@srcf.ucam.org>
-	 <49E38779.9060705@tuffmail.co.uk>  <20090414191645.GB7940@srcf.ucam.org>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 17 Apr 2009 09:37:07 +0800
-Message-Id: <1239932227.7661.397.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       video4linux-list@redhat.com, laurent.pinchart@skynet.be,
+       mchehab@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 03:16 +0800, Matthew Garrett wrote:
-> The polling interval (in deciseconds) was accidently interpreted as 
-> being in milliseconds in one codepath, resulting in excessively frequent 
-> polling. Ensure that the conversion is performed.
-> 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+2009/4/17 Rafael J. Wysocki <rjw@sisk.pl>:
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13125
+> Subject         : active uvcvideo breaks over suspend
+> Submitter       : Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> Date            : 2009-04-15 10:12 (2 days old)
+> References      : http://marc.info/?l=linux-kernel&m=123979009508840&w=4
+>
 
-Acked-by: Zhang Rui <rui.zhang@intel.com>
+It is a bug in resume path of uvcvideo driver, and I have sent a patch
+to laurent.pinchart@skynet.be,
+mchehab@infradead.org  and video4linux-list@redhat.com to fix it, but
+still no echo from them.
 
-ï»¿Len,
-I think we can ship this patch in 2.6.30-rc3.
+The patch title is V4L/DVB:usbvideo:fix uvc resume failed.
 
-thanks,
-rui
-> 
-> ---
-> 
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 9cd15e8..564ea14 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -909,7 +909,7 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
->  			thermal_zone_device_register("acpitz", trips, tz,
->  						     &acpi_thermal_zone_ops,
->  						     0, 0, 0,
-> -						     tz->polling_frequency);
-> +						     tz->polling_frequency*100);
->  	if (IS_ERR(tz->thermal_zone))
->  		return -ENODEV;
-> 
+Rafael J.
+        If you would like to apply it ,I can resend to you.  Thanks!
 
+-- 
+Lei Ming
