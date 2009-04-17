@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759120AbZDQA7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbZDQBBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759120AbZDQA7c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZDQA7X
+	id S1760013AbZDQBBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZDQBBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:59:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38313 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753533AbZDQA7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:59:22 -0400
-Date: Fri, 17 Apr 2009 02:59:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20090417005911.GA6815@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 16 Apr 2009 21:01:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37214 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754540AbZDQBBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 21:01:00 -0400
+Date: Thu, 16 Apr 2009 17:44:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>, menage@google.com,
+       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       agk@sourceware.org, axboe@kernel.dk, baramsori72@gmail.com,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       ryov@valinux.co.jp, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-Id: <20090416174428.6bb5da21.akpm@linux-foundation.org>
+In-Reply-To: <20090417092040.1c832c69.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
+	<1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
+	<20090416152937.b2188370.akpm@linux-foundation.org>
+	<20090417092040.1c832c69.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Fri, 17 Apr 2009 09:20:40 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Please pull the latest sched-fixes-for-linus git tree from:
+> On Thu, 16 Apr 2009 15:29:37 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Tue, 14 Apr 2009 22:21:14 +0200
+> > Andrea Righi <righi.andrea@gmail.com> wrote:
+> > 
+> > > Subject: [PATCH 3/9] bio-cgroup controller
+> > 
+> > Sorry, but I have to register extreme distress at the name of this. 
+> > The term "bio" is well-established in the kernel and here we have a new
+> > definition for the same term: "block I/O".
+> > 
+> > "bio" was a fine term for you to have chosen from the user's
+> > perspective, but from the kernel developer perspective it is quite
+> > horrid.  The patch adds a vast number of new symbols all into the
+> > existing "bio_" namespace, many of which aren't related to `struct bio'
+> > at all.
+> > 
+> > At least, I think that's what's happening.  Perhaps the controller
+> > really _is_ designed to track `struct bio'?  If so, that's an odd thing
+> > to tell userspace about.
+> > 
+> Hmm, how about iotrack-cgroup ?
+> 
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+Well. blockio_cgroup has the same character count and is more specific.
 
- Thanks,
-
-	Ingo
-
------------------->
-Gautham R Shenoy (1):
-      sched: Avoid printing sched_group::__cpu_power for default case
-
-Lai Jiangshan (1):
-      tracing, sched: mark get_parent_ip() notrace
-
-
- kernel/sched.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 5724508..b902e58 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4846,7 +4846,7 @@ void scheduler_tick(void)
- #endif
- }
- 
--unsigned long get_parent_ip(unsigned long addr)
-+notrace unsigned long get_parent_ip(unsigned long addr)
- {
- 	if (in_lock_functions(addr)) {
- 		addr = CALLER_ADDR2;
-@@ -7367,8 +7367,12 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 		cpumask_or(groupmask, groupmask, sched_group_cpus(group));
- 
- 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
--		printk(KERN_CONT " %s (__cpu_power = %d)", str,
--						group->__cpu_power);
-+
-+		printk(KERN_CONT " %s", str);
-+		if (group->__cpu_power != SCHED_LOAD_SCALE) {
-+			printk(KERN_CONT " (__cpu_power = %d)",
-+				group->__cpu_power);
-+		}
- 
- 		group = group->next;
- 	} while (group != sd->groups);
