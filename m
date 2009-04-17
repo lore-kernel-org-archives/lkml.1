@@ -1,188 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbZDQNZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbZDQNZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761130AbZDQNZb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 09:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761007AbZDQNZM
+	id S1761220AbZDQNZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 09:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbZDQNZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 09:25:12 -0400
-Received: from e24smtp02.br.ibm.com ([32.104.18.86]:49030 "EHLO
-	e24smtp02.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760959AbZDQNZK (ORCPT
+	Fri, 17 Apr 2009 09:25:49 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40529 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756274AbZDQNZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 09:25:10 -0400
-Message-ID: <49E8832F.6070302@linux.vnet.ibm.com>
-Date: Fri, 17 Apr 2009 10:25:03 -0300
-From: Daniel Debonzi <debonzi@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-CC: scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and implementation.
-References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> <49E85F1C.7040106@vlnb.net>
-In-Reply-To: <49E85F1C.7040106@vlnb.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 09:25:49 -0400
+Date: Fri, 17 Apr 2009 15:28:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH] [0/28] x86: MCE: Feature series for 2.6.31
+Message-ID: <20090417132854.GO14687@one.firstfloor.org>
+References: <20090407507.636692542@firstfloor.org> <49E866F2.7020407@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E866F2.7020407@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> Daniel Debonzi, on 04/16/2009 10:23 PM wrote:
->> Vladislav Bolkhovitin wrote:
->>> Hi All,
->>>
->>> Below is proposal for the SCST sysfs layout, which will replace 
->>> existing procfs-based infrastructure. Any comments, questions and 
->>> suggestions are welcome!
->>>
->>> I. SCST sysfs layout.
->>>
->>> Root would be /sys/scsi_tgt.
->>>
->>> In the root there would be the following files and subdirectories:
->>>
->>>  - targets - subdirectory listing names of all registered target 
->>> drivers.
->>>
->>>  - devices - subdirectory listing all registered backend devices.
->>>
->>>  - sgv - subdirectory listing all existing SGV pools.
->>>
->>>  - drivers - subdirectory listing all loaded target and backend 
->>> drivers (dev handlers).
->>>
->>>  - threads - RW file listing number of global SCST threads. Writing 
->>> to that file would allow to change that value.
->>>
->>>  - trace_level - RW file listing SCST core logging level. Writing to 
->>> that file would allow to change that. Example content: "out_of_mem | 
->>> minor | pid | line | function | special | mgmt | mgmt_minor | 
->>> mgmt_dbg | retry". See current procfs implementation of this file for 
->>> more info.
->>>
->>>  - version - RO file listing version of SCST core and enabled compile 
->>> time features. Example content: "1.0.2, EXTRACHECKS, 
->>> DEBUG"                                                                                                                          
->>
->>
->> Based on all I read this last days, I believe we are not allowed to 
->> include the directory scsi_tgt on /sys root. I think it has to be in a 
->> existent directory reserved for this sort of application. I just 
->> didn't figured out which one it would be.
+On Fri, Apr 17, 2009 at 08:24:34PM +0900, Hidetoshi Seto wrote:
+> Andi Kleen wrote:
+> > Various new Intel x86 machine check features, including initial support
+> > for machine check recovery and new status bits. The actual machine check
+> > recovery requires some generic VM changes, which will be posted in a separate
+> > series ("POISON series") This series can be applied without the POISON
+> > series and POISON requires these patches.
+> > 
+> > Especially the broadcast and early nowayout patches are fairly important for 
+> > Nehalem CPUs, without them machine checks are often incorrectly reported
+> > due to the shared bank topology of the system.
+> > 
+> > -Andi
 > 
-> /sys/class? It already has scsi_device, scsi_disk, scsi_generic and 
-> scsi_host.
+> Andi, could you divide this series into "cleanups" and "features"?
 
-I don't think so because all the directories on /sys/class have symlinks 
-to the files somewhere else. However I noticed that many of them on my 
-system are on /sys/device/virtual
+There is very little classic cleanup (as in make code prettier
+to read and do nothing else) in this series, it's pretty much all features or 
+feature like fixes. 
 
->>> III. Implementation considerations
->>>
->>> 1. Top level subdirectories and files should be created by init_scst().
->>>
->>> 2. targets/target_driver_name drivers/target_driver_name and should 
->>> be created by scst_register_target_template() and removed by 
->>> scst_unregister_target_template().
->>>
->>> 3. targets/target_driver_name/target with sessions, luns and 
->>> ini_groups subdirectories should be created by scst_register() and 
->>> removed by scst_unregister().
->>>
->>> 4. targets/target_driver_name/target/sessions/session and below 
->>> should be created by scst_init_session() and removed by 
->>> scst_free_session().
->>>
->>> 5. Pass-through devices should be added to devices/ by 
->>> scst_register_device() and removed by scst_unregister_device(). 
->>> Initially they should have "handler" link pointed to "none".
->>>
->>> 6. Virtual devices should be added to devices/ by 
->>> scst_register_virtual_device() and removed by 
->>> scst_unregister_virtual_device().
->>>
->>> 7. drivers/dev_handler_name should be added by 
->>> scst_register_dev_driver() or scst_register_virtual_dev_driver() and 
->>> removed by scst_unregister_dev_driver() or 
->>> scst_unregister_virtual_dev_driver().
->>>
->>> 8. It isn't clear how to best combine standard and custom entries in 
->>> targets/target_driver_name/target, devices/device, 
->>> drivers/target_driver_name and drivers/dev_handler_name, I don't know 
->>> sysfs interfaces sufficiently well. I can only suggest places, where 
->>> it should be done:
->>>
->>>  - For targets/target_driver_name/target a target driver after 
->>> scst_register() register call should call new function 
->>> scst_get_target_root() and add there new entries. Before 
->>> scst_unregister() call the target driver should remove them at first. 
->>> Similarly it should be done for drivers/target_driver_name and 
->>> drivers/dev_handler_name.
->>>
->>>  - For devices/device a dev handler should do it in attach() callback 
->>> and remove in detach() callback. Similarly to scst_get_target_root(), 
->>> the dev handler should get its sysfs root by calling 
->>> scst_get_dev_root().
->>>
->>> Both should be made in some generic way to minimize duplicated code 
->>> between target drivers and between dev handlers.
->>
->> Also based on what I read, the way to have data structures reflected 
->> on sysfs is using kobjecs. I feel that the expected approach to have 
->> it is to include a kobject (or kset depending on the case) on the 
->> existent structures which will be reflected on the sysfs. I notice 
->> that on the actual implementation all the proc interface is 
->> implemented on scst_proc.c and I don't know if it will be possible to 
->> keep having the access interfaces on a separated source file. We could 
->> possible have the callback functions on a separated file but I can't 
->> visualize it without start to touch it more deeply. Probably you guys 
->> have a better view of this implementation possibilities.
-> 
-> All the above sysfs layout reflects internal SCST objects:
-> 
-> 1. targets/target_driver_name and drivers/target_driver_name -> struct 
-> scst_tgt_template
-> 
-> 2. targets/target_driver_name/target -> struct scst_tgt
-> 
-> 3. targets/target_driver_name/target/sessions/session -> struct 
-> scst_session
-> 
-> 4. targets/target_driver_name/target/ini_groups/group -> struct 
-> scst_acg. (For targets/target_driver_name/target/luns each struct 
-> scst_tgt would have internal struct scst_acg.)
-> 
-> 5. 
-> targets/target_driver_name/target/ini_groups/group/initiators/initiator 
-> -> struct scst_acn
-> 
-> 6. targets/target_driver_name/target/ini_groups/group/luns/lun and 
-> targets/target_driver_name/target/luns/lun -> struct scst_acg_dev
-> 
-> 7. devices/device -> struct scst_device
-> 
-> 8. drivers/dev_handler_name -> struct scst_dev_type
-> 
-> 9. sgv/pool -> struct sgv_pool
-> 
-> So, we should simply add kobjects in them. To manipulate with then 
-> already there is an API, used by procfs, and should be also used by 
-> sysfs. This API is completely out of scst_proc.c
-> 
+The ones that could be seen as cleanups are:
 
-great, this will save some time.
+x86: MCE: Remove unused mce_events variable
+x86: MCE: Use symbolic macros to access MCG_CAP register
+x86: MCE: Remove mce_init unused argument
+x86: MCE: Rename and align out2 label
 
-> 
-> LAYOUT UPDATE.
-> 
-> Looks like it would be better to move entries from 
-> drivers/target_driver_name to targets/target_driver_name to keep all the 
-> related entries in one place. Then to reflect new state rename drivers/ 
-> to back_drivers/.
+That one is technically a cleanup, but I would argue it's a fix because
+it shrinks code size:
 
-Ack.
+x86: MCE: Use extended sysattrs for the check_interval attribute.
 
-Thanks,
-Daniel Debonzi
+That one could be see as cleanup too although I personally consider removing
+BKL feature too:
 
+x86: MCE: Drop BKL in mce_open
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
