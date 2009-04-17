@@ -1,104 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZDQKCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbZDQKER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbZDQKCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 06:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbZDQKCb
+	id S1760345AbZDQKER (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 06:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758230AbZDQKEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 06:02:31 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:24403
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756246AbZDQKCa (ORCPT
+	Fri, 17 Apr 2009 06:04:04 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:54593 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757101AbZDQKEC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 06:02:30 -0400
-X-BigFish: VPS-13(zz936eQ4015Mzz1202hzzz32i6bh14bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KI8P7U-01-GGV-01
-Date: Fri, 17 Apr 2009 12:01:55 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: jbarnes@virtuousgeek.org
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH]  pci: derive nearby CPUs from device's instead of bus'
-	NUMA information
-Message-ID: <20090417100155.GE16198@alberich.amd.com>
+	Fri, 17 Apr 2009 06:04:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TBJMK6gxRwhVrTvYx5fW0+AVQncqYFLrPdxfXBgaXcLTe1CntpP5UOq+2qPWdwdaIF
+         YLWyGklwYDGVtK8CKzccKOK+G1Uq2WlANEBKGMpfJiGhNTkJKqETTvP0BdOpxcxCmSqb
+         0WHuLy8DDjBtoOJZbP4+MCujFYFDb4qG5heos=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 17 Apr 2009 10:02:02.0798 (UTC) FILETIME=[8E4E4CE0:01C9BF43]
+In-Reply-To: <1239960548.23397.4282.camel@laptop>
+References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com>
+	 <1239912812.23397.3432.camel@laptop>
+	 <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com>
+	 <1239949360.23397.4065.camel@laptop>
+	 <c62985530904170159j6f3b5477g411a028e69fd93f6@mail.gmail.com>
+	 <1239960548.23397.4282.camel@laptop>
+Date: Fri, 17 Apr 2009 12:04:00 +0200
+Message-ID: <c62985530904170304r916d978m68c275eb5618eb78@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v2] tracing/events: provide string with undefined size 
+	support
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case of AMD CPU northbridge functions this NUMA information might
-differ.
-
-Here is an example from a 4-socket system.
-
-Currently Linux shows
-
-  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat numa_node
-  0
-  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat local_cpu*
-  0-3
-  00000000,0000000f
-
-which is not correct for northbridge functions as the local CPUs
-are those of the same socket.
-
-With this patch and a quirk for AMD CPU NB functions Linux can
-do better and correctly show
-
-  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat numa_node
-  2
-  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat local_cpu*
-  8-11
-  00000000,00000f00
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- drivers/pci/pci-sysfs.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-The quirk for AMD CPU NB functions is contained in another patch
-that I'll send to x86-maintainers for inclusion into tip tree.
-
-Please apply.
-
-Thanks,
-Andreas
-
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index a7eb1b4..9360f3d 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -74,7 +74,11 @@ static ssize_t local_cpus_show(struct device *dev,
- 	const struct cpumask *mask;
- 	int len;
- 
-+#ifdef CONFIG_NUMA
-+	mask = cpumask_of_node(dev_to_node(dev));
-+#else
- 	mask = cpumask_of_pcibus(to_pci_dev(dev)->bus);
-+#endif
- 	len = cpumask_scnprintf(buf, PAGE_SIZE-2, mask);
- 	buf[len++] = '\n';
- 	buf[len] = '\0';
-@@ -88,7 +92,11 @@ static ssize_t local_cpulist_show(struct device *dev,
- 	const struct cpumask *mask;
- 	int len;
- 
-+#ifdef CONFIG_NUMA
-+	mask = cpumask_of_node(dev_to_node(dev));
-+#else
- 	mask = cpumask_of_pcibus(to_pci_dev(dev)->bus);
-+#endif
- 	len = cpulist_scnprintf(buf, PAGE_SIZE-2, mask);
- 	buf[len++] = '\n';
- 	buf[len] = '\0';
--- 
-1.6.2
-
+Le 17 avril 2009 11:29, Peter Zijlstra <a.p.zijlstra@chello.nl> a écrit :
+> On Fri, 2009-04-17 at 10:59 +0200, Frédéric Weisbecker wrote:
+>
+>> struct foo {
+>>    field1;
+>>    field2;
+>>    ...
+>> };
+>>
+>> struct foo *f;
+>>
+>> event = ring_buffer_lock_reserve(sizeof(*f), ...);
+>> f = ring_buffer_event_data(event);
+>>
+>> I can't use a kmalloc here. We are tracing a random event which can happen
+>> at a random frequency, random context, etc...
+>
+> Can't you add a bit to that ring_buffer_lock_reserve() thing?
+>
+> The thing I do for perf_counters is I first iterate all the output, then
+> make the reserve large enough to fit all the output in, then copy the
+> bits into the output buffer.
+>
+> The result is that the output cannot be interpreted as a fixed offset
+> struct, but that's not much of an issue anyway.
+>
+> Another possibility is using relative pointers for strings that point
+> beyond the tail of the fixed offset struct.
+>
+> So something like:
+>
+>  __field(int, foo);
+>  __string(bar);
+>  __field(int, foo2);
+>  __string(bar2);
+>  __field(int, foo3);
+>
+> would look like:
+>
+>  struct plop {
+>   int foo;
+>   char *bar;
+>   int foo2;
+>   char *bar2;
+>   int foo3;
+>
+>   char data[0];
+>  }
+>
+> and you'd do something like:
+>
+>  size = sizeof(struct plop);
+>  size += strlen(bar) + 1;
+>  size += strlen(bar2) + 1;
+>
+>  event = ring_buffer_lock_reserve(size);
+>  offset = sizeof(struct plop);
+>  my_plop.bar = (char *)offset;
+>  offset += strlen(bar) + 1;
+>  my_plop.bar2 = (char *)offset;
+>  memcpy(&event, &my_plop, sizeof(struct plop));
+>  memcpy(&event + my_plop.bar, bar, strlen(bar)+1);
+>  memcpy(&event + my_plop.bar2, bar2, strlen(bar2)+1);
+>  ring_buffer_unlock();
+>
+> Then on reading, you'd get a variable sized entry, with a fixed size
+> fixed offset struct, that contains relative offset character pointers.
 
 
+
+I like much this idea.
+Just a small change on it: I could use absolute addresses
+
+offset = sizeof(struct plop);
+my_plop.bar = &entry + offset;
+offset += strlen(str1) + 1;
+my_plop.bar2 = &entry + offset;
+strcpy(my_plop.bar, str1);
+strcpy(my_plop.bar2, str2);
+
+So that its integration will need very few changes to support printing
+and filtering. It will just behave like usual char [..].
+
+Nice! Thanks Peter.
