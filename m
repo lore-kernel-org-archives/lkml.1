@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbZDQAol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbZDQAo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbZDQAol (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbZDQAiL
+	id S1760896AbZDQAo6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbZDQAkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:38:11 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39094 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760107AbZDQAiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:38:10 -0400
-Date: Fri, 17 Apr 2009 01:38:05 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090417003805.GI26366@ZenIV.linux.org.uk>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417002744.GB29630@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Apr 2009 20:40:36 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:57923 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760656AbZDQAkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:40:35 -0400
+Message-Id: <20090417001637.670524938@polymtl.ca>
+References: <20090417001437.215128284@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 16 Apr 2009 20:14:38 -0400
+From: mathieu.desnoyers@polymtl.ca
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [patch 1/3] rcupdate header remove whitespace
+Content-Disposition: inline; filename=rcupdate-header-remove-whitespace.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 17 Apr 2009 00:38:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 02:27:44AM +0200, Ingo Molnar wrote:
+Janitor-style whitespace cleanup. Will need to copy this header elsewhere
+anyway.
 
-> Could you give an example of such a weird interaction?
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+---
+ include/linux/rcupdate.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If I could give you one at the moment, I'd sent patches regardless of BKL
-crusades.  I _have_ run into such crap before and it had been just that -
-crap.
+Index: linux.trees.git/include/linux/rcupdate.h
+===================================================================
+--- linux.trees.git.orig/include/linux/rcupdate.h	2009-04-16 19:57:30.000000000 -0400
++++ linux.trees.git/include/linux/rcupdate.h	2009-04-16 19:57:35.000000000 -0400
+@@ -18,7 +18,7 @@
+  * Copyright IBM Corporation, 2001
+  *
+  * Author: Dipankar Sarma <dipankar@in.ibm.com>
+- * 
++ *
+  * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
+  * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
+  * Papers:
 
-> I fear, unless i'm misunderstanding your feedback, that you are 
-> setting the purist's irrealistically high burden to get rid of the 
-> BKL from the VFS here.
-> 
-> "Arbitrary weird ones" means all BKL using sites in the kernel - all 
-> ~800 ones - up to 800x800 == close to a million interactions to 
-> check.
-
-Sigh...  How about dumping that lovely strawman?  I've exsoddingplicitly
-told you that all such stuff is *within* *individual* *fs* *driver*.
-
-Start with taking these guys down into the superblock methods in question.
-Drop that junk on VFS-only side of things completely (mount --move,
-mount --bind, etc.).  Then we go looking for data structures that are
-	a) internal to fs driver
-	b) accessed by methods in question (in that fs driver)
-	c) are shared between different filesystems.
-
-Analysis is on per-fs basis.  And getting rid of these turds doesn't have
-to happen in one patch.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
