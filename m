@@ -1,95 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbZDQJ4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZDQKCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760250AbZDQJ4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 05:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbZDQJ4E
+	id S1759939AbZDQKCk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 06:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbZDQKCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 05:56:04 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:52691 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757818AbZDQJ4B (ORCPT
+	Fri, 17 Apr 2009 06:02:31 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:24403
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756246AbZDQKCa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 05:56:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=jt2PURVTuV7Bu/JGlbuL6Rycs/KUFBUEsEXomnCfZZ2aAnqAQRsHI0hblS6OT1TB8C
-         exBoKOdPgSsnY2FBqugmSG1P5GNcqqyHCDsb7pIY/5hef9PgjgFlYGa4R66EKoO5e42r
-         ta2k9VijlEBzatyNaJ/SlqR4J1+3NJ4a+ofYo=
-Date: Fri, 17 Apr 2009 11:55:56 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+	Fri, 17 Apr 2009 06:02:30 -0400
+X-BigFish: VPS-13(zz936eQ4015Mzz1202hzzz32i6bh14bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KI8P7U-01-GGV-01
+Date: Fri, 17 Apr 2009 12:01:55 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: jbarnes@virtuousgeek.org
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090417095555.GD8689@linux>
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Paul Menage <menage@google.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-	akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-	Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-	Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-	fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-	Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-	dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-	roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-	Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-	yoshikawa.takuya@oss.ntt.co.jp,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH]  pci: derive nearby CPUs from device's instead of bus'
+	NUMA information
+Message-ID: <20090417100155.GE16198@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Apr 2009 10:02:02.0798 (UTC) FILETIME=[8E4E4CE0:01C9BF43]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 10:24:17AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Tue, 14 Apr 2009 22:21:12 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
-> 
-> > +Example:
-> > +* Create an association between an io-throttle group and a bio-cgroup group
-> > +  with "bio" and "blockio" subsystems mounted in different mount points:
-> > +  # mount -t cgroup -o bio bio-cgroup /mnt/bio-cgroup/
-> > +  # cd /mnt/bio-cgroup/
-> > +  # mkdir bio-grp
-> > +  # cat bio-grp/bio.id
-> > +  1
-> > +  # mount -t cgroup -o blockio blockio /mnt/io-throttle
-> > +  # cd /mnt/io-throttle
-> > +  # mkdir foo
-> > +  # echo 1 > foo/blockio.bio_id
-> 
-> Why do we need multiple cgroups at once to track I/O ?
-> Seems complicated to me.
-> 
-> Thanks,
-> -Kame
+In case of AMD CPU northbridge functions this NUMA information might
+differ.
 
-I totally agree. I could easily merge the bio-cgroup functionality in
-io-throttle or implement this as an infrastructure framework, using a
-single controller and remove this complication.
+Here is an example from a 4-socket system.
 
-For now, since the decisions on IO controllers are not definitive at
-all, I privileged flexibility and I simply decided to be a plain user of
-bio-cgroup to quickly adapt my patch to the future bio-cgroup
-development.
+Currently Linux shows
+
+  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat numa_node
+  0
+  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat local_cpu*
+  0-3
+  00000000,0000000f
+
+which is not correct for northbridge functions as the local CPUs
+are those of the same socket.
+
+With this patch and a quirk for AMD CPU NB functions Linux can
+do better and correctly show
+
+  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat numa_node
+  2
+  root@hagen:/sys/devices/pci0000:00/0000:00:1a.4# cat local_cpu*
+  8-11
+  00000000,00000f00
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ drivers/pci/pci-sysfs.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+The quirk for AMD CPU NB functions is contained in another patch
+that I'll send to x86-maintainers for inclusion into tip tree.
+
+Please apply.
 
 Thanks,
--Andrea
+Andreas
+
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index a7eb1b4..9360f3d 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -74,7 +74,11 @@ static ssize_t local_cpus_show(struct device *dev,
+ 	const struct cpumask *mask;
+ 	int len;
+ 
++#ifdef CONFIG_NUMA
++	mask = cpumask_of_node(dev_to_node(dev));
++#else
+ 	mask = cpumask_of_pcibus(to_pci_dev(dev)->bus);
++#endif
+ 	len = cpumask_scnprintf(buf, PAGE_SIZE-2, mask);
+ 	buf[len++] = '\n';
+ 	buf[len] = '\0';
+@@ -88,7 +92,11 @@ static ssize_t local_cpulist_show(struct device *dev,
+ 	const struct cpumask *mask;
+ 	int len;
+ 
++#ifdef CONFIG_NUMA
++	mask = cpumask_of_node(dev_to_node(dev));
++#else
+ 	mask = cpumask_of_pcibus(to_pci_dev(dev)->bus);
++#endif
+ 	len = cpulist_scnprintf(buf, PAGE_SIZE-2, mask);
+ 	buf[len++] = '\n';
+ 	buf[len] = '\0';
+-- 
+1.6.2
+
+
+
