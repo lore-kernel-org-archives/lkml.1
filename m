@@ -1,125 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZDQCFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZDQCNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZDQCFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 22:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZDQCF2
+	id S1758501AbZDQCNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 22:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZDQCNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 22:05:28 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59719 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbZDQCF2 (ORCPT
+	Thu, 16 Apr 2009 22:13:07 -0400
+Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:52077 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753022AbZDQCNG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 22:05:28 -0400
-Date: Fri, 17 Apr 2009 11:03:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add file based RSS accounting for memory resource
- controller (v2)
-Message-Id: <20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090417014042.GB18558@balbir.in.ibm.com>
-References: <20090415120510.GX7082@balbir.in.ibm.com>
-	<20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416015955.GB7082@balbir.in.ibm.com>
-	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416120316.GG7082@balbir.in.ibm.com>
-	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417014042.GB18558@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 22:13:06 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] include/asm-generic/pgtable.h: fix sparse warnings
+Date: Thu, 16 Apr 2009 22:12:18 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F904E@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] include/asm-generic/pgtable.h: fix sparse warnings
+Thread-Index: Acm/Ae80hheoTkaiR8WyIFdTFska/g==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 17 Apr 2009 02:13:02.0410 (UTC) FILETIME=[0953DAA0:01C9BF02]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 07:10:42 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Fix a number of sparse warnings due to macro expansion.
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
-> 
-> > On Thu, 16 Apr 2009 17:33:16 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
-> > > 
-> > > > 
-> > > > > Sorry, some troubles found. Ignore above Ack. 3points now.
-> > > > > 
-> > > > > 1. get_cpu should be after (*)
-> > > > > ==mem_cgroup_update_mapped_file_stat()
-> > > > > +	int cpu = get_cpu();
-> > > > > +
-> > > > > +	if (!page_is_file_cache(page))
-> > > > > +		return;
-> > > > > +
-> > > > > +	if (unlikely(!mm))
-> > > > > +		mm = &init_mm;
-> > > > > +
-> > > > > +	mem = try_get_mem_cgroup_from_mm(mm);
-> > > > > +	if (!mem)
-> > > > > +		return;
-> > > > > + ----------------------------------------(*)
-> > > > > +	stat = &mem->stat;
-> > > > > +	cpustat = &stat->cpustat[cpu];
-> > > > > +
-> > > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
-> > > > > +	put_cpu();
-> > > > > +}
-> > > > > ==
-> > > 
-> > > Yes or I should have a goto
-> > > 
-> > > > > 
-> > > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
-> > > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
-> > > 
-> > > Hmmm.. not sure I understand this part. Are you suggesting that mm can
-> > > be NULL?
-> > No.
-> > 
-> > > I added the check for !mm as a safety check. Since this
-> > > routine is only called from rmap context, mm is not NULL, hence mem
-> > > should not be NULL. Did you find a race between mm->owner assignment
-> > > and lookup via mm->owner?
-> > > 
-> > No.
-> > 
-> > page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
-> > 
-> > For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
-> > used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
-> > 
-> > Then, File_Mapped can be greater than Cached easily if you use mm->owner.
-> > 
-> > I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
-> > other cgroups. It's meaningless.
-> > Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
-> > 
-> > By useing page_cgroup->mem_cgroup, we can avoid above mess.
-> 
-> Yes, I see your point. I wanted mapped_file to show up in the cgroup
-> that mapped the page. But this works for me as well, but that means
-> we'll nest the page cgroup lock under the PTE lock.
+  warning: symbol '__pte' shadows an earlier one
 
-Don't worry. we do that nest at ANON's uncharge(), already.
+These sparse warning show up in the following sources:
 
-About cost:
+  mm/fremap.c
+  mm/mremap.c
+  mm/memory.c
+  mm/rmap.c
 
-IIUC, the number of "mapcount 0->1/1->0" of file caches are much smaller than
-that of o Anon. And there will be not very much cache pingpong.
+This trivial patch fixes all the warnings.
 
-If you use PCG_MAPPED flag in page_cgroup (as my patch), you can use
-not-atomic version of set/clear when update is only under lock_page_cgroup().
-If you find better way, plz use it. But we can't avoid some kind of atomic ops
-for correct accounting, I think.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-Thanks,
--Kame
+---
 
-
+diff --git a/include/asm-generic/pgtable.h
+b/include/asm-generic/pgtable.h
+index 8e6d0ca..c51b173 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -53,9 +53,9 @@
+ #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
+ #define ptep_get_and_clear(__mm, __address, __ptep)
+\
+ ({
+\
+-	pte_t __pte = *(__ptep);
+\
++	pte_t ___pte = *(__ptep);
+\
+ 	pte_clear((__mm), (__address), (__ptep));
+\
+-	__pte;
+\
++	___pte;
+\
+ })
+ #endif
+  
