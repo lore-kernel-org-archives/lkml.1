@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761827AbZDQXEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbZDQXEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761827AbZDQXEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 19:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZDQXD3
+	id S1762298AbZDQXEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 19:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759547AbZDQXDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 19:03:29 -0400
+	Fri, 17 Apr 2009 19:03:34 -0400
 Received: from stargate.chelsio.com ([67.207.112.58]:7088 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752815AbZDQXD1 (ORCPT
+	with ESMTP id S1756776AbZDQXDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 19:03:27 -0400
+	Fri, 17 Apr 2009 19:03:30 -0400
 X-Greylist: delayed 2497 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 19:03:26 EDT
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2.6.30 3/4] cxgb3: Fix potential msi-x vector leak
+Subject: [PATCH 2.6.30 1/4] cxgb3: fix link fault handling
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Fri, 17 Apr 2009 15:21:22 -0700
-Message-ID: <20090417222122.8537.43636.stgit@speedy5>
+Date: Fri, 17 Apr 2009 15:21:11 -0700
+Message-ID: <20090417222111.8472.45439.stgit@speedy5>
 User-Agent: StGIT/0.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,31 +28,114 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Release vectors when a MSI-X allocation fails.
+Use the existing periodic task to handle link faults.
+The link fault interrupt handler is also called in work queue context,
+which is wrong and might cause potential deadlocks.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/cxgb3_main.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ drivers/net/cxgb3/cxgb3_main.c |   22 ++--------------------
+ drivers/net/cxgb3/t3_hw.c      |   11 +----------
+ 2 files changed, 3 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 99b5032..cbd59fe 100644
+index ab0e5fe..9fdfe0b 100644
 --- a/drivers/net/cxgb3/cxgb3_main.c
 +++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -2917,8 +2917,13 @@ static int __devinit cxgb_enable_msix(struct adapter *adap)
- 	while ((err = pci_enable_msix(adap->pdev, entries, vectors)) > 0)
- 		vectors = err;
+@@ -2493,6 +2493,7 @@ static void check_link_status(struct adapter *adapter)
  
--	if (!err && vectors < (adap->params.nports + 1))
-+	if (err < 0)
-+		pci_disable_msix(adap->pdev);
-+
-+	if (!err && vectors < (adap->params.nports + 1)) {
-+		pci_disable_msix(adap->pdev);
- 		err = -1;
-+	}
+ 		spin_lock_irq(&adapter->work_lock);
+ 		if (p->link_fault) {
++			t3_link_fault(adapter, i);
+ 			spin_unlock_irq(&adapter->work_lock);
+ 			continue;
+ 		}
+@@ -2554,9 +2555,7 @@ static void t3_adap_check_task(struct work_struct *work)
  
- 	if (!err) {
- 		for (i = 0; i < vectors; ++i)
+ 	adapter->check_task_cnt++;
+ 
+-	/* Check link status for PHYs without interrupts */
+-	if (p->linkpoll_period)
+-		check_link_status(adapter);
++	check_link_status(adapter);
+ 
+ 	/* Accumulate MAC stats if needed */
+ 	if (!p->linkpoll_period ||
+@@ -2680,21 +2679,6 @@ void t3_os_ext_intr_handler(struct adapter *adapter)
+ 	spin_unlock(&adapter->work_lock);
+ }
+ 
+-static void link_fault_task(struct work_struct *work)
+-{
+-	struct adapter *adapter = container_of(work, struct adapter,
+-					       link_fault_handler_task);
+-	int i;
+-
+-	for_each_port(adapter, i) {
+-		struct net_device *netdev = adapter->port[i];
+-		struct port_info *pi = netdev_priv(netdev);
+-
+-		if (pi->link_fault)
+-			t3_link_fault(adapter, i);
+-	}
+-}
+-
+ void t3_os_link_fault_handler(struct adapter *adapter, int port_id)
+ {
+ 	struct net_device *netdev = adapter->port[port_id];
+@@ -2702,7 +2686,6 @@ void t3_os_link_fault_handler(struct adapter *adapter, int port_id)
+ 
+ 	spin_lock(&adapter->work_lock);
+ 	pi->link_fault = 1;
+-	queue_work(cxgb3_wq, &adapter->link_fault_handler_task);
+ 	spin_unlock(&adapter->work_lock);
+ }
+ 
+@@ -3082,7 +3065,6 @@ static int __devinit init_one(struct pci_dev *pdev,
+ 
+ 	INIT_LIST_HEAD(&adapter->adapter_list);
+ 	INIT_WORK(&adapter->ext_intr_handler_task, ext_intr_task);
+-	INIT_WORK(&adapter->link_fault_handler_task, link_fault_task);
+ 	INIT_WORK(&adapter->fatal_error_handler_task, fatal_error_task);
+ 	INIT_DELAYED_WORK(&adapter->adap_check_task, t3_adap_check_task);
+ 
+diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
+index 31ed31a..e1bd690 100644
+--- a/drivers/net/cxgb3/t3_hw.c
++++ b/drivers/net/cxgb3/t3_hw.c
+@@ -1202,7 +1202,6 @@ void t3_link_changed(struct adapter *adapter, int port_id)
+ 	struct cphy *phy = &pi->phy;
+ 	struct cmac *mac = &pi->mac;
+ 	struct link_config *lc = &pi->link_config;
+-	int force_link_down = 0;
+ 
+ 	phy->ops->get_link_status(phy, &link_ok, &speed, &duplex, &fc);
+ 
+@@ -1218,14 +1217,9 @@ void t3_link_changed(struct adapter *adapter, int port_id)
+ 		status = t3_read_reg(adapter, A_XGM_INT_STATUS + mac->offset);
+ 		if (status & F_LINKFAULTCHANGE) {
+ 			mac->stats.link_faults++;
+-			force_link_down = 1;
++			pi->link_fault = 1;
+ 		}
+ 		t3_open_rx_traffic(mac, rx_cfg, rx_hash_high, rx_hash_low);
+-
+-		if (force_link_down) {
+-			t3_os_link_fault_handler(adapter, port_id);
+-			return;
+-		}
+ 	}
+ 
+ 	if (lc->requested_fc & PAUSE_AUTONEG)
+@@ -1292,9 +1286,6 @@ void t3_link_fault(struct adapter *adapter, int port_id)
+ 		/* Account link faults only when the phy reports a link up */
+ 		if (link_ok)
+ 			mac->stats.link_faults++;
+-
+-		msleep(1000);
+-		t3_os_link_fault_handler(adapter, port_id);
+ 	} else {
+ 		if (link_ok)
+ 			t3_write_reg(adapter, A_XGM_XAUI_ACT_CTRL + mac->offset,
 
