@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbZDQSPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762226AbZDQSUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762594AbZDQSPl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761782AbZDQSPc
+	id S1762226AbZDQSUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbZDQSUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:15:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39973 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756389AbZDQSPb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:15:31 -0400
-Date: Fri, 17 Apr 2009 11:03:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount syscalls
- with a mutex
-In-Reply-To: <20090417113142.3151579b@bike.lwn.net>
-Message-ID: <alpine.LFD.2.00.0904171039080.4042@localhost.localdomain>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu>
- <20090417003805.GI26366@ZenIV.linux.org.uk> <20090417165643.GL8253@elte.hu> <1239987885.23397.4817.camel@laptop> <alpine.LFD.2.00.0904171010470.4042@localhost.localdomain> <20090417113142.3151579b@bike.lwn.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Apr 2009 14:20:24 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51544 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755075AbZDQSUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 14:20:24 -0400
+In-Reply-To: <11555.1239976666@jrobl>
+References: <15909.1239887985@jrobl> <OF1283DDC6.0AD2926E-ON8525759B.004938DD-8525759B.004A1887@us.ibm.com> <11555.1239976666@jrobl>
+To: hooanon05@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com,
+       david safford <safford@watson.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: IMA and fs
+X-KeepSent: AE6426B8:ECBED7A5-8525759B:00640328;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.5 December 05, 2008
+Message-ID: <OFAE6426B8.ECBED7A5-ON8525759B.00640328-8525759B.0064BD10@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Fri, 17 Apr 2009 14:20:20 -0400
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5|December 05, 2008) at
+ 04/17/2009 14:20:20,
+	Serialize complete at 04/17/2009 14:20:20
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hooanon05@yahoo.co.jp wrote on 04/17/2009 09:57:46 AM:
 
-
-On Fri, 17 Apr 2009, Jonathan Corbet wrote:
-
-> On Fri, 17 Apr 2009 10:21:06 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Mimi Zohar:
+> > > xfs_iget() holds spinlock before xfs_iget_cache_hit(), and
+> > > ima_inode_alloc() cannot use GFP_KERNEL.
+> > 
+> > This looks similar to the xfs - IMA problem discussed
+> > http://lkml.org/lkml/2009/2/20/327.
 > 
-> > And I know we had patches for file locking BKL-removal at some point. What 
-> > happened to them? Were they just broken, or forgotten, or waiting in Jon's 
-> > tree, or what?
+> Yes, the same issue.
+> I didn't know it was discussed before.
+> So what is the conclusion? Are you waiting for fixing the spinlock in
+> xfs?
+
+Yes. I just assumed, incorrectly, the xfs maintainer was notified.
+Am copying the xfs maintainer now.
+
+> > > Does nfsd_open() need to to call ima_path_check()?
+>    :::
+> > Yes, in order for the open/free to be balanced in ima_file_free().
 > 
-> Not in my tree, I've not seen them.  I could maybe take a look at that,
-> I've just about recovered from my fasync experience...:)
+> Then how about putting ima_path_check() into __dentry_open() instead of
+> may_open()?
+> 
+> 
+> J. R. Okajima
 
-Hmm. It might also just be my fevered imagination. I'd like to say it was 
-Matthew Wilcox, but really, my mind is going.
+Interesting.  Am looking into it.
 
-Ahh. Bug google backs me up. As long as I have google, I can keep 
-Alzheimer's at bay: "Negative scalability by removal of lock_kernel()" 
-thread on lkml back in October 2000. After we had actually done the BKL 
-removal.
+Thanks!
 
-So we actually did apply it (in 2.4.0-test9, and then reverted it again 
-(in -test11, I think). Google for "file_lock_sem fs/locks.c" and see some 
-of the discussion. The end result was to go back to the BKL due to Apache 
-slowdowns.
-
-But I seem to remember a later patch (in the last year or two) from Willy 
-too. Google doesn't help me, so that's probably just my fevered mind. But 
-I'm cc'ing Willy anyway.
-
-		Linus
+Mimi Zohar
