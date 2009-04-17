@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZDQQfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761882AbZDQQg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbZDQQfQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758887AbZDQQe7
+	id S1761882AbZDQQg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757406AbZDQQgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:34:59 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:58729 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758809AbZDQQe6 (ORCPT
+	Fri, 17 Apr 2009 12:36:48 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:12872 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759210AbZDQQgr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:34:58 -0400
-Date: Fri, 17 Apr 2009 12:27:43 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Chris Friesen <cfriesen@nortel.com>
-cc: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
-Subject: Re: how to tell if arbitrary kernel memory address is backed by
- physical memory?
-In-Reply-To: <49E8AB11.4000708@nortel.com>
-Message-ID: <alpine.DEB.1.10.0904171224530.7261@qirst.com>
-References: <49E750CA.4060300@nortel.com> <alpine.DEB.1.10.0904161654480.7855@qirst.com> <49E8AB11.4000708@nortel.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 17 Apr 2009 12:36:47 -0400
+X-BigFish: VPS0(zzzz1202hzzz2fh6bh14bh62h)
+X-Spam-TCS-SCL: 1:0
+Message-ID: <49E8B015.7060808@am.sony.com>
+Date: Fri, 17 Apr 2009 09:36:37 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Mackerras <paulus@samba.org>
+CC: subrata@linux.vnet.ibm.com, Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Olof Johansson <olof@lixom.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch] powerpc/pasemi: Fix no SMP build error
+References: <1239285094.5188.65.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1239285094.5188.65.camel@subratamodak.linux.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset="UTF-8"
+X-OriginalArrivalTime: 17 Apr 2009 16:36:38.0623 (UTC) FILETIME=[AE327EF0:01C9BF7A]
+X-SEL-encryption-scan: scanned
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+A non-SMP version of smp_send_stop() is now included in smp.h.
+Remove the unneeded def in the pasemi setup.c.
 
-On Fri, 17 Apr 2009, Chris Friesen wrote:
+Fixes build errors like these when CONFIG_SMP=n:
 
-> We have a mips board that appears to have holes in the lowmem mappings such
-> that blindly walking all of it causes problems.  I assume the allocator knows
-> about these holes and simply doesn't assign memory at those addresses.
+  arch/powerpc/platforms/pasemi/setup.c:48: error: redefinition of ‘smp_send_stop’
+  include/linux/smp.h:125: error: previous definition of 'smp_send_stop' was here
 
-Yes memory is registered in distinct ranges during boot.
+Reported-by: subrata@linux.vnet.ibm.com
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
 
-> We may have found a solution though...it looks like virt_addr_valid() returns
-> false for the problematic addresses.  Would it be reasonable to call this once
-> for each page before trying to access it?
-
-Sure. Note that virt_addr_valid only ensures that there is a page
-struct for that address. You may need to ensure that PageReserved(page) is
-false if you want to make sure that you have actual memory there that is
-valid to use.
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index c64fb5b..153051e 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -44,10 +44,6 @@
+ 
+ #include "pasemi.h"
+ 
+-#if !defined(CONFIG_SMP)
+-static void smp_send_stop(void) {}
+-#endif
+-
+ /* SDC reset register, must be pre-mapped at reset time */
+ static void __iomem *reset_reg;
+ 
 
