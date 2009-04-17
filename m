@@ -1,204 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbZDQOoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761628AbZDQOoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761689AbZDQOoe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbZDQOng
+	id S1761628AbZDQOoU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761334AbZDQOnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:43:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63520 "EHLO
+	Fri, 17 Apr 2009 10:43:35 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62583 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761007AbZDQOnd (ORCPT
+	with ESMTP id S1760998AbZDQOnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 17 Apr 2009 10:43:33 -0400
-Message-Id: <20090417144331.971635220@goodmis.org>
+Message-Id: <20090417144331.796749518@goodmis.org>
 References: <20090417144055.857407604@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 17 Apr 2009 10:40:58 -0400
+Date: Fri, 17 Apr 2009 10:40:57 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 3/5] tracing/events/ring-buffer: expose format of ring buffer headers to users
-Content-Disposition: inline; filename=0003-tracing-events-ring-buffer-expose-format-of-ring-bu.patch
+Subject: [PATCH v2 2/5] tracing/events: add startup tests for events
+Content-Disposition: inline; filename=0002-tracing-events-add-startup-tests-for-events.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Currently, every thing needed to read the binary output from the
-ring buffers is available, with the exception of the way the ring
-buffers handles itself internally.
+As events start to become popular, and the new way to add tracing
+infrastructure into ftrace, it is important to catch any problems
+that might happen with a mistake in the TRACE_EVENT macro.
 
-This patch creates two special files in the debugfs/tracing/events
-directory:
+This patch introduces a startup self test on the registered trace
+events. Note, it can only do a generic test, any type of testing that
+needs more involement is needed to be implemented by the tracepoint
+creators.
 
- # cat /debug/tracing/events/header_page
-        field: u64 timestamp;   offset:0;       size:8;
-        field: local_t commit;  offset:8;       size:8;
-        field: char data;       offset:16;      size:4080;
+The test goes down one by one enabling a trace point and running
+some random tasks (random in the sense that I just made them up).
+Those tasks are creating threads, grabbing mutexes and spinlocks
+and using workqueues.
 
- # cat /debug/tracing/events/header_event
-        type        :    2 bits
-        len         :    3 bits
-        time_delta  :   27 bits
-        array       :   32 bits
+After testing each event individually, it does the same test after
+enabling each system of trace points. Like sched, irq, lockdep.
 
-        padding     : type == 0
-        time_extend : type == 1
-        data        : type == 3
+Then finally it enables all tracepoints and performs the tasks again.
+The output to the console on bootup will look like this when everything
+works:
 
-This is to allow a userspace app to see if the ring buffer format changes
-or not.
+Running tests on trace events:
+Testing event kfree_skb: OK
+Testing event kmalloc: OK
+Testing event kmem_cache_alloc: OK
+Testing event kmalloc_node: OK
+Testing event kmem_cache_alloc_node: OK
+Testing event kfree: OK
+Testing event kmem_cache_free: OK
+Testing event irq_handler_exit: OK
+Testing event irq_handler_entry: OK
+Testing event softirq_entry: OK
+Testing event softirq_exit: OK
+Testing event lock_acquire: OK
+Testing event lock_release: OK
+Testing event sched_kthread_stop: OK
+Testing event sched_kthread_stop_ret: OK
+Testing event sched_wait_task: OK
+Testing event sched_wakeup: OK
+Testing event sched_wakeup_new: OK
+Testing event sched_switch: OK
+Testing event sched_migrate_task: OK
+Testing event sched_process_free: OK
+Testing event sched_process_exit: OK
+Testing event sched_process_wait: OK
+Testing event sched_process_fork: OK
+Testing event sched_signal_send: OK
+Running tests on trace event systems:
+Testing event system skb: OK
+Testing event system kmem: OK
+Testing event system irq: OK
+Testing event system lockdep: OK
+Testing event system sched: OK
+Running tests on all trace events:
+Testing all events: OK
 
-Impact: allow userspace apps to know of ringbuffer format changes
+[ folded in:
+
+  tracing: add #include <linux/delay.h> to fix build failure in test_work()
+
+  This build failure occured on a few rare configs:
+
+   kernel/trace/trace_events.c: In function ‘test_work’:
+   kernel/trace/trace_events.c:975: error: implicit declaration of function ‘udelay’
+   kernel/trace/trace_events.c:980: error: implicit declaration of function ‘msleep’
+
+  delay.h is included in way too many other headers, hiding cases
+  where new usage is added without header inclusion.
+
+  Impact: build fix
+  Signed-off-by: Ingo Molnar <mingo@elte.hu>
+]
+
+Impact: event tracer self testing
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ring_buffer.h |    5 ++++
- kernel/trace/ring_buffer.c  |   44 +++++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace_events.c |   38 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 87 insertions(+), 0 deletions(-)
+ kernel/trace/trace_events.c |  178 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 178 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index f0aa486..fac8f1a 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -166,6 +166,11 @@ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data);
- int ring_buffer_read_page(struct ring_buffer *buffer, void **data_page,
- 			  size_t len, int cpu, int full);
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 6591d83..f81d6ee 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -8,10 +8,14 @@
+  *
+  */
  
-+struct trace_seq;
-+
-+int ring_buffer_print_entry_header(struct trace_seq *s);
-+int ring_buffer_print_page_header(struct trace_seq *s);
-+
- enum ring_buffer_flags {
- 	RB_FL_OVERWRITE		= 1 << 0,
- };
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index f935bd5..84a6055 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -22,6 +22,28 @@
- #include "trace.h"
++#include <linux/workqueue.h>
++#include <linux/spinlock.h>
++#include <linux/kthread.h>
+ #include <linux/debugfs.h>
+ #include <linux/uaccess.h>
+ #include <linux/module.h>
+ #include <linux/ctype.h>
++#include <linux/delay.h>
  
- /*
-+ * The ring buffer header is special. We must manually up keep it.
-+ */
-+int ring_buffer_print_entry_header(struct trace_seq *s)
+ #include "trace_output.h"
+ 
+@@ -920,3 +924,177 @@ static __init int event_trace_init(void)
+ 	return 0;
+ }
+ fs_initcall(event_trace_init);
++
++#ifdef CONFIG_FTRACE_STARTUP_TEST
++
++static DEFINE_SPINLOCK(test_spinlock);
++static DEFINE_SPINLOCK(test_spinlock_irq);
++static DEFINE_MUTEX(test_mutex);
++
++static __init void test_work(struct work_struct *dummy)
 +{
-+	int ret;
++	spin_lock(&test_spinlock);
++	spin_lock_irq(&test_spinlock_irq);
++	udelay(1);
++	spin_unlock_irq(&test_spinlock_irq);
++	spin_unlock(&test_spinlock);
 +
-+	ret = trace_seq_printf(s, "\ttype        :    2 bits\n");
-+	ret = trace_seq_printf(s, "\tlen         :    3 bits\n");
-+	ret = trace_seq_printf(s, "\ttime_delta  :   27 bits\n");
-+	ret = trace_seq_printf(s, "\tarray       :   32 bits\n");
-+	ret = trace_seq_printf(s, "\n");
-+	ret = trace_seq_printf(s, "\tpadding     : type == %d\n",
-+			       RINGBUF_TYPE_PADDING);
-+	ret = trace_seq_printf(s, "\ttime_extend : type == %d\n",
-+			       RINGBUF_TYPE_TIME_EXTEND);
-+	ret = trace_seq_printf(s, "\tdata        : type == %d\n",
-+			       RINGBUF_TYPE_DATA);
++	mutex_lock(&test_mutex);
++	msleep(1);
++	mutex_unlock(&test_mutex);
++}
 +
-+	return ret;
++static __init int event_test_thread(void *unused)
++{
++	void *test_malloc;
++
++	test_malloc = kmalloc(1234, GFP_KERNEL);
++	if (!test_malloc)
++		pr_info("failed to kmalloc\n");
++
++	schedule_on_each_cpu(test_work);
++
++	kfree(test_malloc);
++
++	set_current_state(TASK_INTERRUPTIBLE);
++	while (!kthread_should_stop())
++		schedule();
++
++	return 0;
 +}
 +
 +/*
-  * The ring buffer is made up of a list of pages. A separate list of pages is
-  * allocated for each CPU. A writer may only write to a buffer that is
-  * associated with the CPU it is currently executing on.  A reader may read
-@@ -340,6 +362,28 @@ static inline int test_time_stamp(u64 delta)
- 
- #define BUF_PAGE_SIZE (PAGE_SIZE - BUF_PAGE_HDR_SIZE)
- 
-+int ring_buffer_print_page_header(struct trace_seq *s)
++ * Do various things that may trigger events.
++ */
++static __init void event_test_stuff(void)
 +{
-+	struct buffer_data_page field;
++	struct task_struct *test_thread;
++
++	test_thread = kthread_run(event_test_thread, NULL, "test-events");
++	msleep(1);
++	kthread_stop(test_thread);
++}
++
++/*
++ * For every trace event defined, we will test each trace point separately,
++ * and then by groups, and finally all trace points.
++ */
++static __init int event_trace_self_tests(void)
++{
++	struct ftrace_event_call *call;
++	struct event_subsystem *system;
++	char *sysname;
 +	int ret;
 +
-+	ret = trace_seq_printf(s, "\tfield: u64 timestamp;\t"
-+			       "offset:0;\tsize:%u;\n",
-+			       (unsigned int)sizeof(field.time_stamp));
++	pr_info("Running tests on trace events:\n");
 +
-+	ret = trace_seq_printf(s, "\tfield: local_t commit;\t"
-+			       "offset:%u;\tsize:%u;\n",
-+			       (unsigned int)offsetof(typeof(field), commit),
-+			       (unsigned int)sizeof(field.commit));
++	list_for_each_entry(call, &ftrace_events, list) {
 +
-+	ret = trace_seq_printf(s, "\tfield: char data;\t"
-+			       "offset:%u;\tsize:%u;\n",
-+			       (unsigned int)offsetof(typeof(field), data),
-+			       (unsigned int)BUF_PAGE_SIZE);
++		/* Only test those that have a regfunc */
++		if (!call->regfunc)
++			continue;
 +
-+	return ret;
-+}
++		pr_info("Testing event %s: ", call->name);
 +
- /*
-  * head_page == tail_page && head == tail then buffer is empty.
-  */
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index f81d6ee..7163a2b 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -610,6 +610,30 @@ subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
- 	return cnt;
- }
- 
-+static ssize_t
-+show_header(struct file *filp, char __user *ubuf, size_t cnt, loff_t *ppos)
-+{
-+	int (*func)(struct trace_seq *s) = filp->private_data;
-+	struct trace_seq *s;
-+	int r;
++		/*
++		 * If an event is already enabled, someone is using
++		 * it and the self test should not be on.
++		 */
++		if (call->enabled) {
++			pr_warning("Enabled event during self test!\n");
++			WARN_ON_ONCE(1);
++			continue;
++		}
 +
-+	if (*ppos)
++		call->enabled = 1;
++		call->regfunc();
++
++		event_test_stuff();
++
++		call->unregfunc();
++		call->enabled = 0;
++
++		pr_cont("OK\n");
++	}
++
++	/* Now test at the sub system level */
++
++	pr_info("Running tests on trace event systems:\n");
++
++	list_for_each_entry(system, &event_subsystems, list) {
++
++		/* the ftrace system is special, skip it */
++		if (strcmp(system->name, "ftrace") == 0)
++			continue;
++
++		pr_info("Testing event system %s: ", system->name);
++
++		/* ftrace_set_clr_event can modify the name passed in. */
++		sysname = kstrdup(system->name, GFP_KERNEL);
++		if (WARN_ON(!sysname)) {
++			pr_warning("Can't allocate memory, giving up!\n");
++			return 0;
++		}
++		ret = ftrace_set_clr_event(sysname, 1);
++		kfree(sysname);
++		if (WARN_ON_ONCE(ret)) {
++			pr_warning("error enabling system %s\n",
++				   system->name);
++			continue;
++		}
++
++		event_test_stuff();
++
++		sysname = kstrdup(system->name, GFP_KERNEL);
++		if (WARN_ON(!sysname)) {
++			pr_warning("Can't allocate memory, giving up!\n");
++			return 0;
++		}
++		ret = ftrace_set_clr_event(sysname, 0);
++		kfree(sysname);
++
++		if (WARN_ON_ONCE(ret))
++			pr_warning("error disabling system %s\n",
++				   system->name);
++
++		pr_cont("OK\n");
++	}
++
++	/* Test with all events enabled */
++
++	pr_info("Running tests on all trace events:\n");
++	pr_info("Testing all events: ");
++
++	sysname = kmalloc(4, GFP_KERNEL);
++	if (WARN_ON(!sysname)) {
++		pr_warning("Can't allocate memory, giving up!\n");
 +		return 0;
++	}
++	memcpy(sysname, "*:*", 4);
++	ret = ftrace_set_clr_event(sysname, 1);
++	if (WARN_ON_ONCE(ret)) {
++		kfree(sysname);
++		pr_warning("error enabling all events\n");
++		return 0;
++	}
 +
-+	s = kmalloc(sizeof(*s), GFP_KERNEL);
-+	if (!s)
-+		return -ENOMEM;
++	event_test_stuff();
 +
-+	trace_seq_init(s);
++	/* reset sysname */
++	memcpy(sysname, "*:*", 4);
++	ret = ftrace_set_clr_event(sysname, 0);
++	kfree(sysname);
 +
-+	func(s);
-+	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
++	if (WARN_ON_ONCE(ret)) {
++		pr_warning("error disabling all events\n");
++		return 0;
++	}
 +
-+	kfree(s);
++	pr_cont("OK\n");
 +
-+	return r;
++	return 0;
 +}
 +
- static const struct seq_operations show_event_seq_ops = {
- 	.start = t_start,
- 	.next = t_next,
-@@ -667,6 +691,11 @@ static const struct file_operations ftrace_subsystem_filter_fops = {
- 	.write = subsystem_filter_write,
- };
- 
-+static const struct file_operations ftrace_show_header_fops = {
-+	.open = tracing_open_generic,
-+	.read = show_header,
-+};
++late_initcall(event_trace_self_tests);
 +
- static struct dentry *event_trace_events_dir(void)
- {
- 	static struct dentry *d_tracer;
-@@ -909,6 +938,15 @@ static __init int event_trace_init(void)
- 	if (!d_events)
- 		return 0;
- 
-+	/* ring buffer internal formats */
-+	trace_create_file("header_page", 0444, d_events,
-+			  ring_buffer_print_page_header,
-+			  &ftrace_show_header_fops);
-+
-+	trace_create_file("header_event", 0444, d_events,
-+			  ring_buffer_print_entry_header,
-+			  &ftrace_show_header_fops);
-+
- 	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
- 		/* The linker may leave blanks */
- 		if (!call->name)
++#endif
 -- 
 1.6.2.1
 
