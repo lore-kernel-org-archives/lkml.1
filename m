@@ -1,39 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbZDQJ2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbZDQJ3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbZDQJ2p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 05:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbZDQJ2h
+	id S1760206AbZDQJ3b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 05:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbZDQJ3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 05:28:37 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36734 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754561AbZDQJ2g (ORCPT
+	Fri, 17 Apr 2009 05:29:21 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37123 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758104AbZDQJ3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 05:28:36 -0400
-Date: Fri, 17 Apr 2009 10:29:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Nicholson <robert.nicholson@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Does the linux kernel contain support for ATA Security feature
- set?
-Message-ID: <20090417102949.6c2b663a@lxorguk.ukuu.org.uk>
-In-Reply-To: <CC1C24F4-B448-4453-BA6C-EF436231B267@gmail.com>
-References: <CC1C24F4-B448-4453-BA6C-EF436231B267@gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Fri, 17 Apr 2009 05:29:20 -0400
+Subject: Re: [PATCH 1/2 v2] tracing/events: provide string with undefined
+ size  support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <c62985530904170159j6f3b5477g411a028e69fd93f6@mail.gmail.com>
+References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com>
+	 <1239912812.23397.3432.camel@laptop>
+	 <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com>
+	 <1239949360.23397.4065.camel@laptop>
+	 <c62985530904170159j6f3b5477g411a028e69fd93f6@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 17 Apr 2009 11:29:08 +0200
+Message-Id: <1239960548.23397.4282.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So does the Linux kernel support the ATA security set then? or does
+On Fri, 2009-04-17 at 10:59 +0200, Frédéric Weisbecker wrote:
 
-It supports pass through of ATA commands: See man hdparm
+> struct foo {
+>    field1;
+>    field2;
+>    ...
+> };
+> 
+> struct foo *f;
+> 
+> event = ring_buffer_lock_reserve(sizeof(*f), ...);
+> f = ring_buffer_event_data(event);
+> 
+> I can't use a kmalloc here. We are tracing a random event which can happen
+> at a random frequency, random context, etc...
 
-> it, like OSX have protective measures to stop abuse of those features.
+Can't you add a bit to that ring_buffer_lock_reserve() thing?
 
-The kernel doesn't but your BIOS or in some distributions early boot
-scripts may well issue a security freeze.
+The thing I do for perf_counters is I first iterate all the output, then
+make the reserve large enough to fit all the output in, then copy the
+bits into the output buffer.
 
-Alan
+The result is that the output cannot be interpreted as a fixed offset
+struct, but that's not much of an issue anyway.
+
+Another possibility is using relative pointers for strings that point
+beyond the tail of the fixed offset struct.
+
+So something like:
+
+  __field(int, foo);
+  __string(bar);
+  __field(int, foo2);
+  __string(bar2);
+  __field(int, foo3);
+
+would look like:
+
+ struct plop {
+   int foo;
+   char *bar;
+   int foo2;
+   char *bar2;
+   int foo3;
+
+   char data[0];
+ }
+
+and you'd do something like:
+
+ size = sizeof(struct plop);
+ size += strlen(bar) + 1;
+ size += strlen(bar2) + 1;
+
+ event = ring_buffer_lock_reserve(size);
+ offset = sizeof(struct plop);
+ my_plop.bar = (char *)offset;
+ offset += strlen(bar) + 1;
+ my_plop.bar2 = (char *)offset;
+ memcpy(&event, &my_plop, sizeof(struct plop));
+ memcpy(&event + my_plop.bar, bar, strlen(bar)+1);
+ memcpy(&event + my_plop.bar2, bar2, strlen(bar2)+1);
+ ring_buffer_unlock();
+
+Then on reading, you'd get a variable sized entry, with a fixed size
+fixed offset struct, that contains relative offset character pointers.
+
