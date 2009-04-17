@@ -1,84 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbZDQOM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761103AbZDQONe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760456AbZDQOM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbZDQOMR
+	id S1761103AbZDQONe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZDQONZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:12:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64484 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbZDQOMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:12:16 -0400
-Message-ID: <49E88E3F.8030107@vlnb.net>
-Date: Fri, 17 Apr 2009 18:12:15 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 17 Apr 2009 10:13:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36261 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753384AbZDQONZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 10:13:25 -0400
+Date: Fri, 17 Apr 2009 16:13:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Weidong Han <weidong.han@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: dwmw2@infradead.org, allen.m.kay@intel.com, fenghua.yu@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH 3/5] x86, intr-remap: enable interrupt remapping early
+Message-ID: <20090417141310.GD23493@elte.hu>
+References: <1239957736-6161-1-git-send-email-weidong.han@intel.com> <1239957736-6161-4-git-send-email-weidong.han@intel.com>
 MIME-Version: 1.0
-To: Daniel Debonzi <debonzi@linux.vnet.ibm.com>
-CC: scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and implementation.
-References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> <49E85F1C.7040106@vlnb.net> <49E8832F.6070302@linux.vnet.ibm.com>
-In-Reply-To: <49E8832F.6070302@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18D7gUziYYu386Io2thDVoF5J7cxMmoKD/ejHJ
- 6vsG1+ZiJdn51MPQcYnl7PWHECuowwNWUdPFN53PBsYy7J85pf
- /IlEQCZ7KSeWK0Um9b8Pg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239957736-6161-4-git-send-email-weidong.han@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Debonzi, on 04/17/2009 05:25 PM wrote:
->>> Vladislav Bolkhovitin wrote:
->>>> Hi All,
->>>>
->>>> Below is proposal for the SCST sysfs layout, which will replace 
->>>> existing procfs-based infrastructure. Any comments, questions and 
->>>> suggestions are welcome!
->>>>
->>>> I. SCST sysfs layout.
->>>>
->>>> Root would be /sys/scsi_tgt.
->>>>
->>>> In the root there would be the following files and subdirectories:
->>>>
->>>>  - targets - subdirectory listing names of all registered target 
->>>> drivers.
->>>>
->>>>  - devices - subdirectory listing all registered backend devices.
->>>>
->>>>  - sgv - subdirectory listing all existing SGV pools.
->>>>
->>>>  - drivers - subdirectory listing all loaded target and backend 
->>>> drivers (dev handlers).
->>>>
->>>>  - threads - RW file listing number of global SCST threads. Writing 
->>>> to that file would allow to change that value.
->>>>
->>>>  - trace_level - RW file listing SCST core logging level. Writing to 
->>>> that file would allow to change that. Example content: "out_of_mem | 
->>>> minor | pid | line | function | special | mgmt | mgmt_minor | 
->>>> mgmt_dbg | retry". See current procfs implementation of this file for 
->>>> more info.
->>>>
->>>>  - version - RO file listing version of SCST core and enabled compile 
->>>> time features. Example content: "1.0.2, EXTRACHECKS, 
->>>> DEBUG"                                                                                                                          
->>>
->>> Based on all I read this last days, I believe we are not allowed to 
->>> include the directory scsi_tgt on /sys root. I think it has to be in a 
->>> existent directory reserved for this sort of application. I just 
->>> didn't figured out which one it would be.
->> /sys/class? It already has scsi_device, scsi_disk, scsi_generic and 
->> scsi_host.
-> 
-> I don't think so because all the directories on /sys/class have symlinks 
-> to the files somewhere else. However I noticed that many of them on my 
-> system are on /sys/device/virtual
 
-Let's go with root in /sys/class/scsi_tgt. In future, if somebody 
-objects, we can easily change it.
+* Weidong Han <weidong.han@intel.com> wrote:
 
-Vlad
+> --- a/arch/x86/kernel/apic/apic.c
+> +++ b/arch/x86/kernel/apic/apic.c
+> @@ -118,6 +118,8 @@ static int x2apic_preenabled;
+>  static int disable_x2apic;
+>  static __init int setup_nox2apic(char *str)
+>  {
+> +	if (x2apic_enabled())
+> +		panic("Bios already enabled x2apic, can't enforce nox2apic");
+
+Could you please turn that into something like:
+
+		printk(KERN_WARNING "Bios already enabled x2apic, can't enforce nox2apic");
+		return 1;
+
+panic-ing the box just because we cannot meet a boot option is not 
+good.
+
+> +#ifdef CONFIG_X86_X2APIC
+> +	if (cpu_has_x2apic)
+> +		ret = enable_intr_remapping(EIM_32BIT_APIC_ID);
+> +	else
+> +#endif
+> +		ret = enable_intr_remapping(EIM_8BIT_APIC_ID);
+
+That construct looks rather ugly.
+
+Why not clear x2apic from the CPU flags if CONFIG_X86_X2APIC is 
+disabled. (and print a one-liner during bootup that we did so)
+
+Then this could be written as:
+
+	if (cpu_has_x2apic)
+		ret = enable_intr_remapping(EIM_32BIT_APIC_ID);
+	else
+		ret = enable_intr_remapping(EIM_8BIT_APIC_ID);
+
+which looks far more nice.
+
+> +#ifdef CONFIG_X86_X2APIC
+> +	if (cpu_has_x2apic && !x2apic) {
+>  		x2apic = 1;
+>  		enable_x2apic();
+> +		pr_info("Enabled x2apic\n");
+>  	}
+> +#endif
+
+ditto - this #ifdef could go away with the cpuflags trick.
+
+> +ir_failed:
+> +	if (x2apic_preenabled)
+> +		panic("x2apic enabled by bios. But IR enabling failed");
+
+What is the likelyhood that we can continue in compat mode? If 
+there's some chance, we should rather print a KERN_WARNING and 
+should try to continue. If IRQs are not coming we'll hang shortly 
+afterwards anyway.
+
+>  		panic("x2apic enabled prior OS handover,"
+> -		      " enable CONFIG_INTR_REMAP");
+
+ditto.
+
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -1968,15 +1968,6 @@ static int __init init_dmars(void)
+>  		}
+>  	}
+>  
+> -#ifdef CONFIG_INTR_REMAP
+> -	if (!intr_remapping_enabled) {
+> -		ret = enable_intr_remapping(0);
+> -		if (ret)
+> -			printk(KERN_ERR
+> -			       "IOMMU: enable interrupt remapping failed\n");
+> -	}
+> -#endif
+
+David, is this fine with you? Doing ir-remap setup in the ioapic 
+code and early on is the obviously right thing to do.
+
+> --- a/drivers/pci/intr_remapping.c
+> +++ b/drivers/pci/intr_remapping.c
+> @@ -423,20 +423,6 @@ static void iommu_set_intr_remapping(struct intel_iommu *iommu, int mode)
+>  		      readl, (sts & DMA_GSTS_IRTPS), sts);
+>  	spin_unlock_irqrestore(&iommu->register_lock, flags);
+>  
+> -	if (mode == 0) {
+> -		spin_lock_irqsave(&iommu->register_lock, flags);
+> -
+> -		/* enable comaptiblity format interrupt pass through */
+
+(this removal also fixes a typo ;-)
+
+> -		cmd = iommu->gcmd | DMA_GCMD_CFI;
+> -		iommu->gcmd |= DMA_GCMD_CFI;
+> -		writel(cmd, iommu->reg + DMAR_GCMD_REG);
+> -
+> -		IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG,
+> -			      readl, (sts & DMA_GSTS_CFIS), sts);
+> -
+> -		spin_unlock_irqrestore(&iommu->register_lock, flags);
+> -	}
+
+Btw., switching on compat mode might be worthwile to do in one of 
+the failure paths? I.e. we try to switch to IR mode but fail - we 
+should then try to switch to compat pass-through instead of leaving 
+the controller in limbo. Does it matter in your opinion?
+
+> -
+>  	/*
+>  	 * global invalidation of interrupt entry cache before enabling
+>  	 * interrupt-remapping.
+> @@ -516,6 +502,20 @@ end:
+>  	spin_unlock_irqrestore(&iommu->register_lock, flags);
+>  }
+>  
+> +int __init intr_remapping_supported(void)
+> +{
+> +	struct dmar_drhd_unit *drhd;
+> +
+> +	for_each_drhd_unit(drhd) {
+> +		struct intel_iommu *iommu = drhd->iommu;
+> +
+> +		if (!ecap_ir_support(iommu->ecap))
+> +			return 0;
+> +	}
+> +
+> +	return 1;
+> +}
+
+Jesse, are these bits fine with you? The layering is still a bit 
+incestous but it's a marked improvement over what we had there 
+before.
+
+	Ingo
