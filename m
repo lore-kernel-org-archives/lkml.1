@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbZDQKlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbZDQKmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760418AbZDQKlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 06:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZDQKll
+	id S1760747AbZDQKmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 06:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760192AbZDQKlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 06:41:41 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:8230 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754271AbZDQKlk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 06:41:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=CbS6dUdaGJXXlNqZ2nUp/MVpFUMrSb1ISVc9djyk5xIvIcOWasK9VkhScr0MAHK6hI
-         pIiPqy2KWckO+2xPMtdxb8hp6hvhYieDMGJ4JGKqfqkz17VWjW1S4kYS2NiLmDlex4qZ
-         AtNS16To8hv61x5gUJp1AxqyiueufcPly/1Pc=
-Date: Fri, 17 Apr 2009 12:41:35 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
-       randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090417104134.GA19872@linux>
-Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Paul Menage <menage@google.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-	akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-	Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-	Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-	fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-	matt@bluehost.com, dradford@bluehost.com, ngupta@google.com,
-	randy.dunlap@oracle.com, roberto@unbit.it,
-	Ryo Tsuruta <ryov@valinux.co.jp>,
-	Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-	yoshikawa.takuya@oss.ntt.co.jp,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com> <49E7E1CF.6060209@cn.fujitsu.com> <20090417102539.GA16838@linux>
+	Fri, 17 Apr 2009 06:41:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51180 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760724AbZDQKlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 06:41:51 -0400
+Message-ID: <49E85CE9.4090306@pobox.com>
+Date: Fri, 17 Apr 2009 06:41:45 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417102539.GA16838@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Zhenwen Xu <helight.xu@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] v3 fix error on drivers/ata/pata_legacy.c
+References: <20090417073259.GA6366@helight> <20090417112713.04ed51d7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090417112713.04ed51d7@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 12:25:40PM +0200, Andrea Righi wrote:
-> So, what about implementing the bio-cgroup functionality as cgroup "page
-> tracking" infrastructure and provide the following interfaces:
+Alan Cox wrote:
+> On Fri, 17 Apr 2009 15:32:59 +0800
+> Zhenwen Xu <helight.xu@gmail.com> wrote:
 > 
-> /*
->  * Encode the cgrp->css.id in page_group->flags
-
-sorry, I meant css_id(struct cgroup_subsys_state *css) here.
-
->  */
-> void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
+>> fix those errors:
+>>
+>> drivers/ata/pata_legacy.c: In function ‘pdc_data_xfer_vlb’:
+>> drivers/ata/pata_legacy.c:289: error: ‘ap’ undeclared (first use in this function)
+>> drivers/ata/pata_legacy.c:289: error: (Each undeclared identifier is reported only once
+>> drivers/ata/pata_legacy.c:289: error: for each function it appears in.)
+>> drivers/ata/pata_legacy.c: At top level:
+>> drivers/ata/pata_legacy.c:869: error: ‘ATA_PFLAG_PIO32_CHANGE’ undeclared here (not in a
+>> +function)
+>> make[2]: *** [drivers/ata/pata_legacy.o] Error 1
+>> make[1]: *** [drivers/ata] Error 2
 > 
-> /*
->  * Returns the cgroup owner of a page, decoding the cgroup id from
->  * page_cgroup->flags.
->  */
-> struct cgroup *get_cgroup_page_owner(struct page *page);
+> Looks good to me. I shall have to find something larger than PROPOSED in
+> the patch title to stop Jeff applying things that were discussion code
 
-Or better, even more generic:
+It had a 'signed-off-by', which I took to mean, it was a proposed patch 
+that was OK to merge once people were happy...  Sorry about that 
+misinterpretation.
 
-/*
- * Encode id in page_group->flags.
- */
-void set_page_id(struct page *page, unsigned short id);
+	Jeff
 
-/*
- * Returns the id of a page, decoding it from page_cgroup->flags.
- */
-unsigned short get_page_id(struct page *page);
 
-Then we can use css_id() for cgroups, or any kind of ID for other
-potential users (dm-ioband, etc.).
 
--Andrea
 
-> 
-> This also wouldn't increase the size of page_cgroup because we can
-> encode the cgroup id in the unused bits of page_cgroup->flags, as
-> originally suggested by Kame.
-> 
-> And I think it could be used also by dm-ioband, even if it's not a
-> cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
