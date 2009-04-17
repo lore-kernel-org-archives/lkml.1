@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761957AbZDQQlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbZDQQmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761957AbZDQQlo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761397AbZDQQlf
+	id S1762257AbZDQQmM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761346AbZDQQl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:41:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64886 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755685AbZDQQlf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:41:35 -0400
-Date: Fri, 17 Apr 2009 12:41:33 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 3/5] tracing/events: add rcu locking around trace event
- prints
-In-Reply-To: <49E8AF03.6070509@goop.org>
-Message-ID: <alpine.DEB.2.00.0904171240450.14919@gandalf.stny.rr.com>
-References: <20090416021830.556671772@goodmis.org> <20090416021928.467656424@goodmis.org> <alpine.DEB.2.00.0904171004210.14919@gandalf.stny.rr.com> <20090417161820.GA26479@mit.edu> <49E8AF03.6070509@goop.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 17 Apr 2009 12:41:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52854 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759122AbZDQQlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:41:55 -0400
+Date: Fri, 17 Apr 2009 18:41:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: fix section mismatch warnings
+Message-ID: <20090417164141.GJ8253@elte.hu>
+References: <1239918902.10567.22.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239918902.10567.22.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 17 Apr 2009, Jeremy Fitzhardinge wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> Theodore Tso wrote:
-> > I haven't been following all of the e-mail threads about the include
-> > hell problem; what are the issues, exactly?  What's the problem with
-> > simply including <linux/rcuupdate.h>, and any needed prequisites in
-> > ftrace.h?
+> The following changes since commit 88dc4c8e38d64db32907e0bd605f8c1ec4c4d1bd:
+>   Ingo Molnar (1):
+>         Merge branch 'tracing/ftrace'
 > 
-> I'm adding tracing support to paravirt.h, which in turn gets included in
-> various low-level arch/x86 headers.  If it starts including other high-level
-> linux/ headers, we quickly get into deep #include recursion problems and
-> undefined symbols.
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
+> 
+> Jaswinder Singh Rajput (3):
+>       x86: mm/numa_32.c calculate_numa_remap_pages should use __init
+>       x86: apic/es7000_32.c find_unisys_acpi_oem_table and es7000_acpi_madt_oem_check should use __init
+>       x86: smpboot.c wakeup_secondary_cpu_via_nmi do not required __devinit
 
-I think our final solution of the:
+The commit logs lack analysis. The suggestions in the warnings are 
+advisory and can be wrong. Analysis explaining what happened, maybe 
+even when it happened, and what should be done about it to fix that 
+issue is needed in such changelogs.
 
-#ifdef CREATE_FOO_TRACE_POINTS
-#undef CREATE_FOO_TRACE_POINTS
-#include <trace/define_trace.h>
-#endif
+The commits might be correct - or they might be bogus. The commit 
+logs dont give us any help in deciding that. I.e. if you did that 
+work, you should document it. If you _didnt_ do that analysis work, 
+you shouldnt send patches addressing these types of warnings.
 
-would fix this for us.
-
--- Steve
-
+	Ingo
