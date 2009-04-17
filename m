@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbZDQAsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbZDQArw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761425AbZDQAsq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbZDQApZ
+	id S1760979AbZDQArw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760910AbZDQAoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:45:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41920 "EHLO mx3.mail.elte.hu"
+	Thu, 16 Apr 2009 20:44:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55687 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760905AbZDQApW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:45:22 -0400
-Date: Fri, 17 Apr 2009 02:45:17 +0200
+	id S1760890AbZDQAoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:44:11 -0400
+Date: Fri, 17 Apr 2009 02:43:52 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [Bug #13099] net, sky2: BUG: unable to handle kernel NULL
-	pointer dereference, pci_vpd_truncate()
-Message-ID: <20090417004517.GB1988@elte.hu>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.Q2.cw85JB@chimera>
+To: mathieu.desnoyers@polymtl.ca
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 2/3] RCU move trace defines to rcupdate_defines.h
+Message-ID: <20090417004352.GA1988@elte.hu>
+References: <20090417001437.215128284@polymtl.ca> <20090417001637.845737169@polymtl.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <nY3-4PrO6XH.A.Q2.cw85JB@chimera>
+In-Reply-To: <20090417001637.845737169@polymtl.ca>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,30 +38,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* mathieu.desnoyers@polymtl.ca <mathieu.desnoyers@polymtl.ca> wrote:
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13099
-> Subject		: net, sky2: BUG: unable to handle kernel NULL pointer dereference, pci_vpd_truncate()
-> Submitter	: Ingo Molnar <mingo@elte.hu>
-> Date		: 2009-04-06 9:03 (11 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123900867611321&w=4
-> Handled-By	: Stephen Hemminger <shemminger@vyatta.com>
+>  include/linux/rcupdate.h         |  127 ------------------------------
+>  include/linux/rcupdate_defines.h |  163 +++++++++++++++++++++++++++++++++++++++
 
-I think this can be closed as the fix has been merged upstream 
-already (via the PCI tree):
-
- commit d407e32efe060afa2b9a797a91376ebc65b4ce11
- Author: Anton Vorontsov <avorontsov@ru.mvista.com>
- Date:   Wed Apr 1 02:23:41 2009 +0400
-
-    PCI: Fix oops in pci_vpd_truncate
+Looks good to me (if Paul accepts it too), but please use the 
+standard convention we use in other places for 'light' headers: 
+rcupdate_types.h.
 
 	Ingo
