@@ -1,133 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbZDQRD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbZDQRF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbZDQRD7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZDQRDv
+	id S1760803AbZDQRF1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbZDQRFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:03:51 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:63976 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbZDQRDu (ORCPT
+	Fri, 17 Apr 2009 13:05:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35857 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754969AbZDQRFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:03:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=nl0pSQ+F08McwHpKecg1hJH5YaT7gsR9XXnP1odFUV7YwZLQoka7b6u/2yJWuqsObn
-         0Ig+eD4ogqv9q52q0Xu7nFGBBioEVEMT3BQ39QjU6apNpDwKkYKGhGQsbYCCszK9dfF1
-         kENgHbCiht6mV9rIJvCvkFGyZ6nQu8KW4Xngw=
-MIME-Version: 1.0
-Date: Fri, 17 Apr 2009 19:03:48 +0200
-Message-ID: <8db1092f0904171003u462b9d90pe874cd63c7a22a1d@mail.gmail.com>
-Subject: Spontaneous reboots since 2.6.29-rc*
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 17 Apr 2009 13:05:12 -0400
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+ syscalls with a mutex
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090417165643.GL8253@elte.hu>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it>
+	 <20090416160645.GB17804@elte.hu>
+	 <20090416235649.GF26366@ZenIV.linux.org.uk>
+	 <20090417000142.GF21405@elte.hu>
+	 <20090417001345.GH26366@ZenIV.linux.org.uk>
+	 <20090417002744.GB29630@elte.hu>
+	 <20090417003805.GI26366@ZenIV.linux.org.uk> <20090417165643.GL8253@elte.hu>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 19:04:45 +0200
+Message-Id: <1239987885.23397.4817.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes I observed spontaneous reboots during booting kernel, after
-this message:
-[...]
-[    0.024996] ... PM-Timer delta = 357949
-[    0.024996] ... PM-Timer result ok
-[    0.024996] ..... delta 1249983
-[    0.024996] ..... mult: 53694522
-[    0.024996] ..... calibration result: 199997
-[    0.024996] ..... CPU clock speed is 1999.0972 MHz.
-[    0.024996] ..... host bus clock speed is 199.0997 MHz.
-[    0.024996] Booting processor 1 APIC 0x1 ip 0x6000
+On Fri, 2009-04-17 at 18:56 +0200, Ingo Molnar wrote:
 
-after this should be:
-[    0.000999] Initializing CPU#1
-[    0.000999] masked ExtINT on CPU#1
-[    0.000999] Calibrating delay using timer specific routine..
-4067.56 BogoMIPS (lpj=2033784)
-[    0.000999] CPU: L1 I cache: 32K, L1 D cache: 32K
-[    0.000999] CPU: L2 cache: 1024K
+> Stupid question regarding c): wouldnt such data structures go via 
+> the VFS - which you said was free of BKL constraints? Or are there 
+> interconnected private data structures between certain types of 
+> closely related filesystems that the VFS does not know about? (and 
+> hence might have BKL assumptions)
 
+The VFS is stuffed with ->private like pointers for filesystems to flesh
+out, and I could well imagine some implicit serialization between the
+various (4?) VFS hooks that are currently still under BKL.
 
-Also I found this message in dmesg:
-[    0.000000] 4 Processors exceeds NR_CPUS limit of 2
-[    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
+Anyway, it seems quite clear that the first thing is to push the current
+BKL usage down into the filesystems -- which should be somewhat
+straight-forward.
 
+After that it really comes down to picking off these filesystems one at
+a time, which will really need a proper audit, there just ain't a proper
+substitute for thinking ;-)
 
-I only have two processors:
-maciek@zlom:~$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Pentium(R) Dual  CPU  E2180  @ 2.00GHz
-stepping        : 13
-cpu MHz         : 1200.000
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 1
-core id         : 0
-cpu cores       : 2
-apicid          : 0
-initial apicid  : 0
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
-lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl est
-tm2 ssse3 cx16 xtpr pdcm lahf_lm
-bogomips        : 4423.96
-clflush size    : 64
-power management:
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Pentium(R) Dual  CPU  E2180  @ 2.00GHz
-stepping        : 13
-cpu MHz         : 1200.000
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 1
-core id         : 1
-cpu cores       : 2
-apicid          : 1
-initial apicid  : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
-lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl est
-tm2 ssse3 cx16 xtpr pdcm lahf_lm
-bogomips        : 4067.56
-clflush size    : 64
-power management:
-
-I use latest bios. Unfortunately it happens only sometimes, so I
-cannot try bisect.
-
-Config:
-http://unixy.pl/maciek/download/kernel/2.6.30-rc2/pc/config-2.6.30-rc2
-
-Dmesg:
-http://unixy.pl/maciek/download/kernel/2.6.30-rc2/pc/dmesg-2.6.30-rc2.txt
-
-Regards
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
