@@ -1,76 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZDQDtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbZDQDvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZDQDtV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 23:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZDQDtN
+	id S1754722AbZDQDvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 23:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZDQDvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 23:49:13 -0400
-Received: from smtp103.prem.mail.sp1.yahoo.com ([98.136.44.58]:35219 "HELO
-	smtp103.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752664AbZDQDtM (ORCPT
+	Thu, 16 Apr 2009 23:51:31 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35849 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbZDQDva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 23:49:12 -0400
-X-YMail-OSG: _xP1h7EVM1mCSE4ByTKVMxj3LI2_eNi4B.bRGBKQyM8nKViJ3qf73Mz6Pu3nk5WNGNBCcLxt4iGzqkiYFQ2wXpXNAgAbqYFlLTIveiX_AcWIveieQ1HMEwzzszqvRcU5Vzt0lBth9f8f7Jugp4bFaqdPJyt0navECK1wT8XGwNKk_m6UWTVJf0lUNguj8RkGGqoiVzJ38ElJlajTl64bkg8_NoCG7hvNBHRA1iYxJO0J79F.H.nj4PfKBUF972BoLVhl5h.V4rR4TaGVfV0z9Gjg0KXWECvUfc7HfcYMAyLs6k7tZ95qxud3SiCkAwvMsgNP5N6WxiuTbyOPFPGxIfo-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <49E7FC03.20605@schaufler-ca.com>
-Date: Thu, 16 Apr 2009 20:48:19 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Etienne Basset <etienne.basset@numericable.fr>
-CC: LSM <linux-security-module@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Smack: check for SMACK xattr validity in smack_inode_setxattr
-References: <49E4D5B6.80202@numericable.fr> <49E561C8.90306@schaufler-ca.com> <49E57DFF.9030207@numericable.fr> <49E60B2D.5080508@schaufler-ca.com> <49E7AA12.2090406@numericable.fr>
-In-Reply-To: <49E7AA12.2090406@numericable.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 16 Apr 2009 23:51:30 -0400
+Date: Fri, 17 Apr 2009 12:49:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+ controller (v2)
+Message-Id: <20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090417034539.GD18558@balbir.in.ibm.com>
+References: <20090415120510.GX7082@balbir.in.ibm.com>
+	<20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416015955.GB7082@balbir.in.ibm.com>
+	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416120316.GG7082@balbir.in.ibm.com>
+	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417014042.GB18558@balbir.in.ibm.com>
+	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417034539.GD18558@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Etienne Basset wrote:
-> the following patch moves checks for SMACK xattr validity
-> from smack_inode_post_setxattr (which cannot return an error to the user)
-> to smack_inode_setxattr (which can return an error).
->
-> Signed-off-by: Etienne Basset <etienne.basset@numericable.fr>
->   
+On Fri, 17 Apr 2009 09:15:39 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 11:03:50]:
+> 
+> > On Fri, 17 Apr 2009 07:10:42 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
+> > > 
+> > > > On Thu, 16 Apr 2009 17:33:16 +0530
+> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
+> > > > > 
+> > > > > > 
+> > > > > > > Sorry, some troubles found. Ignore above Ack. 3points now.
+> > > > > > > 
+> > > > > > > 1. get_cpu should be after (*)
+> > > > > > > ==mem_cgroup_update_mapped_file_stat()
+> > > > > > > +	int cpu = get_cpu();
+> > > > > > > +
+> > > > > > > +	if (!page_is_file_cache(page))
+> > > > > > > +		return;
+> > > > > > > +
+> > > > > > > +	if (unlikely(!mm))
+> > > > > > > +		mm = &init_mm;
+> > > > > > > +
+> > > > > > > +	mem = try_get_mem_cgroup_from_mm(mm);
+> > > > > > > +	if (!mem)
+> > > > > > > +		return;
+> > > > > > > + ----------------------------------------(*)
+> > > > > > > +	stat = &mem->stat;
+> > > > > > > +	cpustat = &stat->cpustat[cpu];
+> > > > > > > +
+> > > > > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
+> > > > > > > +	put_cpu();
+> > > > > > > +}
+> > > > > > > ==
+> > > > > 
+> > > > > Yes or I should have a goto
+> > > > > 
+> > > > > > > 
+> > > > > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
+> > > > > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
+> > > > > 
+> > > > > Hmmm.. not sure I understand this part. Are you suggesting that mm can
+> > > > > be NULL?
+> > > > No.
+> > > > 
+> > > > > I added the check for !mm as a safety check. Since this
+> > > > > routine is only called from rmap context, mm is not NULL, hence mem
+> > > > > should not be NULL. Did you find a race between mm->owner assignment
+> > > > > and lookup via mm->owner?
+> > > > > 
+> > > > No.
+> > > > 
+> > > > page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
+> > > > 
+> > > > For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
+> > > > used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
+> > > > 
+> > > > Then, File_Mapped can be greater than Cached easily if you use mm->owner.
+> > > > 
+> > > > I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
+> > > > other cgroups. It's meaningless.
+> > > > Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
+> > > > 
+> > > > By useing page_cgroup->mem_cgroup, we can avoid above mess.
+> > > 
+> > > Yes, I see your point. I wanted mapped_file to show up in the cgroup
+> > > that mapped the page. But this works for me as well, but that means
+> > > we'll nest the page cgroup lock under the PTE lock.
+> > 
+> > Don't worry. we do that nest at ANON's uncharge(), already.
+> > 
+> > About cost:
+> > 
+> > IIUC, the number of "mapcount 0->1/1->0" of file caches are much smaller than
+> > that of o Anon. And there will be not very much cache pingpong.
+> > 
+> > If you use PCG_MAPPED flag in page_cgroup (as my patch), you can use
+> > not-atomic version of set/clear when update is only under lock_page_cgroup().
+> > If you find better way, plz use it. But we can't avoid some kind of atomic ops
+> > for correct accounting, I think.
+> >
+> 
+> Can you sign off on your patch, so that I can take it with your
+> signed-off-by. I will also make some minor changes, get_cpu() is not
+> needed, since we are in preempt disable context. 
+> 
+Hmm, 
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> ---
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 9215149..98b3195 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -609,8 +609,12 @@ static int smack_inode_setxattr(struct dentry *dentry, const char *name,
->  	    strcmp(name, XATTR_NAME_SMACKIPOUT) == 0) {
->  		if (!capable(CAP_MAC_ADMIN))
->  			rc = -EPERM;
-> -		/* a label cannot be void and cannot begin with '-' */
-> -		if (size == 0 || (size > 0 && ((char *)value)[0] == '-'))
-> +		/*
-> +		 * check label validity here so import wont fail on
-> +		 * post_setxattr
-> +		 */
-> +		if (size == 0 || size >= SMK_LABELLEN ||
-> +		    smk_import(value, size) == NULL)
->  			rc = -EINVAL;
->  	} else
->  		rc = cap_inode_setxattr(dentry, name, value, size, flags);
-> @@ -644,9 +648,6 @@ static void smack_inode_post_setxattr(struct dentry *dentry, const char *name,
->  	if (strcmp(name, XATTR_NAME_SMACK))
->  		return;
->  
-> -	if (size >= SMK_LABELLEN)
-> -		return;
-> -
->  	isp = dentry->d_inode->i_security;
->  
->  	/*
->
->
->
->   
+But some more clean up is necesarry.
+
+=== This part ==
++	lock_page_cgroup(pc);
++	mem = pc->mem_cgroup;
++	if (mem) {
++		cpu = get_cpu();
++		stat = &mem->stat;
++		cpustat = &stat->cpustat[cpu];
++		if (map)
+
+=== Should be ==
++	lock_page_cgroup(pc);
+	if (!PageCgroupUsed(pc)) {
+		unlock_page_cgroup(pc);
+		return;
+	}
+	mem = pc->mem_cgroup
+	VM_BUG_ON(!mem);
+	cpu = get_cpu();
+	stat = &mem->stat;
+	cpustat = &stat->cpustat[cpu];
+	if (map)
+.....
+
+Maybe much cleaner.
+
+Thanks,
+-Kame
+
+
 
