@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZDQTKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751841AbZDQTK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbZDQTKm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 15:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZDQTHc
+	id S1751841AbZDQTK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 15:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZDQTHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 15:07:32 -0400
-Received: from kroah.org ([198.145.64.141]:51230 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754347AbZDQTHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 15:07:31 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 10/10] UIO: fix specific device driver missing statement for depmod
-Date: Fri, 17 Apr 2009 12:04:34 -0700
-Message-Id: <1239995074-4065-10-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20090417190144.GB3548@kroah.com>
-References: <20090417190144.GB3548@kroah.com>
+	Fri, 17 Apr 2009 15:07:37 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56724 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756112AbZDQTHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 15:07:36 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+K7EA9TVKKJA0dt2VH4aNyegWjg6aFfleKKp5Uta
+	PElzbzVM7FCzSh
+Date: Fri, 17 Apr 2009 21:07:52 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Florian Fainelli <florian@openwrt.org>
+cc: Peter Holik <peter@holik.at>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
+In-Reply-To: <200904171632.26091.florian@openwrt.org>
+Message-ID: <Pine.LNX.4.64.0904172102300.5119@axis700.grange>
+References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
+ <200904171632.26091.florian@openwrt.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hans J. Koch <hjk@linutronix.de>
+On Fri, 17 Apr 2009, Florian Fainelli wrote:
 
-On Fri, Apr 10, 2009 at 01:50:50PM -0700, Andrew Morton wrote:
-> On Fri, 10 Apr 2009 13:32:01 GMT
-> bugzilla-daemon@bugzilla.kernel.org wrote:
->
-> > http://bugzilla.kernel.org/show_bug.cgi?id=13059
+> > diff --git a/drivers/net/usb/intellon.c b/drivers/net/usb/intellon.c
+> > new file mode 100644
+> > index 0000000..c9fcc38
+> > --- /dev/null
+> > +++ b/drivers/net/usb/intellon.c
+> > @@ -0,0 +1,273 @@
+> > +/*
+> > + * Copyright (c) 2009 Peter Holik
+> > + *
+> > + * Intellon PLC (Powerline Communications) usb net driver
+> 
+> Intellon INT51x1 PLC ...
+> [snip]
+> 
+> > +
+> > +static u8 nibble(unsigned char c)
+> > +{
+> > +	if (likely(isdigit(c)))
+> > +		return c - '0';
+> > +	c = toupper(c);
+> > +	if (likely(isxdigit(c)))
+> > +		return 10 + c - 'A';
+> > +	return 0;
+> > +}
+> 
+> Please prefix this with intellon_ (or int51x1_) for instance to avoid any 
+> possible namespace clash.
+> 
+> > +
+> > +static inline int get_ethernet_addr(struct usbnet *dev)
+> > +{
+> > +	int             tmp, i;
+> > +	unsigned char   buf [13];
+> > +
+> > +	tmp = usb_string(dev->udev, 3, buf, sizeof buf);
+> > +	if (tmp != 12) {
+> > +		devdbg(dev, "bad MAC string fetch, %d\n", tmp);
+> > +		if (tmp >= 0)
+> > +			tmp = -EINVAL;
+> > +		return tmp;
+> > +	}
+> > +	for (i = tmp = 0; i < 6; i++, tmp += 2)
+> > +		dev->net->dev_addr [i] =
+> > +			(nibble(buf [tmp]) << 4) + nibble(buf [tmp + 1]);
+> > +	return 0;
+> > +}
+> 
+> Same here.
 
-drivers/uio/uio_cif.c misses a MODULE_DEVICE_TABLE, this fixes it.
+FWIW, I think it's pretty common to name static functions in a .c file, 
+which perform auxiliary function, not really specific to the context 
+without the respective context-prefix. Of course, it might indeed happen 
+that a global symbol "nibble" or "get_ethernet_addr" gets introduced at 
+some point thus leading to a conflict, but this seems to be unlikely. And 
+in any case the one who introduces such a symbol will have to grep the 
+entire kernel anyway.
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Thanks
+Guennadi
 ---
- drivers/uio/uio_cif.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
-index c60b8fc..28034c8 100644
---- a/drivers/uio/uio_cif.c
-+++ b/drivers/uio/uio_cif.c
-@@ -147,5 +147,6 @@ static void __exit hilscher_exit_module(void)
- module_init(hilscher_init_module);
- module_exit(hilscher_exit_module);
- 
-+MODULE_DEVICE_TABLE(pci, hilscher_pci_ids);
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Hans J. Koch, Benedikt Spranger");
--- 
-1.6.2
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
