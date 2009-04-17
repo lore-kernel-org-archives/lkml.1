@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbZDQAOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbZDQAP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758802AbZDQAOA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZDQANu
+	id S1757663AbZDQAP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbZDQAPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:13:50 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51606 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754889AbZDQANt (ORCPT
+	Thu, 16 Apr 2009 20:15:47 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:59669 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbZDQAPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:13:49 -0400
-Date: Fri, 17 Apr 2009 01:13:45 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090417001345.GH26366@ZenIV.linux.org.uk>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu>
+	Thu, 16 Apr 2009 20:15:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KfM6E2qBkuZP6Ic5rmRk/FmrI+bdUXYrvxhEKxgol9/+ZQ+tpDWftYptd1wmDhy4dZ
+         SNOD270v1bfveNhc1bwIZg5nqutzkRSeNOyaR1V0dIzYK8XCBowyonSfRCdywLY3ce7g
+         nNKVg9TQgSydIRJDL7I/1FzhXfVJ7FF/7uVxU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417000142.GF21405@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090416165233.5d8bbfb5@nehalam>
+References: <20090415170111.6e1ca264@nehalam>
+	 <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	 <49E72E83.50702@trash.net>
+	 <20090416.153354.170676392.davem@davemloft.net>
+	 <20090416234955.GL6924@linux.vnet.ibm.com>
+	 <20090416165233.5d8bbfb5@nehalam>
+Date: Fri, 17 Apr 2009 08:15:44 +0800
+Message-ID: <b6a2187b0904161715s46412569t4aa9b255427f9626@mail.gmail.com>
+Subject: Re: [PATCH] netfilter: per-cpu spin-lock with recursion (v0.8)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org, dada1@cosmosbay.com,
+       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 02:01:42AM +0200, Ingo Molnar wrote:
-> 
-> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> 
-> > remount is potentially nastier, but then it *is* nasty.  Again, 
-> > it's only per-fs stuff, so the obvious first step is taking BKL 
-> > down into the instances. It doesn't protect anything in VFS; all 
-> > uses are fs internal, so that'll take review of individual 
-> > filesystems.
-> > 
-> > NOTE: do not assume that code in fs/foo/* is correct; "it doesn't 
-> > take BKL elsewhere" does _not_ mean that we don't have races.  
-> > IOW, the same review ought to look for such beasts and deal with 
-> > them.  Mere "oh, no BKL anywhere in that fs" is not enough to 
-> > discard the ->remount_fs() instance.
-> 
-> what kind of races do you mean? Timing sensitive ones that are there 
-> just are not easy to trigger with the BKL held?
-> 
-> Or actual locking interaction between that body of BKL code and all 
-> other BKL using code?
+On Fri, Apr 17, 2009 at 7:52 AM, Stephen Hemminger
+<shemminger@vyatta.com> wrote:
+> This version of x_tables (ip/ip6/arp) locking uses a per-cpu
+> recursive lock that can be nested. It is sort of like existing kernel_lock,
+> rwlock_t and even old 2.4 brlock.
 
-Old foo_read_super/foo_write_super/foo_put_super/foo_remount_fs for the
-same foo.  IOW, per-driver (and not per-fs - that's taken care of) data
-structures.  Arbitrary weird ones.
+Tested and working. As fast as before.
+
+Thanks,
+Jeff.
