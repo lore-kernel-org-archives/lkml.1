@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbZDQXDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761827AbZDQXEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760459AbZDQXDs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 19:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZDQXD1
+	id S1761827AbZDQXEI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 19:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZDQXD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 19:03:27 -0400
+	Fri, 17 Apr 2009 19:03:29 -0400
 Received: from stargate.chelsio.com ([67.207.112.58]:7088 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752127AbZDQXD0 (ORCPT
+	with ESMTP id S1752815AbZDQXD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 19:03:26 -0400
+	Fri, 17 Apr 2009 19:03:27 -0400
 X-Greylist: delayed 2497 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 19:03:26 EDT
-Message-ID: <49E900D2.3040700@chelsio.com>
-Date: Fri, 17 Apr 2009 15:21:06 -0700
 From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+Subject: [PATCH 2.6.30 3/4] cxgb3: Fix potential msi-x vector leak
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Fri, 17 Apr 2009 15:21:22 -0700
+Message-ID: <20090417222122.8537.43636.stgit@speedy5>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.30 0/4] cxgb3: driver fixes
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Apr 2009 22:22:09.0828 (UTC) FILETIME=[F2F55640:01C9BFAA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+From: Divy Le Ray <divy@chelsio.com>
 
-I am submitting a series of 4 patches for inclusion in 2.6.30.
-Here is a brief description of the patch series:
-- Use the existing periodic task to treat link faults, fix spin lock usage
-- Fix missing workqueue flushes when the driver is unloaded
-- Fix potential MSI-X vector leak on error case
-- Fix EEH last recover attempt exit
+Release vectors when a MSI-X allocation fails.
 
-Cheers,
-Divy
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
+
+ drivers/net/cxgb3/cxgb3_main.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 99b5032..cbd59fe 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -2917,8 +2917,13 @@ static int __devinit cxgb_enable_msix(struct adapter *adap)
+ 	while ((err = pci_enable_msix(adap->pdev, entries, vectors)) > 0)
+ 		vectors = err;
+ 
+-	if (!err && vectors < (adap->params.nports + 1))
++	if (err < 0)
++		pci_disable_msix(adap->pdev);
++
++	if (!err && vectors < (adap->params.nports + 1)) {
++		pci_disable_msix(adap->pdev);
+ 		err = -1;
++	}
+ 
+ 	if (!err) {
+ 		for (i = 0; i < vectors; ++i)
+
