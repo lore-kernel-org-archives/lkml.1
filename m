@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbZDQSCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbZDQSD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762276AbZDQSCd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbZDQSCY
+	id S1762333AbZDQSD2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761513AbZDQSDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:02:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40552 "EHLO hera.kernel.org"
+	Fri, 17 Apr 2009 14:03:20 -0400
+Received: from smtp6.welho.com ([213.243.153.40]:33773 "EHLO smtp6.welho.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758939AbZDQSCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:02:24 -0400
-Subject: Re: [git-pull -tip] x86: fix section mismatch warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+	id S1760297AbZDQSDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 14:03:19 -0400
+Date: Fri, 17 Apr 2009 21:03:16 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090417164141.GJ8253@elte.hu>
-References: <1239918902.10567.22.camel@ht.satnam>
-	 <20090417164141.GJ8253@elte.hu>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 23:31:20 +0530
-Message-Id: <1239991281.3153.4.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/3] AHCI updates: Marvell AHCI PATA works;
+	pata_marvell fate?
+Message-ID: <20090417180316.GA7134@sci.fi>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20090417023949.GA14469@havoc.gtf.org> <20090417105031.607a771e@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090417105031.607a771e@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 18:41 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > The following changes since commit 88dc4c8e38d64db32907e0bd605f8c1ec4c4d1bd:
-> >   Ingo Molnar (1):
-> >         Merge branch 'tracing/ftrace'
+On Fri, Apr 17, 2009 at 10:50:31AM +0100, Alan Cox wrote:
+> > Marvell PATA on 6121 and similar chips should also work, but that hasn't
+> > yet been tested.  Here's the full list of what still needs testing:
 > > 
-> > are available in the git repository at:
+> > - master + slave devices
+> > - ATAPI
+> > - 6121 (6123? others?)
+> 
+> LBA48
+> 
+> 
 > > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
-> > 
-> > Jaswinder Singh Rajput (3):
-> >       x86: mm/numa_32.c calculate_numa_remap_pages should use __init
-> >       x86: apic/es7000_32.c find_unisys_acpi_oem_table and es7000_acpi_madt_oem_check should use __init
-> >       x86: smpboot.c wakeup_secondary_cpu_via_nmi do not required __devinit
+> > Also, there is the open question of how to deal with pata_marvell
+> > co-existence
 > 
-> The commit logs lack analysis. The suggestions in the warnings are 
-> advisory and can be wrong. Analysis explaining what happened, maybe 
-> even when it happened, and what should be done about it to fix that 
-> issue is needed in such changelogs.
-> 
-> The commits might be correct - or they might be bogus. The commit 
-> logs dont give us any help in deciding that. I.e. if you did that 
-> work, you should document it. If you _didnt_ do that analysis work, 
-> you shouldnt send patches addressing these types of warnings.
-> 
+> I think for the moment make PATA support by AHCI a config option and as
+> soon as we trust it we can get rid of the option and of pata_marvell.
 
-I was busy in another stuff, So I am sending analysis of first commit.
-If you want you can apply this patch and ignore others :
+How does this relate to 6101 which is a PATA only controller? Would that
+continue to use pata_marvell or does this new stuff support such things
+too?
 
-[PATCH-tip] x86: mm/numa_32.c calculate_numa_remap_pages should use __init
-
-calculate_numa_remap_pages() is called only by __init initmem_init()
-further calculate_numa_remap_pages is calling:
-	__init find_e820_area() and __init reserve_early()
-
-So calculate_numa_remap_pages() should be __init calculate_numa_remap_pages().
-
-Impact: fix Section mismatch warnings
- WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
- The function calculate_numa_remap_pages() references
- the function __init find_e820_area().
- This is often because calculate_numa_remap_pages lacks a __init
- annotation or the annotation of find_e820_area is wrong.
-
- WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
- The function calculate_numa_remap_pages() references
- the function __init reserve_early().
- This is often because calculate_numa_remap_pages lacks a __init
- annotation or the annotation of reserve_early is wrong.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/mm/numa_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
-index 3daefa0..d253006 100644
---- a/arch/x86/mm/numa_32.c
-+++ b/arch/x86/mm/numa_32.c
-@@ -257,7 +257,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
- }
- #endif
- 
--static unsigned long calculate_numa_remap_pages(void)
-+static __init unsigned long calculate_numa_remap_pages(void)
- {
- 	int nid;
- 	unsigned long size, reserve_pages = 0;
 -- 
-1.6.0.6
-
-
-
-
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
