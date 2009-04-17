@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761771AbZDQWD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZDQWIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761771AbZDQWD2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 18:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761214AbZDQWDQ
+	id S1756728AbZDQWIV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 18:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZDQWIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 18:03:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52861 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752982AbZDQWDP (ORCPT
+	Fri, 17 Apr 2009 18:08:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55989 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZDQWIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 18:03:15 -0400
-Date: Fri, 17 Apr 2009 14:58:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Joe Perches <joe@perches.com>, randy.dunlap@oracle.com, akpm@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
- updates
-In-Reply-To: <20090417144117.4ac8828f.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0904171446500.4042@localhost.localdomain>
-References: <1239167872-8179-1-git-send-email-joe@perches.com> <20090417134711.ba0f03e7.randy.dunlap@oracle.com> <1240003652.31116.44.camel@localhost> <20090417144117.4ac8828f.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Apr 2009 18:08:10 -0400
+Message-ID: <49E8FD0B.2050308@zytor.com>
+Date: Fri, 17 Apr 2009 15:04:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
+References: <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes> <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu> <49E76864.9060309@kernel.org> <20090416172803.GB16618@elte.hu> <49E7916C.7050701@kernel.org> <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <20090416235452.GE21405@elte.hu> <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain> <20090417131633.GA30578@elte.hu>
+In-Reply-To: <20090417131633.GA30578@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 17 Apr 2009, Andrew Morton wrote:
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> : fatal: Not a git repository
+>> On Fri, 17 Apr 2009, Ingo Molnar wrote:
+>>> Could we perhaps round up to 1MB in this case too?
+>> (The below 1MB one).
+>>
+>> I'd argue against it, at least in this incarnation. I can well 
+>> imagine somebody wanting to do resource management in the 640k-1M 
+>> window, so..
 > 
->     it whines about not being run in a git directory, but does a decent
->     job anyway.  
+> ok - indeed - if there's some super-small system with limited 
+> address lines and all physical addresses tightly packed with RAM?
+> 
 
-The default options are: --email --git --m --l --multiline, and the 
-"--git" part basically does a
+No, much more likely that you're having PCI 2.x or PnP devices which 
+have 20-bit resources.  It's probably worth noting that at least right 
+now, Linux mishandles 20-bit BARs and treat them like 32-bit BARs.  It 
+turns out to actually work on a majority of the (quite few) known 
+devices which do have 20-bit BARs.
 
-	git log --since=${email_git_since} -- ${file}
+> 
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)       0.639 MB RAM
+>  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)     0.001 MB
+>                                                 [ hole ]       0.250 MB
+>  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)     0.125 MB
+>  BIOS-e820: 0000000000100000 - 000000003ed94000 (usable)    1004.5   MB RAM
+>  BIOS-e820: 000000003ed94000 - 000000003ee4e000 (ACPI NVS)     0.7   MB
+>  BIOS-e820: 000000003ee4e000 - 000000003fea2000 (usable)      16.3   MB RAM
+>  BIOS-e820: 000000003fea2000 - 000000003fee9000 (ACPI NVS)     0.3   MB
+>  BIOS-e820: 000000003fee9000 - 000000003feed000 (usable)       0.15  MB RAM
+>  BIOS-e820: 000000003feed000 - 000000003feff000 (ACPI data     0.07  MB
+>  BIOS-e820: 000000003feff000 - 000000003ff00000 (usable)       0.004 MB RAM
+>                                                 [ hole ]       1.0   MB
+>                                                 [ hole ]    3072.0   MB
+> 
+> On this map, using your scheme, we'd fill up that small 1MB hole up 
+> to 1GB [mockup]:
+> 
+>  BIOS-e820: 000000003ff00000 - 0000000040000000 (RAM buffer)
+> 
+> I guess that's a good thing not just for robustness: a chipset might 
+> be faster when DMA or mmio is on some well-isolated physical memory 
+> range, not too close to real RAM or other devices?
+> 
 
-to see the logs, and greps and counts sign-offs.
+Realistically, there probably is RAM there, probably consumed by the SMM 
+T-seg.
 
-So the "fatal: Not a git repository" is from git saying it can't do that.
-
-And as a result, it _only_ looks at your MAINTAINERS file, rather than 
-trying to figure it out from other sources too.
-
-For example:
-
-	[torvalds@nehalem linux]$ ./scripts/get_maintainer.pl --no-git -f kernel/exit.c
-	linux-kernel@vger.kernel.org
-
-would be what you see. And then if you have git, you'd also see
-
-	[torvalds@nehalem linux]$ ./scripts/get_maintainer.pl --git -f kernel/exit.c
-	Andrew Morton <akpm@linux-foundation.org>
-	Ingo Molnar <mingo@elte.hu>
-	Oleg Nesterov <oleg@tv-sign.ru>
-	Oleg Nesterov <oleg@redhat.com>
-	Roland McGrath <roland@redhat.com>
-
-because it literally looked at sign-offs of patches that touched 
-kernel/exit.c in the last year, and noticed that those tive people had the 
-top five spots.
-
-(Ok, so I have the top spot, but I'm a penguin chief and as such get 
-excused. You were _originally_ on that list too, but apparently you like 
-getting email, so now you're listed too).
-
-And yeah, I personally find the git statistics more relevant than the 
-MAINTAINERS list. I just tend to do it by hand, although I tend to use a 
-six-month cutoff:
-
-	git log --since=6.months.ago kernel/exit.c |
-		grep 'Signed-off-by: ' |
-		sort | uniq -c | sort -n
-
-works beautifully on just about any set of files and doesn't need no 
-steenking perl.
-
-		Linus
-
+	-hpa
