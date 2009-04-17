@@ -1,104 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbZDQLJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbZDQLRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758956AbZDQLJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 07:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZDQLJp
+	id S1759084AbZDQLRe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 07:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbZDQLRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 07:09:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50264 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757897AbZDQLJo (ORCPT
+	Fri, 17 Apr 2009 07:17:21 -0400
+Received: from stinky.trash.net ([213.144.137.162]:51123 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754601AbZDQLRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 07:09:44 -0400
-Date: Fri, 17 Apr 2009 07:09:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
- recursive protection
-In-Reply-To: <20090417045229.GA30001@Krystal>
-Message-ID: <alpine.DEB.2.00.0904170706510.20429@gandalf.stny.rr.com>
-References: <20090416161543.199331330@goodmis.org> <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop> <alpine.DEB.2.00.0904161343110.20429@gandalf.stny.rr.com> <1239904428.23397.3278.camel@laptop> <alpine.DEB.2.00.0904162254270.20429@gandalf.stny.rr.com>
- <alpine.DEB.2.00.0904170002030.20429@gandalf.stny.rr.com> <20090417045229.GA30001@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 17 Apr 2009 07:17:20 -0400
+Message-ID: <49E86539.9070408@trash.net>
+Date: Fri, 17 Apr 2009 13:17:13 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Stephen Hemminger <shemminger@vyatta.com>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] netfilter: per-cpu spin-lock with recursion (v0.8)
+References: <20090415170111.6e1ca264@nehalam>	<alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com> <20090416165233.5d8bbfb5@nehalam> <49E81B9D.3030807@cosmosbay.com>
+In-Reply-To: <49E81B9D.3030807@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 17 Apr 2009, Mathieu Desnoyers wrote:
-> > ---[ end trace 03d889e04bc7a9a7 ]---
-> > possible reason: unannotated irqs-on.
-> > irq event stamp: 12569
-> > hardirqs last  enabled at (12567): [<ffffffff8026206a>] local_bh_enable+0xaa/0x110
-> > hardirqs last disabled at (12569): [<ffffffff80610c76>] int3+0x16/0x40
-> > softirqs last  enabled at (12566): [<ffffffff80514d2b>] lock_sock_nested+0xfb/0x110
-> > softirqs last disabled at (12568): [<ffffffff8058454e>] tcp_prequeue_process+0x2e/0xa0
-> > 
-> > 
-> > Note, for some reason we hit int3 ??
-> > 
-> > Tracepoints do not use int3 does it?
-> > 
+Eric Dumazet wrote:
+> Stephen Hemminger a écrit :
+>> This version of x_tables (ip/ip6/arp) locking uses a per-cpu
+>> recursive lock that can be nested. It is sort of like existing kernel_lock,
+>> rwlock_t and even old 2.4 brlock.
+>>
+>> ...
+> I like this version 8 of the patch, as it mixes all ideas we had,
+> but have two questions.
 > 
-> Not in your ftrace tree. My LTTng tree includes the immediate values,
-> which brienfly uses the int3 handler when enabling/disabling
-> tracepoints. But this seems unrelated to your problem.
-
-Maybe something else is adding it :-/
-
+> Previous netfilter code (and 2.6.30-rc2 one too) disable BH, not only preemption.
 > 
-> > I have kprobes defined but not any kprobe self tests on.
-> > 
+> I see xt_table_info_lock_all(void) does block BH, so this one is safe.
 > 
-> Could this be a userspace breakpoint then ?
+> I let Patrick or other tell us if its safe to run ipt_do_table()
+> with preemption disabled but BH enabled, I really dont know.
 
-Nope, it happens right in the kernel. And the path I describe below points 
-out that we have a bug in irq tracing when we take a int3 in kernel space.
-
-> 
-> > Anyway, let me describe what the above is and what I found in my 
-> > investigation.
-> > 
-> > The lockdep took a check_flags error when it noticed that interrupts were 
-> > enabled, but the current->hardirqs_enabled was 0. Lockdep thought 
-> > interrupts were disabled but they were in fact enabled.
-> > 
-> > 
-> > The last 4 lines of the warning have the numbers in the parenthesis 
-> > annotate the order of events: (Here they are in order)
-> > 
-> > softirqs last  enabled at (12566): [<ffffffff80514d2b>] lock_sock_nested+0xfb/0x110
-> > hardirqs last  enabled at (12567): [<ffffffff8026206a>] local_bh_enable+0xaa/0x110
-> > softirqs last disabled at (12568): [<ffffffff8058454e>] tcp_prequeue_process+0x2e/0xa0
-> > hardirqs last disabled at (12569): [<ffffffff80610c76>] int3+0x16/0x40
-> > 
-> > The last change that lockdep saw was interrupts being disabled by int3. I 
-> > still don't understand why int3 was enabled. I have startup tests for 
-> > ftrace and the event tracer, but this blob happened when I first ssh'd 
-> > into the box.
-> 
-> Also note that maybe some entry.S annotation could be missing, making
-> kallsyms think it was running within int3 when in fact it was running in
-> a different function. I would double-check with objdump givin the
-> ffffffff80610c76 address to make sure.
-
-Actually, that was the first thing I did. Because I thought int3 was 
-weird.
-
-
-> 
-> Just giving my 2 cents before going to bed. I don't have any more brain
-> left for tonight.
-
-Thanks,
-
--- Steve
+No, on jumps the return position is stored in the per-cpu copy
+of the ruleset and we must prevent BH context corrupting the
+value of something running in process context.
