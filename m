@@ -1,210 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759756AbZDQXWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbZDQXXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759756AbZDQXWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 19:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZDQXW0
+	id S1759814AbZDQXXt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 19:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZDQXXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 19:22:26 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:50215 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752358AbZDQXWZ (ORCPT
+	Fri, 17 Apr 2009 19:23:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47961 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbZDQXXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 19:22:25 -0400
-X-IronPort-AV: E=Sophos;i="4.40,206,1238976000"; 
-   d="scan'208";a="156163303"
-Date: Fri, 17 Apr 2009 16:22:17 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Wait for console to become available, ver 3.1
-Message-ID: <20090417232217.GC8449@cuplxvomd02.corp.sa.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Fri, 17 Apr 2009 19:23:38 -0400
+Subject: Re: Q: NFSD readdir in linux-2.6.28
+From: David Woodhouse <dwmw2@infradead.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: hooanon05@yahoo.co.jp, hch@infradead.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20090417225306.GO26366@ZenIV.linux.org.uk>
+References: <8036.1237474444@jrobl>
+	 <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl>
+	 <1239960739.3428.33.camel@macbook.infradead.org>
+	 <20090417193233.GM26366@ZenIV.linux.org.uk>
+	 <1240006620.19059.41.camel@macbook.infradead.org>
+	 <20090417224350.GN26366@ZenIV.linux.org.uk>
+	 <20090417225306.GO26366@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Sat, 18 Apr 2009 00:23:32 +0100
+Message-Id: <1240010612.21423.34.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parallelization to improve boot times has been successful enough that race
-conditions now exist between the init_post() open of /dev/console and
-initialization of the console device. When this occurs, opening /dev/console
-fails and any applications inherited from init have no standard in/out/error
-devices. This is expected behavior if no console device is available, but
-quite unfortunate in the case where the console is just a bit slow waking up.
+On Fri, 2009-04-17 at 23:53 +0100, Al Viro wrote:
+> On Fri, Apr 17, 2009 at 11:43:50PM +0100, Al Viro wrote:
+> > On Fri, Apr 17, 2009 at 11:17:00PM +0100, David Woodhouse wrote:
+> > > It sounds like the better answer is to just make sure i_mutex is held
+> > > when nfsd_buffered_readdir() calls back into the provided filldir
+> > > function (we could do it in the various filldir functions themselves,
+> > > _if_ they call lookup_one_len(), but I think I prefer it this way --
+> > > it's simpler). Patch below for comment.
+> > 
+> > Umm...  I can live with that, assuming that we don't have callbacks
+> > that take i_mutex themselves.  AFAICS, everything we call there is
+> > either obviously not touching i_mutex or is already called while we
+> > hold i_mutex elsewhere, but I'd appreciate if somebody actually
+> > tested that sucker for different versions of protocol...
+> 
+> BTW, why mess with taking i_mutex inside the inner loop and not
+> immediately around it?
 
-Some buses, such as USB, offer no guarantees about how long it takes to
-discover devices, so there is no reliable way to distinguish between a missing
-console and a slow one.  The pragmatic approach taken in this patch is to
-wait for a while to see if a console shows up, and just go on if it doesn't.
-The default delay is 1000 msec (1 second).
+Or, to phrase my last response slightly differently... because I don't
+like either of these two versions very much...
 
-There are two new command line parameters:
-consolewait		Wait forever for a console to be registered
-consoledelay=msec	Use the given number of milliseconds as the delay
-			interval instead of the default
 
-Note that, though these parameters are modeled after the rootwait and rootdelay
-parameters, details differ. Instead of sleeping and polling, which can increase
-boot time, this code uses a waitqueue and will proceed as soon as a console is
-available.
 
-It could be argued that providing both command line parameters and a Kconfig
-option for the console wait time is over-engineering. There doesn't really
-seem to be a reasonable way to determine a default, though, which drives the
-Kconfig option. The selection of USB devices connected to the system can
-only be known at runtime, which drives the need for command line parameters.
-
-History
-v3.1	Correct the abbreviation for milliseconds in
-	Documentation/kernel-parameters.txt to be "ms", not "mS". Thanks to
-	Peter Anvin for this.
-v3	Increase the default delay to 1 second and add kernel command line
-	parameters to override the default delay. Thanks to David Brownell for
-	his helpful suggestions.
-v2	Wait for the preferred console rather than any console. Make the
-	delay interval a tunable.
-v1	Initial version
-
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
----
- Documentation/kernel-parameters.txt |   10 ++++++++
- arch/mips/configs/powertv_defconfig |    2 +-
- init/Kconfig                        |   12 ++++++++++
- kernel/printk.c                     |   41 +++++++++++++++++++++++++++++++++++
- 4 files changed, 64 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 6172e43..641e7a0 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -507,6 +507,16 @@ and is between 256 and 4096 characters. It is defined in the file
- 			console=brl,ttyS0
- 		For now, only VisioBraille is supported.
- 
-+	consoledelay=ms	[KNL] Wait up to ms milliseconds for the preferred
-+			console to be registered, then continue. Useful for
-+			systems where a console may not be plugged in, such as
-+			for USB serial devices.
-+
-+	consolewait 	[KNL] Wait (indefinitely) for preferred console device
-+			to be registered. Useful, for example, for USB serial
-+			devices, but will never complete booting if no console
-+			is plugged in.
-+
- 	coredump_filter=
- 			[KNL] Change the default value for
- 			/proc/<pid>/coredump_filter.
-diff --git a/arch/mips/configs/powertv_defconfig b/arch/mips/configs/powertv_defconfig
-index 7311e63..b4a046d 100644
---- a/arch/mips/configs/powertv_defconfig
-+++ b/arch/mips/configs/powertv_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.30-rc2
--# Thu Apr 16 11:29:44 2009
-+# Fri Apr 17 12:38:42 2009
- #
- CONFIG_MIPS=y
- 
-diff --git a/init/Kconfig b/init/Kconfig
-index 7be4d38..a04eba1 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -835,6 +835,18 @@ config PRINTK
- 	  very difficult to diagnose system problems, saying N here is
- 	  strongly discouraged.
- 
-+config PRINTK_CONSOLE_WAIT
-+	int "Default number of milliseconds to wait for console device"
-+	default 1000
-+	help
-+	  Some systems use console devices, such as USB serial devices, which
-+	  may not be present or which may take an unspecified amount of time
-+	  to be initialized. This setting is the default for the maximum number
-+	  of milliseconds the system will wait for a console to be registered.
-+	  This value can be overridden by the command line parameters
-+	  consolewait, to wait forever, or consoledelay=msec, to give a
-+	  different value for the wait.
-+
- config BUG
- 	bool "BUG() support" if EMBEDDED
- 	default y
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 5052b54..aa6db96 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -105,6 +105,11 @@ static unsigned log_start;	/* Index into log_buf: next char to be read by syslog
- static unsigned con_start;	/* Index into log_buf: next char to be sent to consoles */
- static unsigned log_end;	/* Index into log_buf: most-recently-written-char + 1 */
- 
-+/* Definitions controlling the wait for a console device to be initialized */
-+static bool console_wait;	/* If true, wait forever for console */
-+static long console_delay = CONFIG_PRINTK_CONSOLE_WAIT; /* In milliseconds */
-+static DECLARE_WAIT_QUEUE_HEAD(console_wq);
-+
- /*
-  *	Array of consoles built from command line options (console=)
-  */
-@@ -195,6 +200,30 @@ out:
- 
- __setup("log_buf_len=", log_buf_len_setup);
- 
-+/*
-+ * Set up to wait forever for the console to appear
-+ * @str:	Ignored
-+ * Returns one.
-+ */
-+static int __init consolewait_setup(char *str)
-+{
-+	console_wait = true;
-+	return 1;
-+}
-+__setup("consolewait", consolewait_setup);
-+
-+/*
-+ * Set the delay, in milliseconds, to wait for the console.
-+ * @str:	Pointer to the start of the delay value
-+ * Returns one.
-+ */
-+static int __init consoledelay_setup(char *str)
-+{
-+	console_delay = simple_strtoul(str, NULL, 10);
-+	return 1;
-+}
-+__setup("consoledelay=", consoledelay_setup);
-+
- #ifdef CONFIG_BOOT_PRINTK_DELAY
- 
- static unsigned int boot_delay; /* msecs delay after each printk during bootup */
-@@ -1081,6 +1110,17 @@ struct tty_driver *console_device(int *index)
- 	struct console *c;
- 	struct tty_driver *driver = NULL;
- 
-+	/* The console device may not be initialized yet. We can either wait
-+	 * forever if consolewait is specified on the command line, or wait
-+	 * for some number of milliseconds if console_delay=msec is used */
-+	if (console_wait)
-+		wait_event(console_wq, preferred_console >= 0);
-+
-+	else if (wait_event_timeout(console_wq, preferred_console >= 0,
-+		msecs_to_jiffies(console_delay)) == 0)
-+		pr_warning("No preferred console after waiting %ld msec; "
-+			"continuing anyway\n", console_delay);
-+
- 	acquire_console_sem();
- 	for (c = console_drivers; c != NULL; c = c->next) {
- 		if (!c->device)
-@@ -1230,6 +1270,7 @@ void register_console(struct console *console)
- 		spin_unlock_irqrestore(&logbuf_lock, flags);
- 	}
- 	release_console_sem();
-+	wake_up_all(&console_wq);
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index ab93fcf..0523e9f 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1885,9 +1885,10 @@ static int nfsd_buffered_filldir(void *__buf, const char *name, int namlen,
+ 	return 0;
  }
- EXPORT_SYMBOL(register_console);
  
+-static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+-				 struct readdir_cd *cdp, loff_t *offsetp)
++static __be32 nfsd_buffered_readdir(struct file *file, filldir_t func,
++				    struct readdir_cd *cdp, loff_t *offsetp)
+ {
++	struct inode *dir_inode = file->f_path.dentry->d_inode;
+ 	struct readdir_data buf;
+ 	struct buffered_dirent *de;
+ 	int host_err;
+@@ -1896,7 +1897,7 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 
+ 	buf.dirent = (void *)__get_free_page(GFP_KERNEL);
+ 	if (!buf.dirent)
+-		return -ENOMEM;
++		return nfserrno(-ENOMEM);
+ 
+ 	offset = *offsetp;
+ 
+@@ -1912,23 +1913,37 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 			host_err = 0;
+ 
+ 		if (host_err < 0)
+-			break;
++			goto done;
+ 
+ 		size = buf.used;
+ 
+ 		if (!size)
+-			break;
++			goto done;
+ 
+ 		de = (struct buffered_dirent *)buf.dirent;
++
++		host_err = mutex_lock_killable(&dir_inode->i_mutex);
++		if (host_err)
++			goto done;
++
+ 		while (size > 0) {
++
++			int finished;
++
+ 			offset = de->offset;
+ 
++			/*
++			 * Various filldir functions may end up calling back
++			 * into lookup_one_len() and the file system's 
++			 * ->lookup() method. These expect i_mutex to be held.
++			 */
++
+ 			if (func(cdp, de->name, de->namlen, de->offset,
+ 				 de->ino, de->d_type))
+-				goto done;
+-
++				goto done_unlock;
++			    
+ 			if (cdp->err != nfs_ok)
+-				goto done;
++				goto done_unlock;
+ 
+ 			reclen = ALIGN(sizeof(*de) + de->namlen,
+ 				       sizeof(u64));
+@@ -1937,6 +1952,8 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 		}
+ 		offset = vfs_llseek(file, 0, SEEK_CUR);
+ 	}
++ done_unlock:
++	mutex_unlock(&dir_inode->i_mutex);
+ 
+  done:
+ 	free_page((unsigned long)(buf.dirent));
+
+
+
+====================================================================
+
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index ab93fcf..915a47c 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1885,8 +1885,8 @@ static int nfsd_buffered_filldir(void *__buf, const char *name, int namlen,
+ 	return 0;
+ }
+ 
+-static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+-				 struct readdir_cd *cdp, loff_t *offsetp)
++static __be32 nfsd_buffered_readdir(struct file *file, filldir_t func,
++				    struct readdir_cd *cdp, loff_t *offsetp)
+ {
+ 	struct readdir_data buf;
+ 	struct buffered_dirent *de;
+@@ -1896,11 +1896,12 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 
+ 	buf.dirent = (void *)__get_free_page(GFP_KERNEL);
+ 	if (!buf.dirent)
+-		return -ENOMEM;
++		return nfserrno(-ENOMEM);
+ 
+ 	offset = *offsetp;
+ 
+ 	while (1) {
++		struct inode *dir_inode = file->f_path.dentry->d_inode;
+ 		unsigned int reclen;
+ 
+ 		cdp->err = nfserr_eof; /* will be cleared on successful read */
+@@ -1920,24 +1921,42 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 			break;
+ 
+ 		de = (struct buffered_dirent *)buf.dirent;
++
++		host_err = mutex_lock_killable(&dir_inode->i_mutex);
++		if (host_err)
++			break;
++
+ 		while (size > 0) {
++			int finished;
++
+ 			offset = de->offset;
+ 
++			/*
++			 * Various filldir functions may end up calling back
++			 * into lookup_one_len() and the file system's 
++			 * ->lookup() method. These expect i_mutex to be held.
++			 */
++
+ 			if (func(cdp, de->name, de->namlen, de->offset,
+ 				 de->ino, de->d_type))
+-				goto done;
+-
++				goto done_unlock;
++			    
+ 			if (cdp->err != nfs_ok)
+-				goto done;
++				goto done_unlock;
+ 
+ 			reclen = ALIGN(sizeof(*de) + de->namlen,
+ 				       sizeof(u64));
+ 			size -= reclen;
+ 			de = (struct buffered_dirent *)((char *)de + reclen);
+ 		}
++		mutex_unlock(&dir_inode->i_mutex);
+ 		offset = vfs_llseek(file, 0, SEEK_CUR);
+-	}
++		continue;
+ 
++	done_unlock:
++		mutex_unlock(&dir_inode->i_mutex);
++		break;
++	}
+  done:
+ 	free_page((unsigned long)(buf.dirent));
+ 
+
+-- 
+dwmw2
+
