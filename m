@@ -1,56 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbZDQGqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbZDQGs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759689AbZDQGqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 02:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZDQGqM
+	id S1760003AbZDQGs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 02:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZDQGsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 02:46:12 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:44823 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbZDQGqK (ORCPT
+	Fri, 17 Apr 2009 02:48:19 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:51356 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbZDQGsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 02:46:10 -0400
-Message-ID: <49E825AA.8000506@in.ibm.com>
-Date: Fri, 17 Apr 2009 12:16:02 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Fri, 17 Apr 2009 02:48:18 -0400
+Date: Fri, 17 Apr 2009 12:17:26 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+	controller (v2)
+Message-ID: <20090417064726.GB3896@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com> <20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com> <20090416120316.GG7082@balbir.in.ibm.com> <20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com> <20090417014042.GB18558@balbir.in.ibm.com> <20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com> <20090417034539.GD18558@balbir.in.ibm.com> <20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com> <20090417045623.GA3896@balbir.in.ibm.com> <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Next April 17: x86 allmodconfig drivers/ata failure
-References: <20090417120002.c47a686d.sfr@canb.auug.org.au>
-In-Reply-To: <20090417120002.c47a686d.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today's next allmodconfig (x86) build failed with
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 14:17:26]:
 
-drivers/ata/pata_legacy.c: In function ‘pdc_data_xfer_vlb’:
-drivers/ata/pata_legacy.c:289: error: ‘ap’ undeclared (first use in this 
-function)
-drivers/ata/pata_legacy.c:289: error: (Each undeclared identifier is 
-reported only once
-drivers/ata/pata_legacy.c:289: error: for each function it appears in.)
-drivers/ata/pata_legacy.c: At top level:
-drivers/ata/pata_legacy.c:869: error: ‘ATA_PFLAG_PIO32_CHANGE’ 
-undeclared here (not in a
-+function)
-make[2]: *** [drivers/ata/pata_legacy.o] Error 1
-make[1]: *** [drivers/ata] Error 2
+> On Fri, 17 Apr 2009 10:26:23 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 12:49:51]:
+> > 
+> > > On Fri, 17 Apr 2009 09:15:39 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 11:03:50]:
+> > > > 
+> > > > > On Fri, 17 Apr 2009 07:10:42 +0530
+> > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > 
+> > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
+> > > > > > 
+> > > > > > > On Thu, 16 Apr 2009 17:33:16 +0530
+> > > > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > > > 
+> > > > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
+> > > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > > Sorry, some troubles found. Ignore above Ack. 3points now.
+> > > > > > > > > > 
+> > > > > > > > > > 1. get_cpu should be after (*)
+> > > > > > > > > > ==mem_cgroup_update_mapped_file_stat()
+> > > > > > > > > > +	int cpu = get_cpu();
+> > > > > > > > > > +
+> > > > > > > > > > +	if (!page_is_file_cache(page))
+> > > > > > > > > > +		return;
+> > > > > > > > > > +
+> > > > > > > > > > +	if (unlikely(!mm))
+> > > > > > > > > > +		mm = &init_mm;
+> > > > > > > > > > +
+> > > > > > > > > > +	mem = try_get_mem_cgroup_from_mm(mm);
+> > > > > > > > > > +	if (!mem)
+> > > > > > > > > > +		return;
+> > > > > > > > > > + ----------------------------------------(*)
+> > > > > > > > > > +	stat = &mem->stat;
+> > > > > > > > > > +	cpustat = &stat->cpustat[cpu];
+> > > > > > > > > > +
+> > > > > > > > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
+> > > > > > > > > > +	put_cpu();
+> > > > > > > > > > +}
+> > > > > > > > > > ==
+> > > > > > > > 
+> > > > > > > > Yes or I should have a goto
+> > > > > > > > 
+> > > > > > > > > > 
+> > > > > > > > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
+> > > > > > > > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
+> > > > > > > > 
+> > > > > > > > Hmmm.. not sure I understand this part. Are you suggesting that mm can
+> > > > > > > > be NULL?
+> > > > > > > No.
+> > > > > > > 
+> > > > > > > > I added the check for !mm as a safety check. Since this
+> > > > > > > > routine is only called from rmap context, mm is not NULL, hence mem
+> > > > > > > > should not be NULL. Did you find a race between mm->owner assignment
+> > > > > > > > and lookup via mm->owner?
+> > > > > > > > 
+> > > > > > > No.
+> > > > > > > 
+> > > > > > > page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
+> > > > > > > 
+> > > > > > > For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
+> > > > > > > used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
+> > > > > > > 
+> > > > > > > Then, File_Mapped can be greater than Cached easily if you use mm->owner.
+> > > > > > > 
+> > > > > > > I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
+> > > > > > > other cgroups. It's meaningless.
+> > > > > > > Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
+> > > > > > > 
+> > > > > > > By useing page_cgroup->mem_cgroup, we can avoid above mess.
+> > > > > > 
+> > > > > > Yes, I see your point. I wanted mapped_file to show up in the cgroup
+> > > > > > that mapped the page. But this works for me as well, but that means
+> > > > > > we'll nest the page cgroup lock under the PTE lock.
+> > > > > 
+> > > > > Don't worry. we do that nest at ANON's uncharge(), already.
+> > > > > 
+> > > > > About cost:
+> > > > > 
+> > > > > IIUC, the number of "mapcount 0->1/1->0" of file caches are much smaller than
+> > > > > that of o Anon. And there will be not very much cache pingpong.
+> > > > > 
+> > > > > If you use PCG_MAPPED flag in page_cgroup (as my patch), you can use
+> > > > > not-atomic version of set/clear when update is only under lock_page_cgroup().
+> > > > > If you find better way, plz use it. But we can't avoid some kind of atomic ops
+> > > > > for correct accounting, I think.
+> > > > >
+> > > > 
+> > > > Can you sign off on your patch, so that I can take it with your
+> > > > signed-off-by. I will also make some minor changes, get_cpu() is not
+> > > > needed, since we are in preempt disable context. 
+> > > > 
+> > > Hmm, 
+> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > 
+> > > But some more clean up is necesarry.
+> > > 
+> > > === This part ==
+> > > +	lock_page_cgroup(pc);
+> > > +	mem = pc->mem_cgroup;
+> > > +	if (mem) {
+> > > +		cpu = get_cpu();
+> > > +		stat = &mem->stat;
+> > > +		cpustat = &stat->cpustat[cpu];
+> > > +		if (map)
+> > > 
+> > > === Should be ==
+> > > +	lock_page_cgroup(pc);
+> > > 	if (!PageCgroupUsed(pc)) {
+> > > 		unlock_page_cgroup(pc);
+> > > 		return;
+> > > 	}
+> > 
+> > Do we need this? If the page is mapped, pc should be used right?
+> > 
+> 
+> About file cache, it'd definitely charged at add-to-radix-tree
+> regardless of being mapped or not.
+>
 
-Thanks
--Sachin
+Yes, what I meant was that before being mapped, the page should be
+charged by the memory controller.
+ 
+> *But* we still have following code.
+> ==
+> 820 static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>  821                         gfp_t gfp_mask, struct mem_cgroup **memcg,
+>  822    
+>  834         /*
+>  835          * We always charge the cgroup the mm_struct belongs to.
+>  836          * The mm_struct's mem_cgroup changes on task migration if the
+>  837          * thread group leader migrates. It's possible that mm is not
+>  838          * set, if so charge the init_mm (happens for pagecache usage).
+>  839          */
+>  840         mem = *memcg;
+>  841         if (likely(!mem)) {
+>  842                 mem = try_get_mem_cgroup_from_mm(mm);
+>  843                 *memcg = mem;
+>  844         } else {
+>  845                 css_get(&mem->css);
+>  846         }
+>  847         if (unlikely(!mem))
+>  848                 return 0;
+> ==
+> 
+> So, for _now_, we should use this style of checking page_cgroup is used or not.
+> Until we fix/confirm try_charge() does.
+>
+
+Hmm... I think we need to fix this loop hole, if not mem, we should
+look at charging the root cgroup. I suspect !mem cases should be 0,
+I'll keep that as a TODO. 
 
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+	Balbir
