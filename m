@@ -1,179 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760468AbZDQLVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760683AbZDQLWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760468AbZDQLVj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 07:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbZDQLVa
+	id S1760683AbZDQLWd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 07:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbZDQLWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 07:21:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44622 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754601AbZDQLV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 07:21:29 -0400
-Message-ID: <49E8662D.5010607@redhat.com>
-Date: Fri, 17 Apr 2009 13:21:17 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 17 Apr 2009 07:22:24 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:45908 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755557AbZDQLWY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 07:22:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bMQCSynqtX7PAYQICw+8owdkQ1y8vPHcoTEigjaUkqRSsRXnjl0V/8V7kosn62YwJP
+         qwTMXS0+y2WMck6CIvgszkWz3wpglx5uvxqIqH6XRREqaNWGef5+GPek7dIdQJ2JCAEW
+         7NacFOiurvb4+cbtqydyFoTOqUCUJ5iXO75iM=
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH v2] block: simplify I/O stat accounting
-References: <49E72F19.1030400@redhat.com>
-In-Reply-To: <49E72F19.1030400@redhat.com>
+In-Reply-To: <alpine.DEB.2.00.0904170649130.20429@gandalf.stny.rr.com>
+References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com>
+	 <1239912812.23397.3432.camel@laptop>
+	 <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com>
+	 <1239949360.23397.4065.camel@laptop>
+	 <c62985530904170159j6f3b5477g411a028e69fd93f6@mail.gmail.com>
+	 <1239960548.23397.4282.camel@laptop>
+	 <alpine.DEB.2.00.0904170552160.20429@gandalf.stny.rr.com>
+	 <1239964774.23397.4363.camel@laptop>
+	 <alpine.DEB.2.00.0904170649130.20429@gandalf.stny.rr.com>
+Date: Fri, 17 Apr 2009 13:14:23 +0200
+Message-ID: <c62985530904170414j1f558aa2q32431ef09f5faae5@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v2] tracing/events: provide string with undefined size 
+	support
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/4/17 Steven Rostedt <rostedt@goodmis.org>:
+>
+> On Fri, 17 Apr 2009, Peter Zijlstra wrote:
+>
+>> On Fri, 2009-04-17 at 06:10 -0400, Steven Rostedt wrote:
+>>
+>> > When I replied to Frederic, I thought I could come up with a way to do
+>> > something like you are proposing. Instead, I only ended up with the
+>> > variant that Frederic implemented.
+>> >
+>> > I've done what you are suggesting several times in tracing. Logdev does
+>> > this in its tracing.
+>> >
+>> > The problem that we have, is that we don't have actual code. We have a
+>> > TRACE_EVENT macro that is doing the work for us. This, unfortunately,
+>> > limits what we can do.
+>>
+>> Can't you do things like:
+>>
+>> #define __string(x) unsigned long length_##x, offset_##x;
+>>
+>>   TP_STRUCT__entry
+>>
+>>   size = sizeof(struct foo);
+>>
+>> #define __string(x) length_##x = strlen(x) + 1; size += length_##x;
+>>
+>>   TP_STRUCT__entry
+>>
+>>   entry = ring_buffer_lock_reserve(size);
+>>   offset = sizeof(stuct foo);
+>>
+>> #define __string(x) \
+>>       __entry->x = offset_##x = offset; offset += length_##x;
+>>
+>>   TP_STRUCT__entry
+>>
+>>   TP_fast_assign
+>>
+>> #define _string(x) strcpy(&entry->data[offset_##x], x);
+>>
+>>   TP_STRUCT__entry
+>>
+>>   ring_buffer_unlock();
+>>
+>> also, you don't need that __ending_string() thing, you can always end a
+>> struct with char data[0], its 0 size ;-)
+>>
+>
+> This looks very similar to what I suggested in the cross email.
+>
+> Frederic,
+>
+> You want to take a crack at implementing this. I think my description had
+> a bit more details, but is basically the same as what Peter is describing
+> here.
+>
+> I'd just make __string become an offset (as described in my email)
+>
+> Then the user could just index directly. They only need to worry about the
+> print, the assignment would be automated.
 
-This simplifies I/O stat accounting switching code and separates it
-completely from I/O scheduler switch code.
 
-Requests are accounted according to the state of their request queue
-at the time of the request allocation. There is no need anymore to
-flush the request queue when switching I/O accounting state.
+Nice!
+Ok, I will restart with it!
 
 
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
----
- block/blk-core.c       |   10 ++++++----
- block/blk-merge.c      |    6 +++---
- block/blk-sysfs.c      |    4 ----
- block/blk.h            |    7 +------
- include/linux/blkdev.h |    3 +++
- 5 files changed, 13 insertions(+), 17 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 07ab754..42a646f 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -643,7 +643,7 @@ static inline void blk_free_request(struct request_queue *q, struct request *rq)
- }
- 
- static struct request *
--blk_alloc_request(struct request_queue *q, int rw, int priv, gfp_t gfp_mask)
-+blk_alloc_request(struct request_queue *q, int flags, int priv, gfp_t gfp_mask)
- {
- 	struct request *rq = mempool_alloc(q->rq.rq_pool, gfp_mask);
- 
-@@ -652,7 +652,7 @@ blk_alloc_request(struct request_queue *q, int rw, int priv, gfp_t gfp_mask)
- 
- 	blk_rq_init(q, rq);
- 
--	rq->cmd_flags = rw | REQ_ALLOCED;
-+	rq->cmd_flags = flags | REQ_ALLOCED;
- 
- 	if (priv) {
- 		if (unlikely(elv_set_request(q, rq, gfp_mask))) {
-@@ -744,7 +744,7 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
- 	struct request_list *rl = &q->rq;
- 	struct io_context *ioc = NULL;
- 	const bool is_sync = rw_is_sync(rw_flags) != 0;
--	int may_queue, priv;
-+	int may_queue, priv, iostat = 0;
- 
- 	may_queue = elv_may_queue(q, rw_flags);
- 	if (may_queue == ELV_MQUEUE_NO)
-@@ -792,9 +792,11 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
- 	if (priv)
- 		rl->elvpriv++;
- 
-+	if (blk_queue_io_stat(q))
-+		iostat = REQ_IO_STAT;
- 	spin_unlock_irq(q->queue_lock);
- 
--	rq = blk_alloc_request(q, rw_flags, priv, gfp_mask);
-+	rq = blk_alloc_request(q, rw_flags | iostat, priv, gfp_mask);
- 	if (unlikely(!rq)) {
- 		/*
- 		 * Allocation failed presumably due to memory. Undo anything
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 63760ca..6a05270 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -338,9 +338,9 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
- 	return 1;
- }
- 
--static void blk_account_io_merge(struct request *req)
-+static void blk_account_io_merge(struct request *req, struct request *next)
- {
--	if (blk_do_io_stat(req)) {
-+	if (req->rq_disk && blk_rq_io_stat(next)) {
- 		struct hd_struct *part;
- 		int cpu;
- 
-@@ -402,7 +402,7 @@ static int attempt_merge(struct request_queue *q, struct request *req,
- 
- 	elv_merge_requests(q, req, next);
- 
--	blk_account_io_merge(req);
-+	blk_account_io_merge(req, next);
- 
- 	req->ioprio = ioprio_best(req->ioprio, next->ioprio);
- 	if (blk_rq_cpu_valid(next))
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index cac4e9f..3ff9bba 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -209,14 +209,10 @@ static ssize_t queue_iostats_store(struct request_queue *q, const char *page,
- 	ssize_t ret = queue_var_store(&stats, page, count);
- 
- 	spin_lock_irq(q->queue_lock);
--	elv_quiesce_start(q);
--
- 	if (stats)
- 		queue_flag_set(QUEUE_FLAG_IO_STAT, q);
- 	else
- 		queue_flag_clear(QUEUE_FLAG_IO_STAT, q);
--
--	elv_quiesce_end(q);
- 	spin_unlock_irq(q->queue_lock);
- 
- 	return ret;
-diff --git a/block/blk.h b/block/blk.h
-index 5dfc412..79c85f7 100644
---- a/block/blk.h
-+++ b/block/blk.h
-@@ -114,12 +114,7 @@ static inline int blk_cpu_to_group(int cpu)
- 
- static inline int blk_do_io_stat(struct request *rq)
- {
--	struct gendisk *disk = rq->rq_disk;
--
--	if (!disk || !disk->queue)
--		return 0;
--
--	return blk_queue_io_stat(disk->queue) && (rq->cmd_flags & REQ_ELVPRIV);
-+	return rq->rq_disk && blk_rq_io_stat(rq);
- }
- 
- #endif
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index ba54c83..2755d5c 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -118,6 +118,7 @@ enum rq_flag_bits {
- 	__REQ_COPY_USER,	/* contains copies of user pages */
- 	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
- 	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
-+	__REQ_IO_STAT,		/* account I/O stat */
- 	__REQ_NR_BITS,		/* stops here */
- };
- 
-@@ -145,6 +146,7 @@ enum rq_flag_bits {
- #define REQ_COPY_USER	(1 << __REQ_COPY_USER)
- #define REQ_INTEGRITY	(1 << __REQ_INTEGRITY)
- #define REQ_NOIDLE	(1 << __REQ_NOIDLE)
-+#define REQ_IO_STAT	(1 << __REQ_IO_STAT)
- 
- #define BLK_MAX_CDB	16
- 
-@@ -598,6 +600,7 @@ enum {
- 				 blk_failfast_transport(rq) ||	\
- 				 blk_failfast_driver(rq))
- #define blk_rq_started(rq)	((rq)->cmd_flags & REQ_STARTED)
-+#define blk_rq_io_stat(rq)	((rq)->cmd_flags & REQ_IO_STAT)
- 
- #define blk_account_rq(rq)	(blk_rq_started(rq) && (blk_fs_request(rq) || blk_discard_rq(rq))) 
- 
+>
+> -- Steve
+>
+>
