@@ -1,86 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbZDQAqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbZDQArf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761209AbZDQAqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbZDQAl6
+	id S1761350AbZDQArf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760829AbZDQAnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:41:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40553
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760717AbZDQAlz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:41:55 -0400
-Date: Thu, 16 Apr 2009 17:41:45 -0700 (PDT)
-Message-Id: <20090416.174145.225651742.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, bunk@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, protasnb@gmail.com,
-       kernel-testers@vger.kernel.org, netdev@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 16 Apr 2009 20:43:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:44452 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760035AbZDQAnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:43:46 -0400
+Message-ID: <49E7D0BC.4070700@goop.org>
+Date: Thu, 16 Apr 2009 17:43:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/8] tracing: create automated trace defines
+References: <20090414172640.796858018@goodmis.org> <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal> <49E7C74A.8030100@goop.org> <20090417001317.GB20513@Krystal> <49E7CADE.1060202@goop.org> <20090417002831.GC20513@Krystal>
+In-Reply-To: <20090417002831.GC20513@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Thu, 16 Apr 2009 23:42:31 +0200 (CEST)
+Mathieu Desnoyers wrote:
+> "all this code" is actually :
+>
+>                rcu_read_lock_sched_notrace();                          \
+>                 it_func = rcu_dereference((tp)->funcs);                 \
+>                 if (it_func) {                                          \
+>                         do {                                            \
+>                                 ((void(*)(proto))(*it_func))(args);     \
+>                         } while (*(++it_func));                         \
+>                 }                                                       \
+>                 rcu_read_unlock_sched_notrace();                        \
+>
+> Which does nothing more than disabling preemption and a for loop to
+> call all the tracepoint handlers. I don't see the big win in laying out
+> the stack to call this code out-of-line; we would just remove the
+> preempt disable and the loop, which are minimal compared to most
+> call stacks.
+>   
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13099
-> Subject		: net, sky2: BUG: unable to handle kernel NULL pointer dereference, pci_vpd_truncate()
-> Submitter	: Ingo Molnar <mingo@elte.hu>
-> Date		: 2009-04-06 9:03 (11 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123900867611321&w=4
-> Handled-By	: Stephen Hemminger <shemminger@vyatta.com>
+Well, look at it from my perspective:  Ingo has been repeatedly beating 
+me up for the overhead pvops adds to a native kernel, where it really is 
+just a (direct) function call.  I want to instrument each pvop site with 
+a tracepoint so I can actually work out which calls are being called how 
+frequently to look for new optimisation opportunities.
 
-Fixed by:
+I would guess the tracepoint code sequence is going to increase the 
+impact of each pvop call site by a fair bit, and that's not counting the 
+effects the extra register pressure will have.  That's a pile of code to 
+add.
 
-commit d407e32efe060afa2b9a797a91376ebc65b4ce11
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Wed Apr 1 02:23:41 2009 +0400
+And frankly, that's fine by me, because I would expect this degree of 
+introspection to have some performance hit.  But it does make the need 
+for per-subsystem tracing Kconfig entries fairly important, because I 
+don't think this would be acceptable to ship in a non-debug-everything 
+kernel build, even though other tracepoints might be.
 
-    PCI: Fix oops in pci_vpd_truncate
-    
-    pci_vpd_truncate() should check for dev->vpd->attr, otherwise this might
-    happen:
-    
-      sky2 driver version 1.22
-      Unable to handle kernel paging request for data at address 0x0000000c
-      Faulting instruction address: 0xc01836fc
-      Oops: Kernel access of bad area, sig: 11 [#1]
-      [...]
-      NIP [c01836fc] pci_vpd_truncate+0x38/0x40
-      LR [c029be18] sky2_probe+0x14c/0x518
-      Call Trace:
-      [ef82bde0] [c029bda4] sky2_probe+0xd8/0x518 (unreliable)
-      [ef82be20] [c018a11c] local_pci_probe+0x24/0x34
-      [ef82be30] [c018a14c] pci_call_probe+0x20/0x30
-      [ef82be50] [c018a330] __pci_device_probe+0x64/0x78
-      [ef82be60] [c018a44c] pci_device_probe+0x30/0x58
-      [ef82be80] [c01aa270] really_probe+0x78/0x1a0
-      [ef82bea0] [c01aa460] __driver_attach+0xa4/0xa8
-      [ef82bec0] [c01a96ac] bus_for_each_dev+0x60/0x9c
-      [ef82bef0] [c01aa0b4] driver_attach+0x24/0x34
-      [ef82bf00] [c01a9e08] bus_add_driver+0x12c/0x1cc
-      [ef82bf20] [c01aa87c] driver_register+0x6c/0x110
-      [ef82bf30] [c018a770] __pci_register_driver+0x4c/0x9c
-      [ef82bf50] [c03782c8] sky2_init_module+0x30/0x40
-      [ef82bf60] [c0001dbc] do_one_initcall+0x34/0x1a0
-      [ef82bfd0] [c0362240] do_initcalls+0x38/0x58
-    
-    This happens with CONFIG_SKY2=y, and "ip=on" kernel command line, so
-    pci_vpd_truncate() is called before late_initcall(pci_sysfs_init),
-    therefore ->attr isn't yet initialized.
-    
-    Acked-by: Stephen Hemminger <shemminger@vyatta.com>
-    Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> So basically, tracepoints are already just doing a function call, with a
+> few more bytes for preempt disable and multiple handler support.
+>
+> About the compiler deciding to put the unlikely branch out-of-line, I've
+> never seen any function calls generated just for the sake of saving
+> those few bytes, that would be crazy of the part of the compiler.
+> However, it can (and should) freely put the stack setup in the coldest
+> cache-lines possible, which are reachable by a near jump.
+>   
 
+No, it wouldn't generate a call.  But if its going to put the code out 
+of line into cold cache-lines, then it may as well generate a call.
+
+Anyway, the important point from my perspective is that tracepoint.h 
+have no #include dependencies beyond linux/types.h (compiler.h, etc).
+
+    J
