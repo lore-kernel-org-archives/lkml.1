@@ -1,188 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbZDQQM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbZDQQMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761566AbZDQQM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760303AbZDQQLo
+	id S1761634AbZDQQMs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761490AbZDQQMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:11:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55367 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761269AbZDQQLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:11:42 -0400
-Date: Fri, 17 Apr 2009 16:10:26 GMT
-From: tip-bot for Steven Rostedt <srostedt@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       akpm@linux-foundation.org, srostedt@redhat.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       akpm@linux-foundation.org, srostedt@redhat.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090416161746.604786131@goodmis.org>
-References: <20090416161746.604786131@goodmis.org>
-Subject: [tip:tracing/core] tracing/events: perform function tracing in event selftests
-Message-ID: <tip-9ea21c1ecdb35ecdcac5fd9d95f62a1f6a7ffec0@git.kernel.org>
-Git-Commit-ID: 9ea21c1ecdb35ecdcac5fd9d95f62a1f6a7ffec0
-X-Mailer: tip-git-log-daemon
+	Fri, 17 Apr 2009 12:12:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54597 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761567AbZDQQMC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:12:02 -0400
+Date: Fri, 17 Apr 2009 09:00:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13058] First hibernation attempt fails
+In-Reply-To: <49E85DFD.9030306@tuffmail.co.uk>
+Message-ID: <alpine.LFD.2.00.0904170856460.4042@localhost.localdomain>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090417063007.GB4593@kernel.dk> <49E83DC4.8040207@tuffmail.co.uk> <20090417091321.GP4593@kernel.dk> <20090417093359.GQ4593@kernel.dk> <49E84DF8.7030802@tuffmail.co.uk>
+ <20090417094558.GR4593@kernel.dk> <49E85DFD.9030306@tuffmail.co.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 16:10:28 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9ea21c1ecdb35ecdcac5fd9d95f62a1f6a7ffec0
-Gitweb:     http://git.kernel.org/tip/9ea21c1ecdb35ecdcac5fd9d95f62a1f6a7ffec0
-Author:     Steven Rostedt <srostedt@redhat.com>
-AuthorDate: Thu, 16 Apr 2009 12:15:44 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 17:10:35 +0200
-
-tracing/events: perform function tracing in event selftests
-
-We can find some bugs in the trace events if we stress the writes as well.
-The function tracer is a good way to stress the events.
-
-[ Impact: extend scope of event tracer self-tests ]
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20090416161746.604786131@goodmis.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+On Fri, 17 Apr 2009, Alan Jenkins wrote:
+> 
+> As another datapoint:  I tried blindly applying the commit to 2.6.29. 
+> The resulting kernel was able to hibernate fine the first time.
+
+Yeah, so it's not that commit per se that causes it. I bet it needs all 
+the IO scheduler changes too - and even when it does that, the end result 
+probably is really just a timing change.
+
+> I'm going to be annoying and try something slightly different.  In
+> theory, I should be able to find the "first bad commit" where
+> cherry-picking 1faa16d22 causes a problem.
+
+Just for fun, try this one first and see if it makes any difference.
+
+Maybe the whole "swappiness=0" part was intentional. And maybe it wasn't. 
+This is one trivial patch. Maybe it makes your machine blow up. Who knows?
+
+There are other differences in the shrink_all_memory() path wrt the normal 
+memory freeing paths, but they are way more subtle. So I'm suggesting 
+tryign this not becasue I think it's "The Bug(tm)", but because it's an 
+easy test to make, and maybe it makes a difference.
+
+		Linus
 ---
- kernel/trace/trace_events.c |   78 +++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 72 insertions(+), 6 deletions(-)
+ mm/vmscan.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 7163a2b..1137f95 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -1017,7 +1017,7 @@ static __init void event_test_stuff(void)
-  * For every trace event defined, we will test each trace point separately,
-  * and then by groups, and finally all trace points.
-  */
--static __init int event_trace_self_tests(void)
-+static __init void event_trace_self_tests(void)
- {
- 	struct ftrace_event_call *call;
- 	struct event_subsystem *system;
-@@ -1071,7 +1071,7 @@ static __init int event_trace_self_tests(void)
- 		sysname = kstrdup(system->name, GFP_KERNEL);
- 		if (WARN_ON(!sysname)) {
- 			pr_warning("Can't allocate memory, giving up!\n");
--			return 0;
-+			return;
- 		}
- 		ret = ftrace_set_clr_event(sysname, 1);
- 		kfree(sysname);
-@@ -1086,7 +1086,7 @@ static __init int event_trace_self_tests(void)
- 		sysname = kstrdup(system->name, GFP_KERNEL);
- 		if (WARN_ON(!sysname)) {
- 			pr_warning("Can't allocate memory, giving up!\n");
--			return 0;
-+			return;
- 		}
- 		ret = ftrace_set_clr_event(sysname, 0);
- 		kfree(sysname);
-@@ -1106,14 +1106,14 @@ static __init int event_trace_self_tests(void)
- 	sysname = kmalloc(4, GFP_KERNEL);
- 	if (WARN_ON(!sysname)) {
- 		pr_warning("Can't allocate memory, giving up!\n");
--		return 0;
-+		return;
- 	}
- 	memcpy(sysname, "*:*", 4);
- 	ret = ftrace_set_clr_event(sysname, 1);
- 	if (WARN_ON_ONCE(ret)) {
- 		kfree(sysname);
- 		pr_warning("error enabling all events\n");
--		return 0;
-+		return;
- 	}
- 
- 	event_test_stuff();
-@@ -1125,10 +1125,76 @@ static __init int event_trace_self_tests(void)
- 
- 	if (WARN_ON_ONCE(ret)) {
- 		pr_warning("error disabling all events\n");
--		return 0;
-+		return;
- 	}
- 
- 	pr_cont("OK\n");
-+}
-+
-+#ifdef CONFIG_FUNCTION_TRACER
-+
-+static DEFINE_PER_CPU(atomic_t, test_event_disable);
-+
-+static void
-+function_test_events_call(unsigned long ip, unsigned long parent_ip)
-+{
-+	struct ring_buffer_event *event;
-+	struct ftrace_entry *entry;
-+	unsigned long flags;
-+	long disabled;
-+	int resched;
-+	int cpu;
-+	int pc;
-+
-+	pc = preempt_count();
-+	resched = ftrace_preempt_disable();
-+	cpu = raw_smp_processor_id();
-+	disabled = atomic_inc_return(&per_cpu(test_event_disable, cpu));
-+
-+	if (disabled != 1)
-+		goto out;
-+
-+	local_save_flags(flags);
-+
-+	event = trace_current_buffer_lock_reserve(TRACE_FN, sizeof(*entry),
-+						  flags, pc);
-+	if (!event)
-+		goto out;
-+	entry	= ring_buffer_event_data(event);
-+	entry->ip			= ip;
-+	entry->parent_ip		= parent_ip;
-+
-+	trace_current_buffer_unlock_commit(event, flags, pc);
-+
-+ out:
-+	atomic_dec(&per_cpu(test_event_disable, cpu));
-+	ftrace_preempt_enable(resched);
-+}
-+
-+static struct ftrace_ops trace_ops __initdata  =
-+{
-+	.func = function_test_events_call,
-+};
-+
-+static __init void event_trace_self_test_with_function(void)
-+{
-+	register_ftrace_function(&trace_ops);
-+	pr_info("Running tests again, along with the function tracer\n");
-+	event_trace_self_tests();
-+	unregister_ftrace_function(&trace_ops);
-+}
-+#else
-+static __init void event_trace_self_test_with_function(void)
-+{
-+}
-+#endif
-+
-+static __init int event_trace_self_tests_init(void)
-+{
-+
-+	event_trace_self_tests();
-+
-+	event_trace_self_test_with_function();
- 
- 	return 0;
- }
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 39fdfb1..d3595ed 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -2113,6 +2113,8 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+ 	struct scan_control sc = {
+ 		.gfp_mask = GFP_KERNEL,
+ 		.may_unmap = 0,
++		.swap_cluster_max = SWAP_CLUSTER_MAX,
++		.swappiness = vm_swappiness,
+ 		.may_writepage = 1,
+ 		.isolate_pages = isolate_pages_global,
+ 	};
