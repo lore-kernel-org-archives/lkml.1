@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZDQCiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbZDQCid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbZDQCiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 22:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZDQCiG
+	id S1759412AbZDQCid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 22:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759541AbZDQCiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 22:38:06 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:47845 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754849AbZDQCiF (ORCPT
+	Thu, 16 Apr 2009 22:38:21 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46501 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759439AbZDQCiT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 22:38:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEACuI50lMQW1W/2dsb2JhbACBTs5Dg30G
-Date: Thu, 16 Apr 2009 22:38:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [patch 2/3] RCU move trace defines to rcupdate_types.h (update)
-Message-ID: <20090417023802.GA26612@Krystal>
-References: <20090417003755.276959950@polymtl.ca> <20090417003931.846405986@polymtl.ca> <49E7D701.9090407@goop.org> <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com>
+	Thu, 16 Apr 2009 22:38:19 -0400
+Date: Fri, 17 Apr 2009 11:38:09 +0900
+To: dan.j.williams@intel.com
+Cc: a.beregalov@gmail.com, kernel-testers@vger.kernel.org,
+       linux-kernel@vger.kernel.org, maciej.sosnowski@intel.com
+Subject: Re: 2.6.30-rc1: ioatdma: DMA-API: device driver frees DMA memory
+ with 	wrong function
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <e9c3a7c20904151027xdf617fbh64fcb5618e195a71@mail.gmail.com>
+References: <a4423d670904090536j71be609csf2c32be3ed9cfe1e@mail.gmail.com>
+	<a4423d670904150539w1a4fe05ake75ce2aea4538eab@mail.gmail.com>
+	<e9c3a7c20904151027xdf617fbh64fcb5618e195a71@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:37:05 up 47 days, 23:03,  1 user,  load average: 0.82, 0.72,
-	0.61
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090417113814J.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 17 Apr 2009 11:38:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
+On Wed, 15 Apr 2009 10:27:48 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> On Wed, Apr 15, 2009 at 5:39 AM, Alexander Beregalov
+> <a.beregalov@gmail.com> wrote:
+> > 2009/4/9 Alexander Beregalov <a.beregalov@gmail.com>:
+> >> ioatdma 0000:00:08.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> >> ioatdma 0000:00:08.0: setting latency timer to 64
+> >> ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine found, 4 channels,
+> >> device version 0x12, driver version 3.64
+> >>  alloc irq_desc for 33 on cpu 0 node 0
+> >>  alloc kstat_irqs on cpu 0 node 0
+> >> ioatdma 0000:00:08.0: irq 33 for MSI/MSI-X
+> >> ------------[ cut here ]------------
+> >> WARNING: at lib/dma-debug.c:565 check_unmap+0x2f6/0x6a0()
+> >> Hardware name: PowerEdge 1950
+> >> ioatdma 0000:00:08.0: DMA-API: device driver frees DMA memory with
+> >> wrong function [device address=0x000000007f76f800] [size=2000 bytes]
+> >> [map
+> >> ped as single] [unmapped as page]
+> >
+> > The problem still persists.
 > 
-> On Thu, 16 Apr 2009, Jeremy Fitzhardinge wrote:
-> 
-> > I don't think this helps.  rcupdate_types.h uses preempt_disable/enable, but
-> > doesn't include linux/preempt.h for them - but someone's going to have to, so
-> > you've got an implicit dependency on the user to #include the right headers in
-> > advance.
-> 
-> Would including linux/preempt.h in rcupdate_types.h be a problem?
-> 
-> -- Steve
-> 
+> Thanks for the report Alexander.  Maciej and I are looking into a fix.
 
-Here is the updated patch to tracepoint.h that includes preempt.h.
+Looks like the driver uses pci_unmap_page() to unmap the region
+previously mapped by dma_map_single(), right?
 
-
-tracepoints : remove rcupdate.h dependency
-
-Use the slimmer rcupdate_types.h instead of the fat rcupdate.h.
-
-Changelog : include preempt.h from tracepoint.h.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Hellwig <hch@lst.de>
----
- include/linux/tracepoint.h |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
-
-Index: linux.trees.git/include/linux/tracepoint.h
-===================================================================
---- linux.trees.git.orig/include/linux/tracepoint.h	2009-04-16 20:32:27.000000000 -0400
-+++ linux.trees.git/include/linux/tracepoint.h	2009-04-16 22:13:53.000000000 -0400
-@@ -15,7 +15,8 @@
-  */
- 
- #include <linux/types.h>
--#include <linux/rcupdate.h>
-+#include <linux/rcupdate_types.h>
-+#include <linux/preempt.h>
- 
- struct module;
- struct tracepoint;
-@@ -150,11 +151,11 @@ extern int tracepoint_get_iter_range(str
-  * tracepoint_synchronize_unregister must be called between the last tracepoint
-  * probe unregistration and the end of module exit to make sure there is no
-  * caller executing a probe when it is freed.
-+ * Using a define rather than a static inline to make sure tracepoint.h does not
-+ * depend on rcupdate.h. rcupdate.h must be included whenever
-+ * tracepoint_synchronize_unregister() is used.
-  */
--static inline void tracepoint_synchronize_unregister(void)
--{
--	synchronize_sched();
--}
-+#define tracepoint_synchronize_unregister() synchronize_sched()
- 
- #define PARAMS(args...) args
- 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+It's not the proper usage of DMA API but it doesn't cause any
+problems. This is not a urgent issue though it's better to fix it.
