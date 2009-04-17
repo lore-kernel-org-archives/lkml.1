@@ -1,130 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762158AbZDQQdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762031AbZDQQeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762158AbZDQQdi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZDQQd3
+	id S1762031AbZDQQeZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbZDQQeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:33:29 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:8354 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbZDQQd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:33:28 -0400
-Date: Fri, 17 Apr 2009 18:36:17 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: spock@gentoo.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: fix fillrect for 24bpp modes
-Message-Id: <20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090413170954.GA8403@tria>
-References: <20090413170954.GA8403@tria>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: f8e2b138
+	Fri, 17 Apr 2009 12:34:09 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:58210 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759261AbZDQQeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:34:07 -0400
+Date: Fri, 17 Apr 2009 09:33:52 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: David Miller <davem@davemloft.net>, kaber@trash.net,
+       torvalds@linux-foundation.org, shemminger@vyatta.com,
+       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+Message-ID: <20090417163351.GC6742@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <1239948734.23397.4052.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239948734.23397.4052.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Apr 2009 19:09:54 +0200
-Michal Januszewski <spock@gentoo.org> wrote:
-
-> The software fillrect routines do not work properly when the number of
-> pixels per machine word is not an integer.  To see that, run the following
-> command on a fbdev console with a 24bpp video mode, using a non-accelerated
-> driver such as (u)vesafb:
+On Fri, Apr 17, 2009 at 08:12:14AM +0200, Peter Zijlstra wrote:
+> On Thu, 2009-04-16 at 18:28 -0700, Paul E. McKenney wrote:
+> > On Thu, Apr 16, 2009 at 04:49:55PM -0700, Paul E. McKenney wrote:
+> > > On Thu, Apr 16, 2009 at 03:33:54PM -0700, David Miller wrote:
+> > > > From: Patrick McHardy <kaber@trash.net>
+> > > > Date: Thu, 16 Apr 2009 15:11:31 +0200
+> > > > 
+> > > > > Linus Torvalds wrote:
+> > > > >> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
+> > > > >>> The counters are the bigger problem, otherwise we could just free
+> > > > >>> table
+> > > > >>> info via rcu.  Do we really have to support: replace where the counter
+> > > > >>> values coming out to user space are always exactly accurate, or is it
+> > > > >>> allowed to replace a rule and maybe lose some counter ticks (worst
+> > > > >>> case
+> > > > >>> NCPU-1).
+> > > > >> Why not just read the counters fromt he old one at RCU free time (they
+> > > > >> are guaranteed to be stable at that point, since we're all done with
+> > > > >> those entries), and apply them at that point to the current setup?
+> > > > > 
+> > > > > We need the counters immediately to copy them to userspace, so waiting
+> > > > > for an asynchronous RCU free is not going to work.
+> > > > 
+> > > > It just occurred to me that since all netfilter packet handling
+> > > > goes through one place, we could have a sort-of "netfilter RCU"
+> > > > of sorts to solve this problem.
+> > > 
+> > > OK, I am putting one together...
+> > > 
+> > > It will be needed sooner or later, though I suspect per-CPU locking
+> > > would work fine in this case.
+> > 
+> > And here is a crude first cut.  Untested, probably does not even compile.
+> > 
+> > Straight conversion of Mathieu Desnoyers's user-space RCU implementation
+> > at git://lttng.org/userspace-rcu.git to the kernel (and yes, I did help
+> > a little, but he must bear the bulk of the guilt).  Pick on srcu.h
+> > and srcu.c out of sheer laziness.  User-space testing gives deep
+> > sub-microsecond grace-period latencies, so should be fast enough, at
+> > least if you don't mind two smp_call_function() invocations per grace
+> > period and spinning on each instance of a per-CPU variable.
+> > 
+> > Again, I believe per-CPU locking should work fine for the netfilter
+> > counters, but I guess "friends don't let friends use hashed locks".
+> > (I would not know for sure, never having used them myself, except of
+> > course to protect hash tables.)
+> > 
+> > Most definitely -not- for inclusion at this point.  Next step is to hack
+> > up the relevant rcutorture code and watch it explode on contact.  ;-)
 > 
->   reset ; echo -e '\e[41mtest\e[K'
+> One comment, its again a global thing..
 > 
-> The expected result is 'test' displayed on a line with red background.
-> Instead of that, 'test' has a red background, but the rest of the line
-> (rendered using fillrect()) contains a distored colorful pattern.
+> I've been playing with the idea for a while now to make all RCU
+> implementations into proper objects so that you can do things like:
 > 
-> This patch fixes the problem by correctly computing rotation shifts.
-> It has been tested in a 24bpp mode on 32- and 64-bit little-endian
-> machines.
+>   struct atomic_rcu_domain my_rcu_domain = create_atomic_rcu();
 > 
+>   atomic_rcu_read_lock(&my_rcu_domain());
+>   ...
+> 
+>   atomic_rcu_read_unlock(&my_rcu_domain());
+> 
+> and
+> 
+>   call_atomic_rcu(&my_rcu_domain, &my_obj->rcu_head, do_something);
+> 
+> etc..
+> 
+> We would have:
+> 
+>   atomic_rcu  --  'classic' non preemptible RCU (treercu these days)
+>   sleep_rcu   --  'preemptible' RCU
+> 
+> Then have 3 default domains:
+> 
+> sched_rcu     -- always atomic_rcu
 
-I can confirm the patch fixes the issue it describes if the line is not padded
-or padded in a special way. See my comments below.
+This is the call_rcu_sched() variant.
 
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
-> ---
-> diff --git a/drivers/video/cfbfillrect.c b/drivers/video/cfbfillrect.c
-> index 64b3576..396e676 100644
-> --- a/drivers/video/cfbfillrect.c
-> +++ b/drivers/video/cfbfillrect.c
-> @@ -9,10 +9,6 @@
->   *
->   * NOTES:
->   *
-> - *  The code for depths like 24 that don't have integer number of pixels per
-> - *  long is broken and needs to be fixed. For now I turned these types of
-> - *  mode off.
-> - *
->   *  Also need to add code to deal with cards endians that are different than
->   *  the native cpu endians. I also need to deal with MSB position in the word.
->   *
-> @@ -139,7 +135,7 @@ bitfill_unaligned(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
->  
->  		// Trailing bits
->  		if (last)
-> -			FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
-> +			FB_WRITEL(comp(pat, FB_READL(dst), last), dst);
->  	}
->  }
->  
-> @@ -297,7 +293,7 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
->  	else
->  		fg = rect->color;
->  
-> -	pat = pixel_to_pat( bpp, fg);
-> +	pat = pixel_to_pat(bpp, fg);
->  
->  	dst = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
->  	dst_idx = ((unsigned long)p->screen_base & (bytes - 1))*8;
-> @@ -333,17 +329,20 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
->  			dst_idx += p->fix.line_length*8;
->  		}
->  	} else {
-> -		int right;
-> -		int r;
-> -		int rot = (left-dst_idx) % bpp;
-> +		int right, r;
->  		void (*fill_op)(struct fb_info *p, unsigned long __iomem *dst,
->  				int dst_idx, unsigned long pat, int left,
->  				int right, unsigned n, int bits) = NULL;
-> -
-> +#ifdef __LITTLE_ENDIAN
-> +		right = left;
-> +		left = bpp - right;
-> +#else
-> +		right = bpp - left;
-> +#endif
->  		/* rotate pattern to correct start position */
-> -		pat = pat << rot | pat >> (bpp-rot);
-> +		r = dst_idx >> (ffs(bits) - 1);
+> rcu           -- depends on PREEMPT_RCU
 
-The r is simply dst_idx / bits. Most compilers will optimize it away into 
-a simple shift because the bits has only one bit set (it is number of bits in a long variable, ie. 32 or 64).
+This is the call_rcu() variant.
 
-> +		pat = pat << ((left*r) % bpp) | pat >> ((right*r) % bpp);
->  
+> preempt_rcu   -- always sleep_rcu
 
-If the r = (dst_idx / bits) it is number of long words. The shift by ((left*r) % bpp) does
-not make much sense (try left = 3 and r = 24 words - it is always zero but should be 3). 
-It is even worse if a line is padded so line's length modulo bpp is not 
-zero it does not work. A colorful pattern is produced  after the "mtest" text.
+I guess that this one could allow sleeping on mutexes...  Does anyone
+need to do that?
 
-A dst_idx offset is not taken into account (it could be non-zero only for depths < 8 bits).
+> This would allow generic code to:
+>   1) use preemptible RCU for those cases where needed
+>   2) create smaller RCU domains where needed, such as in this case
+>   3) mostly do away with SRCU
 
-Kind regards,
-Krzysztof
+#3 would be good!  But...
 
+At an API level, there are two differences between SRCU and the other
+RCU implementations:
 
-----------------------------------------------------------------------
-Najlepsze dzwonki MP3 na telefon komorkowy!
-Sprawdz >> http://link.interia.pl/f2128  
+a.	The return value from srcu_read_lock() is passed to
+	srcu_read_unlock().
 
+b.	There is a control block passed in to each SRCU primitive.
+
+Difference (a) could potentially be taken care of with a few tricks I
+am trying in the process of getting preemptrcu merged into treercu.
+
+Your approach to (b) certainly makes it uniform, there are >500
+occurrences of rcu_read_lock() and rcu_read_unlock() each, but only
+a very few occurrences of srcu_read_lock() and srcu_read_unlock()
+(like exactly one each!).  So adding an argument to rcu_read_lock()
+does not sound at all reasonable.
+
+> Now I realize that the presented RCU implementation has a different
+> grace period method than the existing ones that use the timer tick to
+> drive the state machine, so 2) might not be too relevant here. But maybe
+> we can do something with different grace periods too.
+> 
+> Anyway, just an idea because I always get a little offended at the hard
+> coded global variables in all these RCU implementations :-)
+
+I am thinking in terms of adding a synchronize_rcu_bh() with the desired
+properties.  That way we avoid yet another RCU flavor.  (What can I say?
+I got carried away!)  Also, since the rcu-bh flavor is used only by
+networking, we have a fair amount of freedom to tweak it.  It will take
+longer than introducing a new flavor, but Steve Hemminger has a good
+solution already, and RCU really isn't the thing to do quick hacks on.
+
+							Thanx, Paul
