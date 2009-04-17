@@ -1,345 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbZDQOST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761302AbZDQOTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbZDQOST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756294AbZDQOSI
+	id S1761302AbZDQOTd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbZDQOTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:18:08 -0400
-Received: from mail.it-technology.at ([62.99.145.147]:33702 "EHLO
-	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754952AbZDQOSG (ORCPT
+	Fri, 17 Apr 2009 10:19:24 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:47272 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760860AbZDQOTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:18:06 -0400
-X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 10:18:06 EDT
-Message-ID: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
-Date: Fri, 17 Apr 2009 16:10:24 +0200 (CEST)
-Subject: [PATCH] usb driver for intellon based PLC like devolo dlan duo
-From: "Peter Holik" <peter@holik.at>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
+	Fri, 17 Apr 2009 10:19:23 -0400
+Date: Fri, 17 Apr 2009 19:48:38 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+	controller (v3)
+Message-ID: <20090417141837.GD3896@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090416120316.GG7082@balbir.in.ibm.com> <20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com> <20090417014042.GB18558@balbir.in.ibm.com> <20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com> <20090417034539.GD18558@balbir.in.ibm.com> <20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com> <20090417045623.GA3896@balbir.in.ibm.com> <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com> <20090417064726.GB3896@balbir.in.ibm.com> <20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Peter Holik <peter@holik.at>
+Hi, Kame,
+
+How does this look? I did not use the mapped flag in page_cgroup
+flags. page_is_file_cache and page_mapped worked as well.
+
+Feature: Add file RSS tracking per memory cgroup
+
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+Changelog v3 -> v2
+1. Fix get_cpu(), put_cpu() matching. Moved away from get_cpu() and use
+   smp_processor_id(), since we are in preempt disable context
+2. Use pc->mem_cgroup to identify the mem_cgroup instead of mm
+3. page_add_file_rmap() and page_remove_rmap() argument changes are undone.
+
+Changelog v2 -> v1
+
+1. Rename file_rss to mapped_file
+2. Add hooks into mem_cgroup_move_account for updating MAPPED_FILE statistics
+3. Use a better name for the statistics routine.
+
+
+We currently don't track file RSS, the RSS we report is actually anon RSS.
+All the file mapped pages, come in through the page cache and get accounted
+there. This patch adds support for accounting file RSS pages. It should
+
+1. Help improve the metrics reported by the memory resource controller
+2. Will form the basis for a future shared memory accounting heuristic
+   that has been proposed by Kamezawa.
+
+Unfortunately, we cannot rename the existing "rss" keyword used in memory.stat
+to "anon_rss". We however, add "mapped_file" data and hope to educate the end
+user through documentation.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
- drivers/net/usb/Kconfig    |    7 +
- drivers/net/usb/Makefile   |    2 +-
- drivers/net/usb/intellon.c |  273 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 281 insertions(+), 1 deletions(-)
- create mode 100644 drivers/net/usb/intellon.c
 
-diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
-index 8ee2103..068faa5 100644
---- a/drivers/net/usb/Kconfig
-+++ b/drivers/net/usb/Kconfig
-@@ -345,4 +345,11 @@ config USB_HSO
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called hso.
+ include/linux/memcontrol.h |    7 ++++-
+ mm/memcontrol.c            |   66 +++++++++++++++++++++++++++++++++++++++++++-
+ mm/rmap.c                  |    5 +++
+ 3 files changed, 75 insertions(+), 3 deletions(-)
 
-+config USB_NET_INTELLON
-+	tristate "Intellon PLC based usb adapter"
-+	depends on USB_USBNET
-+	help
-+	  Choose this option if you're using a PLC (Powerline Communications)
-+	  solution with an Intellon chip, like the "devolo dLan duo".
-+
- endmenu
-diff --git a/drivers/net/usb/Makefile b/drivers/net/usb/Makefile
-index 88a87ee..0fccfe9 100644
---- a/drivers/net/usb/Makefile
-+++ b/drivers/net/usb/Makefile
-@@ -19,4 +19,4 @@ obj-$(CONFIG_USB_NET_CDC_SUBSET)	+= cdc_subset.o
- obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
- obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
- obj-$(CONFIG_USB_USBNET)	+= usbnet.o
+
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 18146c9..05a5c11 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -116,7 +116,7 @@ static inline bool mem_cgroup_disabled(void)
+ }
+ 
+ extern bool mem_cgroup_oom_called(struct task_struct *task);
 -
-+obj-$(CONFIG_USB_NET_INTELLON)	+= intellon.o
-diff --git a/drivers/net/usb/intellon.c b/drivers/net/usb/intellon.c
-new file mode 100644
-index 0000000..c9fcc38
---- /dev/null
-+++ b/drivers/net/usb/intellon.c
-@@ -0,0 +1,273 @@
++void mem_cgroup_update_mapped_file_stat(struct page *page, int val);
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
+@@ -264,6 +264,11 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
+ {
+ }
+ 
++static inline void mem_cgroup_update_mapped_file_stat(struct page *page,
++							int val)
++{
++}
++
+ #endif /* CONFIG_CGROUP_MEM_CONT */
+ 
+ #endif /* _LINUX_MEMCONTROL_H */
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e44fb0f..562bd76 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -62,7 +62,8 @@ enum mem_cgroup_stat_index {
+ 	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
+ 	 */
+ 	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
+-	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
++	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
++	MEM_CGROUP_STAT_MAPPED_FILE,  /* # of pages charged as file rss */
+ 	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+ 	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+ 
+@@ -321,6 +322,44 @@ static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
+ 	return css_is_removed(&mem->css);
+ }
+ 
 +/*
-+ * Copyright (c) 2009 Peter Holik
-+ *
-+ * Intellon PLC (Powerline Communications) usb net driver
-+ *
-+ * http://www.tandel.be/downloads/INT51X1_Datasheet.pdf
-+ *
-+ * Based on the work of Jan 'RedBully' Seiffert
++ * Currently used to update mapped file statistics, but the routine can be
++ * generalized to update other statistics as well.
 + */
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or.
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ *
-+ * Should you need to contact me, the author, you can do so either by
-+ * e-mail - mail your message to <vojtech@suse.cz>, or by paper mail:
-+ * Vojtech Pavlik, Simunkova 1594, Prague 8, 182 00 Czech Republic
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/ctype.h>
-+#include <linux/netdevice.h>
-+#include <linux/etherdevice.h>
-+#include <linux/ethtool.h>
-+#include <linux/mii.h>
-+#include <linux/usb.h>
-+#include <linux/usb/usbnet.h>
-+
-+#define INTELLON_VENDOR_ID	0x09e1
-+#define INTELLON_PRODUCT_ID	0x5121
-+
-+#define INTELLON_HEADER_SIZE	2	/* 2 byte header */
-+
-+#define PACKET_TYPE_PROMISCUOUS		(1 << 0)
-+#define PACKET_TYPE_ALL_MULTICAST	(1 << 1) /* no filter */
-+#define PACKET_TYPE_DIRECTED		(1 << 2)
-+#define PACKET_TYPE_BROADCAST		(1 << 3)
-+#define PACKET_TYPE_MULTICAST		(1 << 4) /* filtered */
-+
-+#define SET_ETHERNET_PACKET_FILTER	0x43
-+
-+static u8 nibble(unsigned char c)
++void mem_cgroup_update_mapped_file_stat(struct page *page, int val)
 +{
-+	if (likely(isdigit(c)))
-+		return c - '0';
-+	c = toupper(c);
-+	if (likely(isxdigit(c)))
-+		return 10 + c - 'A';
-+	return 0;
-+}
++	struct mem_cgroup *mem;
++	struct mem_cgroup_stat *stat;
++	struct mem_cgroup_stat_cpu *cpustat;
++	int cpu;
++	struct page_cgroup *pc;
 +
-+static inline int get_ethernet_addr(struct usbnet *dev)
-+{
-+	int             tmp, i;
-+	unsigned char   buf [13];
++	if (!page_is_file_cache(page))
++		return;
 +
-+	tmp = usb_string(dev->udev, 3, buf, sizeof buf);
-+	if (tmp != 12) {
-+		devdbg(dev, "bad MAC string fetch, %d\n", tmp);
-+		if (tmp >= 0)
-+			tmp = -EINVAL;
-+		return tmp;
-+	}
-+	for (i = tmp = 0; i < 6; i++, tmp += 2)
-+		dev->net->dev_addr [i] =
-+			(nibble(buf [tmp]) << 4) + nibble(buf [tmp + 1]);
-+	return 0;
-+}
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
++		return;
 +
++	lock_page_cgroup(pc);
++	mem = pc->mem_cgroup;
++	if (!mem)
++		goto done;
 +
-+static int intellon_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
-+{
-+	int len;
-+
-+	if (unlikely(skb->len < INTELLON_HEADER_SIZE)) {
-+		deverr(dev, "unexpected tiny rx frame");
-+		return 0;
-+	}
-+
-+	len = (skb->data[skb->len - 2] | (skb->data[skb->len - 1] << 8));
-+
-+	skb_trim(skb, len);
-+
-+	return 1;
-+}
-+
-+static struct sk_buff *intellon_tx_fixup(struct usbnet *dev,
-+		struct sk_buff *skb, gfp_t flags)
-+{
-+	int pack_len = skb->len;
-+	int headroom = skb_headroom(skb);
-+	int tailroom = skb_tailroom(skb);
-+	int need_tail = 0;
++	if (!PageCgroupUsed(pc))
++		goto done;
 +
 +	/*
-+	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
-+	 * but we need to know ourself, because this would add to the length
-+	 * we send down to the device...
++	 * Preemption is already disabled, we don't need get_cpu()
 +	 */
-+	if (!((pack_len + INTELLON_HEADER_SIZE) % dev->maxpacket))
-+		need_tail = 1;
++	cpu = smp_processor_id();
++	stat = &mem->stat;
++	cpustat = &stat->cpustat[cpu];
 +
-+	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
-+	if ((pack_len + INTELLON_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
-+		need_tail = dev->maxpacket + 1 - pack_len - INTELLON_HEADER_SIZE;
++	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
++done:
++	unlock_page_cgroup(pc);
++}
+ 
+ /*
+  * Call callback function against all cgroup under hierarchy tree.
+@@ -1096,6 +1135,10 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 	struct mem_cgroup_per_zone *from_mz, *to_mz;
+ 	int nid, zid;
+ 	int ret = -EBUSY;
++	struct page *page;
++	int cpu;
++	struct mem_cgroup_stat *stat;
++	struct mem_cgroup_stat_cpu *cpustat;
+ 
+ 	VM_BUG_ON(from == to);
+ 	VM_BUG_ON(PageLRU(pc->page));
+@@ -1116,6 +1159,23 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 
+ 	res_counter_uncharge(&from->res, PAGE_SIZE);
+ 	mem_cgroup_charge_statistics(from, pc, false);
 +
-+	if (!skb_cloned(skb) &&
-+			(headroom + tailroom >= need_tail + INTELLON_HEADER_SIZE)) {
-+		if (headroom < INTELLON_HEADER_SIZE || tailroom < need_tail) {
-+			skb->data = memmove(skb->head + INTELLON_HEADER_SIZE,
-+					skb->data, skb->len);
-+			skb_set_tail_pointer(skb, skb->len);
-+		}
-+	} else {
-+		struct sk_buff *skb2;
++	page = pc->page;
++	if (page_is_file_cache(page) && page_mapped(page)) {
++		cpu = smp_processor_id();
++		/* Update mapped_file data for mem_cgroup "from" */
++		stat = &from->stat;
++		cpustat = &stat->cpustat[cpu];
++		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
++						-1);
 +
-+		skb2 = skb_copy_expand(skb,
-+				INTELLON_HEADER_SIZE,
-+				need_tail,
-+				flags);
-+		dev_kfree_skb_any(skb);
-+		if (!skb2)
-+			return skb2;
-+		skb = skb2;
++		/* Update mapped_file data for mem_cgroup "to" */
++		stat = &to->stat;
++		cpustat = &stat->cpustat[cpu];
++		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
++						1);
 +	}
 +
-+	pack_len += need_tail;
-+
-+	__skb_push(skb, INTELLON_HEADER_SIZE);
-+
-+	skb->data[0] = pack_len & 0xFF;
-+	skb->data[1] = (pack_len & 0x700) >> 8;
-+
-+	if(need_tail)
-+		memset(__skb_put(skb, need_tail), 0, need_tail);
-+
-+	return skb;
-+}
-+
-+static void intellon_async_cmd_callback(struct urb *urb)
-+{
-+	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
-+	int status = urb->status;
-+
-+	if (status < 0)
-+		dev_warn(&urb->dev->dev, "async callback failed with %d\n", status);
-+
-+	kfree(req);
-+	usb_free_urb(urb);
-+}
-+
-+static void intellon_set_multicast(struct net_device *netdev)
-+{
-+	struct usb_ctrlrequest *req;
-+	int status;
-+	struct urb *urb;
-+	struct usbnet *dev = netdev_priv(netdev);
-+	u16 filter = PACKET_TYPE_DIRECTED |
-+		     PACKET_TYPE_BROADCAST;
-+
-+	if (netdev->flags & IFF_PROMISC) {
-+		/* do not expect to see traffic of other PLCs */
-+		filter |= PACKET_TYPE_PROMISCUOUS;
-+		devinfo(dev, "promiscuous mode enabled");
-+	} else if (netdev->mc_count ||
-+		  (netdev->flags & IFF_ALLMULTI)) {
-+		filter |= PACKET_TYPE_ALL_MULTICAST;
-+		devdbg(dev, "receive all multicast enabled");
-+	} else {
-+		/* ~PROMISCUOUS, ~MULTICAST */
-+		devdbg(dev, "receive own packets only");
+ 	if (do_swap_account)
+ 		res_counter_uncharge(&from->memsw, PAGE_SIZE);
+ 	css_put(&from->css);
+@@ -2051,6 +2111,7 @@ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+ enum {
+ 	MCS_CACHE,
+ 	MCS_RSS,
++	MCS_MAPPED_FILE,
+ 	MCS_PGPGIN,
+ 	MCS_PGPGOUT,
+ 	MCS_INACTIVE_ANON,
+@@ -2071,6 +2132,7 @@ struct {
+ } memcg_stat_strings[NR_MCS_STAT] = {
+ 	{"cache", "total_cache"},
+ 	{"rss", "total_rss"},
++	{"mapped_file", "total_mapped_file"},
+ 	{"pgpgin", "total_pgpgin"},
+ 	{"pgpgout", "total_pgpgout"},
+ 	{"inactive_anon", "total_inactive_anon"},
+@@ -2091,6 +2153,8 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
+ 	s->stat[MCS_CACHE] += val * PAGE_SIZE;
+ 	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
+ 	s->stat[MCS_RSS] += val * PAGE_SIZE;
++	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_MAPPED_FILE);
++	s->stat[MCS_MAPPED_FILE] += val * PAGE_SIZE;
+ 	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
+ 	s->stat[MCS_PGPGIN] += val;
+ 	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 1652166..c3ba0b9 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -688,8 +688,10 @@ void page_add_new_anon_rmap(struct page *page,
+  */
+ void page_add_file_rmap(struct page *page)
+ {
+-	if (atomic_inc_and_test(&page->_mapcount))
++	if (atomic_inc_and_test(&page->_mapcount)) {
+ 		__inc_zone_page_state(page, NR_FILE_MAPPED);
++		mem_cgroup_update_mapped_file_stat(page, 1);
 +	}
-+
-+	urb = usb_alloc_urb(0, GFP_ATOMIC);
-+	if (!urb) {
-+		devwarn(dev, "Error allocating URB");
-+		return;
-+	}
-+
-+	req = kmalloc(sizeof *req, GFP_ATOMIC);
-+	if (!req) {
-+		devwarn(dev, "Error allocating control msg");
-+		usb_free_urb(urb);
-+		return;
-+	}
-+
-+	req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
-+	req->bRequest = SET_ETHERNET_PACKET_FILTER;
-+	req->wValue = cpu_to_le16(filter);
-+	req->wIndex = 0;
-+	req->wLength = 0;
-+
-+	usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
-+		(void *)req, NULL, 0,
-+		intellon_async_cmd_callback,
-+		(void *)req);
-+
-+	status = usb_submit_urb(urb, GFP_ATOMIC);
-+	if (status < 0) {
-+		devwarn(dev, "Error submitting control msg, sts=%d", status);
-+		kfree(req);
-+		usb_free_urb(urb);
-+	}
-+}
-+
-+static int intellon_bind(struct usbnet *dev, struct usb_interface *intf)
-+{
-+	int status = get_ethernet_addr(dev);
-+
-+	if (status)
-+		return status;
-+
-+	dev->net->hard_header_len += INTELLON_HEADER_SIZE;
-+	dev->hard_mtu = dev->net->mtu + dev->net->hard_header_len;
-+	dev->net->set_multicast_list = intellon_set_multicast;
-+
-+	return usbnet_get_endpoints(dev, intf);
-+}
-+
-+static const struct driver_info intellon_info = {
-+	.description = "Intellon powerline adapter",
-+	.bind        = intellon_bind,
-+	.rx_fixup    = intellon_rx_fixup,
-+	.tx_fixup    = intellon_tx_fixup,
-+	.in          = 1,
-+	.out         = 2,
-+	.flags      = FLAG_ETHER,
-+};
-+
-+static const struct usb_device_id products[] = {
-+	{
-+	USB_DEVICE(INTELLON_VENDOR_ID, INTELLON_PRODUCT_ID),
-+		.driver_info = (unsigned long) &intellon_info,
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(usb, products);
-+
-+static struct usb_driver intellon_driver = {
-+	.name       = "intellon",
-+	.id_table   = products,
-+	.probe      = usbnet_probe,
-+	.disconnect = usbnet_disconnect,
-+	.suspend    = usbnet_suspend,
-+	.resume     = usbnet_resume,
-+};
-+
-+static int __init intellon_init(void)
-+{
-+	return usb_register(&intellon_driver);
-+}
-+module_init(intellon_init);
-+
-+static void __exit intellon_exit(void)
-+{
-+	usb_deregister(&intellon_driver);
-+}
-+module_exit(intellon_exit);
-+
-+MODULE_AUTHOR("Peter Holik");
-+MODULE_DESCRIPTION("Intellon powerline adapter");
-+MODULE_LICENSE("GPL");
+ }
+ 
+ #ifdef CONFIG_DEBUG_VM
+@@ -738,6 +740,7 @@ void page_remove_rmap(struct page *page)
+ 			mem_cgroup_uncharge_page(page);
+ 		__dec_zone_page_state(page,
+ 			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
++		mem_cgroup_update_mapped_file_stat(page, -1);
+ 		/*
+ 		 * It would be tidy to reset the PageAnon mapping here,
+ 		 * but that might overwrite a racing page_add_anon_rmap
+
 -- 
-1.6.2.1
-
-
+	Balbir
