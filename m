@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbZDQGks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbZDQGlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760280AbZDQGks (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 02:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760044AbZDQGjm
+	id S1760247AbZDQGlH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 02:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759980AbZDQGjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 02:39:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:56721 "EHLO abulafia.goop.org"
+	Fri, 17 Apr 2009 02:39:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:56726 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754564AbZDQGjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 02:39:39 -0400
+	id S1754901AbZDQGjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 02:39:41 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: mathieu.desnoyers@polymtl.ca
 Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 1/5] x86/paravirt: split paravirt definitions into paravirt_types.h
-Date: Thu, 16 Apr 2009 23:39:30 -0700
-Message-Id: <1239950374-1252-2-git-send-email-jeremy@goop.org>
+Subject: [PATCH 2/5] x86/pvops: add tracing for all significant pvops entrypoints
+Date: Thu, 16 Apr 2009 23:39:31 -0700
+Message-Id: <1239950374-1252-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1239950374-1252-1-git-send-email-jeremy@goop.org>
 References: <1239950374-1252-1-git-send-email-jeremy@goop.org>
@@ -26,1487 +26,1870 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Create a definitions-only asm/paravirt_types.h header.
+Define TRACE_EVENTS for all significant pvops entrypoints.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/paravirt.h       |  709 +--------------------------------
- arch/x86/include/asm/paravirt_types.h |  718 +++++++++++++++++++++++++++++++++
- 2 files changed, 719 insertions(+), 708 deletions(-)
- create mode 100644 arch/x86/include/asm/paravirt_types.h
+ arch/x86/include/asm/paravirt-trace.h | 1171 +++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/paravirt.h       |  163 ++++-
+ arch/x86/kernel/Makefile              |    5 +-
+ arch/x86/kernel/paravirt-trace.c      |   16 +
+ 4 files changed, 1331 insertions(+), 24 deletions(-)
+ create mode 100644 arch/x86/include/asm/paravirt-trace.h
+ create mode 100644 arch/x86/kernel/paravirt-trace.c
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 1fe5837..9fdc5f7 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -7,42 +7,7 @@
- #include <asm/pgtable_types.h>
- #include <asm/asm.h>
- 
--/* Bitmask of what can be clobbered: usually at least eax. */
--#define CLBR_NONE 0
--#define CLBR_EAX  (1 << 0)
--#define CLBR_ECX  (1 << 1)
--#define CLBR_EDX  (1 << 2)
--#define CLBR_EDI  (1 << 3)
--
--#ifdef CONFIG_X86_32
--/* CLBR_ANY should match all regs platform has. For i386, that's just it */
--#define CLBR_ANY  ((1 << 4) - 1)
--
--#define CLBR_ARG_REGS	(CLBR_EAX | CLBR_EDX | CLBR_ECX)
--#define CLBR_RET_REG	(CLBR_EAX | CLBR_EDX)
--#define CLBR_SCRATCH	(0)
--#else
--#define CLBR_RAX  CLBR_EAX
--#define CLBR_RCX  CLBR_ECX
--#define CLBR_RDX  CLBR_EDX
--#define CLBR_RDI  CLBR_EDI
--#define CLBR_RSI  (1 << 4)
--#define CLBR_R8   (1 << 5)
--#define CLBR_R9   (1 << 6)
--#define CLBR_R10  (1 << 7)
--#define CLBR_R11  (1 << 8)
--
--#define CLBR_ANY  ((1 << 9) - 1)
--
--#define CLBR_ARG_REGS	(CLBR_RDI | CLBR_RSI | CLBR_RDX | \
--			 CLBR_RCX | CLBR_R8 | CLBR_R9)
--#define CLBR_RET_REG	(CLBR_RAX)
--#define CLBR_SCRATCH	(CLBR_R10 | CLBR_R11)
--
--#include <asm/desc_defs.h>
--#endif /* X86_64 */
--
--#define CLBR_CALLEE_SAVE ((CLBR_ARG_REGS | CLBR_SCRATCH) & ~CLBR_RET_REG)
-+#include <asm/paravirt_types.h>
- 
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
-@@ -50,647 +15,6 @@
- #include <asm/kmap_types.h>
- #include <asm/desc_defs.h>
- 
--struct page;
--struct thread_struct;
--struct desc_ptr;
--struct tss_struct;
--struct mm_struct;
--struct desc_struct;
--struct task_struct;
--
--/*
-- * Wrapper type for pointers to code which uses the non-standard
-- * calling convention.  See PV_CALL_SAVE_REGS_THUNK below.
-- */
--struct paravirt_callee_save {
--	void *func;
--};
--
--/* general info */
--struct pv_info {
--	unsigned int kernel_rpl;
--	int shared_kernel_pmd;
--	int paravirt_enabled;
--	const char *name;
--};
--
--struct pv_init_ops {
--	/*
--	 * Patch may replace one of the defined code sequences with
--	 * arbitrary code, subject to the same register constraints.
--	 * This generally means the code is not free to clobber any
--	 * registers other than EAX.  The patch function should return
--	 * the number of bytes of code generated, as we nop pad the
--	 * rest in generic code.
--	 */
--	unsigned (*patch)(u8 type, u16 clobber, void *insnbuf,
--			  unsigned long addr, unsigned len);
--
--	/* Basic arch-specific setup */
--	void (*arch_setup)(void);
--	char *(*memory_setup)(void);
--	void (*post_allocator_init)(void);
--
--	/* Print a banner to identify the environment */
--	void (*banner)(void);
--};
--
--
--struct pv_lazy_ops {
--	/* Set deferred update mode, used for batching operations. */
--	void (*enter)(void);
--	void (*leave)(void);
--};
--
--struct pv_time_ops {
--	void (*time_init)(void);
--
--	/* Set and set time of day */
--	unsigned long (*get_wallclock)(void);
--	int (*set_wallclock)(unsigned long);
--
--	unsigned long long (*sched_clock)(void);
--	unsigned long (*get_tsc_khz)(void);
--};
--
--struct pv_cpu_ops {
--	/* hooks for various privileged instructions */
--	unsigned long (*get_debugreg)(int regno);
--	void (*set_debugreg)(int regno, unsigned long value);
--
--	void (*clts)(void);
--
--	unsigned long (*read_cr0)(void);
--	void (*write_cr0)(unsigned long);
--
--	unsigned long (*read_cr4_safe)(void);
--	unsigned long (*read_cr4)(void);
--	void (*write_cr4)(unsigned long);
--
--#ifdef CONFIG_X86_64
--	unsigned long (*read_cr8)(void);
--	void (*write_cr8)(unsigned long);
--#endif
--
--	/* Segment descriptor handling */
--	void (*load_tr_desc)(void);
--	void (*load_gdt)(const struct desc_ptr *);
--	void (*load_idt)(const struct desc_ptr *);
--	void (*store_gdt)(struct desc_ptr *);
--	void (*store_idt)(struct desc_ptr *);
--	void (*set_ldt)(const void *desc, unsigned entries);
--	unsigned long (*store_tr)(void);
--	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
--#ifdef CONFIG_X86_64
--	void (*load_gs_index)(unsigned int idx);
--#endif
--	void (*write_ldt_entry)(struct desc_struct *ldt, int entrynum,
--				const void *desc);
--	void (*write_gdt_entry)(struct desc_struct *,
--				int entrynum, const void *desc, int size);
--	void (*write_idt_entry)(gate_desc *,
--				int entrynum, const gate_desc *gate);
--	void (*alloc_ldt)(struct desc_struct *ldt, unsigned entries);
--	void (*free_ldt)(struct desc_struct *ldt, unsigned entries);
--
--	void (*load_sp0)(struct tss_struct *tss, struct thread_struct *t);
--
--	void (*set_iopl_mask)(unsigned mask);
--
--	void (*wbinvd)(void);
--	void (*io_delay)(void);
--
--	/* cpuid emulation, mostly so that caps bits can be disabled */
--	void (*cpuid)(unsigned int *eax, unsigned int *ebx,
--		      unsigned int *ecx, unsigned int *edx);
--
--	/* MSR, PMC and TSR operations.
--	   err = 0/-EFAULT.  wrmsr returns 0/-EFAULT. */
--	u64 (*read_msr_amd)(unsigned int msr, int *err);
--	u64 (*read_msr)(unsigned int msr, int *err);
--	int (*write_msr)(unsigned int msr, unsigned low, unsigned high);
--
--	u64 (*read_tsc)(void);
--	u64 (*read_pmc)(int counter);
--	unsigned long long (*read_tscp)(unsigned int *aux);
--
--	/*
--	 * Atomically enable interrupts and return to userspace.  This
--	 * is only ever used to return to 32-bit processes; in a
--	 * 64-bit kernel, it's used for 32-on-64 compat processes, but
--	 * never native 64-bit processes.  (Jump, not call.)
--	 */
--	void (*irq_enable_sysexit)(void);
--
--	/*
--	 * Switch to usermode gs and return to 64-bit usermode using
--	 * sysret.  Only used in 64-bit kernels to return to 64-bit
--	 * processes.  Usermode register state, including %rsp, must
--	 * already be restored.
--	 */
--	void (*usergs_sysret64)(void);
--
--	/*
--	 * Switch to usermode gs and return to 32-bit usermode using
--	 * sysret.  Used to return to 32-on-64 compat processes.
--	 * Other usermode register state, including %esp, must already
--	 * be restored.
--	 */
--	void (*usergs_sysret32)(void);
--
--	/* Normal iret.  Jump to this with the standard iret stack
--	   frame set up. */
--	void (*iret)(void);
--
--	void (*swapgs)(void);
--
--	void (*start_context_switch)(struct task_struct *prev);
--	void (*end_context_switch)(struct task_struct *next);
--};
--
--struct pv_irq_ops {
--	void (*init_IRQ)(void);
--
--	/*
--	 * Get/set interrupt state.  save_fl and restore_fl are only
--	 * expected to use X86_EFLAGS_IF; all other bits
--	 * returned from save_fl are undefined, and may be ignored by
--	 * restore_fl.
--	 *
--	 * NOTE: These functions callers expect the callee to preserve
--	 * more registers than the standard C calling convention.
--	 */
--	struct paravirt_callee_save save_fl;
--	struct paravirt_callee_save restore_fl;
--	struct paravirt_callee_save irq_disable;
--	struct paravirt_callee_save irq_enable;
--
--	void (*safe_halt)(void);
--	void (*halt)(void);
--
--#ifdef CONFIG_X86_64
--	void (*adjust_exception_frame)(void);
--#endif
--};
--
--struct pv_apic_ops {
--#ifdef CONFIG_X86_LOCAL_APIC
--	void (*setup_boot_clock)(void);
--	void (*setup_secondary_clock)(void);
--
--	void (*startup_ipi_hook)(int phys_apicid,
--				 unsigned long start_eip,
--				 unsigned long start_esp);
--#endif
--};
--
--struct pv_mmu_ops {
--	/*
--	 * Called before/after init_mm pagetable setup. setup_start
--	 * may reset %cr3, and may pre-install parts of the pagetable;
--	 * pagetable setup is expected to preserve any existing
--	 * mapping.
--	 */
--	void (*pagetable_setup_start)(pgd_t *pgd_base);
--	void (*pagetable_setup_done)(pgd_t *pgd_base);
--
--	unsigned long (*read_cr2)(void);
--	void (*write_cr2)(unsigned long);
--
--	unsigned long (*read_cr3)(void);
--	void (*write_cr3)(unsigned long);
--
--	/*
--	 * Hooks for intercepting the creation/use/destruction of an
--	 * mm_struct.
--	 */
--	void (*activate_mm)(struct mm_struct *prev,
--			    struct mm_struct *next);
--	void (*dup_mmap)(struct mm_struct *oldmm,
--			 struct mm_struct *mm);
--	void (*exit_mmap)(struct mm_struct *mm);
--
--
--	/* TLB operations */
--	void (*flush_tlb_user)(void);
--	void (*flush_tlb_kernel)(void);
--	void (*flush_tlb_single)(unsigned long addr);
--	void (*flush_tlb_others)(const struct cpumask *cpus,
--				 struct mm_struct *mm,
--				 unsigned long va);
--
--	/* Hooks for allocating and freeing a pagetable top-level */
--	int  (*pgd_alloc)(struct mm_struct *mm);
--	void (*pgd_free)(struct mm_struct *mm, pgd_t *pgd);
--
--	/*
--	 * Hooks for allocating/releasing pagetable pages when they're
--	 * attached to a pagetable
--	 */
--	void (*alloc_pte)(struct mm_struct *mm, unsigned long pfn);
--	void (*alloc_pmd)(struct mm_struct *mm, unsigned long pfn);
--	void (*alloc_pmd_clone)(unsigned long pfn, unsigned long clonepfn, unsigned long start, unsigned long count);
--	void (*alloc_pud)(struct mm_struct *mm, unsigned long pfn);
--	void (*release_pte)(unsigned long pfn);
--	void (*release_pmd)(unsigned long pfn);
--	void (*release_pud)(unsigned long pfn);
--
--	/* Pagetable manipulation functions */
--	void (*set_pte)(pte_t *ptep, pte_t pteval);
--	void (*set_pte_at)(struct mm_struct *mm, unsigned long addr,
--			   pte_t *ptep, pte_t pteval);
--	void (*set_pmd)(pmd_t *pmdp, pmd_t pmdval);
--	void (*pte_update)(struct mm_struct *mm, unsigned long addr,
--			   pte_t *ptep);
--	void (*pte_update_defer)(struct mm_struct *mm,
--				 unsigned long addr, pte_t *ptep);
--
--	pte_t (*ptep_modify_prot_start)(struct mm_struct *mm, unsigned long addr,
--					pte_t *ptep);
--	void (*ptep_modify_prot_commit)(struct mm_struct *mm, unsigned long addr,
--					pte_t *ptep, pte_t pte);
--
--	struct paravirt_callee_save pte_val;
--	struct paravirt_callee_save make_pte;
--
--	struct paravirt_callee_save pgd_val;
--	struct paravirt_callee_save make_pgd;
--
--#if PAGETABLE_LEVELS >= 3
--#ifdef CONFIG_X86_PAE
--	void (*set_pte_atomic)(pte_t *ptep, pte_t pteval);
--	void (*pte_clear)(struct mm_struct *mm, unsigned long addr,
--			  pte_t *ptep);
--	void (*pmd_clear)(pmd_t *pmdp);
--
--#endif	/* CONFIG_X86_PAE */
--
--	void (*set_pud)(pud_t *pudp, pud_t pudval);
--
--	struct paravirt_callee_save pmd_val;
--	struct paravirt_callee_save make_pmd;
--
--#if PAGETABLE_LEVELS == 4
--	struct paravirt_callee_save pud_val;
--	struct paravirt_callee_save make_pud;
--
--	void (*set_pgd)(pgd_t *pudp, pgd_t pgdval);
--#endif	/* PAGETABLE_LEVELS == 4 */
--#endif	/* PAGETABLE_LEVELS >= 3 */
--
--#ifdef CONFIG_HIGHPTE
--	void *(*kmap_atomic_pte)(struct page *page, enum km_type type);
--#endif
--
--	struct pv_lazy_ops lazy_mode;
--
--	/* dom0 ops */
--
--	/* Sometimes the physical address is a pfn, and sometimes its
--	   an mfn.  We can tell which is which from the index. */
--	void (*set_fixmap)(unsigned /* enum fixed_addresses */ idx,
--			   phys_addr_t phys, pgprot_t flags);
--};
--
--struct raw_spinlock;
--struct pv_lock_ops {
--	int (*spin_is_locked)(struct raw_spinlock *lock);
--	int (*spin_is_contended)(struct raw_spinlock *lock);
--	void (*spin_lock)(struct raw_spinlock *lock);
--	void (*spin_lock_flags)(struct raw_spinlock *lock, unsigned long flags);
--	int (*spin_trylock)(struct raw_spinlock *lock);
--	void (*spin_unlock)(struct raw_spinlock *lock);
--};
--
--/* This contains all the paravirt structures: we get a convenient
-- * number for each function using the offset which we use to indicate
-- * what to patch. */
--struct paravirt_patch_template {
--	struct pv_init_ops pv_init_ops;
--	struct pv_time_ops pv_time_ops;
--	struct pv_cpu_ops pv_cpu_ops;
--	struct pv_irq_ops pv_irq_ops;
--	struct pv_apic_ops pv_apic_ops;
--	struct pv_mmu_ops pv_mmu_ops;
--	struct pv_lock_ops pv_lock_ops;
--};
--
--extern struct pv_info pv_info;
--extern struct pv_init_ops pv_init_ops;
--extern struct pv_time_ops pv_time_ops;
--extern struct pv_cpu_ops pv_cpu_ops;
--extern struct pv_irq_ops pv_irq_ops;
--extern struct pv_apic_ops pv_apic_ops;
--extern struct pv_mmu_ops pv_mmu_ops;
--extern struct pv_lock_ops pv_lock_ops;
--
--#define PARAVIRT_PATCH(x)					\
--	(offsetof(struct paravirt_patch_template, x) / sizeof(void *))
--
--#define paravirt_type(op)				\
--	[paravirt_typenum] "i" (PARAVIRT_PATCH(op)),	\
--	[paravirt_opptr] "i" (&(op))
--#define paravirt_clobber(clobber)		\
--	[paravirt_clobber] "i" (clobber)
--
--/*
-- * Generate some code, and mark it as patchable by the
-- * apply_paravirt() alternate instruction patcher.
-- */
--#define _paravirt_alt(insn_string, type, clobber)	\
--	"771:\n\t" insn_string "\n" "772:\n"		\
--	".pushsection .parainstructions,\"a\"\n"	\
--	_ASM_ALIGN "\n"					\
--	_ASM_PTR " 771b\n"				\
--	"  .byte " type "\n"				\
--	"  .byte 772b-771b\n"				\
--	"  .short " clobber "\n"			\
--	".popsection\n"
--
--/* Generate patchable code, with the default asm parameters. */
--#define paravirt_alt(insn_string)					\
--	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
--
--/* Simple instruction patching code. */
--#define DEF_NATIVE(ops, name, code) 					\
--	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
--	asm("start_" #ops "_" #name ": " code "; end_" #ops "_" #name ":")
--
--unsigned paravirt_patch_nop(void);
--unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len);
--unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len);
--unsigned paravirt_patch_ignore(unsigned len);
--unsigned paravirt_patch_call(void *insnbuf,
--			     const void *target, u16 tgt_clobbers,
--			     unsigned long addr, u16 site_clobbers,
--			     unsigned len);
--unsigned paravirt_patch_jmp(void *insnbuf, const void *target,
--			    unsigned long addr, unsigned len);
--unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
--				unsigned long addr, unsigned len);
--
--unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
--			      const char *start, const char *end);
--
--unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
--		      unsigned long addr, unsigned len);
--
--int paravirt_disable_iospace(void);
--
--/*
-- * This generates an indirect call based on the operation type number.
-- * The type number, computed in PARAVIRT_PATCH, is derived from the
-- * offset into the paravirt_patch_template structure, and can therefore be
-- * freely converted back into a structure offset.
-- */
--#define PARAVIRT_CALL	"call *%c[paravirt_opptr];"
--
--/*
-- * These macros are intended to wrap calls through one of the paravirt
-- * ops structs, so that they can be later identified and patched at
-- * runtime.
-- *
-- * Normally, a call to a pv_op function is a simple indirect call:
-- * (pv_op_struct.operations)(args...).
-- *
-- * Unfortunately, this is a relatively slow operation for modern CPUs,
-- * because it cannot necessarily determine what the destination
-- * address is.  In this case, the address is a runtime constant, so at
-- * the very least we can patch the call to e a simple direct call, or
-- * ideally, patch an inline implementation into the callsite.  (Direct
-- * calls are essentially free, because the call and return addresses
-- * are completely predictable.)
-- *
-- * For i386, these macros rely on the standard gcc "regparm(3)" calling
-- * convention, in which the first three arguments are placed in %eax,
-- * %edx, %ecx (in that order), and the remaining arguments are placed
-- * on the stack.  All caller-save registers (eax,edx,ecx) are expected
-- * to be modified (either clobbered or used for return values).
-- * X86_64, on the other hand, already specifies a register-based calling
-- * conventions, returning at %rax, with parameteres going on %rdi, %rsi,
-- * %rdx, and %rcx. Note that for this reason, x86_64 does not need any
-- * special handling for dealing with 4 arguments, unlike i386.
-- * However, x86_64 also have to clobber all caller saved registers, which
-- * unfortunately, are quite a bit (r8 - r11)
-- *
-- * The call instruction itself is marked by placing its start address
-- * and size into the .parainstructions section, so that
-- * apply_paravirt() in arch/i386/kernel/alternative.c can do the
-- * appropriate patching under the control of the backend pv_init_ops
-- * implementation.
-- *
-- * Unfortunately there's no way to get gcc to generate the args setup
-- * for the call, and then allow the call itself to be generated by an
-- * inline asm.  Because of this, we must do the complete arg setup and
-- * return value handling from within these macros.  This is fairly
-- * cumbersome.
-- *
-- * There are 5 sets of PVOP_* macros for dealing with 0-4 arguments.
-- * It could be extended to more arguments, but there would be little
-- * to be gained from that.  For each number of arguments, there are
-- * the two VCALL and CALL variants for void and non-void functions.
-- *
-- * When there is a return value, the invoker of the macro must specify
-- * the return type.  The macro then uses sizeof() on that type to
-- * determine whether its a 32 or 64 bit value, and places the return
-- * in the right register(s) (just %eax for 32-bit, and %edx:%eax for
-- * 64-bit). For x86_64 machines, it just returns at %rax regardless of
-- * the return value size.
-- *
-- * 64-bit arguments are passed as a pair of adjacent 32-bit arguments
-- * i386 also passes 64-bit arguments as a pair of adjacent 32-bit arguments
-- * in low,high order
-- *
-- * Small structures are passed and returned in registers.  The macro
-- * calling convention can't directly deal with this, so the wrapper
-- * functions must do this.
-- *
-- * These PVOP_* macros are only defined within this header.  This
-- * means that all uses must be wrapped in inline functions.  This also
-- * makes sure the incoming and outgoing types are always correct.
-- */
--#ifdef CONFIG_X86_32
--#define PVOP_VCALL_ARGS				\
--	unsigned long __eax = __eax, __edx = __edx, __ecx = __ecx
--#define PVOP_CALL_ARGS			PVOP_VCALL_ARGS
--
--#define PVOP_CALL_ARG1(x)		"a" ((unsigned long)(x))
--#define PVOP_CALL_ARG2(x)		"d" ((unsigned long)(x))
--#define PVOP_CALL_ARG3(x)		"c" ((unsigned long)(x))
--
--#define PVOP_VCALL_CLOBBERS		"=a" (__eax), "=d" (__edx),	\
--					"=c" (__ecx)
--#define PVOP_CALL_CLOBBERS		PVOP_VCALL_CLOBBERS
--
--#define PVOP_VCALLEE_CLOBBERS		"=a" (__eax), "=d" (__edx)
--#define PVOP_CALLEE_CLOBBERS		PVOP_VCALLEE_CLOBBERS
--
--#define EXTRA_CLOBBERS
--#define VEXTRA_CLOBBERS
--#else  /* CONFIG_X86_64 */
--#define PVOP_VCALL_ARGS					\
--	unsigned long __edi = __edi, __esi = __esi,	\
--		__edx = __edx, __ecx = __ecx
--#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS, __eax
--
--#define PVOP_CALL_ARG1(x)		"D" ((unsigned long)(x))
--#define PVOP_CALL_ARG2(x)		"S" ((unsigned long)(x))
--#define PVOP_CALL_ARG3(x)		"d" ((unsigned long)(x))
--#define PVOP_CALL_ARG4(x)		"c" ((unsigned long)(x))
--
--#define PVOP_VCALL_CLOBBERS	"=D" (__edi),				\
--				"=S" (__esi), "=d" (__edx),		\
--				"=c" (__ecx)
--#define PVOP_CALL_CLOBBERS	PVOP_VCALL_CLOBBERS, "=a" (__eax)
--
--#define PVOP_VCALLEE_CLOBBERS	"=a" (__eax)
--#define PVOP_CALLEE_CLOBBERS	PVOP_VCALLEE_CLOBBERS
--
--#define EXTRA_CLOBBERS	 , "r8", "r9", "r10", "r11"
--#define VEXTRA_CLOBBERS	 , "rax", "r8", "r9", "r10", "r11"
--#endif	/* CONFIG_X86_32 */
--
--#ifdef CONFIG_PARAVIRT_DEBUG
--#define PVOP_TEST_NULL(op)	BUG_ON(op == NULL)
--#else
--#define PVOP_TEST_NULL(op)	((void)op)
--#endif
--
--#define ____PVOP_CALL(rettype, op, clbr, call_clbr, extra_clbr,		\
--		      pre, post, ...)					\
--	({								\
--		rettype __ret;						\
--		PVOP_CALL_ARGS;						\
--		PVOP_TEST_NULL(op);					\
--		/* This is 32-bit specific, but is okay in 64-bit */	\
--		/* since this condition will never hold */		\
--		if (sizeof(rettype) > sizeof(unsigned long)) {		\
--			asm volatile(pre				\
--				     paravirt_alt(PARAVIRT_CALL)	\
--				     post				\
--				     : call_clbr			\
--				     : paravirt_type(op),		\
--				       paravirt_clobber(clbr),		\
--				       ##__VA_ARGS__			\
--				     : "memory", "cc" extra_clbr);	\
--			__ret = (rettype)((((u64)__edx) << 32) | __eax); \
--		} else {						\
--			asm volatile(pre				\
--				     paravirt_alt(PARAVIRT_CALL)	\
--				     post				\
--				     : call_clbr			\
--				     : paravirt_type(op),		\
--				       paravirt_clobber(clbr),		\
--				       ##__VA_ARGS__			\
--				     : "memory", "cc" extra_clbr);	\
--			__ret = (rettype)__eax;				\
--		}							\
--		__ret;							\
--	})
--
--#define __PVOP_CALL(rettype, op, pre, post, ...)			\
--	____PVOP_CALL(rettype, op, CLBR_ANY, PVOP_CALL_CLOBBERS,	\
--		      EXTRA_CLOBBERS, pre, post, ##__VA_ARGS__)
--
--#define __PVOP_CALLEESAVE(rettype, op, pre, post, ...)			\
--	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
--		      PVOP_CALLEE_CLOBBERS, ,				\
--		      pre, post, ##__VA_ARGS__)
--
--
--#define ____PVOP_VCALL(op, clbr, call_clbr, extra_clbr, pre, post, ...)	\
--	({								\
--		PVOP_VCALL_ARGS;					\
--		PVOP_TEST_NULL(op);					\
--		asm volatile(pre					\
--			     paravirt_alt(PARAVIRT_CALL)		\
--			     post					\
--			     : call_clbr				\
--			     : paravirt_type(op),			\
--			       paravirt_clobber(clbr),			\
--			       ##__VA_ARGS__				\
--			     : "memory", "cc" extra_clbr);		\
--	})
--
--#define __PVOP_VCALL(op, pre, post, ...)				\
--	____PVOP_VCALL(op, CLBR_ANY, PVOP_VCALL_CLOBBERS,		\
--		       VEXTRA_CLOBBERS,					\
--		       pre, post, ##__VA_ARGS__)
--
--#define __PVOP_VCALLEESAVE(rettype, op, pre, post, ...)			\
--	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
--		      PVOP_VCALLEE_CLOBBERS, ,				\
--		      pre, post, ##__VA_ARGS__)
--
--
--
--#define PVOP_CALL0(rettype, op)						\
--	__PVOP_CALL(rettype, op, "", "")
--#define PVOP_VCALL0(op)							\
--	__PVOP_VCALL(op, "", "")
--
--#define PVOP_CALLEE0(rettype, op)					\
--	__PVOP_CALLEESAVE(rettype, op, "", "")
--#define PVOP_VCALLEE0(op)						\
--	__PVOP_VCALLEESAVE(op, "", "")
--
--
--#define PVOP_CALL1(rettype, op, arg1)					\
--	__PVOP_CALL(rettype, op, "", "", PVOP_CALL_ARG1(arg1))
--#define PVOP_VCALL1(op, arg1)						\
--	__PVOP_VCALL(op, "", "", PVOP_CALL_ARG1(arg1))
--
--#define PVOP_CALLEE1(rettype, op, arg1)					\
--	__PVOP_CALLEESAVE(rettype, op, "", "", PVOP_CALL_ARG1(arg1))
--#define PVOP_VCALLEE1(op, arg1)						\
--	__PVOP_VCALLEESAVE(op, "", "", PVOP_CALL_ARG1(arg1))
--
--
--#define PVOP_CALL2(rettype, op, arg1, arg2)				\
--	__PVOP_CALL(rettype, op, "", "", PVOP_CALL_ARG1(arg1),		\
--		    PVOP_CALL_ARG2(arg2))
--#define PVOP_VCALL2(op, arg1, arg2)					\
--	__PVOP_VCALL(op, "", "", PVOP_CALL_ARG1(arg1),			\
--		     PVOP_CALL_ARG2(arg2))
--
--#define PVOP_CALLEE2(rettype, op, arg1, arg2)				\
--	__PVOP_CALLEESAVE(rettype, op, "", "", PVOP_CALL_ARG1(arg1),	\
--			  PVOP_CALL_ARG2(arg2))
--#define PVOP_VCALLEE2(op, arg1, arg2)					\
--	__PVOP_VCALLEESAVE(op, "", "", PVOP_CALL_ARG1(arg1),		\
--			   PVOP_CALL_ARG2(arg2))
--
--
--#define PVOP_CALL3(rettype, op, arg1, arg2, arg3)			\
--	__PVOP_CALL(rettype, op, "", "", PVOP_CALL_ARG1(arg1),		\
--		    PVOP_CALL_ARG2(arg2), PVOP_CALL_ARG3(arg3))
--#define PVOP_VCALL3(op, arg1, arg2, arg3)				\
--	__PVOP_VCALL(op, "", "", PVOP_CALL_ARG1(arg1),			\
--		     PVOP_CALL_ARG2(arg2), PVOP_CALL_ARG3(arg3))
--
--/* This is the only difference in x86_64. We can make it much simpler */
--#ifdef CONFIG_X86_32
--#define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)			\
--	__PVOP_CALL(rettype, op,					\
--		    "push %[_arg4];", "lea 4(%%esp),%%esp;",		\
--		    PVOP_CALL_ARG1(arg1), PVOP_CALL_ARG2(arg2),		\
--		    PVOP_CALL_ARG3(arg3), [_arg4] "mr" ((u32)(arg4)))
--#define PVOP_VCALL4(op, arg1, arg2, arg3, arg4)				\
--	__PVOP_VCALL(op,						\
--		    "push %[_arg4];", "lea 4(%%esp),%%esp;",		\
--		    "0" ((u32)(arg1)), "1" ((u32)(arg2)),		\
--		    "2" ((u32)(arg3)), [_arg4] "mr" ((u32)(arg4)))
--#else
--#define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)			\
--	__PVOP_CALL(rettype, op, "", "",				\
--		    PVOP_CALL_ARG1(arg1), PVOP_CALL_ARG2(arg2),		\
--		    PVOP_CALL_ARG3(arg3), PVOP_CALL_ARG4(arg4))
--#define PVOP_VCALL4(op, arg1, arg2, arg3, arg4)				\
--	__PVOP_VCALL(op, "", "",					\
--		     PVOP_CALL_ARG1(arg1), PVOP_CALL_ARG2(arg2),	\
--		     PVOP_CALL_ARG3(arg3), PVOP_CALL_ARG4(arg4))
--#endif
--
- static inline int paravirt_enabled(void)
- {
- 	return pv_info.paravirt_enabled;
-@@ -1393,20 +717,6 @@ static inline void pmd_clear(pmd_t *pmdp)
- }
- #endif	/* CONFIG_X86_PAE */
- 
--/* Lazy mode for batching updates / context switch */
--enum paravirt_lazy_mode {
--	PARAVIRT_LAZY_NONE,
--	PARAVIRT_LAZY_MMU,
--	PARAVIRT_LAZY_CPU,
--};
--
--enum paravirt_lazy_mode paravirt_get_lazy_mode(void);
--void paravirt_start_context_switch(struct task_struct *prev);
--void paravirt_end_context_switch(struct task_struct *next);
--
--void paravirt_enter_lazy_mmu(void);
--void paravirt_leave_lazy_mmu(void);
--
- #define  __HAVE_ARCH_START_CONTEXT_SWITCH
- static inline void arch_start_context_switch(struct task_struct *prev)
- {
-@@ -1437,12 +747,6 @@ static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
- 	pv_mmu_ops.set_fixmap(idx, phys, flags);
- }
- 
--void _paravirt_nop(void);
--u32 _paravirt_ident_32(u32);
--u64 _paravirt_ident_64(u64);
--
--#define paravirt_nop	((void *)_paravirt_nop)
--
- #ifdef CONFIG_SMP
- 
- static inline int __raw_spin_is_locked(struct raw_spinlock *lock)
-@@ -1479,17 +783,6 @@ static __always_inline void __raw_spin_unlock(struct raw_spinlock *lock)
- 
- #endif
- 
--/* These all sit in the .parainstructions section to tell us what to patch. */
--struct paravirt_patch_site {
--	u8 *instr; 		/* original instructions */
--	u8 instrtype;		/* type of this instruction */
--	u8 len;			/* length of original instruction */
--	u16 clobbers;		/* what registers you may clobber */
--};
--
--extern struct paravirt_patch_site __parainstructions[],
--	__parainstructions_end[];
--
- #ifdef CONFIG_X86_32
- #define PV_SAVE_REGS "pushl %ecx; pushl %edx;"
- #define PV_RESTORE_REGS "popl %edx; popl %ecx;"
-diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
+diff --git a/arch/x86/include/asm/paravirt-trace.h b/arch/x86/include/asm/paravirt-trace.h
 new file mode 100644
-index 0000000..9121aed
+index 0000000..2c72964
 --- /dev/null
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -0,0 +1,718 @@
-+#ifndef _ASM_X86_PARAVIRT_TYPES_H
-+#define _ASM_X86_PARAVIRT_TYPES_H
++++ b/arch/x86/include/asm/paravirt-trace.h
+@@ -0,0 +1,1171 @@
++#if !defined(_ASM_X86_PARAVIRT_TRACE_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _ASM_X86_PARAVIRT_TRACE_H
 +
-+/* Bitmask of what can be clobbered: usually at least eax. */
-+#define CLBR_NONE 0
-+#define CLBR_EAX  (1 << 0)
-+#define CLBR_ECX  (1 << 1)
-+#define CLBR_EDX  (1 << 2)
-+#define CLBR_EDI  (1 << 3)
++#include <linux/tracepoint.h>
++#include <asm/paravirt_types.h>
 +
-+#ifdef CONFIG_X86_32
-+/* CLBR_ANY should match all regs platform has. For i386, that's just it */
-+#define CLBR_ANY  ((1 << 4) - 1)
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM pvops
 +
-+#define CLBR_ARG_REGS	(CLBR_EAX | CLBR_EDX | CLBR_ECX)
-+#define CLBR_RET_REG	(CLBR_EAX | CLBR_EDX)
-+#define CLBR_SCRATCH	(0)
-+#else
-+#define CLBR_RAX  CLBR_EAX
-+#define CLBR_RCX  CLBR_ECX
-+#define CLBR_RDX  CLBR_EDX
-+#define CLBR_RDI  CLBR_EDI
-+#define CLBR_RSI  (1 << 4)
-+#define CLBR_R8   (1 << 5)
-+#define CLBR_R9   (1 << 6)
-+#define CLBR_R10  (1 << 7)
-+#define CLBR_R11  (1 << 8)
++#define TRACE_INCLUDE_FILE	paravirt-trace
++#define TRACE_INCLUDE_PATH	asm
 +
-+#define CLBR_ANY  ((1 << 9) - 1)
-+
-+#define CLBR_ARG_REGS	(CLBR_RDI | CLBR_RSI | CLBR_RDX | \
-+			 CLBR_RCX | CLBR_R8 | CLBR_R9)
-+#define CLBR_RET_REG	(CLBR_RAX)
-+#define CLBR_SCRATCH	(CLBR_R10 | CLBR_R11)
-+
-+#include <asm/desc_defs.h>
-+#endif /* X86_64 */
-+
-+#define CLBR_CALLEE_SAVE ((CLBR_ARG_REGS | CLBR_SCRATCH) & ~CLBR_RET_REG)
-+
-+#ifndef __ASSEMBLY__
-+
-+struct page;
-+struct thread_struct;
-+struct desc_ptr;
 +struct tss_struct;
-+struct mm_struct;
-+struct desc_struct;
-+struct task_struct;
-+struct cpumask;
++struct thread_struct;
 +
-+/*
-+ * Wrapper type for pointers to code which uses the non-standard
-+ * calling convention.  See PV_CALL_SAVE_REGS_THUNK below.
++/* width for %0*x */
++#define HEX_FIELD(type)	((int)sizeof(type) * 2)
++
++/* 
++ * Define tracepoints for all significant pvops.
++ *
++ * Some general rules I used to determine what to record:
++ *  - no global state (lazy modes, etc), since that can be
++ *    derived from tracing
++ *  - record old values where practical, so that updates can be
++ *    self-contained (somewhat contradictory to point 1, but
++ *    could be useful)
++ *  - display pte/pmd/pud/pgds in "cooked" rather than raw form
++ *    (ie, the result of "X_val" rather than the naked bitpattern
++ *    in the X_t type).
 + */
-+struct paravirt_callee_save {
-+	void *func;
-+};
 +
-+/* general info */
-+struct pv_info {
-+	unsigned int kernel_rpl;
-+	int shared_kernel_pmd;
-+	int paravirt_enabled;
-+	const char *name;
-+};
++TRACE_EVENT(load_sp0,
++	    TP_PROTO(struct tss_struct *tss, struct thread_struct *thread),
++	    TP_ARGS(tss, thread),
++	    TP_STRUCT__entry(
++		    __field(struct tss_struct *, tss)
++		    __field(struct thread_struct *, thread)
++		    ),
++	    TP_fast_assign(
++		    __entry->tss = tss;
++		    __entry->thread = thread;
++		    ),
++	    TP_printk("task %p tss = %p",
++		      __entry->thread, __entry->tss)
++	);
 +
-+struct pv_init_ops {
-+	/*
-+	 * Patch may replace one of the defined code sequences with
-+	 * arbitrary code, subject to the same register constraints.
-+	 * This generally means the code is not free to clobber any
-+	 * registers other than EAX.  The patch function should return
-+	 * the number of bytes of code generated, as we nop pad the
-+	 * rest in generic code.
-+	 */
-+	unsigned (*patch)(u8 type, u16 clobber, void *insnbuf,
-+			  unsigned long addr, unsigned len);
++TRACE_EVENT(get_debugreg,
++	    TP_PROTO(int reg, unsigned long val),
++	    TP_ARGS(reg, val),
++	    TP_STRUCT__entry(
++		    __field(int, reg)
++		    __field(unsigned long, val)
++		    ),
++	    TP_fast_assign(
++		    __entry->reg = reg;
++		    __entry->val = val;
++		    ),
++	    TP_printk("reg %d = %lx", __entry->reg, __entry->val)
++	);
 +
-+	/* Basic arch-specific setup */
-+	void (*arch_setup)(void);
-+	char *(*memory_setup)(void);
-+	void (*post_allocator_init)(void);
++TRACE_EVENT(set_debugreg,
++	    TP_PROTO(int reg, unsigned long val),
++	    TP_ARGS(reg, val),
++	    TP_STRUCT__entry(
++		    __field(int, reg)
++		    __field(unsigned long, val)
++		    ),
++	    TP_fast_assign(
++		    __entry->reg = reg;
++		    __entry->val = val;
++		    ),
++	    TP_printk("reg %d = %lx", __entry->reg, __entry->val)
++	);
 +
-+	/* Print a banner to identify the environment */
-+	void (*banner)(void);
-+};
++TRACE_EVENT(clts,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
++
++TRACE_EVENT(read_cr0,
++	    TP_PROTO(unsigned long cr0),
++	    TP_ARGS(cr0),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr0)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr0 = cr0;
++		    ),
++	    TP_printk("%lx", __entry->cr0)
++	);
++
++TRACE_EVENT(write_cr0,
++	    TP_PROTO(unsigned long cr0),
++	    TP_ARGS(cr0),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr0)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr0 = cr0;
++		    ),
++	    TP_printk("%lx", __entry->cr0)
++	);
++
++TRACE_EVENT(read_cr2,
++	    TP_PROTO(unsigned long cr2),
++	    TP_ARGS(cr2),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr2)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr2 = cr2;
++		    ),
++	    TP_printk("%lx", __entry->cr2)
++	);
++
++TRACE_EVENT(write_cr2,
++	    TP_PROTO(unsigned long cr2),
++	    TP_ARGS(cr2),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr2)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr2 = cr2;
++		    ),
++	    TP_printk("%lx", __entry->cr2)
++	);
++
++TRACE_EVENT(read_cr3,
++	    TP_PROTO(unsigned long cr3),
++	    TP_ARGS(cr3),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr3)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr3 = cr3;
++		    ),
++	    TP_printk("%lx", __entry->cr3)
++	);
++
++TRACE_EVENT(write_cr3,
++	    TP_PROTO(unsigned long cr3),
++	    TP_ARGS(cr3),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr3)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr3 = cr3;
++		    ),
++	    TP_printk("%lx", __entry->cr3)
++	);
++
++TRACE_EVENT(write_cr4,
++	    TP_PROTO(unsigned long cr4),
++	    TP_ARGS(cr4),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr4)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr4 = cr4;
++		    ),
++	    TP_printk("%lx", __entry->cr4)
++	);
++
++TRACE_EVENT(read_cr4,
++	    TP_PROTO(unsigned long cr4),
++	    TP_ARGS(cr4),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr4)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr4 = cr4;
++		    ),
++	    TP_printk("%lx", __entry->cr4)
++	);
++
++TRACE_EVENT(write_cr8,
++	    TP_PROTO(unsigned long cr8),
++	    TP_ARGS(cr8),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr8)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr8 = cr8;
++		    ),
++	    TP_printk("%lx", __entry->cr8)
++	);
++
++TRACE_EVENT(read_cr8,
++	    TP_PROTO(unsigned long cr8),
++	    TP_ARGS(cr8),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, cr8)
++		    ),
++	    TP_fast_assign(
++		    __entry->cr8 = cr8;
++		    ),
++	    TP_printk("%lx", __entry->cr8)
++	);
++
++TRACE_EVENT(safe_halt,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
++
++TRACE_EVENT(wbinvd,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
++
++TRACE_EVENT(read_msr,
++	    TP_PROTO(unsigned msr, u64 val),
++	    TP_ARGS(msr, val),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, val)
++		    __field(unsigned, msr)
++		    ),
++	    TP_fast_assign(
++		    __entry->msr = msr;
++		    __entry->val = val;
++		    ),
++	    TP_printk("%x -> %llx", __entry->msr, __entry->val)
++	);
++
++TRACE_EVENT(read_msr_amd,
++	    TP_PROTO(unsigned msr, u64 val),
++	    TP_ARGS(msr, val),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, val)
++		    __field(unsigned, msr)
++		    ),
++	    TP_fast_assign(
++		    __entry->msr = msr;
++		    __entry->val = val;
++		    ),
++	    TP_printk("%x -> %llx", __entry->msr, __entry->val)
++	);
++
++TRACE_EVENT(write_msr,
++	    TP_PROTO(unsigned msr, unsigned low, unsigned high),
++	    TP_ARGS(msr, low, high),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, val)
++		    __field(unsigned, msr)
++		    ),
++	    TP_fast_assign(
++		    __entry->msr = msr;
++		    __entry->val = ((u64)high << 32) | low;
++		    ),
++	    TP_printk("%x -> %llx", __entry->msr, __entry->val)
++	);
++
++TRACE_EVENT(read_tsc,
++	    TP_PROTO(unsigned long long tsc),
++	    TP_ARGS(tsc),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, tsc)
++		    ),
++	    TP_fast_assign(
++		    __entry->tsc = tsc;
++		    ),
++	    TP_printk("%llx", __entry->tsc)
++	);
++
++TRACE_EVENT(sched_clock,
++	    TP_PROTO(unsigned long long clock),
++	    TP_ARGS(clock),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, clock)
++		    ),
++	    TP_fast_assign(
++		    __entry->clock = clock;
++		    ),
++	    TP_printk("%llx", __entry->clock)
++	);
++
++TRACE_EVENT(read_pmc,
++	    TP_PROTO(unsigned pmc, u64 val),
++	    TP_ARGS(pmc, val),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, val)
++		    __field(unsigned, pmc)
++		    ),
++	    TP_fast_assign(
++		    __entry->pmc = pmc;
++		    __entry->val = val;
++		    ),
++	    TP_printk("%x -> %llx", __entry->pmc, __entry->val)
++	);
++
++TRACE_EVENT(read_tscp,
++	    TP_PROTO(unsigned long long tsc, unsigned aux),
++	    TP_ARGS(tsc, aux),
++	    TP_STRUCT__entry(
++		    __field(unsigned long long, tsc)
++		    __field(unsigned, aux)
++		    ),
++	    TP_fast_assign(
++		    __entry->tsc = tsc;
++		    __entry->aux = aux;
++		    ),
++	    TP_printk("tsc:%llx aux:%x", __entry->tsc, __entry->aux)
++	);
++
++TRACE_EVENT(alloc_ldt,
++	    TP_PROTO(struct desc_struct *ldt, unsigned entries),
++	    TP_ARGS(ldt, entries),
++	    TP_STRUCT__entry(
++		    __field(struct desc_struct *, ldt)
++		    __field(unsigned, entries)
++		    ),
++	    TP_fast_assign(
++		    __entry->ldt = ldt;
++		    __entry->entries = entries;
++		    ),
++	    TP_printk("ldt:%p entries:%d",
++		      __entry->ldt, __entry->entries)
++	);
++
++TRACE_EVENT(free_ldt,
++	    TP_PROTO(struct desc_struct *ldt, unsigned entries),
++	    TP_ARGS(ldt, entries),
++	    TP_STRUCT__entry(
++		    __field(struct desc_struct *, ldt)
++		    __field(unsigned, entries)
++		    ),
++	    TP_fast_assign(
++		    __entry->ldt = ldt;
++		    __entry->entries = entries;
++		    ),
++	    TP_printk("ldt:%p entries:%d",
++		      __entry->ldt, __entry->entries)
++	);
++
++TRACE_EVENT(load_TR_desc,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
++
++TRACE_EVENT(load_gdt,
++	    TP_PROTO(const struct desc_ptr *gdt),
++	    TP_ARGS(gdt),
++	    TP_STRUCT__entry(
++		    __field(struct desc_ptr, gdtptr)
++		    ),
++	    TP_fast_assign(
++		    __entry->gdtptr = *gdt;
++		    ),
++	    TP_printk("gdt:%lx size:%d",
++		      __entry->gdtptr.address, __entry->gdtptr.size)
++	);
++
++TRACE_EVENT(load_idt,
++	    TP_PROTO(const struct desc_ptr *idt),
++	    TP_ARGS(idt),
++	    TP_STRUCT__entry(
++		    __field(struct desc_ptr, idtptr)
++		    ),
++	    TP_fast_assign(
++		    __entry->idtptr = *idt;
++		    ),
++	    TP_printk("idt:%lx size:%d",
++		      __entry->idtptr.address, __entry->idtptr.size)
++	);
++
++TRACE_EVENT(set_ldt,
++	    TP_PROTO(const struct desc_struct *ldt, unsigned entries),
++	    TP_ARGS(ldt, entries),
++	    TP_STRUCT__entry(
++		    __field(const struct desc_struct *, ldt)
++		    __field(unsigned, entries)
++		    ),
++	    TP_fast_assign(
++		    __entry->ldt = ldt;
++		    __entry->entries = entries;
++		    ),
++	    TP_printk("ldt:%p entries:%d",
++		      __entry->ldt, __entry->entries)
++	);
++
++TRACE_EVENT(store_gdt,
++	    TP_PROTO(const struct desc_ptr *gdt),
++	    TP_ARGS(gdt),
++	    TP_STRUCT__entry(
++		    __field(struct desc_ptr, gdtptr)
++		    ),
++	    TP_fast_assign(
++		    __entry->gdtptr = *gdt;
++		    ),
++	    TP_printk("gdt:%lx size:%d",
++		      __entry->gdtptr.address, __entry->gdtptr.size)
++	);
++
++TRACE_EVENT(store_idt,
++	    TP_PROTO(const struct desc_ptr *idt),
++	    TP_ARGS(idt),
++	    TP_STRUCT__entry(
++		    __field(struct desc_ptr, idtptr)
++		    ),
++	    TP_fast_assign(
++		    __entry->idtptr = *idt;
++		    ),
++	    TP_printk("idt:%lx size:%d",
++		      __entry->idtptr.address, __entry->idtptr.size)
++	);
++
++TRACE_EVENT(store_tr,
++	    TP_PROTO(unsigned long tr),
++	    TP_ARGS(tr),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, tr)
++		    ),
++	    TP_fast_assign(
++		    __entry->tr = tr;
++		    ),
++	    TP_printk("%lx", __entry->tr)
++	);
++
++TRACE_EVENT(load_TLS,
++	    TP_PROTO(const struct thread_struct *t, unsigned cpu),
++	    TP_ARGS(t, cpu),
++	    TP_STRUCT__entry(
++		    __array(struct desc_struct, tls, GDT_ENTRY_TLS_ENTRIES)
++		    __field(unsigned, cpu)
++		    ),
++	    TP_fast_assign(
++		    memcpy(__entry->tls, t->tls_array, sizeof(__entry->tls));
++		    __entry->cpu = cpu;
++		    ),
++	    TP_printk("cpu:%d", __entry->cpu)
++	);
++
++TRACE_EVENT(load_gs_index,
++	    TP_PROTO(unsigned gs),
++	    TP_ARGS(gs),
++	    TP_STRUCT__entry(
++		    __field(unsigned, gs)
++		    ),
++	    TP_fast_assign(
++		    __entry->gs = gs;
++		    ),
++	    TP_printk("gs:%x", __entry->gs)
++	);
++
++TRACE_EVENT(write_ldt_entry,
++	    TP_PROTO(struct desc_struct *dt, int idx, const void *desc),
++	    TP_ARGS(dt, idx, desc),
++	    TP_STRUCT__entry(
++		    __field(struct desc_struct *, dt)
++		    __field(int, idx)
++		    __field(const void *, desc)
++		    ),
++	    TP_fast_assign(
++		    __entry->dt = dt;
++		    __entry->idx = idx;
++		    __entry->desc = desc;
++		    ),
++	    TP_printk("dt:%p entry:%d desc:%p",
++		      __entry->dt, __entry->idx, __entry->desc)
++	);
++
++TRACE_EVENT(write_gdt_entry,
++	    TP_PROTO(struct desc_struct *dt, int idx, void *desc, int type),
++	    TP_ARGS(dt, idx, desc, type),
++	    TP_STRUCT__entry(
++		    __field(struct desc_struct *, dt)
++		    __field(int, idx)
++		    __field(void *, desc)
++		    __field(int, type)
++		    ),
++	    TP_fast_assign(
++		    __entry->dt = dt;
++		    __entry->idx = idx;
++		    __entry->desc = desc;
++		    __entry->type = type;
++		    ),
++	    TP_printk("dt:%p entry:%d desc:%p type:%d",
++		      __entry->dt, __entry->idx, __entry->desc, __entry->type)
++	);
++
++TRACE_EVENT(write_idt_entry,
++	    TP_PROTO(gate_desc *dt, int idx, const gate_desc *g),
++	    TP_ARGS(dt, idx, g),
++	    TP_STRUCT__entry(
++		    __field(gate_desc *, dt)
++		    __field(int, idx)
++		    __field(const gate_desc *, gate)
++		    ),
++	    TP_fast_assign(
++		    __entry->dt = dt;
++		    __entry->idx = idx;
++		    __entry->gate = g;
++		    ),
++	    TP_printk("dt:%p entry:%d gate:%p",
++		      __entry->dt, __entry->idx, __entry->gate)
++	);
++
++TRACE_EVENT(set_iopl_mask,
++	    TP_PROTO(unsigned mask),
++	    TP_ARGS(mask),
++	    TP_STRUCT__entry(
++		    __field(unsigned, mask)
++		    ),
++	    TP_fast_assign(
++		    __entry->mask = mask;
++		    ),
++	    TP_printk("mask:%x", __entry->mask)
++	);
++
++TRACE_EVENT(activate_mm,
++	    TP_PROTO(struct mm_struct *prev, struct mm_struct *next),
++	    TP_ARGS(prev, next),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, prev)
++		    __field(struct mm_struct *, next)
++		    ),
++	    TP_fast_assign(
++		    __entry->prev = prev;
++		    __entry->next = next;
++		    ),
++	    TP_printk("prev=%p next=%p",
++		      __entry->prev, __entry->next)
++	);
++
++TRACE_EVENT(dup_mmap,
++	    TP_PROTO(struct mm_struct *prev, struct mm_struct *next),
++	    TP_ARGS(prev, next),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, prev)
++		    __field(struct mm_struct *, next)
++		    ),
++	    TP_fast_assign(
++		    __entry->prev = prev;
++		    __entry->next = next;
++		    ),
++	    TP_printk("oldmm=%p mm=%p",
++		      __entry->prev, __entry->next)
++	);
++
++TRACE_EVENT(exit_mmap,
++	    TP_PROTO(struct mm_struct *mm),
++	    TP_ARGS(mm),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    ),
++	    TP_printk("mm=%p", __entry->mm)
++	);
++
++TRACE_EVENT(flush_tlb_user,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
++
++TRACE_EVENT(flush_tlb_kernel,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
++
++TRACE_EVENT(flush_tlb_single,
++	    TP_PROTO(unsigned long addr),
++	    TP_ARGS(addr),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, addr)
++		    ),
++	    TP_fast_assign(
++		    __entry->addr = addr;
++		    ),
++	    TP_printk("addr:%lx", __entry->addr)
++	);
++
++TRACE_EVENT(flush_tlb_others,
++	    TP_PROTO(const struct cpumask *cpumask, struct mm_struct *mm, unsigned long va),
++	    TP_ARGS(cpumask, mm, va),
++	    TP_STRUCT__entry(
++		    __field(struct cpumask, cpumask)
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, va)
++		    ),
++	    TP_fast_assign(
++		    __entry->cpumask = *cpumask;
++		    __entry->mm = mm;
++		    __entry->va = va;
++		    ),
++	    TP_printk("cpumask:<> mm:%p addr:%lx",
++		      __entry->mm, __entry->va)
++	);
++
++TRACE_EVENT(pgd_alloc,
++	    TP_PROTO(struct mm_struct *mm),
++	    TP_ARGS(mm),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(pgd_t *, pgd)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->pgd = mm->pgd;
++		    ),
++	    TP_printk("mm:%p pgd:%p", __entry->mm, __entry->pgd)
++	);
 +
 +
-+struct pv_lazy_ops {
-+	/* Set deferred update mode, used for batching operations. */
-+	void (*enter)(void);
-+	void (*leave)(void);
-+};
++TRACE_EVENT(pgd_free,
++	    TP_PROTO(struct mm_struct *mm, pgd_t *pgd),
++	    TP_ARGS(mm, pgd),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(pgd_t *, pgd)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->pgd = pgd;
++		    ),
++	    TP_printk("mm:%p pgd:%p", __entry->mm, __entry->pgd)
++	);
 +
-+struct pv_time_ops {
-+	void (*time_init)(void);
++TRACE_EVENT(alloc_pte,
++	    TP_PROTO(struct mm_struct *mm, unsigned long pfn),
++	    TP_ARGS(mm, pfn),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, pfn)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->pfn = pfn;
++		    ),
++	    TP_printk("mm:%p pfn:%lx", __entry->mm, __entry->pfn)
++	);
 +
-+	/* Set and set time of day */
-+	unsigned long (*get_wallclock)(void);
-+	int (*set_wallclock)(unsigned long);
++TRACE_EVENT(release_pte,
++	    TP_PROTO(unsigned long pfn),
++	    TP_ARGS(pfn),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, pfn)
++		    ),
++	    TP_fast_assign(
++		    __entry->pfn = pfn;
++		    ),
++	    TP_printk("pfn:%lx", __entry->pfn)
++	);
 +
-+	unsigned long long (*sched_clock)(void);
-+	unsigned long (*get_tsc_khz)(void);
-+};
++TRACE_EVENT(alloc_pmd,
++	    TP_PROTO(struct mm_struct *mm, unsigned long pfn),
++	    TP_ARGS(mm, pfn),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, pfn)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->pfn = pfn;
++		    ),
++	    TP_printk("mm:%p pfn:%lx", __entry->mm, __entry->pfn)
++	);
 +
-+struct pv_cpu_ops {
-+	/* hooks for various privileged instructions */
-+	unsigned long (*get_debugreg)(int regno);
-+	void (*set_debugreg)(int regno, unsigned long value);
++TRACE_EVENT(alloc_pmd_clone,
++	    TP_PROTO(unsigned long pfn, unsigned long clonepfn,
++		     unsigned long start, unsigned long count),
++	    TP_ARGS(pfn, clonepfn, start, count),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, pfn)
++		    __field(unsigned long, clonepfn)
++		    __field(unsigned long, start)
++		    __field(unsigned long, count)
++		    ),
++	    TP_fast_assign(
++		    __entry->pfn = pfn;
++		    __entry->clonepfn = clonepfn;
++		    __entry->start = start;
++		    __entry->count = count;
++		    ),
++	    TP_printk("pfn:%lx clonepfn:%lx start:%lx count:%lx",
++		      __entry->pfn, __entry->clonepfn, __entry->start, __entry->count)
++	);
 +
-+	void (*clts)(void);
++TRACE_EVENT(release_pmd,
++	    TP_PROTO(unsigned long pfn),
++	    TP_ARGS(pfn),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, pfn)
++		    ),
++	    TP_fast_assign(
++		    __entry->pfn = pfn;
++		    ),
++	    TP_printk("pfn:%lx", __entry->pfn)
++	);
 +
-+	unsigned long (*read_cr0)(void);
-+	void (*write_cr0)(unsigned long);
++TRACE_EVENT(alloc_pud,
++	    TP_PROTO(struct mm_struct *mm, unsigned long pfn),
++	    TP_ARGS(mm, pfn),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, pfn)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->pfn = pfn;
++		    ),
++	    TP_printk("mm:%p pfn:%lx", __entry->mm, __entry->pfn)
++	);
 +
-+	unsigned long (*read_cr4_safe)(void);
-+	unsigned long (*read_cr4)(void);
-+	void (*write_cr4)(unsigned long);
++TRACE_EVENT(release_pud,
++	    TP_PROTO(unsigned long pfn),
++	    TP_ARGS(pfn),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, pfn)
++		    ),
++	    TP_fast_assign(
++		    __entry->pfn = pfn;
++		    ),
++	    TP_printk("pfn:%lx", __entry->pfn)
++	);
 +
-+#ifdef CONFIG_X86_64
-+	unsigned long (*read_cr8)(void);
-+	void (*write_cr8)(unsigned long);
-+#endif
++TRACE_EVENT(kmap_atomic_pte,
++	    TP_PROTO(struct page *page, enum km_type type, unsigned long addr),
++	    TP_ARGS(page, type, addr),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, pfn)
++		    __field(unsigned long, addr)
++		    __field(enum km_type, type)
++		    ),
++	    TP_fast_assign(
++		    __entry->pfn = page_to_pfn(page);
++		    __entry->type = type;
++		    __entry->addr = addr;
++		    ),
++	    TP_printk("pfn:%lx type:%d addr:%lx",
++		      __entry->pfn, __entry->type, __entry->addr)
++	);
 +
-+	/* Segment descriptor handling */
-+	void (*load_tr_desc)(void);
-+	void (*load_gdt)(const struct desc_ptr *);
-+	void (*load_idt)(const struct desc_ptr *);
-+	void (*store_gdt)(struct desc_ptr *);
-+	void (*store_idt)(struct desc_ptr *);
-+	void (*set_ldt)(const void *desc, unsigned entries);
-+	unsigned long (*store_tr)(void);
-+	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
-+#ifdef CONFIG_X86_64
-+	void (*load_gs_index)(unsigned int idx);
-+#endif
-+	void (*write_ldt_entry)(struct desc_struct *ldt, int entrynum,
-+				const void *desc);
-+	void (*write_gdt_entry)(struct desc_struct *,
-+				int entrynum, const void *desc, int size);
-+	void (*write_idt_entry)(gate_desc *,
-+				int entrynum, const gate_desc *gate);
-+	void (*alloc_ldt)(struct desc_struct *ldt, unsigned entries);
-+	void (*free_ldt)(struct desc_struct *ldt, unsigned entries);
++TRACE_EVENT(pte_update,
++	    TP_PROTO(struct mm_struct *mm, unsigned long addr, pte_t *ptep),
++	    TP_ARGS(mm, addr, ptep),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, addr)
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, pteval)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->addr = addr;
++		    __entry->ptep = ptep;
++		    __entry->pteval = pte_val_notrace(*ptep);
++		    ),
++	    TP_printk("mm:%p addr:%lx ptep:%p pte:%0*llx",
++		      __entry->mm, __entry->addr, __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pteval)
++	);
 +
-+	void (*load_sp0)(struct tss_struct *tss, struct thread_struct *t);
++TRACE_EVENT(pte_update_defer,
++	    TP_PROTO(struct mm_struct *mm, unsigned long addr, pte_t *ptep),
++	    TP_ARGS(mm, addr, ptep),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, addr)
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, pteval)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->addr = addr;
++		    __entry->ptep = ptep;
++		    __entry->pteval = pte_val_notrace(*ptep);
++		    ),
++	    TP_printk("mm:%p addr:%lx ptep:%p pte:%0*llx",
++		      __entry->mm, __entry->addr, __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pteval)
++	);
 +
-+	void (*set_iopl_mask)(unsigned mask);
++TRACE_EVENT(make_pte,
++	    TP_PROTO(pteval_t pteval, pteval_t pte),
++	    TP_ARGS(pteval, pte),
++	    TP_STRUCT__entry(
++		    __field(pteval_t, pteval)
++		    __field(pteval_t, pte)
++		    ),
++	    TP_fast_assign(
++		    __entry->pteval = pteval;
++		    __entry->pte = pte;
++		    ),
++	    TP_printk("pteval:%0*llx pte:%0*llx",
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pteval,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pte)
++	);
 +
-+	void (*wbinvd)(void);
-+	void (*io_delay)(void);
++TRACE_EVENT(pte_val,
++	    TP_PROTO(pte_t pte, pteval_t pteval),
++	    TP_ARGS(pte, pteval),
++	    TP_STRUCT__entry(
++		    __field(pte_t, pte)
++		    __field(pteval_t, pteval)
++		    ),
++	    TP_fast_assign(
++		    __entry->pte = pte;
++		    __entry->pteval = pteval;
++		    ),
++	    TP_printk("pte:%0*llx pteval:%0*llx",
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pte.pte,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pteval)
++	);
 +
-+	/* cpuid emulation, mostly so that caps bits can be disabled */
-+	void (*cpuid)(unsigned int *eax, unsigned int *ebx,
-+		      unsigned int *ecx, unsigned int *edx);
++TRACE_EVENT(make_pgd,
++	    TP_PROTO(pgdval_t pgdval, pgdval_t pgd),
++	    TP_ARGS(pgdval, pgd),
++	    TP_STRUCT__entry(
++		    __field(pgdval_t, pgdval)
++		    __field(pgdval_t, pgd)
++		    ),
++	    TP_fast_assign(
++		    __entry->pgdval = pgdval;
++		    __entry->pgd = pgd;
++		    ),
++	    TP_printk("pgdval:%0*llx pgd:%0*llx",
++		      HEX_FIELD(pgdval_t), (unsigned long long)__entry->pgdval,
++		      HEX_FIELD(pgdval_t), (unsigned long long)__entry->pgd)
++	);
 +
-+	/* MSR, PMC and TSR operations.
-+	   err = 0/-EFAULT.  wrmsr returns 0/-EFAULT. */
-+	u64 (*read_msr_amd)(unsigned int msr, int *err);
-+	u64 (*read_msr)(unsigned int msr, int *err);
-+	int (*write_msr)(unsigned int msr, unsigned low, unsigned high);
++TRACE_EVENT(pgd_val,
++	    TP_PROTO(pgd_t pgd, pgdval_t pgdval),
++	    TP_ARGS(pgd, pgdval),
++	    TP_STRUCT__entry(
++		    __field(pgd_t, pgd)
++		    __field(pgdval_t, pgdval)
++		    ),
++	    TP_fast_assign(
++		    __entry->pgd = pgd;
++		    __entry->pgdval = pgdval;
++		    ),
++	    TP_printk("pgd:%0*llx pgdval:%0*llx",
++		      HEX_FIELD(pgdval_t), (unsigned long long)__entry->pgd.pgd,
++		      HEX_FIELD(pgdval_t), (unsigned long long)__entry->pgdval)
++	);
 +
-+	u64 (*read_tsc)(void);
-+	u64 (*read_pmc)(int counter);
-+	unsigned long long (*read_tscp)(unsigned int *aux);
++TRACE_EVENT(ptep_modify_prot_start,
++	    TP_PROTO(struct mm_struct *mm, unsigned long addr, pte_t *ptep),
++	    TP_ARGS(mm, addr, ptep),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, addr)
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, pteval)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->addr = addr;
++		    __entry->ptep = ptep;
++		    __entry->pteval = pte_val_notrace(*ptep);
++		    ),
++	    TP_printk("mm:%p addr:%lx ptep:%p pte:%0*llx",
++		      __entry->mm, __entry->addr, __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pteval)
++	);
 +
-+	/*
-+	 * Atomically enable interrupts and return to userspace.  This
-+	 * is only ever used to return to 32-bit processes; in a
-+	 * 64-bit kernel, it's used for 32-on-64 compat processes, but
-+	 * never native 64-bit processes.  (Jump, not call.)
-+	 */
-+	void (*irq_enable_sysexit)(void);
++TRACE_EVENT(ptep_modify_prot_commit,
++	    TP_PROTO(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte),
++	    TP_ARGS(mm, addr, ptep, pte),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, addr)
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, pteval)
++		    __field(pteval_t, newpte)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->addr = addr;
++		    __entry->ptep = ptep;
++		    __entry->pteval = pte_val_notrace(*ptep);
++		    __entry->newpte = pte_val_notrace(pte);
++		    ),
++	    TP_printk("mm:%p addr:%lx ptep:%p pte:%0*llx newpte:%0*llx",
++		      __entry->mm, __entry->addr, __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->pteval,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->newpte)
++	);
 +
-+	/*
-+	 * Switch to usermode gs and return to 64-bit usermode using
-+	 * sysret.  Only used in 64-bit kernels to return to 64-bit
-+	 * processes.  Usermode register state, including %rsp, must
-+	 * already be restored.
-+	 */
-+	void (*usergs_sysret64)(void);
++TRACE_EVENT(set_pte,
++	    TP_PROTO(pte_t *ptep, pte_t pte),
++	    TP_ARGS(ptep, pte),
++	    TP_STRUCT__entry(
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, oldpte)
++		    __field(pteval_t, newpte)
++		    ),
++	    TP_fast_assign(
++		    __entry->ptep = ptep;
++		    __entry->oldpte = pte_val_notrace(*ptep);
++		    __entry->newpte = pte_val_notrace(pte);
++		    ),
++	    TP_printk("ptep:%p oldpte:%0*llx newpte:%0*llx",
++		      __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->oldpte,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->newpte)
++	);
 +
-+	/*
-+	 * Switch to usermode gs and return to 32-bit usermode using
-+	 * sysret.  Used to return to 32-on-64 compat processes.
-+	 * Other usermode register state, including %esp, must already
-+	 * be restored.
-+	 */
-+	void (*usergs_sysret32)(void);
++TRACE_EVENT(set_pte_at,
++	    TP_PROTO(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte),
++	    TP_ARGS(mm, addr, ptep, pte),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, addr)
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, oldpte)
++		    __field(pteval_t, newpte)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->addr = addr;
++		    __entry->ptep = ptep;
++		    __entry->oldpte = pte_val_notrace(*ptep);
++		    __entry->newpte = pte_val_notrace(pte);
++		    ),
++	    TP_printk("mm:%p addr:%lx ptep:%p oldpte:%0*llx newpte:%0*llx",
++		      __entry->mm, __entry->addr, __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->oldpte,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->newpte)
++	);
 +
-+	/* Normal iret.  Jump to this with the standard iret stack
-+	   frame set up. */
-+	void (*iret)(void);
-+
-+	void (*swapgs)(void);
-+
-+	void (*start_context_switch)(struct task_struct *prev);
-+	void (*end_context_switch)(struct task_struct *next);
-+};
-+
-+struct pv_irq_ops {
-+	void (*init_IRQ)(void);
-+
-+	/*
-+	 * Get/set interrupt state.  save_fl and restore_fl are only
-+	 * expected to use X86_EFLAGS_IF; all other bits
-+	 * returned from save_fl are undefined, and may be ignored by
-+	 * restore_fl.
-+	 *
-+	 * NOTE: These functions callers expect the callee to preserve
-+	 * more registers than the standard C calling convention.
-+	 */
-+	struct paravirt_callee_save save_fl;
-+	struct paravirt_callee_save restore_fl;
-+	struct paravirt_callee_save irq_disable;
-+	struct paravirt_callee_save irq_enable;
-+
-+	void (*safe_halt)(void);
-+	void (*halt)(void);
-+
-+#ifdef CONFIG_X86_64
-+	void (*adjust_exception_frame)(void);
-+#endif
-+};
-+
-+struct pv_apic_ops {
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	void (*setup_boot_clock)(void);
-+	void (*setup_secondary_clock)(void);
-+
-+	void (*startup_ipi_hook)(int phys_apicid,
-+				 unsigned long start_eip,
-+				 unsigned long start_esp);
-+#endif
-+};
-+
-+struct pv_mmu_ops {
-+	/*
-+	 * Called before/after init_mm pagetable setup. setup_start
-+	 * may reset %cr3, and may pre-install parts of the pagetable;
-+	 * pagetable setup is expected to preserve any existing
-+	 * mapping.
-+	 */
-+	void (*pagetable_setup_start)(pgd_t *pgd_base);
-+	void (*pagetable_setup_done)(pgd_t *pgd_base);
-+
-+	unsigned long (*read_cr2)(void);
-+	void (*write_cr2)(unsigned long);
-+
-+	unsigned long (*read_cr3)(void);
-+	void (*write_cr3)(unsigned long);
-+
-+	/*
-+	 * Hooks for intercepting the creation/use/destruction of an
-+	 * mm_struct.
-+	 */
-+	void (*activate_mm)(struct mm_struct *prev,
-+			    struct mm_struct *next);
-+	void (*dup_mmap)(struct mm_struct *oldmm,
-+			 struct mm_struct *mm);
-+	void (*exit_mmap)(struct mm_struct *mm);
-+
-+
-+	/* TLB operations */
-+	void (*flush_tlb_user)(void);
-+	void (*flush_tlb_kernel)(void);
-+	void (*flush_tlb_single)(unsigned long addr);
-+	void (*flush_tlb_others)(const struct cpumask *cpus,
-+				 struct mm_struct *mm,
-+				 unsigned long va);
-+
-+	/* Hooks for allocating and freeing a pagetable top-level */
-+	int  (*pgd_alloc)(struct mm_struct *mm);
-+	void (*pgd_free)(struct mm_struct *mm, pgd_t *pgd);
-+
-+	/*
-+	 * Hooks for allocating/releasing pagetable pages when they're
-+	 * attached to a pagetable
-+	 */
-+	void (*alloc_pte)(struct mm_struct *mm, unsigned long pfn);
-+	void (*alloc_pmd)(struct mm_struct *mm, unsigned long pfn);
-+	void (*alloc_pmd_clone)(unsigned long pfn, unsigned long clonepfn, unsigned long start, unsigned long count);
-+	void (*alloc_pud)(struct mm_struct *mm, unsigned long pfn);
-+	void (*release_pte)(unsigned long pfn);
-+	void (*release_pmd)(unsigned long pfn);
-+	void (*release_pud)(unsigned long pfn);
-+
-+	/* Pagetable manipulation functions */
-+	void (*set_pte)(pte_t *ptep, pte_t pteval);
-+	void (*set_pte_at)(struct mm_struct *mm, unsigned long addr,
-+			   pte_t *ptep, pte_t pteval);
-+	void (*set_pmd)(pmd_t *pmdp, pmd_t pmdval);
-+	void (*pte_update)(struct mm_struct *mm, unsigned long addr,
-+			   pte_t *ptep);
-+	void (*pte_update_defer)(struct mm_struct *mm,
-+				 unsigned long addr, pte_t *ptep);
-+
-+	pte_t (*ptep_modify_prot_start)(struct mm_struct *mm, unsigned long addr,
-+					pte_t *ptep);
-+	void (*ptep_modify_prot_commit)(struct mm_struct *mm, unsigned long addr,
-+					pte_t *ptep, pte_t pte);
-+
-+	struct paravirt_callee_save pte_val;
-+	struct paravirt_callee_save make_pte;
-+
-+	struct paravirt_callee_save pgd_val;
-+	struct paravirt_callee_save make_pgd;
++TRACE_EVENT(set_pmd,
++	    TP_PROTO(pmd_t *pmdp, pmd_t pmd),
++	    TP_ARGS(pmdp, pmd),
++	    TP_STRUCT__entry(
++		    __field(pmd_t *, pmdp)
++		    __field(pmdval_t, oldpmd)
++		    __field(pmdval_t, newpmd)
++		    ),
++	    TP_fast_assign(
++		    __entry->pmdp = pmdp;
++		    __entry->oldpmd = pmd_val_notrace(*pmdp);
++		    __entry->newpmd = pmd_val_notrace(pmd);
++		    ),
++	    TP_printk("pmdp:%p oldpmd:%0*llx newpmd:%0*llx",
++		      __entry->pmdp,
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->oldpmd,
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->newpmd)
++	);
 +
 +#if PAGETABLE_LEVELS >= 3
++TRACE_EVENT(make_pmd,
++	    TP_PROTO(pmdval_t pmdval, pmdval_t pmd),
++	    TP_ARGS(pmdval, pmd),
++	    TP_STRUCT__entry(
++		    __field(pmdval_t, pmdval)
++		    __field(pmdval_t, pmd)
++		    ),
++	    TP_fast_assign(
++		    __entry->pmdval = pmdval;
++		    __entry->pmd = pmd;
++		    ),
++	    TP_printk("pmdval:%0*llx pmd:%0*llx",
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->pmdval,
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->pmd)
++	);
++
++TRACE_EVENT(pmd_val,
++	    TP_PROTO(pmd_t pmd, pmdval_t pmdval),
++	    TP_ARGS(pmd, pmdval),
++	    TP_STRUCT__entry(
++		    __field(pmd_t, pmd)
++		    __field(pmdval_t, pmdval)
++		    ),
++	    TP_fast_assign(
++		    __entry->pmd = pmd;
++		    __entry->pmdval = pmdval;
++		    ),
++	    TP_printk("pmd:%0*llx pmdval:%0*llx",
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->pmd.pmd,
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->pmdval)
++	);
++
++TRACE_EVENT(set_pud,
++	    TP_PROTO(pud_t *pudp, pud_t pud),
++	    TP_ARGS(pudp, pud),
++	    TP_STRUCT__entry(
++		    __field(pud_t *, pudp)
++		    __field(pudval_t, oldpud)
++		    __field(pudval_t, newpud)
++		    ),
++	    TP_fast_assign(
++		    __entry->pudp = pudp;
++		    __entry->oldpud = pud_val_notrace(*pudp);
++		    __entry->newpud = pud_val_notrace(pud);
++		    ),
++	    TP_printk("pudp:%p oldpud:%0*llx newpud:%0*llx",
++		      __entry->pudp,
++		      HEX_FIELD(pudval_t), (unsigned long long)__entry->oldpud,
++		      HEX_FIELD(pudval_t), (unsigned long long)__entry->newpud)
++	);
++
++#if PAGETABLE_LEVELS == 4
++
++TRACE_EVENT(make_pud,
++	    TP_PROTO(pudval_t pudval, pudval_t pud),
++	    TP_ARGS(pudval, pud),
++	    TP_STRUCT__entry(
++		    __field(pudval_t, pudval)
++		    __field(pudval_t, pud)
++		    ),
++	    TP_fast_assign(
++		    __entry->pudval = pudval;
++		    __entry->pud = pud;
++		    ),
++	    TP_printk("pudval:%0*llx pud:%0*llx",
++		      HEX_FIELD(pudval_t), (unsigned long long)__entry->pudval,
++		      HEX_FIELD(pudval_t), (unsigned long long)__entry->pud)
++	);
++
++TRACE_EVENT(pud_val,
++	    TP_PROTO(pud_t pud, pudval_t pudval),
++	    TP_ARGS(pud, pudval),
++	    TP_STRUCT__entry(
++		    __field(pud_t, pud)
++		    __field(pudval_t, pudval)
++		    ),
++	    TP_fast_assign(
++		    __entry->pud = pud;
++		    __entry->pudval = pudval;
++		    ),
++	    TP_printk("pud:%0*llx pudval:%0*llx",
++		      HEX_FIELD(pudval_t), (unsigned long long)__entry->pud.pud,
++		      HEX_FIELD(pudval_t), (unsigned long long)__entry->pudval)
++	);
++
++TRACE_EVENT(set_pgd,
++	    TP_PROTO(pgd_t *pgdp, pgd_t pgd),
++	    TP_ARGS(pgdp, pgd),
++	    TP_STRUCT__entry(
++		    __field(pgd_t *, pgdp)
++		    __field(pgdval_t, oldpgd)
++		    __field(pgdval_t, newpgd)
++		    ),
++	    TP_fast_assign(
++		    __entry->pgdp = pgdp;
++		    __entry->oldpgd = pgd_val_notrace(*pgdp);
++		    __entry->newpgd = pgd_val_notrace(pgd);
++		    ),
++	    TP_printk("pgdp:%p oldpgd:%0*llx newpgd:%0*llx",
++		      __entry->pgdp,
++		      HEX_FIELD(pgdval_t), (unsigned long long)__entry->oldpgd,
++		      HEX_FIELD(pgdval_t), (unsigned long long)__entry->newpgd)
++	);
++
++#endif	/* PAGETABLE_LEVELS == 4 */
++
++#endif	/* PAGETABLE_LEVELS >= 3 */
++
 +#ifdef CONFIG_X86_PAE
-+	void (*set_pte_atomic)(pte_t *ptep, pte_t pteval);
-+	void (*pte_clear)(struct mm_struct *mm, unsigned long addr,
-+			  pte_t *ptep);
-+	void (*pmd_clear)(pmd_t *pmdp);
++TRACE_EVENT(set_pte_atomic,
++	    TP_PROTO(pte_t *ptep, pte_t pte),
++	    TP_ARGS(ptep, pte),
++	    TP_STRUCT__entry(
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, oldpte)
++		    __field(pteval_t, newpte)
++		    ),
++	    TP_fast_assign(
++		    __entry->ptep = ptep;
++		    __entry->oldpte = pte_val_notrace(*ptep);
++		    __entry->newpte = pte_val_notrace(pte);
++		    ),
++	    TP_printk("ptep:%p oldpte:%0*llx newpte:%0*llx",
++		      __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->oldpte,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->newpte)
++	);
++
++TRACE_EVENT(pte_clear,
++	    TP_PROTO(struct mm_struct *mm, unsigned long addr, pte_t *ptep),
++	    TP_ARGS(mm, addr, ptep),
++	    TP_STRUCT__entry(
++		    __field(struct mm_struct *, mm)
++		    __field(unsigned long, addr)
++		    __field(pte_t *, ptep)
++		    __field(pteval_t, oldpte)
++		    ),
++	    TP_fast_assign(
++		    __entry->mm = mm;
++		    __entry->addr = addr;
++		    __entry->ptep = ptep;
++		    __entry->oldpte = pte_val_notrace(*ptep);
++		    ),
++	    TP_printk("mm:%p addr:%lx ptep:%p oldpte:%0*llx",
++		      __entry->mm, __entry->addr, __entry->ptep,
++		      HEX_FIELD(pteval_t), (unsigned long long)__entry->oldpte)
++	);
++
++TRACE_EVENT(pmd_clear,
++	    TP_PROTO(pmd_t *pmdp),
++	    TP_ARGS(pmdp),
++	    TP_STRUCT__entry(
++		    __field(pmd_t *, pmdp)
++		    __field(pmdval_t, oldpmd)
++		    ),
++	    TP_fast_assign(
++		    __entry->pmdp = pmdp;
++		    __entry->oldpmd = pmd_val_notrace(*pmdp);
++		    ),
++	    TP_printk("pmdp:%p oldpmd:%0*llx",
++		      __entry->pmdp,
++		      HEX_FIELD(pmdval_t), (unsigned long long)__entry->oldpmd)
++	);
 +
 +#endif	/* CONFIG_X86_PAE */
 +
-+	void (*set_pud)(pud_t *pudp, pud_t pudval);
++TRACE_EVENT(enter_lazy_cpu,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
 +
-+	struct paravirt_callee_save pmd_val;
-+	struct paravirt_callee_save make_pmd;
++TRACE_EVENT(leave_lazy_cpu,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
 +
-+#if PAGETABLE_LEVELS == 4
-+	struct paravirt_callee_save pud_val;
-+	struct paravirt_callee_save make_pud;
++TRACE_EVENT(enter_lazy_mmu,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
 +
-+	void (*set_pgd)(pgd_t *pudp, pgd_t pgdval);
-+#endif	/* PAGETABLE_LEVELS == 4 */
-+#endif	/* PAGETABLE_LEVELS >= 3 */
++TRACE_EVENT(leave_lazy_mmu,
++	    TP_PROTO(int __dummy),
++	    TP_ARGS(__dummy),
++	    ,
++	    ,
++	);
 +
-+#ifdef CONFIG_HIGHPTE
-+	void *(*kmap_atomic_pte)(struct page *page, enum km_type type);
-+#endif
++TRACE_EVENT(set_fixmap,
++	    TP_PROTO(unsigned idx, phys_addr_t phys, pgprot_t flags),
++	    TP_ARGS(idx, phys, flags),
++	    TP_STRUCT__entry(
++		    __field(unsigned, idx)
++		    __field(phys_addr_t, phys)
++		    __field(pgprot_t, flags)
++		    ),
++	    TP_fast_assign(
++		    __entry->idx = idx;
++		    __entry->phys = phys;
++		    __entry->flags = flags;
++		    ),
++	    TP_printk("idx:%d phys:%llx flags:%*llx",
++		      __entry->idx, (unsigned long long)__entry->phys,
++		      HEX_FIELD(pgprotval_t), (unsigned long long)pgprot_val(__entry->flags))
++	);
 +
-+	struct pv_lazy_ops lazy_mode;
++#endif	/* _ASM_X86_PARAVIRT_TRACE_H */
 +
-+	/* dom0 ops */
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index 9fdc5f7..fafb965 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -12,8 +12,10 @@
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ #include <linux/cpumask.h>
 +
-+	/* Sometimes the physical address is a pfn, and sometimes its
-+	   an mfn.  We can tell which is which from the index. */
-+	void (*set_fixmap)(unsigned /* enum fixed_addresses */ idx,
-+			   phys_addr_t phys, pgprot_t flags);
-+};
+ #include <asm/kmap_types.h>
+ #include <asm/desc_defs.h>
++#include <asm/paravirt-trace.h>
+ 
+ static inline int paravirt_enabled(void)
+ {
+@@ -54,87 +56,115 @@ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
+  */
+ static inline unsigned long paravirt_get_debugreg(int reg)
+ {
+-	return PVOP_CALL1(unsigned long, pv_cpu_ops.get_debugreg, reg);
++	unsigned long ret;
 +
-+struct raw_spinlock;
-+struct pv_lock_ops {
-+	int (*spin_is_locked)(struct raw_spinlock *lock);
-+	int (*spin_is_contended)(struct raw_spinlock *lock);
-+	void (*spin_lock)(struct raw_spinlock *lock);
-+	void (*spin_lock_flags)(struct raw_spinlock *lock, unsigned long flags);
-+	int (*spin_trylock)(struct raw_spinlock *lock);
-+	void (*spin_unlock)(struct raw_spinlock *lock);
-+};
++	ret = PVOP_CALL1(unsigned long, pv_cpu_ops.get_debugreg, reg);
 +
-+/* This contains all the paravirt structures: we get a convenient
-+ * number for each function using the offset which we use to indicate
-+ * what to patch. */
-+struct paravirt_patch_template {
-+	struct pv_init_ops pv_init_ops;
-+	struct pv_time_ops pv_time_ops;
-+	struct pv_cpu_ops pv_cpu_ops;
-+	struct pv_irq_ops pv_irq_ops;
-+	struct pv_apic_ops pv_apic_ops;
-+	struct pv_mmu_ops pv_mmu_ops;
-+	struct pv_lock_ops pv_lock_ops;
-+};
++	trace_get_debugreg(reg, ret);
 +
-+extern struct pv_info pv_info;
-+extern struct pv_init_ops pv_init_ops;
-+extern struct pv_time_ops pv_time_ops;
-+extern struct pv_cpu_ops pv_cpu_ops;
-+extern struct pv_irq_ops pv_irq_ops;
-+extern struct pv_apic_ops pv_apic_ops;
-+extern struct pv_mmu_ops pv_mmu_ops;
-+extern struct pv_lock_ops pv_lock_ops;
++	return ret;
+ }
+ #define get_debugreg(var, reg) var = paravirt_get_debugreg(reg)
+ static inline void set_debugreg(unsigned long val, int reg)
+ {
++	trace_set_debugreg(reg, val);
+ 	PVOP_VCALL2(pv_cpu_ops.set_debugreg, reg, val);
+ }
+ 
+ static inline void clts(void)
+ {
++	trace_clts(0);
+ 	PVOP_VCALL0(pv_cpu_ops.clts);
+ }
+ 
+ static inline unsigned long read_cr0(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr0);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr0);
++	trace_read_cr0(ret);
++	return ret;
+ }
+ 
+ static inline void write_cr0(unsigned long x)
+ {
++	trace_write_cr0(x);
+ 	PVOP_VCALL1(pv_cpu_ops.write_cr0, x);
+ }
+ 
+ static inline unsigned long read_cr2(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_mmu_ops.read_cr2);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_mmu_ops.read_cr2);
++	trace_read_cr2(ret);
++	return ret;
+ }
+ 
+ static inline void write_cr2(unsigned long x)
+ {
++	trace_write_cr2(x);
+ 	PVOP_VCALL1(pv_mmu_ops.write_cr2, x);
+ }
+ 
+ static inline unsigned long read_cr3(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_mmu_ops.read_cr3);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_mmu_ops.read_cr3);
++	trace_read_cr3(ret);
++	return ret;
+ }
+ 
+ static inline void write_cr3(unsigned long x)
+ {
++	trace_write_cr3(x);
+ 	PVOP_VCALL1(pv_mmu_ops.write_cr3, x);
+ }
+ 
+ static inline unsigned long read_cr4(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr4);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr4);
++	trace_read_cr4(ret);
++	return ret;
+ }
+ static inline unsigned long read_cr4_safe(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr4_safe);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr4_safe);
++	trace_read_cr4(ret);
++	return ret;
+ }
+ 
+ static inline void write_cr4(unsigned long x)
+ {
++	trace_write_cr4(x);
+ 	PVOP_VCALL1(pv_cpu_ops.write_cr4, x);
+ }
+ 
+ #ifdef CONFIG_X86_64
+ static inline unsigned long read_cr8(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr8);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_cpu_ops.read_cr8);
++	trace_read_cr8(ret);
++	return ret;
+ }
+ 
+ static inline void write_cr8(unsigned long x)
+ {
++	trace_write_cr8(x);
+ 	PVOP_VCALL1(pv_cpu_ops.write_cr8, x);
+ }
+ #endif
+ 
+ static inline void raw_safe_halt(void)
+ {
++	trace_safe_halt(0);
+ 	PVOP_VCALL0(pv_irq_ops.safe_halt);
+ }
+ 
+ static inline void halt(void)
+ {
++	trace_safe_halt(0);
+ 	PVOP_VCALL0(pv_irq_ops.safe_halt);
+ }
+ 
+ static inline void wbinvd(void)
+ {
++	trace_wbinvd(0);
+ 	PVOP_VCALL0(pv_cpu_ops.wbinvd);
+ }
+ 
+@@ -142,14 +172,19 @@ static inline void wbinvd(void)
+ 
+ static inline u64 paravirt_read_msr(unsigned msr, int *err)
+ {
+-	return PVOP_CALL2(u64, pv_cpu_ops.read_msr, msr, err);
++	u64 ret = PVOP_CALL2(u64, pv_cpu_ops.read_msr, msr, err);
++	trace_read_msr(msr, ret);
++	return ret;
+ }
+ static inline u64 paravirt_read_msr_amd(unsigned msr, int *err)
+ {
+-	return PVOP_CALL2(u64, pv_cpu_ops.read_msr_amd, msr, err);
++	u64 ret = PVOP_CALL2(u64, pv_cpu_ops.read_msr_amd, msr, err);
++	trace_read_msr_amd(msr, ret);
++	return ret;
+ }
+ static inline int paravirt_write_msr(unsigned msr, unsigned low, unsigned high)
+ {
++	trace_write_msr(msr, low, high);
+ 	return PVOP_CALL3(int, pv_cpu_ops.write_msr, msr, low, high);
+ }
+ 
+@@ -203,7 +238,9 @@ static inline int rdmsrl_amd_safe(unsigned msr, unsigned long long *p)
+ 
+ static inline u64 paravirt_read_tsc(void)
+ {
+-	return PVOP_CALL0(u64, pv_cpu_ops.read_tsc);
++	u64 ret = PVOP_CALL0(u64, pv_cpu_ops.read_tsc);
++	trace_read_tsc(ret);
++	return ret;
+ }
+ 
+ #define rdtscl(low)				\
+@@ -216,13 +253,17 @@ do {						\
+ 
+ static inline unsigned long long paravirt_sched_clock(void)
+ {
+-	return PVOP_CALL0(unsigned long long, pv_time_ops.sched_clock);
++	unsigned long long ret = PVOP_CALL0(unsigned long long, pv_time_ops.sched_clock);
++	trace_sched_clock(ret);
++	return ret;
+ }
+ #define calibrate_tsc() (pv_time_ops.get_tsc_khz())
+ 
+ static inline unsigned long long paravirt_read_pmc(int counter)
+ {
+-	return PVOP_CALL1(u64, pv_cpu_ops.read_pmc, counter);
++	unsigned long long ret = PVOP_CALL1(u64, pv_cpu_ops.read_pmc, counter);
++	trace_read_tscp(counter, ret);
++	return ret;
+ }
+ 
+ #define rdpmc(counter, low, high)		\
+@@ -234,7 +275,9 @@ do {						\
+ 
+ static inline unsigned long long paravirt_rdtscp(unsigned int *aux)
+ {
+-	return PVOP_CALL1(u64, pv_cpu_ops.read_tscp, aux);
++	unsigned long long ret = PVOP_CALL1(u64, pv_cpu_ops.read_tscp, aux);
++	trace_read_tscp(ret, *aux);
++	return ret;
+ }
+ 
+ #define rdtscp(low, high, aux)				\
+@@ -255,51 +298,63 @@ do {							\
+ 
+ static inline void paravirt_alloc_ldt(struct desc_struct *ldt, unsigned entries)
+ {
++	trace_alloc_ldt(ldt, entries);
+ 	PVOP_VCALL2(pv_cpu_ops.alloc_ldt, ldt, entries);
+ }
+ 
+ static inline void paravirt_free_ldt(struct desc_struct *ldt, unsigned entries)
+ {
++	trace_free_ldt(ldt, entries);
+ 	PVOP_VCALL2(pv_cpu_ops.free_ldt, ldt, entries);
+ }
+ 
+ static inline void load_TR_desc(void)
+ {
++	trace_load_TR_desc(0);
+ 	PVOP_VCALL0(pv_cpu_ops.load_tr_desc);
+ }
+ static inline void load_gdt(const struct desc_ptr *dtr)
+ {
++	trace_load_gdt(dtr);
+ 	PVOP_VCALL1(pv_cpu_ops.load_gdt, dtr);
+ }
+ static inline void load_idt(const struct desc_ptr *dtr)
+ {
++	trace_load_idt(dtr);
+ 	PVOP_VCALL1(pv_cpu_ops.load_idt, dtr);
+ }
+ static inline void set_ldt(const void *addr, unsigned entries)
+ {
++	trace_set_ldt(addr, entries);
+ 	PVOP_VCALL2(pv_cpu_ops.set_ldt, addr, entries);
+ }
+ static inline void store_gdt(struct desc_ptr *dtr)
+ {
+ 	PVOP_VCALL1(pv_cpu_ops.store_gdt, dtr);
++	trace_store_gdt(dtr);
+ }
+ static inline void store_idt(struct desc_ptr *dtr)
+ {
+ 	PVOP_VCALL1(pv_cpu_ops.store_idt, dtr);
++	trace_store_idt(dtr);
+ }
+ static inline unsigned long paravirt_store_tr(void)
+ {
+-	return PVOP_CALL0(unsigned long, pv_cpu_ops.store_tr);
++	unsigned long ret = PVOP_CALL0(unsigned long, pv_cpu_ops.store_tr);
++	trace_store_tr(ret);
++	return ret;
+ }
+ #define store_tr(tr)	((tr) = paravirt_store_tr())
+ static inline void load_TLS(struct thread_struct *t, unsigned cpu)
+ {
++	trace_load_TLS(t, cpu);
+ 	PVOP_VCALL2(pv_cpu_ops.load_tls, t, cpu);
+ }
+ 
+ #ifdef CONFIG_X86_64
+ static inline void load_gs_index(unsigned int gs)
+ {
++	trace_load_gs_index(gs);
+ 	PVOP_VCALL1(pv_cpu_ops.load_gs_index, gs);
+ }
+ #endif
+@@ -307,21 +362,25 @@ static inline void load_gs_index(unsigned int gs)
+ static inline void write_ldt_entry(struct desc_struct *dt, int entry,
+ 				   const void *desc)
+ {
++	trace_write_ldt_entry(dt, entry, desc);
+ 	PVOP_VCALL3(pv_cpu_ops.write_ldt_entry, dt, entry, desc);
+ }
+ 
+ static inline void write_gdt_entry(struct desc_struct *dt, int entry,
+ 				   void *desc, int type)
+ {
++	trace_write_gdt_entry(dt, entry, desc, type);
+ 	PVOP_VCALL4(pv_cpu_ops.write_gdt_entry, dt, entry, desc, type);
+ }
+ 
+ static inline void write_idt_entry(gate_desc *dt, int entry, const gate_desc *g)
+ {
++	trace_write_idt_entry(dt, entry, g);
+ 	PVOP_VCALL3(pv_cpu_ops.write_idt_entry, dt, entry, g);
+ }
+ static inline void set_iopl_mask(unsigned mask)
+ {
++	trace_set_iopl_mask(mask);
+ 	PVOP_VCALL1(pv_cpu_ops.set_iopl_mask, mask);
+ }
+ 
+@@ -376,30 +435,36 @@ static inline void startup_ipi_hook(int phys_apicid, unsigned long start_eip,
+ static inline void paravirt_activate_mm(struct mm_struct *prev,
+ 					struct mm_struct *next)
+ {
++	trace_activate_mm(prev, next);
+ 	PVOP_VCALL2(pv_mmu_ops.activate_mm, prev, next);
+ }
+ 
+ static inline void arch_dup_mmap(struct mm_struct *oldmm,
+ 				 struct mm_struct *mm)
+ {
++	trace_dup_mmap(oldmm, mm);
+ 	PVOP_VCALL2(pv_mmu_ops.dup_mmap, oldmm, mm);
+ }
+ 
+ static inline void arch_exit_mmap(struct mm_struct *mm)
+ {
++	trace_exit_mmap(mm);
+ 	PVOP_VCALL1(pv_mmu_ops.exit_mmap, mm);
+ }
+ 
+ static inline void __flush_tlb(void)
+ {
++	trace_flush_tlb_user(0);
+ 	PVOP_VCALL0(pv_mmu_ops.flush_tlb_user);
+ }
+ static inline void __flush_tlb_global(void)
+ {
++	trace_flush_tlb_kernel(0);
+ 	PVOP_VCALL0(pv_mmu_ops.flush_tlb_kernel);
+ }
+ static inline void __flush_tlb_single(unsigned long addr)
+ {
++	trace_flush_tlb_single(addr);
+ 	PVOP_VCALL1(pv_mmu_ops.flush_tlb_single, addr);
+ }
+ 
+@@ -407,49 +472,60 @@ static inline void flush_tlb_others(const struct cpumask *cpumask,
+ 				    struct mm_struct *mm,
+ 				    unsigned long va)
+ {
++	trace_flush_tlb_others(cpumask, mm, va);	
+ 	PVOP_VCALL3(pv_mmu_ops.flush_tlb_others, cpumask, mm, va);
+ }
+ 
+ static inline int paravirt_pgd_alloc(struct mm_struct *mm)
+ {
+-	return PVOP_CALL1(int, pv_mmu_ops.pgd_alloc, mm);
++	int ret = PVOP_CALL1(int, pv_mmu_ops.pgd_alloc, mm);
++	trace_pgd_alloc(mm);
++	return ret;
+ }
+ 
+ static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
++	trace_pgd_free(mm, pgd);
+ 	PVOP_VCALL2(pv_mmu_ops.pgd_free, mm, pgd);
+ }
+ 
+ static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)
+ {
++	trace_alloc_pte(mm, pfn);
+ 	PVOP_VCALL2(pv_mmu_ops.alloc_pte, mm, pfn);
+ }
+ static inline void paravirt_release_pte(unsigned long pfn)
+ {
++	trace_release_pte(pfn);
+ 	PVOP_VCALL1(pv_mmu_ops.release_pte, pfn);
+ }
+ 
+ static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)
+ {
++	trace_alloc_pmd(mm, pfn);
+ 	PVOP_VCALL2(pv_mmu_ops.alloc_pmd, mm, pfn);
+ }
+ 
+ static inline void paravirt_alloc_pmd_clone(unsigned long pfn, unsigned long clonepfn,
+ 					    unsigned long start, unsigned long count)
+ {
++	trace_alloc_pmd_clone(pfn, clonepfn, start, count);
+ 	PVOP_VCALL4(pv_mmu_ops.alloc_pmd_clone, pfn, clonepfn, start, count);
+ }
+ static inline void paravirt_release_pmd(unsigned long pfn)
+ {
++	trace_release_pmd(pfn);
+ 	PVOP_VCALL1(pv_mmu_ops.release_pmd, pfn);
+ }
+ 
+ static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned long pfn)
+ {
++	trace_alloc_pud(mm, pfn);
+ 	PVOP_VCALL2(pv_mmu_ops.alloc_pud, mm, pfn);
+ }
+ static inline void paravirt_release_pud(unsigned long pfn)
+ {
++	trace_release_pud(pfn);
+ 	PVOP_VCALL1(pv_mmu_ops.release_pud, pfn);
+ }
+ 
+@@ -458,6 +534,7 @@ static inline void *kmap_atomic_pte(struct page *page, enum km_type type)
+ {
+ 	unsigned long ret;
+ 	ret = PVOP_CALL2(unsigned long, pv_mmu_ops.kmap_atomic_pte, page, type);
++	trace_kmap_atomic_pte(page, type, ret);
+ 	return (void *)ret;
+ }
+ #endif
+@@ -465,12 +542,14 @@ static inline void *kmap_atomic_pte(struct page *page, enum km_type type)
+ static inline void pte_update(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep)
+ {
++	trace_pte_update(mm, addr, ptep);
+ 	PVOP_VCALL3(pv_mmu_ops.pte_update, mm, addr, ptep);
+ }
+ 
+ static inline void pte_update_defer(struct mm_struct *mm, unsigned long addr,
+ 				    pte_t *ptep)
+ {
++	trace_pte_update_defer(mm, addr, ptep);
+ 	PVOP_VCALL3(pv_mmu_ops.pte_update_defer, mm, addr, ptep);
+ }
+ 
+@@ -486,11 +565,11 @@ static inline pte_t __pte(pteval_t val)
+ 		ret = PVOP_CALLEE1(pteval_t,
+ 				   pv_mmu_ops.make_pte,
+ 				   val);
+-
++	trace_make_pte(val, ret);
+ 	return (pte_t) { .pte = ret };
+ }
+ 
+-static inline pteval_t pte_val(pte_t pte)
++static inline pteval_t pte_val_notrace(pte_t pte)
+ {
+ 	pteval_t ret;
+ 
+@@ -500,7 +579,13 @@ static inline pteval_t pte_val(pte_t pte)
+ 	else
+ 		ret = PVOP_CALLEE1(pteval_t, pv_mmu_ops.pte_val,
+ 				   pte.pte);
++	return ret;
++}
+ 
++static inline pteval_t pte_val(pte_t pte)
++{
++	pteval_t ret = pte_val_notrace(pte);
++	trace_pte_val(pte, ret);
+ 	return ret;
+ }
+ 
+@@ -514,11 +599,11 @@ static inline pgd_t __pgd(pgdval_t val)
+ 	else
+ 		ret = PVOP_CALLEE1(pgdval_t, pv_mmu_ops.make_pgd,
+ 				   val);
+-
++	trace_make_pgd(val, ret);
+ 	return (pgd_t) { ret };
+ }
+ 
+-static inline pgdval_t pgd_val(pgd_t pgd)
++static inline pgdval_t pgd_val_notrace(pgd_t pgd)
+ {
+ 	pgdval_t ret;
+ 
+@@ -528,7 +613,13 @@ static inline pgdval_t pgd_val(pgd_t pgd)
+ 	else
+ 		ret =  PVOP_CALLEE1(pgdval_t, pv_mmu_ops.pgd_val,
+ 				    pgd.pgd);
++	return ret;
++}
+ 
++static inline pgdval_t pgd_val(pgd_t pgd)
++{
++	pgdval_t ret = pgd_val_notrace(pgd);
++	trace_pgd_val(pgd, ret);
+ 	return ret;
+ }
+ 
+@@ -541,12 +632,14 @@ static inline pte_t ptep_modify_prot_start(struct mm_struct *mm, unsigned long a
+ 	ret = PVOP_CALL3(pteval_t, pv_mmu_ops.ptep_modify_prot_start,
+ 			 mm, addr, ptep);
+ 
++	trace_ptep_modify_prot_start(mm, addr, ptep);
+ 	return (pte_t) { .pte = ret };
+ }
+ 
+ static inline void ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
+ 					   pte_t *ptep, pte_t pte)
+ {
++	trace_ptep_modify_prot_commit(mm, addr, ptep, pte);
+ 	if (sizeof(pteval_t) > sizeof(long))
+ 		/* 5 arg words */
+ 		pv_mmu_ops.ptep_modify_prot_commit(mm, addr, ptep, pte);
+@@ -557,6 +650,7 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm, unsigned long a
+ 
+ static inline void set_pte(pte_t *ptep, pte_t pte)
+ {
++	trace_set_pte(ptep, pte);
+ 	if (sizeof(pteval_t) > sizeof(long))
+ 		PVOP_VCALL3(pv_mmu_ops.set_pte, ptep,
+ 			    pte.pte, (u64)pte.pte >> 32);
+@@ -568,6 +662,7 @@ static inline void set_pte(pte_t *ptep, pte_t pte)
+ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep, pte_t pte)
+ {
++	trace_set_pte_at(mm, addr, ptep, pte);
+ 	if (sizeof(pteval_t) > sizeof(long))
+ 		/* 5 arg words */
+ 		pv_mmu_ops.set_pte_at(mm, addr, ptep, pte);
+@@ -579,6 +674,7 @@ static inline void set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
+ 	pmdval_t val = native_pmd_val(pmd);
+ 
++	trace_set_pmd(pmdp, pmd);
+ 	if (sizeof(pmdval_t) > sizeof(long))
+ 		PVOP_VCALL3(pv_mmu_ops.set_pmd, pmdp, val, (u64)val >> 32);
+ 	else
+@@ -596,11 +692,11 @@ static inline pmd_t __pmd(pmdval_t val)
+ 	else
+ 		ret = PVOP_CALLEE1(pmdval_t, pv_mmu_ops.make_pmd,
+ 				   val);
+-
++	trace_make_pmd(val, ret);
+ 	return (pmd_t) { ret };
+ }
+ 
+-static inline pmdval_t pmd_val(pmd_t pmd)
++static inline pmdval_t pmd_val_notrace(pmd_t pmd)
+ {
+ 	pmdval_t ret;
+ 
+@@ -610,7 +706,13 @@ static inline pmdval_t pmd_val(pmd_t pmd)
+ 	else
+ 		ret =  PVOP_CALLEE1(pmdval_t, pv_mmu_ops.pmd_val,
+ 				    pmd.pmd);
++	return ret;
++}
+ 
++static inline pmdval_t pmd_val(pmd_t pmd)
++{
++	pmdval_t ret = pmd_val_notrace(pmd);
++	trace_pmd_val(pmd, ret);
+ 	return ret;
+ }
+ 
+@@ -618,6 +720,7 @@ static inline void set_pud(pud_t *pudp, pud_t pud)
+ {
+ 	pudval_t val = native_pud_val(pud);
+ 
++	trace_set_pud(pudp, pud);
+ 	if (sizeof(pudval_t) > sizeof(long))
+ 		PVOP_VCALL3(pv_mmu_ops.set_pud, pudp,
+ 			    val, (u64)val >> 32);
+@@ -636,11 +739,11 @@ static inline pud_t __pud(pudval_t val)
+ 	else
+ 		ret = PVOP_CALLEE1(pudval_t, pv_mmu_ops.make_pud,
+ 				   val);
+-
++	trace_make_pud(val, ret);
+ 	return (pud_t) { ret };
+ }
+ 
+-static inline pudval_t pud_val(pud_t pud)
++static inline pudval_t pud_val_notrace(pud_t pud)
+ {
+ 	pudval_t ret;
+ 
+@@ -654,10 +757,18 @@ static inline pudval_t pud_val(pud_t pud)
+ 	return ret;
+ }
+ 
++static inline pudval_t pud_val(pud_t pud)
++{
++	pudval_t ret = pud_val_notrace(pud);
++	trace_pud_val(pud, ret);
++	return ret;
++}
 +
-+#define PARAVIRT_PATCH(x)					\
-+	(offsetof(struct paravirt_patch_template, x) / sizeof(void *))
+ static inline void set_pgd(pgd_t *pgdp, pgd_t pgd)
+ {
+ 	pgdval_t val = native_pgd_val(pgd);
+ 
++	trace_set_pgd(pgdp, pgd);
+ 	if (sizeof(pgdval_t) > sizeof(long))
+ 		PVOP_VCALL3(pv_mmu_ops.set_pgd, pgdp,
+ 			    val, (u64)val >> 32);
+@@ -685,6 +796,7 @@ static inline void pud_clear(pud_t *pudp)
+    64-bit pte atomically */
+ static inline void set_pte_atomic(pte_t *ptep, pte_t pte)
+ {
++	trace_set_pte_atomic(ptep, pte);
+ 	PVOP_VCALL3(pv_mmu_ops.set_pte_atomic, ptep,
+ 		    pte.pte, pte.pte >> 32);
+ }
+@@ -692,11 +804,13 @@ static inline void set_pte_atomic(pte_t *ptep, pte_t pte)
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+ 			     pte_t *ptep)
+ {
++	trace_pte_clear(mm, addr, ptep);
+ 	PVOP_VCALL3(pv_mmu_ops.pte_clear, mm, addr, ptep);
+ }
+ 
+ static inline void pmd_clear(pmd_t *pmdp)
+ {
++	trace_pmd_clear(pmdp);
+ 	PVOP_VCALL1(pv_mmu_ops.pmd_clear, pmdp);
+ }
+ #else  /* !CONFIG_X86_PAE */
+@@ -731,11 +845,13 @@ static inline void arch_end_context_switch(struct task_struct *next)
+ #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+ static inline void arch_enter_lazy_mmu_mode(void)
+ {
++	trace_enter_lazy_mmu(0);
+ 	PVOP_VCALL0(pv_mmu_ops.lazy_mode.enter);
+ }
+ 
+ static inline void arch_leave_lazy_mmu_mode(void)
+ {
++	trace_leave_lazy_mmu(0);
+ 	PVOP_VCALL0(pv_mmu_ops.lazy_mode.leave);
+ }
+ 
+@@ -744,6 +860,7 @@ void arch_flush_lazy_mmu_mode(void);
+ static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
+ 				phys_addr_t phys, pgprot_t flags)
+ {
++	trace_set_fixmap(idx, phys, flags);
+ 	pv_mmu_ops.set_fixmap(idx, phys, flags);
+ }
+ 
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 145cce7..6e69f04 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -11,6 +11,7 @@ ifdef CONFIG_FUNCTION_TRACER
+ CFLAGS_REMOVE_tsc.o = -pg
+ CFLAGS_REMOVE_rtc.o = -pg
+ CFLAGS_REMOVE_paravirt-spinlocks.o = -pg
++CFLAGS_REMOVE_paravirt-trace.o = -pg
+ CFLAGS_REMOVE_ftrace.o = -pg
+ CFLAGS_REMOVE_early_printk.o = -pg
+ endif
+@@ -24,6 +25,7 @@ CFLAGS_vsyscall_64.o	:= $(PROFILING) -g0 $(nostackp)
+ CFLAGS_hpet.o		:= $(nostackp)
+ CFLAGS_tsc.o		:= $(nostackp)
+ CFLAGS_paravirt.o	:= $(nostackp)
++CFLAGS_paravirt-trace.o	:= $(nostackp)
+ 
+ obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
+ obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+@@ -89,7 +91,8 @@ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+ obj-$(CONFIG_KVM_GUEST)		+= kvm.o
+ obj-$(CONFIG_KVM_CLOCK)		+= kvmclock.o
+-obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o paravirt-spinlocks.o
++obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o \
++					paravirt-spinlocks.o paravirt-trace.o
+ obj-$(CONFIG_PARAVIRT_CLOCK)	+= pvclock.o
+ 
+ obj-$(CONFIG_PCSPKR_PLATFORM)	+= pcspeaker.o
+diff --git a/arch/x86/kernel/paravirt-trace.c b/arch/x86/kernel/paravirt-trace.c
+new file mode 100644
+index 0000000..ca0ef16
+--- /dev/null
++++ b/arch/x86/kernel/paravirt-trace.c
+@@ -0,0 +1,16 @@
++#include <linux/rcupdate.h>
++#include <linux/kernel.h>
++#include <linux/slab.h>
 +
-+#define paravirt_type(op)				\
-+	[paravirt_typenum] "i" (PARAVIRT_PATCH(op)),	\
-+	[paravirt_opptr] "i" (&(op))
-+#define paravirt_clobber(clobber)		\
-+	[paravirt_clobber] "i" (clobber)
++#define CREATE_TRACE_POINTS
++#include <asm/paravirt-trace.h>
 +
-+/*
-+ * Generate some code, and mark it as patchable by the
-+ * apply_paravirt() alternate instruction patcher.
-+ */
-+#define _paravirt_alt(insn_string, type, clobber)	\
-+	"771:\n\t" insn_string "\n" "772:\n"		\
-+	".pushsection .parainstructions,\"a\"\n"	\
-+	_ASM_ALIGN "\n"					\
-+	_ASM_PTR " 771b\n"				\
-+	"  .byte " type "\n"				\
-+	"  .byte 772b-771b\n"				\
-+	"  .short " clobber "\n"			\
-+	".popsection\n"
-+
-+/* Generate patchable code, with the default asm parameters. */
-+#define paravirt_alt(insn_string)					\
-+	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
-+
-+/* Simple instruction patching code. */
-+#define DEF_NATIVE(ops, name, code) 					\
-+	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
-+	asm("start_" #ops "_" #name ": " code "; end_" #ops "_" #name ":")
-+
-+unsigned paravirt_patch_nop(void);
-+unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len);
-+unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len);
-+unsigned paravirt_patch_ignore(unsigned len);
-+unsigned paravirt_patch_call(void *insnbuf,
-+			     const void *target, u16 tgt_clobbers,
-+			     unsigned long addr, u16 site_clobbers,
-+			     unsigned len);
-+unsigned paravirt_patch_jmp(void *insnbuf, const void *target,
-+			    unsigned long addr, unsigned len);
-+unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
-+				unsigned long addr, unsigned len);
-+
-+unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
-+			      const char *start, const char *end);
-+
-+unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
-+		      unsigned long addr, unsigned len);
-+
-+int paravirt_disable_iospace(void);
-+
-+/*
-+ * This generates an indirect call based on the operation type number.
-+ * The type number, computed in PARAVIRT_PATCH, is derived from the
-+ * offset into the paravirt_patch_template structure, and can therefore be
-+ * freely converted back into a structure offset.
-+ */
-+#define PARAVIRT_CALL	"call *%c[paravirt_opptr];"
-+
-+/*
-+ * These macros are intended to wrap calls through one of the paravirt
-+ * ops structs, so that they can be later identified and patched at
-+ * runtime.
-+ *
-+ * Normally, a call to a pv_op function is a simple indirect call:
-+ * (pv_op_struct.operations)(args...).
-+ *
-+ * Unfortunately, this is a relatively slow operation for modern CPUs,
-+ * because it cannot necessarily determine what the destination
-+ * address is.  In this case, the address is a runtime constant, so at
-+ * the very least we can patch the call to e a simple direct call, or
-+ * ideally, patch an inline implementation into the callsite.  (Direct
-+ * calls are essentially free, because the call and return addresses
-+ * are completely predictable.)
-+ *
-+ * For i386, these macros rely on the standard gcc "regparm(3)" calling
-+ * convention, in which the first three arguments are placed in %eax,
-+ * %edx, %ecx (in that order), and the remaining arguments are placed
-+ * on the stack.  All caller-save registers (eax,edx,ecx) are expected
-+ * to be modified (either clobbered or used for return values).
-+ * X86_64, on the other hand, already specifies a register-based calling
-+ * conventions, returning at %rax, with parameteres going on %rdi, %rsi,
-+ * %rdx, and %rcx. Note that for this reason, x86_64 does not need any
-+ * special handling for dealing with 4 arguments, unlike i386.
-+ * However, x86_64 also have to clobber all caller saved registers, which
-+ * unfortunately, are quite a bit (r8 - r11)
-+ *
-+ * The call instruction itself is marked by placing its start address
-+ * and size into the .parainstructions section, so that
-+ * apply_paravirt() in arch/i386/kernel/alternative.c can do the
-+ * appropriate patching under the control of the backend pv_init_ops
-+ * implementation.
-+ *
-+ * Unfortunately there's no way to get gcc to generate the args setup
-+ * for the call, and then allow the call itself to be generated by an
-+ * inline asm.  Because of this, we must do the complete arg setup and
-+ * return value handling from within these macros.  This is fairly
-+ * cumbersome.
-+ *
-+ * There are 5 sets of PVOP_* macros for dealing with 0-4 arguments.
-+ * It could be extended to more arguments, but there would be little
-+ * to be gained from that.  For each number of arguments, there are
-+ * the two VCALL and CALL variants for void and non-void functions.
-+ *
-+ * When there is a return value, the invoker of the macro must specify
-+ * the return type.  The macro then uses sizeof() on that type to
-+ * determine whether its a 32 or 64 bit value, and places the return
-+ * in the right register(s) (just %eax for 32-bit, and %edx:%eax for
-+ * 64-bit). For x86_64 machines, it just returns at %rax regardless of
-+ * the return value size.
-+ *
-+ * 64-bit arguments are passed as a pair of adjacent 32-bit arguments
-+ * i386 also passes 64-bit arguments as a pair of adjacent 32-bit arguments
-+ * in low,high order
-+ *
-+ * Small structures are passed and returned in registers.  The macro
-+ * calling convention can't directly deal with this, so the wrapper
-+ * functions must do this.
-+ *
-+ * These PVOP_* macros are only defined within this header.  This
-+ * means that all uses must be wrapped in inline functions.  This also
-+ * makes sure the incoming and outgoing types are always correct.
-+ */
-+#ifdef CONFIG_X86_32
-+#define PVOP_VCALL_ARGS				\
-+	unsigned long __eax = __eax, __edx = __edx, __ecx = __ecx
-+#define PVOP_CALL_ARGS			PVOP_VCALL_ARGS
-+
-+#define PVOP_CALL_ARG1(x)		"a" ((unsigned long)(x))
-+#define PVOP_CALL_ARG2(x)		"d" ((unsigned long)(x))
-+#define PVOP_CALL_ARG3(x)		"c" ((unsigned long)(x))
-+
-+#define PVOP_VCALL_CLOBBERS		"=a" (__eax), "=d" (__edx),	\
-+					"=c" (__ecx)
-+#define PVOP_CALL_CLOBBERS		PVOP_VCALL_CLOBBERS
-+
-+#define PVOP_VCALLEE_CLOBBERS		"=a" (__eax), "=d" (__edx)
-+#define PVOP_CALLEE_CLOBBERS		PVOP_VCALLEE_CLOBBERS
-+
-+#define EXTRA_CLOBBERS
-+#define VEXTRA_CLOBBERS
-+#else  /* CONFIG_X86_64 */
-+#define PVOP_VCALL_ARGS					\
-+	unsigned long __edi = __edi, __esi = __esi,	\
-+		__edx = __edx, __ecx = __ecx
-+#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS, __eax
-+
-+#define PVOP_CALL_ARG1(x)		"D" ((unsigned long)(x))
-+#define PVOP_CALL_ARG2(x)		"S" ((unsigned long)(x))
-+#define PVOP_CALL_ARG3(x)		"d" ((unsigned long)(x))
-+#define PVOP_CALL_ARG4(x)		"c" ((unsigned long)(x))
-+
-+#define PVOP_VCALL_CLOBBERS	"=D" (__edi),				\
-+				"=S" (__esi), "=d" (__edx),		\
-+				"=c" (__ecx)
-+#define PVOP_CALL_CLOBBERS	PVOP_VCALL_CLOBBERS, "=a" (__eax)
-+
-+#define PVOP_VCALLEE_CLOBBERS	"=a" (__eax)
-+#define PVOP_CALLEE_CLOBBERS	PVOP_VCALLEE_CLOBBERS
-+
-+#define EXTRA_CLOBBERS	 , "r8", "r9", "r10", "r11"
-+#define VEXTRA_CLOBBERS	 , "rax", "r8", "r9", "r10", "r11"
-+#endif	/* CONFIG_X86_32 */
-+
-+#ifdef CONFIG_PARAVIRT_DEBUG
-+#define PVOP_TEST_NULL(op)	BUG_ON(op == NULL)
-+#else
-+#define PVOP_TEST_NULL(op)	((void)op)
-+#endif
-+
-+#define ____PVOP_CALL(rettype, op, clbr, call_clbr, extra_clbr,		\
-+		      pre, post, ...)					\
-+	({								\
-+		rettype __ret;						\
-+		PVOP_CALL_ARGS;						\
-+		PVOP_TEST_NULL(op);					\
-+		/* This is 32-bit specific, but is okay in 64-bit */	\
-+		/* since this condition will never hold */		\
-+		if (sizeof(rettype) > sizeof(unsigned long)) {		\
-+			asm volatile(pre				\
-+				     paravirt_alt(PARAVIRT_CALL)	\
-+				     post				\
-+				     : call_clbr			\
-+				     : paravirt_type(op),		\
-+				       paravirt_clobber(clbr),		\
-+				       ##__VA_ARGS__			\
-+				     : "memory", "cc" extra_clbr);	\
-+			__ret = (rettype)((((u64)__edx) << 32) | __eax); \
-+		} else {						\
-+			asm volatile(pre				\
-+				     paravirt_alt(PARAVIRT_CALL)	\
-+				     post				\
-+				     : call_clbr			\
-+				     : paravirt_type(op),		\
-+				       paravirt_clobber(clbr),		\
-+				       ##__VA_ARGS__			\
-+				     : "memory", "cc" extra_clbr);	\
-+			__ret = (rettype)__eax;				\
-+		}							\
-+		__ret;							\
-+	})
-+
-+#define __PVOP_CALL(rettype, op, pre, post, ...)			\
-+	____PVOP_CALL(rettype, op, CLBR_ANY, PVOP_CALL_CLOBBERS,	\
-+		      EXTRA_CLOBBERS, pre, post, ##__VA_ARGS__)
-+
-+#define __PVOP_CALLEESAVE(rettype, op, pre, post, ...)			\
-+	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
-+		      PVOP_CALLEE_CLOBBERS, ,				\
-+		      pre, post, ##__VA_ARGS__)
-+
-+
-+#define ____PVOP_VCALL(op, clbr, call_clbr, extra_clbr, pre, post, ...)	\
-+	({								\
-+		PVOP_VCALL_ARGS;					\
-+		PVOP_TEST_NULL(op);					\
-+		asm volatile(pre					\
-+			     paravirt_alt(PARAVIRT_CALL)		\
-+			     post					\
-+			     : call_clbr				\
-+			     : paravirt_type(op),			\
-+			       paravirt_clobber(clbr),			\
-+			       ##__VA_ARGS__				\
-+			     : "memory", "cc" extra_clbr);		\
-+	})
-+
-+#define __PVOP_VCALL(op, pre, post, ...)				\
-+	____PVOP_VCALL(op, CLBR_ANY, PVOP_VCALL_CLOBBERS,		\
-+		       VEXTRA_CLOBBERS,					\
-+		       pre, post, ##__VA_ARGS__)
-+
-+#define __PVOP_VCALLEESAVE(rettype, op, pre, post, ...)			\
-+	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
-+		      PVOP_VCALLEE_CLOBBERS, ,				\
-+		      pre, post, ##__VA_ARGS__)
-+
-+
-+
-+#define PVOP_CALL0(rettype, op)						\
-+	__PVOP_CALL(rettype, op, "", "")
-+#define PVOP_VCALL0(op)							\
-+	__PVOP_VCALL(op, "", "")
-+
-+#define PVOP_CALLEE0(rettype, op)					\
-+	__PVOP_CALLEESAVE(rettype, op, "", "")
-+#define PVOP_VCALLEE0(op)						\
-+	__PVOP_VCALLEESAVE(op, "", "")
-+
-+
-+#define PVOP_CALL1(rettype, op, arg1)					\
-+	__PVOP_CALL(rettype, op, "", "", PVOP_CALL_ARG1(arg1))
-+#define PVOP_VCALL1(op, arg1)						\
-+	__PVOP_VCALL(op, "", "", PVOP_CALL_ARG1(arg1))
-+
-+#define PVOP_CALLEE1(rettype, op, arg1)					\
-+	__PVOP_CALLEESAVE(rettype, op, "", "", PVOP_CALL_ARG1(arg1))
-+#define PVOP_VCALLEE1(op, arg1)						\
-+	__PVOP_VCALLEESAVE(op, "", "", PVOP_CALL_ARG1(arg1))
-+
-+
-+#define PVOP_CALL2(rettype, op, arg1, arg2)				\
-+	__PVOP_CALL(rettype, op, "", "", PVOP_CALL_ARG1(arg1),		\
-+		    PVOP_CALL_ARG2(arg2))
-+#define PVOP_VCALL2(op, arg1, arg2)					\
-+	__PVOP_VCALL(op, "", "", PVOP_CALL_ARG1(arg1),			\
-+		     PVOP_CALL_ARG2(arg2))
-+
-+#define PVOP_CALLEE2(rettype, op, arg1, arg2)				\
-+	__PVOP_CALLEESAVE(rettype, op, "", "", PVOP_CALL_ARG1(arg1),	\
-+			  PVOP_CALL_ARG2(arg2))
-+#define PVOP_VCALLEE2(op, arg1, arg2)					\
-+	__PVOP_VCALLEESAVE(op, "", "", PVOP_CALL_ARG1(arg1),		\
-+			   PVOP_CALL_ARG2(arg2))
-+
-+
-+#define PVOP_CALL3(rettype, op, arg1, arg2, arg3)			\
-+	__PVOP_CALL(rettype, op, "", "", PVOP_CALL_ARG1(arg1),		\
-+		    PVOP_CALL_ARG2(arg2), PVOP_CALL_ARG3(arg3))
-+#define PVOP_VCALL3(op, arg1, arg2, arg3)				\
-+	__PVOP_VCALL(op, "", "", PVOP_CALL_ARG1(arg1),			\
-+		     PVOP_CALL_ARG2(arg2), PVOP_CALL_ARG3(arg3))
-+
-+/* This is the only difference in x86_64. We can make it much simpler */
-+#ifdef CONFIG_X86_32
-+#define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)			\
-+	__PVOP_CALL(rettype, op,					\
-+		    "push %[_arg4];", "lea 4(%%esp),%%esp;",		\
-+		    PVOP_CALL_ARG1(arg1), PVOP_CALL_ARG2(arg2),		\
-+		    PVOP_CALL_ARG3(arg3), [_arg4] "mr" ((u32)(arg4)))
-+#define PVOP_VCALL4(op, arg1, arg2, arg3, arg4)				\
-+	__PVOP_VCALL(op,						\
-+		    "push %[_arg4];", "lea 4(%%esp),%%esp;",		\
-+		    "0" ((u32)(arg1)), "1" ((u32)(arg2)),		\
-+		    "2" ((u32)(arg3)), [_arg4] "mr" ((u32)(arg4)))
-+#else
-+#define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)			\
-+	__PVOP_CALL(rettype, op, "", "",				\
-+		    PVOP_CALL_ARG1(arg1), PVOP_CALL_ARG2(arg2),		\
-+		    PVOP_CALL_ARG3(arg3), PVOP_CALL_ARG4(arg4))
-+#define PVOP_VCALL4(op, arg1, arg2, arg3, arg4)				\
-+	__PVOP_VCALL(op, "", "",					\
-+		     PVOP_CALL_ARG1(arg1), PVOP_CALL_ARG2(arg2),	\
-+		     PVOP_CALL_ARG3(arg3), PVOP_CALL_ARG4(arg4))
-+#endif
-+
-+/* Lazy mode for batching updates / context switch */
-+enum paravirt_lazy_mode {
-+	PARAVIRT_LAZY_NONE,
-+	PARAVIRT_LAZY_MMU,
-+	PARAVIRT_LAZY_CPU,
-+};
-+
-+enum paravirt_lazy_mode paravirt_get_lazy_mode(void);
-+void paravirt_start_context_switch(struct task_struct *prev);
-+void paravirt_end_context_switch(struct task_struct *next);
-+
-+void paravirt_enter_lazy_mmu(void);
-+void paravirt_leave_lazy_mmu(void);
-+
-+void _paravirt_nop(void);
-+u32 _paravirt_ident_32(u32);
-+u64 _paravirt_ident_64(u64);
-+
-+#define paravirt_nop	((void *)_paravirt_nop)
-+
-+/* These all sit in the .parainstructions section to tell us what to patch. */
-+struct paravirt_patch_site {
-+	u8 *instr; 		/* original instructions */
-+	u8 instrtype;		/* type of this instruction */
-+	u8 len;			/* length of original instruction */
-+	u16 clobbers;		/* what registers you may clobber */
-+};
-+
-+extern struct paravirt_patch_site __parainstructions[],
-+	__parainstructions_end[];
-+
-+#endif	/* __ASSEMBLY__ */
-+
-+#endif	/* _ASM_X86_PARAVIRT_TYPES_H */
++char paravirt_trace_lazy_mode(void)
++{
++	switch (paravirt_get_lazy_mode()) {
++	case PARAVIRT_LAZY_NONE:	return '-';
++	case PARAVIRT_LAZY_MMU:		return 'm';
++	case PARAVIRT_LAZY_CPU:		return 'c';
++	default:			return '?';
++	}
++}
 -- 
 1.6.0.6
 
