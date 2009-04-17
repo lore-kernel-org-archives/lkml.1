@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbZDQQK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761199AbZDQQLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760091AbZDQQK1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbZDQQKM
+	id S1761199AbZDQQLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbZDQQLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:10:12 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:39844 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758974AbZDQQKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:10:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Au4EAG9D6ElMQW1W/2dsb2JhbACBTs5Ag30G
-Date: Fri, 17 Apr 2009 12:10:05 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 1/4] tracing: move __DO_TRACE out of line
-Message-ID: <20090417161005.GA16361@Krystal>
-References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-2-git-send-email-jeremy@goop.org> <20090417154640.GB8253@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 12:11:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55356 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753533AbZDQQLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:11:22 -0400
+Date: Fri, 17 Apr 2009 16:10:38 GMT
+From: tip-bot for Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
+       jeremy.fitzhardinge@citrix.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, jeremy.fitzhardinge@citrix.com,
+       mingo@elte.hu
+In-Reply-To: <1239950139-1119-5-git-send-email-jeremy@goop.org>
+References: <1239950139-1119-5-git-send-email-jeremy@goop.org>
+Subject: [tip:tracing/core] tracing: avoid warnings from zero-arg tracepoints
+Message-ID: <tip-76aa81118ddfbb3dc31533030cf3ec329dd067a6@git.kernel.org>
+Git-Commit-ID: 76aa81118ddfbb3dc31533030cf3ec329dd067a6
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090417154640.GB8253@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:06:49 up 48 days, 12:33,  3 users,  load average: 1.20, 0.78,
-	0.79
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 16:10:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> > 
-> > Mainly simplify linux/tracepoint.h's include dependencies (removes 
-> > rcupdate.h), but it can't help with icache locality, since it 
-> > definitely moves the code out of line, rather than relying on gcc 
-> > to do it.
-> 
-> > --- a/include/linux/tracepoint.h
-> > +++ b/include/linux/tracepoint.h
-> > @@ -15,7 +15,6 @@
-> >   */
-> >  
-> >  #include <linux/types.h>
-> > -#include <linux/rcupdate.h>
-> 
-> nice!
-> 
-> > +#define DEFINE_DO_TRACE(name, proto, args)				\
-> > +	void __do_trace_##name(struct tracepoint *tp, TP_PROTO(proto))	\
-> > +	{								\
-> 
-> that needs to be marked notrace, otherwise the function tracer 
-> becomes noisy. (or even lockupy.)
-> 
+Commit-ID:  76aa81118ddfbb3dc31533030cf3ec329dd067a6
+Gitweb:     http://git.kernel.org/tip/76aa81118ddfbb3dc31533030cf3ec329dd067a6
+Author:     Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+AuthorDate: Thu, 16 Apr 2009 23:35:39 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 17 Apr 2009 17:52:26 +0200
 
-I guess I'll have to put it more clearly : I am all for minimizing
-tracepoint header dependency, but I'll be nacking this kind of
-out-of-lining patch. Taking a function call, and moving it out-of-line
-(thus duplicating the function call for nothing) seems *really*
-pointless and will hurt tracer performance.
+tracing: avoid warnings from zero-arg tracepoints
 
-If thread_info.h is now so big that it needs a cleanup, I guess we'll
-just have to do it.
+Tracepoints with no arguments can issue two warnings:
 
-Mathieu
+	"field" defined by not used
+	"ret" is uninitialized in this function
 
-> 	Ingo
+Mark field as being OK to leave unused, and initialize ret.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+[ Impact: fix false positive compiler warnings. ]
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Cc: mathieu.desnoyers@polymtl.ca
+LKML-Reference: <1239950139-1119-5-git-send-email-jeremy@goop.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/trace/ftrace.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 60c5323..39a3351 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -160,8 +160,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ static int								\
+ ftrace_format_##call(struct trace_seq *s)				\
+ {									\
+-	struct ftrace_raw_##call field;					\
+-	int ret;							\
++	struct ftrace_raw_##call field __attribute__((unused));		\
++	int ret = 0;							\
+ 									\
+ 	tstruct;							\
+ 									\
