@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbZDQPxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbZDQPz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758871AbZDQPxk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 11:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbZDQPxa
+	id S1760148AbZDQPz2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 11:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZDQPzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 11:53:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33662 "EHLO mx2.mail.elte.hu"
+	Fri, 17 Apr 2009 11:55:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42241 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753734AbZDQPx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 11:53:29 -0400
-Date: Fri, 17 Apr 2009 17:53:13 +0200
+	id S1754741AbZDQPzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 11:55:16 -0400
+Date: Fri, 17 Apr 2009 17:55:00 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: mathieu.desnoyers@polymtl.ca, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 4/4] tracing: avoid warnings from zero-arg tracepoints
-Message-ID: <20090417155313.GC8253@elte.hu>
-References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-5-git-send-email-jeremy@goop.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] WIP pvops trace events
+Message-ID: <20090417155500.GD8253@elte.hu>
+References: <1239950374-1252-1-git-send-email-jeremy@goop.org> <20090417084356.GA28417@elte.hu> <49E888EE.6000003@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239950139-1119-5-git-send-email-jeremy@goop.org>
+In-Reply-To: <49E888EE.6000003@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,36 +37,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> 
-> Tracepoints with no arguments can issue two warnings:
-> 	"field" defined by not used
-> 	"ret" is uninitialized in this function
-> 
-> Mark field as being OK to leave unused, and initialize ret.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  include/trace/ftrace.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> Ingo Molnar wrote:
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>   
+>>> This is my series of pvops tracing patches, consisting of:
+>>>
+>>> - Split out asm/paravirt_type.h from asm/paravirt.h, so that
+>>>   trace/events/pvops.h can include the types without getting everything
+>>>   else.
+>>>     
+>>
+>> Ob'sidenote: seems like tracing is driving include file dependency  
+>> cleanups! The law of unintended consequences (of the positive  
+>> variety).
+>
+> The tracing stuff is making the C preprocessor cower and wimper like a  
+> beaten puppy, so we need to do something to help it...
 
-> 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 60c5323..39a3351 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -160,8 +160,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
->  static int								\
->  ftrace_format_##call(struct trace_seq *s)				\
->  {									\
-> -	struct ftrace_raw_##call field;					\
-> -	int ret;							\
-> +	struct ftrace_raw_##call field __attribute__((unused));		\
-> +	int ret = 0;							\
->  									\
->  	tstruct;							\
+'beaten puppy' is not the fitting analogy i believe here.
 
-This looks like a fix we should pick up straight away. I've applied 
-it to tip:tracing/ftrace - Steve is it fine with you too?
+'tortured bastard' might be closer?
 
 	Ingo
