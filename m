@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbZDQVOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZDQVPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761411AbZDQVOn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 17:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759607AbZDQVNV
+	id S1760771AbZDQVPe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZDQVPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 17:13:21 -0400
-Received: from mail-qy0-f126.google.com ([209.85.221.126]:33246 "EHLO
-	mail-qy0-f126.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759601AbZDQVNU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 17:13:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sb1Zh3U+rOgm/EgS/k/Ha39k+lugATqPx3g38ip3uRhBcCPCTmDUgHAtzcLgnSWRHz
-         RHLIdvMmc+ilrpa/7LXOYx3zpdmWCEnaoaLp8Mhz/P0bbLBrPcFrNzYGcjs+2LWHka4i
-         M/AwlMHX1fjDXiH5wQZ4+AH7Db6tsiAypUsfY=
+	Fri, 17 Apr 2009 17:15:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42919 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752982AbZDQVPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 17:15:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #13099] net, sky2: BUG: unable to handle kernel NULL pointer dereference, pci_vpd_truncate()
+Date: Fri, 17 Apr 2009 23:14:49 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Stephen Hemminger <shemminger@vyatta.com>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.Q2.cw85JB@chimera> <20090417004517.GB1988@elte.hu>
+In-Reply-To: <20090417004517.GB1988@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <1239997028.3307.496.camel@calx>
-References: <1239997028.3307.496.camel@calx>
-Date: Fri, 17 Apr 2009 17:13:19 -0400
-X-Google-Sender-Auth: 1709a7cd17d106be
-Message-ID: <7d1d9c250904171413u3cf20247i5513c415bf9c6a5f@mail.gmail.com>
-Subject: Re: [PATCH] Add myself to embedded maintainers
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Linux Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904172314.50380.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 3:37 PM, Matt Mackall <mpm@selenic.com> wrote:
-> Impact: make more work for myself
+On Friday 17 April 2009, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.29.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13099
+> > Subject		: net, sky2: BUG: unable to handle kernel NULL pointer dereference, pci_vpd_truncate()
+> > Submitter	: Ingo Molnar <mingo@elte.hu>
+> > Date		: 2009-04-06 9:03 (11 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123900867611321&w=4
+> > Handled-By	: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> I think this can be closed as the fix has been merged upstream 
+> already (via the PCI tree):
+> 
+>  commit d407e32efe060afa2b9a797a91376ebc65b4ce11
+>  Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+>  Date:   Wed Apr 1 02:23:41 2009 +0400
+> 
+>     PCI: Fix oops in pci_vpd_truncate
 
-I don't think "Impact:" has been outlawed just quite yet...  :-)
+Thanks, closed.
 
->
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
-
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-
->
-> diff -r 8e0f1cee0a71 MAINTAINERS
-> --- a/MAINTAINERS       Sat Jan 24 15:41:13 2009 -0600
-> +++ b/MAINTAINERS       Fri Apr 17 14:12:07 2009 -0500
-> @@ -1627,6 +1627,8 @@
->  EMBEDDED LINUX
->  P:     Paul Gortmaker
->  M:     paul.gortmaker@windriver.com
-> +P:     Matt Mackall
-> +M:     mpm@selenic.com
->  P:     David Woodhouse
->  M:     dwmw2@infradead.org
->  L:     linux-embedded@vger.kernel.org
->
->
-> --
-> http://selenic.com : development and support for Mercurial and Linux
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Rafael
