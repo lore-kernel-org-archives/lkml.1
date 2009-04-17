@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbZDQIqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbZDQIui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760242AbZDQIqf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 04:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZDQIq1
+	id S1758543AbZDQIui (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 04:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZDQIu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 04:46:27 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:61148 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755579AbZDQIqZ (ORCPT
+	Fri, 17 Apr 2009 04:50:29 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50518 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753050AbZDQIu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 04:46:25 -0400
-Subject: Re: C/R without "leaks" (was: Re: Creating tasks on restart:
- userspace vs kernel)
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090416161215.GA8505@x200.localdomain>
-References: <49E40662.2040508@cs.columbia.edu>
-	 <20090414163633.GE27461@x200.localdomain>
-	 <49E4D89D.9060903@cs.columbia.edu>
-	 <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia>
-	 <20090416161215.GA8505@x200.localdomain>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 10:46:14 +0200
-Message-Id: <1239957974.6143.36.camel@bahia>
+	Fri, 17 Apr 2009 04:50:28 -0400
+Date: Fri, 17 Apr 2009 17:48:54 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, yoshikawa.takuya@oss.ntt.co.jp,
+       righi.andrea@gmail.com, menage@google.com, balbir@linux.vnet.ibm.com,
+       guijianfeng@cn.fujitsu.com, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-Id: <20090417174854.07aeec9f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090417170016.5c7268f1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
+	<49E7E037.9080004@oss.ntt.co.jp>
+	<20090417112433.085ed604.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417.162201.183038478.ryov@valinux.co.jp>
+	<20090417170016.5c7268f1.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-16 at 20:12 +0400, Alexey Dobriyan wrote:
-> On Thu, Apr 16, 2009 at 12:42:17AM +0200, Greg Kurz wrote:
-> > On Wed, 2009-04-15 at 23:56 +0400, Alexey Dobriyan wrote:
+On Fri, 17 Apr 2009 17:00:16 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Fri, 17 Apr 2009 16:22:01 +0900 (JST)
+> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 > 
-> > > There are sockets and live netns as the most complex example. I'm not
-> > > prepared to describe it exactly, but people wishing to do C/R with
-> > > "leaks" should be very careful with their wishes.
+> > In the case where the bio-cgroup data is allocated dynamically,
+> >    - Sometimes quite a large amount of memory get marked dirty.
+> >      In this case it requires more kernel memory than that of the
+> >      current implementation.
+> >    - The operation is expansive due to memory allocations and exclusive
+> >      controls by such as spinlocks.
 > > 
-> > They should close their sockets before checkpoint and find/have some way
-> > to reconnect after. This implies some kind of C/R awareness in the code
-> > to be checkpointed.
+> > In the case where the bio-cgroup data is allocated by delayed allocation, 
+> >   - It makes the operation complicated and expensive, because
+> >     sometimes a bio has to be created in the context of other
+> >     processes, such as aio and swap-out operation.
+> > 
+> > I'd prefer a simple and lightweight implementation. bio-cgroup only
+> > needs 4bytes unlike memory controller. The reason why bio-cgroup chose
+> > this approach is to minimize the overhead.
+> > 
+> My point is, plz do your best to reduce memory usage here. You increase
+> size of page_cgroup just because you cannot increase size of struct page.
+> It's not be sane reason to increase size of this object.
+> It's a cheat in my point of view.
 > 
-> How do you imagine sshd closing sockets and reconnecting?
 
-Dunno and it isn't really my concern... I'm interested in HPC jobs that
-can collaborate with the C/R feature. For examples, those jobs that use
-interconnect hardware that will never be *checkpointable*... Usually,
-the batch manager tells the jobs it's going to be checkpointed, so that
-it can disconnect/shrink memory/reach quiescent point, and reconnect
-after resuming execution.
+Can't this work sanely ?
+Hmm, endian is obstacle ?
+==
+	sturct page_cgroup {
+		union {
+			struct {
+				unsigned long memcg_field:16;
+				unsigned long blockio_field:16;
+			} field;
+			unsigned long flags; /* unsigned long is not 32bits */
+		} flags;
+	}
+==
 
-I understand you aim at supporting transparent C/R of connected TCP
-sockets. Nice feature. Could you give use cases where it's *really*
-helpful/needed/mandatory ?
+Thanks,
+-Kame
 
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
 
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
+
+
 
