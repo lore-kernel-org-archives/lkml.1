@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZDQICA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZDQIE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZDQICA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 04:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZDQIBv
+	id S1756728AbZDQIE1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 04:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZDQIEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 04:01:51 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42994 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400AbZDQIBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 04:01:50 -0400
-Date: Fri, 17 Apr 2009 17:00:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: yoshikawa.takuya@oss.ntt.co.jp, righi.andrea@gmail.com, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-Message-Id: <20090417170016.5c7268f1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090417.162201.183038478.ryov@valinux.co.jp>
-References: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
-	<49E7E037.9080004@oss.ntt.co.jp>
-	<20090417112433.085ed604.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417.162201.183038478.ryov@valinux.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 04:04:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54870 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752662AbZDQIEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 04:04:01 -0400
+Message-ID: <49E837EC.5000202@redhat.com>
+Date: Fri, 17 Apr 2009 10:03:56 +0200
+From: Jerome Marchand <jmarchan@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: simplify I/O stat accounting
+References: <49E72F19.1030400@redhat.com> <20090416163456.GR5178@kernel.dk> <20090416163728.GS5178@kernel.dk> <20090416163831.GT5178@kernel.dk> <20090416164253.GU5178@kernel.dk>
+In-Reply-To: <20090416164253.GU5178@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 16:22:01 +0900 (JST)
-Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-
-> In the case where the bio-cgroup data is allocated dynamically,
->    - Sometimes quite a large amount of memory get marked dirty.
->      In this case it requires more kernel memory than that of the
->      current implementation.
->    - The operation is expansive due to memory allocations and exclusive
->      controls by such as spinlocks.
+Jens Axboe wrote:
+> On Thu, Apr 16 2009, Jens Axboe wrote:
+>> On Thu, Apr 16 2009, Jens Axboe wrote:
+>>> On Thu, Apr 16 2009, Jens Axboe wrote:
+>>>> On Thu, Apr 16 2009, Jerome Marchand wrote:
+>>>>> This simplifies I/O stat accounting switching code and separates it
+>>>>> completely from I/O scheduler switch code.
+>>>>>
+>>>>> Requests are accounted according to the state of their request queue
+>>>>> at the time of the request allocation. There is no need anymore to
+>>>>> flush the request queue when switching I/O accounting state.
+>>>> This is cleaner, I like it. I'll apply it, but I'm changing this one:
+>>>>
+>>>>> @@ -792,9 +792,10 @@ static struct request *get_request(struct
+>>>>> request_queue *q, int rw_flags,
+>>>>>  	if (priv)
+>>>>>  		rl->elvpriv++;
+>>>>>
+>>>>> +	iostat = blk_queue_io_stat(q) ? REQ_IO_STAT : 0;
+>>>>>  	spin_unlock_irq(q->queue_lock);
+>>>> to a regular if, I hate these ?: constructs. An if is much more
+>>>> readable, imho.
+>>> Grmbl, your patch is line wrapped. Please fix your mailer.
+>> And it doesn't apply to current -git. Looks like a hand apply, but
+>> please be a little more careful in the future.
 > 
-> In the case where the bio-cgroup data is allocated by delayed allocation, 
->   - It makes the operation complicated and expensive, because
->     sometimes a bio has to be created in the context of other
->     processes, such as aio and swap-out operation.
+> OK, it doesn't even compile either:
 > 
-> I'd prefer a simple and lightweight implementation. bio-cgroup only
-> needs 4bytes unlike memory controller. The reason why bio-cgroup chose
-> this approach is to minimize the overhead.
+> +#define blk_rq_io_stat(rq)     ((rq)->flags & REQ_IO_STAT)
 > 
-My point is, plz do your best to reduce memory usage here. You increase
-size of page_cgroup just because you cannot increase size of struct page.
-It's not be sane reason to increase size of this object.
-It's a cheat in my point of view.
+> that wants to be ->cmd_flags.
+> 
+> Please resend when you have something that at least compiles. If you
+> send untested stuff my way, at least tell me.
+> 
 
+Hi Jens,
 
-Thanks,
--Kame
+I'm very sorry about this. I didn't send you a patch which does not
+compiles on purpose. I was working on backporting that patch on an older
+version of the kernel. It looks like I hand-edited that patch by mistake
+before I sent it to you.
 
+Jérôme
