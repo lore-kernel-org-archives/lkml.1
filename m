@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbZDQIRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZDQI3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758987AbZDQIRl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 04:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZDQIRZ
+	id S1756031AbZDQI3N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 04:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZDQI3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 04:17:25 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:29622 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754066AbZDQIRY (ORCPT
+	Fri, 17 Apr 2009 04:29:00 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:37644 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756746AbZDQI26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 04:17:24 -0400
+	Fri, 17 Apr 2009 04:28:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=CXliKwIzfIDZM/HKk1YpPhe73Un+Re9NJeEBV3TGwIFo86wZUabZ4WMo04fTM/H1Jc
-         LfX2/g1uHC7pXVuN9486G4/Ro2qaLGYs+38IQN49tc4LpQOcCw7UUwDKf0fqHz/3kmpi
-         3sn1UI93LFbVWloysoa5h0KbrSxEKL/kr5/kk=
-Date: Fri, 17 Apr 2009 16:18:23 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Renzo Davoli <renzo@cs.unibo.it>, linux-kernel@vger.kernel.org,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090417081823.GA31897@hack>
-References: <20090204080236.GA17452@cs.unibo.it> <20090310214436.GC5213@cs.unibo.it> <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it> <20090329163228.GE7671@hack> <20090404101708.GG4203@cs.unibo.it> <20090407173646.GL12226@hack> <20090408121851.GE24173@cs.unibo.it> <20090413163603.GG2391@hack>
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=j4Q7mv2bVM0N9QDkqPm3ouliYekFvhtbNRhkrO/bNG8Y9YpMZ6QM0sKKGZTC6VN/qo
+         HtPzYzTi5E6E/aPdp2LvsQlHLeRyf/JDxg6Qr2a6ENTGWtWO3DxNvajX86ZaKPs7KKh+
+         xWg0T2sjAMpuK3BwEeIZh0+fx1Vkm9bpYn0GE=
+Message-ID: <49E83DC4.8040207@tuffmail.co.uk>
+Date: Fri, 17 Apr 2009 09:28:52 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090413163603.GG2391@hack>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #13058] First hibernation attempt fails
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090417063007.GB4593@kernel.dk>
+In-Reply-To: <20090417063007.GB4593@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 14, 2009 at 12:36:03AM +0800, Américo Wang wrote:
->Anyway, I will test your patch tomorrow, and will send you more
->feedbacks soon.
+Jens Axboe wrote:
+> On Thu, Apr 16 2009, Rafael J. Wysocki wrote:
+>   
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.29.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13058
+>> Subject		: First hibernation attempt fails
+>> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+>> Date		: 2009-04-10 10:58 (7 days old)
+>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1faa16d22877f4839bd433547d770c676d1d964c
+>> References	: http://marc.info/?l=linux-kernel&m=123928022321917&w=2
+>>     
 >
+> Alan, is this still a problem?
+>   
 
-Sorry for the delay.
-
-I applied your 2 patches to linus-tree, compile and run, when I run
-the same UML binary inside UML, I got:
-
-Locating the bottom of the address space ... do_syscall_stub : ret =
--13, offset = 1052680, data = 0a98a008
-do_syscall_stub: syscall 192 failed, return value = 0xfffffff3,
-expected return value = 0x0
- syscall parameters: 0x0 0x1000 0x7 0x11 0x3 0x19c0
-Failed to flush page for address 0x0
-Killed
-
-I don't have enough time to dig this, would like to have a look at it?
-
-Thanks.
-
--- 
-Live like a child, think like the god.
- 
+Yup.  Still present in v2.6.30-rc2-195-g9f76208.
