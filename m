@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbZDQMyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbZDQM5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760762AbZDQMyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 08:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZDQMyJ
+	id S1760731AbZDQM5f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 08:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZDQM50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 08:54:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46049 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753544AbZDQMyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 08:54:08 -0400
-Date: Fri, 17 Apr 2009 14:53:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, mathieu.desnoyers@polymtl.ca,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 3/4] tracing: pass proto and args to DEFINE_TRACE
-Message-ID: <20090417125338.GA24283@elte.hu>
-References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-4-git-send-email-jeremy@goop.org> <20090417064820.GA20685@infradead.org> <49E828B0.90402@goop.org> <20090417070513.GA24860@infradead.org>
-MIME-Version: 1.0
+	Fri, 17 Apr 2009 08:57:26 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59328 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753264AbZDQM50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 08:57:26 -0400
+Date: Fri, 17 Apr 2009 15:00:30 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH] [14/28] x86: MCE: Add MSR read wrappers for easier error injection
+Message-ID: <20090417130030.GK14687@one.firstfloor.org>
+References: <20090407507.636692542@firstfloor.org> <20090407150756.23F221D046E@basil.firstfloor.org> <49E866C7.4080707@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090417070513.GA24860@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49E866C7.4080707@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 17, 2009 at 08:23:51PM +0900, Hidetoshi Seto wrote:
+> Andi Kleen wrote:
+> > This will be used by future patches to allow machine check error injection.
+> > Right now it's a nop, except for adding some wrappers around the MSR reads.
+> > 
+> > This is early in the sequence to avoid too many conflicts.
+> > 
+> > Andi Kleen <ak@linux.intel.com>
+> > 
+> > 
+> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > 
+> > ---
+> >  arch/x86/kernel/cpu/mcheck/mce_64.c |   37 ++++++++++++++++++++++++------------
+> >  1 file changed, 25 insertions(+), 12 deletions(-)
+> > 
+> > Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+> > ===================================================================
+> > --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:09:59.000000000 +0200
+> > +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:12.000000000 +0200
+> > @@ -171,6 +171,19 @@
+> >  	panic(msg);
+> >  }
+> 
+> Since you introduce X86_MCE_INJECT in later patch,
+> how about this style?
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+If someone feels strongly about that I can do that, but personally
+I would think using standard function return arguments without
+macros is more regular and more readable in general. That seems
+to be also the general trend in the source base, going away from
+magic macros.
 
-> Then again I'd really wish we could get Steve's recents bits 
-> merged for various reasons. [...]
+Do you feel strongly about it?
 
-I symphathise with your desire to have the latest and greatest stuff 
-upstream right now (i get asked this all the time - _everyone_ wants 
-their important stuff upstream, yesterday (and everyone else's 
-unstable unnecessary crap should wait)), but there's no way we'll 
-rush these new tracing features upstream now. They are not yet 
-complete and there's a set of new users whose needs have to be 
-observed and designed in.
+-Andi
 
-That is how the upstream development cycle works: stuff added after 
-the merge window goes upstream in the next merge window, at the 
-earliest. (I.e. in about 2 months from now.)
-
-> [...] The whole DEFINE_TRACE thing only appeared in 2.6.30 and 
-> releasing that one kernel with the half-baked inferior version 
-> sounds like a really bad idea.
-
-The current upstream code in .30 is fully functional and useful to 
-all the subsystems that are making use of it - so your attack on it 
-is a bit puzzling to me.
-
-You showed up when, some two weeks ago or so, in the merge window? 
-That's generally pretty much the worst time to ask for more 
-features. The moral of the story is really: if you feel strongly 
-about features in an area, get involved sooner.
-
-Module support (which your complaint really boils down to) was never 
-really popular with users of this stuff: the pre-.30 facilities were 
-exported to modules all along, but were rarely used from that angle 
-(for understandable reasons). Most tracing code contributions and 
-enhancements came from the direction of non-modular core kernel 
-facilities.
-
-Linus doesnt even _use_ modular kernels - neither do i ;)
-
-Yes, once a facility proves to be successful (this is about the 
-fifth version - it all evolved gradually along several kernel 
-releases), everyone jumps on it and wants new features, preferably 
-yesterday.
-
-Thanks,
-
-	Ingo
+> 
+> #ifdef CONFIG_X86_MCE_INJECT
+> #define mce_rdmsrl(msr,v) (v) = __mce_rdmsrl((msr))
+> #define mce_wrmsrl(msr,v) __mce_wrmsrl((msr),(v))
