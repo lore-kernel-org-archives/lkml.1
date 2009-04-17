@@ -1,120 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbZDQReK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbZDQReq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761195AbZDQReK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758610AbZDQRd4
+	id S932096AbZDQReq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbZDQReg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:33:56 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45422 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756763AbZDQRdz (ORCPT
+	Fri, 17 Apr 2009 13:34:36 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46578 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756924AbZDQReg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:33:55 -0400
-Date: Fri, 17 Apr 2009 13:33:54 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: mathieu.desnoyers@polymtl.ca, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 2/4] x86/pvops: target CREATE_TRACE_POINTS to particular
- subsystems
-In-Reply-To: <49E8B907.9000109@goop.org>
-Message-ID: <alpine.DEB.2.00.0904171330190.14919@gandalf.stny.rr.com>
-References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-3-git-send-email-jeremy@goop.org> <alpine.DEB.2.00.0904171149100.14919@gandalf.stny.rr.com> <49E8AAC8.5080004@goop.org> <alpine.DEB.2.00.0904171231270.14919@gandalf.stny.rr.com>
- <49E8B2EB.8030108@goop.org> <alpine.DEB.2.00.0904171251490.14919@gandalf.stny.rr.com> <49E8B907.9000109@goop.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 17 Apr 2009 13:34:36 -0400
+Date: Fri, 17 Apr 2009 18:34:22 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090417173422.GJ26366@ZenIV.linux.org.uk>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu> <20090417003805.GI26366@ZenIV.linux.org.uk> <20090417165643.GL8253@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090417165643.GL8253@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 17, 2009 at 06:56:43PM +0200, Ingo Molnar wrote:
 
+> Stupid question regarding c): wouldnt such data structures go via 
+> the VFS - which you said was free of BKL constraints? Or are there 
+> interconnected private data structures between certain types of 
+> closely related filesystems that the VFS does not know about? (and 
+> hence might have BKL assumptions)
 
-On Fri, 17 Apr 2009, Jeremy Fitzhardinge wrote:
+Shared between different instances of this fs type.  E.g. if FAT had
+its hashtable not per-superblock (as it is now) but system-wide (as it
+used to be prior to [PATCH] FAT: the inode hash from per module to per sb),
+it would be suspicious.  In this particular case, it was OK from the
+very beginning (I'd used a system-wide spinlock to protect it when it
+had been introduced and per-superblock splitup made that spinlock per-sb
+along with the hash table).
 
-> Steven Rostedt wrote:
-> > On Fri, 17 Apr 2009, Jeremy Fitzhardinge wrote:
-> > 
-> >   
-> > > Steven Rostedt wrote:
-> > >     
-> > > > Ah yes! It needs to be:
-> > > > 
-> > > > #ifdef CONFIG_IRQ_TRACE_POINTS
-> > > > #undef CONFIG_IRQ_TRACE_POINTS
-> > > > #include <trace/define_trace.h>
-> > > > #endif
-> > > > 
-> > > > Otherwise we get into the recursion again.
-> > > >         
-> > > We should probably also move the #define TRACE_SYS in there as well
-> > > (without
-> > > the #undef), as it should only have one definition at a time...
-> > >     
-> > 
-> > Actually, I'm kind of against that. Just because as it stands, the
-> > TRACE_SYSTEM macro is up at the top, and it is easy to see.
-> >   
-> 
-> Yes, but it means that if you're in the middle of CREATE_FOO_TRACE_POINTS and
-> foo.h happens to include bar.h, suddenly TRACE_SUBSYSTEM becomes bar...
+IOW, I wouldn't particulary worry about interactions between different
+fs _types_ - it's interactions between the different fs _instances_
+within the same driver that are likely sources of PITA.
 
-How so?
-
-> 
-> > Actually, we could do (from the top of the file)
-> > 
-> > #ifdef CONFIG_IRQ_TRACE_POINTS
-> > #undef CONFIG_IRQ_TRACE_POINTS
-
-The first thing the file does is undef CONFIG_FOO_TRACE_POINTS, anything 
-else that gets incuded, will not take this path.
-
-> > 
-> > #define TRACE_SYSTEM irq
-> > 
-> > #include <trace/define_trace.h>
-> > 
-> > #elif !defined(_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)
-> > #define _TRACE_IRQ_H
-> > 
-> > #include <linux/tracepoint.h>
-> > #include <linux/interrupt.h>
-> > 
-> > 
-> > [...]
-> > 
-> > #endif
-> >   
-> 
-> That's slightly different from what we have now.  At the moment its
-> 
->    #if !defined(_TRACE_IRQ_H)...
->    ...
->    #endif
-> 
->    #ifdef CREATE_IRQ_TRACE_POINTS
->    ...
->    #endif
-> 
-> So we get both the main part of the file and the CREATE_X_TRACE_POINTS parts.
-> Your suggestion makes them exclusive:
-> 
->    #ifdef CREATE_IRQ_TRACE_POINTS
->    ...
->    #elif !defined(_TRACE_IRQ_H)...
->    ...
->    #endif
->      
-> Does that make a difference?
-
-Hmm, I was about to disagree, but I think we need it separate. Because, we 
-still need it to do the tracepoint conversion, and we also need to call 
-tracepoint.h and TRACE_EVENT before calling define_trace.h.
-
-OK, scrap that idea ;-)
-
--- Steve
-
+ObOtherQuestion: no, I don't think that bdev open and bdev ioctls situation
+is related to this group of BKL users.  sb_set_blocksize() might, in principle,
+want a memory barrier of some kind, but that's it.
