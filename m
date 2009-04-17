@@ -1,105 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZDQFJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbZDQFLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbZDQFJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 01:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZDQFI7
+	id S1757961AbZDQFLk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 01:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZDQFLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 01:08:59 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:43016 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbZDQFI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 01:08:58 -0400
-Date: Thu, 16 Apr 2009 22:08:51 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: David Miller <davem@davemloft.net>, kaber@trash.net,
-       torvalds@linux-foundation.org, dada1@cosmosbay.com,
-       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-Message-ID: <20090417050851.GC6885@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090416215033.3e648a7a@nehalam>
+	Fri, 17 Apr 2009 01:11:31 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:16301 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbZDQFLa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 01:11:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :user-agent;
+        b=L7WTrtmbeccEzX7sPxjr0bKxbK5/GHYnvKL2suDvXJeRgWFDKL7wcdAp3x5Qr7bpuO
+         V7pNtBrRbzLNmw/YEMCe4Rev3AqwMmwIWDwRp3Hk59TJ34qircYVGMW/loqxC4k887gu
+         xwekeyUiubTGZL5bawlML++2liueF3Mh8g6sc=
+Date: Fri, 17 Apr 2009 13:09:59 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com
+Subject: [PATCH] fix error on drivers/ata/pata_legacy.c
+Message-ID: <20090417050959.GA5717@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090416215033.3e648a7a@nehalam>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 09:50:33PM -0700, Stephen Hemminger wrote:
-> On Thu, 16 Apr 2009 18:28:12 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Thu, Apr 16, 2009 at 04:49:55PM -0700, Paul E. McKenney wrote:
-> > > On Thu, Apr 16, 2009 at 03:33:54PM -0700, David Miller wrote:
-> > > > From: Patrick McHardy <kaber@trash.net>
-> > > > Date: Thu, 16 Apr 2009 15:11:31 +0200
-> > > > 
-> > > > > Linus Torvalds wrote:
-> > > > >> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
-> > > > >>> The counters are the bigger problem, otherwise we could just free
-> > > > >>> table
-> > > > >>> info via rcu.  Do we really have to support: replace where the counter
-> > > > >>> values coming out to user space are always exactly accurate, or is it
-> > > > >>> allowed to replace a rule and maybe lose some counter ticks (worst
-> > > > >>> case
-> > > > >>> NCPU-1).
-> > > > >> Why not just read the counters fromt he old one at RCU free time (they
-> > > > >> are guaranteed to be stable at that point, since we're all done with
-> > > > >> those entries), and apply them at that point to the current setup?
-> > > > > 
-> > > > > We need the counters immediately to copy them to userspace, so waiting
-> > > > > for an asynchronous RCU free is not going to work.
-> > > > 
-> > > > It just occurred to me that since all netfilter packet handling
-> > > > goes through one place, we could have a sort-of "netfilter RCU"
-> > > > of sorts to solve this problem.
-> > > 
-> > > OK, I am putting one together...
-> > > 
-> > > It will be needed sooner or later, though I suspect per-CPU locking
-> > > would work fine in this case.
-> > 
-> > And here is a crude first cut.  Untested, probably does not even compile.
-> > 
-> > Straight conversion of Mathieu Desnoyers's user-space RCU implementation
-> > at git://lttng.org/userspace-rcu.git to the kernel (and yes, I did help
-> > a little, but he must bear the bulk of the guilt).  Pick on srcu.h
-> > and srcu.c out of sheer laziness.  User-space testing gives deep
-> > sub-microsecond grace-period latencies, so should be fast enough, at
-> > least if you don't mind two smp_call_function() invocations per grace
-> > period and spinning on each instance of a per-CPU variable.
-> > 
-> > Again, I believe per-CPU locking should work fine for the netfilter
-> > counters, but I guess "friends don't let friends use hashed locks".
-> > (I would not know for sure, never having used them myself, except of
-> > course to protect hash tables.)
-> > 
-> > Most definitely -not- for inclusion at this point.  Next step is to hack
-> > up the relevant rcutorture code and watch it explode on contact.  ;-)
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> I am glad to see this worked on, but would rather not use RCU in this case
-> of iptables. It would be good for some of the other long grace period sutff.
+fix those errors:
 
-Agreed, as noted above.  Mostly just getting tired of people complaining
-about long grace periods.  Again, this patch cannot replace standard RCU
-for reasons noted earlier in this thread.
+drivers/ata/pata_legacy.c: In function ‘pdc_data_xfer_vlb’:
+drivers/ata/pata_legacy.c:289: error: ‘ap’ undeclared (first use in this function)
+drivers/ata/pata_legacy.c:289: error: (Each undeclared identifier is reported only once
+drivers/ata/pata_legacy.c:289: error: for each function it appears in.)
+drivers/ata/pata_legacy.c: At top level:
+drivers/ata/pata_legacy.c:869: error: ‘ATA_PFLAG_PIO32_CHANGE’ undeclared here (not in a function)
+make[2]: *** [drivers/ata/pata_legacy.o] Error 1
+make[1]: *** [drivers/ata] Error 2
 
-> The code to per-cpu entry consolidation by alloc/flip in 2.6.30-rc2 was
-> hard to debug and more convoluted so it probably would be a long term maintaince
-> nightmare.  The issue was the variable size skip structure so it made
-> for lots of iterators, etc. If the non-RCU per-cpu spinlock version is just
-> as fast, it is easier to understand.
 
-Your per-CPU-lock patch looked more straightforward to me than did the
-RCU patch.
+>From 9aa998af4bdcd49ef8e5c5572ded1434ab4acb98 Mon Sep 17 00:00:00 2001
+From: Zhenwen Xu <Helight.Xu@gmail.com>
+Date: Fri, 17 Apr 2009 13:04:50 +0800
+Subject: [PATCH] fix error ong drivers/ata/pata_legacy.c
 
-							Thanx, Paul
+Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+---
+ drivers/ata/pata_legacy.c |    3 ++-
+ include/linux/libata.h    |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
+index 6f985be..58e3855 100644
+--- a/drivers/ata/pata_legacy.c
++++ b/drivers/ata/pata_legacy.c
+@@ -285,10 +285,11 @@ static unsigned int pdc_data_xfer_vlb(struct ata_device *dev,
+ 			unsigned char *buf, unsigned int buflen, int rw)
+ {
+ 	int slop = buflen & 3;
++	struct ata_port *ap = dev->link->ap;
++
+ 	/* 32bit I/O capable *and* we need to write a whole number of dwords */
+ 	if (ata_id_has_dword_io(dev->id) && (slop == 0 || slop == 3)
+ 					&& (ap->pflags & ATA_PFLAG_PIO32)) {
+-		struct ata_port *ap = dev->link->ap;
+ 		unsigned long flags;
+ 
+ 		local_irq_save(flags);
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 3d501db..1fdd3eb 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -227,7 +227,7 @@ enum {
+ 	ATA_PFLAG_INIT_GTM_VALID = (1 << 19), /* initial gtm data valid */
+ 
+ 	ATA_PFLAG_PIO32		= (1 << 20),  /* 32bit PIO */
+-	ATA_PFLAG_PIO32CHANGE	= (1 << 21),  /* 32bit PIO can be turned on/off */
++	ATA_PFLAG_PIO32_CHANGE	= (1 << 21),  /* 32bit PIO can be turned on/off */
+ 
+ 	/* struct ata_queued_cmd flags */
+ 	ATA_QCFLAG_ACTIVE	= (1 << 0), /* cmd not yet ack'd to scsi lyer */
+-- 
+1.5.6.5
+
+-- 
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
