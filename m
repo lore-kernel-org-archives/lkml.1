@@ -1,126 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZDQH5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZDQH5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbZDQH5P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZDQH44
+	id S1760023AbZDQH5f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZDQH5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:56:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36991 "EHLO mx2.redhat.com"
+	Fri, 17 Apr 2009 03:57:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33149 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754667AbZDQH4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:56:55 -0400
-Date: Fri, 17 Apr 2009 09:50:38 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Brice Goglin <brice@myri.com>, "David S. Miller" <davem@davemloft.net>,
-       Linux Network Development list <netdev@vger.kernel.org>
-Subject: Re: [PATCH net-next] myri10ge: allow per-board firmware overriding
-Message-ID: <20090417095038.49b745bf@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <49E7239B.4000309@myri.com>
-References: <49E7239B.4000309@myri.com>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754555AbZDQH5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 03:57:22 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Fix discard requests accounting in the diskstats
+Date: Fri, 17 Apr 2009 13:25:01 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: David Woodhouse <David.Woodhouse@intel.com>, linux-kernel@vger.kernel.org,
+       jmarchan@redhat.com
+References: <200904171144.49448.knikanth@suse.de> <20090417064912.GH4593@kernel.dk>
+In-Reply-To: <20090417064912.GH4593@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904171325.01486.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 14:24:59 +0200
-Brice Goglin <brice@myri.com> wrote:
+On Friday 17 April 2009 12:19:12 Jens Axboe wrote:
+> On Fri, Apr 17 2009, Nikanth Karthikesan wrote:
+> > When 2 discard requests are merged, the stats gets updated, but we do not
+> > update statistics normally when a discard request is issued or completed.
+> > For example the in_flight counter would be decremented when 2 discard
+> > requests are merged, but it was not at all incremented when they were
+> > issued, and in_flight counter will not be decremented, when they are
+> > completed as well.
+> >
+> > This patch fixes this by adding discard requests to the statistics.
+>
+> This needs rebasing on top of this one:
+>
+> http://lkml.org/lkml/2009/4/16/159
+>
+> whenever that gets resubmitted as a proper, working patch.
+>
 
-> --- linux-tmp.old/drivers/net/myri10ge/myri10ge.c	2009-04-08 06:56:50.000000000 +0200
-> +++ linux-tmp/drivers/net/myri10ge/myri10ge.c	2009-04-09 14:00:16.000000000 +0200
-> @@ -255,6 +255,7 @@
->  	u32 read_write_dma;
->  	u32 link_changes;
->  	u32 msg_enable;
-> +	unsigned int board_number;
->  };
->  
->  static char *myri10ge_fw_unaligned = "myri10ge_ethp_z8e.dat";
-> @@ -266,6 +267,13 @@
->  module_param(myri10ge_fw_name, charp, S_IRUGO | S_IWUSR);
->  MODULE_PARM_DESC(myri10ge_fw_name, "Firmware image name");
->  
-> +#define MYRI10GE_MAX_BOARDS 8
-> +static char *myri10ge_fw_names[MYRI10GE_MAX_BOARDS] =
-> +    {[0...(MYRI10GE_MAX_BOARDS - 1)] = NULL };
-> +module_param_array_named(myri10ge_fw_names, myri10ge_fw_names, charp, NULL,
-> +			 0444);
-> +MODULE_PARM_DESC(myri10ge_fw_name, "Firmware image names per board");
-> +
->  static int myri10ge_ecrc_enable = 1;
->  module_param(myri10ge_ecrc_enable, int, S_IRUGO);
->  MODULE_PARM_DESC(myri10ge_ecrc_enable, "Enable Extended CRC on PCI-E");
-> @@ -3258,6 +3266,8 @@
->  
->  static void myri10ge_select_firmware(struct myri10ge_priv *mgp)
->  {
-> +	int overridden = 0;
-> +
->  	if (myri10ge_force_firmware == 0) {
->  		int link_width, exp_cap;
->  		u16 lnk;
-> @@ -3291,10 +3301,18 @@
->  		}
->  	}
->  	if (myri10ge_fw_name != NULL) {
-> -		dev_info(&mgp->pdev->dev, "overriding firmware to %s\n",
-> -			 myri10ge_fw_name);
-> +		overridden = 1;
->  		mgp->fw_name = myri10ge_fw_name;
->  	}
-> +	if (mgp->board_number < MYRI10GE_MAX_BOARDS &&
-> +	    myri10ge_fw_names[mgp->board_number] != NULL &&
-> +	    strlen(myri10ge_fw_names[mgp->board_number])) {
-> +		mgp->fw_name = myri10ge_fw_names[mgp->board_number];
-> +		overridden = 1;
-> +	}
-> +	if (overridden)
-> +		dev_info(&mgp->pdev->dev, "overriding firmware to %s\n",
-> +			 mgp->fw_name);
->  }
->  
->  #ifdef CONFIG_PM
-> @@ -3759,6 +3777,7 @@
->  	int status = -ENXIO;
->  	int dac_enabled;
->  	unsigned hdr_offset, ss_offset;
-> +	static int board_number;
->  
->  	netdev = alloc_etherdev_mq(sizeof(*mgp), MYRI10GE_MAX_SLICES);
->  	if (netdev == NULL) {
-> @@ -3775,6 +3794,7 @@
->  	mgp->pause = myri10ge_flow_control;
->  	mgp->intr_coal_delay = myri10ge_intr_coal_delay;
->  	mgp->msg_enable = netif_msg_init(myri10ge_debug, MYRI10GE_MSG_DEFAULT);
-> +	mgp->board_number = board_number;
->  	init_waitqueue_head(&mgp->down_wq);
->  
->  	if (pci_enable_device(pdev)) {
-> @@ -3925,6 +3945,7 @@
->  			 netdev->irq, mgp->tx_boundary, mgp->fw_name,
->  			 (mgp->wc_enabled ? "Enabled" : "Disabled"));
->  
-> +	board_number++;
->  	return 0;
->  
->  abort_with_state:
+Ok. I will resend after Jerome resubmits that patch.
 
-Code assumes boards are always initialized in the same order. I suppose
-this is always true and is nothing wrong here. However perhaps linux could
-provide some form of modules/boot parameters that are used with
-an identification number like MAC address. Example:
+Thanks
+Nikanth
+ 
+> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> >
+> > ---
+> >
+> > diff --git a/block/blk-core.c b/block/blk-core.c
+> > index 07ab754..ee960a7 100644
+> > --- a/block/blk-core.c
+> > +++ b/block/blk-core.c
+> > @@ -68,7 +68,7 @@ static void drive_stat_acct(struct request *rq, int
+> > new_io) int rw = rq_data_dir(rq);
+> >  	int cpu;
+> >
+> > -	if (!blk_fs_request(rq) || !blk_do_io_stat(rq))
+> > +	if (!rq_accountable(rq) || !blk_do_io_stat(rq))
+> >  		return;
+> >
+> >  	cpu = part_stat_lock();
+> > @@ -1698,7 +1698,7 @@ static void blk_account_io_done(struct request
+> > *req) * IO on queueing nor completion.  Accounting the containing
+> >  	 * request is enough.
+> >  	 */
+> > -	if (blk_fs_request(req) && req != &req->q->bar_rq) {
+> > +	if (rq_accountable(req) && req != &req->q->bar_rq) {
+> >  		unsigned long duration = jiffies - req->start_time;
+> >  		const int rw = rq_data_dir(req);
+> >  		struct hd_struct *part;
+> > diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> > index ba54c83..9483c02 100644
+> > --- a/include/linux/blkdev.h
+> > +++ b/include/linux/blkdev.h
+> > @@ -667,7 +667,9 @@ static inline void blk_clear_queue_full(struct
+> > request_queue *q, int sync) (REQ_NOMERGE | REQ_STARTED | REQ_HARDBARRIER
+> > | REQ_SOFTBARRIER) #define rq_mergeable(rq)	\
+> >  	(!((rq)->cmd_flags & RQ_NOMERGE_FLAGS) && \
+> > -	 (blk_discard_rq(rq) || blk_fs_request((rq))))
+> > +	 (blk_discard_rq(rq) || blk_fs_request(rq)))
+> > +#define rq_accountable(rq)	\
+> > +	(blk_discard_rq(rq) || blk_fs_request(rq))
+> >
+> >  /*
+> >   * q->prep_rq_fn return values
 
-module my_parms="id1:param1;id2:param2;" 
 
-char *get_module_param_id(const char *param, const char *id)
-
-This would help in situation like this - admin will not have to thinking
-about boards initialization ordering. Besides some other drivers (like MTD
-cmd partitions) use own parsing for similar things, I think would be
-nice to unify things. What You think?
-
-Cheers
-Stanislaw
