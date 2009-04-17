@@ -1,106 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbZDQVa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbZDQVbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbZDQVa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 17:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759951AbZDQVaG
+	id S1761782AbZDQVbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbZDQVbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 17:30:06 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1285 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756058AbZDQVaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 17:30:04 -0400
-Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
- updates
-From: Joe Perches <joe@perches.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 14:27:32 -0700
-Message-Id: <1240003652.31116.44.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+	Fri, 17 Apr 2009 17:31:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43028 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753864AbZDQVbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 17:31:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Fri, 17 Apr 2009 23:31:05 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <alpine.LFD.2.00.0904161742140.4042@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904161742140.4042@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904172331.06910.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 13:47 -0700, Randy Dunlap wrote:
-> On Tue,  7 Apr 2009 22:17:42 -0700 Joe Perches wrote:
-> I was hoping to get the patch that changed all pairs of
-> P:
-> M:
-> lines to one line that is suitable for pasting into email addresses.
-> Are we supposed to use get_maintainer.pl for that?
+On Friday 17 April 2009, Linus Torvalds wrote:
+> 
+> On Thu, 16 Apr 2009, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13098
+> > Subject		: 2.6.29-git12 breaks vga=0x0f07 on MSI/Intel GPU
+> > Submitter	: Andi Kleen <andi@firstfloor.org>
+> > Date		: 2009-04-06 01:14 (11 days old)
+> > References	: http://lkml.org/lkml/2009/4/5/200
+> > Handled-By	: H. Peter Anvin <hpa@zytor.com>
+> 
+> I think this got fixed already. The VGA moresettign was reverted back to 
+> the old order.
 
-I merely wanted to get the patterns accepted.
+Closed.
 
-I thought the P/M: integration was an unnecessary
-complication that would delay pattern acceptance.
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13044
+> > Subject		: 2.6.30-rc1 can't find the root fs
+> > Submitter	: Heinz Diehl <htd@fancy-poultry.org>
+> > Date		: 2009-04-08 13:35 (9 days old)
+> 
+> This was one of the async things that got fixed by just waiting for module 
+> async work to finish.
 
-So I use scripts/get_maintainer.pl "as is".
-Suggestions on improvements to the script are
-of course gladly accepted...
+Closed.
 
-If the script doesn't work well for you, please
-let me know.
-
-If the P/M: conversion is desired, I've no objection.
-The script would have to change though.
-
-There are command line options to control email address
-output style:
-
-For instance:
-
-$ ./scripts/get_maintainer.pl -f Documentation/DocBook/sh.tmpl 
-linux-doc@vger.kernel.org
-linux-kernel@vger.kernel.org
-Randy Dunlap <rdunlap@xenotime.net>
-Paul Mundt <lethal@linux-sh.org>
-
-with option "--no-n" (also "--non") (Do not output "name")
-
-$ ./scripts/get_maintainer.pl --no-n -f Documentation/DocBook/sh.tmpl 
-linux-doc@vger.kernel.org
-linux-kernel@vger.kernel.org
-rdunlap@xenotime.net
-lethal@linux-sh.org
-
-with option "--no-l" (do not output "mailing lists")
-
-$ ./scripts/get_maintainer.pl --no-l -f Documentation/DocBook/sh.tmpl
-Randy Dunlap <rdunlap@xenotime.net>
-Paul Mundt <lethal@linux-sh.org>
-
-with option "--no-m"
-(do not output "maintainers" , just use git log "by:" signors)
-
-$ ./scripts/get_maintainer.pl --no-m -f Documentation/DocBook/sh.tmpl 
-linux-doc@vger.kernel.org
-linux-kernel@vger.kernel.org
-Paul Mundt <lethal@linux-sh.org>
-
-with option "--no-multiline", the output is on a single line
-
-$ ./scripts/get_maintainer.pl --no-multiline -f Documentation/DocBook/sh.tmpl 
-linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Paul Mundt <lethal@linux-sh.org>
-
-The entry separator (default ", ") is specified with --separator
-
-By default, "subscriber-only" mailing lists are
-not output.  Use "--l --s" to output lists and
-lists that are "subscriber-only".
-
-There is a defect in the script right now with
-"subscriber-only" mailing lists.  The regex
-check is not broad enough.
-
-I'll submit a patch for that shortly.
-
-cheers, Joe
-
+Thanks,
+Rafael
