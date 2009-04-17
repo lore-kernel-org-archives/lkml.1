@@ -1,79 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbZDQSI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbZDQSKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbZDQSI7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZDQSIv
+	id S932184AbZDQSKU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758072AbZDQSKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:08:51 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47911 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758713AbZDQSIu (ORCPT
+	Fri, 17 Apr 2009 14:10:05 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:49494 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757824AbZDQSKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:08:50 -0400
-Date: Fri, 17 Apr 2009 19:08:32 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090417180832.GL26366@ZenIV.linux.org.uk>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu> <20090417003805.GI26366@ZenIV.linux.org.uk> <20090417165643.GL8253@elte.hu> <1239987885.23397.4817.camel@laptop> <alpine.LFD.2.00.0904171010470.4042@localhost.localdomain>
+	Fri, 17 Apr 2009 14:10:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=ub0erYges/pci8ojdRLxc0NXqcRb240yZsgsGWGcFXfX1AcmSAbr4dcUr8Xb0yvhv
+	cR9SjyutoUFyUgvx7Z1vw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904171010470.4042@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090417141358.GD29086@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	 <1236823015-4183-2-git-send-email-vgoyal@redhat.com>
+	 <20090312001146.74591b9d.akpm@linux-foundation.org>
+	 <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com>
+	 <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux>
+	 <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux>
+	 <20090417141358.GD29086@redhat.com>
+Date: Fri, 17 Apr 2009 11:09:51 -0700
+Message-ID: <e98e18940904171109r17ccb054kb7879f8d02ac26b5@mail.gmail.com>
+Subject: Re: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
+From: Nauman Rafique <nauman@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, arozansk@redhat.com, jmoyer@redhat.com,
+       oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 10:21:06AM -0700, Linus Torvalds wrote:
+On Fri, Apr 17, 2009 at 7:13 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
+>> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+>> > > I think it would be possible to implement both proportional and limiting
+>> > > rules at the same level (e.g., the IO scheduler), but we need also to
+>> > > address the memory consumption problem (I still need to review your
+>> > > patchset in details and I'm going to test it soon :), so I don't know if
+>> > > you already addressed this issue).
+>> > >
+>> >
+>> > Can you please elaborate a bit on this? Are you concerned about that data
+>> > structures created to solve the problem consume a lot of memory?
+>>
+>> Sorry I was not very clear here. With memory consumption I mean wasting
+>> the memory with hard/slow reclaimable dirty pages or pending IO
+>> requests.
+>>
+>> If there's only a global limit on dirty pages, any cgroup can exhaust
+>> that limit and cause other cgroups/processes to block when they try to
+>> write to disk.
+>>
+>> But, ok, the IO controller is not probably the best place to implement
+>> such functionality. I should rework on the per cgroup dirty_ratio:
+>>
+>> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+>>
+>> Last time we focused too much on the best interfaces to define dirty
+>> pages limit, and I never re-posted an updated version of this patchset.
+>> Now I think we can simply provide the same dirty_ratio/dirty_bytes
+>> interface that we provide globally, but per cgroup.
+>>
+>> >
+>> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
+>> > > in the cgroup that exceeds its limit, how do we avoid the waste of
+>> > > memory due to the succeeding IO requests and the increasingly dirty
+>> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
+>> > > but I think we talked about this problem in a previous email... sorry I
+>> > > don't find the discussion in my mail archives.
+>> > >
+>> > > IMHO a nice approach would be to measure IO consumption at the IO
+>> > > scheduler level, and control IO applying proportional weights / absolute
+>> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
+>> > > time block the tasks from dirtying memory that will generate additional
+>> > > IO requests.
+>> > >
+>> > > Anyway, there's no need to provide this with a single IO controller, we
+>> > > could split the problem in two parts: 1) provide a proportional /
+>> > > absolute IO controller in the IO schedulers and 2) allow to set, for
+>> > > example, a maximum limit of dirty pages for each cgroup.
+>> > >
+>> >
+>> > I think setting a maximum limit on dirty pages is an interesting thought.
+>> > It sounds like as if memory controller can handle it?
+>>
+>> Exactly, the same above.
+>
+> Thinking more about it. Memory controller can probably enforce the higher
+> limit but it would not easily translate into a fixed upper async write
+> rate. Till the process hits the page cache limit or is slowed down by
+> dirty page writeout, it can get a very high async write BW.
+>
+> So memory controller page cache limit will help but it would not direclty
+> translate into what max bw limit patches are doing.
+>
+> Even if we do max bw control at IO scheduler level, async writes are
+> problematic again. IO controller will not be able to throttle the process
+> until it sees actuall write request. In big memory systems, writeout might
+> not happen for some time and till then it will see a high throughput.
+>
+> So doing async write throttling at higher layer and not at IO scheduler
+> layer gives us the opprotunity to produce more accurate results.
 
-> Of course, right now we do hold the BKL over _multiple_ downcalls, so in 
-> that sense it's not actually totally 100% correct and straightforward to 
-> just move it down. Eg in the generic_shutdown_super() case we do
-> 
-> 	lock_kernel();
-> 	  ->write_super();
-> 	  ->put_super();
-> 	invalidate_inodes();
-> 	unlock_kernel();
-> 
-> and obviously if we split it up so that we push a lock_kernel() into both, 
-> we end up unlocking in between. I doubt anything cares, but it's still a 
-> technical difference.
+Wouldn't 'doing control on writes at a higher layer' have the same
+problems as the ones we talk about in dm-ioband? What if the cgroup
+being throttled for dirtying pages has a high weight assigned to it at
+the IO scheduler level? What if there are threads of different classes
+within that cgroup, and we would want to let RT task dirty the pages
+before BE tasks? I am not sure all these questions make sense, but
+just wanted to raise issues that might pop up.
 
-No, that's OK.  Anything that would expect on lack of blocking between
-the callers of ->write_super() and ->put_super() is simply insane.  Not
-that other callers of ->write_super() had been under BKL, while we are
-at it...
+If the whole system is designed with cgroups in mind, then throttling
+at IO scheduler layer should lead to backlog, that could be seen at
+higher level. For example, if a cgroup is not getting service at IO
+scheduler level, it should run out of request descriptors, and thus
+the thread writing back dirty pages should notice it (if its pdflush,
+blocking it is probably not the best idea). And that should mean the
+cgroup should hit the dirty threshold, and disallow the task to dirty
+further pages. There is a possibility though that getting all this
+right might be an overkill and we can get away with a simpler
+solution. One possibility seems to be that we provide some feedback
+from IO scheduling layer to higher layers, that cgroup is hitting its
+write bandwith limit, and should not be allowed to dirty any more
+pages.
 
-> There are similar issues with 'remount' holding the BKL over longer 
-> sequences.
-> 
-> Btw, the superblock code really does seem to depend on lock_kernel. Those 
-> "sb->s_flags" accesses are literally not protected by anything else afaik.
-
-Modifications in there *should* be protected by ->s_umount.  Except that
-emergency_remount() does down_read() instead of down_write(), for some
-reason.  And that fs going r/o on error very likely will not hold any
-locks at all, BKL included.
-
-Note that most of the readers really couldn't care less about protection.
-Single-shot tests for one bit like "is this fs mounted noatime right now?" 
-are OK as is - we don't *care* if it races with remount and no way to
-do anything about such race anyway.
-
-Read-only is the main exception; we should be mostly OK since the per-vfsmount
-r/o rework, but "I have an error and I'll go r/o now" stuff is still messy.
-
-> That said, I think that fs/locks.c is likely a much bigger issue. Very few 
-> people care about any realtimeness of mount/unmount/remount. But file 
-> locking? That is much more likely to be an issue.
-
-That is much more likely to require really non-trivial work, BTW.  That code
-is a *mess* and inventing sane locking for it will be painful.
+>
+> For sync requests, I think IO scheduler max bw control should work fine.
+>
+> BTW, andrea, what is the use case of your patches? Andrew had mentioned
+> that some people are already using it. I am curious to know will a
+> proportional BW controller will solve the issues/requirements of these
+> people or they have specific requirement of traffic shaping and max bw
+> controller only.
+>
+> [..]
+>> > > > Can you please give little more details here regarding how QoS requirements
+>> > > > are not met with proportional weight?
+>> > >
+>> > > With proportional weights the whole bandwidth is allocated if no one
+>> > > else is using it. When IO is submitted other tasks with a higher weight
+>> > > can be forced to sleep until the IO generated by the low weight tasks is
+>> > > not completely dispatched. Or any extent of the priority inversion
+>> > > problems.
+>> >
+>> > Hmm..., I am not very sure here. When admin is allocating the weights, he
+>> > has the whole picture. He knows how many groups are conteding for the disk
+>> > and what could be the worst case scenario. So if I have got two groups
+>> > with A and B with weight 1 and 2 and both are contending, then as an
+>> > admin one would expect to get 33% of BW for group A in worst case (if
+>> > group B is continuously backlogged). If B is not contending than A can get
+>> > 100% of BW. So while configuring the system, will one not plan for worst
+>> > case (33% for A, and 66 % for B)?
+>>
+>> OK, I'm quite convinced.. :)
+>>
+>> To a large degree, if we want to provide a BW reservation strategy we
+>> must provide an interface that allows cgroups to ask for time slices
+>> such as max/min 5 IO requests every 50ms or something like that.
+>> Probably the same functionality can be achieved translating time slices
+>> from weights, percentages or absolute BW limits.
+>
+> Ok, I would like to split it in two parts.
+>
+> I think providng minimum gurantee in absolute terms like 5 IO request
+> every 50ms will be very hard because IO scheduler has no control over
+> how many competitors are there. An easier thing will be to have minimum
+> gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
+> shall have to create right cgroup hierarchy and assign weights properly and
+> then admin can calculate what % of disk slice a particular group will get
+> as minimum gurantee. (This is more complicated than this as there are
+> time slices which are not accounted to any groups. During queue switch
+> cfq starts the time slice counting only after first request has completed
+> to offset the impact of seeking and i guess also NCQ).
+>
+> I think it should be possible to give max bandwidth gurantees in absolute
+> terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
+> scheduler has to do is to not allow dispatch from a particular queue if
+> it has crossed its limit and then either let the disk idle or move onto
+> next eligible queue.
+>
+> The only issue here will be async writes. max bw gurantee for async writes
+> at IO scheduler level might not mean much to application because of page
+> cache.
+>
+> Thanks
+> Vivek
+>
