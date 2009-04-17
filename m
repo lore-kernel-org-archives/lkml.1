@@ -1,61 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbZDQQtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbZDQQwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761973AbZDQQtz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbZDQQtr
+	id S1761395AbZDQQwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760111AbZDQQwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:49:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60658 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753158AbZDQQtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:49:46 -0400
-Date: Fri, 17 Apr 2009 18:49:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Christoph Lameter <cl@linux.com>, linux-kernel@vger.kernel.org
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-Message-ID: <20090417164918.GK8253@elte.hu>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com> <1239951613.23397.4107.camel@laptop> <alpine.DEB.1.10.0904170941020.11877@qirst.com> <1239977776.23397.4590.camel@laptop> <alpine.DEB.1.10.0904171021360.20239@qirst.com> <1239979901.23397.4638.camel@laptop> <alpine.DEB.1.10.0904171100510.21575@qirst.com> <20090417153520.GA29968@elte.hu> <alpine.DEB.1.10.0904171142050.13734@qirst.com> <1239985426.23397.4757.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239985426.23397.4757.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 17 Apr 2009 12:52:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37620 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759426AbZDQQwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:52:05 -0400
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: David Miller <davem@davemloft.net>, kaber@trash.net,
+       torvalds@linux-foundation.org, shemminger@vyatta.com,
+       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+In-Reply-To: <20090417163351.GC6742@linux.vnet.ibm.com>
+References: <20090415170111.6e1ca264@nehalam>
+	 <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	 <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net>
+	 <20090416234955.GL6924@linux.vnet.ibm.com>
+	 <20090417012812.GA25534@linux.vnet.ibm.com>
+	 <1239948734.23397.4052.camel@laptop>
+	 <20090417163351.GC6742@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 18:51:37 +0200
+Message-Id: <1239987097.23397.4800.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-04-17 at 09:33 -0700, Paul E. McKenney wrote:
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> > > Is the overhead 1%? 2%? 0.5%? And how did it change from 
-> > > 2.6.22 onwards? Did it go up by 0.1%, from 1% to 1.1%? Or did 
-> > > the average go down by 0.05%, while increasing the spread of 
-> > > events (thus fooling your cutoff)?
+> > One comment, its again a global thing..
 > > 
-> > As you see in the diagrams provided there is a 4 fold increase 
-> > in the number of interrupts >1usecs when going from 2.6.22 to 
-> > 2.6.23. How would you measure the overhead? Time spent in the 
-> > OS? Disturbance of the caches by the OS that cause the 
-> > application to have to refetch data from Ram?
+> > I've been playing with the idea for a while now to make all RCU
+> > implementations into proper objects so that you can do things like:
+> > 
+> >   struct atomic_rcu_domain my_rcu_domain = create_atomic_rcu();
+> > 
+> >   atomic_rcu_read_lock(&my_rcu_domain());
+> >   ...
+> > 
+> >   atomic_rcu_read_unlock(&my_rcu_domain());
+> > 
+> > and
+> > 
+> >   call_atomic_rcu(&my_rcu_domain, &my_obj->rcu_head, do_something);
+> > 
+> > etc..
+> > 
+> > We would have:
+> > 
+> >   atomic_rcu  --  'classic' non preemptible RCU (treercu these days)
+> >   sleep_rcu   --  'preemptible' RCU
+> > 
+> > Then have 3 default domains:
+> > 
+> > sched_rcu     -- always atomic_rcu
 > 
-> You could for example run an NMI profiler at 10000 Hz and collect 
-> samples. Or use PMU hardware to collect numbers
+> This is the call_rcu_sched() variant.
+> 
+> > rcu           -- depends on PREEMPT_RCU
+> 
+> This is the call_rcu() variant.
+> 
+> > preempt_rcu   -- always sleep_rcu
+> 
+> I guess that this one could allow sleeping on mutexes...  Does anyone
+> need to do that?
 
-it's even simpler than that: use a user-space loop and an alert() 
-based signal-handler triggered measurement to count the number of 
-loops user-space can execute, per second.
+I almost did a few times, but never quite got the code that needed it
+working good enough for it to go anywhere.
 
-Such measurements can very easily be made much more precise than 
-0.1%, and in a tight loop there's basically no caching issues - it 
-measures pure 'cycles left for user-space' performance.
+> > This would allow generic code to:
+> >   1) use preemptible RCU for those cases where needed
+> >   2) create smaller RCU domains where needed, such as in this case
+> >   3) mostly do away with SRCU
+> 
+> #3 would be good!  But...
+> 
+> At an API level, there are two differences between SRCU and the other
+> RCU implementations:
+> 
+> a.	The return value from srcu_read_lock() is passed to
+> 	srcu_read_unlock().
+> 
+> b.	There is a control block passed in to each SRCU primitive.
+> 
+> Difference (a) could potentially be taken care of with a few tricks I
+> am trying in the process of getting preemptrcu merged into treercu.
 
-	Ingo
+Right, incrementing one cpu and decrementing another doesn't change the
+sum over all cpus :-)
+
+> Your approach to (b) certainly makes it uniform, there are >500
+> occurrences of rcu_read_lock() and rcu_read_unlock() each, but only
+> a very few occurrences of srcu_read_lock() and srcu_read_unlock()
+> (like exactly one each!).  So adding an argument to rcu_read_lock()
+> does not sound at all reasonable.
+
+static inline void rcu_read_lock(void)
+{
+	atomic_rcu_read_lock(&global_atomic_rcu_context);
+}
+
+static inline void rcu_read_unlock(void)
+{
+	atomic_rcu_read_unlock(&global_atomic_rcu_context);
+}
+
+static inline void call_rcu(struct rcu_head *rcuhead, void (*func)(struct rcu_head *))
+{
+	call_atomic_rcu(&global_atomic_rcu_context, rcuhead, func);
+}
+
+etc.. Should take care of that, no?
+
+> > Now I realize that the presented RCU implementation has a different
+> > grace period method than the existing ones that use the timer tick to
+> > drive the state machine, so 2) might not be too relevant here. But maybe
+> > we can do something with different grace periods too.
+> > 
+> > Anyway, just an idea because I always get a little offended at the hard
+> > coded global variables in all these RCU implementations :-)
+> 
+> I am thinking in terms of adding a synchronize_rcu_bh() with the desired
+> properties.  That way we avoid yet another RCU flavor.  (What can I say?
+> I got carried away!)  Also, since the rcu-bh flavor is used only by
+> networking, we have a fair amount of freedom to tweak it. 
+
+Right. I was thinking along the way of providing a watermark (either
+nr_queued based, or time based) and once it exceeds try to drive it from
+read_unlock. Or similar. unlock driven RCU implementations have the best
+grace period time every, except for all the down sides ;-)
+
+>  It will take
+> longer than introducing a new flavor, but Steve Hemminger has a good
+> solution already, and RCU really isn't the thing to do quick hacks on.
+
+Ok, back on topic :-)
+
+I wouldn't exactly call it a good solution, it does a
+for_each_possible_cpu() spin_lock();
+
+ 1) that should probably be for_each_online_cpu()
+
+ 2) that doesn't scale at all, I'm sure dave's 256-way hurts like mad
+    when inserting tons of rules and we do that for every iptable
+    modification.
+
+ 3) there is no way lockdep can track all that :(
+
+Do we _really_ _really_ __HAVE__ to serialize this? So far I've heard
+Patrick say: there might be, a use case. That doesn't sound like: we
+should make it dead slow for everybody else.
+
