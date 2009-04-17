@@ -1,94 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbZDQBrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbZDQBvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759078AbZDQBrz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZDQBrr
+	id S1758483AbZDQBvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbZDQBu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:47:47 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:57201 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752043AbZDQBrq (ORCPT
+	Thu, 16 Apr 2009 21:50:59 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:55716 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754095AbZDQBu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:47:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiAFAMF750lMQW1W/2dsb2JhbACBTs5bg30G
-Date: Thu, 16 Apr 2009 21:47:33 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [patch 2/3] RCU move trace defines to rcupdate_types.h
-Message-ID: <20090417014733.GB24956@Krystal>
-References: <20090417003755.276959950@polymtl.ca> <20090417003931.846405986@polymtl.ca> <49E7D701.9090407@goop.org> <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com> <20090417014209.GA24956@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 21:50:58 -0400
+Date: Fri, 17 Apr 2009 07:20:04 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       randy.dunlap@oracle.com, menage@google.com, chlunde@ping.uio.no,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Andrea Righi <righi.andrea@gmail.com>, dradford@bluehost.com,
+       agk@sourceware.org, subrata@linux.vnet.ibm.com, axboe@kernel.dk,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
+       ngupta@google.com
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-ID: <20090417015004.GC18558@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-4-git-send-email-righi.andrea@gmail.com> <20090416152937.b2188370.akpm@linux-foundation.org> <20090417092040.1c832c69.kamezawa.hiroyu@jp.fujitsu.com> <20090416174428.6bb5da21.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090417014209.GA24956@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:44:02 up 47 days, 22:10,  1 user,  load average: 0.91, 0.55,
-	0.43
+In-Reply-To: <20090416174428.6bb5da21.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > On Thu, 16 Apr 2009, Jeremy Fitzhardinge wrote:
-> > 
-> > > I don't think this helps.  rcupdate_types.h uses preempt_disable/enable, but
-> > > doesn't include linux/preempt.h for them - but someone's going to have to, so
-> > > you've got an implicit dependency on the user to #include the right headers in
-> > > advance.
-> > 
-> > Would including linux/preempt.h in rcupdate_types.h be a problem?
-> > 
-> > -- Steve
+* Andrew Morton <akpm@linux-foundation.org> [2009-04-16 17:44:28]:
+
+> > Hmm, how about iotrack-cgroup ?
 > > 
 > 
-> I did not include preempt.h in rcupdate_types.h because rcupdate.h did
-> not include it, so I thought it had a special status such a kernel.h.
-> However, I notice the rcupdate.h includes spinlock.h, which in turn
-> includes preempt.h, so we would need to include preempt.h in
-> rcupdate_types.h.
-> 
+> Well. blockio_cgroup has the same character count and is more specific.
 
-Hrm, well, the actual question is :
-
-given rcupdate_types.h only defines macros, and given we won't want to
-include all the headers that implement all the content of these macros,
-does it make sense to typically require people to either include
-rcupdate.h directly if they want to have the full includes required to
-expand the macros ?
-
-If we do that, then including preempt.h in rcupdate_types.h is not
-necessary. However, tracepoint.h should now include preempt.h, because
-it would be cumbersome to require from every tracepoint.h users to
-include preempt.h.
-
-One way or another, we will have to include preempt.h under
-tracepoint.h, but I don't see it as a roadblock, given that preempt.h is
-quite slim.
-
-Mathieu
-
-> But I think preempt.h is pretty much only type definitions. I don't
-> think that would be a problem, but maybe Jeremy knows better.
-> 
-> Mathieu
-> 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Sounds good to me.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Balbir
