@@ -1,172 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZDQOou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbZDQOpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbZDQOou (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761476AbZDQOnh
+	id S1761782AbZDQOpO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761504AbZDQOnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 17 Apr 2009 10:43:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48405 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62636 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761063AbZDQOne (ORCPT
+	with ESMTP id S1756294AbZDQOne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 17 Apr 2009 10:43:34 -0400
-Message-Id: <20090417144332.464531663@goodmis.org>
+Message-Id: <20090417144332.227759396@goodmis.org>
 References: <20090417144055.857407604@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 17 Apr 2009 10:41:00 -0400
+Date: Fri, 17 Apr 2009 10:40:59 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v2 5/5] tracing/events: perform function tracing in event selftests
-Content-Disposition: inline; filename=0005-tracing-events-perform-function-tracing-in-event-se.patch
+       Avadh Patel <avadh4all@gmail.com>
+Subject: [PATCH v2 4/5] tracing: add saved_cmdlines file to show cached task comms
+Content-Disposition: inline; filename=0004-tracing-add-saved_cmdlines-file-to-show-cached-task.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Avadh Patel <avadh4all@gmail.com>
 
-We can find some bugs in the trace events if we stress the writes as well.
-The function tracer is a good way to stress the events.
+Export the cached task comms to userspace. This allows user apps to translate
+the pids from a trace into their respective task command lines.
 
-Impact: extend scope of event tracer self-tests
+[ added error checking and use of buf pointer to index file_buf
+    - Steven Rostedt ]
+
+Impact: let userspace apps reading binary buffer know comm's of pids
+Signed-off-by: Avadh Patel <avadh4all@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20090416161746.604786131@goodmis.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/trace/trace_events.c |   78 +++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 72 insertions(+), 6 deletions(-)
+ kernel/trace/trace.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 7163a2b..1137f95 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -1017,7 +1017,7 @@ static __init void event_test_stuff(void)
-  * For every trace event defined, we will test each trace point separately,
-  * and then by groups, and finally all trace points.
-  */
--static __init int event_trace_self_tests(void)
-+static __init void event_trace_self_tests(void)
- {
- 	struct ftrace_event_call *call;
- 	struct event_subsystem *system;
-@@ -1071,7 +1071,7 @@ static __init int event_trace_self_tests(void)
- 		sysname = kstrdup(system->name, GFP_KERNEL);
- 		if (WARN_ON(!sysname)) {
- 			pr_warning("Can't allocate memory, giving up!\n");
--			return 0;
-+			return;
- 		}
- 		ret = ftrace_set_clr_event(sysname, 1);
- 		kfree(sysname);
-@@ -1086,7 +1086,7 @@ static __init int event_trace_self_tests(void)
- 		sysname = kstrdup(system->name, GFP_KERNEL);
- 		if (WARN_ON(!sysname)) {
- 			pr_warning("Can't allocate memory, giving up!\n");
--			return 0;
-+			return;
- 		}
- 		ret = ftrace_set_clr_event(sysname, 0);
- 		kfree(sysname);
-@@ -1106,14 +1106,14 @@ static __init int event_trace_self_tests(void)
- 	sysname = kmalloc(4, GFP_KERNEL);
- 	if (WARN_ON(!sysname)) {
- 		pr_warning("Can't allocate memory, giving up!\n");
--		return 0;
-+		return;
- 	}
- 	memcpy(sysname, "*:*", 4);
- 	ret = ftrace_set_clr_event(sysname, 1);
- 	if (WARN_ON_ONCE(ret)) {
- 		kfree(sysname);
- 		pr_warning("error enabling all events\n");
--		return 0;
-+		return;
- 	}
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 2d69b26..031c46f 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2422,6 +2422,56 @@ static const struct file_operations tracing_readme_fops = {
+ };
  
- 	event_test_stuff();
-@@ -1125,10 +1125,76 @@ static __init int event_trace_self_tests(void)
- 
- 	if (WARN_ON_ONCE(ret)) {
- 		pr_warning("error disabling all events\n");
--		return 0;
-+		return;
- 	}
- 
- 	pr_cont("OK\n");
+ static ssize_t
++tracing_saved_cmdlines_read(struct file *file, char __user *ubuf,
++				size_t cnt, loff_t *ppos)
++{
++	char *buf_comm;
++	char *file_buf;
++	char *buf;
++	int len = 0;
++	int pid;
++	int i;
++
++	file_buf = kmalloc(SAVED_CMDLINES*(16+TASK_COMM_LEN), GFP_KERNEL);
++	if (!file_buf)
++		return -ENOMEM;
++
++	buf_comm = kmalloc(TASK_COMM_LEN, GFP_KERNEL);
++	if (!buf_comm) {
++		kfree(file_buf);
++		return -ENOMEM;
++	}
++
++	buf = file_buf;
++
++	for (i = 0; i < SAVED_CMDLINES; i++) {
++		int r;
++
++		pid = map_cmdline_to_pid[i];
++		if (pid == -1 || pid == NO_CMDLINE_MAP)
++			continue;
++
++		trace_find_cmdline(pid, buf_comm);
++		r = sprintf(buf, "%d %s\n", pid, buf_comm);
++		buf += r;
++		len += r;
++	}
++
++	len = simple_read_from_buffer(ubuf, cnt, ppos,
++				      file_buf, len);
++
++	kfree(file_buf);
++	kfree(buf_comm);
++
++	return len;
 +}
 +
-+#ifdef CONFIG_FUNCTION_TRACER
-+
-+static DEFINE_PER_CPU(atomic_t, test_event_disable);
-+
-+static void
-+function_test_events_call(unsigned long ip, unsigned long parent_ip)
-+{
-+	struct ring_buffer_event *event;
-+	struct ftrace_entry *entry;
-+	unsigned long flags;
-+	long disabled;
-+	int resched;
-+	int cpu;
-+	int pc;
-+
-+	pc = preempt_count();
-+	resched = ftrace_preempt_disable();
-+	cpu = raw_smp_processor_id();
-+	disabled = atomic_inc_return(&per_cpu(test_event_disable, cpu));
-+
-+	if (disabled != 1)
-+		goto out;
-+
-+	local_save_flags(flags);
-+
-+	event = trace_current_buffer_lock_reserve(TRACE_FN, sizeof(*entry),
-+						  flags, pc);
-+	if (!event)
-+		goto out;
-+	entry	= ring_buffer_event_data(event);
-+	entry->ip			= ip;
-+	entry->parent_ip		= parent_ip;
-+
-+	trace_current_buffer_unlock_commit(event, flags, pc);
-+
-+ out:
-+	atomic_dec(&per_cpu(test_event_disable, cpu));
-+	ftrace_preempt_enable(resched);
-+}
-+
-+static struct ftrace_ops trace_ops __initdata  =
-+{
-+	.func = function_test_events_call,
++static const struct file_operations tracing_saved_cmdlines_fops = {
++    .open       = tracing_open_generic,
++    .read       = tracing_saved_cmdlines_read,
 +};
 +
-+static __init void event_trace_self_test_with_function(void)
-+{
-+	register_ftrace_function(&trace_ops);
-+	pr_info("Running tests again, along with the function tracer\n");
-+	event_trace_self_tests();
-+	unregister_ftrace_function(&trace_ops);
-+}
-+#else
-+static __init void event_trace_self_test_with_function(void)
-+{
-+}
-+#endif
-+
-+static __init int event_trace_self_tests_init(void)
-+{
-+
-+	event_trace_self_tests();
-+
-+	event_trace_self_test_with_function();
++static ssize_t
+ tracing_ctrl_read(struct file *filp, char __user *ubuf,
+ 		  size_t cnt, loff_t *ppos)
+ {
+@@ -3973,6 +4023,9 @@ static __init int tracer_init_debugfs(void)
+ 	trace_create_file("trace_marker", 0220, d_tracer,
+ 			NULL, &tracing_mark_fops);
  
- 	return 0;
- }
++	trace_create_file("saved_cmdlines", 0444, d_tracer,
++			NULL, &tracing_saved_cmdlines_fops);
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 	trace_create_file("dyn_ftrace_total_info", 0444, d_tracer,
+ 			&ftrace_update_tot_cnt, &tracing_dyn_info_fops);
 -- 
 1.6.2.1
 
