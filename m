@@ -1,57 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbZDQWzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760629AbZDQW4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759293AbZDQWzv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 18:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZDQWzk
+	id S1760629AbZDQW4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 18:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbZDQWzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 18:55:40 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1391 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbZDQWzk (ORCPT
+	Fri, 17 Apr 2009 18:55:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34415
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756643AbZDQWzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 18:55:40 -0400
-Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
- updates
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: randy.dunlap@oracle.com, torvalds@linux-foundation.org,
+	Fri, 17 Apr 2009 18:55:47 -0400
+Date: Fri, 17 Apr 2009 15:55:38 -0700 (PDT)
+Message-Id: <20090417.155538.246001651.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20090417151853.6f02d8d3.akpm@linux-foundation.org>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	 <1240003652.31116.44.camel@localhost>
-	 <20090417144117.4ac8828f.akpm@linux-foundation.org>
-	 <1240006168.31116.62.camel@localhost>
-	 <20090417151853.6f02d8d3.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 15:53:49 -0700
-Message-Id: <1240008829.31116.74.camel@localhost>
+Subject: Re: pull request: wireless-2.6 2009-04-17
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090417195407.GC3291@tuxdriver.com>
+References: <20090417195407.GC3291@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 15:18 -0700, Andrew Morton wrote:
-> On Fri, 17 Apr 2009 15:09:28 -0700
-> Joe Perches <joe@perches.com> wrote:
-> > I changed the script to verify that a .git directory
-> > exists before running git.
-> 
-> hm, well, there's benefit in telling the user "hey, you'll get better
-> results if you run this in your git directory".
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 17 Apr 2009 15:54:07 -0400
 
-OK, I'll add the message
+> git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
 
-+    if (!(-d ".git")) {
-+	warn("$P: .git repository not found.\n");
-+	warn("Use a .git repository for better results.\n");
-+	warn("ie: git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git\n");
-+	return;
-+    }
-
-when I submit the patches.
-
-cheers, Joe
-
+Looks good, pulled, thanks!
