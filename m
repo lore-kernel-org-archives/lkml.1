@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZDQAW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbZDQA2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbZDQAW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZDQAWT
+	id S1758535AbZDQA2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZDQA2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:22:19 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52660 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbZDQAWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:22:18 -0400
-Date: Fri, 17 Apr 2009 09:20:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrea Righi <righi.andrea@gmail.com>, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, axboe@kernel.dk, baramsori72@gmail.com,
-       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
-       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       ryov@valinux.co.jp, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-Message-Id: <20090417092040.1c832c69.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090416152937.b2188370.akpm@linux-foundation.org>
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
-	<1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
-	<20090416152937.b2188370.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 20:28:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55184 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753820AbZDQA2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:28:08 -0400
+Date: Fri, 17 Apr 2009 02:27:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090417002744.GB29630@elte.hu>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090417001345.GH26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 15:29:37 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Tue, 14 Apr 2009 22:21:14 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+
+> On Fri, Apr 17, 2009 at 02:01:42AM +0200, Ingo Molnar wrote:
+> > 
+> > * Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> > 
+> > > remount is potentially nastier, but then it *is* nasty.  Again, 
+> > > it's only per-fs stuff, so the obvious first step is taking BKL 
+> > > down into the instances. It doesn't protect anything in VFS; all 
+> > > uses are fs internal, so that'll take review of individual 
+> > > filesystems.
+> > > 
+> > > NOTE: do not assume that code in fs/foo/* is correct; "it doesn't 
+> > > take BKL elsewhere" does _not_ mean that we don't have races.  
+> > > IOW, the same review ought to look for such beasts and deal with 
+> > > them.  Mere "oh, no BKL anywhere in that fs" is not enough to 
+> > > discard the ->remount_fs() instance.
+> > 
+> > what kind of races do you mean? Timing sensitive ones that are there 
+> > just are not easy to trigger with the BKL held?
+> > 
+> > Or actual locking interaction between that body of BKL code and 
+> > all other BKL using code?
 > 
-> > Subject: [PATCH 3/9] bio-cgroup controller
-> 
-> Sorry, but I have to register extreme distress at the name of this. 
-> The term "bio" is well-established in the kernel and here we have a new
-> definition for the same term: "block I/O".
-> 
-> "bio" was a fine term for you to have chosen from the user's
-> perspective, but from the kernel developer perspective it is quite
-> horrid.  The patch adds a vast number of new symbols all into the
-> existing "bio_" namespace, many of which aren't related to `struct bio'
-> at all.
-> 
-> At least, I think that's what's happening.  Perhaps the controller
-> really _is_ designed to track `struct bio'?  If so, that's an odd thing
-> to tell userspace about.
-> 
-Hmm, how about iotrack-cgroup ?
+> Old foo_read_super/foo_write_super/foo_put_super/foo_remount_fs 
+> for the same foo.  IOW, per-driver (and not per-fs - that's taken 
+> care of) data structures.  Arbitrary weird ones.
+
+Could you give an example of such a weird interaction?
+
+I fear, unless i'm misunderstanding your feedback, that you are 
+setting the purist's irrealistically high burden to get rid of the 
+BKL from the VFS here.
+
+"Arbitrary weird ones" means all BKL using sites in the kernel - all 
+~800 ones - up to 800x800 == close to a million interactions to 
+check.
+
+That's not manageable humanly, nor does it really matter: most BKL 
+assumptions have bit-rotted anyway already (by the sheer entropy of 
+kernel facilities growing new schedule() sites or moving them, over 
+a period of 10 years or more) and many BKL using drivers are broken 
+already or dont need it at all.
 
 Thanks,
--Kame
 
-
-> 
-> > The controller bio-cgroup is used by io-throttle to track writeback IO
-> > and for properly apply throttling.
-> 
-> Presumably it tracks all forms of block-based I/O and not just delayed
-> writeback.
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+	Ingo
