@@ -1,108 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbZDQANZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbZDQANm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbZDQANZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbZDQANI
+	id S1758687AbZDQANm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbZDQANa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:13:08 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:50696 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755611AbZDQANG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:13:06 -0400
-Date: Thu, 16 Apr 2009 17:13:04 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com,
-       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] netfilter: use per-cpu recursive spinlock  (v6)
-Message-ID: <20090417001304.GA21657@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090415.164811.19905145.davem@davemloft.net> <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <20090415174551.529d241c@nehalam> <49E6BBA9.2030701@cosmosbay.com> <49E7384B.5020707@trash.net> <20090416144748.GB6924@linux.vnet.ibm.com> <49E75876.10509@cosmosbay.com> <20090416175850.GH6924@linux.vnet.ibm.com> <49E77BF6.1080206@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 16 Apr 2009 20:13:30 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:46824 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755736AbZDQAN3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:13:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiAFAJtj50lMQW1W/2dsb2JhbACBTs5vg30G
+Date: Thu, 16 Apr 2009 20:13:17 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/8] tracing: create automated trace defines
+Message-ID: <20090417001317.GB20513@Krystal>
+References: <20090414172337.280621613@goodmis.org> <20090414172640.796858018@goodmis.org> <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal> <49E7C74A.8030100@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49E77BF6.1080206@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <49E7C74A.8030100@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:08:56 up 47 days, 20:35,  3 users,  load average: 0.39, 0.75,
+	0.64
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 08:41:58PM +0200, Eric Dumazet wrote:
-> 
-> 
-> Paul E. McKenney a écrit :
-> > 
-> > But if some other CPU holds the lock, this code would fail to wait for
-> > that other CPU to release the lock, right?  It also might corrupt the
-> > rl->count field due to two CPUs accessing it concurrently non-atomically.
-> 
-> If another cpu holds the lock, this cpu will spin on its own lock.
-> 
-> Remember other cpus dont touch rl->count. This is a private field, only touched
-> by the cpu on its own per_cpu data. There is no possible 'corruption'
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
+>> The other point I dislike about the out-of-line approach is that the
+>> tracer will suffer from a pointless supplementary function call at each
+>> event. Given how slow function calls are, at least on x86, I'd prefer
+>> leaving the handler call chain inline, unless there is a very strong
+>> reason not to do so.
+>>   
+>
+> Are they?  They're generally considered to be "free", because the call  
+> and return are predicted 100% accurately.
+>
 
-Ah!!!  I must confess that I didn't make it that far into the code...
+Adding a simple function call within the tracer fast path, in LTTng, has
+a very measurable performance impact on the tbench workload. This is why
+I don't use any function call-based trace clocks in LTTng, but rather my
+own inline trace clock.
 
-> So the owner of the per_cpu data does :
-> 
-> /*
->  * disable preemption, get rl = &__get_cpu_var(arp_tables_lock);
->  * then :
->  */
-> lock_time :
-> if (++rl->count == 0)
-> 	spin_lock(&rl->lock);
-> 
-> unlock_time:
-> if (likely(--rl->count == 0))
-> 	spin_unlock(&rl->lock);
-> 
-> 
-> while other cpus only do :
-> 
-> spin_lock(&rl->lock);
-> /* work on data */
-> spin_unlock(&rl->lock);
-> 
-> So they cannot corrupt 'count' stuff.
+Mathieu
 
-OK, that does function.  Hurts my head, though.  ;-)
+>> I'll come up with a patch that leaves the tracepoint inline, but fixes
+>> the header dependency.
+>>   
+> OK.
+>
+>    J
+>
 
-> > I suggest the following, preferably in a function or macro or something:
-> > 
-> > 	cur_cpu = smp_processor_id();
-> > 	if (likely(rl->owner != cur_cpu) {
-> > 		spin_lock(&rl->lock);
-> > 		rl->owner = smp_processor_id();
-> > 		rl->count = 1;
-> > 	} else {
-> > 		rl->count++;
-> > 	}
-> > 
-> > And the inverse for unlock.
-> > 
-> > Or am I missing something subtle?
-> 
-> Apparently Linus missed it too, and reacted badly to my mail.
-> I dont know why we discuss of this stuff on lkml either...
 
-Encapsulating them so that they appear in the same place might (or might
-not) have gotten the fact that you were not doing a recursive lock
-through my head.  Even so, the name "rec_lock" might have overwhelmed
-the code structure in my mind.  ;-)
 
-> I stop working on this subject and consider drinking dome hard stuf and
-> watching tv :)
 
-That -is- extreme!  ;-)
-
-							Thanx, Paul
-
-> See you
-> 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
