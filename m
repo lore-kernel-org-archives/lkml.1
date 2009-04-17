@@ -1,168 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbZDQDvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751020AbZDQECT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbZDQDvj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 23:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZDQDvb
+	id S1751020AbZDQECT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 00:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbZDQECG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 23:51:31 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35849 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbZDQDva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 23:51:30 -0400
-Date: Fri, 17 Apr 2009 12:49:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add file based RSS accounting for memory resource
- controller (v2)
-Message-Id: <20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090417034539.GD18558@balbir.in.ibm.com>
-References: <20090415120510.GX7082@balbir.in.ibm.com>
-	<20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416015955.GB7082@balbir.in.ibm.com>
-	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090416120316.GG7082@balbir.in.ibm.com>
-	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417014042.GB18558@balbir.in.ibm.com>
-	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417034539.GD18558@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 17 Apr 2009 00:02:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45012 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750752AbZDQECE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 00:02:04 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19Oeh5qLHdOZk2DVMEe9iF1E8YdNLMwQSVDuBfkmJ
+	bypPZzE566x1Ua
+Subject: Re: [Bug #13114] USB storage (usbstick) automount woes
+From: Mike Galbraith <efault@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <nY3-4PrO6XH.A.wsH.Nw85JB@chimera>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+	 <nY3-4PrO6XH.A.wsH.Nw85JB@chimera>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 06:01:59 +0200
+Message-Id: <1239940919.5879.11.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 09:15:39 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 11:03:50]:
+On Thu, 2009-04-16 at 23:45 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> > On Fri, 17 Apr 2009 07:10:42 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
-> > > 
-> > > > On Thu, 16 Apr 2009 17:33:16 +0530
-> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
-> > > > > 
-> > > > > > 
-> > > > > > > Sorry, some troubles found. Ignore above Ack. 3points now.
-> > > > > > > 
-> > > > > > > 1. get_cpu should be after (*)
-> > > > > > > ==mem_cgroup_update_mapped_file_stat()
-> > > > > > > +	int cpu = get_cpu();
-> > > > > > > +
-> > > > > > > +	if (!page_is_file_cache(page))
-> > > > > > > +		return;
-> > > > > > > +
-> > > > > > > +	if (unlikely(!mm))
-> > > > > > > +		mm = &init_mm;
-> > > > > > > +
-> > > > > > > +	mem = try_get_mem_cgroup_from_mm(mm);
-> > > > > > > +	if (!mem)
-> > > > > > > +		return;
-> > > > > > > + ----------------------------------------(*)
-> > > > > > > +	stat = &mem->stat;
-> > > > > > > +	cpustat = &stat->cpustat[cpu];
-> > > > > > > +
-> > > > > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
-> > > > > > > +	put_cpu();
-> > > > > > > +}
-> > > > > > > ==
-> > > > > 
-> > > > > Yes or I should have a goto
-> > > > > 
-> > > > > > > 
-> > > > > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
-> > > > > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
-> > > > > 
-> > > > > Hmmm.. not sure I understand this part. Are you suggesting that mm can
-> > > > > be NULL?
-> > > > No.
-> > > > 
-> > > > > I added the check for !mm as a safety check. Since this
-> > > > > routine is only called from rmap context, mm is not NULL, hence mem
-> > > > > should not be NULL. Did you find a race between mm->owner assignment
-> > > > > and lookup via mm->owner?
-> > > > > 
-> > > > No.
-> > > > 
-> > > > page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
-> > > > 
-> > > > For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
-> > > > used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
-> > > > 
-> > > > Then, File_Mapped can be greater than Cached easily if you use mm->owner.
-> > > > 
-> > > > I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
-> > > > other cgroups. It's meaningless.
-> > > > Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
-> > > > 
-> > > > By useing page_cgroup->mem_cgroup, we can avoid above mess.
-> > > 
-> > > Yes, I see your point. I wanted mapped_file to show up in the cgroup
-> > > that mapped the page. But this works for me as well, but that means
-> > > we'll nest the page cgroup lock under the PTE lock.
-> > 
-> > Don't worry. we do that nest at ANON's uncharge(), already.
-> > 
-> > About cost:
-> > 
-> > IIUC, the number of "mapcount 0->1/1->0" of file caches are much smaller than
-> > that of o Anon. And there will be not very much cache pingpong.
-> > 
-> > If you use PCG_MAPPED flag in page_cgroup (as my patch), you can use
-> > not-atomic version of set/clear when update is only under lock_page_cgroup().
-> > If you find better way, plz use it. But we can't avoid some kind of atomic ops
-> > for correct accounting, I think.
-> >
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Can you sign off on your patch, so that I can take it with your
-> signed-off-by. I will also make some minor changes, get_cpu() is not
-> needed, since we are in preempt disable context. 
 > 
-Hmm, 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13114
+> Subject		: USB storage (usbstick) automount woes
+> Submitter	: Mike Galbraith <efault@gmx.de>
+> Date		: 2009-04-09 9:26 (8 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e6e244b6cb1f70e7109381626293cd40a8334ed3
+> References	: http://marc.info/?l=linux-kernel&m=123926928907568&w=4
+> Handled-By	: Alan Stern <stern@rowland.harvard.edu>
 
-But some more clean up is necesarry.
+The fix is in the pipe.
 
-=== This part ==
-+	lock_page_cgroup(pc);
-+	mem = pc->mem_cgroup;
-+	if (mem) {
-+		cpu = get_cpu();
-+		stat = &mem->stat;
-+		cpustat = &stat->cpustat[cpu];
-+		if (map)
-
-=== Should be ==
-+	lock_page_cgroup(pc);
-	if (!PageCgroupUsed(pc)) {
-		unlock_page_cgroup(pc);
-		return;
-	}
-	mem = pc->mem_cgroup
-	VM_BUG_ON(!mem);
-	cpu = get_cpu();
-	stat = &mem->stat;
-	cpustat = &stat->cpustat[cpu];
-	if (map)
-.....
-
-Maybe much cleaner.
-
-Thanks,
--Kame
-
-
+	-Mike
 
