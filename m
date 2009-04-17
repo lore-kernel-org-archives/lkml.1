@@ -1,146 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761818AbZDQOtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbZDQOty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761818AbZDQOtk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760964AbZDQOta
+	id S1761376AbZDQOty (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761865AbZDQOtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:49:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53139 "EHLO mx2.redhat.com"
+	Fri, 17 Apr 2009 10:49:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43942 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759512AbZDQOta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:49:30 -0400
-Date: Fri, 17 Apr 2009 11:49:08 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2 2/2] kvm userspace: Add MCE simulation to kvm
-Message-ID: <20090417144908.GA24261@amt.cnet>
-References: <1239953925.6842.21.camel@yhuang-dev.sh.intel.com>
+	id S1761849AbZDQOtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 10:49:41 -0400
+Date: Fri, 17 Apr 2009 14:48:50 GMT
+From: tip-bot for Weidong Han <weidong.han@intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       suresh.b.siddha@intel.com, weidong.han@intel.com, tglx@linutronix.de,
+       randy.dunlap@oracle.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       randy.dunlap@oracle.com, mingo@elte.hu
+In-Reply-To: <1239957736-6161-2-git-send-email-weidong.han@intel.com>
+References: <1239957736-6161-2-git-send-email-weidong.han@intel.com>
+Subject: [tip:x86/apic] docs, x86: add nox2apic back to kernel-parameters.txt
+Message-ID: <tip-66a2f36639a85d06e28819e2896efbea38e97ada@git.kernel.org>
+Git-Commit-ID: 66a2f36639a85d06e28819e2896efbea38e97ada
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1239953925.6842.21.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 14:48:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Huang,
+Commit-ID:  66a2f36639a85d06e28819e2896efbea38e97ada
+Gitweb:     http://git.kernel.org/tip/66a2f36639a85d06e28819e2896efbea38e97ada
+Author:     Weidong Han <weidong.han@intel.com>
+AuthorDate: Fri, 17 Apr 2009 16:42:12 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 17 Apr 2009 16:23:44 +0200
 
-On Fri, Apr 17, 2009 at 03:38:45PM +0800, Huang Ying wrote:
-> - MCE features are initialized when VCPU is initialized according to CPUID.
-> - A monitor command "mce" is added to inject a MCE.
-> 
-> 
-> ChangeLog:
-> 
-> v2:
-> 
-> - Use new kernel MCE capability exportion interface.
-> 
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> ---
->  libkvm/libkvm-x86.c    |   33 +++++++++++++++++++++++++++++++++
->  libkvm/libkvm.h        |    4 ++++
->  qemu/monitor.c         |   26 ++++++++++++++++++++++++++
->  qemu/qemu-kvm-x86.c    |   33 +++++++++++++++++++++++++++++++++
->  qemu/qemu-kvm.c        |   26 ++++++++++++++++++++++++++
->  qemu/qemu-kvm.h        |    4 ++++
->  qemu/target-i386/cpu.h |    3 +++
->  7 files changed, 129 insertions(+)
-> 
-> --- a/qemu/monitor.c
-> +++ b/qemu/monitor.c
-> @@ -1557,6 +1557,31 @@ static void do_info_status(Monitor *mon)
->  }
->  
->  
-> +#if defined(TARGET_I386) || defined(TARGET_X86_64)
-> +static void do_inject_mce(Monitor *mon,
-> +			  int cpu_index, int bank,
-> +			  unsigned status_hi, unsigned status_lo,
-> +			  unsigned mcg_status_hi, unsigned mcg_status_lo,
-> +			  unsigned addr_hi, unsigned addr_lo,
-> +			  unsigned misc_hi, unsigned misc_lo)
-> +{
-> +    CPUState *env;
-> +    struct kvm_x86_mce mce = {
-> +	.bank = bank,
-> +	.status = ((uint64_t)status_hi << 32) | status_lo,
-> +	.mcg_status = ((uint64_t)mcg_status_hi << 32) | mcg_status_lo,
-> +	.addr = ((uint64_t)addr_hi << 32) | addr_lo,
-> +	.misc = ((uint64_t)misc_hi << 32) | misc_lo,
-> +    };
-> +
-> +    for (env = first_cpu; env != NULL; env = env->next_cpu)
-> +	if (env->cpu_index == cpu_index && env->mcg_cap) {
-> +	    kvm_inject_x86_mce(env, &mce);
-> +	    break;
-> +	}
-> +}
-> +#endif
+docs, x86: add nox2apic back to kernel-parameters.txt
 
-This will break compilation on hosts with older kernel headers. To ease
-the merge with QEMU, do_inject_mce should call qemu_inject_x86_mce,
-which does nothing for the case where KVM is disabled, or call KVM
-specific function otherwise (knowledge about struct kvm_x86_mce should
-be contained within KVM code).
+"nox2apic" was removed from kernel-parameters.txt by mistake, when
+entries were sorted in alpha order (commit 0cb55ad2). But this early
+parameter is still there, add it back to kernel-parameters.txt.
 
-> +
->  static void do_balloon(Monitor *mon, int value)
->  {
->      ram_addr_t target = value;
-> @@ -1758,6 +1783,7 @@ static const mon_cmd_t mon_cmds[] = {
->        "[tap,user,socket,vde] options", "add host VLAN client" },
->      { "host_net_remove", "is", net_host_device_remove,
->        "vlan_id name", "remove host VLAN client" },
-> +    { "mce", "iillll", do_inject_mce, "cpu bank status mcgstatus addr misc", "inject a MCE on the given CPU"},
->  #endif
->      { "balloon", "i", do_balloon,
->        "target", "request VM to change it's memory allocation (in MB)" },
-> --- a/libkvm/libkvm-x86.c
-> +++ b/libkvm/libkvm-x86.c
-> @@ -379,6 +379,39 @@ int kvm_set_msrs(kvm_context_t kvm, int 
->      return r;
->  }
->  
->
-> +int kvm_get_mce_cap_supported(kvm_context_t kvm, uint64_t *mce_cap,
-> +			      int *max_banks)
-> +{
-> +    int r;
-> +
-> +    r = ioctl(kvm->fd, KVM_CHECK_EXTENSION, KVM_CAP_MCE);
-> +    if (r > 0) {
-> +	*max_banks = r;
-> +	return ioctl(kvm->fd, KVM_X86_GET_MCE_CAP_SUPPORTED, mce_cap);
-> +    }
-> +    return -ENOSYS;
-> +}
-> +
-> +int kvm_setup_mce(kvm_context_t kvm, int vcpu, uint64_t *mcg_cap)
-> +{
-> +    int r;
-> +
-> +    r = ioctl(kvm->fd, KVM_CHECK_EXTENSION, KVM_CAP_MCE);
-> +    if (r > 0)
-> +	return ioctl(kvm->vcpu_fd[vcpu], KVM_X86_SETUP_MCE, mcg_cap);
-> +    return -ENOSYS;
-> +}
-> +
-> +int kvm_set_mce(kvm_context_t kvm, int vcpu, struct kvm_x86_mce *m)
-> +{
-> +    int r;
-> +
-> +    r = ioctl(kvm->fd, KVM_CHECK_EXTENSION, KVM_CAP_MCE);
-> +    if (r > 0)
-> +	return ioctl(kvm->vcpu_fd[vcpu], KVM_X86_SET_MCE, m);
-> +    return -ENOSYS;
-> +}
+[ Impact: add boot parameter description ]
 
-Have to #ifdef KVM_CAP_MCE where appropriate, otherwise compilation 
-on hosts with older kernel headers fail.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Weidong Han <weidong.han@intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: iommu@lists.linux-foundation.org
+Cc: dwmw2@infradead.org
+Cc: allen.m.kay@intel.com
+Cc: fenghua.yu@intel.com
+LKML-Reference: <1239957736-6161-2-git-send-email-weidong.han@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
+
+---
+ Documentation/kernel-parameters.txt |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 6172e43..33989d2 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1588,6 +1588,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	nowb		[ARM]
+ 
++	nox2apic	[X86-64,APIC] Do not enable x2APIC mode.
++
+ 	nptcg=		[IA64] Override max number of concurrent global TLB
+ 			purges which is reported from either PAL_VM_SUMMARY or
+ 			SAL PALO.
