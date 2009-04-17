@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZDQHzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbZDQH4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758347AbZDQHzS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDQHzA
+	id S1759874AbZDQH4W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZDQH4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:55:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43931
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751400AbZDQHzA (ORCPT
+	Fri, 17 Apr 2009 03:56:11 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4328 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754352AbZDQH4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:55:00 -0400
-Date: Fri, 17 Apr 2009 00:54:51 -0700 (PDT)
-Message-Id: <20090417.005451.215477692.davem@davemloft.net>
-To: bn@niasdigital.com
-Cc: hskinnemoen@atmel.com, jgarzik@pobox.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] macb: Kconfig net device compat fixup
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1239953045.2837.58.camel@linux-51e8.site>
-References: <1239953045.2837.58.camel@linux-51e8.site>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 17 Apr 2009 03:56:10 -0400
+Subject: Re: RFC: introduce struct ksymbol
+From: Joe Perches <joe@perches.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200904152021.41427.rusty@rustcorp.com.au>
+References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com>
+	 <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
+	 <200904152021.41427.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 00:55:33 -0700
+Message-Id: <1239954933.31728.12.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ben Nizette <bn@niasdigital.com>
-Date: Fri, 17 Apr 2009 17:24:05 +1000
-
-> The macb driver hasn't been updated to use net_device_ops and as such
-> should select COMPAT_NET_DEV_OPS to avoid build breakage.
+On Wed, 2009-04-15 at 20:21 +0930, Rusty Russell wrote: 
+> On Wed, 15 Apr 2009 03:28:39 pm Ingo Molnar wrote:
+> > Why not 'struct ksym'? That name is unused right now, it is shorter 
+> > and just as descriptive.
+> > 
+> > Regarding the change... dunno. Sam, Rusty - what do you think?
 > 
-> Of course really macb should be updated but in the mean time, this at
-> least avoid randconfig problems.
+> Yes, ksym is nice.  But agree with you that it's marginal obfuscation
+> to wrap it in a struct.
 > 
-> Signed-off-by: Ben Nizette <bn@niasdigital.com>
+> The current symbol printing APIs are awful; we should address them first
+> (like the %pF patch does) IMHO.
 
-There's about 26 drivers that fall into this category, it's senseless
-to pepper the tree over with this kind of annotation that we'll just
-release come next release.
+I suggest just %pS<type>
 
-We do have enough drivers converted that powerpc, sparc64, and x86
-allmodconfig and allyesconfig builds pass even with the compat option
-disabled.
+With %pS, struct ksym is probably not all that
+useful unless it's for something like a sscanf.
 
-And I think the others can just cope with this for now.
+Today there are these symbol uses:
+name, offset, size, modname
 
-Actually, in the net-next-2.6 tree this driver has in fact been
-converted :-)
+So perhaps %pS<foo> where foo is any combination of:
+
+n name
+o offset
+s size
+m modname
+a all
+
+and if not specified is a name lookup ("%pSn").
+
+
