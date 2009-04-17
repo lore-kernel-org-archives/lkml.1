@@ -1,125 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbZDQFkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZDQFpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757751AbZDQFkt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 01:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZDQFkh
+	id S1755621AbZDQFpJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 01:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZDQFox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 01:40:37 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51069 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbZDQFkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 01:40:36 -0400
-Date: Thu, 16 Apr 2009 22:40:32 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com,
-       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-Message-ID: <20090417054032.GD6885@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090416215033.3e648a7a@nehalam> <49E810B0.9000906@cosmosbay.com>
+	Fri, 17 Apr 2009 01:44:53 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:33753 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbZDQFow (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 01:44:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MR4/SEIjH8xh7Mm50u3GmsZTWif04VJ1r2kMqDvDXErwCXDKrrOkEsAVavT5Uw08F+
+         0It9vTE3IsERzZN3FSDgUZ+JsAQ8MxqJFk3WW68DTEksAwlwRmATnel8UaAZBC5hdbVd
+         l8fzONR0c94PzwqD27fwlLblZI7syY+8bRdYo=
+Date: Fri, 17 Apr 2009 07:44:48 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>, Greg KH <greg@kroah.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: fix file mode of trace and README
+Message-ID: <20090417054447.GA6020@nowhere>
+References: <49E7EAB6.4070605@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49E810B0.9000906@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <49E7EAB6.4070605@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 07:16:32AM +0200, Eric Dumazet wrote:
-> Stephen Hemminger a écrit :
-> > On Thu, 16 Apr 2009 18:28:12 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> >> On Thu, Apr 16, 2009 at 04:49:55PM -0700, Paul E. McKenney wrote:
-> >>> On Thu, Apr 16, 2009 at 03:33:54PM -0700, David Miller wrote:
-> >>>> From: Patrick McHardy <kaber@trash.net>
-> >>>> Date: Thu, 16 Apr 2009 15:11:31 +0200
-> >>>>
-> >>>>> Linus Torvalds wrote:
-> >>>>>> On Wed, 15 Apr 2009, Stephen Hemminger wrote:
-> >>>>>>> The counters are the bigger problem, otherwise we could just free
-> >>>>>>> table
-> >>>>>>> info via rcu.  Do we really have to support: replace where the counter
-> >>>>>>> values coming out to user space are always exactly accurate, or is it
-> >>>>>>> allowed to replace a rule and maybe lose some counter ticks (worst
-> >>>>>>> case
-> >>>>>>> NCPU-1).
-> >>>>>> Why not just read the counters fromt he old one at RCU free time (they
-> >>>>>> are guaranteed to be stable at that point, since we're all done with
-> >>>>>> those entries), and apply them at that point to the current setup?
-> >>>>> We need the counters immediately to copy them to userspace, so waiting
-> >>>>> for an asynchronous RCU free is not going to work.
-> >>>> It just occurred to me that since all netfilter packet handling
-> >>>> goes through one place, we could have a sort-of "netfilter RCU"
-> >>>> of sorts to solve this problem.
-> >>> OK, I am putting one together...
-> >>>
-> >>> It will be needed sooner or later, though I suspect per-CPU locking
-> >>> would work fine in this case.
-> >> And here is a crude first cut.  Untested, probably does not even compile.
-> >>
-> >> Straight conversion of Mathieu Desnoyers's user-space RCU implementation
-> >> at git://lttng.org/userspace-rcu.git to the kernel (and yes, I did help
-> >> a little, but he must bear the bulk of the guilt).  Pick on srcu.h
-> >> and srcu.c out of sheer laziness.  User-space testing gives deep
-> >> sub-microsecond grace-period latencies, so should be fast enough, at
-> >> least if you don't mind two smp_call_function() invocations per grace
-> >> period and spinning on each instance of a per-CPU variable.
-> >>
-> >> Again, I believe per-CPU locking should work fine for the netfilter
-> >> counters, but I guess "friends don't let friends use hashed locks".
-> >> (I would not know for sure, never having used them myself, except of
-> >> course to protect hash tables.)
-> >>
-> >> Most definitely -not- for inclusion at this point.  Next step is to hack
-> >> up the relevant rcutorture code and watch it explode on contact.  ;-)
-> >>
-> >> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > I am glad to see this worked on, but would rather not use RCU in this case
-> > of iptables. It would be good for some of the other long grace period sutff.
-> > 
-> > The code to per-cpu entry consolidation by alloc/flip in 2.6.30-rc2 was
-> > hard to debug and more convoluted so it probably would be a long term maintaince
-> > nightmare.  The issue was the variable size skip structure so it made
-> > for lots of iterators, etc. If the non-RCU per-cpu spinlock version is just
-> > as fast, it is easier to understand.
+On Fri, Apr 17, 2009 at 10:34:30AM +0800, Li Zefan wrote:
+> trace is read-write and README is read-only.
 > 
-> I agree that for 2.6.30, we could use a per-cpu spinlock as your last patch did,
-> this would be very risky to push this new RCU right now. 
-
-I completely agree that this RCU is absolutely -not- 2.6.30 material.  ;-)
-
-> But this new stuff looks very promising, (no more locked ops on fast path),
-> and considering new percpu_{add|sub...} infra, very fast :
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> static inline void rcu_read_unlock_fgp(void)
-> {
-> 	barrier();
-> 	percpu_sub(rcu_fgp_active_readers, 1); /* one instruction on x86 */
-> 	preempt_enable();
-> }
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 031c46f..f681f64 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -4002,7 +4002,7 @@ static __init int tracer_init_debugfs(void)
+>  	trace_create_file("available_tracers", 0444, d_tracer,
+>  			&global_trace, &show_traces_fops);
+>  
+> -	trace_create_file("current_tracer", 0444, d_tracer,
+> +	trace_create_file("current_tracer", 0644, d_tracer,
+>  			&global_trace, &set_tracer_fops);
 
-Very cool!!!  If I had seen this, I had forgotten about it.  I will
-give it a try, but only after getting it working the old way.  (What,
-me paranoid?)
 
-> I wonder if IPI are really necessary on x86 if we use percpu_sub() since
-> it already contains a barrier, and rcu_read_lock_fgp(void) also ends with
-> a barrier() call...
 
-Hmmmm...  But x86 can still execute a later load before an earlier
-store, so it seems to me that there would be the potential for even
-an x86 CPU to pull loads from the critical section up before the final
-store of the percpu_sub(), right?  If so, we really do still need the
-IPIs on x86.
+Oh!
+I wonder how much time we ran with this false permission.
+It clearly shows a bug in debugfs permission (or something
+near this this layer), we have be running with this file
+for a while and I've never seen any issue while writing into it.
 
-							Thanx, Paul
+And we have seen several patches with 0444 permissions for the
+tracing tree containing writeable files, showing that the authors
+ran them whithout problems.
+
+Adding Greg in Cc.
+
+
+
+>  
+>  	trace_create_file("tracing_max_latency", 0644, d_tracer,
+> @@ -4011,7 +4011,7 @@ static __init int tracer_init_debugfs(void)
+>  	trace_create_file("tracing_thresh", 0644, d_tracer,
+>  			&tracing_thresh, &tracing_max_lat_fops);
+>  
+> -	trace_create_file("README", 0644, d_tracer,
+> +	trace_create_file("README", 0444, d_tracer,
+>  			NULL, &tracing_readme_fops);
+
+
+
+At least this one was harmless, but still it fixes the correctness.
+
+Thanks,
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+
+
+>  	trace_create_file("trace_pipe", 0444, d_tracer,
+> -- 
+> 1.5.4.rc3
+> 
+
