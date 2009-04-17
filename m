@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbZDQVqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZDQVvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbZDQVqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 17:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZDQVqJ
+	id S1758050AbZDQVvV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZDQVvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 17:46:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41893 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754846AbZDQVqI (ORCPT
+	Fri, 17 Apr 2009 17:51:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39673 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZDQVvM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 17:46:08 -0400
-Date: Fri, 17 Apr 2009 14:41:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: randy.dunlap@oracle.com, torvalds@linux-foundation.org, akpm@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
- updates
-Message-Id: <20090417144117.4ac8828f.akpm@linux-foundation.org>
-In-Reply-To: <1240003652.31116.44.camel@localhost>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	<20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	<1240003652.31116.44.camel@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 17 Apr 2009 17:51:12 -0400
+Subject: Re: dma-debug: add a check dma memory leaks
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, reinette.chatre@intel.com,
+       benh@kernel.crashing.org, greg@kroah.com
+In-Reply-To: <200903302101.n2UL1O1n011970@hera.kernel.org>
+References: <200903302101.n2UL1O1n011970@hera.kernel.org>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 22:51:05 +0100
+Message-Id: <1240005065.19059.19.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 14:27:32 -0700
-Joe Perches <joe@perches.com> wrote:
+On Mon, 2009-03-30 at 21:01 +0000, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/linus/41531c8f5f05aba5ec645d9770557eedbf75b422
+> Commit:     41531c8f5f05aba5ec645d9770557eedbf75b422
 
-> $ ./scripts/get_maintainer.pl -f Documentation/DocBook/sh.tmpl 
+>     dma-debug: add a check dma memory leaks
+>     
+>     Impact: allow architectures to monitor busses for dma mem leakage
+>     
+>     This patch adds checking code to detect if a device has pending DMA
+>     operations when it is about to be unbound from its device driver.
+>     
+>     Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-Lots of people's scripts/get_maintainer.pl files won't have the `x' bit
-set because patch(1) is dumb.  So for reliability it's best to always do
 
-	perl ./scripts/get_maintainer.pl
+> +static int dma_debug_device_change(struct notifier_block *nb,
+> +				    unsigned long action, void *data)
+> +{
+> +	struct device *dev = data;
+> +	int count;
+> +
+> +
+> +	switch (action) {
+> +	case BUS_NOTIFY_UNBIND_DRIVER:
+> +		count = device_dma_allocations(dev);
+> +		if (count == 0)
+> +			break;
+> +		err_printk(dev, NULL, "DMA-API: device driver has pending "
+> +				"DMA allocations while released from device "
+> +				"[count=%d]\n", count);
 
-<does that>
+Hm, cute... but not quite functioning as you intended. If you look at
+__device_release_driver() in drivers/base/dd.c you'll see it actually
+calls the notifier _before_ calling into the driver's ->remove() method.
+So it's hardly surprising that not everything has been freed yet...
 
-: akpm:/usr/src/25> perl scripts/get_maintainer.pl -f fs/ext3/inode.c 
-: grep: The -P option is not supported
+Reported by Reinette when it bit iwlwifi.
 
-    that's odd.  `man grep' on this machine says
+Ben, can we get away with changing the order so that the ->remove() is
+called before the notifier, in this case? 
 
-    -P, --perl-regexp
-          Interpret PATTERN as a Perl regular expression.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-: fatal: Not a git repository
-
-    it whines about not being run in a git directory, but does a decent
-    job anyway.  
