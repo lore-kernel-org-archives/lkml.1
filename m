@@ -1,235 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbZDQDFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbZDQDNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbZDQDFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 23:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbZDQDFe
+	id S1757731AbZDQDNO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 23:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZDQDM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 23:05:34 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:62657 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754515AbZDQDFd (ORCPT
+	Thu, 16 Apr 2009 23:12:58 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:36666 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbZDQDM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 23:05:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEAJ+M50lMQW1W/2dsb2JhbACBTs46g30G
-Date: Thu, 16 Apr 2009 23:05:30 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] tracepoints : let subsystem nop-out the tracepoints at
-	build time
-Message-ID: <20090417030530.GB26612@Krystal>
-References: <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal> <49E7C74A.8030100@goop.org> <20090417001317.GB20513@Krystal> <49E7CADE.1060202@goop.org> <20090417002831.GC20513@Krystal> <49E7D0BC.4070700@goop.org>
-Mime-Version: 1.0
+	Thu, 16 Apr 2009 23:12:56 -0400
+Date: Fri, 17 Apr 2009 08:42:21 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 00/11] Hardware Breakpoint interfaces
+Message-ID: <20090417031221.GA4837@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090407063441.GA17461@in.ibm.com> <Pine.LNX.4.44L0.0904161718090.2909-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49E7D0BC.4070700@goop.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:38:21 up 47 days, 23:04,  1 user,  load average: 0.56, 0.67,
-	0.60
+In-Reply-To: <Pine.LNX.4.44L0.0904161718090.2909-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Mathieu Desnoyers wrote:
->> "all this code" is actually :
->>
->>                rcu_read_lock_sched_notrace();                          \
->>                 it_func = rcu_dereference((tp)->funcs);                 \
->>                 if (it_func) {                                          \
->>                         do {                                            \
->>                                 ((void(*)(proto))(*it_func))(args);     \
->>                         } while (*(++it_func));                         \
->>                 }                                                       \
->>                 rcu_read_unlock_sched_notrace();                        \
->>
->> Which does nothing more than disabling preemption and a for loop to
->> call all the tracepoint handlers. I don't see the big win in laying out
->> the stack to call this code out-of-line; we would just remove the
->> preempt disable and the loop, which are minimal compared to most
->> call stacks.
->>   
->
-> Well, look at it from my perspective:  Ingo has been repeatedly beating  
-> me up for the overhead pvops adds to a native kernel, where it really is  
-> just a (direct) function call.  I want to instrument each pvop site with  
-> a tracepoint so I can actually work out which calls are being called how  
-> frequently to look for new optimisation opportunities.
->
-> I would guess the tracepoint code sequence is going to increase the  
-> impact of each pvop call site by a fair bit, and that's not counting the  
-> effects the extra register pressure will have.  That's a pile of code to  
-> add.
->
-> And frankly, that's fine by me, because I would expect this degree of  
-> introspection to have some performance hit.  But it does make the need  
-> for per-subsystem tracing Kconfig entries fairly important, because I  
-> don't think this would be acceptable to ship in a non-debug-everything  
-> kernel build, even though other tracepoints might be.
->
-
-Agreed. Tracepoints might change the code surrounding the pvops in a
-similar fashion as the pvops themselves would change the code.
-Therefore, it makes sense to have a Kconfig option to enable the pvops
-tracepoints.
-
-In terms of tracepoints (with the DECLARE_TRACE/DEFINE_TRACE semantic),
-we could have something like :
-
-in include/trace/pvops.h :
-
-#include <linux/tracepoint.h>
-
-#ifdef CONFIG_PVOPS_TRACEPOINTS
-
-#define DECLARE_PVOPS_TRACE			DECLARE_TRACE
-#define DEFINE_PVOPS_TRACE			DEFINE_TRACE
-#define EXPORT_PVOPS_TRACEPOINT_SYMBOL_GPL	EXPORT_TRACEPOINT_SYMBOL_GPL
-#define EXPORT_PVOPS_TRACEPOINT_SYMBOL		EXPORT_TRACEPOINT_SYMBOL
-
-#else /* !CONFIG_PVOPS_TRACEPOINTS */
-
-#define DECLARE_PVOPS_TRACE			DECLARE_TRACE_NOP
-#define DEFINE_PVOPS_TRACE			DEFINE_TRACE_NOP
-#define EXPORT_PVOPS_TRACEPOINT_SYMBOL_GPL	EXPORT_TRACEPOINT_SYMBOL_GPL_NOP
-#define EXPORT_PVOPS_TRACEPOINT_SYMBOL		EXPORT_TRACEPOINT_SYMBOL_NOP
-
-#endif /* CONFIG_PVOPS_TRACEPOINTS */
-
-And then do the declarations/definitions using the new
-
-DECLARE_PVOPS_TRACE / DEFINE_PVOPS_TRACE.
-
-For that you'll need the patch I am attaching below. I'll let Steven
-figure out how to tweak TRACE_EVENT() to support this new tracepoint
-feature.
-
->> So basically, tracepoints are already just doing a function call, with a
->> few more bytes for preempt disable and multiple handler support.
->>
->> About the compiler deciding to put the unlikely branch out-of-line, I've
->> never seen any function calls generated just for the sake of saving
->> those few bytes, that would be crazy of the part of the compiler.
->> However, it can (and should) freely put the stack setup in the coldest
->> cache-lines possible, which are reachable by a near jump.
->>   
->
-> No, it wouldn't generate a call.  But if its going to put the code out  
-> of line into cold cache-lines, then it may as well generate a call.
->
-
-Jumping out-of-line was somewhat faster than calling a function if I
-recall well my performance tests. But that's all been done long ago.
-
-And note that whenever the tracer becomes active, the out-of-line code
-of busy tracepoints becomes cache-hot, which means that there is no more
-cache line fetch to perform, which leaves the stack setup and other
-overhead of function call/return vs 2*jump very measurable.
-
-> Anyway, the important point from my perspective is that tracepoint.h  
-> have no #include dependencies beyond linux/types.h (compiler.h, etc).
->
-
-Is preempt.h a problem ?
-
-Here is the patch.
-
-Mathieu
-
-
-tracepoints : let subsystem nop-out the tracepoints at build time
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Hellwig <hch@lst.de>
----
- include/linux/tracepoint.h |   38 ++++++++++++++++++++++----------------
- 1 file changed, 22 insertions(+), 16 deletions(-)
-
-Index: linux.trees.git/include/linux/tracepoint.h
-===================================================================
---- linux.trees.git.orig/include/linux/tracepoint.h	2009-04-16 22:40:26.000000000 -0400
-+++ linux.trees.git/include/linux/tracepoint.h	2009-04-16 22:40:33.000000000 -0400
-@@ -37,6 +37,24 @@ struct tracepoint {
- #define TP_PROTO(args...)	args
- #define TP_ARGS(args...)		args
+On Thu, Apr 16, 2009 at 05:19:54PM -0400, Alan Stern wrote:
+> On Tue, 7 Apr 2009, K.Prasad wrote:
+> 
+> > Hi Alan,
+> > 	I am sending you the patches with the changes mentioned in the 
+> > Changelog below. Please read the patches in conjunction with my replies
+> > sent to your previous comments.
+> > 
+> > Let me know your thoughts on this.
+> 
+> Sorry to take so long on this... lots of other things keep cropping up.
+> 
+> Mostly it looks okay; I noticed only a few problems.  Comments inline 
+> below.
+> 
+> Alan Stern
+> 
  
-+#define DECLARE_TRACE_NOP(name, proto, args)				\
-+	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
-+	{ }								\
-+	static inline void trace_##name(proto)				\
-+	{ }								\
-+	static inline int register_trace_##name(void (*probe)(proto))	\
-+	{								\
-+		return -ENOSYS;						\
-+	}								\
-+	static inline int unregister_trace_##name(void (*probe)(proto))	\
-+	{								\
-+		return -ENOSYS;						\
-+	}
-+
-+#define DEFINE_TRACE_NOP(name)
-+#define EXPORT_TRACEPOINT_SYMBOL_GPL_NOP(name)
-+#define EXPORT_TRACEPOINT_SYMBOL_NOP(name)
-+
- #ifdef CONFIG_TRACEPOINTS
+Thanks for reviewing it....hope that the code quickly morphs into a form
+that is acceptable to most.
  
- /*
-@@ -95,23 +113,11 @@ extern void tracepoint_update_probe_rang
- 	struct tracepoint *end);
+> > --- arch/x86/include/asm/processor.h.orig
+> > +++ arch/x86/include/asm/processor.h
+> > @@ -429,8 +430,11 @@ struct thread_struct {
+> >  	unsigned long		debugreg1;
+> >  	unsigned long		debugreg2;
+> >  	unsigned long		debugreg3;
+> > +	unsigned long		debugreg[HB_NUM];
+> 
+> You forgot to get rid of debugreg1 - debugreg3!
+> 
+>
+
+After the patch re-arrangement, they are removed through "[Patch
+06/11]". This is to enable compilation of the main tree after
+application of every patch.
  
- #else /* !CONFIG_TRACEPOINTS */
--#define DECLARE_TRACE(name, proto, args)				\
--	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
--	{ }								\
--	static inline void trace_##name(proto)				\
--	{ }								\
--	static inline int register_trace_##name(void (*probe)(proto))	\
--	{								\
--		return -ENOSYS;						\
--	}								\
--	static inline int unregister_trace_##name(void (*probe)(proto))	\
--	{								\
--		return -ENOSYS;						\
--	}
+> > +static int validate_settings(struct hw_breakpoint *bp, struct task_struct *tsk)
+> > +{
+> > +	int ret;
+> > +
+> > +	if (!bp)
+> > +		return -EINVAL;
+> 
+> Is this test really needed?
+> 
+
+It protects us from any rogue requests which has a NULL bp pointer.
+Given that the register_<kernel/user>_hw_breakpoint() interfaces are
+exported, I think it keeps the code safe from poorly written modules.
+
+And as I just see, the second parameter 'tsk' to validate_settings is
+unused throughout. I will remove it.
+
+> > +
+> > +	ret = arch_validate_hwbkpt_settings(bp, tsk);
+> > +	if (ret < 0)
+> > +		goto err;
+> > +
+> > +	/* Check that the virtual address is in the proper range */
+> > +	if (tsk) {
+> > +		if (!arch_check_va_in_userspace(bp->info.address, bp->info.len))
+> > +			return -EFAULT;
+> > +	} else {
+> > +		if (!arch_check_va_in_kernelspace(bp->info.address,
+> > +								bp->info.len))
+> > +			return -EFAULT;
+> > +	}
+> > + err:
+> > +	return ret;
+> > +}
+> 
+> At this point, almost nothing in the routine is arch-independent.  You
+> might as well move everything into the arch-specific code and
+> eliminate the validate_settings() routine.
+> 
+
+Ok. I will directly invoke arch_validate_hwbkpt_settings() [maybe this
+should be called arch_validate_hw_breakpoint()] and move the arch_check_
+function call inside arch_validate_.
  
--#define DEFINE_TRACE(name)
--#define EXPORT_TRACEPOINT_SYMBOL_GPL(name)
--#define EXPORT_TRACEPOINT_SYMBOL(name)
-+#define DECLARE_TRACE			DECLARE_TRACE_NOP
-+#define DEFINE_TRACE			DEFINE_TRACE_NOP
-+#define EXPORT_TRACEPOINT_SYMBOL_GPL	EXPORT_TRACEPOINT_SYMBOL_GPL_NOP
-+#define EXPORT_TRACEPOINT_SYMBOL	EXPORT_TRACEPOINT_SYMBOL_NOP
- 
- static inline void tracepoint_update_probe_range(struct tracepoint *begin,
- 	struct tracepoint *end)
+> > +void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp)
+> > +{
+> > +	int i, j;
+> > +
+> > +	mutex_lock(&hw_breakpoint_mutex);
+> > +
+> > +	/* Find the 'bp' in our list of breakpoints for kernel */
+> > +	for (i = hbp_kernel_pos; i < HB_NUM; i++)
+> > +		if (bp == hbp_kernel[i])
+> > +			break;
+> > +
+> > +	/* Check if we did not find a match for 'bp'. If so return early */
+> > +	if (i == HB_NUM) {
+> > +		mutex_unlock(&hw_breakpoint_mutex);
+> > +		return;
+> > +	}
+> > +
+> > +	/*
+> > +	 * We'll shift the breakpoints one-level above to compact if
+> > +	 * unregistration creates a hole
+> > +	 */
+> > +	for (j = i; j > hbp_kernel_pos; j--)
+> > +		hbp_kernel[j] = hbp_kernel[j-1];
+> > +
+> > +	hbp_kernel[hbp_kernel_pos] = 0;
+> 
+> s/0/NULL/
+> 
+
+Ok.
+
+> > +	on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
+> > +	hbp_kernel_pos++;
+> 
+> Don't you want to increment hbp_kernel_pos _before_ calling
+> on_each_cpu()?  Otherwise you're telling the other CPUs to install an
+> empty breakpoint.
+> 
+
+Incrementing hbp_kernel_pos after arch_update_kernel_hw_breakpoints()
+during unregister_kernel_ is of the following significance:
+
+- The 'pos' numbered debug register is reset to 0 through the code 
+  "set_debugreg(hbp_kernel[i]->info.address, i)" where 'i' ranges from
+  hbp_kernel_pos to HB_NUM. This is necessary during unregister operation.
+
+- The following statements would reset the bits corresponding to
+  unregistered breakpoint only then.
+	kdr7 &= ~kdr7_masks[hbp_kernel_pos];
+	dr7 &= ~kdr7_masks[hbp_kernel_pos];
+
+- Helps keep the arch_update_kernel_hw_breakpoints() code generic enough
+  to be invoked during register and unregister operations.
 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > +/* Unmasked kernel DR7 value */
+> > +static unsigned long kdr7;
+> > +static const unsigned long	kdr7_masks[HB_NUM] = {
+> > +	0xffff00ff,	/* Same for 3, 2, 1, 0 */
+> > +	0xfff000fc,	/* Same for 3, 2, 1 */
+> > +	0xff0000f0,	/* Same for 3, 2 */
+> > +	0xf00f00c0	/* LEN3, R/W3, G3, L3 */
+> > +};
+> 
+> It looks like you took out the first line of assignments.  Isn't
+> kdr7_masks supposed to contain HB_NUM + 1 elements?  Not to mention
+> that reordering the lines has mixed up the comments.
+> 
+
+The kdr7_masks array is slightly different from your implementation
+earlier.
+
+The element zero in the array is 0xffff00ff, which has all bits
+corresponding to DRs 0, 1, 2 and 3 'set', and hence the comment.
+ 
+> > +void arch_update_kernel_hw_breakpoints(void *unused)
+> > +{
+> > +	struct hw_breakpoint *bp;
+> > +	unsigned long dr7;
+> > +	int i;
+> > +
+> > +	/* Check if there is nothing to update */
+> > +	if (hbp_kernel_pos == HB_NUM)
+> > +		return;
+> 
+> This is wrong; you have to set DR7 to 0 first.  Might as well leave
+> out this test and just go through the whole routine.  The "for" loop
+> will be skipped entirely if hbp_kernel_pos == HB_NUM, so you don't
+> save much by returning early.
+> 
+> Ah, now I see this is why you removed a line from kdr7_masks.
+> 
+
+This check is added to help the load_debug_registers() call during
+boot-time which is when hbp_kernel_pos = HB_NUM. If we don't return
+early, then assignments such as  these "kdr7 &= ~kdr7_masks[hbp_kernel_pos];"
+will cause array-out-of-bounds. Otherwise we have to circumvent it by
+adding a dummy HB_NUM element in kdr7_masks[] array. I would prefer
+retaining the "if (hbp_kernel_pos == HB_NUM)" check instead.
+
+> > +
+> > +	get_debugreg(dr7, 7);
+> > +
+> > +	/* Don't allow debug exceptions while we update the registers */
+> > +	set_debugreg(0UL, 7);
+> > +
+> > +	/* Clear all kernel-space bits in kdr7 and dr7 before we set them */
+> > +	kdr7 &= ~kdr7_masks[hbp_kernel_pos];
+> > +	dr7 &= ~kdr7_masks[hbp_kernel_pos];
+> > +
+> > +	for (i = hbp_kernel_pos; i < HB_NUM; i++) {
+> > +		bp = hbp_kernel[i];
+> > +		if (bp) {
+> > +			kdr7 |= encode_dr7(i, bp->info.len, bp->info.type);
+> > +			set_debugreg(hbp_kernel[i]->info.address, i);
+> > +		}
+> > +	}
+> > +
+> > +	dr7 |= kdr7;
+> > +
+> > +	/* No need to set DR6 */
+> > +	set_debugreg(dr7, 7);
+> > +}
+> 
+> 
+> > +int __kprobes hw_breakpoint_handler(struct die_args *args)
+> > +{
+> > +	int i, rc = NOTIFY_STOP;
+> > +	struct hw_breakpoint *bp;
+> > +	/* The DR6 value is stored in args->err */
+> > +	unsigned long dr7, dr6 = args->err;
+> > +
+> > +	/*
+> > +	 * We are here because BT, BS or BD bit is set and no trap bits are set
+> > +	 * in dr6 register. Do an early return
+> > +	 */
+> 
+> I don't like such comments.  It says that BT, BS, or BD is set, but
+> they don't necessarily have to be.  You should say:
+> 
+> 	/* Do an early return if no trap bits are set in DR6 */
+> 
+
+Since we enter hw_breakpoint_handler() code only if DIE_DEBUG (and not
+say DIE_INT3), one or more of these bits would be 'set' when we are in
+hw_breakpoint_handler() - BS, BT, BD or Trap bits, and hence the comment.
+
+> > +	if ((dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) == 0)
+> > +		return NOTIFY_DONE;
+> > +
+> > +	get_debugreg(dr7, 7);
+> > +
+> > +	/* Disable breakpoints during exception handling */
+> > +	set_debugreg(0UL, 7);
+> > +	/*
+> > +	 * Assert that local interrupts are disabled
+> > +	 * Reset the DRn bits in the virtualized register value.
+> > +	 * The ptrace trigger routine will add in whatever is needed.
+> > +	 */
+> > +	current->thread.debugreg6 &= ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3);
+> > +
+> > +	/* Lazy debug register switching */
+> > +	if (per_cpu(last_debugged_task, get_cpu()) != current) {
+> > +		switch_to_none_hw_breakpoint();
+> > +		put_cpu_no_resched();
+> > +	}
+> 
+> Once again, the get_debugreg and set_debugreg statements above should
+> go here instead.
+> 
+
+I understood that you don't want to enable *any* breakpoints - even
+kernel-space ones when we are in hw_breakpoint_handler() thereby making
+it safer. I will change the code in the following iteration of patch.
+
+> > +
+> > +	/* Handle all the breakpoints that were triggered */
+> > +	for (i = 0; i < HB_NUM; ++i) {
+> > +		if (likely(!(dr6 & (DR_TRAP0 << i))))
+> > +			continue;
+> > +		/*
+> > +		 * Find the corresponding hw_breakpoint structure and
+> > +		 * invoke its triggered callback.
+> > +		 */
+> > +		if (i >= hbp_kernel_pos)
+> > +			bp = hbp_kernel[i];
+> > +		else {
+> > +			bp = current->thread.hbp[i];
+> > +			if (!bp) {
+> > +				/* False alarm due to lazy DR switching */
+> > +				continue;
+> > +			}
+> > +		}
+> > +		(bp->triggered)(bp, args->regs);
+> > +		/*
+> > +		 * We have more work to do (send signals) if the breakpoint is
+> > +		 * triggered due to user-space address, or if exceptions other
+> > +		 * than breakpoint (such as single-stepping) are triggered.
+> > +		 */
+> > +		if (arch_check_va_in_userspace(bp->info.address, bp->info.len))
+> > +			rc = NOTIFY_DONE;
+> 
+> This comment and test are more complicated than they need to be.  Just
+> put "rc = NOTIFY_DONE" (with a comment) in the "else" clause above.
+> 
+
+Yes, that's much simpler and avoids a double-check. Will do it.
+
+> > +	}
+> > +	if (dr6 & ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
+> > +		rc = NOTIFY_DONE;
+> > +	set_debugreg(dr7, 7);
+> > +	return rc;
+> > +}
+> 
+> 
+> >  dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+> >  {
+> >  	struct task_struct *tsk = current;
+> > -	unsigned long condition;
+> > +	unsigned long dr6;
+> >  	int si_code;
+> >  
+> > -	get_debugreg(condition, 6);
+> > +	get_debugreg(dr6, 6);
+> > +	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
+> >  
+> >  	/* Catch kmemcheck conditions first of all! */
+> > -	if (condition & DR_STEP && kmemcheck_trap(regs))
+> > +	if ((dr6 & DR_STEP && kmemcheck_trap(regs)) &&
+> > +		!(dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)))
+> >  		return;
+> 
+> Should this test go before the "set_debugreg(0, 6)" statement?
+> 
+
+Either way, it doesn't affect the function "kmemcheck_trap()". I don't
+find it reading directly from DR6 anywhere.
+
+On a related node, a patch that modifies dr6 to be passed by reference
+to the notifier calls will be included in the next iteration.
+
+Let me know, upon receiving the patch, if you still think that such a
+change i.e. resetting bits in dr6 after handling of the corresponding 
+breakpoint needs to be done.
+
+Thanks,
+K.Prasad
+
