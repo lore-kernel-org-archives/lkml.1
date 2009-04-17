@@ -1,133 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbZDQPBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760993AbZDQPJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761376AbZDQPBQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 11:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760507AbZDQPAz
+	id S1760993AbZDQPJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 11:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbZDQPJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 11:00:55 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:58553 "EHLO e8.ny.us.ibm.com"
+	Fri, 17 Apr 2009 11:09:34 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10557 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760473AbZDQPAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 11:00:53 -0400
-Date: Fri, 17 Apr 2009 08:00:47 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: dada1@cosmosbay.com, shemminger@vyatta.com, kaber@trash.net,
-       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com,
-       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-Message-ID: <20090417150047.GB6742@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090416215033.3e648a7a@nehalam> <49E810B0.9000906@cosmosbay.com> <20090417054032.GD6885@linux.vnet.ibm.com> <20090417.010710.59150850.davem@davemloft.net>
+	id S1755189AbZDQPJc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 11:09:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,205,1239001200"; 
+   d="scan'208";a="507322040"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+CC: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Andrea Arcangeli <aarcange@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Leech, Christopher" <christopher.leech@intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Date: Fri, 17 Apr 2009 16:07:38 +0100
+Subject: RE: [RFC][PATCH v3 6/6] fix wrong get_user_pages usage in iovlock.c
+Thread-Topic: [RFC][PATCH v3 6/6] fix wrong get_user_pages usage in iovlock.c
+Thread-Index: Acm9pwjGwlAagKG7QZWlmtVwCfIyWwBxancA
+Message-ID: <129600E5E5FB004392DDC3FB599660D792A39DCE@irsmsx504.ger.corp.intel.com>
+References: <200904141656.14191.nickpiggin@yahoo.com.au>
+ <20090414155719.C66B.A69D9226@jp.fujitsu.com>
+ <20090415174658.AC4F.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090415174658.AC4F.A69D9226@jp.fujitsu.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417.010710.59150850.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 01:07:10AM -0700, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Thu, 16 Apr 2009 22:40:32 -0700
+KOSAKI Motohiro wrote:
+>>> I would perhaps not fold gup_fast conversions into the same patch as
+>>> the fix.
+>> 
+>> OK. I'll fix.
 > 
-> > I completely agree that this RCU is absolutely -not- 2.6.30 material.  ;-)
+> Done.
 > 
-> I don't understand why we're writing such complicated code.
 > 
-> Oh I see why, it's because not every arch uses the generic SMP helpers
-> yet :-)
-
-;-)
-
-> Because if they did universally, we could solve this problem so
-> simply, by merely sending a remote softirq to every online cpu.  Once
-> those all complete we have enough of a quiesce period, every cpu must
-> have exited any netfilter packet processing code path they were in.
 > 
-> And we could know they complete using an atomic counter or something.
+> ===================================
+> Subject: [Untested][RFC][PATCH] fix wrong get_user_pages usage in iovlock.c
+> 
+> 	down_read(mmap_sem)
+> 	get_user_pages()
+> 	up_read(mmap_sem)
+> 
+> is fork unsafe.
+> fix it.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: Chris Leech <christopher.leech@intel.com>
+> Cc: netdev@vger.kernel.org
+> ---
+>  drivers/dma/iovlock.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: b/drivers/dma/iovlock.c
+> ===================================================================
+> --- a/drivers/dma/iovlock.c	2009-04-13 22:58:36.000000000 +0900
+> +++ b/drivers/dma/iovlock.c	2009-04-14 20:27:16.000000000 +0900
+> @@ -104,8 +104,6 @@ struct dma_pinned_list *dma_pin_iovec_pa
+>  			0,	/* force */
+>  			page_list->pages,
+>  			NULL);
+> -		up_read(&current->mm->mmap_sem);
+> -
+>  		if (ret != page_list->nr_pages)
+>  			goto unpin;
+> 
+> @@ -127,6 +125,8 @@ void dma_unpin_iovec_pages(struct dma_pi
+>  	if (!pinned_list)
+>  		return;
+> 
+> +	up_read(&current->mm->mmap_sem);
+> +
+>  	for (i = 0; i < pinned_list->nr_iovecs; i++) {
+>  		struct dma_page_list *page_list = &pinned_list->page_list[i];
+>  		for (j = 0; j < page_list->nr_pages; j++) {
 
-I was with you until you got to the atomic counter, which would require
-dealing with CPU hotplug.
+I have tried it with net_dma and here is what I've got.
 
-But your point is a very good one.  We already do have a flavor of
-RCU that waits for softirq code, namely rcu-bh.  And it is used
-exclusively by the networking code:
+Regards,
+Maciej
+---
 
-     14 net/ipv4/
-     13 net/decnet/
-     10 net/core/
-      6 net/ipv6/
-      4 kernel/		[rcutorture, so these four uses don't count.]
-      3 net/netfilter/
-      2 net/mac80211/
-      2 net/packet/
+ =======================================================
+ [ INFO: possible circular locking dependency detected ]
+ 2.6.30-rc2 #2
+ -------------------------------------------------------
+ iperf/10555 is trying to acquire lock:
+  (sk_lock-AF_INET){+.+.+.}, at: [<ffffffff80450991>] sk_wait_data+0x90/0xc5
 
-So both yours and Peter's implicit point is quite correct -- the kernel
-really does not need yet another flavor of RCU.  So maybe I should instead
-be thinking in terms of making the existing rcu-bh be better adapted to
-the networking code, like maybe a fast synchronize_rcu_bh().
+ but task is already holding lock:
+  (&mm->mmap_sem){++++++}, at: [<ffffffff8043d0f6>] dma_pin_iovec_pages+0x122/0x1a0
+ 
+ which lock already depends on the new lock.
+ 
+ 
+ the existing dependency chain (in reverse order) is:
+ 
+ -> #1 (&mm->mmap_sem){++++++}:
+        [<ffffffffffffffff>] 0xffffffffffffffff
+ 
+ -> #0 (sk_lock-AF_INET){+.+.+.}:
+        [<ffffffffffffffff>] 0xffffffffffffffff
+ 
+ other info that might help us debug this:
+ 
+ 1 lock held by iperf/10555:
+  #0:  (&mm->mmap_sem){++++++}, at: [<ffffffff8043d0f6>] dma_pin_iovec_pages+0x122/0x1a0
+ 
+ stack backtrace:
+ Pid: 10555, comm: iperf Tainted: G        W  2.6.30-rc2 #2
+ Call Trace:
+  [<ffffffff8025b1dc>] ? print_circular_bug_tail+0xc0/0xc9
+  [<ffffffff8025aa2b>] ? print_circular_bug_header+0xc8/0xcf
+  [<ffffffff8025b984>] ? validate_chain+0x67d/0xc7c
+  [<ffffffff8025c6e6>] ? __lock_acquire+0x763/0x7ec
+  [<ffffffff8025c835>] ? lock_acquire+0xc6/0xea
+  [<ffffffff80450991>] ? sk_wait_data+0x90/0xc5
+  [<ffffffff8044ff01>] ? lock_sock_nested+0xee/0x100
+  [<ffffffff80450991>] ? sk_wait_data+0x90/0xc5
+  [<ffffffff80259b07>] ? mark_held_locks+0x43/0x5b
+  [<ffffffff802403ee>] ? local_bh_enable_ip+0xc4/0xc7
+  [<ffffffff80259c3c>] ? trace_hardirqs_on_caller+0x11d/0x148
+  [<ffffffff80450991>] ? sk_wait_data+0x90/0xc5
+  [<ffffffff8024ebb3>] ? autoremove_wake_function+0x0/0x2e
+  [<ffffffff80488ad3>] ? tcp_recvmsg+0x3bf/0xa21
+  [<ffffffff8044f601>] ? sock_common_recvmsg+0x30/0x45
+  [<ffffffff8044d847>] ? sock_recvmsg+0xf0/0x10f
+  [<ffffffff8024ebb3>] ? autoremove_wake_function+0x0/0x2e
+  [<ffffffff8025c704>] ? __lock_acquire+0x781/0x7ec
+  [<ffffffff802b553c>] ? fget_light+0xd5/0xdf
+  [<ffffffff802b54b0>] ? fget_light+0x49/0xdf
+  [<ffffffff8044e91b>] ? sys_recvfrom+0xbc/0x119
+  [<ffffffff80259c3c>] ? trace_hardirqs_on_caller+0x11d/0x148
+  [<ffffffff804e1a7f>] ? _spin_unlock_irq+0x24/0x27
+  [<ffffffff802359ab>] ? finish_task_switch+0x7a/0xe4
+  [<ffffffff80235967>] ? finish_task_switch+0x36/0xe4
+  [<ffffffff804df188>] ? thread_return+0x3e/0x97
+  [<ffffffff802718f7>] ? audit_syscall_entry+0x192/0x1bd
+  [<ffffffff8020b96b>] ? system_call_fastpath+0x16/0x1b
 
-Or do the networking uses of rcu-bh need it to work exactly the way that
-it does now?
-
-							Thanx, Paul
-
-kernel/rcutorture.c __acquires 392 rcu_read_lock_bh();
-kernel/rcutorture.c __releases 398 rcu_read_unlock_bh();
-kernel/rcutorture.c rcu_bh_torture_deferred_free 408 call_rcu_bh(&p->rtort_rcu, rcu_torture_cb);
-kernel/rcutorture.c rcu_bh_torture_synchronize 429 call_rcu_bh(&rcu.head, rcu_bh_torture_wakeme_after_cb);
-net/core/dev.c dev_queue_xmit 1844 rcu_read_lock_bh();
-net/core/dev.c dev_queue_xmit 1909 rcu_read_unlock_bh();
-net/core/dev.c dev_queue_xmit 1915 rcu_read_unlock_bh();
-net/core/filter.c sk_filter 88 rcu_read_lock_bh();
-net/core/filter.c sk_filter 95 rcu_read_unlock_bh();
-net/core/filter.c sk_filter_delayed_uncharge 477 call_rcu_bh(&fp->rcu, sk_filter_rcu_release);
-net/core/filter.c sk_attach_filter 517 rcu_read_lock_bh();
-net/core/filter.c sk_attach_filter 520 rcu_read_unlock_bh();
-net/core/filter.c sk_detach_filter 532 rcu_read_lock_bh();
-net/core/filter.c sk_detach_filter 539 rcu_read_unlock_bh();
-net/decnet/dn_route.c dnrt_free 148 call_rcu_bh(&rt->u.dst.rcu_head, dst_rcu_free);
-net/decnet/dn_route.c dnrt_drop 154 call_rcu_bh(&rt->u.dst.rcu_head, dst_rcu_free);
-net/decnet/dn_route.c __dn_route_output_key 1161 rcu_read_lock_bh();
-net/decnet/dn_route.c __dn_route_output_key 1170 rcu_read_unlock_bh();
-net/decnet/dn_route.c __dn_route_output_key 1175 rcu_read_unlock_bh();
-net/decnet/dn_route.c dn_cache_dump 1623 rcu_read_lock_bh();
-net/decnet/dn_route.c dn_cache_dump 1634 rcu_read_unlock_bh();
-net/decnet/dn_route.c dn_cache_dump 1639 rcu_read_unlock_bh();
-net/decnet/dn_route.c dn_rt_cache_get_first 1659 rcu_read_lock_bh();
-net/decnet/dn_route.c dn_rt_cache_get_first 1663 rcu_read_unlock_bh();
-net/decnet/dn_route.c dn_rt_cache_get_next 1674 rcu_read_unlock_bh();
-net/decnet/dn_route.c dn_rt_cache_get_next 1677 rcu_read_lock_bh();
-net/decnet/dn_route.c dn_rt_cache_seq_stop 1704 rcu_read_unlock_bh();
-net/ipv4/fib_trie.c free_leaf 339 call_rcu_bh(&l->rcu, __leaf_free_rcu);
-net/ipv4/route.c rt_cache_get_first 289 rcu_read_lock_bh();
-net/ipv4/route.c rt_cache_get_first 297 rcu_read_unlock_bh();
-net/ipv4/route.c __rt_cache_get_next 309 rcu_read_unlock_bh();
-net/ipv4/route.c __rt_cache_get_next 314 rcu_read_lock_bh();
-net/ipv4/route.c rt_cache_seq_stop 367 rcu_read_unlock_bh();
-net/ipv4/route.c rt_free 613 call_rcu_bh(&rt->u.dst.rcu_head, dst_rcu_free);
-net/ipv4/route.c rt_drop 619 call_rcu_bh(&rt->u.dst.rcu_head, dst_rcu_free);
-net/ipv4/route.c __ip_route_output_key 2665 rcu_read_lock_bh();
-net/ipv4/route.c __ip_route_output_key 2679 rcu_read_unlock_bh();
-net/ipv4/route.c __ip_route_output_key 2685 rcu_read_unlock_bh();
-net/ipv4/route.c ip_rt_dump 2983 rcu_read_lock_bh();
-net/ipv4/route.c ip_rt_dump 2995 rcu_read_unlock_bh();
-net/ipv4/route.c ip_rt_dump 3000 rcu_read_unlock_bh();
-net/ipv6/addrconf.c ipv6_add_addr 603 rcu_read_lock_bh();
-net/ipv6/addrconf.c ipv6_add_addr 682 rcu_read_unlock_bh();
-net/ipv6/addrconf.c ipv6_regen_rndid 1641 rcu_read_lock_bh();
-net/ipv6/addrconf.c ipv6_regen_rndid 1665 rcu_read_unlock_bh();
-net/ipv6/addrconf.c ipv6_ifa_notify 3967 rcu_read_lock_bh();
-net/ipv6/addrconf.c ipv6_ifa_notify 3970 rcu_read_unlock_bh();
-net/mac80211/wme.c ieee80211_requeue 256 rcu_read_lock_bh();
-net/mac80211/wme.c ieee80211_requeue 294 rcu_read_unlock_bh();
-net/netfilter/nf_conntrack_core.c nf_conntrack_tuple_taken 408 rcu_read_lock_bh();
-net/netfilter/nf_conntrack_core.c nf_conntrack_tuple_taken 413 rcu_read_unlock_bh();
-net/netfilter/nf_conntrack_core.c nf_conntrack_tuple_taken 418 rcu_read_unlock_bh();
-net/packet/af_packet.c run_filter 459 rcu_read_lock_bh();
-net/packet/af_packet.c run_filter 463 rcu_read_unlock_bh();
