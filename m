@@ -1,100 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762125AbZDQS6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZDQTEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762125AbZDQS6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760072AbZDQS6o
+	id S1756774AbZDQTEb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 15:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZDQTEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:58:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48644 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753604AbZDQS6o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:58:44 -0400
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0904171410540.28536@qirst.com>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>
-	 <1239951613.23397.4107.camel@laptop>
-	 <alpine.DEB.1.10.0904170941020.11877@qirst.com>
-	 <1239977776.23397.4590.camel@laptop>
-	 <alpine.DEB.1.10.0904171021360.20239@qirst.com>
-	 <1239979901.23397.4638.camel@laptop>
-	 <alpine.DEB.1.10.0904171100510.21575@qirst.com>
-	 <20090417153520.GA29968@elte.hu>
-	 <alpine.DEB.1.10.0904171142050.13734@qirst.com>
-	 <1239985426.23397.4757.camel@laptop> <20090417164918.GK8253@elte.hu>
-	 <alpine.DEB.1.10.0904171335490.28603@qirst.com>
-	 <1239991892.23397.4905.camel@laptop>
-	 <alpine.DEB.1.10.0904171410540.28536@qirst.com>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 20:58:39 +0200
-Message-Id: <1239994719.23397.4979.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 15:04:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52371 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751710AbZDQTEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 15:04:22 -0400
+Date: Fri, 17 Apr 2009 21:03:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: fix section mismatch warnings
+Message-ID: <20090417190355.GA21614@elte.hu>
+References: <1239918902.10567.22.camel@ht.satnam> <20090417164141.GJ8253@elte.hu> <1239991281.3153.4.camel@ht.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239991281.3153.4.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 14:20 -0400, Christoph Lameter wrote:
-> On Fri, 17 Apr 2009, Peter Zijlstra wrote:
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Fri, 2009-04-17 at 18:41 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > > The following changes since commit 88dc4c8e38d64db32907e0bd605f8c1ec4c4d1bd:
+> > >   Ingo Molnar (1):
+> > >         Merge branch 'tracing/ftrace'
+> > > 
+> > > are available in the git repository at:
+> > > 
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
+> > > 
+> > > Jaswinder Singh Rajput (3):
+> > >       x86: mm/numa_32.c calculate_numa_remap_pages should use __init
+> > >       x86: apic/es7000_32.c find_unisys_acpi_oem_table and es7000_acpi_madt_oem_check should use __init
+> > >       x86: smpboot.c wakeup_secondary_cpu_via_nmi do not required __devinit
+> > 
+> > The commit logs lack analysis. The suggestions in the warnings are 
+> > advisory and can be wrong. Analysis explaining what happened, maybe 
+> > even when it happened, and what should be done about it to fix that 
+> > issue is needed in such changelogs.
+> > 
+> > The commits might be correct - or they might be bogus. The commit 
+> > logs dont give us any help in deciding that. I.e. if you did that 
+> > work, you should document it. If you _didnt_ do that analysis work, 
+> > you shouldnt send patches addressing these types of warnings.
+> > 
 > 
-> > Something like this is nice to compare between kernels. Chris'
-> > suggestion of timing a simple fixed loop:
-> >
-> > $ time (let i=1000000; while [ $i -gt 0 ]; do let i--; done)
-> >
-> > real    0m14.389s
-> > user    0m13.787s
-> > sys     0m0.498s
-> >
-> > Is also useful, since it gives an absolute measure of time available to
-> > user-space.
-> >
-> > Although I suspect a simple C while(i--); might be better due to less
-> > code involved.
+> I was busy in another stuff, So I am sending analysis of first 
+> commit. If you want you can apply this patch and ignore others :
 > 
-> The absolute time available to user space is not that important. It is
-> important that the processor stays available during latency critical
-> operations and is not taken away by the OS. The intervals that the OS
-> takes the processor away determine the mininum interval that the
-> application has to react to events (f.e. RDMA transfers via Infiniband,
-> or operations on requests coming in via shared memory). These operations
-> often must occur in parallel on multiple cores. Processing is delayed if
-> any of the cores encounters a delay due to OS noise.
-
-So you have hard deadlines in the order of us? Are these SCHED_FIFO
-tasks or SCHED_OTHER?
-
-> The latencytest code simulates a busy processor (no system calls, all
-> memory is prefaulted). For some reasons Linux is increasingly taking time
-> away from such processes (that intentionally run uncontended on a
-> dedicated processor). This causes regressions so that current upstream is
-> not usable for these applications.
+> [PATCH-tip] x86: mm/numa_32.c calculate_numa_remap_pages should use __init
 > 
-> It would be best for these applications if the processor would be left
-> undisturbed. There is likely not much that the OS needs to do on a busy
-> processor if there are no competing threads and if there is no I/O taking
-> place.
+> calculate_numa_remap_pages() is called only by __init initmem_init()
+> further calculate_numa_remap_pages is calling:
+> 	__init find_e820_area() and __init reserve_early()
+> 
+> So calculate_numa_remap_pages() should be __init calculate_numa_remap_pages().
+> 
+> Impact: fix Section mismatch warnings
+>  WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
+>  The function calculate_numa_remap_pages() references
+>  the function __init find_e820_area().
+>  This is often because calculate_numa_remap_pages lacks a __init
+>  annotation or the annotation of find_e820_area is wrong.
+> 
+>  WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
+>  The function calculate_numa_remap_pages() references
+>  the function __init reserve_early().
+>  This is often because calculate_numa_remap_pages lacks a __init
+>  annotation or the annotation of reserve_early is wrong.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Agreed -- that would be nice.
+Yes, this one is perfect, it contains precisely the information we 
+need. It's also helpful for other reasons: people looking at such 
+commit logs will learn how to do section warning analysis correct.
 
-I can't really match the pattern to anything. The one thing that worried
-me was sched_clock_tick(), which does a GTOD to sync the clocks between
-cpus.
+Btw., the impact line i added is slightly different:
 
-Your Xeon is a core2 class machine and should have relatively stable
-TSC, however its also a dual socket, which I think defeats the
-stable-ness.
+    [ Impact: save memory, address Section mismatch warning ]
 
-What clocksource do you have?
+Note that the main impact is that we now save a little bit of RAM, 
+by marking one more function __init.
 
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+Below is the full commit.
 
-Thing is, that doesn't really match the .23 is expensive and .25 isn't.
+Thanks,
 
-Also, looking over the rest of the scheduler tick code, I can't really
-see what would be so expensive.
+	Ingo
 
+-------------------->
+>From 445b9e51e9ebd7eb1b9ba724b38342015769b48e Mon Sep 17 00:00:00 2001
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Date: Fri, 17 Apr 2009 23:31:20 +0530
+Subject: [PATCH] x86: mm/numa_32.c calculate_numa_remap_pages should use __init
+
+calculate_numa_remap_pages() is called only by __init initmem_init()
+further calculate_numa_remap_pages is calling:
+	__init find_e820_area() and __init reserve_early()
+
+So calculate_numa_remap_pages() should be __init calculate_numa_remap_pages().
+
+ WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
+ The function calculate_numa_remap_pages() references
+ the function __init find_e820_area().
+ This is often because calculate_numa_remap_pages lacks a __init
+ annotation or the annotation of find_e820_area is wrong.
+
+ WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
+ The function calculate_numa_remap_pages() references
+ the function __init reserve_early().
+ This is often because calculate_numa_remap_pages lacks a __init
+ annotation or the annotation of reserve_early is wrong.
+
+[ Impact: save memory, address Section mismatch warning ]
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+LKML-Reference: <1239991281.3153.4.camel@ht.satnam>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/numa_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
+index 3daefa0..d253006 100644
+--- a/arch/x86/mm/numa_32.c
++++ b/arch/x86/mm/numa_32.c
+@@ -257,7 +257,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
+ }
+ #endif
+ 
+-static unsigned long calculate_numa_remap_pages(void)
++static __init unsigned long calculate_numa_remap_pages(void)
+ {
+ 	int nid;
+ 	unsigned long size, reserve_pages = 0;
