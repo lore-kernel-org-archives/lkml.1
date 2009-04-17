@@ -1,147 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbZDQDYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZDQDi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbZDQDYT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 23:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZDQDYL
+	id S1758130AbZDQDi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 23:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbZDQDis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 23:24:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42284 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbZDQDYK (ORCPT
+	Thu, 16 Apr 2009 23:38:48 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:16692 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZDQDir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 23:24:10 -0400
-Date: Thu, 16 Apr 2009 23:24:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/2] tracing/events/lockdep: move tracepoints within
- recursive protection
-In-Reply-To: <alpine.DEB.2.00.0904162254270.20429@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0904162319010.20429@gandalf.stny.rr.com>
-References: <20090416161543.199331330@goodmis.org>  <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop>  <alpine.DEB.2.00.0904161343110.20429@gandalf.stny.rr.com> <1239904428.23397.3278.camel@laptop>
- <alpine.DEB.2.00.0904162254270.20429@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 16 Apr 2009 23:38:47 -0400
+Message-ID: <49E7F9B7.2090804@gawab.com>
+Date: Thu, 16 Apr 2009 20:38:31 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [Bug #13067] iwl3945: wlan0: beacon loss from AP - sending probe
+ request
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.giB.rw85JB@chimera>
+In-Reply-To: <nY3-4PrO6XH.A.giB.rw85JB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13067
+> Subject		: iwl3945: wlan0: beacon loss from AP - sending probe request
+> Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+> Date		: 2009-04-05 9:11 (12 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123892272218266&w=4
+>
+>
+>   
+I'm getting this on .30rc2, so I confirm that it's still an issue (I'm 
+not the original submitter).
+It's really annoying because it's filling my logs like crazy. Below is 
+15mins of logs, and it just repeats like this.
 
+dhclient: DHCPREQUEST of 192.168.1.5 on wlan0 to 192.168.1.254 port 67
+dhclient: DHCPACK of 192.168.1.5 from 192.168.1.254
+dhclient: bound to 192.168.1.5 -- renewal in 823 seconds.
+NetworkManager: <debug> [1239937333.003788] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239937339.001004] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+NetworkManager: <debug> [1239937453.002911] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239937459.000974] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+NetworkManager: <debug> [1239937573.002956] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239937579.000971] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+NetworkManager: <debug> [1239937693.003787] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239937699.000981] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+NetworkManager: <debug> [1239937813.002710] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239937819.000753] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+NetworkManager: <debug> [1239937933.003806] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239937939.000724] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+NetworkManager: <debug> [1239938053.002711] periodic_update(): Roamed 
+from BSSID 00:1C:DF:67:1F:AC (madru) to (none) ((none))
+kernel: wlan0: beacon loss from AP 00:1c:df:67:1f:ac - sending probe request
+NetworkManager: <debug> [1239938059.001749] periodic_update(): Roamed 
+from BSSID (none) ((none)) to 00:1C:DF:67:1F:AC (madru)
+dhclient: DHCPREQUEST of 192.168.1.5 on wlan0 to 192.168.1.254 port 67
+dhclient: DHCPACK of 192.168.1.5 from 192.168.1.254
+dhclient: bound to 192.168.1.5 -- renewal in 803 seconds.
 
-
-On Thu, 16 Apr 2009, Steven Rostedt wrote:
-> I reverted my patch and added recursion detection, but I hit this nasty 
-> bug:
-> 
-> ---------------------------------
-> CPU 0 
-> Modules linked in: radeon drm autofs4 hidp rfcomm l2cap bluetooth sunrpc 
-> ip6t_REJECT ip6table_filter ip6_tables ipv6 sbs sbshc battery sg evbug 
-> ide_cd_mod cdrom snd_intel8x0 snd_ac97_codec ac97_bus serio_raw 
-> snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device 
-> snd_pcm_oss snd_mixer_oss e1000 snd_pcm button floppy snd_timer i2c_i801 
-> snd soundcore i2c_core snd_page_alloc ata_generic iTCO_wdt 
-> iTCO_vendor_support pata_acpi e752x_edac edac_core pcspkr dm_snapshot 
-> dm_zero dm_mirror dm_region_hash dm_log dm_mod ata_piix libata sd_mod 
-> scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
-> Pid: 3301, comm: pcscd Tainted: G        W  2.6.30-rc1 #1036 Precision 
-> WorkStation 470    
-> RIP: 0010:[<ffffffff803a59a2>]  [<ffffffff803a59a2>] strlen+0x2/0x20
-> RSP: 0018:ffff880033d19c40  EFLAGS: 00010046
-> RAX: 0000000000000000 RBX: ffffffff807617df RCX: ffffffff807617de
-> RDX: ffff880033d19d48 RSI: ffff880033d19c58 RDI: 5b5b5b5b5b5b5b5b
-> RBP: ffff880033d19ca8 R08: 5b5b5b5b5b5b5b00 R09: 0000000000000000
-> R10: 0000000000000003 R11: 0000000000000202 R12: 0000000000000000
-> R13: 5b5b5b5b5b5b5b5b R14: ffffffff81269b62 R15: ffff880033d19d08
-> FS:  0000000041b6f940(0063) GS:ffffffff80828000(0000) 
-> knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00000000006aec88 CR3: 0000000033c02000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-> Process pcscd (pid: 3301, threadinfo ffff880033d18000, task 
-> ffff880033c48000)
-> Stack:
->  ffffffff803a73e5 ffffffff81269b60 ffffffff8126ab60 0000000000000004
->  0000000affffffff ffffffffffffffff 0000000000000000 ffff880033d19c98
->  0000000000000246 ffff880033d19d08 0000000000000000 0000000000000000
-> Call Trace:
->  [<ffffffff803a73e5>] ? vbin_printf+0x1b5/0x2e0
->  [<ffffffff802b77dc>] trace_vbprintk+0xbc/0x1c0
->  [<ffffffff802887fe>] ? lock_acquire+0x10e/0x120
->  [<ffffffff802bad29>] __trace_bprintk+0x79/0x80
->  [<ffffffff80228ed6>] ? ftrace_call+0x5/0x2b
->  [<ffffffff802b5dac>] ? tracing_record_cmdline+0x2c/0x100
->  [<ffffffff80284920>] ftrace_event_lock_acquire+0x60/0x70
->  [<ffffffff802887fe>] lock_acquire+0x10e/0x120
->  [<ffffffff8030a744>] ? dput+0x64/0x170
->  [<ffffffff80610336>] _spin_lock+0x36/0x70
->  [<ffffffff8030a744>] ? dput+0x64/0x170
->  [<ffffffff8039f98f>] ? _atomic_dec_and_lock+0x1f/0x50
->  [<ffffffff8030a744>] dput+0x64/0x170
->  [<ffffffff80315215>] dcache_dir_close+0x15/0x20
->  [<ffffffff802f8a51>] __fput+0xd1/0x230
->  [<ffffffff802f8f0b>] fput+0x1b/0x30
->  [<ffffffff802f566d>] filp_close+0x5d/0x90
->  [<ffffffff802f5746>] sys_close+0xa6/0x110
->  [<ffffffff802291af>] system_call_fastpath+0x16/0x1b
-> Code: 01 48 83 f9 ff 0f 1f 40 00 74 0b 48 83 c7 01 0f b6 07 84 c0 75 e3 c9 
-> 31 c0 c3 c9 48 89 f8 c3 66 2e 0f 1f 84 00 00 00 00 00 31 c0 <80> 3f 00 55 
-> 48 89 e5 74 11 48 89 f8 66 90 48 83 c0 01 80 38 00 
-> RIP  [<ffffffff803a59a2>] strlen+0x2/0x20
->  RSP <ffff880033d19c40>
-> 
-> 
-> Doing an objdump:
-> 
-> ffffffff803a59a0 <strlen>:
-> ffffffff803a59a0:       31 c0                   xor    %eax,%eax
-> ffffffff803a59a2:       80 3f 00                cmpb   $0x0,(%rdi)
-> ffffffff803a59a5:       55                      push   %rbp
-> ffffffff803a59a6:       48 89 e5                mov    %rsp,%rbp
-> ffffffff803a59a9:       74 11                   je     ffffffff803a59bc <strlen+0x1c>
-> 
-> The %rdi is: 5b5b5b5b5b5b5b5b
-> 
-> Either there's a bug in the vbin_printf, or we have some crazy lock->name?
-> 
-> TRACE_FORMAT(lock_acquire,
->         TP_PROTO(struct lockdep_map *lock, unsigned int subclass,
->                 int trylock, int read, int check,
->                 struct lockdep_map *next_lock, unsigned long ip),
->         TP_ARGS(lock, subclass, trylock, read, check, next_lock, ip),
->         TP_FMT("%s%s%s", trylock ? "try " : "",
->                 read ? "read " : "", lock->name)
->         );
-> 
-> I'll continue to look into this, and perhaps reboot and see what other 
-> nasties I hit.
-
-OK, I think I figured this bug out. This is a lockdep issue with respect 
-to tracepoints.
-
-The trace points in lockdep are called all the time. Outside the lockdep 
-logic. But if lockdep were to trigger an error / warning (which this run 
-did) we might be in trouble. For new locks, like the dentry->d_lock, that 
-are created, they will not get a name:
-
-void lockdep_init_map(struct lockdep_map *lock, const char *name,
-                      struct lock_class_key *key, int subclass)
-{
-        if (unlikely(!debug_locks))
-                return;
-
-When a problem is found by lockdep, debug_locks becomes false. Thus we 
-stop allocating names for locks. This dentry->d_lock I had, now has no 
-name. Worse yet, I have CONFIG_DEBUG_VM set, that scrambles non 
-initialized memory. Thus, when the trace point was hit, it had junk for 
-the lock->name, and the machine crashed.
-
-
--- Steve
-
+Justin Madru
