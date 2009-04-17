@@ -1,167 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbZDQHar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZDQHbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758737AbZDQHar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757888AbZDQHai
+	id S1758905AbZDQHbD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbZDQHaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:30:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:21155 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753088AbZDQHah (ORCPT
+	Fri, 17 Apr 2009 03:30:39 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:24667 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754697AbZDQHai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cENm+NPuj77XROlgMeAZKt1g/tXFA8J94k8mtFQ5L8hqKxH2LSo7FJjFseOk+u+v40
-         CogFaaXwXVDPwUFYPSYvY1MA1344NkWfBp1agIwv8VYbxosvnV+n8EQDAiuhHpuvkEQa
-         igw4hWnKY64zGYQryPHT6hXRlCRZxcQwPBOOs=
-Date: Fri, 17 Apr 2009 16:30:31 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] loop: use BIO list management functions
-Message-ID: <20090417073031.GA3367@localhost.localdomain>
-References: <20090417063217.GA3515@localhost.localdomain> <20090417064034.GG4593@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417064034.GG4593@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 17 Apr 2009 03:30:38 -0400
+Subject: Re: [PATCH 2/4] [MTD] Add MEMERASE64 ioctl for >4GiB devices
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Kevin Cernekee <kpc.mtd@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux MTD <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <a95a62fe0904082252h41afa872j2ef6fb9d1d76dc27@mail.gmail.com>
+References: <a95a62fe0904082252h41afa872j2ef6fb9d1d76dc27@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 17 Apr 2009 10:30:16 +0300
+Message-Id: <1239953416.3390.243.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Apr 2009 07:30:17.0988 (UTC) FILETIME=[5B6A8C40:01C9BF2E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 08:40:35AM +0200, Jens Axboe wrote:
-> On Fri, Apr 17 2009, Akinobu Mita wrote:
-> > Impact: cleanup
+On Wed, 2009-04-08 at 22:52 -0700, Kevin Cernekee wrote:
+> New MEMERASE/MEMREADOOB/MEMWRITEOOB ioctls are needed in order to support
+> 64-bit offsets into large NAND flash devices.
 > 
-> This looks good, but please provide a better description than just a
-> silly impact notice. I've filled it in for you for this one, but in the
-> future the description should say what the patch does.
+> Signed-off-by: Kevin Cernekee <kpc.mtd@gmail.com>
 > 
-> It's queued for 2.6.31.
 
-OK, I added the description and Christoph's feedbacks.
+Kevin, are you going to re-send patches 2-4, taking into account
+Arnd's and Andrew's suggestions?
 
-Subject: loop: use BIO list management functions
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-There are BIO list management helpers in bio.h.
-This uses them to reduce code duplication in loopback driver.
-
-Cc:  Jens Axboe <axboe@kernel.dk>
-Cc: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- drivers/block/loop.c |   42 +++++++-----------------------------------
- include/linux/bio.h  |    2 +-
- include/linux/loop.h |    3 +--
- 3 files changed, 9 insertions(+), 38 deletions(-)
-
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index ddae808..2b70545 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -506,35 +506,6 @@ out:
- 	return ret;
- }
- 
--/*
-- * Add bio to back of pending list
-- */
--static void loop_add_bio(struct loop_device *lo, struct bio *bio)
--{
--	if (lo->lo_biotail) {
--		lo->lo_biotail->bi_next = bio;
--		lo->lo_biotail = bio;
--	} else
--		lo->lo_bio = lo->lo_biotail = bio;
--}
--
--/*
-- * Grab first pending buffer
-- */
--static struct bio *loop_get_bio(struct loop_device *lo)
--{
--	struct bio *bio;
--
--	if ((bio = lo->lo_bio)) {
--		if (bio == lo->lo_biotail)
--			lo->lo_biotail = NULL;
--		lo->lo_bio = bio->bi_next;
--		bio->bi_next = NULL;
--	}
--
--	return bio;
--}
--
- static int loop_make_request(struct request_queue *q, struct bio *old_bio)
- {
- 	struct loop_device *lo = q->queuedata;
-@@ -550,7 +521,7 @@ static int loop_make_request(struct request_queue *q, struct bio *old_bio)
- 		goto out;
- 	if (unlikely(rw == WRITE && (lo->lo_flags & LO_FLAGS_READ_ONLY)))
- 		goto out;
--	loop_add_bio(lo, old_bio);
-+	bio_list_add(&lo->lo_bio_list, old_bio);
- 	wake_up(&lo->lo_event);
- 	spin_unlock_irq(&lo->lo_lock);
- 	return 0;
-@@ -609,15 +580,16 @@ static int loop_thread(void *data)
- 
- 	set_user_nice(current, -20);
- 
--	while (!kthread_should_stop() || lo->lo_bio) {
-+	while (!kthread_should_stop() || !bio_list_empty(&lo->lo_bio_list)) {
- 
- 		wait_event_interruptible(lo->lo_event,
--				lo->lo_bio || kthread_should_stop());
-+				!bio_list_empty(&lo->lo_bio_list) ||
-+				kthread_should_stop());
- 
--		if (!lo->lo_bio)
-+		if (bio_list_empty(&lo->lo_bio_list))
- 			continue;
- 		spin_lock_irq(&lo->lo_lock);
--		bio = loop_get_bio(lo);
-+		bio = bio_list_pop(&lo->lo_bio_list);
- 		spin_unlock_irq(&lo->lo_lock);
- 
- 		BUG_ON(!bio);
-@@ -841,7 +813,7 @@ static int loop_set_fd(struct loop_device *lo, fmode_t mode,
- 	lo->old_gfp_mask = mapping_gfp_mask(mapping);
- 	mapping_set_gfp_mask(mapping, lo->old_gfp_mask & ~(__GFP_IO|__GFP_FS));
- 
--	lo->lo_bio = lo->lo_biotail = NULL;
-+	bio_list_init(&lo->lo_bio_list);
- 
- 	/*
- 	 * set queue make_request_fn, and add limits based on lower level
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index b89cf2d..9388c55 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -505,7 +505,7 @@ static inline int bio_has_data(struct bio *bio)
- }
- 
- /*
-- * BIO list managment for use by remapping drivers (e.g. DM or MD).
-+ * BIO list management for use by remapping drivers (e.g. DM or MD).
-  *
-  * A bio_list anchors a singly-linked list of bios chained through the bi_next
-  * member of the bio.  The bio_list also caches the last list member to allow
-diff --git a/include/linux/loop.h b/include/linux/loop.h
-index 4072544..66c194e 100644
---- a/include/linux/loop.h
-+++ b/include/linux/loop.h
-@@ -56,8 +56,7 @@ struct loop_device {
- 	gfp_t		old_gfp_mask;
- 
- 	spinlock_t		lo_lock;
--	struct bio 		*lo_bio;
--	struct bio		*lo_biotail;
-+	struct bio_list		lo_bio_list;
- 	int			lo_state;
- 	struct mutex		lo_ctl_mutex;
- 	struct task_struct	*lo_thread;
