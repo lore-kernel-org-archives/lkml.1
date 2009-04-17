@@ -1,132 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZDQU7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZDQVBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbZDQU7f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 16:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZDQU7Z
+	id S1756015AbZDQVBZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZDQVBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 16:59:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42820 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752930AbZDQU7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 16:59:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Fri, 17 Apr 2009 17:01:16 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:52718 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbZDQVBO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 17:01:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=CspbC23pQQDKphU4BecA72zDXZACzySl3vwXaR/6vqqGncyIWSFw+C+uHU/m29dWbg
+         m7+PPvz5JbnTHcGa2vWOiuCD05QKdQGyUHA007Zs7uDkzxp+Eewn7Tg2bQRrv4/FfNue
+         sfkwUSiKsWI3k9hIFiApntE6u+SsRdugV2GD8=
+Message-ID: <49E8EC71.2010104@gmail.com>
+Date: Sat, 18 Apr 2009 00:54:09 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+MIME-Version: 1.0
 To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [Bug #13058] First hibernation attempt fails
-Date: Fri, 17 Apr 2009 22:58:58 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <alpine.LFD.2.00.0904170856460.4042@localhost.localdomain> <49E8C06A.5080605@tuffmail.co.uk>
-In-Reply-To: <49E8C06A.5080605@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Subject: Re: [BISECTED] 20 ACPI interrupts per second on EEEPC 4G
+References: <49DF6835.9040501@tuffmail.co.uk> <49DFE345.3010109@gmail.com> <49E05F83.2090500@tuffmail.co.uk> <49E20EBA.2090708@tuffmail.co.uk>
+In-Reply-To: <49E20EBA.2090708@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904172258.58783.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 April 2009, Alan Jenkins wrote:
-> Linus Torvalds wrote:
-> > On Fri, 17 Apr 2009, Alan Jenkins wrote:
-> >   
-> >> As another datapoint:  I tried blindly applying the commit to 2.6.29. 
-> >> The resulting kernel was able to hibernate fine the first time.
-> >>     
-> >
-> > Yeah, so it's not that commit per se that causes it. I bet it needs all 
-> > the IO scheduler changes too - and even when it does that, the end result 
-> > probably is really just a timing change.
-> >
-> >   
-> >> I'm going to be annoying and try something slightly different.  In
-> >> theory, I should be able to find the "first bad commit" where
-> >> cherry-picking 1faa16d22 causes a problem.
-> >>     
-> >
-> > Just for fun, try this one first and see if it makes any difference.
-> >
-> > Maybe the whole "swappiness=0" part was intentional. And maybe it wasn't. 
-> > This is one trivial patch. Maybe it makes your machine blow up. Who knows?
-> >
-> > There are other differences in the shrink_all_memory() path wrt the normal 
-> > memory freeing paths, but they are way more subtle. So I'm suggesting 
-> > tryign this not becasue I think it's "The Bug(tm)", but because it's an 
-> > easy test to make, and maybe it makes a difference.
-> >
-> > 		Linus
-> > ---
-> >  mm/vmscan.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 39fdfb1..d3595ed 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -2113,6 +2113,8 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
-> >  	struct scan_control sc = {
-> >  		.gfp_mask = GFP_KERNEL,
-> >  		.may_unmap = 0,
-> > +		.swap_cluster_max = SWAP_CLUSTER_MAX,
-> > +		.swappiness = vm_swappiness,
-> >  		.may_writepage = 1,
-> >  		.isolate_pages = isolate_pages_global,
-> >  	};
-> >   
-> 
-> 
-> No, that doesn't seem to affect it.
+Alan Jenkins wrote:
+> Alan Jenkins wrote:
+>   
+>> Alexey Starikovskiy wrote:
+>>     
+>>> Alan Jenkins wrote:
+>>>       
+>>>> On latest git, powertop shows 20 ACPI interrupts per second. 
+>>>> Previously, this was closer to 1 per second.  See attached output (a
+>>>> vs b, "a" is from 2.6.29-rc8).
+>>>>
+>>>> This is from a pretty sparse KDE desktop.  Normally I run
+>>>> gnome-power-manager, but I killed it to make sure that wasn't
+>>>> causing any problems.
+>>>>
+>>>>         
+>>>> gpe18:   60975  enabled
+>>>> gpe_all:   60975
+>>>> sci:   60975
+>>>>
+>>>> which I presume means lots of EC interrupts.
+>>>>
+>>>> [    0.134068] ACPI: EC: GPE = 0x18, I/O: command/status = 0x66,
+>>>> data = 0x62
+>>>>
+>>>>         
+>>> This patch looks to be a suspect:
+>>> 34ff4dbccccce54c83b1234d39b7ad9e548a75dd,
+>>> Please check if reversing it helps
+>>>       
+>> No, I still get 20 ACPI interrupts per second.
+>>
+>> I tried without powertop, just in case that was provoking it, but it
+>> still happens:
+>>
+>> alan@alan-eeepc:/sys/firmware/acpi/interrupts$ cat sci; sleep 5; cat sci
+>>    2583
+>>    2680
+>>     
+>
+> I did wonder whether this was due to thermal polling.  So look what I
+> found with bisection :-).
+>   
+Great!
+>
+> b1569e99c795bf83b4ddf41c4f1c42761ab7f75e is first bad commit
+> commit b1569e99c795bf83b4ddf41c4f1c42761ab7f75e
+> Author: Matthew Garrett <mjg59@srcf.ucam.org>
+> Date:   Wed Dec 3 17:55:32 2008 +0000
+>
+>     ACPI: move thermal trip handling to generic thermal layer
+>
+>     The ACPI code currently carries its own thermal trip handling,
+> meaning that
+>     any other thermal implementation will need to reimplement it. Move
+> the code
+>     to the generic thermal layer.
+>
+>
+> Regards
+> Alan
+>   
 
-Can you please try to reproduce the problem with the appended debug patch
-applied and send the output of dmesg to me?
-
-Rafael
-
----
- mm/vmscan.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c
-+++ linux-2.6/mm/vmscan.c
-@@ -2115,6 +2115,7 @@ unsigned long shrink_all_memory(unsigned
- 		.may_unmap = 0,
- 		.may_writepage = 1,
- 		.isolate_pages = isolate_pages_global,
-+		.nr_reclaimed = 0,
- 	};
- 
- 	current->reclaim_state = &reclaim_state;
-@@ -2135,6 +2136,8 @@ unsigned long shrink_all_memory(unsigned
- 		nr_slab -= reclaim_state.reclaimed_slab;
- 	}
- 
-+	printk(KERN_INFO "before: sc.nr_reclaimed = %lu\n", sc.nr_reclaimed);
-+
- 	/*
- 	 * We try to shrink LRUs in 5 passes:
- 	 * 0 = Reclaim from inactive_list only
-@@ -2168,6 +2171,10 @@ unsigned long shrink_all_memory(unsigned
- 
- 			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
- 				congestion_wait(WRITE, HZ / 10);
-+
-+			printk(KERN_INFO "pass = %d, prio = %d, "
-+				"sc.nr_reclaimed = %lu\n", pass, prio,
-+				sc.nr_reclaimed);
- 		}
- 	}
- 
-@@ -2184,6 +2191,7 @@ unsigned long shrink_all_memory(unsigned
- 				reclaim_state.reclaimed_slab > 0);
- 	}
- 
-+	printk(KERN_INFO "after: sc.nr_reclaimed = %lu\n", sc.nr_reclaimed);
- 
- out:
- 	current->reclaim_state = NULL;
