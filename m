@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbZDQPvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbZDQPxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760085AbZDQPvA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 11:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZDQPuu
+	id S1759713AbZDQPxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 11:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZDQPxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 11:50:50 -0400
-Received: from e24smtp05.br.ibm.com ([32.104.18.26]:42665 "EHLO
-	e24smtp05.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753191AbZDQPut (ORCPT
+	Fri, 17 Apr 2009 11:53:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53923 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbZDQPxH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 11:50:49 -0400
-Message-ID: <49E8A551.7050307@linux.vnet.ibm.com>
-Date: Fri, 17 Apr 2009 12:50:41 -0300
-From: Daniel Debonzi <debonzi@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 17 Apr 2009 11:53:07 -0400
+Date: Fri, 17 Apr 2009 11:53:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: mathieu.desnoyers@polymtl.ca, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 4/4] tracing: avoid warnings from zero-arg tracepoints
+In-Reply-To: <1239950139-1119-5-git-send-email-jeremy@goop.org>
+Message-ID: <alpine.DEB.2.00.0904171152500.14919@gandalf.stny.rr.com>
+References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-5-git-send-email-jeremy@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Vladislav Bolkhovitin <vst@vlnb.net>, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and implementation.
-References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> <49E85F1C.7040106@vlnb.net> <49E8832F.6070302@linux.vnet.ibm.com> <ac3eb2510904170724l654b00b4k79156138f9fd926d@mail.gmail.com>
-In-Reply-To: <ac3eb2510904170724l654b00b4k79156138f9fd926d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kay,
-
-Thanks for the inputs.
-
-Do you mean that uses struct device is the right way to do it instead of 
-kobjects or it is just a option to get things on right places into sysfs?
-
-I don't know this struct closely but my first impression looking to the 
-source code is that it is tied with hardware and has some complexity we 
-probably don't need. What do you think?
-
-Regards,
-Daniel Debonzi
 
 
-Kay Sievers wrote:
-> On Fri, Apr 17, 2009 at 15:25, Daniel Debonzi
-> <debonzi@linux.vnet.ibm.com> wrote:
->> Vladislav Bolkhovitin wrote:
+On Thu, 16 Apr 2009, Jeremy Fitzhardinge wrote:
+
+> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 > 
->>>> Based on all I read this last days, I believe we are not allowed to
->>>> include the directory scsi_tgt on /sys root. I think it has to be in a
->>>> existent directory reserved for this sort of application. I just didn't
->>>> figured out which one it would be.
+> Tracepoints with no arguments can issue two warnings:
+> 	"field" defined by not used
+> 	"ret" is uninitialized in this function
 > 
-> Right, there will be no new out-of-/sys/devices/ top-level device dir,
-> unless you convince everybody to have a scsifs, which would be in
-> /sys/kernel/scsi/, and which would not use the driver core device
-> stuff at all. :)
+> Mark field as being OK to leave unused, and initialize ret.
 > 
->>> /sys/class? It already has scsi_device, scsi_disk, scsi_generic and
->>> scsi_host.
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  include/trace/ftrace.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> If it's a bus or a class, it does not matter. What you need to include
-> is a "struct device" (and not a kobject) if you want them to show up
-> in the common directories.
-> 
->> I don't think so because all the directories on /sys/class have symlinks to
->> the files somewhere else. However I noticed that many of them on my system
->> are on /sys/device/virtual
-> 
-> All "struct device" devices appear in /sys/devices/, that's the single
-> place the hierarchy is expressed. The classification, meaning the
-> "collection of devices of the same subsystem" happens in /sys/bus/
-> /sys/class/, therefore they are only flat lists of links. Virtual are
-> devices which have no parent assigned. The driver core prepends
-> virtual to them, when they are registered.
-> 
-> Kay
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 60c5323..39a3351 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -160,8 +160,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+>  static int								\
+>  ftrace_format_##call(struct trace_seq *s)				\
+>  {									\
+> -	struct ftrace_raw_##call field;					\
+> -	int ret;							\
+> +	struct ftrace_raw_##call field __attribute__((unused));		\
+> +	int ret = 0;							\
+>  									\
+>  	tstruct;							\
+>  									\
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
 
