@@ -1,1903 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbZDQJek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760524AbZDQJhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760579AbZDQJek (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 05:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760220AbZDQJeY
+	id S1760524AbZDQJhp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 05:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757192AbZDQJhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 05:34:24 -0400
-Received: from queueout02-winn.ispmail.ntl.com ([81.103.221.56]:26390 "EHLO
-	queueout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760433AbZDQJeS (ORCPT
+	Fri, 17 Apr 2009 05:37:36 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:40003 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756031AbZDQJhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 05:34:18 -0400
-Subject: [PATCH] staging/wlan-ng: Move firmware loading into driver
-From: Karl Relton <karllinuxtest.relton@ntlworld.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Richard Kennedy <richard@rsk.demon.co.uk>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 10:15:34 +0100
-Message-Id: <1239959734.6284.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.0 c=1 a=rA5UT2xz_v4A:10 a=u96BB7JSVtwA:10 a=NLZqzBF-AAAA:8 a=pQs5aej7AAAA:8 a=hMrpyb_uAAAA:8 a=D2b-Oj0ClIMqOvuTv7gA:9 a=DDDTYmdEJTwKKzdcx64A:7 a=Yn5AKUSPoQDwEtm66kFRhyVUnoAA:4 a=_dQi-Dcv4p4A:10 a=7BtmIzTBHdUA:10 a=wFoP6VKi9VpA45zT:21 a=M-j9S7hQ_7RUnFn0:21
+	Fri, 17 Apr 2009 05:37:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=hHVQ/QGLvbc+N4O3y6OzhgWx2yH4wISpSaZmZTPsPWUo/zDuGIOcQN8UbPuZ8ZtZ3N
+         Xq6ig7IBbDaMT0YJnA2fmfCgTXvtU8Ak/18SnXJhKrrvhsuhgLvqwk4LZFuqYzVcLnN/
+         +JjTef8SqLZmKMKHot1rPKGZywWCP8Mt7DgHY=
+Date: Fri, 17 Apr 2009 11:37:28 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Subject: Re: [PATCH 01/10] Documentation
+Message-ID: <20090417093656.GA5246@linux>
+Mail-Followup-To: Vivek Goyal <vgoyal@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+	dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+	fchecconi@gmail.com, paolo.valente@unimore.it,
+	jens.axboe@oracle.com, ryov@valinux.co.jp,
+	fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+	taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+	jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+	balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org, menage@google.com,
+	peterz@infradead.org
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090416183753.GE8896@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move prism2 firmware loading from userspace into driver, using linux
-request_firmware(). Firmware is now loaded (if available) on device
-probing, before it is registered as a netdevice and advertised to userspace.
+On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+> > I think it would be possible to implement both proportional and limiting
+> > rules at the same level (e.g., the IO scheduler), but we need also to
+> > address the memory consumption problem (I still need to review your
+> > patchset in details and I'm going to test it soon :), so I don't know if
+> > you already addressed this issue).
+> > 
+> 
+> Can you please elaborate a bit on this? Are you concerned about that data
+> structures created to solve the problem consume a lot of memory?
 
-Signed-off-by: Karl Relton <karllinuxtest.relton@ntlworld.com>
+Sorry I was not very clear here. With memory consumption I mean wasting
+the memory with hard/slow reclaimable dirty pages or pending IO
+requests.
 
----
+If there's only a global limit on dirty pages, any cgroup can exhaust
+that limit and cause other cgroups/processes to block when they try to
+write to disk.
 
-Some Notes:
+But, ok, the IO controller is not probably the best place to implement
+such functionality. I should rework on the per cgroup dirty_ratio:
 
-- Applies against linux-next (as of 20090416), tested on my system
+https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
 
-- The code in prism2fw.c is ported from the original linux-wlan-ng
-  project prism2dl.c userpace utility for firmware uploading.
+Last time we focused too much on the best interfaces to define dirty
+pages limit, and I never re-posted an updated version of this patchset.
+Now I think we can simply provide the same dirty_ratio/dirty_bytes
+interface that we provide globally, but per cgroup.
 
-- Some definitions previously cleaned out of the header files have been
-  re-inserted to support this code (simply re-copied from original .h files)
+> 
+> > IOW if we simply don't dispatch requests and we don't throttle the tasks
+> > in the cgroup that exceeds its limit, how do we avoid the waste of
+> > memory due to the succeeding IO requests and the increasingly dirty
+> > pages in the page cache (that are also hard to reclaim)? I may be wrong,
+> > but I think we talked about this problem in a previous email... sorry I
+> > don't find the discussion in my mail archives.
+> > 
+> > IMHO a nice approach would be to measure IO consumption at the IO
+> > scheduler level, and control IO applying proportional weights / absolute
+> > limits _both_ at the IO scheduler / elevator level _and_ at the same
+> > time block the tasks from dirtying memory that will generate additional
+> > IO requests.
+> > 
+> > Anyway, there's no need to provide this with a single IO controller, we
+> > could split the problem in two parts: 1) provide a proportional /
+> > absolute IO controller in the IO schedulers and 2) allow to set, for
+> > example, a maximum limit of dirty pages for each cgroup.
+> > 
+> 
+> I think setting a maximum limit on dirty pages is an interesting thought.
+> It sounds like as if memory controller can handle it?
 
-- The firmware file should be prism2_ru.hex in the 'standard' Linux firmware
-  directory
+Exactly, the same above.
 
-- Previous patch to introduce ioctl barring mutex is reverted in this patch: now
-  device initialisation order has changed that patch is no longer necessary.
+> 
+> I guess currently memory controller puts limit on total amount of memory
+> consumed by cgroup and there are no knobs on type of memory consumed. So
+> if one can limit amount of dirty page cache memory per cgroup, it
+> automatically throttles the aysnc writes at the input itself.
+>  
+> So I agree that if we can limit the process from dirtying too much of
+> memory than IO scheduler level controller should be able to do both
+> proportional weight and max bw controller.
+> 
+> Currently doing proportional weight control for async writes is very
+> tricky. I am not seeing constantly backlogged traffic at IO scheudler
+> level and hence two different weight processes seem to be getting same
+> BW.
+> 
+> I will dive deeper into the patches on dm-ioband to see how they have
+> solved this issue. Looks like they are just waiting longer for slowest
+> group to consume its tokens and that will keep the disk idle. Extended
+> delays might now show up immediately as performance hog, because it might
+> also promote increased merging but it should lead to increased latency of
+> response. And proving latency issues is hard. :-)   
+> 
+> > Maybe I'm just repeating what we already said in a previous
+> > discussion... in this case sorry for the duplicate thoughts. :)
+> > 
+> > > 
+> > > - Have you thought of doing hierarchical control? 
+> > > 
+> > 
+> > Providing hiearchies in cgroups is in general expensive, deeper
+> > hierarchies imply checking all the way up to the root cgroup, so I think
+> > we need to be very careful and be aware of the trade-offs before
+> > providing such feature. For this particular case (IO controller)
+> > wouldn't it be simpler and more efficient to just ignore hierarchies in
+> > the kernel and opportunely handle them in userspace? for absolute
+> > limiting rules this isn't difficult at all, just imagine a config file
+> > and a script or a deamon that dynamically create the opportune cgroups
+> > and configure them accordingly to what is defined in the configuration
+> > file.
+> > 
+> > I think we can simply define hierarchical dependencies in the
+> > configuration file, translate them in absolute values and use the
+> > absolute values to configure the cgroups' properties.
+> > 
+> > For example, we can just check that the BW allocated for a particular
+> > parent cgroup is not greater than the total BW allocated for the
+> > children. And for each child just use the min(parent_BW, BW) or equally
+> > divide the parent's BW among the children, etc.
+> 
+> IIUC, you are saying that allow hiearchy in user space and then flatten it
+> out and pass it to kernel?
+> 
+> Hmm.., agree that handling hierarchies is hard and expensive. But at the
+> same time rest of the controllers like cpu and memory are handling it in
+> kernel so it probably makes sense to keep the IO controller also in line.
+> 
+> In practice I am not expecting deep hiearchices. May be 2- 3 levels would
+> be good for most of the people.
+> 
+> > 
+> > > - What happens to the notion of CFQ task classes and task priority. Looks
+> > >   like max bw rule supercede everything. There is no way that an RT task
+> > >   get unlimited amount of disk BW even if it wants to? (There is no notion
+> > >   of RT cgroup etc)
+> > 
+> > What about moving all the RT tasks in a separate cgroup with unlimited
+> > BW?
+> 
+> Hmm.., I think that should work. I have yet to look at your patches in
+> detail but it looks like unlimited BW group will not be throttled at all
+> hence RT tasks can just go right through without getting impacted.
 
-- Had to define bswap16 & bswap32 utilities in prism2fw.c because no
-  standard kernel provision for these seem to exist.
+Correct.
 
+> 
+> > 
+> > > 
+> > > > > 
+> > > > >   Above requirement can create configuration problems.
+> > > > > 
+> > > > > 	- If there are large number of disks in system, per cgroup one shall
+> > > > > 	  have to create rules for each disk. Until and unless admin knows
+> > > > > 	  what applications are in which cgroup and strictly what disk
+> > > > > 	  these applications do IO to and create rules for only those
+> > > > >  	  disks.
+> > > > 
+> > > > I don't think this is a huge problem anyway. IMHO a userspace tool, e.g.
+> > > > a script, would be able to efficiently create/modify rules parsing user
+> > > > defined rules in some human-readable form (config files, etc.), even in
+> > > > presence of hundreds of disk. The same is valid for dm-ioband I think.
+> > > > 
+> > > > > 
+> > > > > 	- I think problem gets compounded if there is a hierarchy of
+> > > > > 	  logical devices. I think in that case one shall have to create
+> > > > > 	  rules for logical devices and not actual physical devices.
+> > > > 
+> > > > With logical devices you mean device-mapper devices (i.e. LVM, software
+> > > > RAID, etc.)? or do you mean that we need to introduce the concept of
+> > > > "logical device" to easily (quickly) configure IO requirements and then
+> > > > map those logical devices to the actual physical devices? In this case I
+> > > > think this can be addressed in userspace. Or maybe I'm totally missing
+> > > > the point here.
+> > > 
+> > > Yes, I meant LVM, Software RAID etc. So if I have got many disks in the system
+> > > and I have created software raid on some of them, I need to create rules for
+> > > lvm devices or physical devices behind those lvm devices? I am assuming
+> > > that it will be logical devices.
+> > > 
+> > > So I need to know exactly to what all devices applications in a particular
+> > > cgroup is going to do IO, and also know exactly how many cgroups are
+> > > contending for that cgroup, and also know what worst case disk rate I can
+> > > expect from that device and then I can do a good job of giving a
+> > > reasonable value to the max rate of that cgroup on a particular device?
+> > 
+> > ok, I understand. For these cases dm-ioband perfectly addresses the
+> > problem. For the general case, I think the only solution is to provide a
+> > common interface that each dm subsystem must call to account IO and
+> > apply limiting and proportional rules.
+> > 
+> > > 
+> > > > 
+> > > > > 
+> > > > > - Because it is not proportional weight distribution, if some
+> > > > >   cgroup is not using its planned BW, other group sharing the
+> > > > >   disk can not make use of spare BW.  
+> > > > > 	
+> > > > 
+> > > > Right.
+> > > > 
+> > > > > - I think one should know in advance the throughput rate of underlying media
+> > > > >   and also know competing applications so that one can statically define
+> > > > >   the BW assigned to each cgroup on each disk.
+> > > > > 
+> > > > >   This will be difficult. Effective BW extracted out of a rotational media
+> > > > >   is dependent on the seek pattern so one shall have to either try to make
+> > > > >   some conservative estimates and try to divide BW (we will not utilize disk
+> > > > >   fully) or take some peak numbers and divide BW (cgroup might not get the
+> > > > >   maximum rate configured).
+> > > > 
+> > > > Correct. I think the proportional weight approach is the only solution
+> > > > to efficiently use the whole BW. OTOH absolute limiting rules offer a
+> > > > better control over QoS, because you can totally remove performance
+> > > > bursts/peaks that could break QoS requirements for short periods of
+> > > > time.
+> > > 
+> > > Can you please give little more details here regarding how QoS requirements
+> > > are not met with proportional weight?
+> > 
+> > With proportional weights the whole bandwidth is allocated if no one
+> > else is using it. When IO is submitted other tasks with a higher weight
+> > can be forced to sleep until the IO generated by the low weight tasks is
+> > not completely dispatched. Or any extent of the priority inversion
+> > problems.
+> 
+> Hmm..., I am not very sure here. When admin is allocating the weights, he
+> has the whole picture. He knows how many groups are conteding for the disk
+> and what could be the worst case scenario. So if I have got two groups
+> with A and B with weight 1 and 2 and both are contending, then as an 
+> admin one would expect to get 33% of BW for group A in worst case (if
+> group B is continuously backlogged). If B is not contending than A can get
+> 100% of BW. So while configuring the system, will one not plan for worst
+> case (33% for A, and 66 % for B)?
 
---- a/drivers/staging/wlan-ng/hfa384x.h	2009-04-14 21:51:48.000000000 +0100
-+++ b/drivers/staging/wlan-ng/hfa384x.h	2009-04-15 17:56:49.000000000 +0100
-@@ -64,6 +64,7 @@
- #define		HFA384x_PORTID_MAX		((u16)7)
- #define		HFA384x_NUMPORTS_MAX		((u16)(HFA384x_PORTID_MAX+1))
- #define		HFA384x_PDR_LEN_MAX		((u16)512) /* in bytes, from EK */
-+#define		HFA384x_PDA_RECS_MAX		((u16)200) /* a guess */
- #define		HFA384x_PDA_LEN_MAX		((u16)1024) /* in bytes, from EK */
- #define		HFA384x_SCANRESULT_MAX		((u16)31)
- #define		HFA384x_HSCANRESULT_MAX		((u16)31)
-@@ -882,6 +883,249 @@ typedef union hfa384x_usbin {
- 	u8 boguspad[3000];
- } __attribute__ ((packed)) hfa384x_usbin_t;
- 
-+/*--------------------------------------------------------------------
-+PD record structures.
-+--------------------------------------------------------------------*/
-+
-+typedef struct hfa384x_pdr_pcb_partnum
-+{
-+	u8	num[8];
-+} __attribute__ ((packed)) hfa384x_pdr_pcb_partnum_t;
-+
-+typedef struct hfa384x_pdr_pcb_tracenum
-+{
-+	u8	num[8];
-+} __attribute__ ((packed)) hfa384x_pdr_pcb_tracenum_t;
-+
-+typedef struct hfa384x_pdr_nic_serial
-+{
-+	u8	num[12];
-+} __attribute__ ((packed)) hfa384x_pdr_nic_serial_t;
-+
-+typedef struct hfa384x_pdr_mkk_measurements
-+{
-+	double	carrier_freq;
-+	double	occupied_band;
-+	double	power_density;
-+	double	tx_spur_f1;
-+	double	tx_spur_f2;
-+	double	tx_spur_f3;
-+	double	tx_spur_f4;
-+	double	tx_spur_l1;
-+	double	tx_spur_l2;
-+	double	tx_spur_l3;
-+	double	tx_spur_l4;
-+	double	rx_spur_f1;
-+	double	rx_spur_f2;
-+	double	rx_spur_l1;
-+	double	rx_spur_l2;
-+} __attribute__ ((packed)) hfa384x_pdr_mkk_measurements_t;
-+
-+typedef struct hfa384x_pdr_nic_ramsize
-+{
-+	u8	size[12]; /* units of KB */
-+} __attribute__ ((packed)) hfa384x_pdr_nic_ramsize_t;
-+
-+typedef struct hfa384x_pdr_mfisuprange
-+{
-+	u16	id;
-+	u16	variant;
-+	u16	bottom;
-+	u16	top;
-+} __attribute__ ((packed)) hfa384x_pdr_mfisuprange_t;
-+
-+typedef struct hfa384x_pdr_cfisuprange
-+{
-+	u16	id;
-+	u16	variant;
-+	u16	bottom;
-+	u16	top;
-+} __attribute__ ((packed)) hfa384x_pdr_cfisuprange_t;
-+
-+typedef struct hfa384x_pdr_nicid
-+{
-+	u16	id;
-+	u16	variant;
-+	u16	major;
-+	u16	minor;
-+} __attribute__ ((packed)) hfa384x_pdr_nicid_t;
-+
-+
-+typedef struct hfa384x_pdr_refdac_measurements
-+{
-+	u16	value[0];
-+} __attribute__ ((packed)) hfa384x_pdr_refdac_measurements_t;
-+
-+typedef struct hfa384x_pdr_vgdac_measurements
-+{
-+	u16	value[0];
-+} __attribute__ ((packed)) hfa384x_pdr_vgdac_measurements_t;
-+
-+typedef struct hfa384x_pdr_level_comp_measurements
-+{
-+	u16	value[0];
-+} __attribute__ ((packed)) hfa384x_pdr_level_compc_measurements_t;
-+
-+typedef struct hfa384x_pdr_mac_address
-+{
-+	u8	addr[6];
-+} __attribute__ ((packed)) hfa384x_pdr_mac_address_t;
-+
-+typedef struct hfa384x_pdr_mkk_callname
-+{
-+	u8	callname[8];
-+} __attribute__ ((packed)) hfa384x_pdr_mkk_callname_t;
-+
-+typedef struct hfa384x_pdr_regdomain
-+{
-+	u16	numdomains;
-+	u16	domain[5];
-+} __attribute__ ((packed)) hfa384x_pdr_regdomain_t;
-+
-+typedef struct hfa384x_pdr_allowed_channel
-+{
-+	u16	ch_bitmap;
-+} __attribute__ ((packed)) hfa384x_pdr_allowed_channel_t;
-+
-+typedef struct hfa384x_pdr_default_channel
-+{
-+	u16	channel;
-+} __attribute__ ((packed)) hfa384x_pdr_default_channel_t;
-+
-+typedef struct hfa384x_pdr_privacy_option
-+{
-+	u16	available;
-+} __attribute__ ((packed)) hfa384x_pdr_privacy_option_t;
-+
-+typedef struct hfa384x_pdr_temptype
-+{
-+	u16	type;
-+} __attribute__ ((packed)) hfa384x_pdr_temptype_t;
-+
-+typedef struct hfa384x_pdr_refdac_setup
-+{
-+	u16	ch_value[14];
-+} __attribute__ ((packed)) hfa384x_pdr_refdac_setup_t;
-+
-+typedef struct hfa384x_pdr_vgdac_setup
-+{
-+	u16	ch_value[14];
-+} __attribute__ ((packed)) hfa384x_pdr_vgdac_setup_t;
-+
-+typedef struct hfa384x_pdr_level_comp_setup
-+{
-+	u16	ch_value[14];
-+} __attribute__ ((packed)) hfa384x_pdr_level_comp_setup_t;
-+
-+typedef struct hfa384x_pdr_trimdac_setup
-+{
-+	u16	trimidac;
-+	u16	trimqdac;
-+} __attribute__ ((packed)) hfa384x_pdr_trimdac_setup_t;
-+
-+typedef struct hfa384x_pdr_ifr_setting
-+{
-+	u16	value[3];
-+} __attribute__ ((packed)) hfa384x_pdr_ifr_setting_t;
-+
-+typedef struct hfa384x_pdr_rfr_setting
-+{
-+	u16	value[3];
-+} __attribute__ ((packed)) hfa384x_pdr_rfr_setting_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_baseline
-+{
-+	u16	value[50];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_baseline_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_shadow
-+{
-+	u32	value[32];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_shadow_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_ifrf
-+{
-+	u32	value[20];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_ifrf_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_chcalsp
-+{
-+	u16	value[14];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_chcalsp_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_chcali
-+{
-+	u16	value[17];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_chcali_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_nic_config
-+{
-+	u16	config_bitmap;
-+} __attribute__ ((packed)) hfa384x_pdr_nic_config_t;
-+
-+typedef struct hfa384x_pdr_hfo_delay
-+{
-+	u8   hfo_delay;
-+} __attribute__ ((packed)) hfa384x_hfo_delay_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_manf_testsp
-+{
-+	u16	value[30];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_manf_testsp_t;
-+
-+typedef struct hfa384x_pdr_hfa3861_manf_testi
-+{
-+	u16	value[30];
-+} __attribute__ ((packed)) hfa384x_pdr_hfa3861_manf_testi_t;
-+
-+typedef struct hfa384x_end_of_pda
-+{
-+	u16	crc;
-+} __attribute__ ((packed)) hfa384x_pdr_end_of_pda_t;
-+
-+typedef struct hfa384x_pdrec
-+{
-+	u16	len; /* in words */
-+	u16	code;
-+	union pdr {
-+	hfa384x_pdr_pcb_partnum_t	pcb_partnum;
-+	hfa384x_pdr_pcb_tracenum_t	pcb_tracenum;
-+	hfa384x_pdr_nic_serial_t	nic_serial;
-+	hfa384x_pdr_mkk_measurements_t	mkk_measurements;
-+	hfa384x_pdr_nic_ramsize_t	nic_ramsize;
-+	hfa384x_pdr_mfisuprange_t	mfisuprange;
-+	hfa384x_pdr_cfisuprange_t	cfisuprange;
-+	hfa384x_pdr_nicid_t		nicid;
-+	hfa384x_pdr_refdac_measurements_t	refdac_measurements;
-+	hfa384x_pdr_vgdac_measurements_t	vgdac_measurements;
-+	hfa384x_pdr_level_compc_measurements_t	level_compc_measurements;
-+	hfa384x_pdr_mac_address_t	mac_address;
-+	hfa384x_pdr_mkk_callname_t	mkk_callname;
-+	hfa384x_pdr_regdomain_t		regdomain;
-+	hfa384x_pdr_allowed_channel_t	allowed_channel;
-+	hfa384x_pdr_default_channel_t	default_channel;
-+	hfa384x_pdr_privacy_option_t	privacy_option;
-+	hfa384x_pdr_temptype_t		temptype;
-+	hfa384x_pdr_refdac_setup_t	refdac_setup;
-+	hfa384x_pdr_vgdac_setup_t	vgdac_setup;
-+	hfa384x_pdr_level_comp_setup_t	level_comp_setup;
-+	hfa384x_pdr_trimdac_setup_t	trimdac_setup;
-+	hfa384x_pdr_ifr_setting_t	ifr_setting;
-+	hfa384x_pdr_rfr_setting_t	rfr_setting;
-+	hfa384x_pdr_hfa3861_baseline_t	hfa3861_baseline;
-+	hfa384x_pdr_hfa3861_shadow_t	hfa3861_shadow;
-+	hfa384x_pdr_hfa3861_ifrf_t	hfa3861_ifrf;
-+	hfa384x_pdr_hfa3861_chcalsp_t	hfa3861_chcalsp;
-+	hfa384x_pdr_hfa3861_chcali_t	hfa3861_chcali;
-+	hfa384x_pdr_nic_config_t	nic_config;
-+	hfa384x_hfo_delay_t             hfo_delay;
-+	hfa384x_pdr_hfa3861_manf_testsp_t	hfa3861_manf_testsp;
-+	hfa384x_pdr_hfa3861_manf_testi_t	hfa3861_manf_testi;
-+	hfa384x_pdr_end_of_pda_t	end_of_pda;
-+
-+	} data;
-+} __attribute__ ((packed)) hfa384x_pdrec_t;
-+
- #ifdef __KERNEL__
- /*--------------------------------------------------------------------
- ---  MAC state structure, argument to all functions --
---- a/drivers/staging/wlan-ng/p80211metadef.h	2009-04-14 21:51:48.000000000 +0100
-+++ b/drivers/staging/wlan-ng/p80211metadef.h	2009-04-15 17:56:49.000000000 +0100
-@@ -50,6 +50,14 @@
- #define DIDmsg_dot11req_mibget \
- 			(P80211DID_MKSECTION(1) | \
- 			P80211DID_MKGROUP(1))
-+#define DIDmsg_dot11req_mibget_mibattribute \
-+			(P80211DID_MKSECTION(1) | \
-+			P80211DID_MKGROUP(1) | \
-+			P80211DID_MKITEM(1) | 0x00000000)
-+#define DIDmsg_dot11req_mibget_resultcode \
-+			(P80211DID_MKSECTION(1) | \
-+			P80211DID_MKGROUP(1) | \
-+			P80211DID_MKITEM(2) | 0x00000000)
- #define DIDmsg_dot11req_mibset \
- 			(P80211DID_MKSECTION(1) | \
- 			P80211DID_MKGROUP(2))
-@@ -94,12 +102,48 @@
- #define DIDmsg_p2req_readpda \
- 			(P80211DID_MKSECTION(5) | \
- 			P80211DID_MKGROUP(2))
-+#define DIDmsg_p2req_readpda_pda \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(2) | \
-+			P80211DID_MKITEM(1) | 0x00000000)
-+#define DIDmsg_p2req_readpda_resultcode \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(2) | \
-+			P80211DID_MKITEM(2) | 0x00000000)
- #define DIDmsg_p2req_ramdl_state \
- 			(P80211DID_MKSECTION(5) | \
- 			P80211DID_MKGROUP(11))
-+#define DIDmsg_p2req_ramdl_state_enable \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(11) | \
-+			P80211DID_MKITEM(1) | 0x00000000)
-+#define DIDmsg_p2req_ramdl_state_exeaddr \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(11) | \
-+			P80211DID_MKITEM(2) | 0x00000000)
-+#define DIDmsg_p2req_ramdl_state_resultcode \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(11) | \
-+			P80211DID_MKITEM(3) | 0x00000000)
- #define DIDmsg_p2req_ramdl_write \
- 			(P80211DID_MKSECTION(5) | \
- 			P80211DID_MKGROUP(12))
-+#define DIDmsg_p2req_ramdl_write_addr \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(12) | \
-+			P80211DID_MKITEM(1) | 0x00000000)
-+#define DIDmsg_p2req_ramdl_write_len \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(12) | \
-+			P80211DID_MKITEM(2) | 0x00000000)
-+#define DIDmsg_p2req_ramdl_write_data \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(12) | \
-+			P80211DID_MKITEM(3) | 0x00000000)
-+#define DIDmsg_p2req_ramdl_write_resultcode \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(12) | \
-+			P80211DID_MKITEM(4) | 0x00000000)
- #define DIDmsg_p2req_flashdl_state \
- 			(P80211DID_MKSECTION(5) | \
- 			P80211DID_MKGROUP(13))
-@@ -203,6 +247,10 @@
- 			(P80211DID_MKSECTION(5) | \
- 			P80211DID_MKGROUP(2) | \
- 			P80211DID_MKITEM(1) | 0x18000000)
-+#define DIDmib_p2_p2NIC_p2PRISupRange \
-+			(P80211DID_MKSECTION(5) | \
-+			P80211DID_MKGROUP(5) | \
-+			P80211DID_MKITEM(6) | 0x10000000)
- #define DIDmib_p2_p2MAC \
- 			(P80211DID_MKSECTION(5) | \
- 			P80211DID_MKGROUP(6))
---- a/drivers/staging/wlan-ng/p80211netdev.h	2009-04-14 21:51:48.000000000 +0100
-+++ b/drivers/staging/wlan-ng/p80211netdev.h	2009-04-15 17:57:36.000000000 +0100
-@@ -227,8 +227,6 @@ typedef struct wlandevice {
- 	u8 spy_number;
- 	char spy_address[IW_MAX_SPY][ETH_ALEN];
- 	struct iw_quality spy_stat[IW_MAX_SPY];
--
--	struct mutex ioctl_lock;
- } wlandevice_t;
- 
- /* WEP stuff */
-@@ -244,5 +242,4 @@ int register_wlandev(wlandevice_t *wland
- int unregister_wlandev(wlandevice_t *wlandev);
- void p80211netdev_rx(wlandevice_t *wlandev, struct sk_buff *skb);
- void p80211netdev_hwremoved(wlandevice_t *wlandev);
--void p80211_allow_ioctls(wlandevice_t *wlandev);
- #endif
---- a/drivers/staging/wlan-ng/p80211netdev.c	2009-04-16 21:24:54.000000000 +0100
-+++ b/drivers/staging/wlan-ng/p80211netdev.c	2009-04-16 21:29:24.000000000 +0100
-@@ -567,8 +567,6 @@ static int p80211knetdev_do_ioctl(netdev
- 
- 	pr_debug("rx'd ioctl, cmd=%d, len=%d\n", cmd, req->len);
- 
--	mutex_lock(&wlandev->ioctl_lock);
--
- #ifdef SIOCETHTOOL
- 	if (cmd == SIOCETHTOOL) {
- 		result =
-@@ -609,8 +607,6 @@ static int p80211knetdev_do_ioctl(netdev
- 		result = -ENOMEM;
- 	}
- bail:
--	mutex_unlock(&wlandev->ioctl_lock);
--
- 	return result;		/* If allocate,copyfrom or copyto fails, return errno */
- }
- 
-@@ -772,11 +768,6 @@ int wlan_setup(wlandevice_t *wlandev)
- 		dev->ml_priv = wlandev;
- 		dev->netdev_ops = &p80211_netdev_ops;
- 
--		mutex_init(&wlandev->ioctl_lock);
--		/* block ioctls until fully initialised. Don't forget to call
--		   allow_ioctls at some point!*/
--		mutex_lock(&wlandev->ioctl_lock);
--
- #if (WIRELESS_EXT < 21)
- 		dev->get_wireless_stats = p80211wext_get_wireless_stats;
- #endif
-@@ -1117,8 +1108,3 @@ static void p80211knetdev_tx_timeout(net
- 		netif_wake_queue(wlandev->netdev);
- 	}
- }
--
--void p80211_allow_ioctls(wlandevice_t *wlandev)
--{
--	mutex_unlock(&wlandev->ioctl_lock);
--}
---- a/drivers/staging/wlan-ng/prism2usb.c	2009-04-14 21:51:48.000000000 +0100
-+++ b/drivers/staging/wlan-ng/prism2usb.c	2009-04-16 20:30:16.000000000 +0100
-@@ -2,6 +2,7 @@
- #include "prism2mgmt.c"
- #include "prism2mib.c"
- #include "prism2sta.c"
-+#include "prism2fw.c"
- 
- #define PRISM_USB_DEVICE(vid, pid, name) \
-            USB_DEVICE(vid, pid),  \
-@@ -153,15 +154,16 @@ static int prism2sta_probe_usb(struct us
- 
- 	wlandev->msdstate = WLAN_MSD_HWPRESENT;
- 
-+	/* Try and load firmware, then enable card before we register */
-+	prism2_fwtry(dev, wlandev);
-+	prism2sta_ifstate(wlandev, P80211ENUM_ifstate_enable);
-+
- 	if (register_wlandev(wlandev) != 0) {
- 		printk(KERN_ERR "%s: register_wlandev() failed.\n", dev_info);
- 		result = -EIO;
- 		goto failed;
- 	}
- 
--/* enable the card */
--	prism2sta_ifstate(wlandev, P80211ENUM_ifstate_enable);
--
- 	goto done;
- 
- failed:
-@@ -170,7 +172,6 @@ failed:
- 	wlandev = NULL;
- 
- done:
--	p80211_allow_ioctls(wlandev);
- 	usb_set_intfdata(interface, wlandev);
- 	return result;
- }
---- a/drivers/staging/wlan-ng/prism2fw.c	1970-01-01 01:00:00.000000000 +0100
-+++ b/drivers/staging/wlan-ng/prism2fw.c	2009-04-16 20:28:17.000000000 +0100
-@@ -0,0 +1,1410 @@
-+/* from src/prism2/download/prism2dl.c
-+*
-+* utility for downloading prism2 images moved into kernelspace
-+*
-+* Copyright (C) 1999 AbsoluteValue Systems, Inc.  All Rights Reserved.
-+* --------------------------------------------------------------------
-+*
-+* linux-wlan
-+*
-+*   The contents of this file are subject to the Mozilla Public
-+*   License Version 1.1 (the "License"); you may not use this file
-+*   except in compliance with the License. You may obtain a copy of
-+*   the License at http://www.mozilla.org/MPL/
-+*
-+*   Software distributed under the License is distributed on an "AS
-+*   IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-+*   implied. See the License for the specific language governing
-+*   rights and limitations under the License.
-+*
-+*   Alternatively, the contents of this file may be used under the
-+*   terms of the GNU Public License version 2 (the "GPL"), in which
-+*   case the provisions of the GPL are applicable instead of the
-+*   above.  If you wish to allow the use of your version of this file
-+*   only under the terms of the GPL and not to allow others to use
-+*   your version of this file under the MPL, indicate your decision
-+*   by deleting the provisions above and replace them with the notice
-+*   and other provisions required by the GPL.  If you do not delete
-+*   the provisions above, a recipient may use your version of this
-+*   file under either the MPL or the GPL.
-+*
-+* --------------------------------------------------------------------
-+*
-+* Inquiries regarding the linux-wlan Open Source project can be
-+* made directly to:
-+*
-+* AbsoluteValue Systems Inc.
-+* info@linux-wlan.com
-+* http://www.linux-wlan.com
-+*
-+* --------------------------------------------------------------------
-+*
-+* Portions of the development of this software were funded by 
-+* Intersil Corporation as part of PRISM(R) chipset product development.
-+*
-+* --------------------------------------------------------------------
-+*/
-+
-+/*================================================================*/
-+/* System Includes */
-+#include <linux/sort.h>
-+#include <linux/firmware.h>
-+
-+
-+/*================================================================*/
-+/* Local Constants */
-+
-+#define PRISM2_USB_FWFILE	"prism2_ru.hex"
-+
-+#define S3DATA_MAX		5000
-+#define S3PLUG_MAX		200
-+#define S3CRC_MAX		200
-+#define S3INFO_MAX		50
-+#define SREC_LINE_MAX		264
-+#define S3LEN_TXTOFFSET		2
-+#define S3LEN_TXTLEN		2
-+#define S3ADDR_TXTOFFSET	4
-+#define S3ADDR_TXTLEN		8
-+#define S3DATA_TXTOFFSET	12
-+/*S3DATA_TXTLEN			variable, depends on len field */
-+/*S3CKSUM_TXTOFFSET		variable, depends on len field */
-+#define S3CKSUM_TXTLEN		2
-+#define SERNUM_LEN_MAX		12
-+
-+#define S3PLUG_ITEMCODE_TXTOFFSET	(S3DATA_TXTOFFSET)
-+#define S3PLUG_ITEMCODE_TXTLEN		8
-+#define S3PLUG_ADDR_TXTOFFSET		(S3DATA_TXTOFFSET+8)
-+#define S3PLUG_ADDR_TXTLEN		8
-+#define S3PLUG_LEN_TXTOFFSET		(S3DATA_TXTOFFSET+16)
-+#define S3PLUG_LEN_TXTLEN		8
-+
-+#define S3CRC_ADDR_TXTOFFSET		(S3DATA_TXTOFFSET)
-+#define S3CRC_ADDR_TXTLEN		8
-+#define S3CRC_LEN_TXTOFFSET		(S3DATA_TXTOFFSET+8)
-+#define S3CRC_LEN_TXTLEN		8
-+#define S3CRC_DOWRITE_TXTOFFSET		(S3DATA_TXTOFFSET+16)
-+#define S3CRC_DOWRITE_TXTLEN		8
-+
-+#define S3INFO_LEN_TXTOFFSET		(S3DATA_TXTOFFSET)
-+#define S3INFO_LEN_TXTLEN		4
-+#define S3INFO_TYPE_TXTOFFSET		(S3DATA_TXTOFFSET+4)
-+#define S3INFO_TYPE_TXTLEN		4
-+#define S3INFO_DATA_TXTOFFSET		(S3DATA_TXTOFFSET+8)
-+/* S3INFO_DATA_TXTLEN			variable, depends on INFO_LEN field */
-+
-+#define S3ADDR_PLUG		(0xff000000UL)
-+#define S3ADDR_CRC		(0xff100000UL)
-+#define S3ADDR_INFO		(0xff200000UL)
-+
-+#define PDAFILE_LINE_MAX	1024
-+
-+#define CHUNKS_MAX		100
-+
-+#define WRITESIZE_MAX		4096
-+
-+/*================================================================*/
-+/* Local Macros */
-+
-+#define bswap_16(x) \
-+     (__extension__							      \
-+      ({ register unsigned short int __v, __x = (x);			      \
-+	   __asm__ ("rorw $8, %w0"					      \
-+		    : "=r" (__v)					      \
-+		    : "0" (__x)						      \
-+		    : "cc");						      \
-+	 __v; }))
-+
-+#define bswap_32(x) \
-+     (__extension__							      \
-+      ({ register unsigned int __v, __x = (x);				      \
-+	   __asm__ ("rorw $8, %w0;"					      \
-+		    "rorl $16, %0;"					      \
-+		    "rorw $8, %w0"					      \
-+		    : "=r" (__v)					      \
-+		    : "0" (__x)						      \
-+		    : "cc");						      \
-+	 __v; }))
-+
-+
-+
-+/*================================================================*/
-+/* Local Types */
-+
-+typedef struct s3datarec
-+{
-+	u32	len;
-+	u32	addr;
-+	u8	checksum;
-+	u8	*data;
-+} s3datarec_t;
-+
-+typedef struct s3plugrec
-+{
-+	u32	itemcode;
-+	u32	addr;
-+	u32	len;
-+} s3plugrec_t;
-+
-+typedef struct s3crcrec
-+{
-+	u32		addr;
-+	u32		len;
-+	unsigned int	dowrite;
-+} s3crcrec_t;
-+
-+typedef struct s3inforec
-+{
-+	u16	len;
-+	u16	type;
-+	union {
-+		hfa384x_compident_t	version;
-+		hfa384x_caplevel_t	compat;
-+		u16			buildseq;
-+		hfa384x_compident_t	platform;
-+	}	info;
-+} s3inforec_t;
-+
-+typedef struct pda
-+{
-+	u8		buf[HFA384x_PDA_LEN_MAX];
-+	hfa384x_pdrec_t	*rec[HFA384x_PDA_RECS_MAX];
-+	unsigned int	nrec;
-+} pda_t;
-+
-+typedef struct imgchunk
-+{
-+	u32	addr;	/* start address */
-+	u32	len;	/* in bytes */
-+	u16	crc;	/* CRC value (if it falls at a chunk boundary) */
-+	u8	*data;
-+} imgchunk_t;
-+
-+/*================================================================*/
-+/* Local Static Definitions */
-+
-+
-+/*----------------------------------------------------------------*/
-+/* s-record image processing */
-+
-+/* Data records */
-+unsigned int	ns3data = 0;
-+s3datarec_t	s3data[S3DATA_MAX];
-+
-+/* Plug records */
-+unsigned int	ns3plug = 0;
-+s3plugrec_t	s3plug[S3PLUG_MAX];
-+
-+/* CRC records */
-+unsigned int	ns3crc = 0;
-+s3crcrec_t	s3crc[S3CRC_MAX];
-+
-+/* Info records */
-+unsigned int	ns3info = 0;
-+s3inforec_t	s3info[S3INFO_MAX];
-+
-+/* S7 record (there _better_ be only one) */
-+u32		startaddr;
-+
-+/* Load image chunks */
-+unsigned int	nfchunks;
-+imgchunk_t	fchunk[CHUNKS_MAX];
-+
-+/* Note that for the following pdrec_t arrays, the len and code */
-+/*   fields are stored in HOST byte order. The mkpdrlist() function */
-+/*   does the conversion.  */
-+/*----------------------------------------------------------------*/
-+/* PDA, built from [card|newfile]+[addfile1+addfile2...] */
-+
-+pda_t		pda;
-+hfa384x_compident_t nicid;
-+hfa384x_caplevel_t  rfid;
-+hfa384x_caplevel_t  macid;
-+hfa384x_caplevel_t  priid;
-+
-+
-+/*================================================================*/
-+/* Local Function Declarations */
-+
-+int	prism2_fwapply(char *rfptr, int rfsize, wlandevice_t *wlandev);
-+int	read_srecfile(char *rfptr, int rfsize);
-+int	mkimage(imgchunk_t *clist, unsigned int *ccnt);
-+int	read_cardpda(pda_t *pda, wlandevice_t *wlandev);
-+int	mkpdrlist( pda_t *pda);
-+int	s3datarec_compare(const void *p1, const void *p2);
-+int	plugimage( imgchunk_t *fchunk, unsigned int nfchunks, 
-+		s3plugrec_t* s3plug, unsigned int ns3plug, pda_t *pda);
-+int	crcimage( imgchunk_t *fchunk, unsigned int nfchunks, 
-+		s3crcrec_t *s3crc, unsigned int ns3crc);
-+int	writeimage(wlandevice_t *wlandev, imgchunk_t *fchunk, unsigned int nfchunks);
-+void	free_chunks(imgchunk_t *fchunk, unsigned int *nfchunks);
-+void	free_srecs(void);
-+
-+int     validate_identity(void);
-+
-+/*================================================================*/
-+/* Function Definitions */
-+
-+
-+/*----------------------------------------------------------------
-+* prism2_fwtry
-+*
-+* Try and get firmware into memory
-+*
-+* Arguments:
-+*	udev	usb device structure
-+*	wlandev wlan device structure
-+*
-+* Returns: 
-+*	0	- success 
-+*	~0	- failure
-+----------------------------------------------------------------*/
-+int prism2_fwtry(struct usb_device *udev, wlandevice_t *wlandev)
-+{
-+	const struct firmware *fw_entry = NULL;
-+
-+	printk(KERN_INFO "prism2_usb: Checking for firmware %s\n", PRISM2_USB_FWFILE);
-+	if(request_firmware(&fw_entry, PRISM2_USB_FWFILE, &udev->dev) != 0)
-+	{
-+		printk(KERN_INFO
-+		       "prism2_usb: Firmware not available, but not essential\n");
-+		printk(KERN_INFO
-+		       "prism2_usb: can continue to use card anyway.\n");
-+		return 1;
-+	}
-+
-+	printk(KERN_INFO "prism2_usb: %s will be processed, size %d\n", PRISM2_USB_FWFILE, fw_entry->size);
-+	prism2_fwapply((char *)fw_entry->data, fw_entry->size, wlandev);
-+
-+	release_firmware(fw_entry);
-+	return 0;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* prism2_fwapply
-+*
-+* Apply the firmware loaded into memory
-+*
-+* Arguments:
-+*	rfptr	firmware image in kernel memory
-+*	rfsize	firmware size in kernel memory
-+*	wlandev device
-+*
-+* Returns: 
-+*	0	- success 
-+*	~0	- failure
-+----------------------------------------------------------------*/
-+int prism2_fwapply(char *rfptr, int rfsize, wlandevice_t *wlandev)
-+{
-+	signed int	result = 0;
-+	p80211msg_dot11req_mibget_t getmsg;
-+	p80211itemd_t *item;
-+	u32        *data;
-+
-+	/* Initialize the data structures */
-+	ns3data = 0;
-+	memset(s3data, 0, sizeof(s3data));
-+	ns3plug = 0;
-+	memset(s3plug, 0, sizeof(s3plug));
-+	ns3crc = 0;
-+	memset(s3crc, 0, sizeof(s3crc));
-+	ns3info = 0;
-+	memset(s3info, 0, sizeof(s3info));
-+	startaddr = 0;
-+
-+	nfchunks = 0;
-+	memset( fchunk, 0, sizeof(fchunk));
-+	memset( &nicid, 0, sizeof(nicid));
-+	memset( &rfid, 0, sizeof(rfid));
-+	memset( &macid, 0, sizeof(macid));
-+	memset( &priid, 0, sizeof(priid));
-+
-+	/* clear the pda and add an initial END record */
-+	memset(&pda, 0, sizeof(pda));
-+	pda.rec[0] = (hfa384x_pdrec_t*)pda.buf;
-+	pda.rec[0]->len = cpu_to_le16(2);  	/* len in words */  			/* len in words */
-+	pda.rec[0]->code = cpu_to_le16(HFA384x_PDR_END_OF_PDA);
-+	pda.nrec = 1;
-+
-+
-+	/*-----------------------------------------------------*/
-+	/* Put card into fwload state */
-+	prism2sta_ifstate(wlandev, P80211ENUM_ifstate_fwload);
-+
-+	/* Build the PDA we're going to use. */
-+	if (read_cardpda(&pda, wlandev)) {
-+		printk(KERN_ERR "load_cardpda failed, exiting.\n");
-+		return(1);
-+	}
-+
-+	/* read the card's PRI-SUP */
-+	memset(&getmsg, 0, sizeof(getmsg));
-+	getmsg.msgcode = DIDmsg_dot11req_mibget;
-+	getmsg.msglen = sizeof(getmsg);
-+	strcpy(getmsg.devname, wlandev->name);
-+
-+	getmsg.mibattribute.did = DIDmsg_dot11req_mibget_mibattribute;
-+	getmsg.mibattribute.status = P80211ENUM_msgitem_status_data_ok;
-+	getmsg.resultcode.did = DIDmsg_dot11req_mibget_resultcode;
-+	getmsg.resultcode.status = P80211ENUM_msgitem_status_no_value;
-+
-+	item = (p80211itemd_t *) getmsg.mibattribute.data;
-+	item->did = DIDmib_p2_p2NIC_p2PRISupRange;
-+	item->status = P80211ENUM_msgitem_status_no_value;
-+		
-+	data = (u32*) item->data;
-+
-+	/* DIDmsg_dot11req_mibget */
-+	prism2mgmt_mibset_mibget(wlandev, &getmsg);
-+	if (getmsg.resultcode.data != P80211ENUM_resultcode_success) {
-+		printk(KERN_ERR "Couldn't fetch PRI-SUP info\n");
-+	}
-+
-+	/* Already in host order */
-+	priid.role = *data++;
-+	priid.id = *data++;
-+	priid.variant = *data++;
-+	priid.bottom = *data++;
-+	priid.top = *data++;
-+
-+
-+	/* Read the S3 file */
-+	result = read_srecfile(rfptr, rfsize);
-+	if ( result ) {
-+		printk(KERN_ERR "Failed to read the data exiting.\n");
-+		return(1);
-+	}
-+	/* Sort the S3 data records */
-+	sort( s3data, 
-+		ns3data,
-+		sizeof(s3datarec_t),
-+		s3datarec_compare, NULL);
-+
-+	result = validate_identity();
-+
-+	if ( result ) {
-+		printk(KERN_ERR "Incompatible firmware image.\n");
-+		return(1);
-+	}
-+
-+	if (startaddr == 0x00000000) {
-+		printk(KERN_ERR "Can't RAM download a Flash image!\n");
-+		return(1);
-+	}
-+
-+	/* Make the image chunks */
-+	result = mkimage(fchunk, &nfchunks);
-+
-+	/* Do any plugging */
-+	result = plugimage(fchunk, nfchunks, s3plug, ns3plug, 
-+						&pda);
-+	if ( result ) {
-+		printk(KERN_ERR "Failed to plug data.\n");
-+		return(1);
-+	}
-+
-+	/* Insert any CRCs */
-+	if (crcimage(fchunk, nfchunks, s3crc, ns3crc) ) {
-+		printk(KERN_ERR "Failed to insert all CRCs\n");
-+		return(1);
-+	}
-+
-+	/* Write the image */
-+	result = writeimage(wlandev, fchunk, nfchunks);
-+	if ( result ) {
-+		printk(KERN_ERR "Failed to ramwrite image data.\n");
-+		return(1);
-+	}
-+
-+	/* clear any allocated memory */
-+	free_chunks(fchunk, &nfchunks);
-+	free_srecs();
-+
-+	printk(KERN_INFO "prism2_usb: firmware loading finished.\n");
-+
-+	return result;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* crcimage
-+*
-+* Adds a CRC16 in the two bytes prior to each block identified by
-+* an S3 CRC record.  Currently, we don't actually do a CRC we just
-+* insert the value 0xC0DE in hfa384x order.  
-+*
-+* Arguments:
-+*	fchunk		Array of image chunks
-+*	nfchunks	Number of image chunks
-+*	s3crc		Array of crc records
-+*	ns3crc		Number of crc records
-+*
-+* Returns: 
-+*	0	success
-+*	~0	failure
-+----------------------------------------------------------------*/
-+int crcimage(imgchunk_t *fchunk, unsigned int nfchunks, s3crcrec_t *s3crc,
-+	     unsigned int ns3crc)
-+{
-+	int	result = 0;
-+	int	i;
-+	int	c;
-+	u32	crcstart;
-+	u32	crcend;
-+	u32	cstart = 0;
-+	u32	cend;
-+	u8	*dest;
-+	u32	chunkoff;
-+
-+	for ( i = 0; i < ns3crc; i++ ) {
-+		if ( !s3crc[i].dowrite ) continue;
-+		crcstart = s3crc[i].addr;
-+		crcend =   s3crc[i].addr + s3crc[i].len;
-+		/* Find chunk */
-+		for ( c = 0; c < nfchunks; c++) {
-+			cstart = fchunk[c].addr;
-+			cend =	 fchunk[c].addr + fchunk[c].len;
-+			/*  the line below does an address & len match search */
-+			/*  unfortunately, I've found that the len fields of */
-+			/*  some crc records don't match with the length of */
-+			/*  the actual data, so we're not checking right */
-+			/*  now */
-+			/* if ( crcstart-2 >= cstart && crcend <= cend ) break;*/
-+
-+			/* note the -2 below, it's to make sure the chunk has */
-+			/*   space for the CRC value */
-+			if ( crcstart-2 >= cstart && crcstart < cend ) break;
-+		}
-+		if ( c >= nfchunks ) {
-+			printk(KERN_ERR
-+				"Failed to find chunk for "
-+				"crcrec[%d], addr=0x%06x len=%d , "
-+				"aborting crc.\n", 
-+				i, s3crc[i].addr, s3crc[i].len);
-+			return 1;
-+		}
-+		
-+		/* Insert crc */
-+		pr_debug("Adding crc @ 0x%06x\n", s3crc[i].addr-2);
-+		chunkoff = crcstart - cstart - 2;
-+		dest = fchunk[c].data + chunkoff;
-+		*dest =     0xde;
-+		*(dest+1) = 0xc0;
-+
-+	}
-+	return result;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* free_chunks
-+*
-+* Clears the chunklist data structures in preparation for a new file.
-+*
-+* Arguments:
-+*	none
-+*
-+* Returns: 
-+*	nothing
-+----------------------------------------------------------------*/
-+void free_chunks(imgchunk_t *fchunk, unsigned int *nfchunks)
-+{
-+	int i;
-+	for ( i = 0; i < *nfchunks; i++) {
-+		if ( fchunk[i].data != NULL ) {
-+			kfree(fchunk[i].data);
-+		}
-+	}
-+	*nfchunks = 0;
-+	memset( fchunk, 0, sizeof(fchunk));
-+
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* free_srecs
-+*
-+* Clears the srec data structures in preparation for a new file.
-+*
-+* Arguments:
-+*	none
-+*
-+* Returns: 
-+*	nothing
-+----------------------------------------------------------------*/
-+void free_srecs(void)
-+{
-+	int i;
-+	for ( i = 0; i < ns3data; i++) {
-+		kfree(s3data[i].data);
-+	}
-+	ns3data = 0;
-+	memset(s3data, 0, sizeof(s3data));
-+	ns3plug = 0;
-+	memset(s3plug, 0, sizeof(s3plug));
-+	ns3crc = 0;
-+	memset(s3crc, 0, sizeof(s3crc));
-+	ns3info = 0;
-+	memset(s3info, 0, sizeof(s3info));
-+	startaddr = 0;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* mkimage
-+*
-+* Scans the currently loaded set of S records for data residing
-+* in contiguous memory regions.  Each contiguous region is then
-+* made into a 'chunk'.  This function assumes that we're building
-+* a new chunk list.  Assumes the s3data items are in sorted order.
-+*
-+* Arguments:	none
-+*
-+* Returns: 
-+*	0	- success 
-+*	~0	- failure (probably an errno)
-+----------------------------------------------------------------*/
-+int mkimage(imgchunk_t *clist, unsigned int *ccnt)
-+{
-+	int		result = 0;
-+	int		i;
-+	int		j;
-+	int		currchunk = 0;
-+	u32		nextaddr = 0;
-+	u32		s3start;
-+	u32		s3end;
-+	u32		cstart = 0;
-+	u32		cend;
-+	u32		coffset;
-+	
-+	/* There may already be data in the chunklist */
-+	*ccnt = 0;
-+
-+	/* Establish the location and size of each chunk */
-+	for ( i = 0; i < ns3data; i++) {
-+		if ( s3data[i].addr == nextaddr ) { 
-+			/* existing chunk, grow it */
-+			clist[currchunk].len += s3data[i].len;
-+			nextaddr += s3data[i].len;
-+		} else {
-+			/* New chunk */
-+			(*ccnt)++;
-+			currchunk = *ccnt - 1;
-+			clist[currchunk].addr = s3data[i].addr;
-+			clist[currchunk].len = s3data[i].len;
-+			nextaddr = s3data[i].addr + s3data[i].len;
-+			/* Expand the chunk if there is a CRC record at */
-+			/* their beginning bound */
-+			for ( j = 0; j < ns3crc; j++) {
-+				if ( s3crc[j].dowrite &&
-+				     s3crc[j].addr == clist[currchunk].addr ) {
-+					clist[currchunk].addr -= 2;
-+					clist[currchunk].len += 2;
-+				}
-+			}
-+		}
-+	}
-+
-+	/* We're currently assuming there aren't any overlapping chunks */
-+	/*  if this proves false, we'll need to add code to coalesce. */
-+
-+	/* Allocate buffer space for chunks */
-+	for ( i = 0; i < *ccnt; i++) {
-+		clist[i].data = kmalloc(clist[i].len, GFP_KERNEL);
-+		if  ( clist[i].data == NULL ) {
-+			printk(KERN_ERR "failed to allocate image space, exitting.\n");
-+			return(1);
-+		}
-+		memset(clist[i].data, 0, clist[i].len);
-+	}
-+
-+
-+	/* Display chunks */
-+	for ( i = 0; i < *ccnt;  i++) {
-+		pr_debug("chunk[%d]: addr=0x%06x len=%d\n", 
-+			i, clist[i].addr, clist[i].len);
-+	}
-+
-+	/* Copy srec data to chunks */
-+	for ( i = 0; i < ns3data; i++) {
-+		s3start = s3data[i].addr;
-+		s3end   = s3start + s3data[i].len - 1;
-+		for ( j = 0; j < *ccnt; j++) {
-+			cstart = clist[j].addr;
-+			cend = cstart + clist[j].len - 1;
-+			if ( s3start >= cstart && s3end <= cend ) {
-+				break;
-+			}
-+		}
-+		if ( ((unsigned int)j) >= (*ccnt) ) {
-+			printk(KERN_ERR
-+				"s3rec(a=0x%06x,l=%d), no chunk match, exiting.\n",
-+				s3start, s3data[i].len);
-+			return(1);
-+		}
-+		coffset = s3start - cstart;
-+		memcpy( clist[j].data + coffset, s3data[i].data, s3data[i].len);
-+	}
-+
-+	return result;
-+}
-+
-+/*----------------------------------------------------------------
-+* mkpdrlist
-+*
-+* Reads a raw PDA and builds an array of pdrec_t structures.
-+*
-+* Arguments:
-+*	pda	buffer containing raw PDA bytes
-+*	pdrec	ptr to an array of pdrec_t's.  Will be filled on exit.
-+*	nrec	ptr to a variable that will contain the count of PDRs
-+*
-+* Returns: 
-+*	0	- success 
-+*	~0	- failure (probably an errno)
-+----------------------------------------------------------------*/
-+int mkpdrlist( pda_t *pda)
-+{
-+	int	result = 0;
-+	u16	*pda16 = (u16*)pda->buf;
-+	int	curroff;	/* in 'words' */
-+
-+	pda->nrec = 0;
-+	curroff = 0;
-+	while ( curroff < (HFA384x_PDA_LEN_MAX / 2) &&
-+		le16_to_cpu(pda16[curroff + 1]) !=
-+		HFA384x_PDR_END_OF_PDA ) {
-+		pda->rec[pda->nrec] = (hfa384x_pdrec_t*)&(pda16[curroff]);
-+
-+		if (le16_to_cpu(pda->rec[pda->nrec]->code) ==
-+				HFA384x_PDR_NICID) {
-+			memcpy(&nicid, &pda->rec[pda->nrec]->data.nicid,
-+			       sizeof(nicid));
-+			nicid.id = le16_to_cpu(nicid.id);
-+			nicid.variant = le16_to_cpu(nicid.variant);
-+			nicid.major = le16_to_cpu(nicid.major);
-+			nicid.minor = le16_to_cpu(nicid.minor);
-+		}
-+		if (le16_to_cpu(pda->rec[pda->nrec]->code) ==
-+				HFA384x_PDR_MFISUPRANGE) {
-+			memcpy(&rfid, &pda->rec[pda->nrec]->data.mfisuprange,
-+			       sizeof(rfid));
-+			rfid.id = le16_to_cpu(rfid.id);
-+			rfid.variant = le16_to_cpu(rfid.variant);
-+			rfid.bottom = le16_to_cpu(rfid.bottom);
-+			rfid.top = le16_to_cpu(rfid.top);
-+		}
-+		if (le16_to_cpu(pda->rec[pda->nrec]->code) ==
-+				HFA384x_PDR_CFISUPRANGE) {
-+			memcpy(&macid, &pda->rec[pda->nrec]->data.cfisuprange,
-+			       sizeof(macid));
-+			macid.id = le16_to_cpu(macid.id);
-+			macid.variant = le16_to_cpu(macid.variant);
-+			macid.bottom = le16_to_cpu(macid.bottom);
-+			macid.top = le16_to_cpu(macid.top);
-+		}
-+
-+		(pda->nrec)++;
-+		curroff += le16_to_cpu(pda16[curroff]) + 1;
-+
-+	}
-+	if ( curroff >= (HFA384x_PDA_LEN_MAX / 2) ) {
-+		printk(KERN_ERR
-+			"no end record found or invalid lengths in "
-+			"PDR data, exiting. %x %d\n", curroff, pda->nrec);
-+		return(1);
-+	}
-+	if (le16_to_cpu(pda16[curroff + 1]) == HFA384x_PDR_END_OF_PDA ) {
-+		pda->rec[pda->nrec] = (hfa384x_pdrec_t*)&(pda16[curroff]);
-+		(pda->nrec)++;
-+	}
-+	return result;
-+}
-+
-+
-+
-+/*----------------------------------------------------------------
-+* plugimage
-+*
-+* Plugs the given image using the given plug records from the given 
-+* PDA and filename.
-+*
-+* Arguments:
-+*	fchunk		Array of image chunks
-+*	nfchunks	Number of image chunks
-+*	s3plug		Array of plug records
-+*	ns3plug		Number of plug records
-+*	pda		Current pda data
-+*
-+* Returns: 
-+*	0	success
-+*	~0	failure
-+----------------------------------------------------------------*/
-+int plugimage( imgchunk_t *fchunk, unsigned int nfchunks, 
-+		s3plugrec_t* s3plug, unsigned int ns3plug, pda_t *pda)
-+{
-+	int	result = 0;
-+	int	i;	/* plug index */
-+	int	j;	/* index of PDR or -1 if fname plug */
-+	int	c;	/* chunk index */
-+	u32	pstart;
-+	u32	pend;
-+	u32	cstart = 0;
-+	u32	cend;
-+	u32	chunkoff;
-+	u8	*dest;
-+
-+	/* for each plug record */
-+	for ( i = 0; i < ns3plug; i++) {
-+		pstart = s3plug[i].addr;
-+		pend = 	 s3plug[i].addr + s3plug[i].len;
-+		/* find the matching PDR (or filename) */
-+		if ( s3plug[i].itemcode != 0xffffffffUL ) { /* not filename */
-+			for ( j = 0; j < pda->nrec; j++) {
-+				if ( s3plug[i].itemcode == 
-+				     le16_to_cpu(pda->rec[j]->code) ) break;
-+			}
-+		} else {
-+			j = -1;
-+		}
-+		if ( j >= pda->nrec && j != -1 ) { /*  if no matching PDR, fail */
-+			printk(KERN_WARNING
-+				"warning: Failed to find PDR for "
-+				"plugrec 0x%04x.\n",
-+				s3plug[i].itemcode);
-+			continue; /* and move on to the next PDR */
-+#if 0
-+			/* MSM: They swear that unless it's the MAC address,
-+			 * the serial number, or the TX calibration records,
-+			 * then there's reasonable defaults in the f/w
-+			 * image.  Therefore, missing PDRs in the card
-+			 * should only be a warning, not fatal.
-+			 * TODO: add fatals for the PDRs mentioned above.
-+			 */
-+			result = 1;
-+			continue; 
-+#endif
-+		}
-+
-+		/* Validate plug len against PDR len */
-+		if ( j != -1 && 
-+		     s3plug[i].len < le16_to_cpu(pda->rec[j]->len) ) {
-+			printk(KERN_ERR
-+				"error: Plug vs. PDR len mismatch for "
-+				"plugrec 0x%04x, abort plugging.\n",
-+				s3plug[i].itemcode);
-+			result = 1;
-+			continue;
-+		}
-+
-+		/* Validate plug address against chunk data and identify chunk */
-+		for ( c = 0; c < nfchunks; c++) {
-+			cstart = fchunk[c].addr;
-+			cend =	 fchunk[c].addr + fchunk[c].len;
-+			if ( pstart >= cstart && pend <= cend ) break;
-+		}
-+		if ( c >= nfchunks ) {
-+			printk(KERN_ERR
-+				"error: Failed to find image chunk for "
-+				"plugrec 0x%04x.\n",
-+				s3plug[i].itemcode);
-+			result = 1;
-+			continue;
-+		}
-+
-+		/* Plug data */
-+		chunkoff = pstart - cstart;
-+		dest = fchunk[c].data + chunkoff;
-+		pr_debug("Plugging item 0x%04x @ 0x%06x, len=%d, "
-+			      "cnum=%d coff=0x%06x\n", 
-+			      s3plug[i].itemcode, pstart, s3plug[i].len,
-+			      c, chunkoff);
-+
-+		if ( j == -1 ) { /* plug the filename */
-+			memset(dest, 0, s3plug[i].len);
-+			strncpy(dest, PRISM2_USB_FWFILE, s3plug[i].len - 1);
-+		} else { /* plug a PDR */
-+			memcpy( dest, &(pda->rec[j]->data), s3plug[i].len);
-+		}
-+	}
-+	return result;
-+
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* read_cardpda
-+*
-+* Sends the command for the driver to read the pda from the card
-+* named in the device variable.  Upon success, the card pda is 
-+* stored in the "cardpda" variables.  Note that the pda structure
-+* is considered 'well formed' after this function.  That means
-+* that the nrecs is valid, the rec array has been set up, and there's
-+* a valid PDAEND record in the raw PDA data.
-+*
-+* Arguments:
-+*	pda		pda structure
-+*	wlandev		device
-+*
-+* Returns: 
-+*	0	- success 
-+*	~0	- failure (probably an errno)
-+----------------------------------------------------------------*/
-+int read_cardpda(pda_t *pda, wlandevice_t *wlandev)
-+{
-+	int				result = 0;
-+	p80211msg_p2req_readpda_t	msg;
-+
-+	/* set up the msg */
-+	msg.msgcode = DIDmsg_p2req_readpda;
-+	msg.msglen = sizeof(msg);
-+	strcpy(msg.devname, wlandev->name); 
-+	msg.pda.did = DIDmsg_p2req_readpda_pda;
-+	msg.pda.len = HFA384x_PDA_LEN_MAX;
-+	msg.pda.status = P80211ENUM_msgitem_status_no_value;
-+	msg.resultcode.did = DIDmsg_p2req_readpda_resultcode;
-+	msg.resultcode.len = sizeof(u32);
-+	msg.resultcode.status = P80211ENUM_msgitem_status_no_value;
-+
-+	if ( prism2mgmt_readpda(wlandev, &msg) != 0 ) {
-+		/* prism2mgmt_readpda prints an errno if appropriate */
-+		result = -1;
-+	} else if ( msg.resultcode.data == P80211ENUM_resultcode_success ) {
-+		memcpy(pda->buf, msg.pda.data, HFA384x_PDA_LEN_MAX);
-+		result = mkpdrlist(pda);
-+	} else {
-+		/* resultcode must've been something other than success */
-+		result = -1;
-+	}
-+
-+	return result;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* copy_line
-+* 
-+* Copies a line of text, up to \n, \0, or SREC_LINE_MAX, or limit of
-+* From array 
-+* 
-+* Arguments:
-+*	from	From addr
-+*	to	To addr
-+*	limit	Addr of last character in From array that can be copied
-+*
-+* Returns:
-+*	Num characters copied
-+----------------------------------------------------------------*/
-+int copyline(char *from, char *to, char *limit)
-+{
-+	int c = 0;
-+
-+	while ((c < SREC_LINE_MAX - 1) && (from + c <= limit) &&
-+	       (from[c] != '\n') && (from[c] != '\0')) {
-+		to[c] = from[c];
-+		c++;
-+	}
-+
-+	to[c] = '\0';
-+	return (c < SREC_LINE_MAX - 1) ? c + 1 : c;
-+}	  
-+
-+
-+/*----------------------------------------------------------------
-+* read_srecfile
-+*
-+* Reads the given srecord file and loads the records into the 
-+* s3xxx arrays.  This function can be called repeatedly (once for
-+* each of a set of files), if necessary.  This function performs
-+* no validation of the data except for the grossest of S-record
-+* line format checks.  Don't forget that these will be DOS files...
-+* CR/LF at the end of each line.
-+*
-+* Here's the SREC format we're dealing with:
-+* S[37]nnaaaaaaaaddd...dddcc
-+*
-+*       nn - number of bytes starting with the address field
-+* aaaaaaaa - address in readable (or big endian) format
-+* dd....dd - 0-245 data bytes (two chars per byte)
-+*       cc - checksum
-+*
-+* The S7 record's (there should be only one) address value gets
-+* saved in startaddr.  It's the start execution address used
-+* for RAM downloads. 
-+*
-+* The S3 records have a collection of subformats indicated by the
-+* value of aaaaaaaa:
-+*   0xff000000 - Plug record, data field format:
-+*                xxxxxxxxaaaaaaaassssssss
-+*                x - PDR code number (little endian)
-+*                a - Address in load image to plug (little endian)
-+*                s - Length of plug data area (little endian)
-+*
-+*   0xff100000 - CRC16 generation record, data field format:
-+*                aaaaaaaassssssssbbbbbbbb
-+*                a - Start address for CRC calculation (little endian)
-+*                s - Length of data to  calculate over (little endian)
-+*                b - Boolean, true=write crc, false=don't write
-+*   
-+*   0xff200000 - Info record, data field format:
-+*                ssssttttdd..dd
-+*                s - Size in words (little endian)
-+*                t - Info type (little endian), see #defines and 
-+*                    s3inforec_t for details about types.
-+*                d - (s - 1) little endian words giving the contents of
-+*                    the given info type.
-+*
-+* Arguments:
-+*	rfptr	firmware image (s-record structure) in kernel memory
-+*	rfsize	firmware size in kernel memory
-+*
-+* Returns: 
-+*	0	- success 
-+*	~0	- failure (probably an errno)
-+----------------------------------------------------------------*/
-+int read_srecfile(char *rfptr, int rfsize)
-+{
-+	int		result = 0;
-+	char		buf[SREC_LINE_MAX];
-+	char		tmpbuf[30];
-+	s3datarec_t	tmprec;
-+	int		i, c;
-+	int		line = 0;
-+	u16		*tmpinfo;
-+	char		*endptr = rfptr + rfsize;
-+	
-+
-+	pr_debug("Reading S-record file ...\n");
-+
-+	while ( (c = copyline(rfptr, buf, endptr)) >= 12 ) {
-+		rfptr = rfptr + c;
-+		line++;
-+		if ( buf[0] != 'S' ) {
-+			printk(KERN_ERR "%d warning: No initial \'S\'\n", line);
-+			return 1;
-+		}
-+		if ( buf[1] == '7' ) {	/* S7 record, start address */
-+			buf[12] = '\0';
-+			startaddr = simple_strtoul(buf+4, NULL, 16);
-+			pr_debug("  S7 start addr, line=%d "
-+				      " addr=0x%08x\n", 
-+				      line, 
-+				      startaddr);
-+			continue;
-+		} else if ( buf[1] == '3') {
-+			/* Ok, it's an S3, parse and put it in the right array */
-+			/* Record Length field (we only want datalen) */
-+			memcpy(tmpbuf, buf+S3LEN_TXTOFFSET, S3LEN_TXTLEN);
-+			tmpbuf[S3LEN_TXTLEN] = '\0';
-+			tmprec.len = simple_strtoul( tmpbuf, NULL, 16) - 4 - 1; /* 4=addr, 1=cksum */
-+			/* Address field */
-+			memcpy(tmpbuf, buf+S3ADDR_TXTOFFSET, S3ADDR_TXTLEN);
-+			tmpbuf[S3ADDR_TXTLEN] = '\0';
-+			tmprec.addr = simple_strtoul( tmpbuf, NULL, 16);
-+			/* Checksum field */
-+			tmprec.checksum = simple_strtoul( buf+strlen(buf)-2, NULL, 16);
-+
-+			switch(  tmprec.addr )
-+			{
-+			case S3ADDR_PLUG:
-+				memcpy(tmpbuf, buf+S3PLUG_ITEMCODE_TXTOFFSET, S3PLUG_ITEMCODE_TXTLEN);
-+				tmpbuf[S3PLUG_ITEMCODE_TXTLEN] = '\0';
-+				s3plug[ns3plug].itemcode = simple_strtoul(tmpbuf,NULL,16);
-+				s3plug[ns3plug].itemcode = bswap_32(s3plug[ns3plug].itemcode);
-+
-+				memcpy(tmpbuf, buf+S3PLUG_ADDR_TXTOFFSET, S3PLUG_ADDR_TXTLEN);
-+				tmpbuf[S3PLUG_ADDR_TXTLEN] = '\0';
-+				s3plug[ns3plug].addr = simple_strtoul(tmpbuf,NULL,16);
-+				s3plug[ns3plug].addr = bswap_32(s3plug[ns3plug].addr);
-+
-+				memcpy(tmpbuf, buf+S3PLUG_LEN_TXTOFFSET, S3PLUG_LEN_TXTLEN);
-+				tmpbuf[S3PLUG_LEN_TXTLEN] = '\0';
-+				s3plug[ns3plug].len = simple_strtoul(tmpbuf,NULL,16);
-+				s3plug[ns3plug].len = bswap_32(s3plug[ns3plug].len);
-+
-+				pr_debug("  S3 plugrec, line=%d "
-+					      "itemcode=0x%04x addr=0x%08x len=%d\n", 
-+					      line, 
-+					      s3plug[ns3plug].itemcode,
-+					      s3plug[ns3plug].addr,
-+					      s3plug[ns3plug].len);
-+
-+				ns3plug++;
-+				if ( ns3plug == S3PLUG_MAX ) {
-+					printk(KERN_ERR "S3 plugrec limit reached - aborting\n");
-+					return 1;
-+				}
-+				break;
-+			case S3ADDR_CRC:
-+				memcpy(tmpbuf, buf+S3CRC_ADDR_TXTOFFSET, S3CRC_ADDR_TXTLEN);
-+				tmpbuf[S3CRC_ADDR_TXTLEN] = '\0';
-+				s3crc[ns3crc].addr = simple_strtoul(tmpbuf,NULL,16);
-+				s3crc[ns3crc].addr = bswap_32(s3crc[ns3crc].addr);
-+
-+				memcpy(tmpbuf, buf+S3CRC_LEN_TXTOFFSET, S3CRC_LEN_TXTLEN);
-+				tmpbuf[S3CRC_LEN_TXTLEN] = '\0';
-+				s3crc[ns3crc].len = simple_strtoul(tmpbuf,NULL,16);
-+				s3crc[ns3crc].len = bswap_32(s3crc[ns3crc].len);
-+
-+				memcpy(tmpbuf, buf+S3CRC_DOWRITE_TXTOFFSET, S3CRC_DOWRITE_TXTLEN);
-+				tmpbuf[S3CRC_DOWRITE_TXTLEN] = '\0';
-+				s3crc[ns3crc].dowrite = simple_strtoul(tmpbuf,NULL,16);
-+				s3crc[ns3crc].dowrite = bswap_32(s3crc[ns3crc].dowrite);
-+
-+				pr_debug("  S3 crcrec, line=%d "
-+					      "addr=0x%08x len=%d write=0x%08x\n", 
-+					      line, 
-+					      s3crc[ns3crc].addr,
-+					      s3crc[ns3crc].len,
-+					      s3crc[ns3crc].dowrite);
-+				ns3crc++;
-+				if ( ns3crc == S3CRC_MAX ) {
-+					printk(KERN_ERR "S3 crcrec limit reached - aborting\n");
-+					return 1;
-+				}
-+				break;
-+			case S3ADDR_INFO:
-+				memcpy(tmpbuf, buf+S3INFO_LEN_TXTOFFSET, S3INFO_LEN_TXTLEN);
-+				tmpbuf[S3INFO_LEN_TXTLEN] = '\0';
-+				s3info[ns3info].len = simple_strtoul(tmpbuf,NULL,16);
-+				s3info[ns3info].len = bswap_16(s3info[ns3info].len);
-+
-+				memcpy(tmpbuf, buf+S3INFO_TYPE_TXTOFFSET, S3INFO_TYPE_TXTLEN);
-+				tmpbuf[S3INFO_TYPE_TXTLEN] = '\0';
-+				s3info[ns3info].type = simple_strtoul(tmpbuf,NULL,16);
-+				s3info[ns3info].type = bswap_16(s3info[ns3info].type);
-+			    
-+				pr_debug("  S3 inforec, line=%d "
-+					      "len=0x%04x type=0x%04x\n", 
-+					      line, 
-+					      s3info[ns3info].len,
-+					      s3info[ns3info].type);
-+				if ( ((s3info[ns3info].len - 1) * sizeof(u16)) > sizeof(s3info[ns3info].info) ) {
-+					printk(KERN_ERR " S3 inforec length too long - aborting\n");
-+					return 1;
-+				}
-+
-+				tmpinfo = (u16*)&(s3info[ns3info].info.version);
-+				for (i = 0; i < s3info[ns3info].len - 1; i++) {
-+					memcpy( tmpbuf, buf+S3INFO_DATA_TXTOFFSET+(i*4), 4);
-+					tmpbuf[4] = '\0';
-+					tmpinfo[i] = simple_strtoul(tmpbuf,NULL,16);
-+					tmpinfo[i] = bswap_16(tmpinfo[i]);
-+				}
-+				pr_debug("            info=");
-+				for (i = 0; i < s3info[ns3info].len - 1; i++) {
-+					pr_debug("%04x ", tmpinfo[i]);
-+				}
-+				pr_debug("\n");
-+
-+				ns3info++;
-+				if ( ns3info == S3INFO_MAX ) {
-+					printk(KERN_ERR "S3 inforec limit reached - aborting\n");
-+					return 1;
-+				}
-+				break;
-+			default:	/* Data record */
-+				s3data[ns3data].addr = tmprec.addr;
-+				s3data[ns3data].len = tmprec.len;
-+				s3data[ns3data].checksum = tmprec.checksum;
-+				s3data[ns3data].data = kmalloc(tmprec.len, GFP_KERNEL);
-+				for ( i = 0; i < tmprec.len; i++) {
-+					memcpy(tmpbuf, buf+S3DATA_TXTOFFSET+(i*2), 2);
-+					tmpbuf[2] = '\0';
-+					s3data[ns3data].data[i] = simple_strtoul(tmpbuf, NULL, 16);
-+				}
-+				ns3data++;
-+				if ( ns3data == S3DATA_MAX ) {
-+					printk(KERN_ERR "S3 datarec limit reached - aborting\n");
-+					return 1;
-+				}
-+				break;
-+			}
-+		} else {
-+			printk(KERN_WARNING "%d warning: Unknown S-record detected.\n", line);
-+		}
-+	}
-+	return result;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* s3datarec_compare
-+*
-+* Comparison function for sort().
-+*
-+* Arguments:
-+*	p1	ptr to the first item
-+*	p2	ptr to the second item
-+* Returns: 
-+*	0	items are equal
-+*	<0	p1 < p2
-+*	>0	p1 > p2
-+----------------------------------------------------------------*/
-+int s3datarec_compare(const void *p1, const void *p2) 
-+{
-+	const s3datarec_t	*s1 = p1;
-+	const s3datarec_t	*s2 = p2;
-+	if ( s1->addr == s2->addr ) return 0;
-+	if ( s1->addr < s2->addr ) return -1;
-+	return 1;
-+}
-+
-+
-+/*----------------------------------------------------------------
-+* writeimage
-+*
-+* Takes the chunks, builds p80211 messages and sends them down
-+* to the driver for writing to the card.
-+*
-+* Arguments:
-+*	wlandev		device
-+*	fchunk		Array of image chunks
-+*	nfchunks	Number of image chunks
-+*
-+* Returns: 
-+*	0	success
-+*	~0	failure
-+----------------------------------------------------------------*/
-+int writeimage(wlandevice_t *wlandev, imgchunk_t *fchunk, unsigned int nfchunks)
-+{
-+	int					result = 0;
-+	p80211msg_p2req_ramdl_state_t		rstatemsg;
-+	p80211msg_p2req_ramdl_write_t		rwritemsg;
-+	p80211msg_t				*msgp;
-+	u32					resultcode;
-+	int					i;
-+	int					j;
-+	unsigned int				nwrites;
-+	u32					curroff;
-+	u32					currlen;
-+	u32					currdaddr;
-+
-+	/* Initialize the messages */
-+	memset(&rstatemsg, 0, sizeof(rstatemsg));
-+	strcpy(rstatemsg.devname, wlandev->name);
-+	rstatemsg.msgcode =		DIDmsg_p2req_ramdl_state;
-+	rstatemsg.msglen =		sizeof(rstatemsg);
-+	rstatemsg.enable.did =		DIDmsg_p2req_ramdl_state_enable;
-+	rstatemsg.exeaddr.did =		DIDmsg_p2req_ramdl_state_exeaddr;
-+	rstatemsg.resultcode.did =	DIDmsg_p2req_ramdl_state_resultcode;
-+	rstatemsg.enable.status =	P80211ENUM_msgitem_status_data_ok;
-+	rstatemsg.exeaddr.status =	P80211ENUM_msgitem_status_data_ok;
-+	rstatemsg.resultcode.status =	P80211ENUM_msgitem_status_no_value;
-+	rstatemsg.enable.len =		sizeof(u32);
-+	rstatemsg.exeaddr.len =		sizeof(u32);
-+	rstatemsg.resultcode.len =	sizeof(u32);
-+
-+	memset(&rwritemsg, 0, sizeof(rwritemsg));
-+	strcpy(rwritemsg.devname, wlandev->name);
-+	rwritemsg.msgcode =		DIDmsg_p2req_ramdl_write;
-+	rwritemsg.msglen =		sizeof(rwritemsg);
-+	rwritemsg.addr.did =		DIDmsg_p2req_ramdl_write_addr;
-+	rwritemsg.len.did =		DIDmsg_p2req_ramdl_write_len;
-+	rwritemsg.data.did =		DIDmsg_p2req_ramdl_write_data;
-+	rwritemsg.resultcode.did =	DIDmsg_p2req_ramdl_write_resultcode;
-+	rwritemsg.addr.status =		P80211ENUM_msgitem_status_data_ok;
-+	rwritemsg.len.status =		P80211ENUM_msgitem_status_data_ok;
-+	rwritemsg.data.status =		P80211ENUM_msgitem_status_data_ok;
-+	rwritemsg.resultcode.status =	P80211ENUM_msgitem_status_no_value;
-+	rwritemsg.addr.len =		sizeof(u32);
-+	rwritemsg.len.len =		sizeof(u32);
-+	rwritemsg.data.len =		WRITESIZE_MAX;
-+	rwritemsg.resultcode.len =	sizeof(u32);
-+
-+	/* Send xxx_state(enable) */
-+	pr_debug("Sending dl_state(enable) message.\n");
-+	rstatemsg.enable.data = P80211ENUM_truth_true;
-+	rstatemsg.exeaddr.data = startaddr;
-+
-+	msgp = (p80211msg_t*)&rstatemsg;
-+	result = prism2mgmt_ramdl_state(wlandev, msgp);
-+	if ( result ) {
-+		printk(KERN_ERR
-+			"writeimage state enable failed w/ result=%d, "
-+			"aborting download\n", result);
-+		return result;
-+	}
-+	resultcode = rstatemsg.resultcode.data;
-+	if ( resultcode != P80211ENUM_resultcode_success ) {
-+		printk(KERN_ERR
-+			"writeimage()->xxxdl_state msg indicates failure, "
-+			"w/ resultcode=%d, aborting download.\n",
-+			resultcode);
-+		return 1;
-+	}
-+
-+	/* Now, loop through the data chunks and send WRITESIZE_MAX data */
-+	for ( i = 0; i < nfchunks; i++) {
-+		nwrites = fchunk[i].len / WRITESIZE_MAX;
-+		nwrites += (fchunk[i].len % WRITESIZE_MAX) ? 1 : 0;
-+		curroff = 0;
-+		for ( j = 0; j < nwrites; j++) {
-+			currlen = 
-+			  (fchunk[i].len - (WRITESIZE_MAX * j)) > WRITESIZE_MAX ?
-+			  WRITESIZE_MAX :
-+			  (fchunk[i].len - (WRITESIZE_MAX * j));
-+			curroff = j * WRITESIZE_MAX;
-+			currdaddr = fchunk[i].addr + curroff;
-+			/* Setup the message */
-+			rwritemsg.addr.data = currdaddr;
-+			rwritemsg.len.data = currlen;
-+			memcpy(rwritemsg.data.data, 
-+				fchunk[i].data + curroff,
-+				currlen);
-+
-+			/* Send flashdl_write(pda) */
-+			pr_debug("Sending xxxdl_write message addr=%06x len=%d.\n",
-+				      currdaddr, currlen);
-+
-+			msgp = (p80211msg_t*)&rwritemsg;
-+			result = prism2mgmt_ramdl_write(wlandev, msgp);
-+	
-+			/* Check the results */
-+			if ( result ) {
-+				printk(KERN_ERR
-+					"writeimage chunk write failed w/ result=%d, "
-+					"aborting download\n", result);
-+				return result;
-+			}
-+			resultcode = rstatemsg.resultcode.data;
-+			if ( resultcode != P80211ENUM_resultcode_success ) {
-+				printk(KERN_ERR
-+					"writeimage()->xxxdl_write msg indicates failure, "
-+					"w/ resultcode=%d, aborting download.\n",
-+					resultcode);
-+				return 1;
-+			}
-+
-+		}
-+	}
-+
-+	/* Send xxx_state(disable) */
-+	pr_debug("Sending dl_state(disable) message.\n");
-+	rstatemsg.enable.data = P80211ENUM_truth_false;
-+	rstatemsg.exeaddr.data = 0;
-+
-+	msgp = (p80211msg_t*)&rstatemsg;
-+	result = prism2mgmt_ramdl_state(wlandev, msgp);
-+	if ( result ) {
-+		printk(KERN_ERR
-+			"writeimage state disable failed w/ result=%d, "
-+			"aborting download\n", result);
-+		return result;
-+	}
-+	resultcode = rstatemsg.resultcode.data;
-+	if ( resultcode != P80211ENUM_resultcode_success ) {
-+		printk(KERN_ERR
-+			"writeimage()->xxxdl_state msg indicates failure, "
-+			"w/ resultcode=%d, aborting download.\n",
-+			resultcode);
-+		return 1;
-+	}
-+	return result;
-+}
-+
-+
-+
-+int validate_identity(void) 
-+{
-+	int i;
-+	int result = 1;
-+
-+	pr_debug("NIC ID: %#x v%d.%d.%d\n", 
-+	       nicid.id,
-+	       nicid.major,
-+	       nicid.minor,
-+	       nicid.variant);
-+	pr_debug("MFI ID: %#x v%d %d->%d\n", 
-+	       rfid.id,
-+	       rfid.variant,
-+	       rfid.bottom,
-+	       rfid.top);
-+	pr_debug("CFI ID: %#x v%d %d->%d\n", 
-+	       macid.id,
-+	       macid.variant,
-+	       macid.bottom,
-+	       macid.top);
-+	pr_debug("PRI ID: %#x v%d %d->%d\n",
-+	       priid.id,
-+	       priid.variant,
-+	       priid.bottom,
-+	       priid.top);
-+
-+	for (i = 0 ; i < ns3info ; i ++) {
-+		switch (s3info[i].type) {
-+		case 1:
-+			pr_debug("Version:  ID %#x %d.%d.%d\n", 
-+			       s3info[i].info.version.id,
-+			       s3info[i].info.version.major,
-+				       s3info[i].info.version.minor,
-+			       s3info[i].info.version.variant);
-+			break;
-+		case 2:
-+			pr_debug("Compat: Role %#x Id %#x v%d %d->%d\n",
-+			       s3info[i].info.compat.role,
-+			       s3info[i].info.compat.id,
-+			       s3info[i].info.compat.variant,
-+			       s3info[i].info.compat.bottom,
-+			       s3info[i].info.compat.top);
-+
-+			/* MAC compat range */
-+			if ((s3info[i].info.compat.role == 1) &&
-+			    (s3info[i].info.compat.id == 2)) {
-+				if (s3info[i].info.compat.variant != 
-+				    macid.variant) {
-+					result = 2;
-+				}	
-+			}
-+		
-+			/* PRI compat range */
-+			if ((s3info[i].info.compat.role == 1) &&
-+			    (s3info[i].info.compat.id == 3)) {
-+				if ((s3info[i].info.compat.bottom > priid.top) ||
-+				    (s3info[i].info.compat.top < priid.bottom)){
-+					result = 3;
-+				}					
-+			}
-+			/* SEC compat range */
-+			if ((s3info[i].info.compat.role == 1) &&
-+			    (s3info[i].info.compat.id == 4)) {
-+				
-+			}
-+
-+			break;
-+		case 3:
-+				pr_debug("Seq: %#x\n", s3info[i].info.buildseq);
-+				
-+				break;
-+		case 4:
-+			pr_debug("Platform:  ID %#x %d.%d.%d\n", 
-+			       s3info[i].info.version.id,
-+			       s3info[i].info.version.major,
-+			       s3info[i].info.version.minor,
-+			       s3info[i].info.version.variant);
-+
-+			if (nicid.id != s3info[i].info.version.id)
-+				continue;
-+			if (nicid.major != s3info[i].info.version.major)
-+				continue;
-+			if (nicid.minor != s3info[i].info.version.minor)
-+				continue;
-+			if ((nicid.variant != s3info[i].info.version.variant) &&
-+			    (nicid.id != 0x8008))
-+				continue;
-+
-+			if (result != 2)
-+				result = 0;
-+			break;
-+		case 0x8001:
-+			pr_debug("name inforec len %d\n", s3info[i].len);
-+			
-+			break;
-+		default:
-+			pr_debug("Unknown inforec type %d\n", s3info[i].type);
-+		}
-+	}
-+	// walk through 
-+
-+	return result;
-+}
+OK, I'm quite convinced.. :)
 
+To a large degree, if we want to provide a BW reservation strategy we
+must provide an interface that allows cgroups to ask for time slices
+such as max/min 5 IO requests every 50ms or something like that.
+Probably the same functionality can be achieved translating time slices
+from weights, percentages or absolute BW limits.
 
+>   
+> > 
+> > Maybe it's not an issue at all for the most part of the cases, but using
+> > a solution that is able to provide also a real partitioning of the
+> > available resources can be profitely used by those who need to guarantee
+> > _strict_ BW requirements (soft real-time, maximize the responsiveness of
+> > certain services, etc.), because in this case we're sure that a certain
+> > amount of "spare" BW will be always available when needed by some
+> > "critical" services.
+> > 
+> 
+> Will the same thing not happen in proportional weight? If it is an RT
+> application, one can put it in RT groups to make sure it always gets
+> the BW first even if there is contention. 
+> 
+> Even in regular group, the moment you issue the IO and IO scheduler sees
+> it, you will start getting your reserved share according to your weight.
+> 
+> How it will be different in the case of io throttling? Even if I don't
+> utilize the disk fully, cfq will still put the new guy in the queue and
+> then try to give its share (based on prio).
+> 
+> Are you saying that by keeping disk relatively free, the latency of
+> response for soft real time application will become better? In that
+> case can't one simply underprovision the disk?
+> 
+> But having said that I am not disputing the need of max BW controller
+> as some people have expressed the need of a constant BW view and don't
+> want too big a fluctuations even if BW is available. Max BW controller
+> can't gurantee the minumum BW hence can't avoid the fluctuations
+> completely, but it can still help in smoothing the traffic because
+> other competitiors will be stopped from doing too much of IO.
+
+Agree.
+
+-Andrea
