@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZDQU27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZDQU3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbZDQU27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 16:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZDQU2u
+	id S1756272AbZDQU3v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 16:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZDQU3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 16:28:50 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:35234 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751445AbZDQU2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 16:28:49 -0400
-Date: Fri, 17 Apr 2009 15:28:45 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86/uv: fix init of memory-less nodes
-Message-ID: <20090417202845.GA19532@sgi.com>
-References: <20090417142242.GA23743@sgi.com> <tip-28468050e2f5410c04fd737c922f2bea73ddd690@git.kernel.org> <alpine.DEB.2.00.0904171129310.16240@chino.kir.corp.google.com>
-Mime-Version: 1.0
+	Fri, 17 Apr 2009 16:29:42 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:40320 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbZDQU3l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 16:29:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H0UvTpzyA/Us75tKcbHEARYXAC65Bpp7nkZ2hg/ucqTP2EG5hacbj3XON5Cj1gonLC
+         8NOFZ9Qb6fAk4o2zSLt7zqSz1jLoUAET4cfpPnFP/DdICeuf+X6VrNfVKhF7Ge4h0zB8
+         k2f9cldWGAQb1sSEJTSJWSyGzb/VE3uPrOw9o=
+Date: Fri, 17 Apr 2009 22:29:37 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/lockdep: turn lock->name into an array
+Message-ID: <20090417202936.GB6331@nowhere>
+References: <1239662166-13208-1-git-send-email-fweisbec@gmail.com> <20090414153035.C662.A69D9226@jp.fujitsu.com> <20090414065303.GA24626@elte.hu> <49E8BB98.3090901@goop.org> <1239989260.23397.4848.camel@laptop> <alpine.DEB.2.00.0904171336030.14919@gandalf.stny.rr.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904171129310.16240@chino.kir.corp.google.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <alpine.DEB.2.00.0904171336030.14919@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86/uv: fix init of memory-less nodes
+On Fri, Apr 17, 2009 at 01:36:58PM -0400, Steven Rostedt wrote:
+> 
+> 
+> On Fri, 17 Apr 2009, Peter Zijlstra wrote:
+> 
+> > On Fri, 2009-04-17 at 10:25 -0700, Jeremy Fitzhardinge wrote:
+> > > Ingo Molnar wrote:
+> > > > We could zap all pending trace entries on module unload (it is a 
+> > > > rare operation)
+> > > 
+> > > ....Unless you're trying to trace something across a module unload.  I 
+> > > don't know if its at all practical, but it would be nice to just zap the 
+> > > pointers within the buffer, rather than the whole buffer.
+> > 
+> > I think the new __string() thing that's in the works will avoid the
+> > whole problem by copying the string into the buffer, instead of keeping
+> > a reference.
+> 
+> Speaking of which. We have not heard back from Frederic on this yet. I 
+> hope he's taking a break, enjoying the sun, and not stuck on some tricky 
+> macro crap ;-)
+> 
+> -- Steve
+>
 
-Add support for nodes that have cpus but no memory.
-The current code was failing to add these nodes
-to the nodes_present_map.
-
-[ Impact: fix potential boot crash on memory-less nodes. ]
-
-Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 
+Oh you haven't yet received my mail about that?
+It said I was cheering up about your and Peter's idea of using offsets
+instead of pointer because of the end result:
 
----
+- We can use as much __string() as we want
+- No need for something else, such as the strcpy bits
+- We are not forced to put it in the end of the patch
+- Which means I will implement that in a v3 very soon ;-)
 
-Fixes case caught by David - missed support for the x2apic SRAT table.
+Frederic.
 
-
-
- arch/x86/mm/srat_64.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux/arch/x86/mm/srat_64.c
-===================================================================
---- linux.orig/arch/x86/mm/srat_64.c	2009-04-17 15:12:13.000000000 -0500
-+++ linux/arch/x86/mm/srat_64.c	2009-04-17 15:15:15.000000000 -0500
-@@ -28,6 +28,7 @@ int acpi_numa __initdata;
- static struct acpi_table_slit *acpi_slit;
- 
- static nodemask_t nodes_parsed __initdata;
-+static nodemask_t cpu_nodes_parsed __initdata;
- static struct bootnode nodes[MAX_NUMNODES] __initdata;
- static struct bootnode nodes_add[MAX_NUMNODES];
- static int found_add_area __initdata;
-@@ -141,6 +142,7 @@ acpi_numa_x2apic_affinity_init(struct ac
- 
- 	apic_id = pa->apic_id;
- 	apicid_to_node[apic_id] = node;
-+	node_set(node, cpu_nodes_parsed);
- 	acpi_numa = 1;
- 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
- 	       pxm, apic_id, node);
-@@ -174,6 +176,7 @@ acpi_numa_processor_affinity_init(struct
- 	else
- 		apic_id = pa->apic_id;
- 	apicid_to_node[apic_id] = node;
-+	node_set(node, cpu_nodes_parsed);
- 	acpi_numa = 1;
- 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
- 	       pxm, apic_id, node);
-@@ -402,7 +405,8 @@ int __init acpi_scan_nodes(unsigned long
- 		return -1;
- 	}
- 
--	node_possible_map = nodes_parsed;
-+	/* Account for nodes with cpus and no memory */
-+	nodes_or(node_possible_map, nodes_parsed, cpu_nodes_parsed);
- 
- 	/* Finally register nodes */
- 	for_each_node_mask(i, node_possible_map)
