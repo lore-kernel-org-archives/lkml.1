@@ -1,34 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbZDQWQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761564AbZDQWQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbZDQWQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 18:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZDQWQE
+	id S1761564AbZDQWQq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 18:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZDQWQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 18:16:04 -0400
-Received: from www10.cruzio.com ([63.249.93.160]:2877 "EHLO www10.cruzio.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752092AbZDQWQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 18:16:03 -0400
-Message-ID: <49E8FFA2.8080900@ascenium.com>
-Date: Fri, 17 Apr 2009 15:16:02 -0700
-From: Robert Mykland <robert@ascenium.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 17 Apr 2009 18:16:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51465 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311AbZDQWQe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 18:16:34 -0400
+Message-ID: <49E8FF80.1020901@zytor.com>
+Date: Fri, 17 Apr 2009 15:15:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: File system driver tutorial?
+To: David VomLehn <dvomlehn@cisco.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Patch] Wait for console to become available, ver 3
+References: <20090417213148.GA27825@cuplxvomd02.corp.sa.net>
+In-Reply-To: <20090417213148.GA27825@cuplxvomd02.corp.sa.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any good resources for learning how to write file system drivers beyond 
-reading the source code?
+David VomLehn wrote:
+>>  
+> +	consoledelay=mS	[KNL] Wait up to mS milliseconds for the a preferred
+> +			console to be registered, then continue. Useful for
+> +			systems where a console may not be plugged in, such as
+> +			for USB serial devices.
+> +
 
--- Robert.
+Pet peeve:
 
--- 
-Robert Mykland               Voice: (831) 212-0622
-Founder/CTO                   Ascenium Corporation
-"A new world of computing fulfilling people's lives"
+The symbol for millisecond is "ms".  mS is a unit of conductance, 
+millisiemens.
 
+	-hpa
