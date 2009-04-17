@@ -1,69 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbZDQC0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZDQC3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759201AbZDQC0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 22:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZDQC0K
+	id S1759117AbZDQC3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 22:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZDQC3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 22:26:10 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34488 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754930AbZDQC0J (ORCPT
+	Thu, 16 Apr 2009 22:29:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:12971 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753225AbZDQC3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 22:26:09 -0400
-Date: Fri, 17 Apr 2009 11:24:33 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-Cc: Andrea Righi <righi.andrea@gmail.com>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-Message-Id: <20090417112433.085ed604.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <49E7E037.9080004@oss.ntt.co.jp>
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
-	<1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
-	<49E7E037.9080004@oss.ntt.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Apr 2009 22:29:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=sSEiKcVlzN9tQ2h4Vkpvx6Gesq4V2plcfl3SHuBflb2s2DyIYN9RXnvwzIMFOObATh
+         ZC+o403D2l+DUrVPwwUpdyD3EnuGEsr9ALruDFFhNYXsCgAO6w7ywmTMcJInowSAoL40
+         rIwCq9JqOFphLCUcHo8KZROAF2NC3hHjBr7EY=
+Date: Thu, 16 Apr 2009 19:29:15 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.30-rc2
+Message-ID: <20090417022915.GA7594@dtor-d630.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 10:49:43 +0900
-Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp> wrote:
+Hi Linus,
 
-> Hi,
-> 
-> I have a few question.
->    - I have not yet fully understood how your controller are using
->      bio_cgroup. If my view is wrong please tell me.
-> 
-> o In my view, bio_cgroup's implementation strongly depends on
->    page_cgoup's. Could you explain for what purpose does this
->    functionality itself should be implemented as cgroup subsystem?
->    Using page_cgoup and implementing tracking APIs is not enough?
+Please pull from:
 
-I'll definitely do "Nack" to add full bio-cgroup members to page_cgroup.
-Now, page_cgroup is 40bytes(in 64bit arch.) And all of them are allocated at
-boot time as memmap. (and add member to struct page is much harder ;)
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-IIUC, feature for "tracking bio" is just necesary for pages for I/O.
-So, I think it's much better to add misc. information to struct bio not to the page.
-But, if people want to add "small hint" to struct page or struct page_cgroup
-for tracking buffered I/O, I'll give you help as much as I can.
-Maybe using "unused bits" in page_cgroup->flags is a choice with no overhead.
+to receive updates for the input subsystem.
 
-Thanks,
--Kame
+Changelog:
+---------
+
+Alexander Beregalov (1):
+      Input: hp_sdc_rtc should depend on serio
+
+Arjan van de Ven (3):
+      Input: i8042 - introduce a tougher reset
+      Input: i8042 - add a DMI table for the i8042.reset option
+      Input: remove unnecessary synchronize_rcu() call
+
+Barry Carroll (1):
+      Input: atkbd - add forced release keys quirk for Samsung NC20
+
+Ben Nizette (1):
+      Input: ads7846 - fix unsafe disable_irq
+
+Dmitry Torokhov (2):
+      Input: gameport - fix attach driver code
+      Input: atkbd - add forced release keys quirk for Samsung Q45
+
+Eric Miao (3):
+      Input: ads7846 - introduce platform specific way to synchronize sampling
+      Input: da9034-ts - add Bin Yang as co-author of the driver
+      Input: da9034-ts - make pen {down,up} events more reliable
+
+Ilpo Järvinen (1):
+      Input: pc110pad - remove unused variable dev
+
+Jiri Slaby (1):
+      Input: mainstone-wm97xx - fix condition in pen_up
+
+Mark Brown (1):
+      Input: wm97xx - don't specify IRQF_SAMPLE_RANDOM
+
+Michael Hennerich (2):
+      Input: ad7877, ad7879 - remove depreciated IRQF_SAMPLE_RANDOM flag
+      Input: bf54x-keys - remove depreciated IRQF_SAMPLE_RANDOM flag
+
+
+Diffstat:
+--------
+
+ drivers/input/gameport/gameport.c            |   14 ++++-----
+ drivers/input/input.c                        |    1 -
+ drivers/input/keyboard/atkbd.c               |   20 +++++++++++++-
+ drivers/input/keyboard/bf54x-keys.c          |    2 +-
+ drivers/input/misc/Kconfig                   |    2 +-
+ drivers/input/mouse/pc110pad.c               |    1 -
+ drivers/input/serio/i8042-x86ia64io.h        |   28 +++++++++++++++++++
+ drivers/input/serio/i8042.c                  |   37 ++++++++++++++++++++-----
+ drivers/input/touchscreen/ad7877.c           |    4 +-
+ drivers/input/touchscreen/ad7879.c           |    3 +-
+ drivers/input/touchscreen/ads7846.c          |   12 +++++++-
+ drivers/input/touchscreen/da9034-ts.c        |   29 ++++++++++++-------
+ drivers/input/touchscreen/mainstone-wm97xx.c |    7 ++---
+ drivers/input/touchscreen/wm97xx-core.c      |    3 +-
+ include/linux/spi/ads7846.h                  |    1 +
+ 15 files changed, 121 insertions(+), 43 deletions(-)
+
+-- 
+Dmitry
 
