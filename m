@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZDQOvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbZDQOw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761977AbZDQOvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761652AbZDQOu7
+	id S1762050AbZDQOw4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761657AbZDQOwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:50:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40370 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761663AbZDQOu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:50:57 -0400
-Date: Fri, 17 Apr 2009 14:49:26 GMT
-From: tip-bot for Weidong Han <weidong.han@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.b.siddha@intel.com, weidong.han@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
-References: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
-Subject: [tip:x86/apic] x86, intr-remap: add option to disable interrupt remapping
-Message-ID: <tip-52549a96faf1852128c2a1850b29197f2d41a281@git.kernel.org>
-Git-Commit-ID: 52549a96faf1852128c2a1850b29197f2d41a281
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 14:49:28 +0000 (UTC)
+	Fri, 17 Apr 2009 10:52:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60479 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762100AbZDQOv7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 10:51:59 -0400
+Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <cl@linux.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0904171021360.20239@qirst.com>
+References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>
+	 <1239951613.23397.4107.camel@laptop>
+	 <alpine.DEB.1.10.0904170941020.11877@qirst.com>
+	 <1239977776.23397.4590.camel@laptop>
+	 <alpine.DEB.1.10.0904171021360.20239@qirst.com>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 16:51:41 +0200
+Message-Id: <1239979901.23397.4638.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  52549a96faf1852128c2a1850b29197f2d41a281
-Gitweb:     http://git.kernel.org/tip/52549a96faf1852128c2a1850b29197f2d41a281
-Author:     Weidong Han <weidong.han@intel.com>
-AuthorDate: Fri, 17 Apr 2009 16:42:15 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 16:23:45 +0200
+On Fri, 2009-04-17 at 10:29 -0400, Christoph Lameter wrote:
 
-x86, intr-remap: add option to disable interrupt remapping
+> > With something like that you could say, the jiffy tick went from 0.8+-.1
+> > to 1.1+-.1 us or somesuch.
+> 
+> Well yeah we can look at this but there seem to be regressions in a lot of
+> other subsystems as well. Rescheduling is another thing that we tracked.
+> Its interesting that the holdoffs varied at lot during the scheduler
+> transition to CFS and then stayed high after that was complete.
+> 
+> > After that, you could possibly use oprofile or readprofile or
+> > perf-counters to get an idea where the time is spend. I did a quick
+> > profile on one of my machines, and about half the kernel time spend in a
+> > while(1) loop comes from __do_softirq().
+> >
+> > Really, I should not have to tell you this...
+> 
+> I can get down there but do you really want me to start hacking on the
+> scheduler again? This seems to be a regression from what we had working
+> fine before.
 
-Add option "nointremap" to disable interrupt remapping.
+I won't mind you sending patches. But really, the first thing to do is
+figuring out what is taking time.
 
-[ Impact: add new boot option ]
+And a random 1us cutoff, is well, random.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Weidong Han <weidong.han@intel.com>
-Cc: iommu@lists.linux-foundation.org
-Cc: dwmw2@infradead.org
-Cc: allen.m.kay@intel.com
-Cc: fenghua.yu@intel.com
-LKML-Reference: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+If you want to reduce interrupts, that's fine, but not counting an
+interrupt because its below the magic 1us marker sounds a bit, well,
+magic -- might work for you, might not for me on another machine, might
+even be compiler dependent.
+
+So 5 <1us interruption are not at all accounted, whereas a single 1>us
+interruption is. I'd rather get rid of those 5 than try and shave a bit
+of the one, if you get what I mean.
+
+I'm pretty sure if we run the current kernel on a 5GHz machine all
+interrupts are under 1us again :-), problem fixed? I don't think so.
+
+Furthermore, yes the scheduler is one of those jiffy tick users, but
+there are more. We can do ntp/gtod things in there, there is process
+accounting, there is some RCU machinery, timers etc..
+
+Like said, I did a profile on current -tip and __do_softirq was about
+half the time spend in kernel. I'm not sure why it would be, maybe we're
+doing tons of cache misses there for some reason, I dunno.
 
 
----
- Documentation/kernel-parameters.txt |    3 +++
- drivers/pci/intr_remapping.c        |   11 +++++++++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 33989d2..843cb66 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1533,6 +1533,9 @@ and is between 256 and 4096 characters. It is defined in the file
- 	noinitrd	[RAM] Tells the kernel not to load any configured
- 			initial RAM disk.
- 
-+	nointremap	[X86-64, Intel-IOMMU] Do not enable interrupt
-+			remapping.
-+
- 	nointroute	[IA-64]
- 
- 	nojitter	[IA64] Disables jitter checking for ITC timers.
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index 5c21426..842039e 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -15,6 +15,14 @@ static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
- static int ir_ioapic_num;
- int intr_remapping_enabled;
- 
-+static int disable_intremap;
-+static __init int setup_nointremap(char *str)
-+{
-+	disable_intremap = 1;
-+	return 0;
-+}
-+early_param("nointremap", setup_nointremap);
-+
- struct irq_2_iommu {
- 	struct intel_iommu *iommu;
- 	u16 irte_index;
-@@ -506,6 +514,9 @@ int __init intr_remapping_supported(void)
- {
- 	struct dmar_drhd_unit *drhd;
- 
-+	if (disable_intremap)
-+		return 0;
-+
- 	for_each_drhd_unit(drhd) {
- 		struct intel_iommu *iommu = drhd->iommu;
- 
