@@ -1,104 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759167AbZDQMfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbZDQMkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759167AbZDQMfh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 08:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZDQMf3
+	id S1758657AbZDQMkb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 08:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZDQMkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 08:35:29 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:40176 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbZDQMf2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 08:35:28 -0400
-Subject: Re: C/R without "leaks"
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Chris Friesen <cfriesen@nortel.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <49E85059.8070400@cs.columbia.edu>
-References: <49E40662.2040508@cs.columbia.edu>
-	 <20090414163633.GE27461@x200.localdomain>
-	 <49E4D89D.9060903@cs.columbia.edu>
-	 <20090415195629.GD26994@x200.localdomain> <1239835337.6610.6.camel@bahia>
-	 <20090416161215.GA8505@x200.localdomain> <49E774B1.5060505@nortel.com>
-	 <49E77B49.3020102@cs.columbia.edu> <1239959746.6143.66.camel@bahia>
-	 <49E85059.8070400@cs.columbia.edu>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 14:25:21 +0200
-Message-Id: <1239971121.6143.217.camel@bahia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 08:40:19 -0400
+Received: from THUNK.ORG ([69.25.196.29]:33004 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754809AbZDQMkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 08:40:17 -0400
+Date: Fri, 17 Apr 2009 08:38:05 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Jens Axboe <jens.axboe@oracle.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090417123805.GC7117@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrea Righi <righi.andrea@gmail.com>,
+	Paul Menage <menage@google.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+	baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+	dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+	eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+	Hirokazu Takahashi <taka@valinux.co.jp>,
+	Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+	dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+	roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+	Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+	yoshikawa.takuya@oss.ntt.co.jp, Jens Axboe <jens.axboe@oracle.com>,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-10-git-send-email-righi.andrea@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239740480-28125-10-git-send-email-righi.andrea@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 05:48 -0400, Oren Laadan wrote:
-> You mean an sshd with an open connection probably; the server itself
-> is clearly useful to be able to c/r.
+On Tue, Apr 14, 2009 at 10:21:20PM +0200, Andrea Righi wrote:
+> Delaying journal IO can unnecessarily delay other independent IO
+> operations from different cgroups.
 > 
+> Add BIO_RW_META flag to the ext3 journal IO that informs the io-throttle
+> subsystem to account but not delay journal IO and avoid potential
+> priority inversion problems.
 
-Yes I mean C/R of sshd with active connections.
+So this worries me for two reasons.  First of all, the meaning of
+BIO_RW_META is not well defined, but I'm concerned that you are using
+the flag in a manner that in a way that wasn't its original intent.
+I've included Jens on the cc list so he can comment on that score.
 
-> 
-> A canonical example would a virtual-private-server: instead of doing
-> server consolidation with a virtual machine, your do with containers.
-> In a sense, containers lets you chop the OS into independent isolated
-> pieces. You ca use a linux box to run multiple virtual execution
-> environments (containers), each running services of your choice. They
-> could range from a sshd for users, to apache servers, to database
-> servers to users' vnc sessions, etc.
-> 
+Secondly, there are many more locations than these which can end up
+causing I/O which will ending up causing the journal commit to block
+until they are completed.  I've done a lot of work in the past few
+weeks to make sure those writes get marked using BIO_RW_SYNC.  In
+data=ordered mode, the journal commit will block waiting for data
+blocks to be written out, and that implies you really need to treat as
+high priority all of the block writes that are marked with the
+BIO_RW_SYNC flag.
 
-Indeed, containers allow to implement VPS just like virtual machines: we
-call them system containers. Not much to say about that since they don't
-introduce new concepts to users.
+The flip side of this is it may end up making your I/O controller to
+leaky; that is, someone might be able to evade your I/O controller's
+attempt to impose limits by using fsync() all the time.  This is a
+hard problem, though, because filesystem I/O is almost always
+intertwined.
 
-> Now comes the that you really need to take the machine down, for
-> whatever reason. With c/r of live connections you can live-migrate
-> these containers to another machine (on the same subnet) that will
-> "steal" the IP as well, and voila - no service disruption.
-> 
+What sort of scenarios and workloads are you envisioning might use
+this I/O controller?  And can you say more about the specifics about
+the priority inversion problem you are concerned about?
 
-Theorically, yes. Practicaly, you need a lot more than *simply* capturing
-and restoring socket states for such a migration to be usable in the real
-world.
+Regards,
 
-> 
-> Such scenarios are the focus of Alexey.
-> 
-
-So Alexey should provide some realistic examples, with several hosts,
-routers, switches and overall network infrastructure.
-
-> I'm also very interested in these scenarios, and I'm _also_ thinking
-> of other scenarios, where either (a) an entire container is not
-> necessary (example: user running long computation on laptop and wants
-> to save it before a reboot), or (b) the program would like to make
-> adjustments to its state compared to the time it was saved (example:
-> change the location of an output log file depending on the machine
-> on which your are running).
-> 
-
-I'm _only_ interested in these other scenarios for the moment.
-
-> Unfortunately, if we plan for and require, as per Alexey, that c/r
-> would only work for whole-containers, these two cases will not be
-> addressed.
-> 
-
-Discussion must go on then. There's no hurry in getting C/R
-mainlined. :)
-
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
-
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
-
+						- Ted
