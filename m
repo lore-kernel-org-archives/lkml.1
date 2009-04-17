@@ -1,113 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759763AbZDQHel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbZDQHf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759763AbZDQHel (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbZDQHeb
+	id S1759844AbZDQHf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbZDQHfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:34:31 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:25349 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbZDQHea (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:34:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :user-agent;
-        b=ZKEGpQVEN2N+/akhY+vmb0XmeUA5tHW/uIpn/2wjRgyKXIUDV192bqNtd45YkXSwxb
-         /STXyc87uHRysyanMrMDy2cqgU1ON13oA2xErxqWlldidgujLTpF2OhOG5+WqjSm4Dgw
-         An+S7BHE228S0RG1ansMFZuxb7X78eoNeT0yo=
-Date: Fri, 17 Apr 2009 15:32:59 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com
-Subject: [PATCH] v3 fix error on drivers/ata/pata_legacy.c
-Message-ID: <20090417073259.GA6366@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+	Fri, 17 Apr 2009 03:35:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65418 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbZDQHfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 03:35:14 -0400
+Message-ID: <49E8311D.5030901@cn.fujitsu.com>
+Date: Fri, 17 Apr 2009 15:34:53 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrea Righi <righi.andrea@gmail.com>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] io-throttle documentation
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>	<1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix those errors:
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 14 Apr 2009 22:21:12 +0200
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+> 
+>> +Example:
+>> +* Create an association between an io-throttle group and a bio-cgroup group
+>> +  with "bio" and "blockio" subsystems mounted in different mount points:
+>> +  # mount -t cgroup -o bio bio-cgroup /mnt/bio-cgroup/
+>> +  # cd /mnt/bio-cgroup/
+>> +  # mkdir bio-grp
+>> +  # cat bio-grp/bio.id
+>> +  1
+>> +  # mount -t cgroup -o blockio blockio /mnt/io-throttle
+>> +  # cd /mnt/io-throttle
+>> +  # mkdir foo
+>> +  # echo 1 > foo/blockio.bio_id
+> 
+> Why do we need multiple cgroups at once to track I/O ?
+> Seems complicated to me.
 
-drivers/ata/pata_legacy.c: In function ‘pdc_data_xfer_vlb’:
-drivers/ata/pata_legacy.c:289: error: ‘ap’ undeclared (first use in this function)
-drivers/ata/pata_legacy.c:289: error: (Each undeclared identifier is reported only once
-drivers/ata/pata_legacy.c:289: error: for each function it appears in.)
-drivers/ata/pata_legacy.c: At top level:
-drivers/ata/pata_legacy.c:869: error: ‘ATA_PFLAG_PIO32_CHANGE’ undeclared here (not in a
-+function)
-make[2]: *** [drivers/ata/pata_legacy.o] Error 1
-make[1]: *** [drivers/ata] Error 2
+  Hi Kamezawa-san,
 
+  The original thought to implement this function is for sharing a bio-cgroup
+  with other subsystems, such as dm-ioband. If the bio-cgroup is already mounted,
+  and used by dm-ioband or others, we just need to create a association between 
+  io-throttle and bio-cgroup by echo a bio-cgroup id, just like what dm-ioband does.
 
-
-
->From 171dedab9e29534e911e0f4d23ea0a183edf75e9 Mon Sep 17 00:00:00 2001
-From: Zhenwen Xu <Helight.Xu@gmail.com>
-Date: Fri, 17 Apr 2009 15:30:54 +0800
-Subject: [PATCH] fix error on drivers/ata/pata_legacy.c
-
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
----
- drivers/ata/pata_legacy.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index 6f985be..f72c6c5 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -285,10 +285,11 @@ static unsigned int pdc_data_xfer_vlb(struct ata_device *dev,
- 			unsigned char *buf, unsigned int buflen, int rw)
- {
- 	int slop = buflen & 3;
-+	struct ata_port *ap = dev->link->ap;
-+
- 	/* 32bit I/O capable *and* we need to write a whole number of dwords */
- 	if (ata_id_has_dword_io(dev->id) && (slop == 0 || slop == 3)
- 					&& (ap->pflags & ATA_PFLAG_PIO32)) {
--		struct ata_port *ap = dev->link->ap;
- 		unsigned long flags;
- 
- 		local_irq_save(flags);
-@@ -866,7 +867,7 @@ static struct legacy_controller controllers[] = {
- 			0,			0,			NULL },
- 	{"PDC20230",	&pdc20230_port_ops,	0x7,
- 			ATA_FLAG_NO_IORDY,
--			ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32_CHANGE,	NULL },
-+			ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32CHANGE,	NULL },
- 	{"HT6560A",	&ht6560a_port_ops,	0x07,
- 			ATA_FLAG_NO_IORDY,	0,			NULL },
- 	{"HT6560B",	&ht6560b_port_ops,	0x1F,
-@@ -877,13 +878,13 @@ static struct legacy_controller controllers[] = {
- 			0,			0,			NULL },
- 	{"QDI6500",	&qdi6500_port_ops,	0x07,
- 			ATA_FLAG_NO_IORDY,
--			ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32_CHANGE,    qdi_port },
-+			ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32CHANGE,    qdi_port },
- 	{"QDI6580",	&qdi6580_port_ops,	0x1F,
--			0, ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32_CHANGE, qdi_port },
-+			0, ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32CHANGE, qdi_port },
- 	{"QDI6580DP",	&qdi6580dp_port_ops,	0x1F,
--			0, ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32_CHANGE, qdi_port },
-+			0, ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32CHANGE, qdi_port },
- 	{"W83759A",	&winbond_port_ops,	0x1F,
--			0, ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32_CHANGE,
-+			0, ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32CHANGE,
- 								winbond_port }
- };
- 
--- 
-1.5.6.5
+> 
+> Thanks,
+> -Kame
+> 
+> 
+> 
+> 
 
 -- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
+Regards
+Gui Jianfeng
+
