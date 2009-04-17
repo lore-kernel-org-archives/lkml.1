@@ -1,183 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbZDQWJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZDQWMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbZDQWJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 18:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZDQWJe
+	id S1759939AbZDQWMo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 18:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZDQWMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 18:09:34 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:35158 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbZDQWJd (ORCPT
+	Fri, 17 Apr 2009 18:12:35 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1335 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbZDQWMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 18:09:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=RSakeKOvA84xFIVkXj9RzY3OW974xKkXjXLCcmstFp1Xo9wi04TWn3MjYH4th/IdgB
-         fOvrGSTyvuy39oSL8WzMvi/8F8HY+whSvSUUBrlFCIFfbJnL+JPjRszf57pT0Yfj1Vno
-         T6bRJWzdoO7vaaePD2sg+0nmN12TqpcFLb+3o=
-Date: Sat, 18 Apr 2009 00:09:27 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, kamezawa.hiroyu@jp.fujitsu.com,
-       yoshikawa.takuya@oss.ntt.co.jp, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, taka@valinux.co.jp,
-       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Block I/O tracking (was Re: [PATCH 3/9] bio-cgroup controller)
-Message-ID: <20090417220926.GA435@linux>
-Mail-Followup-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
-	Ryo Tsuruta <ryov@valinux.co.jp>, kamezawa.hiroyu@jp.fujitsu.com,
-	yoshikawa.takuya@oss.ntt.co.jp, menage@google.com,
-	balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-	agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-	baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-	dpshah@google.com, eric.rannaud@gmail.com, taka@valinux.co.jp,
-	lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
-	ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-	s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com> <49E7E037.9080004@oss.ntt.co.jp> <20090417112433.085ed604.kamezawa.hiroyu@jp.fujitsu.com> <20090417.162201.183038478.ryov@valinux.co.jp> <49E8679D.8010405@oss.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49E8679D.8010405@oss.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 17 Apr 2009 18:12:35 -0400
+Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
+ updates
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: randy.dunlap@oracle.com, torvalds@linux-foundation.org, akpm@kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090417144117.4ac8828f.akpm@linux-foundation.org>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
+	 <1240003652.31116.44.camel@localhost>
+	 <20090417144117.4ac8828f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 15:09:28 -0700
+Message-Id: <1240006168.31116.62.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 08:27:25PM +0900, Fernando Luis Vázquez Cao wrote:
-> Ryo Tsuruta wrote:
->> Hi,
->>
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> Date: Fri, 17 Apr 2009 11:24:33 +0900
->>
->>> On Fri, 17 Apr 2009 10:49:43 +0900
->>> Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp> wrote:
->>>
->>>> Hi,
->>>>
->>>> I have a few question.
->>>>    - I have not yet fully understood how your controller are using
->>>>      bio_cgroup. If my view is wrong please tell me.
->>>>
->>>> o In my view, bio_cgroup's implementation strongly depends on
->>>>    page_cgoup's. Could you explain for what purpose does this
->>>>    functionality itself should be implemented as cgroup subsystem?
->>>>    Using page_cgoup and implementing tracking APIs is not enough?
->>> I'll definitely do "Nack" to add full bio-cgroup members to page_cgroup.
->>> Now, page_cgroup is 40bytes(in 64bit arch.) And all of them are allocated at
->>> boot time as memmap. (and add member to struct page is much harder ;)
->>>
->>> IIUC, feature for "tracking bio" is just necesary for pages for I/O.
->>> So, I think it's much better to add misc. information to struct bio not to the page.
->>> But, if people want to add "small hint" to struct page or struct page_cgroup
->>> for tracking buffered I/O, I'll give you help as much as I can.
->>> Maybe using "unused bits" in page_cgroup->flags is a choice with no overhead.
->>
->> In the case where the bio-cgroup data is allocated dynamically,
->>    - Sometimes quite a large amount of memory get marked dirty.
->>      In this case it requires more kernel memory than that of the
->>      current implementation.
->>    - The operation is expansive due to memory allocations and exclusive
->>      controls by such as spinlocks.
->>
->> In the case where the bio-cgroup data is allocated by delayed 
->> allocation,   - It makes the operation complicated and expensive, 
->> because
->>     sometimes a bio has to be created in the context of other
->>     processes, such as aio and swap-out operation.
->>
->> I'd prefer a simple and lightweight implementation. bio-cgroup only
->> needs 4bytes unlike memory controller. The reason why bio-cgroup chose
->> this approach is to minimize the overhead.
->
-> Elaborating on Yoshikawa-san's comment, I would like to propose a
-> generic I/O tracking mechanism that is not tied to all the cgroup
-> paraphernalia. This approach has several advantages:
->
-> - By using this functionality, existing I/O schedulers (well, some
-> relatively minor changes would be needed) would be able to schedule
-> buffered I/O properly.
->
-> - The amount of memory consumed to do the tracking could be
-> optimized according to the kernel configuration (do we really
-> need struct page_cgroup when the cgroup memory controller or all
-> of the cgroup infrastructure has been configured out?).
->
-> The I/O tracking functionality would look something like the following:
->
-> - Create an API to acquire the I/O context of a certain page, which is
-> cgroup independent. For discussion purposes, I will assume that the
-> I/O context of a page is the io_context of the task that dirtied the
-> page (this can be changed if deemed necessary, though).
->
-> - When cgroups are not being used, pages would be tracked using a
-> pfn-indexed array of struct io_context (à la memcg's array of
-> struct page_cgroup).
+On Fri, 2009-04-17 at 14:41 -0700, Andrew Morton wrote:
+> Lots of people's scripts/get_maintainer.pl files won't have the `x' bit
+> set because patch(1) is dumb.  So for reliability it's best to always do
 
-mmh... thinking in terms of io_context instead of task or cgroup. This
-is not suitable for memcg anyway, that will also require the page_cgroup
-infrastructure, at least for the per cgroup lru list I think. In any
-case, as suggested by Kamezawa, we should do the best to reduce the size
-of page_cgroup or any equivalent structure associated with every page
-descriptor.
+git at least persisted the "x" bit.
+checkpatch doesn't say to use perl.
 
->
-> - When cgroups are activated but the memory controller is not, we
-> would have a pfn-indexed array of struct blkio_cgroup, which would
-> have both a pointer to the corresponding io_context of the page and a
-> reference to the cgroup it belongs to (most likely using css_id). The
-> API offered by the I/O tracking mechanism would be extended so that
-> the kernel can easily obtain not only the per-task io_context but also
-> the cgroup a certain page belongs to. Please notice that by doing this
-> we have all the information we need to schedule buffered I/O both at
-> the cgroup-level and the task-level. From the memory usage point of
-> view, memory controller-specific bits would be gone and to top it all
-> we save one indirection level (since struct page_cgroup would be out
-> of the picture).
->
-> - When the memory controller is active we would have the
-> pfn-indexed array of struct page_cgroup we have know plus a
-> reference to the corresponding cgroup and io_context (yes, I
-> still want to do proper scheduling of buffered I/O within a
-> cgroup).
+> 	perl ./scripts/get_maintainer.pl
 
-Have you considered if multiple cgroup subsystems (io-throttle, memcg,
-etc.) want to use this feature at the same time? how to store a
-reference to many different cgroup subsystems?
+OK by me.
 
->
-> - Finally, since bio entering the block layer can generate additional
-> bios it is necessary to pass the I/O context information of original
-> bio down to the new bios. For that stacking devices such as dm and
-> those of that ilk will have to be modified. To improve performance I/O
-> context information would be cached in bios (to achieve this we have
-> to ensure that all bios that enter the block layer have the right I/O
-> context information attached to it).
+> : akpm:/usr/src/25> perl scripts/get_maintainer.pl -f fs/ext3/inode.c 
+> : grep: The -P option is not supported
+>     that's odd.  `man grep' on this machine says
 
-This is a very interesting feature IMHO. AFAIK at the moment only
-dm-ioband, for its dm nature, is able to define rules for logical
-devices (LVM, software RAID, etc).
+I changed the script grep to use "-E", which is older.
 
->
-> Yoshikawa-san and myself have been working on a patch-set that
-> implements just this and we have reached that point where the kernel
-> does not panic right after booting:), so we will be sending patches soon
-> (hopefully this weekend).
+> : fatal: Not a git repository
+> 
+>     it whines about not being run in a git directory, but does a decent
+>     job anyway.  
 
-Good! curious to see this patchset ;).
+Oh, I see, you've git installed, but not in your
+/usr/src/25 directory.
 
-Thanks,
--Andrea
+I changed the script to verify that a .git directory
+exists before running git.
+
+How about with these 2 patches applied?
+
+1: Update scripts/get_maintainer.pl
+   better subscriber-only mailing list checks
+   use grep -E not grep -P, works with earlier version of grep
+   check path for .git before using git
+   Output maintainers before mailing lists
+   Don't auto-add linux-kernel@vger.kernel.org
+2: Update MAINTAINERS
+   Add file patterns to "THE REST"
+   Add L: linux-kernel@vger.kernel.org to "THE REST"
+
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index 60dc0c4..8ba7b3b 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -13,7 +13,7 @@
+ use strict;
+ 
+ my $P = $0;
+-my $V = '0.15';
++my $V = '0.16';
+ 
+ use Getopt::Long qw(:config no_auto_abbrev);
+ 
+@@ -169,6 +169,7 @@ foreach my $file (@ARGV) {
+ }
+ 
+ my @email_to = ();
++my @list_to = ();
+ my @scm = ();
+ my @web = ();
+ my @subsystem = ();
+@@ -182,7 +183,7 @@ foreach my $file (@files) {
+ 
+     my $exclude = 0;
+     foreach my $line (@typevalue) {
+-	if ($line =~ m/^(\C):(.*)/) {
++	if ($line =~ m/^(\C):\s*(.*)/) {
+ 	    my $type = $1;
+ 	    my $value = $2;
+ 	    if ($type eq 'X') {
+@@ -196,7 +197,7 @@ foreach my $file (@files) {
+     if (!$exclude) {
+ 	my $tvi = 0;
+ 	foreach my $line (@typevalue) {
+-	    if ($line =~ m/^(\C):(.*)/) {
++	    if ($line =~ m/^(\C):\s*(.*)/) {
+ 		my $type = $1;
+ 		my $value = $2;
+ 		if ($type eq 'F') {
+@@ -215,29 +216,33 @@ foreach my $file (@files) {
+ 
+ }
+ 
+-if ($email_git_penguin_chiefs) {
++if ($email) {
+     foreach my $chief (@penguin_chief) {
+ 	if ($chief =~ m/^(.*):(.*)/) {
+-	    my $chief_name = $1;
+-	    my $chief_addr = $2;
++	    my $email_address;
+ 	    if ($email_usename) {
+-		push(@email_to, format_email($chief_name, $chief_addr));
++		$email_address = format_email($1, $2);
+ 	    } else {
+-		push(@email_to, $chief_addr);
++		$email_address = $2;
+ 	    }
++	    if ($email_git_penguin_chiefs) {
++		push(@email_to, $email_address);
++	    } else {
++		@email_to = grep(!/${email_address}/, @email_to);
++	    }		
+ 	}
+     }
+ }
+ 
+-if ($email) {
+-    my $address_cnt = @email_to;
+-    if ($address_cnt == 0 && $email_list) {
+-	push(@email_to, "linux-kernel\@vger.kernel.org");
++if ($email || $email_list) {
++    my @to = ();
++    if ($email) {
++	@to = (@to, @email_to);
+     }
+-
+-#Don't sort email address list, but do remove duplicates
+-    @email_to = uniq(@email_to);
+-    output(@email_to);
++    if ($email_list) {
++	@to = (@to, @list_to);
++    }
++    output(uniq(@to));
+ }
+ 
+ if ($scm) {
+@@ -307,10 +312,10 @@ Output type options:
+   --multiline => print 1 entry per line
+ 
+ Default options:
+-  [--email --git --m --l --multiline]
++  [--email --git --m --n --l --multiline]
+ 
+ Other options:
+-  --version -> show version
++  --version => show version
+   --help => show this help information
+ 
+ EOT
+@@ -366,26 +371,30 @@ sub add_categories {
+     $index = $index - 1;
+     while ($index >= 0) {
+ 	my $tv = $typevalue[$index];
+-	if ($tv =~ m/^(\C):(.*)/) {
++	if ($tv =~ m/^(\C):\s*(.*)/) {
+ 	    my $ptype = $1;
+ 	    my $pvalue = $2;
+ 	    if ($ptype eq "L") {
+-		my $subscr = $pvalue;
+-		if ($subscr =~ m/\s*\(subscribers-only\)/) {
++		my $list_address = $pvalue;
++		my $list_additional = "";
++		if ($list_address =~ m/([^\s]+)\s+(.*)$/) {
++		    $list_address = $1;
++		    $list_additional = $2;
++		}
++		if ($list_additional =~ m/subscribers-only/) {
+ 		    if ($email_subscriber_list) {
+-			$subscr =~ s/\s*\(subscribers-only\)//g;
+-			push(@email_to, $subscr);
++			push(@list_to, $list_address);
+ 		    }
+ 		} else {
+ 		    if ($email_list) {
+-			push(@email_to, $pvalue);
++			push(@list_to, $list_address);
+ 		    }
+ 		}
+ 	    } elsif ($ptype eq "M") {
+ 		if ($email_maintainer) {
+ 		    if ($index >= 0) {
+ 			my $tv = $typevalue[$index - 1];
+-			if ($tv =~ m/^(\C):(.*)/) {
++			if ($tv =~ m/^(\C):\s*(.*)/) {
+ 			    if ($1 eq "P" && $email_usename) {
+ 				push(@email_to, format_email($2, $pvalue));
+ 			    } else {
+@@ -415,7 +424,7 @@ sub add_categories {
+ sub which {
+     my ($bin) = @_;
+ 
+-    foreach my $path (split /:/, $ENV{PATH}) {
++    foreach my $path (split(/:/, $ENV{PATH})) {
+ 	if (-e "$path/$bin") {
+ 	    return "$path/$bin";
+ 	}
+@@ -433,17 +442,16 @@ sub recent_git_signoffs {
+     my $count = 0;
+     my @lines = ();
+ 
++    if (!(-d ".git")) {
++	return;
++    }
+     if (which("git") eq "") {
+ 	die("$P: git not found.  Add --nogit to options?\n");
+     }
+ 
+     $cmd = "git log --since=${email_git_since} -- ${file}";
+-    $cmd .= " | grep -Pi \"^[-_ 	a-z]+by:.*\\\@\"";
+-    if (!$email_git_penguin_chiefs) {
+-	$cmd .= " | grep -Pv \"${penguin_chiefs}\"";
+-    }
++    $cmd .= " | grep -Ei \"^[-_ 	a-z]+by:.*\\\@.*\$\"";
+     $cmd .= " | cut -f2- -d\":\"";
+-    $cmd .= " | sed -e \"s/^\\s+//g\"";
+     $cmd .= " | sort | uniq -c | sort -rn";
+ 
+     $output = `${cmd}`;
+@@ -481,7 +489,6 @@ sub recent_git_signoffs {
+ 	    push(@email_to, $line);
+ 	}
+     }
+-    return $output;
+ }
+ 
+ sub uniq {
+diff --git a/MAINTAINERS b/MAINTAINERS
+index abbedb6..e35f589 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6275,5 +6329,10 @@ F:	drivers/serial/zs.*
+ 
+ THE REST
+ P:	Linus Torvalds
++M:	torvalds@linux-foundation.org
++L:	linux-kernel@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+ S:	Buried alive in reporters
++F:	*
++F:	*/
++
+
+
+
