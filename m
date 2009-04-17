@@ -1,29 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZDQB3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZDQBaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZDQB3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbZDQB26
+	id S1759559AbZDQBaT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbZDQB34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:28:58 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:6922 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759007AbZDQB24 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:28:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vHLlTGcFJnZuiF5gZuMBqkrNGCkH2tt5DEl3u9ILskZKnk2jdLSbkz5ew6REl3za6s
-         7ZIFKxmINbb5eA1MDqy+MCa8NG5ptye+VyYLSIJ6dnkhRry22BiPHsSrbvFWZRN/dO9z
-         aYkex9s1B6v0p9wotpSU2b8jpoBo1a9NVCD/0=
-MIME-Version: 1.0
-In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-Date: Fri, 17 Apr 2009 09:28:54 +0800
-Message-ID: <b6a2187b0904161828h33ad84d4y8074c993a43dd146@mail.gmail.com>
+	Thu, 16 Apr 2009 21:29:56 -0400
+Received: from mga09.intel.com ([134.134.136.24]:5017 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756247AbZDQB3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 21:29:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,201,1239001200"; 
+   d="scan'208";a="403892663"
 Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-From: Jeff Chua <jeff.chua.linux@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Adrian Bunk <bunk@kernel.org>,
@@ -35,33 +25,44 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux ACPI <linux-acpi@vger.kernel.org>,
        Linux PM List <linux-pm@lists.linux-foundation.org>,
        Linux SCSI List <linux-scsi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 09:30:13 +0800
+Message-Id: <1239931813.7661.394.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 5:42 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Fri, 2009-04-17 at 05:42 +0800, Rafael J. Wysocki wrote:
+> 
+> 
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13095
+> Subject         : thinkpad-acpi: cannot control brightness with hotkeys
+> Submitter       : Niel Lambrechts <niel.lambrechts@gmail.com>
+> Date            : 2009-04-11 23:07 (6 days old)
+> References      : http://lkml.org/lkml/2009/4/11/160
+> Handled-By      : Matthew Garrett <mjg59@srcf.ucam.org>
+> Patch           : http://lkml.org/lkml/2009/4/15/339
+> 
+> 
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13048
+> Subject         : /sys/class/backlight/acpi_video0/* is gone on vaio laptop with Intel GM45.
+> Submitter       : Rodrigo L. Batista <rodrigo@gus-mg.org>
+> Date            : 2009-04-09 04:57 (8 days old)
+> Handled-By      : yakui_zhao <yakui.zhao@intel.com>
+> Patch           : http://bugzilla.kernel.org/attachment.cgi?id=20967
+>                   http://bugzilla.kernel.org/attachment.cgi?id=20959
+> 
+> 
+bug 13095 is a duplicate of bug 13048.
+patches from Matthew and Yakui are for the same issue.
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13118
-> Subject         : iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> Date            : 2009-04-10 16:05 (7 days old)
-> References      : http://lkml.org/lkml/2009/4/10/111
-> Handled-By      : Eric Dumazet <dada1@cosmosbay.com>
+Yakui, could you verify which patch should be taken please?
 
-Several iterations of patches in progress. See
-[PATCH] netfilter: per-cpu spin-lock with recursion (v0.8)
+thanks,
+rui
 
-
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13066
-> Subject         : Intel HD Audio oops
-> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> Date            : 2009-04-01 8:28 (16 days old)
-> References      : http://marc.info/?l=linux-kernel&m=123857454625829&w=4
-
-Fixed as of April 09 2009 git pull.
-
-
-Thanks,
-Jeff
