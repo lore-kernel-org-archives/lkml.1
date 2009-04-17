@@ -1,63 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761307AbZDQOQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbZDQOQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761307AbZDQOQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759795AbZDQOQY
+	id S1761357AbZDQOQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759795AbZDQOQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:16:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49689 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755804AbZDQOQX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:16:23 -0400
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0904170941020.11877@qirst.com>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>
-	 <1239951613.23397.4107.camel@laptop>
-	 <alpine.DEB.1.10.0904170941020.11877@qirst.com>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 16:16:16 +0200
-Message-Id: <1239977776.23397.4590.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 10:16:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38383 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754952AbZDQOQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 10:16:46 -0400
+Date: Fri, 17 Apr 2009 10:13:58 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Subject: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
+Message-ID: <20090417141358.GD29086@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090417093656.GA5246@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 09:42 -0400, Christoph Lameter wrote:
-> On Fri, 17 Apr 2009, Peter Zijlstra wrote:
+On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
+> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+> > > I think it would be possible to implement both proportional and limiting
+> > > rules at the same level (e.g., the IO scheduler), but we need also to
+> > > address the memory consumption problem (I still need to review your
+> > > patchset in details and I'm going to test it soon :), so I don't know if
+> > > you already addressed this issue).
+> > > 
+> > 
+> > Can you please elaborate a bit on this? Are you concerned about that data
+> > structures created to solve the problem consume a lot of memory?
 > 
-> > This has never been true afaikt, as long as we have a task running, we
-> > take the interrupt, I just looked at the .22 code and that certainly
-> > expects the scheduler_tick() to be called when there is a running
-> > process.
-> >
-> > Also, look at /proc/interrupts if you want to determine interrupt
-> > frequency.
+> Sorry I was not very clear here. With memory consumption I mean wasting
+> the memory with hard/slow reclaimable dirty pages or pending IO
+> requests.
 > 
-> I am mainly interested in limited the number and length of cpu holdoffs.
+> If there's only a global limit on dirty pages, any cgroup can exhaust
+> that limit and cause other cgroups/processes to block when they try to
+> write to disk.
 > 
-> If the timer interrupt is always taken then it must take less than 1 usec
-> in certain versions of the kernel in order to not show up in the
-> statistics gathered.
+> But, ok, the IO controller is not probably the best place to implement
+> such functionality. I should rework on the per cgroup dirty_ratio:
+> 
+> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+> 
+> Last time we focused too much on the best interfaces to define dirty
+> pages limit, and I never re-posted an updated version of this patchset.
+> Now I think we can simply provide the same dirty_ratio/dirty_bytes
+> interface that we provide globally, but per cgroup.
+> 
+> > 
+> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
+> > > in the cgroup that exceeds its limit, how do we avoid the waste of
+> > > memory due to the succeeding IO requests and the increasingly dirty
+> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
+> > > but I think we talked about this problem in a previous email... sorry I
+> > > don't find the discussion in my mail archives.
+> > > 
+> > > IMHO a nice approach would be to measure IO consumption at the IO
+> > > scheduler level, and control IO applying proportional weights / absolute
+> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
+> > > time block the tasks from dirtying memory that will generate additional
+> > > IO requests.
+> > > 
+> > > Anyway, there's no need to provide this with a single IO controller, we
+> > > could split the problem in two parts: 1) provide a proportional /
+> > > absolute IO controller in the IO schedulers and 2) allow to set, for
+> > > example, a maximum limit of dirty pages for each cgroup.
+> > > 
+> > 
+> > I think setting a maximum limit on dirty pages is an interesting thought.
+> > It sounds like as if memory controller can handle it?
+> 
+> Exactly, the same above.
 
-Such a test as you had is pretty useless for anything. 
+Thinking more about it. Memory controller can probably enforce the higher
+limit but it would not easily translate into a fixed upper async write
+rate. Till the process hits the page cache limit or is slowed down by
+dirty page writeout, it can get a very high async write BW.
 
-If you want to measure something I'd suggest making a histogram of tsc
-values in 10ns buckets or something, and seeing if there are a few
-predominant spikes above the noise.
+So memory controller page cache limit will help but it would not direclty
+translate into what max bw limit patches are doing.
 
-With something like that you could say, the jiffy tick went from 0.8+-.1
-to 1.1+-.1 us or somesuch.
+Even if we do max bw control at IO scheduler level, async writes are
+problematic again. IO controller will not be able to throttle the process
+until it sees actuall write request. In big memory systems, writeout might
+not happen for some time and till then it will see a high throughput.
 
-After that, you could possibly use oprofile or readprofile or
-perf-counters to get an idea where the time is spend. I did a quick
-profile on one of my machines, and about half the kernel time spend in a
-while(1) loop comes from __do_softirq().
+So doing async write throttling at higher layer and not at IO scheduler
+layer gives us the opprotunity to produce more accurate results.
 
-Really, I should not have to tell you this...
+For sync requests, I think IO scheduler max bw control should work fine.
 
+BTW, andrea, what is the use case of your patches? Andrew had mentioned
+that some people are already using it. I am curious to know will a
+proportional BW controller will solve the issues/requirements of these
+people or they have specific requirement of traffic shaping and max bw
+controller only.
+
+[..]
+> > > > Can you please give little more details here regarding how QoS requirements
+> > > > are not met with proportional weight?
+> > > 
+> > > With proportional weights the whole bandwidth is allocated if no one
+> > > else is using it. When IO is submitted other tasks with a higher weight
+> > > can be forced to sleep until the IO generated by the low weight tasks is
+> > > not completely dispatched. Or any extent of the priority inversion
+> > > problems.
+> > 
+> > Hmm..., I am not very sure here. When admin is allocating the weights, he
+> > has the whole picture. He knows how many groups are conteding for the disk
+> > and what could be the worst case scenario. So if I have got two groups
+> > with A and B with weight 1 and 2 and both are contending, then as an 
+> > admin one would expect to get 33% of BW for group A in worst case (if
+> > group B is continuously backlogged). If B is not contending than A can get
+> > 100% of BW. So while configuring the system, will one not plan for worst
+> > case (33% for A, and 66 % for B)?
+> 
+> OK, I'm quite convinced.. :)
+> 
+> To a large degree, if we want to provide a BW reservation strategy we
+> must provide an interface that allows cgroups to ask for time slices
+> such as max/min 5 IO requests every 50ms or something like that.
+> Probably the same functionality can be achieved translating time slices
+> from weights, percentages or absolute BW limits.
+
+Ok, I would like to split it in two parts.
+
+I think providng minimum gurantee in absolute terms like 5 IO request
+every 50ms will be very hard because IO scheduler has no control over
+how many competitors are there. An easier thing will be to have minimum
+gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
+shall have to create right cgroup hierarchy and assign weights properly and
+then admin can calculate what % of disk slice a particular group will get
+as minimum gurantee. (This is more complicated than this as there are
+time slices which are not accounted to any groups. During queue switch
+cfq starts the time slice counting only after first request has completed
+to offset the impact of seeking and i guess also NCQ).
+
+I think it should be possible to give max bandwidth gurantees in absolute
+terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
+scheduler has to do is to not allow dispatch from a particular queue if
+it has crossed its limit and then either let the disk idle or move onto
+next eligible queue.
+
+The only issue here will be async writes. max bw gurantee for async writes
+at IO scheduler level might not mean much to application because of page
+cache.
+
+Thanks
+Vivek
