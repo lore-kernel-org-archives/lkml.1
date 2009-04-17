@@ -1,54 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbZDQAP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZDQAQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757663AbZDQAP5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbZDQAPr
+	id S1758630AbZDQAQk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbZDQAQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:15:47 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:59669 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbZDQAPp (ORCPT
+	Thu, 16 Apr 2009 20:16:32 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54689 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757035AbZDQAQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:15:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KfM6E2qBkuZP6Ic5rmRk/FmrI+bdUXYrvxhEKxgol9/+ZQ+tpDWftYptd1wmDhy4dZ
-         SNOD270v1bfveNhc1bwIZg5nqutzkRSeNOyaR1V0dIzYK8XCBowyonSfRCdywLY3ce7g
-         nNKVg9TQgSydIRJDL7I/1FzhXfVJ7FF/7uVxU=
-MIME-Version: 1.0
-In-Reply-To: <20090416165233.5d8bbfb5@nehalam>
-References: <20090415170111.6e1ca264@nehalam>
-	 <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
-	 <49E72E83.50702@trash.net>
-	 <20090416.153354.170676392.davem@davemloft.net>
-	 <20090416234955.GL6924@linux.vnet.ibm.com>
-	 <20090416165233.5d8bbfb5@nehalam>
-Date: Fri, 17 Apr 2009 08:15:44 +0800
-Message-ID: <b6a2187b0904161715s46412569t4aa9b255427f9626@mail.gmail.com>
-Subject: Re: [PATCH] netfilter: per-cpu spin-lock with recursion (v0.8)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org, dada1@cosmosbay.com,
-       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 16 Apr 2009 20:16:31 -0400
+Date: Fri, 17 Apr 2009 09:14:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+ controller (v2)
+Message-Id: <20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090416120316.GG7082@balbir.in.ibm.com>
+References: <20090415120510.GX7082@balbir.in.ibm.com>
+	<20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416015955.GB7082@balbir.in.ibm.com>
+	<20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090416120316.GG7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 7:52 AM, Stephen Hemminger
-<shemminger@vyatta.com> wrote:
-> This version of x_tables (ip/ip6/arp) locking uses a per-cpu
-> recursive lock that can be nested. It is sort of like existing kernel_lock,
-> rwlock_t and even old 2.4 brlock.
+On Thu, 16 Apr 2009 17:33:16 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Tested and working. As fast as before.
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
+> 
+> > 
+> > > Sorry, some troubles found. Ignore above Ack. 3points now.
+> > > 
+> > > 1. get_cpu should be after (*)
+> > > ==mem_cgroup_update_mapped_file_stat()
+> > > +	int cpu = get_cpu();
+> > > +
+> > > +	if (!page_is_file_cache(page))
+> > > +		return;
+> > > +
+> > > +	if (unlikely(!mm))
+> > > +		mm = &init_mm;
+> > > +
+> > > +	mem = try_get_mem_cgroup_from_mm(mm);
+> > > +	if (!mem)
+> > > +		return;
+> > > + ----------------------------------------(*)
+> > > +	stat = &mem->stat;
+> > > +	cpustat = &stat->cpustat[cpu];
+> > > +
+> > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
+> > > +	put_cpu();
+> > > +}
+> > > ==
+> 
+> Yes or I should have a goto
+> 
+> > > 
+> > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
+> > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
+> 
+> Hmmm.. not sure I understand this part. Are you suggesting that mm can
+> be NULL?
+No.
+
+> I added the check for !mm as a safety check. Since this
+> routine is only called from rmap context, mm is not NULL, hence mem
+> should not be NULL. Did you find a race between mm->owner assignment
+> and lookup via mm->owner?
+> 
+No.
+
+page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
+
+For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
+used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
+
+Then, File_Mapped can be greater than Cached easily if you use mm->owner.
+
+I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
+other cgroups. It's meaningless.
+Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
+
+By useing page_cgroup->mem_cgroup, we can avoid above mess.
 
 Thanks,
-Jeff.
+-Kame 
+
+
+
+
+
+
+
+
+
