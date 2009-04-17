@@ -1,137 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbZDQNZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbZDQNZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760855AbZDQNZD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 09:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZDQNYx
+	id S1761130AbZDQNZb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 09:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761007AbZDQNZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 09:24:53 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:41704 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753263AbZDQNYw convert rfc822-to-8bit (ORCPT
+	Fri, 17 Apr 2009 09:25:12 -0400
+Received: from e24smtp02.br.ibm.com ([32.104.18.86]:49030 "EHLO
+	e24smtp02.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760959AbZDQNZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 09:24:52 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH 06/14] DRBD: userspace_interface
-Date: Fri, 17 Apr 2009 15:24:27 +0200
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Greg KH <gregkh@suse.de>, Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com> <1239365545-10356-7-git-send-email-philipp.reisner@linbit.com> <e2e108260904120923q639d036drb04b55b1e653ebf1@mail.gmail.com>
-In-Reply-To: <e2e108260904120923q639d036drb04b55b1e653ebf1@mail.gmail.com>
-X-OTRS-FollowUp-SenderType: agent
+	Fri, 17 Apr 2009 09:25:10 -0400
+Message-ID: <49E8832F.6070302@linux.vnet.ibm.com>
+Date: Fri, 17 Apr 2009 10:25:03 -0300
+From: Daniel Debonzi <debonzi@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904171524.28960.philipp.reisner@linbit.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+CC: scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and implementation.
+References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> <49E85F1C.7040106@vlnb.net>
+In-Reply-To: <49E85F1C.7040106@vlnb.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 April 2009 18:23:43 Bart Van Assche wrote:
-> On Fri, Apr 10, 2009 at 2:12 PM, Philipp Reisner
->
-> <philipp.reisner@linbit.com> wrote:
-> > diff -uNrp linux-2.6.30-rc1/include/linux/drbd.h
-> > linux-2.6.30-rc1-drbd/include/linux/drbd.h ---
-> > linux-2.6.30-rc1/include/linux/drbd.h       1970-01-01 01:00:00.000000000
-> > +0100 +++ linux-2.6.30-rc1-drbd/include/linux/drbd.h  2009-03-26
-> > 15:53:46.520275000 +0100
->
-> ...
->
-> > +#include <linux/drbd_config.h>
->
-> By including drbd_config.h in drbd.h all definitions in the former
-> header file become visible in user space. Several definitions in
-> drbd_config.h only make sense inside the kernel. Either the above
-> #include directive should be removed or drbd_config.h should be
-> cleaned up.
+Vladislav Bolkhovitin wrote:
+> Daniel Debonzi, on 04/16/2009 10:23 PM wrote:
+>> Vladislav Bolkhovitin wrote:
+>>> Hi All,
+>>>
+>>> Below is proposal for the SCST sysfs layout, which will replace 
+>>> existing procfs-based infrastructure. Any comments, questions and 
+>>> suggestions are welcome!
+>>>
+>>> I. SCST sysfs layout.
+>>>
+>>> Root would be /sys/scsi_tgt.
+>>>
+>>> In the root there would be the following files and subdirectories:
+>>>
+>>>  - targets - subdirectory listing names of all registered target 
+>>> drivers.
+>>>
+>>>  - devices - subdirectory listing all registered backend devices.
+>>>
+>>>  - sgv - subdirectory listing all existing SGV pools.
+>>>
+>>>  - drivers - subdirectory listing all loaded target and backend 
+>>> drivers (dev handlers).
+>>>
+>>>  - threads - RW file listing number of global SCST threads. Writing 
+>>> to that file would allow to change that value.
+>>>
+>>>  - trace_level - RW file listing SCST core logging level. Writing to 
+>>> that file would allow to change that. Example content: "out_of_mem | 
+>>> minor | pid | line | function | special | mgmt | mgmt_minor | 
+>>> mgmt_dbg | retry". See current procfs implementation of this file for 
+>>> more info.
+>>>
+>>>  - version - RO file listing version of SCST core and enabled compile 
+>>> time features. Example content: "1.0.2, EXTRACHECKS, 
+>>> DEBUG"                                                                                                                          
+>>
+>>
+>> Based on all I read this last days, I believe we are not allowed to 
+>> include the directory scsi_tgt on /sys root. I think it has to be in a 
+>> existent directory reserved for this sort of application. I just 
+>> didn't figured out which one it would be.
+> 
+> /sys/class? It already has scsi_device, scsi_disk, scsi_generic and 
+> scsi_host.
 
-Without comments and boilerplate, drbd_config.h has 7 defines. 
-REL_VERSION and API_VERSION are used by the kernel code and drbdsetup,
-the others are used only by the kernel.
+I don't think so because all the directories on /sys/class have symlinks 
+to the files somewhere else. However I noticed that many of them on my 
+system are on /sys/device/virtual
 
-Ack, I have removed it from drbd.h
+>>> III. Implementation considerations
+>>>
+>>> 1. Top level subdirectories and files should be created by init_scst().
+>>>
+>>> 2. targets/target_driver_name drivers/target_driver_name and should 
+>>> be created by scst_register_target_template() and removed by 
+>>> scst_unregister_target_template().
+>>>
+>>> 3. targets/target_driver_name/target with sessions, luns and 
+>>> ini_groups subdirectories should be created by scst_register() and 
+>>> removed by scst_unregister().
+>>>
+>>> 4. targets/target_driver_name/target/sessions/session and below 
+>>> should be created by scst_init_session() and removed by 
+>>> scst_free_session().
+>>>
+>>> 5. Pass-through devices should be added to devices/ by 
+>>> scst_register_device() and removed by scst_unregister_device(). 
+>>> Initially they should have "handler" link pointed to "none".
+>>>
+>>> 6. Virtual devices should be added to devices/ by 
+>>> scst_register_virtual_device() and removed by 
+>>> scst_unregister_virtual_device().
+>>>
+>>> 7. drivers/dev_handler_name should be added by 
+>>> scst_register_dev_driver() or scst_register_virtual_dev_driver() and 
+>>> removed by scst_unregister_dev_driver() or 
+>>> scst_unregister_virtual_dev_driver().
+>>>
+>>> 8. It isn't clear how to best combine standard and custom entries in 
+>>> targets/target_driver_name/target, devices/device, 
+>>> drivers/target_driver_name and drivers/dev_handler_name, I don't know 
+>>> sysfs interfaces sufficiently well. I can only suggest places, where 
+>>> it should be done:
+>>>
+>>>  - For targets/target_driver_name/target a target driver after 
+>>> scst_register() register call should call new function 
+>>> scst_get_target_root() and add there new entries. Before 
+>>> scst_unregister() call the target driver should remove them at first. 
+>>> Similarly it should be done for drivers/target_driver_name and 
+>>> drivers/dev_handler_name.
+>>>
+>>>  - For devices/device a dev handler should do it in attach() callback 
+>>> and remove in detach() callback. Similarly to scst_get_target_root(), 
+>>> the dev handler should get its sysfs root by calling 
+>>> scst_get_dev_root().
+>>>
+>>> Both should be made in some generic way to minimize duplicated code 
+>>> between target drivers and between dev handlers.
+>>
+>> Also based on what I read, the way to have data structures reflected 
+>> on sysfs is using kobjecs. I feel that the expected approach to have 
+>> it is to include a kobject (or kset depending on the case) on the 
+>> existent structures which will be reflected on the sysfs. I notice 
+>> that on the actual implementation all the proc interface is 
+>> implemented on scst_proc.c and I don't know if it will be possible to 
+>> keep having the access interfaces on a separated source file. We could 
+>> possible have the callback functions on a separated file but I can't 
+>> visualize it without start to touch it more deeply. Probably you guys 
+>> have a better view of this implementation possibilities.
+> 
+> All the above sysfs layout reflects internal SCST objects:
+> 
+> 1. targets/target_driver_name and drivers/target_driver_name -> struct 
+> scst_tgt_template
+> 
+> 2. targets/target_driver_name/target -> struct scst_tgt
+> 
+> 3. targets/target_driver_name/target/sessions/session -> struct 
+> scst_session
+> 
+> 4. targets/target_driver_name/target/ini_groups/group -> struct 
+> scst_acg. (For targets/target_driver_name/target/luns each struct 
+> scst_tgt would have internal struct scst_acg.)
+> 
+> 5. 
+> targets/target_driver_name/target/ini_groups/group/initiators/initiator 
+> -> struct scst_acn
+> 
+> 6. targets/target_driver_name/target/ini_groups/group/luns/lun and 
+> targets/target_driver_name/target/luns/lun -> struct scst_acg_dev
+> 
+> 7. devices/device -> struct scst_device
+> 
+> 8. drivers/dev_handler_name -> struct scst_dev_type
+> 
+> 9. sgv/pool -> struct sgv_pool
+> 
+> So, we should simply add kobjects in them. To manipulate with then 
+> already there is an API, used by procfs, and should be also used by 
+> sysfs. This API is completely out of scst_proc.c
+> 
 
->
-> > +/* Altough the Linux source code makes a difference between
-> > +   generic endiness and the bitfields' endianess, there is no
-> > +   architecture as of Linux-2.6.24-rc4 where the bitfileds' endianess
-> > +   does not match the generic endianess. */
->
-> I assume this should have been four times "endianness", just like below ?
+great, this will save some time.
 
-Right. Changed.
+> 
+> LAYOUT UPDATE.
+> 
+> Looks like it would be better to move entries from 
+> drivers/target_driver_name to targets/target_driver_name to keep all the 
+> related entries in one place. Then to reflect new state rename drivers/ 
+> to back_drivers/.
 
-> > +/* KEEP the order, do not delete or insert!
-> > + * Or change the API_VERSION, too. */
-> > +enum ret_codes {
-> > +       RetCodeBase = 100,
-> > +       NoError,         /* 101 ... */
-> > +       LAAlreadyInUse,
->
-> How will backwards compatibility for return codes be ensured ? The
-> comment before the enum probably has to be changed to "KEEP the order,
-> do not delete or insert!" only ?
->
+Ack.
 
-Comment adjusted. New error codes should be appended to enum. When a
-old userspace programm sees an error code greater than AfterLastRetCode
-it suggests the user that he should update the userspace tools.
-
-> ...
->
-> > +union drbd_state_t {
-> > +/* According to gcc's docs is the ...
-> > + * The order of allocation of bit-fields within a unit (C90 6.5.2.1, C99
-> > 6.7.2.1). + * Determined by ABI.
-> > + * pointed out by Maxim Uvarov q<muvarov@ru.mvista.com>
-> > + * even though we transmit as "cpu_to_be32(state)",
-> > + * the offsets of the bitfields still need to be swapped
-> > + * on different endianess.
-> > + */
->
-> The above comment really looks strange. Is it still up to date ?
->
-
-The comment might be strange, but the content is true.
-
-> > +/* from drbd_strings.c */
-> > +extern const char *conns_to_name(enum drbd_conns);
-> > +extern const char *roles_to_name(enum drbd_role);
-> > +extern const char *disks_to_name(enum drbd_disk_state);
-> > +extern const char *set_st_err_name(enum set_st_err);
->
-> Should declarations of kernel functions really be present in a user
-> space interface header ?
->
-
-Well, we actually compile and link the same source file (drbd_strings.c) 
-into the kernel code and into unser space (drbdsetup). It just has
-functions to map those numbers to strings. -- Nothing fancy.
-
-So yes, you are right, they are not part of the interface, they are
-just used in both contexts. It just seemed ridiculous to me to have 
-even a dedicated header file defining those 4 external functions.
-
-As usual, I have pushed the changes to git.drbd.org
-
--Phil
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
-
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+Thanks,
+Daniel Debonzi
 
