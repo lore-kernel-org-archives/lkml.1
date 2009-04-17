@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbZDQSLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761031AbZDQSKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932214AbZDQSLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbZDQSKg
+	id S1761031AbZDQSKt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932177AbZDQSK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:10:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44933 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932111AbZDQSKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:10:33 -0400
-Date: Fri, 17 Apr 2009 12:09:33 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "John Stoffel" <john@stoffel.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
-Message-Id: <20090417120933.48804eec.zaitcev@redhat.com>
-In-Reply-To: <18919.61639.864206.337181@stoffel.org>
-References: <18906.49779.243047.207639@stoffel.org>
-	<20090407120022.GA6519@ff.dom.local>
-	<18907.28788.965069.573489@stoffel.org>
-	<20090407130403.e0061a8d.zaitcev@redhat.com>
-	<18908.42166.404232.721757@stoffel.org>
-	<20090408232344.afed8103.zaitcev@redhat.com>
-	<18909.65347.234817.29689@stoffel.org>
-	<20090413174105.b03a1f19.zaitcev@redhat.com>
-	<18916.37351.872568.757026@stoffel.org>
-	<18919.61639.864206.337181@stoffel.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 17 Apr 2009 14:10:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39210 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932191AbZDQSK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 14:10:26 -0400
+Message-ID: <49E8C570.7030708@zytor.com>
+Date: Fri, 17 Apr 2009 11:07:44 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
+References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com>	 <49D69F39.4010101@zytor.com>  <49D6ABD1.7040704@redhat.com> <1239058135.5212.43.camel@localhost.localdomain> <49DA8857.8030607@zytor.com> <49E7BFDC.8040305@redhat.com> <49E7C1B3.1070000@zytor.com> <49E884C2.9030409@redhat.com>
+In-Reply-To: <49E884C2.9030409@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 23:00:23 -0400, "John Stoffel" <john@stoffel.org> wrote:
+Masami Hiramatsu wrote:
+> 
+> Aah, I see. So we'd better make a parser which generates internal
+> data structure from genuine opcode map in compilation time.
+> 
+> And I changed my mind about internal data structure too.
+> In this version, I'll use a smallest bits which are needed
+> for the decoder.
+> 
 
-> Is there any update on this bug?  I'm off for five+ days of vacation,
-> but I'll be happy to test when I get back, and even build test kernels
-> while I'm away if I find some time.
+Yes, and with a proper compile-time parser, that kind of things can be
+done, and be changed later if it is no longer appropriate.
 
-Sorry, John, no update thus far.
-
--- Pete
+	-hpa
