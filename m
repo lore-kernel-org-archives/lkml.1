@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761085AbZDQSqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbZDQSyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761085AbZDQSqQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZDQSqB
+	id S1760436AbZDQSyg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbZDQSy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:46:01 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:59850 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507AbZDQSqA (ORCPT
+	Fri, 17 Apr 2009 14:54:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35143 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757431AbZDQSy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:46:00 -0400
-Message-ID: <49E8CE66.8050709@s5r6.in-berlin.de>
-Date: Fri, 17 Apr 2009 20:45:58 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: How to completely disable async fastboot?
-References: <49E679D0.7050600@garzik.org> <20090415183137.4d19a7c8@infradead.org>
-In-Reply-To: <20090415183137.4d19a7c8@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 17 Apr 2009 14:54:27 -0400
+Date: Fri, 17 Apr 2009 11:50:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: fix fillrect for 24bpp modes
+Message-Id: <20090417115048.0c5ca35d.akpm@linux-foundation.org>
+In-Reply-To: <20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
+References: <20090413170954.GA8403@tria>
+	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/2009 3:31 AM, Arjan van de Ven wrote:
-> On Wed, 15 Apr 2009 20:20:32 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
->> > commit 9710794383ee5008d67f1a6613a4717bf6de47bc
-...
->> not only changes a default, it completely removes the ability to turn 
->> off async AFAICS.
-> 
-> this is on the request of Andrew and others who want to be able to use
-> these API's (soon) in an "forced offload" scenario. 
+On Fri, 17 Apr 2009 18:36:17 +0200
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-Indeed, because the async API is a threadpool API.
-However, 2.6.30-rc1 also gained David Howell's <linux/slow-work.h>, and
-I for one am still wondering which one of these I'm going to use...
--- 
-Stefan Richter
--=====-==--= -=-- =---=
-http://arcgraph.de/sr/
+> On Mon, 13 Apr 2009 19:09:54 +0200
+> Michal Januszewski <spock@gentoo.org> wrote:
+> 
+> ...
+>
+> The r is simply dst_idx / bits. Most compilers will optimize it away into 
+> a simple shift because the bits has only one bit set (it is number of bits in a long variable, ie. 32 or 64).
+> 
+> > +		pat = pat << ((left*r) % bpp) | pat >> ((right*r) % bpp);
+> >  
+> 
+> If the r = (dst_idx / bits) it is number of long words. The shift by ((left*r) % bpp) does
+> not make much sense (try left = 3 and r = 24 words - it is always zero but should be 3). 
+> It is even worse if a line is padded so line's length modulo bpp is not 
+> zero it does not work. A colorful pattern is produced  after the "mtest" text.
+> 
+> A dst_idx offset is not taken into account (it could be non-zero only for depths < 8 bits).
+> 
+
+OK, thanks for checking.
+
+Michael, I'll await a version 2 on this patch.  It looks like something
+we want in 2.6.30.
+
