@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbZDQGjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZDQGjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbZDQGjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 02:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZDQGjD
+	id S1759553AbZDQGjr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 02:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbZDQGjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 02:39:03 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49214 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755912AbZDQGjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 02:39:01 -0400
-Date: Fri, 17 Apr 2009 08:38:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] splice: fix new kernel-doc warnings
-Message-ID: <20090417063859.GF4593@kernel.dk>
-References: <20090416190955.fb1e07d3.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416190955.fb1e07d3.randy.dunlap@oracle.com>
+	Fri, 17 Apr 2009 02:39:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:56716 "EHLO abulafia.goop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754244AbZDQGje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 02:39:34 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: mathieu.desnoyers@polymtl.ca
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH RFC] WIP pvops trace events
+Date: Thu, 16 Apr 2009 23:39:29 -0700
+Message-Id: <1239950374-1252-1-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16 2009, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> splice: fix kernel-doc warnings
-> 
-> Warning(fs/splice.c:617): bad line: 
-> Warning(fs/splice.c:722): No description found for parameter 'sd'
-> Warning(fs/splice.c:722): Excess function parameter 'pipe' description in 'splice_from_pipe_begin'
 
-Thanks Randy, applied.
+This is my series of pvops tracing patches, consisting of:
 
--- 
-Jens Axboe
+- Split out asm/paravirt_type.h from asm/paravirt.h, so that
+  trace/events/pvops.h can include the types without getting everything
+  else.
+
+- Add a pile of new trace events, and insert them into asm/paravirt.h
+
+- misc tidyups
+
+This nearly compiles, except for some duplicate kmemtrace event
+definitions, which I don't understand at all yet.
+
+	J
+
+ arch/x86/include/asm/paravirt.h       |  874 ++++---------------------
+ arch/x86/include/asm/paravirt_types.h |  719 ++++++++++++++++++++
+ arch/x86/kernel/Makefile              |    5 
+ arch/x86/kernel/paravirt-trace.c      |   18 
+ include/trace/events/pvops.h          | 1183 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 2067 insertions(+), 732 deletions(-)
 
