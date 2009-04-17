@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZDQUmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZDQUqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbZDQUmW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 16:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZDQUmO
+	id S1755983AbZDQUqk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 16:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZDQUqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 16:42:14 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:38994 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbZDQUmN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 16:42:13 -0400
-Date: Fri, 17 Apr 2009 16:34:47 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-In-Reply-To: <1239994719.23397.4979.camel@laptop>
-Message-ID: <alpine.DEB.1.10.0904171629470.26593@qirst.com>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>  <1239951613.23397.4107.camel@laptop>  <alpine.DEB.1.10.0904170941020.11877@qirst.com>  <1239977776.23397.4590.camel@laptop>  <alpine.DEB.1.10.0904171021360.20239@qirst.com>  <1239979901.23397.4638.camel@laptop>
-  <alpine.DEB.1.10.0904171100510.21575@qirst.com>  <20090417153520.GA29968@elte.hu>  <alpine.DEB.1.10.0904171142050.13734@qirst.com>  <1239985426.23397.4757.camel@laptop> <20090417164918.GK8253@elte.hu>  <alpine.DEB.1.10.0904171335490.28603@qirst.com> 
- <1239991892.23397.4905.camel@laptop>  <alpine.DEB.1.10.0904171410540.28536@qirst.com> <1239994719.23397.4979.camel@laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 17 Apr 2009 16:46:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35968 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbZDQUq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 16:46:29 -0400
+Date: Fri, 17 Apr 2009 20:45:54 GMT
+From: tip-bot for Jack Steiner <steiner@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090417142447.GA23759@sgi.com>
+References: <20090417142447.GA23759@sgi.com>
+Subject: [tip:x86/urgent] x86/uv: fix init of cpu-less nodes
+Message-ID: <tip-27229ca63269c1be0a710f074fa9de4024f283f1@git.kernel.org>
+Git-Commit-ID: 27229ca63269c1be0a710f074fa9de4024f283f1
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 20:45:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009, Peter Zijlstra wrote:
+Commit-ID:  27229ca63269c1be0a710f074fa9de4024f283f1
+Gitweb:     http://git.kernel.org/tip/27229ca63269c1be0a710f074fa9de4024f283f1
+Author:     Jack Steiner <steiner@sgi.com>
+AuthorDate: Fri, 17 Apr 2009 09:24:47 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 17 Apr 2009 22:43:11 +0200
 
-> > often must occur in parallel on multiple cores. Processing is delayed if
-> > any of the cores encounters a delay due to OS noise.
->
-> So you have hard deadlines in the order of us? Are these SCHED_FIFO
-> tasks or SCHED_OTHER?
+x86/uv: fix init of cpu-less nodes
 
-SCHED_FIFO has the effect of removing all the involuntary context switches
-but it does not effect the other interrutions.
+Fix an endcase in the UV initialization code for the "UV large system mode"
+of apicids.  If node zero contains no cpus, cpus on another node will be the
+boot cpu.  The percpu data that contains the extra apicid bits was not
+being initialized early enough.
 
-> Your Xeon is a core2 class machine and should have relatively stable
-> TSC, however its also a dual socket, which I think defeats the
-> stable-ness.
+[ Impact: fix potential boot crash on cpu-less UV nodes ]
 
-> What clocksource do you have?
->
-> cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20090417142447.GA23759@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-tsc
 
-> Also, looking over the rest of the scheduler tick code, I can't really
-> see what would be so expensive.
+---
+ arch/x86/kernel/apic/x2apic_uv_x.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-The expensiveness may be fine if we can limit the number of occurences.
-Maybe the histograms for those releases give more insight.
-
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index 1248318..49d2f5c 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -19,6 +19,7 @@
+ #include <linux/timer.h>
+ #include <linux/cpu.h>
+ #include <linux/init.h>
++#include <linux/io.h>
+ 
+ #include <asm/uv/uv_mmrs.h>
+ #include <asm/uv/uv_hub.h>
+@@ -34,6 +35,17 @@ DEFINE_PER_CPU(int, x2apic_extra_bits);
+ 
+ static enum uv_system_type uv_system_type;
+ 
++static int early_get_nodeid(void)
++{
++	union uvh_node_id_u node_id;
++	unsigned long *mmr;
++
++	mmr = early_ioremap(UV_LOCAL_MMR_BASE | UVH_NODE_ID, sizeof(*mmr));
++	node_id.v = *mmr;
++	early_iounmap(mmr, sizeof(*mmr));
++	return node_id.s.node_id;
++}
++
+ static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+ 	if (!strcmp(oem_id, "SGI")) {
+@@ -42,6 +54,8 @@ static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ 		else if (!strcmp(oem_table_id, "UVX"))
+ 			uv_system_type = UV_X2APIC;
+ 		else if (!strcmp(oem_table_id, "UVH")) {
++			__get_cpu_var(x2apic_extra_bits) =
++				early_get_nodeid() << (UV_APIC_PNODE_SHIFT - 1);
+ 			uv_system_type = UV_NON_UNIQUE_APIC;
+ 			return 1;
+ 		}
