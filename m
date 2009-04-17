@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZDQIdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbZDQIlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbZDQIdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 04:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbZDQIdp
+	id S1759303AbZDQIlW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 04:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZDQIlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 04:33:45 -0400
-Received: from relay.atmel.no ([80.232.32.139]:51902 "EHLO relay.atmel.no"
+	Fri, 17 Apr 2009 04:41:14 -0400
+Received: from mga11.intel.com ([192.55.52.93]:41767 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753831AbZDQIdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 04:33:44 -0400
-Date: Fri, 17 Apr 2009 10:33:17 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] macb: Kconfig net device compat fixup
-Message-ID: <20090417103317.568f5e85@hskinnemoen-d830>
-In-Reply-To: <20090417094602.51ec1b21@hskinnemoen-d830>
-References: <1239953045.2837.58.camel@linux-51e8.site>
-	<20090417094602.51ec1b21@hskinnemoen-d830>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754479AbZDQIlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 04:41:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,203,1239001200"; 
+   d="scan'208";a="448762604"
+From: Weidong Han <weidong.han@intel.com>
+To: mingo@elte.hu, dwmw2@infradead.org, allen.m.kay@intel.com,
+       fenghua.yu@intel.com
+Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       Weidong Han <weidong.han@intel.com>
+Subject: [PATCH 0/5] fix bugs of x2apic/intr-remap
+Date: Fri, 17 Apr 2009 16:42:11 +0800
+Message-Id: <1239957736-6161-1-git-send-email-weidong.han@intel.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
-> > Of course really macb should be updated but in the mean time, this at
-> > least avoid randconfig problems.  
-> 
-> It doesn't look all that difficult. Could you try the below instead?
+interupt remapping was decoupled from x2apic already, but there are still
+some issues, such as doesn't ack remapped interrupts correctly, and doesn't
+remap ioapic interrupt when x2apic is not enabled.
 
-Better yet, try this one:
+This patchset fixes the ack for remapped interrupts, and alwasys enables
+interrupt remapping before ioapic setup to guarantee ioapic interrupts are
+remapped, adjusts the dependency of x2apic and interrupt remapping in
+lapic_resume. In addition, add option "nointremap" to disable interrupt
+remapping.
 
-http://patchwork.ozlabs.org/patch/25861/
+The patchset can be applied on linux head. Thanks.
 
-which is the one that has been applied to -next.
+Weidong Han (5):
+  docs: add nox2apic back to kernel-parameters.txt
+  x86,intr-remap: fix ack for interrupt remapping
+  x86, intr-remap: enable interrupt remapping early
+  x86, intr-remap: add option to disable interrupt remapping
+  x86: fix x2apic/intr-remap resume
 
-Haavard
+ Documentation/kernel-parameters.txt |    5 ++
+ arch/x86/include/asm/apic.h         |   15 +-----
+ arch/x86/kernel/apic/apic.c         |   91 +++++++++++++++++------------------
+ arch/x86/kernel/apic/io_apic.c      |   32 ++----------
+ drivers/pci/intel-iommu.c           |    9 ----
+ drivers/pci/intr_remapping.c        |   39 ++++++++++-----
+ include/linux/dmar.h                |    1 +
+ 7 files changed, 84 insertions(+), 108 deletions(-)
+
