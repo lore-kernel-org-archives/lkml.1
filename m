@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZDQRpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbZDQRpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbZDQRpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762233AbZDQRow
+	id S1762326AbZDQRpV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762261AbZDQRot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:44:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51068 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762280AbZDQRou (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:44:50 -0400
-Date: Fri, 17 Apr 2009 10:32:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: David Miller <davem@davemloft.net>, paulmck@linux.vnet.ibm.com,
-       dada1@cosmosbay.com, shemminger@vyatta.com, kaber@trash.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
-In-Reply-To: <1239988979.23397.4841.camel@laptop>
-Message-ID: <alpine.LFD.2.00.0904171028070.4042@localhost.localdomain>
-References: <20090416215033.3e648a7a@nehalam>  <49E810B0.9000906@cosmosbay.com> <20090417054032.GD6885@linux.vnet.ibm.com>  <20090417.010710.59150850.davem@davemloft.net> <1239988979.23397.4841.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Apr 2009 13:44:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50324 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762254AbZDQRos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 13:44:48 -0400
+Date: Fri, 17 Apr 2009 13:39:55 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Message-ID: <20090417173955.GF29086@redhat.com>
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239740480-28125-2-git-send-email-righi.andrea@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 14, 2009 at 10:21:12PM +0200, Andrea Righi wrote:
 
+[..]
+> +4.2. Buffered I/O (write-back) tracking
+> +
+> +For buffered writes the scenario is a bit more complex, because the writes in
+> +the page cache are processed asynchronously by kernel threads (pdflush), using
+> +a write-back policy. So the real writes to the underlying block devices occur
+> +in a different I/O context respect to the task that originally generated the
+> +dirty pages.
+> +
+> +The I/O bandwidth controller uses the following solution to resolve this
+> +problem.
+> +
+> +If the operation is a buffered write, we can charge the right cgroup looking at
+> +the owner of the first page involved in the I/O operation, that gives the
+> +context that generated the I/O activity at the source. This information can be
+> +retrieved using the page_cgroup functionality originally provided by the cgroup
+> +memory controller [4], and now provided specifically by the bio-cgroup
+> +controller [5].
+> +
+> +In this way we can correctly account the I/O cost to the right cgroup, but we
+> +cannot throttle the current task in this stage, because, in general, it is a
+> +different task (e.g., pdflush that is processing asynchronously the dirty
+> +page).
+> +
+> +For this reason, all the write-back requests that are not directly submitted by
+> +the real owner and that need to be throttled are not dispatched immediately in
+> +submit_bio(). Instead, they are added into an rbtree and processed
+> +asynchronously by a dedicated kernel thread: kiothrottled.
+> +
 
-On Fri, 17 Apr 2009, Peter Zijlstra wrote:
-> 
-> Since its a full broadcast, we can do that _today_ using on_each_cpu().
-> But whatever way we turn this, this will be a very expensive operation.
-> Imagine doing that on your 256-way for every iptables rules change.
+Hi Andrea,
 
-Well, you _could_ just have a per-CPU bit of "have I used nf rules since 
-the last update", and skip those CPU's. Use memory ordering to check the 
-bits (set the bit _before_ looking up a NF rule, and check them _after_ 
-doing the update, and have a barrier in between if you really think it 
-matters).
+I am trying to go through your patches now and also planning to test it
+out. While reading the documentation async write handling interested
+me. IIUC, looks like you are throttling writes once they are being 
+written to the disk (either by pdflush or in the context of the process
+because vm_dirty_ratio crossed etc).
 
-Remember: the cost was never about a single filter rule update. The cost 
-of a single one is almost immaterial, as long as it's not in hundreds of 
-milliseconds. It's the cost of people building up things incrementally 
-that caused this thing.
+If that's the case, will a process not see an increased rate of writes
+till we are not hitting dirty_background_ratio?
 
-So if you have 200 "iptables" commands in a sequence, and especially 
-during bootup, a trivial "has the old rule been ever even looked at on 
-this CPU" would already fix the issue. Because it would always be zero in 
-the only case where it matters.
+Secondly, if above is giving acceptable performance resutls, then we
+should be able to provide max bw control at IO scheduler level (along
+with proportional bw control)?
 
-This is, of course, what we do for the TLB flushing issue. We don't want 
-to send IPI's to all CPU's, and in 99.999% of all cases we don't need to, 
-because the other CPU's never even loaded the MM.
+So instead of doing max bw and proportional bw implementation in two
+places with the help of different controllers, I think we can do it
+with the help of one controller at one place. 
 
-			Linus
+Please do have a look at my patches also to figure out if that's possible
+or not. I think it should be possible.
+
+Keeping both at single place should simplify the things.
+
+Thanks
+Vivek
