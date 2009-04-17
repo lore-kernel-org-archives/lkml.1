@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbZDQRmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbZDQRnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761552AbZDQRmf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbZDQRmZ
+	id S1761637AbZDQRnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760353AbZDQRnC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:42:25 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:50451 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758066AbZDQRmZ (ORCPT
+	Fri, 17 Apr 2009 13:43:02 -0400
+Received: from [80.94.93.8] ([80.94.93.8]:60601 "EHLO mail1.aihs.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1759949AbZDQRnA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:42:25 -0400
-Message-ID: <49E8BF87.1040201@vlnb.net>
-Date: Fri, 17 Apr 2009 21:42:31 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 17 Apr 2009 13:43:00 -0400
+Message-ID: <20090417061803.671369x4x1gwel8g@80.94.93.8>
+Date: Fri, 17 Apr 2009 06:18:03 +0200
+From: "Mrs.Z. Yubao " <z.yubao@gmail.com>
+Reply-to: chensdesk@gmail.com
+To: undisclosed-recipients:;
+Subject: RE:MESSAGE
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Daniel Debonzi <debonzi@linux.vnet.ibm.com>,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and 	implementation.
-References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> 	<49E85F1C.7040106@vlnb.net> <49E8832F.6070302@linux.vnet.ibm.com> 	<ac3eb2510904170724l654b00b4k79156138f9fd926d@mail.gmail.com> 	<49E8A551.7050307@linux.vnet.ibm.com> <ac3eb2510904170903n4fa28bfdud80fe25b61be3c2a@mail.gmail.com>
-In-Reply-To: <ac3eb2510904170903n4fa28bfdud80fe25b61be3c2a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19chgFzEewpSLddNrWe0LmD8Ctz8GPmtsAYN9E
- hOhdO7vKlQhjauDf9TxYznyUGvViwLYUOkn2phx/hH+X+6cKSH
- zNU74dq/ktty55SQCWhEw==
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers, on 04/17/2009 08:03 PM wrote:
-> On Fri, Apr 17, 2009 at 17:50, Daniel Debonzi
-> <debonzi@linux.vnet.ibm.com> wrote:
->> Do you mean that uses struct device is the right way to do it instead of
->> kobjects or it is just a option to get things on right places into sysfs?
-> 
-> You can not put kobjects in /sys/devices/ and there will be no
-> disconnected kobject tree just for scsi, unless the scsi maintainers
-> really want want that, and then they should create their own
-> filesystem instead, and not use kobjects at all.
 
-Perhaps I'm missing something, but why do you think sysfs hierarchy for 
-a SCSI target subsystem can't be put anywhere, but only in /sys/devices?
+From;Mrs.Z. Yuboa
+Beijing- China
+Email: z.yubao@gmail.com
+                                                                        
+                                                               Date:  
+16th April 2009
 
-Consider /sys/class/scsi_host/ as an example. It is very close to what 
-SCST needs.
 
-And don't forget a SCSI target subsystem, basically, has from 
-implementation POV in common with the regular SCSI (initiator) subsystem 
-only some constants for commands and errors and "SCSI" word in the name. 
-All the internal processing is completely different, similarly to 
-difference between Firefox and Apache, mutt and sendmail, NFS client and 
-server.
+Dear,
+My Name is Mrs. Z. Yubao, I am from china a widow with two little  
+daughters, My husband passed on after along struggle with cancer.
+A few months ago as I was going through my late husband?s documents I  
+found a Certificate of deposit/ time deposit for  in favor of my late  
+husband and since then I have contacted the financial institution in  
+Europe and they have confirmed  that with proper documentation   that   
+the funds can be transferred to any account for investment purposes.
+Therefore I am contacting you now in anticipation that you will stand  
+as my Investor to pull $57m  from the total deposit  and after all  
+documentation is done in your name, the funds will be transferred into  
+your nominated account for investment purposes.
+You will be compensated with 25% of the amount to be transferred to  
+you for investment that you will do for my Family.
+If you are the right person for the, please send your letter of intent  
+to my family representative :(Mr. Chen Zhe Quan ) on his email :  
+chensdesk@gmail.com and his telephone number ; +8613134482821   give  
+him a call as soon as possible.
+I will appreciate your urgent response.
+Regards
 
->> I don't know this struct closely but my first impression looking to the
->> source code is that it is tied with hardware and has some complexity we
->> probably don't need. What do you think?
-> 
-> If you want to integrate with the current scsi devices/objects, which
-> is the only sensible option I think, you have to use struct device
-> devices, kobjects will not get a classification in sysfs, and will be
-> invisible for userspace tools unless you do random readdir() in
-> /sys/devices/ to find them.
-> 
-> Kay
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Mrs.Z. Yubao
+
+
+
 
