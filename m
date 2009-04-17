@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbZDQHcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbZDQHcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759497AbZDQHcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZDQHcL
+	id S1759630AbZDQHcj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759551AbZDQHc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:32:11 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:60971 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753295AbZDQHcJ (ORCPT
+	Fri, 17 Apr 2009 03:32:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:21257 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759549AbZDQHc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:32:09 -0400
-Date: Fri, 17 Apr 2009 16:32:08 +0900 (JST)
-Message-Id: <20090417.163208.39173254.ryov@valinux.co.jp>
-To: yoshikawa.takuya@oss.ntt.co.jp
-Cc: righi.andrea@gmail.com, menage@google.com, balbir@linux.vnet.ibm.com,
-       guijianfeng@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <49E7E037.9080004@oss.ntt.co.jp>
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
-	<1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
-	<49E7E037.9080004@oss.ntt.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 03:32:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MB1NgdaZNVAjz/sjhMB5dzG7kg0Yd3NO6tIot5kw5npA1x+MKpUdItJziNsaIlwmG+
+         dk+r8dLYzkj1Su16EPnNhgEuEZsWUeAofHpTdvJUjPyhkVYgFI46FofVMkdfCBX/wwip
+         EMlfrTuOtCKohaYmTyCkpFXFStRS5/R6GZpFk=
+Date: Fri, 17 Apr 2009 16:32:23 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH] loop: use BIO list management functions
+Message-ID: <20090417073223.GB3367@localhost.localdomain>
+References: <20090417063217.GA3515@localhost.localdomain> <20090417063702.GA16744@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090417063702.GA16744@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Fri, Apr 17, 2009 at 02:37:02AM -0400, Christoph Hellwig wrote:
+> >  /*
+> > - * BIO list managment for use by remapping drivers (e.g. DM or MD).
+> > + * BIO list management for use by remapping drivers (e.g. DM or MD) and loop.
+> >   *
+> 
+> 
+> I don't think this needs changing, that was just examples.
 
-From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-Date: Fri, 17 Apr 2009 10:49:43 +0900
-
-> > +config CGROUP_BIO
-> > +	bool "Block I/O cgroup subsystem"
-> > +	depends on CGROUPS && BLOCK
-> > +	select MM_OWNER
-> > +	help
-> > +	  Provides a Resource Controller which enables to track the onwner
-> > +	  of every Block I/O requests.
-> > +	  The information this subsystem provides can be used from any
-> > +	  kind of module such as dm-ioband device mapper modules or
-> > +	  the cfq-scheduler.
->
->o I can understand this kind of information will be effective for io
->   controllers but how about cfq-scheduler? Don't we need some changes to
->   make cfq use this kind of information?
-
-You need to modify cfq-scheduler to use bio-cgruop.
-
-Thanks,
-Ryo Tsuruta
+OK. I kept only s/managment/management/ typo in new patch.
