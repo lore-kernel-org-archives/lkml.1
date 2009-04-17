@@ -1,142 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbZDQTFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZDQTHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbZDQTFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 15:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZDQTEn
+	id S1754431AbZDQTHj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 15:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbZDQTHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 15:04:43 -0400
-Received: from kroah.org ([198.145.64.141]:34574 "EHLO coco.kroah.org"
+	Fri, 17 Apr 2009 15:07:23 -0400
+Received: from kroah.org ([198.145.64.141]:51190 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755446AbZDQTEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 15:04:41 -0400
-Date: Fri, 17 Apr 2009 12:01:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] STAGING patches for 2.6.31-rc2 tree
-Message-ID: <20090417190148.GC3548@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751966AbZDQTHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 15:07:22 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Alex Chiang <achiang@hp.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/10] sysfs: don't use global workqueue in sysfs_schedule_callback()
+Date: Fri, 17 Apr 2009 12:04:25 -0700
+Message-Id: <1239995074-4065-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <20090417190144.GB3548@kroah.com>
+References: <20090417190144.GB3548@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some patches for your 2.6.31-rc2 git tree.
+From: Alex Chiang <achiang@hp.com>
 
-It contains:
-	- more netdev_ops fixes
-	- pohmelfs update to work properly now.
-	- android binder driver fixes as found by Al Viro
-	- other bugfixes and build fixes.
+A sysfs attribute using sysfs_schedule_callback() to commit suicide
+may end up calling device_unregister(), which will eventually call
+a driver's ->remove function.
 
-All of these are contained within the drivers/staging tree, and have
-been in the linux-next and -mm trees for a while now.
+Drivers may call flush_scheduled_work() in their shutdown routines,
+in which case lockdep will complain with something like the following:
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+  =============================================
+  [ INFO: possible recursive locking detected ]
+  2.6.29-rc8-kk #1
+  ---------------------------------------------
+  events/4/56 is trying to acquire lock:
+  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
 
-thanks,
+  but task is already holding lock:
+  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
 
-greg k-h
+  other info that might help us debug this:
+  3 locks held by events/4/56:
+  #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+  #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+  #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c10d1>] remove_callback+0x21/0x40
 
---------------
+  stack backtrace:
+  Pid: 56, comm: events/4 Not tainted 2.6.29-rc8-kk #1
+  Call Trace:
+  [<ffffffff8026dfcd>] validate_chain+0xb7d/0x1260
+  [<ffffffff8026eade>] __lock_acquire+0x42e/0xa40
+  [<ffffffff8026f148>] lock_acquire+0x58/0x80
+  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+  [<ffffffff8025800d>] flush_workqueue+0x4d/0xa0
+  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+  [<ffffffff80258070>] flush_scheduled_work+0x10/0x20
+  [<ffffffffa0144065>] e1000_remove+0x55/0xfe [e1000e]
+  [<ffffffff8033ee30>] ? sysfs_schedule_callback_work+0x0/0x50
+  [<ffffffff803bfeb2>] pci_device_remove+0x32/0x70
+  [<ffffffff80441da9>] __device_release_driver+0x59/0x90
+  [<ffffffff80441edb>] device_release_driver+0x2b/0x40
+  [<ffffffff804419d6>] bus_remove_device+0xa6/0x120
+  [<ffffffff8043e46b>] device_del+0x12b/0x190
+  [<ffffffff8043e4f6>] device_unregister+0x26/0x70
+  [<ffffffff803ba969>] pci_stop_dev+0x49/0x60
+  [<ffffffff803baab0>] pci_remove_bus_device+0x40/0xc0
+  [<ffffffff803c10d9>] remove_callback+0x29/0x40
+  [<ffffffff8033ee4f>] sysfs_schedule_callback_work+0x1f/0x50
+  [<ffffffff8025769a>] run_workqueue+0x15a/0x230
+  [<ffffffff80257648>] ? run_workqueue+0x108/0x230
+  [<ffffffff8025846f>] worker_thread+0x9f/0x100
+  [<ffffffff8025bce0>] ? autoremove_wake_function+0x0/0x40
+  [<ffffffff802583d0>] ? worker_thread+0x0/0x100
+  [<ffffffff8025b89d>] kthread+0x4d/0x80
+  [<ffffffff8020d4ba>] child_rip+0xa/0x20
+  [<ffffffff8020cebc>] ? restore_args+0x0/0x30
+  [<ffffffff8025b850>] ? kthread+0x0/0x80
+  [<ffffffff8020d4b0>] ? child_rip+0x0/0x20
 
- .../filesystems/pohmelfs/design_notes.txt          |    5 +-
- Documentation/filesystems/pohmelfs/info.txt        |   21 ++-
- drivers/staging/android/binder.c                   |  201 +++++++++++++++-----
- drivers/staging/at76_usb/at76_usb.c                |   20 ++-
- drivers/staging/epl/VirtualEthernetLinux.c         |   17 ++-
- drivers/staging/et131x/et131x_netdev.c             |   23 ++-
- drivers/staging/go7007/go7007-driver.c             |   15 --
- drivers/staging/go7007/wis-sony-tuner.c            |    2 +
- drivers/staging/line6/audio.c                      |    9 +-
- drivers/staging/otus/usbdrv.c                      |   47 +++--
- drivers/staging/otus/zdusb.c                       |    3 +-
- drivers/staging/otus/zdusb.h                       |    4 +
- drivers/staging/pohmelfs/config.c                  |   61 ++++++-
- drivers/staging/pohmelfs/dir.c                     |   24 ++--
- drivers/staging/pohmelfs/inode.c                   |  137 ++++++++++---
- drivers/staging/pohmelfs/lock.c                    |    3 +-
- drivers/staging/pohmelfs/net.c                     |   72 ++------
- drivers/staging/pohmelfs/netfs.h                   |   21 +-
- drivers/staging/pohmelfs/trans.c                   |   33 +--
- drivers/staging/rt2860/rt_main_dev.c               |   25 ++-
- drivers/staging/rt2870/rt2870.h                    |    1 +
- drivers/staging/rt2870/rt_main_dev.c               |   28 ++--
- drivers/staging/rt3070/rt_main_dev.c               |   29 ++--
- drivers/staging/slicoss/README                     |   31 +++-
- drivers/staging/slicoss/slicoss.c                  |   25 ++-
- drivers/staging/stlc45xx/Kconfig                   |    2 +-
- drivers/staging/sxg/sxg.c                          |  127 ++++++++----
- drivers/staging/uc2322/aten2011.c                  |   28 +---
- drivers/staging/wlan-ng/p80211netdev.c             |   20 ++-
- 29 files changed, 663 insertions(+), 371 deletions(-)
+Although we know that the device_unregister path will never acquire
+a lock that a driver might try to acquire in its ->remove, in general
+we should never attempt to flush a workqueue from within the same
+workqueue, and lockdep rightly complains.
 
----------------
+So as long as sysfs attributes cannot commit suicide directly and we
+are stuck with this callback mechanism, put the sysfs callbacks on
+their own workqueue instead of the global one.
 
-Alan Cox (1):
-      Staging: aten2011: Clean up some tty bits
+This has the side benefit that if a suicidal sysfs attribute kicks
+off a long chain of ->remove callbacks, we no longer induce a long
+delay on the global queue.
 
-Alexander Beregalov (11):
-      Staging: at76: convert to netdev_ops
-      Staging: epl: convert to netdev_ops
-      Staging: et131x: convert to netdev_ops
-      Staging: otus: convert to netdev_ops
-      Staging: rt2860: convert to netdev_ops
-      Staging: rt2870: convert to netdev_ops
-      Staging: rt3070: convert to netdev_ops
-      Staging: slicoss: convert to netdev_ops
-      Staging: sxg: convert to netdev_ops
-      Staging: wlan-ng: convert to netdev_ops
-      Staging: line6: convert to snd_card_create()
+This also fixes a missing module_put in the error path introduced
+by sysfs-only-allow-one-scheduled-removal-callback-per-kobj.patch.
 
-Arve Hjønnevåg (8):
-      Staging: binder: Remove VM_EXEC check.
-      Staging: binder: Don't create two proc entries with the same name if the driver is opened twice in one process.
-      Staging: binder: mmap fixes.
-      Staging: binder: Add more offset validation.
-      Staging: binder: Keep a reference to the files_struct while the driver is mmapped
-      Staging: binder: Cast to uintptr_t instead of size_t when aligning pointers
-      Staging: binder: Prevent the wrong thread from adding a transaction to the stack.
-      Staging: binder: Defer flush and release operations to avoid deadlocks.
+We never destroy the workqueue, but I'm not sure that's a
+problem.
 
-Daniele Napolitano (2):
-      Staging: rt2870: add ID for Sitecom WL-315
-      otus/zdusb.c: additional USB idnetifier
+Reported-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Tested-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/sysfs/file.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-Evgeniy Polyakov (13):
-      Staging: pohmelfs: Populate dentry cache when receiving the new readdir entry.
-      Staging: Pohmelfs: Move parent lock to the place where we really have to send a lookup request to the server.
-      Staging: Pohmelfs: Disable read lock in pohmelfs_getattr().
-      Staging: Pohmelfs: Added 'need_lock' variable into debug print.
-      Staging: Pohmelfs: Set NETFS_INODE_REMOTE_SYNCED and clear NETFS_INODE_OWNED bits in the root inode.
-      Staging: Pohmelfs: Extend remount option.
-      Staging: Pohmelfs: Sync fs before killing it, since dentry cache is shrunk before writeback is invoked via generic_shutdown_super()
-      Staging: Pohmelfs: Reduce debugging noise about non-existing objects.
-      Staging: Pohmelfs: Use wait_on_page_timeout when waiting for remote directory sync instead of hardcoded 25 seconds.
-      Staging: Pohmelfs: Drop ftrans debugging code.
-      Staging: Pohmelfs: Added ->show_stats() callback.
-      Staging: Pohmelfs: Added IO permissions and priorities.
-      Staging: Pohmelfs: Add load balancing between network states with the same priority.
-
-Geert Uytterhoeven (1):
-      Staging: STLC45XX should depend on GENERIC_HARDIRQS
-
-Greg Kroah-Hartman (1):
-      Staging: go7007: fix build issues
-
-Lior Dotan (1):
-      Revert Staging: SLICOSS: use gfp_kernel where possible
-
-Mithlesh Thukral (4):
-      Staging: sxg: Fire watchdog timer at end of open routine to change the link
-      Staging: sxg: Use correct queue_id for transmitting non-TCP packets
-      Staging: sxg: Fix sleep in atomic context warning while loading driver
-      Staging: sxg: Fix leaks and checksum errors in transmit code path
-
-Stephen Hemminger (1):
-      staging: slicoss: update README
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 289c43a..979e937 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -667,6 +667,7 @@ struct sysfs_schedule_callback_struct {
+ 	struct work_struct	work;
+ };
+ 
++static struct workqueue_struct *sysfs_workqueue;
+ static DEFINE_MUTEX(sysfs_workq_mutex);
+ static LIST_HEAD(sysfs_workq);
+ static void sysfs_schedule_callback_work(struct work_struct *work)
+@@ -715,11 +716,20 @@ int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
+ 	mutex_lock(&sysfs_workq_mutex);
+ 	list_for_each_entry_safe(ss, tmp, &sysfs_workq, workq_list)
+ 		if (ss->kobj == kobj) {
++			module_put(owner);
+ 			mutex_unlock(&sysfs_workq_mutex);
+ 			return -EAGAIN;
+ 		}
+ 	mutex_unlock(&sysfs_workq_mutex);
+ 
++	if (sysfs_workqueue == NULL) {
++		sysfs_workqueue = create_workqueue("sysfsd");
++		if (sysfs_workqueue == NULL) {
++			module_put(owner);
++			return -ENOMEM;
++		}
++	}
++
+ 	ss = kmalloc(sizeof(*ss), GFP_KERNEL);
+ 	if (!ss) {
+ 		module_put(owner);
+@@ -735,7 +745,7 @@ int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
+ 	mutex_lock(&sysfs_workq_mutex);
+ 	list_add_tail(&ss->workq_list, &sysfs_workq);
+ 	mutex_unlock(&sysfs_workq_mutex);
+-	schedule_work(&ss->work);
++	queue_work(sysfs_workqueue, &ss->work);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(sysfs_schedule_callback);
+-- 
+1.6.2
 
