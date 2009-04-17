@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbZDQSLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932347AbZDQSL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932303AbZDQSLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932236AbZDQSKi
+	id S932347AbZDQSL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZDQSLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:10:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44939 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932143AbZDQSKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:10:35 -0400
-Date: Fri, 17 Apr 2009 23:39:06 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-Message-ID: <20090417180906.GA8363@amit-x200.pnq.redhat.com>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com> <1239910921.21233.98.camel@think.oraclecorp.com>
+	Fri, 17 Apr 2009 14:11:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:52285 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932284AbZDQSLC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 14:11:02 -0400
+Message-ID: <49E8C63D.8090901@vlnb.net>
+Date: Fri, 17 Apr 2009 22:11:09 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239910921.21233.98.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bart Van Assche <bart.vanassche@gmail.com>
+CC: scst-devel <scst-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [Scst-devel] ISCSI-SCST performance (with also IET and STGT	data)
+References: <49D10256.8030307@vlnb.net>	<e2e108260904011314h1e0cf5c5wcdf210eee24d40d8@mail.gmail.com>	<49D4F2E1.7000507@vlnb.net> <e2e108260904040104u37953ef7x74b8713dfcf3166a@mail.gmail.com>
+In-Reply-To: <e2e108260904040104u37953ef7x74b8713dfcf3166a@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+igX3ZGkAvVS2JveWvUDZIfpWJCrAqKxeByWt
+ xAy8uKOI8l+DDIh2tpKl6oczgBcLGf7I5GLQDbHq0ALMRk9vwj
+ SKJFU6W3eaIZ3S4u61WDw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Thu) Apr 16 2009 [15:42:01], Chris Mason wrote:
-> Hello everyone,
+Bart Van Assche, on 04/04/2009 12:04 PM wrote:
+> On Thu, Apr 2, 2009 at 7:16 PM, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
+>> Bart Van Assche, on 04/02/2009 12:14 AM wrote:
+>>> I have repeated some of these performance tests for iSCSI over IPoIB
+>>> (two DDR PCIe 1.0 ConnectX HCA's connected back to back). The results
+>>> for the buffered I/O test with a block size of 512K (initiator)
+>>> against a file of 1GB residing on a tmpfs filesystem on the target are
+>>> as follows:
+>>>
+>>> write-test: iSCSI-SCST 243 MB/s; IET 192 MB/s.
+>>> read-test: iSCSI-SCST 291 MB/s; IET 223 MB/s.
+>>>
+>>> And for a block size of 4 KB:
+>>>
+>>> write-test: iSCSI-SCST 43 MB/s; IET 42 MB/s.
+>>> read-test: iSCSI-SCST 288 MB/s; IET 221 MB/s.
+>> Do you have any thoughts why writes are so bad? It shouldn't be so..
 > 
-> Here's an updated (v4) patch for ext3 data=guarded mode.  The first two
-> patches in the series are unchanged, and it looks like Linus pulled them
-> in this morning.
+> By this time I have run the following variation of the 4 KB write test:
+> * Target: iSCSI-SCST was exporting a 1 GB file residing on a tmpfs filesystem.
+> * Initiator: two processes were writing 4 KB blocks as follows:
+> dd if=/dev/zero of=/dev/sdb bs=4K seek=0 count=131072 oflag=sync &
+> dd if=/dev/zero of=/dev/sdb bs=4K seek=131072 count=131072 oflag=sync &
+> 
+> Results:
+> * Each dd process on the initiator was writing at a speed of 37.8
+> MB/s, or a combined writing speed of 75.6 MB/s.
+> * CPU load on the initiator system during the test: 2.0.
+> * According to /proc/interrupts, about 38000 mlx4-comp-0 interrupts
+> were triggered per second.
+> 
+> These results confirm that the initiator system was the bottleneck
+> during the 4 KB write test, not the target system.
 
-I had written a small program that calculates the time needed to allocate
-a file and zero it using various methods (posix_fallocate, mmap, 4k-chunk
-writes, 8k-chunk writes). I did this on a 20G partition with each method
-creating a file 4G in size. The system has 3G RAM. The program that does
-this is at
+If so with oflag=direct you should have a performance gain, because you 
+will eliminate a data copy.
 
-http://fedorapeople.org/gitweb?p=amitshah/public_git/alloc-perf.git;a=blob;f=test-file-zero-alloc-speed.c;hb=HEAD
+> Bart.
+> 
+> ------------------------------------------------------------------------------
+> _______________________________________________
+> Scst-devel mailing list
+> Scst-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/scst-devel
+> 
 
-with the script to run it for the multiple filesystems at
-
-http://fedorapeople.org/gitweb?p=amitshah/public_git/alloc-perf.git;a=blob;f=run_test.sh;hb=HEAD
-
-I have a few results from those runs, time in seconds:
-
-# 4GiB file, kernel b0cbc861a3c05e634520b049b5cc27ad6febb51f
-
-filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
-ext2		74		96	761		81
-ext3-writeback	87		97	202		93
-ext3-ordered	86		94	134		104
-ext4		0		84	120		91
-xfs		0		84	274		81
-reiserfs	85		84	187		98
-btrfs		0		86	121		85
-
-# 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
-
-filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
-ext3-guarded	85		97	459		90
-ext3-writeback	86		95	140		94
-ext3-ordered	86		96	277		95
-btrfs		0		81	499		93
-xfs		0		79	184		84
-
-These were with a desktop running with a few terminal sessions and one
-konqueror session (to gauge the times a user will actually see while
-working on her desktop).
-
-Running the test in single user mode, I get the following results:
-
-# 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
-
-filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
-ext3-guarded	84		86	163		91
-ext3-writeback	84		88	217		91
-ext3-ordered	84		86	226		91
-btrfs		0		76	86		79
-ext4		0		73	195		76
-
-		Amit
