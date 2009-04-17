@@ -1,93 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbZDQGVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZDQGXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbZDQGVq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 02:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZDQGVf
+	id S1756356AbZDQGXA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 02:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZDQGWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 02:21:35 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:16110 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbZDQGVe (ORCPT
+	Fri, 17 Apr 2009 02:22:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56940 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbZDQGWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 02:21:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :user-agent;
-        b=uXucVAimNacBpl4RdzInZxDhGp2f9fUE4fhJEOw2HV3OfSmHFgCZCg/ERBdX+ZpiQf
-         HMscDsVVScpIbixOp7ilmDbmmZ9XHA1Yhunx4n4WMtltWY4xtrg+7X5J6cDXscO7AZBl
-         wNc6bR/216ccXd20XBSqYPSyAeZo48QrRaK2w=
-Date: Fri, 17 Apr 2009 14:20:04 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com
-Subject: [PATCH]v2 fix error on drivers/ata/pata_legacy.c
-Message-ID: <20090417062004.GA6201@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+	Fri, 17 Apr 2009 02:22:51 -0400
+Subject: Re: [PATCH 1/2 v2] tracing/events: provide string with undefined
+ size  support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com>
+References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com>
+	 <1239912812.23397.3432.camel@laptop>
+	 <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 17 Apr 2009 08:22:40 +0200
+Message-Id: <1239949360.23397.4065.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix those errors:
+On Thu, 2009-04-16 at 22:28 +0200, Frédéric Weisbecker wrote:
+> 2009/4/16 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> > On Thu, 2009-04-16 at 22:00 +0200, Frederic Weisbecker wrote:
+> >> Impact: less memory usage for tracing
+> >>
+> >> This patch provides the support for dynamic size strings on
+> >> event tracing.
+> >>
+> >> The key concept is to use a structure with an ending char array field of
+> >> undefined size and use such ability to allocate the minimal size on the ring
+> >> buffer to make the entry fit inside as opposite to a fixed length strings with
+> >> upper bound.
+> >>
+> >> This patch provides one new macro:
+> >>
+> >> -__ending_string(name, src)
+> >>
+> >> This one declares the string to the structure inside TP_STRUCT__entry.
+> >> You need to provide the name of the string field and the source that will be
+> >> copied inside.
+> >> Two constraints: only one __ending_string() per TRACE_EVENT can be added and
+> >> it must be the last field to be declared. Hence the __ending prefix.
+> >>
+> >> This macro will declare the necessary field and will also add the dynamic
+> >> size of the string needed for the ring buffer entry allocation.
+> >>
+> >> It also support filtering because these strings behave essentially
+> >> like usual fixed length string.
+> >
+> > can't we simply do __string(name, src) and output something like:
+> >
+> >  struct {
+> >   u16 size;
+> >   char str[0];
+> >  } name;
+> >
+> > That would get rid of this __ending_ wart.
+> >
+> >
+> 
+> Hmm, I don't understand.
+> Such a thing doesn't seem to work. Once we fill the string it would
+> override the fields that
+> follow it if it's not at the end.
 
-drivers/ata/pata_legacy.c: In function ‘pdc_data_xfer_vlb’:
-drivers/ata/pata_legacy.c:289: error: ‘ap’ undeclared (first use in this function)
-drivers/ata/pata_legacy.c:289: error: (Each undeclared identifier is reported only once
-drivers/ata/pata_legacy.c:289: error: for each function it appears in.)
-drivers/ata/pata_legacy.c: At top level:
-drivers/ata/pata_legacy.c:869: error: ‘ATA_PFLAG_PIO32_CHANGE’ undeclared here (not in a
-+function)
-make[2]: *** [drivers/ata/pata_legacy.o] Error 1
-make[1]: *** [drivers/ata] Error 2
+Just grow the thing to fit whatever string length -- rather common
+pattern:
 
+struct foo {
+  int length;
+  char data[0];
+};
 
->From 80584279bc9dbc2d5dbb7c9dcfd4dcc6b39ad70c Mon Sep 17 00:00:00 2001
-From: Zhenwen Xu <Helight.Xu@gmail.com>
-Date: Fri, 17 Apr 2009 14:18:18 +0800
-Subject: [PATCH] fix error on drivers/ata/pata_legacy.c
+struct foo *bar = kmalloc(sizeof(struct foo) + data_size);
 
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
----
- drivers/ata/pata_legacy.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+and bob's your uncle.
 
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index 6f985be..bb30589 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -285,10 +285,11 @@ static unsigned int pdc_data_xfer_vlb(struct ata_device *dev,
- 			unsigned char *buf, unsigned int buflen, int rw)
- {
- 	int slop = buflen & 3;
-+	struct ata_port *ap = dev->link->ap;
-+
- 	/* 32bit I/O capable *and* we need to write a whole number of dwords */
- 	if (ata_id_has_dword_io(dev->id) && (slop == 0 || slop == 3)
- 					&& (ap->pflags & ATA_PFLAG_PIO32)) {
--		struct ata_port *ap = dev->link->ap;
- 		unsigned long flags;
- 
- 		local_irq_save(flags);
-@@ -866,7 +867,7 @@ static struct legacy_controller controllers[] = {
- 			0,			0,			NULL },
- 	{"PDC20230",	&pdc20230_port_ops,	0x7,
- 			ATA_FLAG_NO_IORDY,
--			ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32_CHANGE,	NULL },
-+			ATA_PFLAG_PIO32 | ATA_PFLAG_PIO32CHANGE,	NULL },
- 	{"HT6560A",	&ht6560a_port_ops,	0x07,
- 			ATA_FLAG_NO_IORDY,	0,			NULL },
- 	{"HT6560B",	&ht6560b_port_ops,	0x1F,
--- 
-1.5.6.5
-
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
