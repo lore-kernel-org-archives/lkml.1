@@ -1,70 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbZDQM5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZDQNGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760731AbZDQM5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 08:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZDQM50
+	id S1757900AbZDQNGs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 09:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZDQNGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 08:57:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59328 "EHLO
+	Fri, 17 Apr 2009 09:06:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37453 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753264AbZDQM50 (ORCPT
+	with ESMTP id S1751666AbZDQNGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 08:57:26 -0400
-Date: Fri, 17 Apr 2009 15:00:30 +0200
+	Fri, 17 Apr 2009 09:06:39 -0400
+Date: Fri, 17 Apr 2009 15:09:44 +0200
 From: Andi Kleen <andi@firstfloor.org>
 To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 Cc: Andi Kleen <andi@firstfloor.org>, hpa@zytor.com,
        linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH] [14/28] x86: MCE: Add MSR read wrappers for easier error injection
-Message-ID: <20090417130030.GK14687@one.firstfloor.org>
-References: <20090407507.636692542@firstfloor.org> <20090407150756.23F221D046E@basil.firstfloor.org> <49E866C7.4080707@jp.fujitsu.com>
+Subject: Re: [PATCH] [20/28] x86: MCE: Switch x86 machine check handler to Monarch election.
+Message-ID: <20090417130944.GL14687@one.firstfloor.org>
+References: <20090407507.636692542@firstfloor.org> <20090407150803.1AF0C1D046E@basil.firstfloor.org> <49E866D3.1020003@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49E866C7.4080707@jp.fujitsu.com>
+In-Reply-To: <49E866D3.1020003@jp.fujitsu.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 08:23:51PM +0900, Hidetoshi Seto wrote:
-> Andi Kleen wrote:
-> > This will be used by future patches to allow machine check error injection.
-> > Right now it's a nop, except for adding some wrappers around the MSR reads.
-> > 
-> > This is early in the sequence to avoid too many conflicts.
-> > 
-> > Andi Kleen <ak@linux.intel.com>
-> > 
-> > 
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > 
-> > ---
-> >  arch/x86/kernel/cpu/mcheck/mce_64.c |   37 ++++++++++++++++++++++++------------
-> >  1 file changed, 25 insertions(+), 12 deletions(-)
-> > 
-> > Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-> > ===================================================================
-> > --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:09:59.000000000 +0200
-> > +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:12.000000000 +0200
-> > @@ -171,6 +171,19 @@
-> >  	panic(msg);
-> >  }
+
+Thanks for your review.
+
+On Fri, Apr 17, 2009 at 08:24:03PM +0900, Hidetoshi Seto wrote:
+> > +		goto out;
+> > +	if ((s64)*t < SPINUNIT) {
+> > +		/* CHECKME: Make panic default for 1 too? */
+> > +		if (tolerant < 1)
+> > +			mce_panic("Timeout synchronizing machine check over CPUs",
+> > +				  NULL, NULL);
 > 
-> Since you introduce X86_MCE_INJECT in later patch,
-> how about this style?
+> Assuming that if we came here from mce_start() and panic, then I suppose no mce
+> log would be appeared on the console since no cpu have invoked mce_log(&m) yet.
 
-If someone feels strongly about that I can do that, but personally
-I would think using standard function return arguments without
-macros is more regular and more readable in general. That seems
-to be also the general trend in the source base, going away from
-magic macros.
+Well it would be rather random if the CPU who detects the timeout
+actually has something useful to report.
+More likely the useful information is in some CPU's banks who doesn't
+answer.
 
-Do you feel strongly about it?
+On the other hand the real log will come out to disk after reboot from
+the CPU registers (especially together with the new mce panic=30 default)
+
+> Is it expected behavior?
+
+Kind of expected. We could probably fix it, adding a fallback path here,
+but due to the reasons above I have my doubts it would improve things
+in practice.
+
+> > +	}
+> > +	*t -= SPINUNIT;
+> > +out:
+> > +	touch_nmi_watchdog();
+> > +	return 0;
+> > +}
+> (snip)
+> > +/*
+> > + * Start of Monarch synchronization. This waits until all CPUs have
+> > + * entered the ecception handler and then determines if any of them
+>                   ^^^^^^^^^
+>                   exception
+
+Thanks fixed. I did actually run the spell checker on the comments,
+but that one must have slipped through somehow.
+
+> 
+> > +	while (atomic_read(&mce_callin) != cpus) {
+> > +		if (mce_timed_out(&timeout)) {
+> > +			atomic_set(&global_nwo, 0);
+> > +			*order = -1;
+> > +			return no_way_out;
+> > +		}
+> > +		ndelay(SPINUNIT);
+> > +	}
+> > +
+> > +	/*
+> > +	 * Cache the global no_way_out state.
+> > +	 */
+> > +	nwo = atomic_read(&global_nwo);
+> > +
+> > +	/*
+> > +	 * Monarch starts executing now, the others wait.
+> > +	 */
+> > +	if (*order == 1) {
+> > +		atomic_set(&global_nwo, 0);
+> 
+> Monarch should clear global_nwo after all Subjects have read it.
+
+The subjects don't care about the global nwo state, it only matters to the 
+Monarch who does the panic in mce_end(). The only exception would be timeout, 
+but in this case all the decisions are local only anyways.
+We ensure that all the subjects have written it first.
 
 -Andi
-
-> 
-> #ifdef CONFIG_X86_MCE_INJECT
-> #define mce_rdmsrl(msr,v) (v) = __mce_rdmsrl((msr))
-> #define mce_wrmsrl(msr,v) __mce_wrmsrl((msr),(v))
+-- 
+ak@linux.intel.com -- Speaking for myself only.
