@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZDQH5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZDQICA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbZDQH5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZDQH5X
+	id S1758141AbZDQICA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 04:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZDQIBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:57:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33149 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754555AbZDQH5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:57:22 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Fix discard requests accounting in the diskstats
-Date: Fri, 17 Apr 2009 13:25:01 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: David Woodhouse <David.Woodhouse@intel.com>, linux-kernel@vger.kernel.org,
-       jmarchan@redhat.com
-References: <200904171144.49448.knikanth@suse.de> <20090417064912.GH4593@kernel.dk>
-In-Reply-To: <20090417064912.GH4593@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 17 Apr 2009 04:01:51 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42994 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbZDQIBu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 04:01:50 -0400
+Date: Fri, 17 Apr 2009 17:00:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: yoshikawa.takuya@oss.ntt.co.jp, righi.andrea@gmail.com, menage@google.com,
+       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       taka@valinux.co.jp, lizf@cn.fujitsu.com, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-Id: <20090417170016.5c7268f1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090417.162201.183038478.ryov@valinux.co.jp>
+References: <1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
+	<49E7E037.9080004@oss.ntt.co.jp>
+	<20090417112433.085ed604.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417.162201.183038478.ryov@valinux.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904171325.01486.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 April 2009 12:19:12 Jens Axboe wrote:
-> On Fri, Apr 17 2009, Nikanth Karthikesan wrote:
-> > When 2 discard requests are merged, the stats gets updated, but we do not
-> > update statistics normally when a discard request is issued or completed.
-> > For example the in_flight counter would be decremented when 2 discard
-> > requests are merged, but it was not at all incremented when they were
-> > issued, and in_flight counter will not be decremented, when they are
-> > completed as well.
-> >
-> > This patch fixes this by adding discard requests to the statistics.
->
-> This needs rebasing on top of this one:
->
-> http://lkml.org/lkml/2009/4/16/159
->
-> whenever that gets resubmitted as a proper, working patch.
->
+On Fri, 17 Apr 2009 16:22:01 +0900 (JST)
+Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 
-Ok. I will resend after Jerome resubmits that patch.
+> In the case where the bio-cgroup data is allocated dynamically,
+>    - Sometimes quite a large amount of memory get marked dirty.
+>      In this case it requires more kernel memory than that of the
+>      current implementation.
+>    - The operation is expansive due to memory allocations and exclusive
+>      controls by such as spinlocks.
+> 
+> In the case where the bio-cgroup data is allocated by delayed allocation, 
+>   - It makes the operation complicated and expensive, because
+>     sometimes a bio has to be created in the context of other
+>     processes, such as aio and swap-out operation.
+> 
+> I'd prefer a simple and lightweight implementation. bio-cgroup only
+> needs 4bytes unlike memory controller. The reason why bio-cgroup chose
+> this approach is to minimize the overhead.
+> 
+My point is, plz do your best to reduce memory usage here. You increase
+size of page_cgroup just because you cannot increase size of struct page.
+It's not be sane reason to increase size of this object.
+It's a cheat in my point of view.
 
-Thanks
-Nikanth
- 
-> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> >
-> > ---
-> >
-> > diff --git a/block/blk-core.c b/block/blk-core.c
-> > index 07ab754..ee960a7 100644
-> > --- a/block/blk-core.c
-> > +++ b/block/blk-core.c
-> > @@ -68,7 +68,7 @@ static void drive_stat_acct(struct request *rq, int
-> > new_io) int rw = rq_data_dir(rq);
-> >  	int cpu;
-> >
-> > -	if (!blk_fs_request(rq) || !blk_do_io_stat(rq))
-> > +	if (!rq_accountable(rq) || !blk_do_io_stat(rq))
-> >  		return;
-> >
-> >  	cpu = part_stat_lock();
-> > @@ -1698,7 +1698,7 @@ static void blk_account_io_done(struct request
-> > *req) * IO on queueing nor completion.  Accounting the containing
-> >  	 * request is enough.
-> >  	 */
-> > -	if (blk_fs_request(req) && req != &req->q->bar_rq) {
-> > +	if (rq_accountable(req) && req != &req->q->bar_rq) {
-> >  		unsigned long duration = jiffies - req->start_time;
-> >  		const int rw = rq_data_dir(req);
-> >  		struct hd_struct *part;
-> > diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> > index ba54c83..9483c02 100644
-> > --- a/include/linux/blkdev.h
-> > +++ b/include/linux/blkdev.h
-> > @@ -667,7 +667,9 @@ static inline void blk_clear_queue_full(struct
-> > request_queue *q, int sync) (REQ_NOMERGE | REQ_STARTED | REQ_HARDBARRIER
-> > | REQ_SOFTBARRIER) #define rq_mergeable(rq)	\
-> >  	(!((rq)->cmd_flags & RQ_NOMERGE_FLAGS) && \
-> > -	 (blk_discard_rq(rq) || blk_fs_request((rq))))
-> > +	 (blk_discard_rq(rq) || blk_fs_request(rq)))
-> > +#define rq_accountable(rq)	\
-> > +	(blk_discard_rq(rq) || blk_fs_request(rq))
-> >
-> >  /*
-> >   * q->prep_rq_fn return values
 
+Thanks,
+-Kame
 
