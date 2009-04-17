@@ -1,112 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbZDQOw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbZDQOwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762123AbZDQOw2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761916AbZDQOvT
+	id S1762066AbZDQOwL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761905AbZDQOvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:51:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40389 "EHLO hera.kernel.org"
+	Fri, 17 Apr 2009 10:51:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40388 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761663AbZDQOvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:51:15 -0400
-Date: Fri, 17 Apr 2009 14:49:38 GMT
-From: tip-bot for Weidong Han <weidong.han@intel.com>
+	id S1761749AbZDQOvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 10:51:13 -0400
+Date: Fri, 17 Apr 2009 14:49:49 GMT
+From: tip-bot for Jack Steiner <steiner@sgi.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.b.siddha@intel.com, weidong.han@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
-References: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
-Subject: [tip:x86/apic] x86, intr-remap: fix x2apic/intr-remap resume
-Message-ID: <tip-752b065ceacda418a1f2c956353fd7b1d55020ea@git.kernel.org>
-Git-Commit-ID: 752b065ceacda418a1f2c956353fd7b1d55020ea
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090417142242.GA23743@sgi.com>
+References: <20090417142242.GA23743@sgi.com>
+Subject: [tip:x86/urgent] x86/uv: fix init of memory-less nodes
+Message-ID: <tip-28468050e2f5410c04fd737c922f2bea73ddd690@git.kernel.org>
+Git-Commit-ID: 28468050e2f5410c04fd737c922f2bea73ddd690
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 14:49:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 14:49:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  752b065ceacda418a1f2c956353fd7b1d55020ea
-Gitweb:     http://git.kernel.org/tip/752b065ceacda418a1f2c956353fd7b1d55020ea
-Author:     Weidong Han <weidong.han@intel.com>
-AuthorDate: Fri, 17 Apr 2009 16:42:16 +0800
+Commit-ID:  28468050e2f5410c04fd737c922f2bea73ddd690
+Gitweb:     http://git.kernel.org/tip/28468050e2f5410c04fd737c922f2bea73ddd690
+Author:     Jack Steiner <steiner@sgi.com>
+AuthorDate: Fri, 17 Apr 2009 09:22:42 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 16:23:46 +0200
+CommitDate: Fri, 17 Apr 2009 16:45:29 +0200
 
-x86, intr-remap: fix x2apic/intr-remap resume
+x86/uv: fix init of memory-less nodes
 
-Interrupt remapping was decoupled from x2apic. Shouldn't check
-x2apic before resume interrupt remapping. Otherwise, interrupt
-remapping won't be resumed when x2apic is not enabled.
+Add support for nodes that have cpus but no memory.
+The current code was failing to add these nodes
+to the nodes_present_map.
 
-[ Impact: fix potential intr-remap resume hang on !x2apic ]
+[ Impact: fix potential boot crash on memory-less UV nodes. ]
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Weidong Han <weidong.han@intel.com>
-Cc: iommu@lists.linux-foundation.org
-Cc: dwmw2@infradead.org
-Cc: allen.m.kay@intel.com
-Cc: fenghua.yu@intel.com
-LKML-Reference: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20090417142242.GA23743@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apic/apic.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ arch/x86/mm/srat_64.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 0cf1eea..7b41a32 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -2032,7 +2032,7 @@ static int lapic_resume(struct sys_device *dev)
- 		return 0;
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index c7d272b..1619026 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -28,6 +28,7 @@ int acpi_numa __initdata;
+ static struct acpi_table_slit *acpi_slit;
  
- 	local_irq_save(flags);
--	if (x2apic) {
-+	if (intr_remapping_enabled) {
- 		ioapic_entries = alloc_ioapic_entries();
- 		if (!ioapic_entries) {
- 			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
-@@ -2048,8 +2048,10 @@ static int lapic_resume(struct sys_device *dev)
- 
- 		mask_IO_APIC_setup(ioapic_entries);
- 		mask_8259A();
--		enable_x2apic();
+ static nodemask_t nodes_parsed __initdata;
++static nodemask_t cpu_nodes_parsed __initdata;
+ static struct bootnode nodes[MAX_NUMNODES] __initdata;
+ static struct bootnode nodes_add[MAX_NUMNODES];
+ static int found_add_area __initdata;
+@@ -174,6 +175,7 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+ 	else
+ 		apic_id = pa->apic_id;
+ 	apicid_to_node[apic_id] = node;
++	node_set(node, cpu_nodes_parsed);
+ 	acpi_numa = 1;
+ 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+ 	       pxm, apic_id, node);
+@@ -402,7 +404,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 		return -1;
  	}
-+
-+	if (x2apic)
-+		enable_x2apic();
- #else
- 	if (!apic_pm_state.active)
- 		return 0;
-@@ -2097,10 +2099,12 @@ static int lapic_resume(struct sys_device *dev)
- 	apic_read(APIC_ESR);
  
- #ifdef CONFIG_INTR_REMAP
--	if (intr_remapping_enabled)
--		reenable_intr_remapping(EIM_32BIT_APIC_ID);
-+	if (intr_remapping_enabled) {
-+		if (x2apic)
-+			reenable_intr_remapping(EIM_32BIT_APIC_ID);
-+		else
-+			reenable_intr_remapping(EIM_8BIT_APIC_ID);
+-	node_possible_map = nodes_parsed;
++	/* Account for nodes with cpus and no memory */
++	nodes_or(node_possible_map, nodes_parsed, cpu_nodes_parsed);
  
--	if (x2apic) {
- 		unmask_8259A();
- 		restore_IO_APIC_setup(ioapic_entries);
- 		free_ioapic_entries(ioapic_entries);
-@@ -2109,7 +2113,6 @@ static int lapic_resume(struct sys_device *dev)
- 
- 	local_irq_restore(flags);
- 
--
- 	return 0;
- }
- 
+ 	/* Finally register nodes */
+ 	for_each_node_mask(i, node_possible_map)
