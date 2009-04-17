@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbZDQHqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbZDQHsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759844AbZDQHqy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZDQHql
+	id S1759884AbZDQHsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbZDQHsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:46:41 -0400
-Received: from relay.atmel.no ([80.232.32.139]:55652 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754634AbZDQHqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:46:40 -0400
-Date: Fri, 17 Apr 2009 09:46:02 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] macb: Kconfig net device compat fixup
-Message-ID: <20090417094602.51ec1b21@hskinnemoen-d830>
-In-Reply-To: <1239953045.2837.58.camel@linux-51e8.site>
-References: <1239953045.2837.58.camel@linux-51e8.site>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Fri, 17 Apr 2009 03:48:46 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:54077 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756059AbZDQHsp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 03:48:45 -0400
+Date: Fri, 17 Apr 2009 16:48:44 +0900 (JST)
+Message-Id: <20090417.164844.59671177.ryov@valinux.co.jp>
+To: akpm@linux-foundation.org
+Cc: kamezawa.hiroyu@jp.fujitsu.com, righi.andrea@gmail.com, menage@google.com,
+       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       agk@sourceware.org, axboe@kernel.dk, baramsori72@gmail.com,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090416211514.038c5e91.akpm@linux-foundation.org>
+References: <20090416174428.6bb5da21.akpm@linux-foundation.org>
+	<20090417.104432.193700511.ryov@valinux.co.jp>
+	<20090416211514.038c5e91.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Nizette wrote:
+Hi,
+
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Date: Thu, 16 Apr 2009 21:15:14 -0700
+
+> On Fri, 17 Apr 2009 10:44:32 +0900 (JST) Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 > 
-> The macb driver hasn't been updated to use net_device_ops and as such
-> should select COMPAT_NET_DEV_OPS to avoid build breakage.
+> > > > Hmm, how about iotrack-cgroup ?
+> > > > 
+> > > 
+> > > Well. blockio_cgroup has the same character count and is more specific.
+> > 
+> > How about blkio_cgroup ?
+> 
+> Sounds good.
 
-Hmmm...no other drivers do that...
+I'll rename bio-cgroup to blkio_cgroup and post the patches to this
+list nextweek.
 
-> Of course really macb should be updated but in the mean time, this at
-> least avoid randconfig problems.
-
-It doesn't look all that difficult. Could you try the below instead?
-
-Haavard
-
-=============[cut here]=====================
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Date: Fri, 17 Apr 2009 09:43:14 +0200
-Subject: [PATCH] macb: convert to net_device_ops
-
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
- drivers/net/macb.c |   19 +++++++++++++------
- 1 files changed, 13 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/macb.c b/drivers/net/macb.c
-index d473540..5656e02 100644
---- a/drivers/net/macb.c
-+++ b/drivers/net/macb.c
-@@ -1084,6 +1084,18 @@ static int macb_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- 	return phy_mii_ioctl(phydev, if_mii(rq), cmd);
- }
- 
-+static const struct net_device_ops macb_netdev_ops = {
-+	.ndo_open		= macb_open,
-+	.ndo_stop		= macb_close,
-+	.ndo_start_xmit		= macb_start_xmit,
-+	.ndo_get_stats		= macb_get_stats,
-+	.ndo_set_multicast_list	= macb_set_rx_mode,
-+	.ndo_do_ioctl		= macb_ioctl,
-+	.ndo_validate_addr	= eth_validate_addr,
-+	.ndo_change_mtu		= eth_change_mtu,
-+	.ndo_set_mac_address	= eth_mac_addr,
-+};
-+
- static int __init macb_probe(struct platform_device *pdev)
- {
- 	struct eth_platform_data *pdata;
-@@ -1159,12 +1171,7 @@ static int __init macb_probe(struct platform_device *pdev)
- 		goto err_out_iounmap;
- 	}
- 
--	dev->open = macb_open;
--	dev->stop = macb_close;
--	dev->hard_start_xmit = macb_start_xmit;
--	dev->get_stats = macb_get_stats;
--	dev->set_multicast_list = macb_set_rx_mode;
--	dev->do_ioctl = macb_ioctl;
-+	dev->netdev_ops = &macb_netdev_ops;
- 	netif_napi_add(dev, &bp->napi, macb_poll, 64);
- 	dev->ethtool_ops = &macb_ethtool_ops;
- 
--- 
-1.6.0.4
-
+Thanks,
+Ryo Tsuruta
