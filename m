@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbZDQWxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbZDQWzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759671AbZDQWxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 18:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZDQWxM
+	id S1759293AbZDQWzv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 18:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZDQWzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 18:53:12 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43004 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbZDQWxL (ORCPT
+	Fri, 17 Apr 2009 18:55:40 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1391 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbZDQWzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 18:53:11 -0400
-Date: Fri, 17 Apr 2009 23:53:06 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: hooanon05@yahoo.co.jp, hch@infradead.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: Q: NFSD readdir in linux-2.6.28
-Message-ID: <20090417225306.GO26366@ZenIV.linux.org.uk>
-References: <8036.1237474444@jrobl> <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl> <1239960739.3428.33.camel@macbook.infradead.org> <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417224350.GN26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 17 Apr 2009 18:55:40 -0400
+Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
+ updates
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: randy.dunlap@oracle.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090417151853.6f02d8d3.akpm@linux-foundation.org>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
+	 <1240003652.31116.44.camel@localhost>
+	 <20090417144117.4ac8828f.akpm@linux-foundation.org>
+	 <1240006168.31116.62.camel@localhost>
+	 <20090417151853.6f02d8d3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 15:53:49 -0700
+Message-Id: <1240008829.31116.74.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 11:43:50PM +0100, Al Viro wrote:
-> On Fri, Apr 17, 2009 at 11:17:00PM +0100, David Woodhouse wrote:
-> > It sounds like the better answer is to just make sure i_mutex is held
-> > when nfsd_buffered_readdir() calls back into the provided filldir
-> > function (we could do it in the various filldir functions themselves,
-> > _if_ they call lookup_one_len(), but I think I prefer it this way --
-> > it's simpler). Patch below for comment.
+On Fri, 2009-04-17 at 15:18 -0700, Andrew Morton wrote:
+> On Fri, 17 Apr 2009 15:09:28 -0700
+> Joe Perches <joe@perches.com> wrote:
+> > I changed the script to verify that a .git directory
+> > exists before running git.
 > 
-> Umm...  I can live with that, assuming that we don't have callbacks
-> that take i_mutex themselves.  AFAICS, everything we call there is
-> either obviously not touching i_mutex or is already called while we
-> hold i_mutex elsewhere, but I'd appreciate if somebody actually
-> tested that sucker for different versions of protocol...
+> hm, well, there's benefit in telling the user "hey, you'll get better
+> results if you run this in your git directory".
 
-BTW, why mess with taking i_mutex inside the inner loop and not
-immediately around it?
+OK, I'll add the message
+
++    if (!(-d ".git")) {
++	warn("$P: .git repository not found.\n");
++	warn("Use a .git repository for better results.\n");
++	warn("ie: git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git\n");
++	return;
++    }
+
+when I submit the patches.
+
+cheers, Joe
+
