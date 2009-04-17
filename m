@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbZDQHZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbZDQH1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758245AbZDQHZF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZDQHYt
+	id S1758730AbZDQH1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZDQH1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:24:49 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:31640 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757084AbZDQHYs (ORCPT
+	Fri, 17 Apr 2009 03:27:03 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:24165 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbZDQH1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:24:48 -0400
-Subject: Re: [PATCH] mtd: fix timeout in M25P80 driver
+	Fri, 17 Apr 2009 03:27:00 -0400
+Subject: Re: [PATCH]fix a warning on drivers/mtd/nand/cafe_nand.c
 From: Artem Bityutskiy <dedekind@infradead.org>
 Reply-To: dedekind@infradead.org
-To: Peter Horton <zero@colonel-panic.org>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090413142633.GA1560@sloth.localnet>
-References: <20090413142633.GA1560@sloth.localnet>
+To: Zhenwen Xu <helight.xu@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kyungmin.park@samsung.com,
+       linux-mtd@lists.infradead.org
+In-Reply-To: <20090410124243.GA9852@helight>
+References: <20090410124243.GA9852@helight>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 17 Apr 2009 10:24:20 +0300
-Message-Id: <1239953060.3390.239.camel@localhost.localdomain>
+Date: Fri, 17 Apr 2009 10:26:40 +0300
+Message-Id: <1239953200.3390.241.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 17 Apr 2009 07:24:22.0541 (UTC) FILETIME=[878DA3D0:01C9BF2D]
+X-OriginalArrivalTime: 17 Apr 2009 07:26:42.0522 (UTC) FILETIME=[DAFD0BA0:01C9BF2D]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-13 at 15:26 +0100, Peter Horton wrote:
-> Extend erase timeout in M25P80 SPI Flash driver.
+On Fri, 2009-04-10 at 20:42 +0800, Zhenwen Xu wrote:
+> fix this warning:
 > 
-> The M25P80 drivers fails erasing sectors on a M25P128 because the ready
-> wait timeout is too short. Change the timeout from a simple loop count to a
-> suitable number of seconds.
+> drivers/mtd/nand/cafe_nand.c: In function ‘cafe_nand_probe’:
+> drivers/mtd/nand/cafe_nand.c:730: warning: passing argument 2 of ‘request_irq’ from incompatible pointer type
 > 
-> Signed-off-by: Peter Horton <zero@colonel-panic.org>
+> 
+> From 8f877dd15fedd434e2f5d95a1bc5f4e528dc4528 Mon Sep 17 00:00:00 2001
+> From: Zhenwen Xu <Helight.Xu@gmail.com>
+> Date: Fri, 10 Apr 2009 20:35:30 +0800
+> Subject: [PATCH] fix a warning on drivers/mtd/nand/cafe_nand.c
+> 
+> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
 > ---
-> Index: linux-2.6.29-git12/drivers/mtd/devices/m25p80.c
-> ===================================================================
-> --- linux-2.6.29-git12.orig/drivers/mtd/devices/m25p80.c	2009-04-12 21:41:16.000000000 +0000
-> +++ linux-2.6.29-git12/drivers/mtd/devices/m25p80.c	2009-04-12 21:43:01.000000000 +0000
-> @@ -54,7 +54,7 @@
->  #define	SR_SRWD			0x80	/* SR write protect */
->  
->  /* Define max times to check status register before we give up. */
-> -#define	MAX_READY_WAIT_COUNT	100000
-> +#define	MAX_READY_WAIT_JIFFIES	(10 * HZ)	/* eg. M25P128 specs 6s max sector erase */
->  #define	CMD_SIZE		4
->  
->  #ifdef CONFIG_M25PXX_USE_FAST_READ
-> @@ -145,20 +145,20 @@
->   */
->  static int wait_till_ready(struct m25p *flash)
->  {
-> -	int count;
-> +	unsigned long deadline;
->  	int sr;
->  
-> -	/* one chip guarantees max 5 msec wait here after page writes,
-> -	 * but potentially three seconds (!) after page erase.
-> -	 */
-Why did you remove the comment? Is it wrong or useless?
+>  drivers/mtd/nand/cafe_nand.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-> -	for (count = 0; count < MAX_READY_WAIT_COUNT; count++) {
-> +	deadline = jiffies + MAX_READY_WAIT_JIFFIES;
-> +
-> +	do {
->  		if ((sr = read_sr(flash)) < 0)
->  			break;
->  		else if (!(sr & SR_WIP))
->  			return 0;
->  
-> -		/* REVISIT sometimes sleeping would be best */
-> -	}
-> +		cond_resched();
-> +
-> +	} while (!time_after_eq(jiffies, deadline));
->  
->  	return 1;
->  }
+Pushed, to l2-mtd-2.6.git. This does not guarantee anything,
+it just mean I'll ping dwmw2 to pull from that tree.
 
 -- 
 Best regards,
