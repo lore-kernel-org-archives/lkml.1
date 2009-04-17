@@ -1,63 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbZDQClp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbZDQCyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbZDQClp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 22:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759568AbZDQCl1
+	id S1756966AbZDQCyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 22:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDQCyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 22:41:27 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:21543 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759934AbZDQClZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 22:41:25 -0400
-Date: Thu, 16 Apr 2009 19:09:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: jens.axboe@oracle.com, torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] splice: fix new kernel-doc warnings
-Message-Id: <20090416190955.fb1e07d3.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 16 Apr 2009 22:54:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64042 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752250AbZDQCyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 22:54:13 -0400
+Message-ID: <49E7EF37.2080205@cn.fujitsu.com>
+Date: Fri, 17 Apr 2009 10:53:43 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: Remove include/trace/kmem_event_types.h
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.49E7EC03.01F8:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+kmem_event_types.h is no longer necessary since tracepoint definitions
+are put into include/trace/events/kmem.h
 
-splice: fix kernel-doc warnings
-
-Warning(fs/splice.c:617): bad line: 
-Warning(fs/splice.c:722): No description found for parameter 'sd'
-Warning(fs/splice.c:722): Excess function parameter 'pipe' description in 'splice_from_pipe_begin'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 ---
- fs/splice.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ include/trace/kmem_event_types.h |  193 --------------------------------------
+ 1 files changed, 0 insertions(+), 193 deletions(-)
+ delete mode 100644 include/trace/kmem_event_types.h
 
---- linux-2.6.30-rc2-git1.orig/fs/splice.c
-+++ linux-2.6.30-rc2-git1/fs/splice.c
-@@ -614,7 +614,6 @@ static void wakeup_pipe_writers(struct p
-  * @actor:	handler that splices the data
-  *
-  * Description:
+diff --git a/include/trace/kmem_event_types.h b/include/trace/kmem_event_types.h
+deleted file mode 100644
+index 4ff420f..0000000
+--- a/include/trace/kmem_event_types.h
++++ /dev/null
+@@ -1,193 +0,0 @@
 -
-  *    This function loops over the pipe and calls @actor to do the
-  *    actual moving of a single struct pipe_buffer to the desired
-  *    destination.  It returns when there's no more buffers left in
-@@ -711,7 +710,7 @@ EXPORT_SYMBOL(splice_from_pipe_next);
- 
- /**
-  * splice_from_pipe_begin - start splicing from pipe
-- * @pipe:	pipe to splice from
-+ * @sd:		information about the splice operation
-  *
-  * Description:
-  *    This function should be called before a loop containing
+-/* use <trace/kmem.h> instead */
+-#ifndef TRACE_EVENT
+-# error Do not include this file directly.
+-# error Unless you know what you are doing.
+-#endif
+-
+-#undef TRACE_SYSTEM
+-#define TRACE_SYSTEM kmem
+-
+-TRACE_EVENT(kmalloc,
+-
+-	TP_PROTO(unsigned long call_site,
+-		 const void *ptr,
+-		 size_t bytes_req,
+-		 size_t bytes_alloc,
+-		 gfp_t gfp_flags),
+-
+-	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long,	call_site	)
+-		__field(	const void *,	ptr		)
+-		__field(	size_t,		bytes_req	)
+-		__field(	size_t,		bytes_alloc	)
+-		__field(	gfp_t,		gfp_flags	)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->call_site	= call_site;
+-		__entry->ptr		= ptr;
+-		__entry->bytes_req	= bytes_req;
+-		__entry->bytes_alloc	= bytes_alloc;
+-		__entry->gfp_flags	= gfp_flags;
+-	),
+-
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		__entry->gfp_flags)
+-);
+-
+-TRACE_EVENT(kmem_cache_alloc,
+-
+-	TP_PROTO(unsigned long call_site,
+-		 const void *ptr,
+-		 size_t bytes_req,
+-		 size_t bytes_alloc,
+-		 gfp_t gfp_flags),
+-
+-	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long,	call_site	)
+-		__field(	const void *,	ptr		)
+-		__field(	size_t,		bytes_req	)
+-		__field(	size_t,		bytes_alloc	)
+-		__field(	gfp_t,		gfp_flags	)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->call_site	= call_site;
+-		__entry->ptr		= ptr;
+-		__entry->bytes_req	= bytes_req;
+-		__entry->bytes_alloc	= bytes_alloc;
+-		__entry->gfp_flags	= gfp_flags;
+-	),
+-
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		__entry->gfp_flags)
+-);
+-
+-TRACE_EVENT(kmalloc_node,
+-
+-	TP_PROTO(unsigned long call_site,
+-		 const void *ptr,
+-		 size_t bytes_req,
+-		 size_t bytes_alloc,
+-		 gfp_t gfp_flags,
+-		 int node),
+-
+-	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long,	call_site	)
+-		__field(	const void *,	ptr		)
+-		__field(	size_t,		bytes_req	)
+-		__field(	size_t,		bytes_alloc	)
+-		__field(	gfp_t,		gfp_flags	)
+-		__field(	int,		node		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->call_site	= call_site;
+-		__entry->ptr		= ptr;
+-		__entry->bytes_req	= bytes_req;
+-		__entry->bytes_alloc	= bytes_alloc;
+-		__entry->gfp_flags	= gfp_flags;
+-		__entry->node		= node;
+-	),
+-
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		__entry->gfp_flags,
+-		__entry->node)
+-);
+-
+-TRACE_EVENT(kmem_cache_alloc_node,
+-
+-	TP_PROTO(unsigned long call_site,
+-		 const void *ptr,
+-		 size_t bytes_req,
+-		 size_t bytes_alloc,
+-		 gfp_t gfp_flags,
+-		 int node),
+-
+-	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long,	call_site	)
+-		__field(	const void *,	ptr		)
+-		__field(	size_t,		bytes_req	)
+-		__field(	size_t,		bytes_alloc	)
+-		__field(	gfp_t,		gfp_flags	)
+-		__field(	int,		node		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->call_site	= call_site;
+-		__entry->ptr		= ptr;
+-		__entry->bytes_req	= bytes_req;
+-		__entry->bytes_alloc	= bytes_alloc;
+-		__entry->gfp_flags	= gfp_flags;
+-		__entry->node		= node;
+-	),
+-
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		__entry->gfp_flags,
+-		__entry->node)
+-);
+-
+-TRACE_EVENT(kfree,
+-
+-	TP_PROTO(unsigned long call_site, const void *ptr),
+-
+-	TP_ARGS(call_site, ptr),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long,	call_site	)
+-		__field(	const void *,	ptr		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->call_site	= call_site;
+-		__entry->ptr		= ptr;
+-	),
+-
+-	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+-);
+-
+-TRACE_EVENT(kmem_cache_free,
+-
+-	TP_PROTO(unsigned long call_site, const void *ptr),
+-
+-	TP_ARGS(call_site, ptr),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long,	call_site	)
+-		__field(	const void *,	ptr		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->call_site	= call_site;
+-		__entry->ptr		= ptr;
+-	),
+-
+-	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+-);
+-
+-#undef TRACE_SYSTEM
+-- 
+1.5.5.3
+
+
