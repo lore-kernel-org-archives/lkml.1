@@ -1,35 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbZDQHsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZDQHzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759884AbZDQHsz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbZDQHsq
+	id S1758347AbZDQHzS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDQHzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:48:46 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:54077 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756059AbZDQHsp (ORCPT
+	Fri, 17 Apr 2009 03:55:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43931
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751400AbZDQHzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:48:45 -0400
-Date: Fri, 17 Apr 2009 16:48:44 +0900 (JST)
-Message-Id: <20090417.164844.59671177.ryov@valinux.co.jp>
-To: akpm@linux-foundation.org
-Cc: kamezawa.hiroyu@jp.fujitsu.com, righi.andrea@gmail.com, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, axboe@kernel.dk, baramsori72@gmail.com,
-       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
-       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+	Fri, 17 Apr 2009 03:55:00 -0400
+Date: Fri, 17 Apr 2009 00:54:51 -0700 (PDT)
+Message-Id: <20090417.005451.215477692.davem@davemloft.net>
+To: bn@niasdigital.com
+Cc: hskinnemoen@atmel.com, jgarzik@pobox.com, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090416211514.038c5e91.akpm@linux-foundation.org>
-References: <20090416174428.6bb5da21.akpm@linux-foundation.org>
-	<20090417.104432.193700511.ryov@valinux.co.jp>
-	<20090416211514.038c5e91.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: [PATCH] macb: Kconfig net device compat fixup
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1239953045.2837.58.camel@linux-51e8.site>
+References: <1239953045.2837.58.camel@linux-51e8.site>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -37,25 +27,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Ben Nizette <bn@niasdigital.com>
+Date: Fri, 17 Apr 2009 17:24:05 +1000
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-Date: Thu, 16 Apr 2009 21:15:14 -0700
-
-> On Fri, 17 Apr 2009 10:44:32 +0900 (JST) Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+> The macb driver hasn't been updated to use net_device_ops and as such
+> should select COMPAT_NET_DEV_OPS to avoid build breakage.
 > 
-> > > > Hmm, how about iotrack-cgroup ?
-> > > > 
-> > > 
-> > > Well. blockio_cgroup has the same character count and is more specific.
-> > 
-> > How about blkio_cgroup ?
+> Of course really macb should be updated but in the mean time, this at
+> least avoid randconfig problems.
 > 
-> Sounds good.
+> Signed-off-by: Ben Nizette <bn@niasdigital.com>
 
-I'll rename bio-cgroup to blkio_cgroup and post the patches to this
-list nextweek.
+There's about 26 drivers that fall into this category, it's senseless
+to pepper the tree over with this kind of annotation that we'll just
+release come next release.
 
-Thanks,
-Ryo Tsuruta
+We do have enough drivers converted that powerpc, sparc64, and x86
+allmodconfig and allyesconfig builds pass even with the compat option
+disabled.
+
+And I think the others can just cope with this for now.
+
+Actually, in the net-next-2.6 tree this driver has in fact been
+converted :-)
