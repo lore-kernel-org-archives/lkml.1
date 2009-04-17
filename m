@@ -1,150 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762484AbZDQSMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbZDQSOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762484AbZDQSMn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbZDQSLx
+	id S1759552AbZDQSOZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762044AbZDQSOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:11:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48723 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932343AbZDQSLw (ORCPT
+	Fri, 17 Apr 2009 14:14:16 -0400
+Received: from exprod6og110.obsmtp.com ([64.18.1.25]:50367 "HELO
+	exprod6og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759417AbZDQSOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:11:52 -0400
-Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0904171335490.28603@qirst.com>
-References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>
-	 <1239951613.23397.4107.camel@laptop>
-	 <alpine.DEB.1.10.0904170941020.11877@qirst.com>
-	 <1239977776.23397.4590.camel@laptop>
-	 <alpine.DEB.1.10.0904171021360.20239@qirst.com>
-	 <1239979901.23397.4638.camel@laptop>
-	 <alpine.DEB.1.10.0904171100510.21575@qirst.com>
-	 <20090417153520.GA29968@elte.hu>
-	 <alpine.DEB.1.10.0904171142050.13734@qirst.com>
-	 <1239985426.23397.4757.camel@laptop> <20090417164918.GK8253@elte.hu>
-	 <alpine.DEB.1.10.0904171335490.28603@qirst.com>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 20:11:32 +0200
-Message-Id: <1239991892.23397.4905.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Apr 2009 14:14:15 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C9BF88.3DEBFDA3"
+Subject: RE: [PATCH] mm/page-writeback.c: fix sparse warnings
+Date: Fri, 17 Apr 2009 14:13:39 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F91A0@mi8nycmail19.Mi8.com>
+In-Reply-To: <20090417052730.GA2505@cmpxchg.org>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] mm/page-writeback.c: fix sparse warnings
+Thread-Index: Acm/HUDGtByjUv3cTY+GFZ0eojNFTQAaieUg
+References: <BD79186B4FD85F4B8E60E381CAEE1909015F9049@mi8nycmail19.Mi8.com> <20090417052730.GA2505@cmpxchg.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Johannes Weiner" <hannes@cmpxchg.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 17 Apr 2009 18:14:12.0652 (UTC) FILETIME=[4F786EC0:01C9BF88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 13:45 -0400, Christoph Lameter wrote:
-> Ok I made some changes to the latencytest program (gentwo.org/ll). I hope
-> you can tell me what exactly you would consider meaningful numbers.
-> 
+This is a multi-part message in MIME format.
 
-> More fine grained resolution (100ns do not count measurements below 100ns):
-> 
-> latencytest -d -m100 -b100
-> 
-> CPUs: Freq=3.16Ghz Processors=8 Cores=4 cacheline_size=64 Intel(R) Xeon(R) CPU           X5460  @ 3.16GHz
-> 266619352 samples below 100 nsec
-> 19 involuntary context switches
-> 13254 (0.00497088%) variances in 10.00 seconds: minimum 0.10us maximum
-> 143.63us average 3.63us
-> usecs percent samples
-> -------------------------
->  0.1    23.7     3141
->  0.2     0.7       87
->  0.3     0.1       12
->  0.5     0.0        1
->  0.6     0.0        1
->  1.9     0.1       17
->  2.0     0.4       47
->  2.1     1.0      127
->  2.2     2.3      309
->  2.3     0.3       35
->  2.4     0.2       25
->  2.5     0.2       22
->  2.6     0.2       23
->  2.7     2.0      267
->  2.8     4.2      559
->  2.9     0.4       52
->  3.0     1.1      143
->  3.1     1.5      198
->  3.2     1.1      149
->  3.3     0.7       97
->  3.4     0.6       78
->  3.5     0.6       83
->  3.6     0.9      121
->  3.7     0.8      112
->  3.8     4.1      547
->  3.9     1.5      194
->  4.0     0.3       42
->  4.1     0.1       15
->  4.2     0.2       23
->  4.3     0.8      108
->  4.4     0.5       63
->  4.5     0.2       20
->  4.6     0.2       25
->  4.7     0.2       28
->  4.8     0.3       44
->  4.9     0.2       24
->  5.0     1.0      126
->  5.1     3.1      414
->  5.2    18.0     2385
->  5.3     6.5      857
->  5.4     4.9      656
->  5.5     2.5      335
->  5.6     3.4      448
->  5.7     3.4      445
->  5.8     2.0      268
->  5.9     0.9      116
->  6.0     0.4       54
->  6.1     0.2       22
->  6.2     0.3       36
->  6.3     0.1       17
->  6.4     0.1       10
->  6.5     0.1       11
->  6.6     0.1        9
->  6.7     0.1        9
->  6.8     0.1        8
->  6.9     0.0        4
->  7.0     0.1        8
->  7.1     0.0        6
->  7.2     0.1        7
->  7.3     0.1       14
->  7.4     0.1        7
->  7.5     0.0        4
->  7.6     0.0        3
->  7.7     0.0        6
->  7.8     0.1        7
->  7.9     0.0        6
->  8.0     0.0        5
->  8.1     0.0        4
->  8.2     0.0        3
->  8.3     0.0        2
->  8.4     0.0        2
-> 
-> The group around 5usec is likely the timer interrupt.
+------_=_NextPart_001_01C9BF88.3DEBFDA3
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Right, this is nice. 
+mm: dirty limit type specifies should be unsigned long
 
-There are a number of peaks (aside from 0), 2.2, 2.8, 3.1, 3.8, 4.3 and
-5.2 -- and I suspect your guess about 5.2 is right.
+get_dirty_limits() calls clip_bdi_dirty_limit() and task_dirty_limit()
+with variable pbdi_dirty as one of the arguments. This variable is
+an unsigned long * but both functions expect it to be a long *. This
+causes the following sparse warnings:
+=20
+  warning: incorrect type in argument 3 (different signedness)
+     expected long *pbdi_dirty
+     got unsigned long *pbdi_dirty
+  warning: incorrect type in argument 2 (different signedness)
+     expected long *pdirty
+     got unsigned long *pbdi_dirty
+=20
+Fix the warnings by changing the long * to unsigned long * in both
+functions.
+=20
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-Something like this is nice to compare between kernels. Chris'
-suggestion of timing a simple fixed loop:
+---
 
-$ time (let i=1000000; while [ $i -gt 0 ]; do let i--; done)
-
-real    0m14.389s
-user    0m13.787s
-sys     0m0.498s
-
-Is also useful, since it gives an absolute measure of time available to
-user-space.
-
-Although I suspect a simple C while(i--); might be better due to less
-code involved.
+Patch is also attached due to line wrapping in email.
 
 
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 30351f0..ad2a414 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -265,18 +265,19 @@ static void bdi_writeout_fraction(struct
+backing_dev_info *bdi,
+  * This avoids exceeding the total dirty_limit when the floating
+averages
+  * fluctuate too quickly.
+  */
+-static void
+-clip_bdi_dirty_limit(struct backing_dev_info *bdi, long dirty, long
+*pbdi_dirty)
++static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
++		unsigned long dirty, unsigned long *pbdi_dirty)
+ {
+-	long avail_dirty;
++	unsigned long avail_dirty;
+=20
+-	avail_dirty =3D dirty -
+-		(global_page_state(NR_FILE_DIRTY) +
++	avail_dirty =3D global_page_state(NR_FILE_DIRTY) +
+ 		 global_page_state(NR_WRITEBACK) +
+ 		 global_page_state(NR_UNSTABLE_NFS) +
+-		 global_page_state(NR_WRITEBACK_TEMP));
++		 global_page_state(NR_WRITEBACK_TEMP);
+=20
+-	if (avail_dirty < 0)
++	if (avail_dirty < dirty)
++		avail_dirty =3D dirty - avail_dirty;
++	else
+ 		avail_dirty =3D 0;
+=20
+ 	avail_dirty +=3D bdi_stat(bdi, BDI_RECLAIMABLE) +
+@@ -299,10 +300,10 @@ static inline void task_dirties_fraction(struct
+task_struct *tsk,
+  *
+  *   dirty -=3D (dirty/8) * p_{t}
+  */
+-static void task_dirty_limit(struct task_struct *tsk, long *pdirty)
++static void task_dirty_limit(struct task_struct *tsk, unsigned long
+*pdirty)
+ {
+ 	long numerator, denominator;
+-	long dirty =3D *pdirty;
++	unsigned long dirty =3D *pdirty;
+ 	u64 inv =3D dirty >> 3;
+=20
+ 	task_dirties_fraction(tsk, &numerator, &denominator);=20
 
+------_=_NextPart_001_01C9BF88.3DEBFDA3
+Content-Type: application/octet-stream;
+	name="mm_page-writeback_sparse.patch"
+Content-Transfer-Encoding: base64
+Content-Description: mm_page-writeback_sparse.patch
+Content-Disposition: attachment;
+	filename="mm_page-writeback_sparse.patch"
+
+ZGlmZiAtLWdpdCBhL21tL3BhZ2Utd3JpdGViYWNrLmMgYi9tbS9wYWdlLXdyaXRlYmFjay5jCmlu
+ZGV4IDMwMzUxZjAuLmFkMmE0MTQgMTAwNjQ0Ci0tLSBhL21tL3BhZ2Utd3JpdGViYWNrLmMKKysr
+IGIvbW0vcGFnZS13cml0ZWJhY2suYwpAQCAtMjY1LDE4ICsyNjUsMTkgQEAgc3RhdGljIHZvaWQg
+YmRpX3dyaXRlb3V0X2ZyYWN0aW9uKHN0cnVjdCBiYWNraW5nX2Rldl9pbmZvICpiZGksCiAgKiBU
+aGlzIGF2b2lkcyBleGNlZWRpbmcgdGhlIHRvdGFsIGRpcnR5X2xpbWl0IHdoZW4gdGhlIGZsb2F0
+aW5nIGF2ZXJhZ2VzCiAgKiBmbHVjdHVhdGUgdG9vIHF1aWNrbHkuCiAgKi8KLXN0YXRpYyB2b2lk
+Ci1jbGlwX2JkaV9kaXJ0eV9saW1pdChzdHJ1Y3QgYmFja2luZ19kZXZfaW5mbyAqYmRpLCBsb25n
+IGRpcnR5LCBsb25nICpwYmRpX2RpcnR5KQorc3RhdGljIHZvaWQgY2xpcF9iZGlfZGlydHlfbGlt
+aXQoc3RydWN0IGJhY2tpbmdfZGV2X2luZm8gKmJkaSwKKwkJdW5zaWduZWQgbG9uZyBkaXJ0eSwg
+dW5zaWduZWQgbG9uZyAqcGJkaV9kaXJ0eSkKIHsKLQlsb25nIGF2YWlsX2RpcnR5OworCXVuc2ln
+bmVkIGxvbmcgYXZhaWxfZGlydHk7CiAKLQlhdmFpbF9kaXJ0eSA9IGRpcnR5IC0KLQkJKGdsb2Jh
+bF9wYWdlX3N0YXRlKE5SX0ZJTEVfRElSVFkpICsKKwlhdmFpbF9kaXJ0eSA9IGdsb2JhbF9wYWdl
+X3N0YXRlKE5SX0ZJTEVfRElSVFkpICsKIAkJIGdsb2JhbF9wYWdlX3N0YXRlKE5SX1dSSVRFQkFD
+SykgKwogCQkgZ2xvYmFsX3BhZ2Vfc3RhdGUoTlJfVU5TVEFCTEVfTkZTKSArCi0JCSBnbG9iYWxf
+cGFnZV9zdGF0ZShOUl9XUklURUJBQ0tfVEVNUCkpOworCQkgZ2xvYmFsX3BhZ2Vfc3RhdGUoTlJf
+V1JJVEVCQUNLX1RFTVApOwogCi0JaWYgKGF2YWlsX2RpcnR5IDwgMCkKKwlpZiAoYXZhaWxfZGly
+dHkgPCBkaXJ0eSkKKwkJYXZhaWxfZGlydHkgPSBkaXJ0eSAtIGF2YWlsX2RpcnR5OworCWVsc2UK
+IAkJYXZhaWxfZGlydHkgPSAwOwogCiAJYXZhaWxfZGlydHkgKz0gYmRpX3N0YXQoYmRpLCBCRElf
+UkVDTEFJTUFCTEUpICsKQEAgLTI5OSwxMCArMzAwLDEwIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCB0
+YXNrX2RpcnRpZXNfZnJhY3Rpb24oc3RydWN0IHRhc2tfc3RydWN0ICp0c2ssCiAgKgogICogICBk
+aXJ0eSAtPSAoZGlydHkvOCkgKiBwX3t0fQogICovCi1zdGF0aWMgdm9pZCB0YXNrX2RpcnR5X2xp
+bWl0KHN0cnVjdCB0YXNrX3N0cnVjdCAqdHNrLCBsb25nICpwZGlydHkpCitzdGF0aWMgdm9pZCB0
+YXNrX2RpcnR5X2xpbWl0KHN0cnVjdCB0YXNrX3N0cnVjdCAqdHNrLCB1bnNpZ25lZCBsb25nICpw
+ZGlydHkpCiB7CiAJbG9uZyBudW1lcmF0b3IsIGRlbm9taW5hdG9yOwotCWxvbmcgZGlydHkgPSAq
+cGRpcnR5OworCXVuc2lnbmVkIGxvbmcgZGlydHkgPSAqcGRpcnR5OwogCXU2NCBpbnYgPSBkaXJ0
+eSA+PiAzOwogCiAJdGFza19kaXJ0aWVzX2ZyYWN0aW9uKHRzaywgJm51bWVyYXRvciwgJmRlbm9t
+aW5hdG9yKTsK
+
+------_=_NextPart_001_01C9BF88.3DEBFDA3--
