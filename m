@@ -1,166 +1,345 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbZDQOQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbZDQOST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbZDQOQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 10:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759795AbZDQOQr
+	id S1761392AbZDQOST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 10:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756294AbZDQOSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 10:16:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38383 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754952AbZDQOQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 10:16:46 -0400
-Date: Fri, 17 Apr 2009 10:13:58 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <righi.andrea@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, menage@google.com,
-       peterz@infradead.org
-Subject: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
-Message-ID: <20090417141358.GD29086@redhat.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux>
+	Fri, 17 Apr 2009 10:18:08 -0400
+Received: from mail.it-technology.at ([62.99.145.147]:33702 "EHLO
+	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754952AbZDQOSG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 10:18:06 -0400
+X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 10:18:06 EDT
+Message-ID: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
+Date: Fri, 17 Apr 2009 16:10:24 +0200 (CEST)
+Subject: [PATCH] usb driver for intellon based PLC like devolo dlan duo
+From: "Peter Holik" <peter@holik.at>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417093656.GA5246@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
-> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
-> > > I think it would be possible to implement both proportional and limiting
-> > > rules at the same level (e.g., the IO scheduler), but we need also to
-> > > address the memory consumption problem (I still need to review your
-> > > patchset in details and I'm going to test it soon :), so I don't know if
-> > > you already addressed this issue).
-> > > 
-> > 
-> > Can you please elaborate a bit on this? Are you concerned about that data
-> > structures created to solve the problem consume a lot of memory?
-> 
-> Sorry I was not very clear here. With memory consumption I mean wasting
-> the memory with hard/slow reclaimable dirty pages or pending IO
-> requests.
-> 
-> If there's only a global limit on dirty pages, any cgroup can exhaust
-> that limit and cause other cgroups/processes to block when they try to
-> write to disk.
-> 
-> But, ok, the IO controller is not probably the best place to implement
-> such functionality. I should rework on the per cgroup dirty_ratio:
-> 
-> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
-> 
-> Last time we focused too much on the best interfaces to define dirty
-> pages limit, and I never re-posted an updated version of this patchset.
-> Now I think we can simply provide the same dirty_ratio/dirty_bytes
-> interface that we provide globally, but per cgroup.
-> 
-> > 
-> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
-> > > in the cgroup that exceeds its limit, how do we avoid the waste of
-> > > memory due to the succeeding IO requests and the increasingly dirty
-> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
-> > > but I think we talked about this problem in a previous email... sorry I
-> > > don't find the discussion in my mail archives.
-> > > 
-> > > IMHO a nice approach would be to measure IO consumption at the IO
-> > > scheduler level, and control IO applying proportional weights / absolute
-> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
-> > > time block the tasks from dirtying memory that will generate additional
-> > > IO requests.
-> > > 
-> > > Anyway, there's no need to provide this with a single IO controller, we
-> > > could split the problem in two parts: 1) provide a proportional /
-> > > absolute IO controller in the IO schedulers and 2) allow to set, for
-> > > example, a maximum limit of dirty pages for each cgroup.
-> > > 
-> > 
-> > I think setting a maximum limit on dirty pages is an interesting thought.
-> > It sounds like as if memory controller can handle it?
-> 
-> Exactly, the same above.
+Signed-off-by: Peter Holik <peter@holik.at>
+---
+ drivers/net/usb/Kconfig    |    7 +
+ drivers/net/usb/Makefile   |    2 +-
+ drivers/net/usb/intellon.c |  273 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 281 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/net/usb/intellon.c
 
-Thinking more about it. Memory controller can probably enforce the higher
-limit but it would not easily translate into a fixed upper async write
-rate. Till the process hits the page cache limit or is slowed down by
-dirty page writeout, it can get a very high async write BW.
+diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
+index 8ee2103..068faa5 100644
+--- a/drivers/net/usb/Kconfig
++++ b/drivers/net/usb/Kconfig
+@@ -345,4 +345,11 @@ config USB_HSO
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called hso.
 
-So memory controller page cache limit will help but it would not direclty
-translate into what max bw limit patches are doing.
++config USB_NET_INTELLON
++	tristate "Intellon PLC based usb adapter"
++	depends on USB_USBNET
++	help
++	  Choose this option if you're using a PLC (Powerline Communications)
++	  solution with an Intellon chip, like the "devolo dLan duo".
++
+ endmenu
+diff --git a/drivers/net/usb/Makefile b/drivers/net/usb/Makefile
+index 88a87ee..0fccfe9 100644
+--- a/drivers/net/usb/Makefile
++++ b/drivers/net/usb/Makefile
+@@ -19,4 +19,4 @@ obj-$(CONFIG_USB_NET_CDC_SUBSET)	+= cdc_subset.o
+ obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
+ obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
+ obj-$(CONFIG_USB_USBNET)	+= usbnet.o
+-
++obj-$(CONFIG_USB_NET_INTELLON)	+= intellon.o
+diff --git a/drivers/net/usb/intellon.c b/drivers/net/usb/intellon.c
+new file mode 100644
+index 0000000..c9fcc38
+--- /dev/null
++++ b/drivers/net/usb/intellon.c
+@@ -0,0 +1,273 @@
++/*
++ * Copyright (c) 2009 Peter Holik
++ *
++ * Intellon PLC (Powerline Communications) usb net driver
++ *
++ * http://www.tandel.be/downloads/INT51X1_Datasheet.pdf
++ *
++ * Based on the work of Jan 'RedBully' Seiffert
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or.
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ *
++ * Should you need to contact me, the author, you can do so either by
++ * e-mail - mail your message to <vojtech@suse.cz>, or by paper mail:
++ * Vojtech Pavlik, Simunkova 1594, Prague 8, 182 00 Czech Republic
++ */
++
++#include <linux/module.h>
++#include <linux/ctype.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/ethtool.h>
++#include <linux/mii.h>
++#include <linux/usb.h>
++#include <linux/usb/usbnet.h>
++
++#define INTELLON_VENDOR_ID	0x09e1
++#define INTELLON_PRODUCT_ID	0x5121
++
++#define INTELLON_HEADER_SIZE	2	/* 2 byte header */
++
++#define PACKET_TYPE_PROMISCUOUS		(1 << 0)
++#define PACKET_TYPE_ALL_MULTICAST	(1 << 1) /* no filter */
++#define PACKET_TYPE_DIRECTED		(1 << 2)
++#define PACKET_TYPE_BROADCAST		(1 << 3)
++#define PACKET_TYPE_MULTICAST		(1 << 4) /* filtered */
++
++#define SET_ETHERNET_PACKET_FILTER	0x43
++
++static u8 nibble(unsigned char c)
++{
++	if (likely(isdigit(c)))
++		return c - '0';
++	c = toupper(c);
++	if (likely(isxdigit(c)))
++		return 10 + c - 'A';
++	return 0;
++}
++
++static inline int get_ethernet_addr(struct usbnet *dev)
++{
++	int             tmp, i;
++	unsigned char   buf [13];
++
++	tmp = usb_string(dev->udev, 3, buf, sizeof buf);
++	if (tmp != 12) {
++		devdbg(dev, "bad MAC string fetch, %d\n", tmp);
++		if (tmp >= 0)
++			tmp = -EINVAL;
++		return tmp;
++	}
++	for (i = tmp = 0; i < 6; i++, tmp += 2)
++		dev->net->dev_addr [i] =
++			(nibble(buf [tmp]) << 4) + nibble(buf [tmp + 1]);
++	return 0;
++}
++
++
++static int intellon_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
++{
++	int len;
++
++	if (unlikely(skb->len < INTELLON_HEADER_SIZE)) {
++		deverr(dev, "unexpected tiny rx frame");
++		return 0;
++	}
++
++	len = (skb->data[skb->len - 2] | (skb->data[skb->len - 1] << 8));
++
++	skb_trim(skb, len);
++
++	return 1;
++}
++
++static struct sk_buff *intellon_tx_fixup(struct usbnet *dev,
++		struct sk_buff *skb, gfp_t flags)
++{
++	int pack_len = skb->len;
++	int headroom = skb_headroom(skb);
++	int tailroom = skb_tailroom(skb);
++	int need_tail = 0;
++
++	/*
++	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
++	 * but we need to know ourself, because this would add to the length
++	 * we send down to the device...
++	 */
++	if (!((pack_len + INTELLON_HEADER_SIZE) % dev->maxpacket))
++		need_tail = 1;
++
++	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
++	if ((pack_len + INTELLON_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
++		need_tail = dev->maxpacket + 1 - pack_len - INTELLON_HEADER_SIZE;
++
++	if (!skb_cloned(skb) &&
++			(headroom + tailroom >= need_tail + INTELLON_HEADER_SIZE)) {
++		if (headroom < INTELLON_HEADER_SIZE || tailroom < need_tail) {
++			skb->data = memmove(skb->head + INTELLON_HEADER_SIZE,
++					skb->data, skb->len);
++			skb_set_tail_pointer(skb, skb->len);
++		}
++	} else {
++		struct sk_buff *skb2;
++
++		skb2 = skb_copy_expand(skb,
++				INTELLON_HEADER_SIZE,
++				need_tail,
++				flags);
++		dev_kfree_skb_any(skb);
++		if (!skb2)
++			return skb2;
++		skb = skb2;
++	}
++
++	pack_len += need_tail;
++
++	__skb_push(skb, INTELLON_HEADER_SIZE);
++
++	skb->data[0] = pack_len & 0xFF;
++	skb->data[1] = (pack_len & 0x700) >> 8;
++
++	if(need_tail)
++		memset(__skb_put(skb, need_tail), 0, need_tail);
++
++	return skb;
++}
++
++static void intellon_async_cmd_callback(struct urb *urb)
++{
++	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
++	int status = urb->status;
++
++	if (status < 0)
++		dev_warn(&urb->dev->dev, "async callback failed with %d\n", status);
++
++	kfree(req);
++	usb_free_urb(urb);
++}
++
++static void intellon_set_multicast(struct net_device *netdev)
++{
++	struct usb_ctrlrequest *req;
++	int status;
++	struct urb *urb;
++	struct usbnet *dev = netdev_priv(netdev);
++	u16 filter = PACKET_TYPE_DIRECTED |
++		     PACKET_TYPE_BROADCAST;
++
++	if (netdev->flags & IFF_PROMISC) {
++		/* do not expect to see traffic of other PLCs */
++		filter |= PACKET_TYPE_PROMISCUOUS;
++		devinfo(dev, "promiscuous mode enabled");
++	} else if (netdev->mc_count ||
++		  (netdev->flags & IFF_ALLMULTI)) {
++		filter |= PACKET_TYPE_ALL_MULTICAST;
++		devdbg(dev, "receive all multicast enabled");
++	} else {
++		/* ~PROMISCUOUS, ~MULTICAST */
++		devdbg(dev, "receive own packets only");
++	}
++
++	urb = usb_alloc_urb(0, GFP_ATOMIC);
++	if (!urb) {
++		devwarn(dev, "Error allocating URB");
++		return;
++	}
++
++	req = kmalloc(sizeof *req, GFP_ATOMIC);
++	if (!req) {
++		devwarn(dev, "Error allocating control msg");
++		usb_free_urb(urb);
++		return;
++	}
++
++	req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
++	req->bRequest = SET_ETHERNET_PACKET_FILTER;
++	req->wValue = cpu_to_le16(filter);
++	req->wIndex = 0;
++	req->wLength = 0;
++
++	usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
++		(void *)req, NULL, 0,
++		intellon_async_cmd_callback,
++		(void *)req);
++
++	status = usb_submit_urb(urb, GFP_ATOMIC);
++	if (status < 0) {
++		devwarn(dev, "Error submitting control msg, sts=%d", status);
++		kfree(req);
++		usb_free_urb(urb);
++	}
++}
++
++static int intellon_bind(struct usbnet *dev, struct usb_interface *intf)
++{
++	int status = get_ethernet_addr(dev);
++
++	if (status)
++		return status;
++
++	dev->net->hard_header_len += INTELLON_HEADER_SIZE;
++	dev->hard_mtu = dev->net->mtu + dev->net->hard_header_len;
++	dev->net->set_multicast_list = intellon_set_multicast;
++
++	return usbnet_get_endpoints(dev, intf);
++}
++
++static const struct driver_info intellon_info = {
++	.description = "Intellon powerline adapter",
++	.bind        = intellon_bind,
++	.rx_fixup    = intellon_rx_fixup,
++	.tx_fixup    = intellon_tx_fixup,
++	.in          = 1,
++	.out         = 2,
++	.flags      = FLAG_ETHER,
++};
++
++static const struct usb_device_id products[] = {
++	{
++	USB_DEVICE(INTELLON_VENDOR_ID, INTELLON_PRODUCT_ID),
++		.driver_info = (unsigned long) &intellon_info,
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(usb, products);
++
++static struct usb_driver intellon_driver = {
++	.name       = "intellon",
++	.id_table   = products,
++	.probe      = usbnet_probe,
++	.disconnect = usbnet_disconnect,
++	.suspend    = usbnet_suspend,
++	.resume     = usbnet_resume,
++};
++
++static int __init intellon_init(void)
++{
++	return usb_register(&intellon_driver);
++}
++module_init(intellon_init);
++
++static void __exit intellon_exit(void)
++{
++	usb_deregister(&intellon_driver);
++}
++module_exit(intellon_exit);
++
++MODULE_AUTHOR("Peter Holik");
++MODULE_DESCRIPTION("Intellon powerline adapter");
++MODULE_LICENSE("GPL");
+-- 
+1.6.2.1
 
-Even if we do max bw control at IO scheduler level, async writes are
-problematic again. IO controller will not be able to throttle the process
-until it sees actuall write request. In big memory systems, writeout might
-not happen for some time and till then it will see a high throughput.
 
-So doing async write throttling at higher layer and not at IO scheduler
-layer gives us the opprotunity to produce more accurate results.
-
-For sync requests, I think IO scheduler max bw control should work fine.
-
-BTW, andrea, what is the use case of your patches? Andrew had mentioned
-that some people are already using it. I am curious to know will a
-proportional BW controller will solve the issues/requirements of these
-people or they have specific requirement of traffic shaping and max bw
-controller only.
-
-[..]
-> > > > Can you please give little more details here regarding how QoS requirements
-> > > > are not met with proportional weight?
-> > > 
-> > > With proportional weights the whole bandwidth is allocated if no one
-> > > else is using it. When IO is submitted other tasks with a higher weight
-> > > can be forced to sleep until the IO generated by the low weight tasks is
-> > > not completely dispatched. Or any extent of the priority inversion
-> > > problems.
-> > 
-> > Hmm..., I am not very sure here. When admin is allocating the weights, he
-> > has the whole picture. He knows how many groups are conteding for the disk
-> > and what could be the worst case scenario. So if I have got two groups
-> > with A and B with weight 1 and 2 and both are contending, then as an 
-> > admin one would expect to get 33% of BW for group A in worst case (if
-> > group B is continuously backlogged). If B is not contending than A can get
-> > 100% of BW. So while configuring the system, will one not plan for worst
-> > case (33% for A, and 66 % for B)?
-> 
-> OK, I'm quite convinced.. :)
-> 
-> To a large degree, if we want to provide a BW reservation strategy we
-> must provide an interface that allows cgroups to ask for time slices
-> such as max/min 5 IO requests every 50ms or something like that.
-> Probably the same functionality can be achieved translating time slices
-> from weights, percentages or absolute BW limits.
-
-Ok, I would like to split it in two parts.
-
-I think providng minimum gurantee in absolute terms like 5 IO request
-every 50ms will be very hard because IO scheduler has no control over
-how many competitors are there. An easier thing will be to have minimum
-gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
-shall have to create right cgroup hierarchy and assign weights properly and
-then admin can calculate what % of disk slice a particular group will get
-as minimum gurantee. (This is more complicated than this as there are
-time slices which are not accounted to any groups. During queue switch
-cfq starts the time slice counting only after first request has completed
-to offset the impact of seeking and i guess also NCQ).
-
-I think it should be possible to give max bandwidth gurantees in absolute
-terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
-scheduler has to do is to not allow dispatch from a particular queue if
-it has crossed its limit and then either let the disk idle or move onto
-next eligible queue.
-
-The only issue here will be async writes. max bw gurantee for async writes
-at IO scheduler level might not mean much to application because of page
-cache.
-
-Thanks
-Vivek
