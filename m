@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbZDQKks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbZDQKlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760378AbZDQKks (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 06:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZDQKkF
+	id S1760638AbZDQKlZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 06:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbZDQKlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 06:40:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35610 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757436AbZDQKkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 06:40:03 -0400
-Message-ID: <49E85C7E.5020200@garzik.org>
-Date: Fri, 17 Apr 2009 06:39:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 17 Apr 2009 06:41:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50142 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758309AbZDQKlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 06:41:14 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18YKkpuR6EY2m2cm4gmM2/txSuBFB1LL8RkSKqWNO
+	QLWQ5pgnA+iJl4
+Date: Fri, 17 Apr 2009 12:41:21 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Ming Lei <tom.leiming@gmail.com>
+cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver core:fix driver_match_device
+In-Reply-To: <1238161800-4714-1-git-send-email-tom.leiming@gmail.com>
+Message-ID: <Pine.LNX.4.64.0904171239540.5119@axis700.grange>
+References: <1238161800-4714-1-git-send-email-tom.leiming@gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] AHCI updates: Marvell AHCI PATA works; pata_marvell
- fate?
-References: <20090417023949.GA14469@havoc.gtf.org> <20090417105031.607a771e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090417105031.607a771e@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Marvell PATA on 6121 and similar chips should also work, but that hasn't
->> yet been tested.  Here's the full list of what still needs testing:
->>
->> - master + slave devices
->> - ATAPI
->> - 6121 (6123? others?)
+On Fri, 27 Mar 2009, tom.leiming@gmail.com wrote:
+
+> From: Ming Lei <tom.leiming@gmail.com>
 > 
-> LBA48
-
-And 80-pin cables...  I cannot find where it permits cable detection or 
-where DMA/PIO mode in AHCI mode, complicating things :(
-
-
->> Also, there is the open question of how to deal with pata_marvell
->> co-existence
+> This patch fixes a bug introduced in commit
+> 49b420a13ff95b449947181190b08367348e3e1b.
 > 
-> I think for the moment make PATA support by AHCI a config option and as
-> soon as we trust it we can get rid of the option and of pata_marvell.
+> If a instance of bus_type doesn't have  .match method,
+> all .probe of drivers in the bus should be called, or else
+> the .probe have not a chance to be called.
+> 
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+> Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-I'm not sure I see the worth of making PATA, solely, a config option?
+It looks like this patch is _still_ not in the mainline - now that we are 
+past rc2... Unless the problem has been fixed differently (I haven't 
+tested recent kernels), can we __please__ get it upstream?
 
-Today, the choice is either pata_marvell (PATA) or ahci w/ module option 
-(SATA).
+Thanks
+Guennadi
 
-My patches morph that choice into: pata_marvell (PATA) or mv-ahci (PATA 
-+ SATA).
+> ---
+>  drivers/base/base.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index ddc9749..b528145 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -115,7 +115,7 @@ extern int driver_probe_device(struct device_driver *drv, struct device *dev);
+>  static inline int driver_match_device(struct device_driver *drv,
+>  				      struct device *dev)
+>  {
+> -	return drv->bus->match && drv->bus->match(dev, drv);
+> +	return drv->bus->match ? drv->bus->match(dev, drv) : 1;
+>  }
+>  
+>  extern void sysdev_shutdown(void);
+> -- 
+> 1.6.0.GIT
+> 
 
-Thus, considering the hardware, if the user disables PATA support in 
-mv-ahci, they still have the problem of two drivers competing for the 
-same PCI IDs - no matter that the drivers would each probe different bus 
-types (PATA, or SATA).
-
-We could skip SATA_MV_AHCI if PATA_MARVELL is set in .config...  Now 
-that mv-ahci solely contains Marvell PCI IDs, that would have the effect 
-at compile-time that a module option would have at runtime.
-
-	Jeff
-
-
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
