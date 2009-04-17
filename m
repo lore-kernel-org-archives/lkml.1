@@ -1,86 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbZDQCeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZDQCiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759261AbZDQCeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 22:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759268AbZDQCdt
+	id S1758637AbZDQCiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 22:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZDQCiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 22:33:49 -0400
-Received: from mga11.intel.com ([192.55.52.93]:57779 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758937AbZDQCdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 22:33:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,202,1239001200"; 
-   d="scan'208";a="448692561"
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-From: yakui_zhao <yakui.zhao@intel.com>
-To: Zhang Rui <rui.zhang@intel.com>, mjq59@srcf.ucam.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
+	Thu, 16 Apr 2009 22:38:06 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:47845 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754849AbZDQCiF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 22:38:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEACuI50lMQW1W/2dsb2JhbACBTs5Dg30G
+Date: Thu, 16 Apr 2009 22:38:02 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-In-Reply-To: <1239931813.7661.394.camel@rzhang-dt>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-	 <1239931813.7661.394.camel@rzhang-dt>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Fri, 17 Apr 2009 10:34:53 +0800
-Message-Id: <1239935693.3638.28.camel@localhost.localdomain>
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 2/3] RCU move trace defines to rcupdate_types.h (update)
+Message-ID: <20090417023802.GA26612@Krystal>
+References: <20090417003755.276959950@polymtl.ca> <20090417003931.846405986@polymtl.ca> <49E7D701.9090407@goop.org> <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:37:05 up 47 days, 23:03,  1 user,  load average: 0.82, 0.72,
+	0.61
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-17 at 09:30 +0800, Zhang Rui wrote:
-> On Fri, 2009-04-17 at 05:42 +0800, Rafael J. Wysocki wrote:
-> > 
-> > 
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13095
-> > Subject         : thinkpad-acpi: cannot control brightness with hotkeys
-> > Submitter       : Niel Lambrechts <niel.lambrechts@gmail.com>
-> > Date            : 2009-04-11 23:07 (6 days old)
-> > References      : http://lkml.org/lkml/2009/4/11/160
-> > Handled-By      : Matthew Garrett <mjg59@srcf.ucam.org>
-> > Patch           : http://lkml.org/lkml/2009/4/15/339
-> > 
-> > 
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13048
-> > Subject         : /sys/class/backlight/acpi_video0/* is gone on vaio laptop with Intel GM45.
-> > Submitter       : Rodrigo L. Batista <rodrigo@gus-mg.org>
-> > Date            : 2009-04-09 04:57 (8 days old)
-> > Handled-By      : yakui_zhao <yakui.zhao@intel.com>
-> > Patch           : http://bugzilla.kernel.org/attachment.cgi?id=20967
-> >                   http://bugzilla.kernel.org/attachment.cgi?id=20959
-> > 
-> > 
-> bug 13095 is a duplicate of bug 13048.
-> patches from Matthew and Yakui are for the same issue.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> Yakui, could you verify which patch should be taken please?
-The patch from Matthew is better. 
-It still can work even when the KMS is disabled by adding the boot
-option of "i915.modeset=0".
-
-Hi, Matthew
-    Will you please push the patch?
-    
-thanks.
-
+> On Thu, 16 Apr 2009, Jeremy Fitzhardinge wrote:
 > 
-> thanks,
-> rui
+> > I don't think this helps.  rcupdate_types.h uses preempt_disable/enable, but
+> > doesn't include linux/preempt.h for them - but someone's going to have to, so
+> > you've got an implicit dependency on the user to #include the right headers in
+> > advance.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Would including linux/preempt.h in rcupdate_types.h be a problem?
+> 
+> -- Steve
+> 
 
+Here is the updated patch to tracepoint.h that includes preempt.h.
+
+
+tracepoints : remove rcupdate.h dependency
+
+Use the slimmer rcupdate_types.h instead of the fat rcupdate.h.
+
+Changelog : include preempt.h from tracepoint.h.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Christoph Hellwig <hch@lst.de>
+---
+ include/linux/tracepoint.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+Index: linux.trees.git/include/linux/tracepoint.h
+===================================================================
+--- linux.trees.git.orig/include/linux/tracepoint.h	2009-04-16 20:32:27.000000000 -0400
++++ linux.trees.git/include/linux/tracepoint.h	2009-04-16 22:13:53.000000000 -0400
+@@ -15,7 +15,8 @@
+  */
+ 
+ #include <linux/types.h>
+-#include <linux/rcupdate.h>
++#include <linux/rcupdate_types.h>
++#include <linux/preempt.h>
+ 
+ struct module;
+ struct tracepoint;
+@@ -150,11 +151,11 @@ extern int tracepoint_get_iter_range(str
+  * tracepoint_synchronize_unregister must be called between the last tracepoint
+  * probe unregistration and the end of module exit to make sure there is no
+  * caller executing a probe when it is freed.
++ * Using a define rather than a static inline to make sure tracepoint.h does not
++ * depend on rcupdate.h. rcupdate.h must be included whenever
++ * tracepoint_synchronize_unregister() is used.
+  */
+-static inline void tracepoint_synchronize_unregister(void)
+-{
+-	synchronize_sched();
+-}
++#define tracepoint_synchronize_unregister() synchronize_sched()
+ 
+ #define PARAMS(args...) args
+ 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
