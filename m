@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761791AbZDQQ5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbZDQQ5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761791AbZDQQ5R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 12:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZDQQ5F
+	id S1759250AbZDQQ5e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 12:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761351AbZDQQ5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 12:57:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34689 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754630AbZDQQ5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 12:57:02 -0400
-Date: Fri, 17 Apr 2009 18:56:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090417165643.GL8253@elte.hu>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu> <20090417003805.GI26366@ZenIV.linux.org.uk>
+	Fri, 17 Apr 2009 12:57:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62037 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759964AbZDQQ5S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 12:57:18 -0400
+Date: Fri, 17 Apr 2009 12:57:16 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: mathieu.desnoyers@polymtl.ca, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 2/4] x86/pvops: target CREATE_TRACE_POINTS to particular
+ subsystems
+In-Reply-To: <49E8B2EB.8030108@goop.org>
+Message-ID: <alpine.DEB.2.00.0904171251490.14919@gandalf.stny.rr.com>
+References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-3-git-send-email-jeremy@goop.org> <alpine.DEB.2.00.0904171149100.14919@gandalf.stny.rr.com> <49E8AAC8.5080004@goop.org> <alpine.DEB.2.00.0904171231270.14919@gandalf.stny.rr.com>
+ <49E8B2EB.8030108@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417003805.GI26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+On Fri, 17 Apr 2009, Jeremy Fitzhardinge wrote:
 
-
-> > > Old 
-> > > foo_read_super/foo_write_super/foo_put_super/foo_remount_fs 
-> > > for the same foo.  IOW, per-driver (and not per-fs - that's 
-> > > taken care of) data structures.  Arbitrary weird ones.
-[...]
-> > I fear, unless i'm misunderstanding your feedback, that you are 
-> > setting the purist's irrealistically high burden to get rid of the 
-> > BKL from the VFS here.
+> Steven Rostedt wrote:
+> > Ah yes! It needs to be:
 > > 
-> > "Arbitrary weird ones" means all BKL using sites in the kernel - all 
-> > ~800 ones - up to 800x800 == close to a million interactions to 
-> > check.
+> > #ifdef CONFIG_IRQ_TRACE_POINTS
+> > #undef CONFIG_IRQ_TRACE_POINTS
+> > #include <trace/define_trace.h>
+> > #endif
+> > 
+> > Otherwise we get into the recursion again.
+> >   
 > 
-> Sigh...  How about dumping that lovely strawman?  I've 
-> exsoddingplicitly told you that all such stuff is *within* 
-> *individual* *fs* *driver*.
+> We should probably also move the #define TRACE_SYS in there as well (without
+> the #undef), as it should only have one definition at a time...
 
-Ah, i misunderstood: "per-driver (and not per-fs" to mean to include 
-all other BKL-using Linux drivers as well ;-)
+Actually, I'm kind of against that. Just because as it stands, the 
+TRACE_SYSTEM macro is up at the top, and it is easy to see.
 
-The 'not per-fs' excluded the 'fs driver' meaning (to me).
+Actually, we could do (from the top of the file)
 
-Per fs analysis is of course a must-review if we weaken or change 
-locking.
+#ifdef CONFIG_IRQ_TRACE_POINTS
+#undef CONFIG_IRQ_TRACE_POINTS
 
-> Start with taking these guys down into the superblock methods in question.
-> Drop that junk on VFS-only side of things completely (mount --move,
-> mount --bind, etc.).  Then we go looking for data structures that are
-> 	a) internal to fs driver
-> 	b) accessed by methods in question (in that fs driver)
-> 	c) are shared between different filesystems.
-> 
-> Analysis is on per-fs basis.  And getting rid of these turds 
-> doesn't have to happen in one patch.
+#define TRACE_SYSTEM irq
 
-Stupid question regarding c): wouldnt such data structures go via 
-the VFS - which you said was free of BKL constraints? Or are there 
-interconnected private data structures between certain types of 
-closely related filesystems that the VFS does not know about? (and 
-hence might have BKL assumptions)
+#include <trace/define_trace.h>
 
-	Ingo
+#elif !defined(_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)
+#define _TRACE_IRQ_H
+
+#include <linux/tracepoint.h>
+#include <linux/interrupt.h>
+
+
+[...]
+
+#endif
+
+
+-- Steve
+
