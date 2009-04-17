@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZDQVvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbZDQVwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758050AbZDQVvV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 17:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZDQVvN
+	id S1758433AbZDQVwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 17:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbZDQVwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 17:51:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39673 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbZDQVvM (ORCPT
+	Fri, 17 Apr 2009 17:52:04 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:2086 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZDQVwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 17:51:12 -0400
-Subject: Re: dma-debug: add a check dma memory leaks
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, reinette.chatre@intel.com,
-       benh@kernel.crashing.org, greg@kroah.com
-In-Reply-To: <200903302101.n2UL1O1n011970@hera.kernel.org>
-References: <200903302101.n2UL1O1n011970@hera.kernel.org>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 22:51:05 +0100
-Message-Id: <1240005065.19059.19.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 17 Apr 2009 17:52:03 -0400
+X-Greylist: delayed 541 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 17:52:03 EDT
+Date: Fri, 17 Apr 2009 23:42:12 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mutex: have non-spinning mutexes on s390 by default
+Message-ID: <20090417214212.GG10554@vanheusden.com>
+References: <20090409174758.74abec87@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090409174758.74abec87@osiris.boeblingen.de.ibm.com>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Sat Apr 18 21:15:00 CEST 2009
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
+	key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-30 at 21:01 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/41531c8f5f05aba5ec645d9770557eedbf75b422
-> Commit:     41531c8f5f05aba5ec645d9770557eedbf75b422
+> The adaptive spinning mutexes will not always do what one would expect on
+> virtualized architectures like s390. Especially the cpu_relax() loop in
+> mutex_spin_on_owner might hurt if the mutex holding cpu has been scheduled
+> away by the hypervisor.
+> We would end up in a cpu_relax() loop when there is no chance that the
+> state of the mutex changes until the target cpu has been scheduled again by
+> the hypervisor.
+> For that reason we should change the default behaviour to no-spin on s390.
 
->     dma-debug: add a check dma memory leaks
->     
->     Impact: allow architectures to monitor busses for dma mem leakage
->     
->     This patch adds checking code to detect if a device has pending DMA
->     operations when it is about to be unbound from its device driver.
->     
->     Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Hmmm. Wouldn't this be a change that applies to ibm system p as wel?
+E.g. with linux in an lpar.
 
 
-> +static int dma_debug_device_change(struct notifier_block *nb,
-> +				    unsigned long action, void *data)
-> +{
-> +	struct device *dev = data;
-> +	int count;
-> +
-> +
-> +	switch (action) {
-> +	case BUS_NOTIFY_UNBIND_DRIVER:
-> +		count = device_dma_allocations(dev);
-> +		if (count == 0)
-> +			break;
-> +		err_printk(dev, NULL, "DMA-API: device driver has pending "
-> +				"DMA allocations while released from device "
-> +				"[count=%d]\n", count);
-
-Hm, cute... but not quite functioning as you intended. If you look at
-__device_release_driver() in drivers/base/dd.c you'll see it actually
-calls the notifier _before_ calling into the driver's ->remove() method.
-So it's hardly surprising that not everything has been freed yet...
-
-Reported by Reinette when it bit iwlwifi.
-
-Ben, can we get away with changing the order so that the ->remove() is
-called before the notifier, in this case? 
+Folkert van Heusden
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
