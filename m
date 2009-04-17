@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbZDQBlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbZDQBmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbZDQBlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 21:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZDQBlc
+	id S1757797AbZDQBmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 21:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZDQBmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 21:41:32 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:57987 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbZDQBlb (ORCPT
+	Thu, 16 Apr 2009 21:42:12 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:44016 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753073AbZDQBmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 21:41:31 -0400
-Date: Fri, 17 Apr 2009 07:10:42 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add file based RSS accounting for memory resource
-	controller (v2)
-Message-ID: <20090417014042.GB18558@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090415120510.GX7082@balbir.in.ibm.com> <20090416095303.b4106e9f.kamezawa.hiroyu@jp.fujitsu.com> <20090416015955.GB7082@balbir.in.ibm.com> <20090416110246.c3fef293.kamezawa.hiroyu@jp.fujitsu.com> <20090416164036.03d7347a.kamezawa.hiroyu@jp.fujitsu.com> <20090416171535.cfc4ca84.kamezawa.hiroyu@jp.fujitsu.com> <20090416120316.GG7082@balbir.in.ibm.com> <20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 16 Apr 2009 21:42:11 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiAFAAB450lMQW1W/2dsb2JhbACBTs5ag30G
+Date: Thu, 16 Apr 2009 21:42:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 2/3] RCU move trace defines to rcupdate_types.h
+Message-ID: <20090417014209.GA24956@Krystal>
+References: <20090417003755.276959950@polymtl.ca> <20090417003931.846405986@polymtl.ca> <49E7D701.9090407@goop.org> <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0904162122250.20429@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:39:53 up 47 days, 22:06,  1 user,  load average: 0.43, 0.36,
+	0.37
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-17 09:14:59]:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Thu, 16 Apr 2009, Jeremy Fitzhardinge wrote:
+> 
+> > I don't think this helps.  rcupdate_types.h uses preempt_disable/enable, but
+> > doesn't include linux/preempt.h for them - but someone's going to have to, so
+> > you've got an implicit dependency on the user to #include the right headers in
+> > advance.
+> 
+> Would including linux/preempt.h in rcupdate_types.h be a problem?
+> 
+> -- Steve
+> 
 
-> On Thu, 16 Apr 2009 17:33:16 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-16 17:15:35]:
-> > 
-> > > 
-> > > > Sorry, some troubles found. Ignore above Ack. 3points now.
-> > > > 
-> > > > 1. get_cpu should be after (*)
-> > > > ==mem_cgroup_update_mapped_file_stat()
-> > > > +	int cpu = get_cpu();
-> > > > +
-> > > > +	if (!page_is_file_cache(page))
-> > > > +		return;
-> > > > +
-> > > > +	if (unlikely(!mm))
-> > > > +		mm = &init_mm;
-> > > > +
-> > > > +	mem = try_get_mem_cgroup_from_mm(mm);
-> > > > +	if (!mem)
-> > > > +		return;
-> > > > + ----------------------------------------(*)
-> > > > +	stat = &mem->stat;
-> > > > +	cpustat = &stat->cpustat[cpu];
-> > > > +
-> > > > +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE, val);
-> > > > +	put_cpu();
-> > > > +}
-> > > > ==
-> > 
-> > Yes or I should have a goto
-> > 
-> > > > 
-> > > > 2. In above, "mem" shouldn't be got from "mm"....please get "mem" from page_cgroup.
-> > > > (Because it's file cache, pc->mem_cgroup is not NULL always.)
-> > 
-> > Hmmm.. not sure I understand this part. Are you suggesting that mm can
-> > be NULL?
-> No.
-> 
-> > I added the check for !mm as a safety check. Since this
-> > routine is only called from rmap context, mm is not NULL, hence mem
-> > should not be NULL. Did you find a race between mm->owner assignment
-> > and lookup via mm->owner?
-> > 
-> No.
-> 
-> page_cgroup->mem_cgroup != try_get_mem_cgroup_from_mm(mm);  in many many cases.
-> 
-> For example, libc and /bin/*** is tend to be loaded into default cgroup at boot but
-> used by many cgroups. But mapcount of page caches for /bin/*** is 0 if not running.
-> 
-> Then, File_Mapped can be greater than Cached easily if you use mm->owner.
-> 
-> I can't estimate RSS in *my* cgroup if File_Mapped includes pages which is under 
-> other cgroups. It's meaningless.
-> Especially, when Cached==0 but File_Mapped > 0, I think "oh, the kernel leaks somehing..hmm..."
-> 
-> By useing page_cgroup->mem_cgroup, we can avoid above mess.
+I did not include preempt.h in rcupdate_types.h because rcupdate.h did
+not include it, so I thought it had a special status such a kernel.h.
+However, I notice the rcupdate.h includes spinlock.h, which in turn
+includes preempt.h, so we would need to include preempt.h in
+rcupdate_types.h.
 
-Yes, I see your point. I wanted mapped_file to show up in the cgroup
-that mapped the page. But this works for me as well, but that means
-we'll nest the page cgroup lock under the PTE lock.
+But I think preempt.h is pretty much only type definitions. I don't
+think that would be a problem, but maybe Jeremy knows better.
+
+Mathieu
+
 
 -- 
-	Balbir
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
