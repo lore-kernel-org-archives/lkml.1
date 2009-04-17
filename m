@@ -1,67 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbZDQH4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZDQH5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759874AbZDQH4W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 03:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZDQH4L
+	id S1757511AbZDQH5P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 03:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZDQH44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 03:56:11 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4328 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754352AbZDQH4K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 03:56:10 -0400
-Subject: Re: RFC: introduce struct ksymbol
-From: Joe Perches <joe@perches.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200904152021.41427.rusty@rustcorp.com.au>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com>
-	 <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
-	 <200904152021.41427.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 00:55:33 -0700
-Message-Id: <1239954933.31728.12.camel@localhost>
+	Fri, 17 Apr 2009 03:56:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36991 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754667AbZDQH4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 03:56:55 -0400
+Date: Fri, 17 Apr 2009 09:50:38 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Brice Goglin <brice@myri.com>, "David S. Miller" <davem@davemloft.net>,
+       Linux Network Development list <netdev@vger.kernel.org>
+Subject: Re: [PATCH net-next] myri10ge: allow per-board firmware overriding
+Message-ID: <20090417095038.49b745bf@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <49E7239B.4000309@myri.com>
+References: <49E7239B.4000309@myri.com>
+Organization: RedHat
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-15 at 20:21 +0930, Rusty Russell wrote: 
-> On Wed, 15 Apr 2009 03:28:39 pm Ingo Molnar wrote:
-> > Why not 'struct ksym'? That name is unused right now, it is shorter 
-> > and just as descriptive.
-> > 
-> > Regarding the change... dunno. Sam, Rusty - what do you think?
-> 
-> Yes, ksym is nice.  But agree with you that it's marginal obfuscation
-> to wrap it in a struct.
-> 
-> The current symbol printing APIs are awful; we should address them first
-> (like the %pF patch does) IMHO.
+On Thu, 16 Apr 2009 14:24:59 +0200
+Brice Goglin <brice@myri.com> wrote:
 
-I suggest just %pS<type>
+> --- linux-tmp.old/drivers/net/myri10ge/myri10ge.c	2009-04-08 06:56:50.000000000 +0200
+> +++ linux-tmp/drivers/net/myri10ge/myri10ge.c	2009-04-09 14:00:16.000000000 +0200
+> @@ -255,6 +255,7 @@
+>  	u32 read_write_dma;
+>  	u32 link_changes;
+>  	u32 msg_enable;
+> +	unsigned int board_number;
+>  };
+>  
+>  static char *myri10ge_fw_unaligned = "myri10ge_ethp_z8e.dat";
+> @@ -266,6 +267,13 @@
+>  module_param(myri10ge_fw_name, charp, S_IRUGO | S_IWUSR);
+>  MODULE_PARM_DESC(myri10ge_fw_name, "Firmware image name");
+>  
+> +#define MYRI10GE_MAX_BOARDS 8
+> +static char *myri10ge_fw_names[MYRI10GE_MAX_BOARDS] =
+> +    {[0...(MYRI10GE_MAX_BOARDS - 1)] = NULL };
+> +module_param_array_named(myri10ge_fw_names, myri10ge_fw_names, charp, NULL,
+> +			 0444);
+> +MODULE_PARM_DESC(myri10ge_fw_name, "Firmware image names per board");
+> +
+>  static int myri10ge_ecrc_enable = 1;
+>  module_param(myri10ge_ecrc_enable, int, S_IRUGO);
+>  MODULE_PARM_DESC(myri10ge_ecrc_enable, "Enable Extended CRC on PCI-E");
+> @@ -3258,6 +3266,8 @@
+>  
+>  static void myri10ge_select_firmware(struct myri10ge_priv *mgp)
+>  {
+> +	int overridden = 0;
+> +
+>  	if (myri10ge_force_firmware == 0) {
+>  		int link_width, exp_cap;
+>  		u16 lnk;
+> @@ -3291,10 +3301,18 @@
+>  		}
+>  	}
+>  	if (myri10ge_fw_name != NULL) {
+> -		dev_info(&mgp->pdev->dev, "overriding firmware to %s\n",
+> -			 myri10ge_fw_name);
+> +		overridden = 1;
+>  		mgp->fw_name = myri10ge_fw_name;
+>  	}
+> +	if (mgp->board_number < MYRI10GE_MAX_BOARDS &&
+> +	    myri10ge_fw_names[mgp->board_number] != NULL &&
+> +	    strlen(myri10ge_fw_names[mgp->board_number])) {
+> +		mgp->fw_name = myri10ge_fw_names[mgp->board_number];
+> +		overridden = 1;
+> +	}
+> +	if (overridden)
+> +		dev_info(&mgp->pdev->dev, "overriding firmware to %s\n",
+> +			 mgp->fw_name);
+>  }
+>  
+>  #ifdef CONFIG_PM
+> @@ -3759,6 +3777,7 @@
+>  	int status = -ENXIO;
+>  	int dac_enabled;
+>  	unsigned hdr_offset, ss_offset;
+> +	static int board_number;
+>  
+>  	netdev = alloc_etherdev_mq(sizeof(*mgp), MYRI10GE_MAX_SLICES);
+>  	if (netdev == NULL) {
+> @@ -3775,6 +3794,7 @@
+>  	mgp->pause = myri10ge_flow_control;
+>  	mgp->intr_coal_delay = myri10ge_intr_coal_delay;
+>  	mgp->msg_enable = netif_msg_init(myri10ge_debug, MYRI10GE_MSG_DEFAULT);
+> +	mgp->board_number = board_number;
+>  	init_waitqueue_head(&mgp->down_wq);
+>  
+>  	if (pci_enable_device(pdev)) {
+> @@ -3925,6 +3945,7 @@
+>  			 netdev->irq, mgp->tx_boundary, mgp->fw_name,
+>  			 (mgp->wc_enabled ? "Enabled" : "Disabled"));
+>  
+> +	board_number++;
+>  	return 0;
+>  
+>  abort_with_state:
 
-With %pS, struct ksym is probably not all that
-useful unless it's for something like a sscanf.
+Code assumes boards are always initialized in the same order. I suppose
+this is always true and is nothing wrong here. However perhaps linux could
+provide some form of modules/boot parameters that are used with
+an identification number like MAC address. Example:
 
-Today there are these symbol uses:
-name, offset, size, modname
+module my_parms="id1:param1;id2:param2;" 
 
-So perhaps %pS<foo> where foo is any combination of:
+char *get_module_param_id(const char *param, const char *id)
 
-n name
-o offset
-s size
-m modname
-a all
+This would help in situation like this - admin will not have to thinking
+about boards initialization ordering. Besides some other drivers (like MTD
+cmd partitions) use own parsing for similar things, I think would be
+nice to unify things. What You think?
 
-and if not specified is a name lookup ("%pSn").
-
-
+Cheers
+Stanislaw
