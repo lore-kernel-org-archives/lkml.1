@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbZDQPLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbZDQPMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbZDQPLv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 11:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758541AbZDQPLo
+	id S1761351AbZDQPMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 11:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758541AbZDQPMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 11:11:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43857 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758050AbZDQPLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 11:11:43 -0400
-Date: Fri, 17 Apr 2009 17:11:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2 0/5] [GIT PULL] ftrace,tracing/events rebase updates.
-Message-ID: <20090417151135.GG23493@elte.hu>
-References: <20090417144055.857407604@goodmis.org>
+	Fri, 17 Apr 2009 11:12:03 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:41682 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760475AbZDQPMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 11:12:01 -0400
+Date: Fri, 17 Apr 2009 11:04:41 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
+In-Reply-To: <1239979901.23397.4638.camel@laptop>
+Message-ID: <alpine.DEB.1.10.0904171100510.21575@qirst.com>
+References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>  <1239951613.23397.4107.camel@laptop>  <alpine.DEB.1.10.0904170941020.11877@qirst.com>  <1239977776.23397.4590.camel@laptop>  <alpine.DEB.1.10.0904171021360.20239@qirst.com>
+ <1239979901.23397.4638.camel@laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090417144055.857407604@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 17 Apr 2009, Peter Zijlstra wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> And a random 1us cutoff, is well, random.
 
-> Ingo,
-> 
-> I have already sent these patches once to you. This version updates the
-> change logs to put the impact lines at the end. It also folds in
-> you delay.h missing header fix, and adds my fix to the event tests.
-> The two updates are both done to tracing/events: add startup tests for events
-> 
-> The rest of the patches should be identical.
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Avadh Patel (1):
->       tracing: add saved_cmdlines file to show cached task comms
-> 
-> Steven Rostedt (4):
->       ftrace: use module notifier for function tracer
->       tracing/events: add startup tests for events
->       tracing/events/ring-buffer: expose format of ring buffer headers to users
->       tracing/events: perform function tracing in event selftests
-> 
-> ----
->  include/linux/ftrace.h      |    7 -
->  include/linux/module.h      |    4 +
->  include/linux/ring_buffer.h |    5 +
->  kernel/module.c             |   19 +--
->  kernel/trace/ftrace.c       |   90 ++++++++++----
->  kernel/trace/ring_buffer.c  |   44 +++++++
->  kernel/trace/trace.c        |   53 ++++++++
->  kernel/trace/trace_events.c |  282 +++++++++++++++++++++++++++++++++++++++++++
->  8 files changed, 459 insertions(+), 45 deletions(-)
+Its got to be somewhere.
 
-Pulled, thanks a lot Steve!
+> If you want to reduce interrupts, that's fine, but not counting an
+> interrupt because its below the magic 1us marker sounds a bit, well,
+> magic -- might work for you, might not for me on another machine, might
+> even be compiler dependent.
 
-Will let you know if there's any further self-test failures.
+The point is to reduce the interrupts of user space application. Hardware
+interrupts etc are something else. Maybe I should not use the term
+interrupt. Cpu unavailability? Cache pollution?
 
-	Ingo
+> So 5 <1us interruption are not at all accounted, whereas a single 1>us
+> interruption is. I'd rather get rid of those 5 than try and shave a bit
+> of the one, if you get what I mean.
+
+Ok. We can set the threshold lower and see how that goes.
+
+> Furthermore, yes the scheduler is one of those jiffy tick users, but
+> there are more. We can do ntp/gtod things in there, there is process
+> accounting, there is some RCU machinery, timers etc..
+
+Again things were fine before the scheduler changed.
+
+Could we defer interrupts if a single process is running on a cpu and
+there is no other process on the runqueue and no other use of the timer
+interrupt?
+
