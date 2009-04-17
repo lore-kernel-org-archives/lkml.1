@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZDQIE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbZDQIHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbZDQIE1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 04:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZDQIEG
+	id S1759037AbZDQIHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 04:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZDQIHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 04:04:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54870 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbZDQIEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 04:04:01 -0400
-Message-ID: <49E837EC.5000202@redhat.com>
-Date: Fri, 17 Apr 2009 10:03:56 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: simplify I/O stat accounting
-References: <49E72F19.1030400@redhat.com> <20090416163456.GR5178@kernel.dk> <20090416163728.GS5178@kernel.dk> <20090416163831.GT5178@kernel.dk> <20090416164253.GU5178@kernel.dk>
-In-Reply-To: <20090416164253.GU5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 17 Apr 2009 04:07:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40446
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753552AbZDQIHT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 04:07:19 -0400
+Date: Fri, 17 Apr 2009 01:07:10 -0700 (PDT)
+Message-Id: <20090417.010710.59150850.davem@davemloft.net>
+To: paulmck@linux.vnet.ibm.com
+Cc: dada1@cosmosbay.com, shemminger@vyatta.com, kaber@trash.net,
+       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com,
+       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu spinlock rather than RCU (v3)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090417054032.GD6885@linux.vnet.ibm.com>
+References: <20090416215033.3e648a7a@nehalam>
+	<49E810B0.9000906@cosmosbay.com>
+	<20090417054032.GD6885@linux.vnet.ibm.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Apr 16 2009, Jens Axboe wrote:
->> On Thu, Apr 16 2009, Jens Axboe wrote:
->>> On Thu, Apr 16 2009, Jens Axboe wrote:
->>>> On Thu, Apr 16 2009, Jerome Marchand wrote:
->>>>> This simplifies I/O stat accounting switching code and separates it
->>>>> completely from I/O scheduler switch code.
->>>>>
->>>>> Requests are accounted according to the state of their request queue
->>>>> at the time of the request allocation. There is no need anymore to
->>>>> flush the request queue when switching I/O accounting state.
->>>> This is cleaner, I like it. I'll apply it, but I'm changing this one:
->>>>
->>>>> @@ -792,9 +792,10 @@ static struct request *get_request(struct
->>>>> request_queue *q, int rw_flags,
->>>>>  	if (priv)
->>>>>  		rl->elvpriv++;
->>>>>
->>>>> +	iostat = blk_queue_io_stat(q) ? REQ_IO_STAT : 0;
->>>>>  	spin_unlock_irq(q->queue_lock);
->>>> to a regular if, I hate these ?: constructs. An if is much more
->>>> readable, imho.
->>> Grmbl, your patch is line wrapped. Please fix your mailer.
->> And it doesn't apply to current -git. Looks like a hand apply, but
->> please be a little more careful in the future.
-> 
-> OK, it doesn't even compile either:
-> 
-> +#define blk_rq_io_stat(rq)     ((rq)->flags & REQ_IO_STAT)
-> 
-> that wants to be ->cmd_flags.
-> 
-> Please resend when you have something that at least compiles. If you
-> send untested stuff my way, at least tell me.
-> 
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Date: Thu, 16 Apr 2009 22:40:32 -0700
 
-Hi Jens,
+> I completely agree that this RCU is absolutely -not- 2.6.30 material.  ;-)
 
-I'm very sorry about this. I didn't send you a patch which does not
-compiles on purpose. I was working on backporting that patch on an older
-version of the kernel. It looks like I hand-edited that patch by mistake
-before I sent it to you.
+I don't understand why we're writing such complicated code.
 
-Jérôme
+Oh I see why, it's because not every arch uses the generic SMP helpers
+yet :-)
+
+Because if they did universally, we could solve this problem so
+simply, by merely sending a remote softirq to every online cpu.  Once
+those all complete we have enough of a quiesce period, every cpu must
+have exited any netfilter packet processing code path they were in.
+
+And we could know they complete using an atomic counter or something.
