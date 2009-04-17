@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZDQACX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZDQADh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbZDQACX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Apr 2009 20:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbZDQACJ
+	id S1758139AbZDQADh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Apr 2009 20:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZDQAD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Apr 2009 20:02:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39907 "EHLO mx3.mail.elte.hu"
+	Thu, 16 Apr 2009 20:03:28 -0400
+Received: from gw.goop.org ([64.81.55.164]:60297 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758027AbZDQACI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Apr 2009 20:02:08 -0400
-Date: Fri, 17 Apr 2009 02:01:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Alessio Igor Bogani <abogani@texware.it>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
-	syscalls with a mutex
-Message-ID: <20090417000142.GF21405@elte.hu>
-References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk>
+	id S1753516AbZDQAD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Apr 2009 20:03:27 -0400
+Message-ID: <49E7C74A.8030100@goop.org>
+Date: Thu, 16 Apr 2009 17:03:22 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416235649.GF26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/8] tracing: create automated trace defines
+References: <20090414172337.280621613@goodmis.org> <20090414172640.796858018@goodmis.org> <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal>
+In-Reply-To: <20090416234410.GA20513@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mathieu Desnoyers wrote:
+> The other point I dislike about the out-of-line approach is that the
+> tracer will suffer from a pointless supplementary function call at each
+> event. Given how slow function calls are, at least on x86, I'd prefer
+> leaving the handler call chain inline, unless there is a very strong
+> reason not to do so.
+>   
 
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+Are they?  They're generally considered to be "free", because the call 
+and return are predicted 100% accurately.
 
-> remount is potentially nastier, but then it *is* nasty.  Again, 
-> it's only per-fs stuff, so the obvious first step is taking BKL 
-> down into the instances. It doesn't protect anything in VFS; all 
-> uses are fs internal, so that'll take review of individual 
-> filesystems.
-> 
-> NOTE: do not assume that code in fs/foo/* is correct; "it doesn't 
-> take BKL elsewhere" does _not_ mean that we don't have races.  
-> IOW, the same review ought to look for such beasts and deal with 
-> them.  Mere "oh, no BKL anywhere in that fs" is not enough to 
-> discard the ->remount_fs() instance.
+> I'll come up with a patch that leaves the tracepoint inline, but fixes
+> the header dependency.
+>   
+OK.
 
-what kind of races do you mean? Timing sensitive ones that are there 
-just are not easy to trigger with the BKL held?
-
-Or actual locking interaction between that body of BKL code and all 
-other BKL using code?
-
-	Ingo
+    J
