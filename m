@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbZDQRvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762279AbZDQRwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932133AbZDQRvU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 13:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759536AbZDQRvI
+	id S1762279AbZDQRwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 13:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbZDQRwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 13:51:08 -0400
-Received: from gw0.danplanet.com ([71.245.107.82]:41773 "EHLO
-	mail.danplanet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759045AbZDQRvI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 13:51:08 -0400
-X-Greylist: delayed 1968 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Apr 2009 13:51:07 EDT
-From: Dan Smith <danms@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       serue@us.ibm.com
-Subject: [PATCH] Make new_utsname fields use the proper length constant
-Date: Fri, 17 Apr 2009 10:18:16 -0700
-Message-Id: <1239988696-18140-1-git-send-email-danms@us.ibm.com>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 17 Apr 2009 13:52:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53235 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759075AbZDQRwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 13:52:11 -0400
+Date: Fri, 17 Apr 2009 17:51:37 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       sam@ravnborg.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, tglx@linutronix.de
+In-Reply-To: <20090415234642.GA28531@uranus.ravnborg.org>
+References: <20090415234642.GA28531@uranus.ravnborg.org>
+Subject: [tip:x86/urgent] x86, kbuild: make "make install" not depend on vmlinux
+Message-ID: <tip-e56cb7f5e74af194585be4a2a6fc55a88f5be3ad@git.kernel.org>
+Git-Commit-ID: e56cb7f5e74af194585be4a2a6fc55a88f5be3ad
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 17:51:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The members of the new_utsname structure are defined with magic numbers
-that *should* correspond to the constant __NEW_UTS_LEN+1.  Everywhere else,
-code assumes this and uses the constant, so this patch makes the structure
-match.
+Commit-ID:  e56cb7f5e74af194585be4a2a6fc55a88f5be3ad
+Gitweb:     http://git.kernel.org/tip/e56cb7f5e74af194585be4a2a6fc55a88f5be3ad
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Fri, 17 Apr 2009 10:46:37 -0700
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 17 Apr 2009 10:46:37 -0700
 
-Originally suggested by Serge here:
+x86, kbuild: make "make install" not depend on vmlinux
 
-https://lists.linux-foundation.org/pipermail/containers/2009-March/016258.html
+It is common to use "make install" in restricted environments which
+differ from the one which was actually used to build the kernel.  In
+such environments it is highly undesirable to trigger a rebuild of any
+part of the system.  Worse, the rebuild may be spurious, triggered by
+differences in the environment.
 
-Signed-off-by: Dan Smith <danms@us.ibm.com>
-Cc: containers@lists.linux-foundation.org
-Cc: akpm@linux-foundation.org
-Cc: serue@us.ibm.com
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+LKML-Reference: <20090415234642.GA28531@uranus.ravnborg.org>
+
+
 ---
- include/linux/utsname.h |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/Makefile |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/utsname.h b/include/linux/utsname.h
-index 1123267..3656b30 100644
---- a/include/linux/utsname.h
-+++ b/include/linux/utsname.h
-@@ -22,12 +22,12 @@ struct old_utsname {
- };
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index f05d8c9..8c86b72 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -153,7 +153,7 @@ endif
  
- struct new_utsname {
--	char sysname[65];
--	char nodename[65];
--	char release[65];
--	char version[65];
--	char machine[65];
--	char domainname[65];
-+	char sysname[__NEW_UTS_LEN + 1];
-+	char nodename[__NEW_UTS_LEN + 1];
-+	char release[__NEW_UTS_LEN + 1];
-+	char version[__NEW_UTS_LEN + 1];
-+	char machine[__NEW_UTS_LEN + 1];
-+	char domainname[__NEW_UTS_LEN + 1];
- };
+ boot := arch/x86/boot
  
- #ifdef __KERNEL__
--- 
-1.5.6.3
-
+-BOOT_TARGETS = bzlilo bzdisk fdimage fdimage144 fdimage288 isoimage install
++BOOT_TARGETS = bzlilo bzdisk fdimage fdimage144 fdimage288 isoimage
+ 
+ PHONY += bzImage $(BOOT_TARGETS)
+ 
+@@ -171,6 +171,10 @@ bzImage: vmlinux
+ $(BOOT_TARGETS): vmlinux
+ 	$(Q)$(MAKE) $(build)=$(boot) $@
+ 
++PHONY += install
++install:
++	$(Q)$(MAKE) $(build)=$(boot) $@
++
+ PHONY += vdso_install
+ vdso_install:
+ 	$(Q)$(MAKE) $(build)=arch/x86/vdso $@
