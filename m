@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbZDQSGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbZDQSI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbZDQSGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 14:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757406AbZDQSGb
+	id S1762297AbZDQSI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 14:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZDQSIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 14:06:31 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57586 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756924AbZDQSGa (ORCPT
+	Fri, 17 Apr 2009 14:08:51 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47911 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758713AbZDQSIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 14:06:30 -0400
-Date: Fri, 17 Apr 2009 13:06:13 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dan Smith <danms@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Make new_utsname fields use the proper length constant
-Message-ID: <20090417180613.GA22658@us.ibm.com>
-References: <1239988696-18140-1-git-send-email-danms@us.ibm.com>
+	Fri, 17 Apr 2009 14:08:50 -0400
+Date: Fri, 17 Apr 2009 19:08:32 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH -tip] remove the BKL: Replace BKL in mount/umount
+	syscalls with a mutex
+Message-ID: <20090417180832.GL26366@ZenIV.linux.org.uk>
+References: <1239892078-6039-1-git-send-email-abogani@texware.it> <20090416160645.GB17804@elte.hu> <20090416235649.GF26366@ZenIV.linux.org.uk> <20090417000142.GF21405@elte.hu> <20090417001345.GH26366@ZenIV.linux.org.uk> <20090417002744.GB29630@elte.hu> <20090417003805.GI26366@ZenIV.linux.org.uk> <20090417165643.GL8253@elte.hu> <1239987885.23397.4817.camel@laptop> <alpine.LFD.2.00.0904171010470.4042@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239988696-18140-1-git-send-email-danms@us.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0904171010470.4042@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dan Smith (danms@us.ibm.com):
-> The members of the new_utsname structure are defined with magic numbers
-> that *should* correspond to the constant __NEW_UTS_LEN+1.  Everywhere else,
-> code assumes this and uses the constant, so this patch makes the structure
-> match.
-> 
-> Originally suggested by Serge here:
-> 
-> https://lists.linux-foundation.org/pipermail/containers/2009-March/016258.html
-> 
-> Signed-off-by: Dan Smith <danms@us.ibm.com>
-> Cc: containers@lists.linux-foundation.org
-> Cc: akpm@linux-foundation.org
-> Cc: serue@us.ibm.com
+On Fri, Apr 17, 2009 at 10:21:06AM -0700, Linus Torvalds wrote:
 
-I realize it's weird putting __NEW_UTS_LEN+1 in the
-length for struct old_utsname :), but you didn't make
-up the names, so I would argue just do it for both
-old_utsname and oldold_utsname too...
-
-But of course even if you don't want to,
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks, Dan.
-
--serge
-
-> ---
->  include/linux/utsname.h |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
+> Of course, right now we do hold the BKL over _multiple_ downcalls, so in 
+> that sense it's not actually totally 100% correct and straightforward to 
+> just move it down. Eg in the generic_shutdown_super() case we do
 > 
-> diff --git a/include/linux/utsname.h b/include/linux/utsname.h
-> index 1123267..3656b30 100644
-> --- a/include/linux/utsname.h
-> +++ b/include/linux/utsname.h
-> @@ -22,12 +22,12 @@ struct old_utsname {
->  };
+> 	lock_kernel();
+> 	  ->write_super();
+> 	  ->put_super();
+> 	invalidate_inodes();
+> 	unlock_kernel();
 > 
->  struct new_utsname {
-> -	char sysname[65];
-> -	char nodename[65];
-> -	char release[65];
-> -	char version[65];
-> -	char machine[65];
-> -	char domainname[65];
-> +	char sysname[__NEW_UTS_LEN + 1];
-> +	char nodename[__NEW_UTS_LEN + 1];
-> +	char release[__NEW_UTS_LEN + 1];
-> +	char version[__NEW_UTS_LEN + 1];
-> +	char machine[__NEW_UTS_LEN + 1];
-> +	char domainname[__NEW_UTS_LEN + 1];
->  };
+> and obviously if we split it up so that we push a lock_kernel() into both, 
+> we end up unlocking in between. I doubt anything cares, but it's still a 
+> technical difference.
+
+No, that's OK.  Anything that would expect on lack of blocking between
+the callers of ->write_super() and ->put_super() is simply insane.  Not
+that other callers of ->write_super() had been under BKL, while we are
+at it...
+
+> There are similar issues with 'remount' holding the BKL over longer 
+> sequences.
 > 
->  #ifdef __KERNEL__
-> -- 
-> 1.5.6.3
+> Btw, the superblock code really does seem to depend on lock_kernel. Those 
+> "sb->s_flags" accesses are literally not protected by anything else afaik.
+
+Modifications in there *should* be protected by ->s_umount.  Except that
+emergency_remount() does down_read() instead of down_write(), for some
+reason.  And that fs going r/o on error very likely will not hold any
+locks at all, BKL included.
+
+Note that most of the readers really couldn't care less about protection.
+Single-shot tests for one bit like "is this fs mounted noatime right now?" 
+are OK as is - we don't *care* if it races with remount and no way to
+do anything about such race anyway.
+
+Read-only is the main exception; we should be mostly OK since the per-vfsmount
+r/o rework, but "I have an error and I'll go r/o now" stuff is still messy.
+
+> That said, I think that fs/locks.c is likely a much bigger issue. Very few 
+> people care about any realtimeness of mount/unmount/remount. But file 
+> locking? That is much more likely to be an issue.
+
+That is much more likely to require really non-trivial work, BTW.  That code
+is a *mess* and inventing sane locking for it will be painful.
