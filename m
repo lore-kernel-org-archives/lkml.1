@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZDQUhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZDQUmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbZDQUhf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 16:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZDQUh0
+	id S1755845AbZDQUmW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 16:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZDQUmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 16:37:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37121 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907AbZDQUhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 16:37:25 -0400
-Date: Fri, 17 Apr 2009 20:36:43 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       sam@ravnborg.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1239991281.3153.4.camel@ht.satnam>
-References: <1239991281.3153.4.camel@ht.satnam>
-Subject: [tip:x86/urgent] x86: mm/numa_32.c calculate_numa_remap_pages should use __init
-Message-ID: <tip-f3ebb04784182f7c3d7dfc037a292201ce0c6ac9@git.kernel.org>
-Git-Commit-ID: f3ebb04784182f7c3d7dfc037a292201ce0c6ac9
-X-Mailer: tip-git-log-daemon
+	Fri, 17 Apr 2009 16:42:14 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:38994 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbZDQUmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 16:42:13 -0400
+Date: Fri, 17 Apr 2009 16:34:47 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
+In-Reply-To: <1239994719.23397.4979.camel@laptop>
+Message-ID: <alpine.DEB.1.10.0904171629470.26593@qirst.com>
+References: <alpine.DEB.1.10.0904161539130.23632@qirst.com>  <1239951613.23397.4107.camel@laptop>  <alpine.DEB.1.10.0904170941020.11877@qirst.com>  <1239977776.23397.4590.camel@laptop>  <alpine.DEB.1.10.0904171021360.20239@qirst.com>  <1239979901.23397.4638.camel@laptop>
+  <alpine.DEB.1.10.0904171100510.21575@qirst.com>  <20090417153520.GA29968@elte.hu>  <alpine.DEB.1.10.0904171142050.13734@qirst.com>  <1239985426.23397.4757.camel@laptop> <20090417164918.GK8253@elte.hu>  <alpine.DEB.1.10.0904171335490.28603@qirst.com> 
+ <1239991892.23397.4905.camel@laptop>  <alpine.DEB.1.10.0904171410540.28536@qirst.com> <1239994719.23397.4979.camel@laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Apr 2009 20:36:45 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f3ebb04784182f7c3d7dfc037a292201ce0c6ac9
-Gitweb:     http://git.kernel.org/tip/f3ebb04784182f7c3d7dfc037a292201ce0c6ac9
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Fri, 17 Apr 2009 23:31:20 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 17 Apr 2009 21:04:31 +0200
+On Fri, 17 Apr 2009, Peter Zijlstra wrote:
 
-x86: mm/numa_32.c calculate_numa_remap_pages should use __init
+> > often must occur in parallel on multiple cores. Processing is delayed if
+> > any of the cores encounters a delay due to OS noise.
+>
+> So you have hard deadlines in the order of us? Are these SCHED_FIFO
+> tasks or SCHED_OTHER?
 
-calculate_numa_remap_pages() is called only by __init initmem_init()
-further calculate_numa_remap_pages is calling:
-	__init find_e820_area() and __init reserve_early()
+SCHED_FIFO has the effect of removing all the involuntary context switches
+but it does not effect the other interrutions.
 
-So calculate_numa_remap_pages() should be __init calculate_numa_remap_pages().
+> Your Xeon is a core2 class machine and should have relatively stable
+> TSC, however its also a dual socket, which I think defeats the
+> stable-ness.
 
- WARNING: arch/x86/built-in.o(.text+0x82ea3): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:find_e820_area()
- The function calculate_numa_remap_pages() references
- the function __init find_e820_area().
- This is often because calculate_numa_remap_pages lacks a __init
- annotation or the annotation of find_e820_area is wrong.
+> What clocksource do you have?
+>
+> cat /sys/devices/system/clocksource/clocksource0/current_clocksource
 
- WARNING: arch/x86/built-in.o(.text+0x82f5f): Section mismatch in reference from the function calculate_numa_remap_pages() to the function .init.text:reserve_early()
- The function calculate_numa_remap_pages() references
- the function __init reserve_early().
- This is often because calculate_numa_remap_pages lacks a __init
- annotation or the annotation of reserve_early is wrong.
+cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+tsc
 
-[ Impact: save memory, address Section mismatch warning ]
+> Also, looking over the rest of the scheduler tick code, I can't really
+> see what would be so expensive.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-LKML-Reference: <1239991281.3153.4.camel@ht.satnam>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+The expensiveness may be fine if we can limit the number of occurences.
+Maybe the histograms for those releases give more insight.
 
-
----
- arch/x86/mm/numa_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
-index 3daefa0..d253006 100644
---- a/arch/x86/mm/numa_32.c
-+++ b/arch/x86/mm/numa_32.c
-@@ -257,7 +257,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
- }
- #endif
- 
--static unsigned long calculate_numa_remap_pages(void)
-+static __init unsigned long calculate_numa_remap_pages(void)
- {
- 	int nid;
- 	unsigned long size, reserve_pages = 0;
