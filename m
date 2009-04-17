@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZDQFwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbZDQF4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbZDQFwP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 01:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZDQFv7
+	id S1757751AbZDQF4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 01:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZDQF4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 01:51:59 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63271 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909AbZDQFv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 01:51:58 -0400
-Message-ID: <49E81935.8060402@cn.fujitsu.com>
-Date: Fri, 17 Apr 2009 13:52:53 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: fix file mode of trace and README
-References: <49E7EAB6.4070605@cn.fujitsu.com> <20090417054447.GA6020@nowhere>
-In-Reply-To: <20090417054447.GA6020@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 17 Apr 2009 01:56:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49045 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbZDQF4U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Apr 2009 01:56:20 -0400
+Subject: Re: [PATCH] netfilter: per-cpu spin-lock with recursion (v0.8)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org, dada1@cosmosbay.com,
+       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, benh@kernel.crashing.org
+In-Reply-To: <20090416165233.5d8bbfb5@nehalam>
+References: <20090415170111.6e1ca264@nehalam>
+	 <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	 <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net>
+	 <20090416234955.GL6924@linux.vnet.ibm.com>
+	 <20090416165233.5d8bbfb5@nehalam>
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 07:55:37 +0200
+Message-Id: <1239947737.23397.4018.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-04-16 at 16:52 -0700, Stephen Hemminger wrote:
 
->> -	trace_create_file("current_tracer", 0444, d_tracer,
->> +	trace_create_file("current_tracer", 0644, d_tracer,
->>  			&global_trace, &set_tracer_fops);
-> 
-> 
-> 
-> Oh!
-> I wonder how much time we ran with this false permission.
-> It clearly shows a bug in debugfs permission (or something
-> near this this layer), we have be running with this file
-> for a while and I've never seen any issue while writing into it.
-> 
-> And we have seen several patches with 0444 permissions for the
-> tracing tree containing writeable files, showing that the authors
-> ran them whithout problems.
-> 
+>   - Lockdep doesn't really handle this well
 
-It's not a bug in debugfs or vfs. It's just because root can
-do anything. ;)
+> +/**
+> + * xt_table_info_lock_all - lock xt table info for update
+> + *
+> + * Locks out all readers, and blocks bottom half
+> + */
+> +void xt_table_info_lock_all(void)
+> +{
+> +	int i;
+> +
+> +	local_bh_disable();
+> +	for_each_possible_cpu(i) {
+> +		struct xt_lock *lock = &per_cpu(xt_info_locks, i);
+> +		spin_lock(&lock->lock);
+> +		BUG_ON(lock->depth != -1);
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(xt_table_info_lock_all);
 
-> Adding Greg in Cc.
-> 
+Quite so, this is the old MAX_LOCK_DEPTH < NR_CPUS issue for large
+systems.
+
+Last time this came up David found another way of solving the problem.
+Not having fully read this thread, I cannot suggest one myself -- except
+that RCU domains as suggested by David sound good.
+
+
 
