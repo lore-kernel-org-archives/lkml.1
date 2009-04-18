@@ -1,113 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZDRKWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZDRKhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbZDRKWq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 06:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZDRKWi
+	id S1755819AbZDRKhr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 06:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZDRKhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 06:22:38 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:65383 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbZDRKWh convert rfc822-to-8bit (ORCPT
+	Sat, 18 Apr 2009 06:37:33 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53698 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754009AbZDRKhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 06:22:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=aSx0AikjLdFrpoMs6mNpiNo478jD8QKiXxRV5DNrA8C8hJ0461XKmCI1bGDLK+PugX
-         wN6+dImebUBzOyAtBbchfl08yaW1mqO6TjmJ8M5S5nBSCd7rbksEm78O/KkTrR7vLNMS
-         Qu00ml5tbD/dAATKqNn17te3xlEfRIWD3HdlQ=
-From: Florian Fainelli <florian@openwrt.org>
-To: "Peter Holik" <peter@holik.at>
-Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
-Date: Sat, 18 Apr 2009 12:22:33 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at> <200904171632.26091.florian@openwrt.org> <a3ca03e82d9afad72346dc5b4ae251c7.squirrel@webmail.it-technology.at>
-In-Reply-To: <a3ca03e82d9afad72346dc5b4ae251c7.squirrel@webmail.it-technology.at>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904181222.33869.florian@openwrt.org>
+	Sat, 18 Apr 2009 06:37:32 -0400
+Date: Sat, 18 Apr 2009 13:37:29 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Peter Holik <peter@holik.at>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [Resend][PATCH] usb driver for intellon int51x1 based PLC like
+      devolo dlan duo
+In-Reply-To: <cb6d2886e87af66d945f1052e6eb8a85.squirrel@webmail.it-technology.at>
+Message-ID: <Pine.LNX.4.64.0904181311470.3600@wrl-59.cs.helsinki.fi>
+References: <cb6d2886e87af66d945f1052e6eb8a85.squirrel@webmail.it-technology.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Saturday 18 April 2009 08:48:22 Peter Holik, vous avez écrit :
-> > Hi Peter,
-> >
-> > Nice to see such a driver coming up!
->
-> thanks
->
-> > Le Friday 17 April 2009 16:10:24 Peter Holik, vous avez écrit :
-> >> Signed-off-by: Peter Holik <peter@holik.at>
-> >> ---
-> >>  drivers/net/usb/Kconfig    |    7 +
-> >>  drivers/net/usb/Makefile   |    2 +-
-> >>  drivers/net/usb/intellon.c |  273
-> >> ++++++++++++++++++++++++++++++++++++++++++++ 3 files changed, 281
-> >> insertions(+), 1 deletions(-)
-> >>  create mode 100644 drivers/net/usb/intellon.c
-> >>
-> >> diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
-> >> index 8ee2103..068faa5 100644
-> >> --- a/drivers/net/usb/Kconfig
-> >> +++ b/drivers/net/usb/Kconfig
-> >> @@ -345,4 +345,11 @@ config USB_HSO
-> >>  	  To compile this driver as a module, choose M here: the
-> >>  	  module will be called hso.
-> >>
-> >> +config USB_NET_INTELLON
-> >> +	tristate "Intellon PLC based usb adapter"
-> >> +	depends on USB_USBNET
-> >> +	help
-> >> +	  Choose this option if you're using a PLC (Powerline Communications)
-> >> +	  solution with an Intellon chip, like the "devolo dLan duo".
-> >> +
-> >
-> > Please be more specific, i.e: using a USB-based PLC (...) solution.
-> >
-> > There might be support for PLC PHYs connected to a MII-bus in a near
-> > future, even though they will not reside in drivers/net/usb/.
->
-> What do you mean with the last sentence?
+On Sat, 18 Apr 2009, Peter Holik wrote:
 
-I mean that one might come up with a design that uses Intellon PLC PHY chips 
-only with a custom MAC chip, not integrated MAC+PHY chips only, therefore a 
-more specific naming is required, that's purely cosmetic though.
+> This is a usb driver for the intellon int51x1 based PLC
+> (Powerline Communications) like devolo dlan duo.
+> 
+> Signed-off-by: Peter Holik <peter@holik.at>
+> ---
+>  drivers/net/usb/Kconfig   |    8 ++
+>  drivers/net/usb/Makefile  |    1 +
+>  drivers/net/usb/int51x1.c |  268 +++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 277 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/net/usb/int51x1.c
+> 
+> diff --git a/drivers/net/usb/int51x1.c b/drivers/net/usb/int51x1.c
+> new file mode 100644
+> index 0000000..44a8a09
+> --- /dev/null
+> +++ b/drivers/net/usb/int51x1.c
+> @@ -0,0 +1,268 @@
 
->
-> >>  endmenu
-> >> diff --git a/drivers/net/usb/Makefile b/drivers/net/usb/Makefile
-> >> index 88a87ee..0fccfe9 100644
-> >> --- a/drivers/net/usb/Makefile
-> >> +++ b/drivers/net/usb/Makefile
-> >> @@ -19,4 +19,4 @@ obj-$(CONFIG_USB_NET_CDC_SUBSET)	+= cdc_subset.o
-> >>  obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
-> >>  obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
-> >>  obj-$(CONFIG_USB_USBNET)	+= usbnet.o
-> >> -
-> >> +obj-$(CONFIG_USB_NET_INTELLON)	+= intellon.o
-> >
-> > I would not name this intellon for the same reasons as explained below,
-> > but rather int51x1.c since this driver will for instance not work with
-> > HomePlug AV designs which use different Intellon integrated chips like
-> > the 6000 and 6300 series.
->
-> work in progress...
+> +static int int51x1_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
+> +{
+> +	int len;
+> +
+> +	if (unlikely(skb->len < INT51X1_HEADER_SIZE)) {
 
-Cool :)
+pskb_may_pull(...)
 
-> Disagree, because i've taken "nibble" and "get_ethernet_addr" from
-> cdc_ether.c to have the same code (the version of Jan was different).
+> +		deverr(dev, "unexpected tiny rx frame");
+> +		return 0;
+> +	}
+> +
+> +	len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
+> +
+> +	skb_trim(skb, len);
+> +
+> +	return 1;
+> +}
+> +
+> +static struct sk_buff *int51x1_tx_fixup(struct usbnet *dev,
+> +		struct sk_buff *skb, gfp_t flags)
+> +{
+> +	int pack_len = skb->len;
+> +	int headroom = skb_headroom(skb);
+> +	int tailroom = skb_tailroom(skb);
+> +	int need_tail = 0;
+> +	__le16 *len;
+> +
+> +	/*
+> +	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
+> +	 * but we need to know ourself, because this would add to the length
+> +	 * we send down to the device...
+> +	 */
+> +	if (!((pack_len + INT51X1_HEADER_SIZE) % dev->maxpacket))
+> +		need_tail = 1;
+> +
+> +	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
+> +	if ((pack_len + INT51X1_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
+> +		need_tail = dev->maxpacket + 1 - pack_len - INT51X1_HEADER_SIZE;
 
-Ok.
+This is totally crazy code fragment, first need_tail is used like a 
+boolean? But on the same some +1 scalar trick is being done? Is there some 
+reason why DIV_ROUND_UP (linux/kernel.h) won't do what you want here and 
+then you can trivally find diff = new - old ?
+
+> +	if (!skb_cloned(skb) &&
+> +			(headroom + tailroom >= need_tail + INT51X1_HEADER_SIZE)) {
+> +		if (headroom < INT51X1_HEADER_SIZE || tailroom < need_tail) {
+> +			skb->data = memmove(skb->head + INT51X1_HEADER_SIZE,
+> +					skb->data, skb->len);
+> +			skb_set_tail_pointer(skb, skb->len);
+> +		}
+> +	} else {
+> +		struct sk_buff *skb2;
+> +
+> +		skb2 = skb_copy_expand(skb,
+> +				INT51X1_HEADER_SIZE,
+> +				need_tail,
+> +				flags);
+> +		dev_kfree_skb_any(skb);
+> +		if (!skb2)
+> +			return NULL;
+> +		skb = skb2;
+> +	}
+> +
+> +	pack_len += need_tail;
+> +	pack_len &= 0x07ff;
+> +
+> +	len = (__le16 *) __skb_push(skb, INT51X1_HEADER_SIZE);
+> +	*len = cpu_to_le16(pack_len);
+> +
+> +	if(need_tail)
+> +		memset(__skb_put(skb, need_tail), 0, need_tail);
+> +
+> +	return skb;
+> +}
+> +
+> +static void int51x1_async_cmd_callback(struct urb *urb)
+> +{
+> +	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
+> +	int status = urb->status;
+> +
+> +	if (status < 0)
+> +		dev_warn(&urb->dev->dev, "async callback failed with %d\n", status);
+> +
+> +	kfree(req);
+> +	usb_free_urb(urb);
+> +}
+> +
+> +static void int51x1_set_multicast(struct net_device *netdev)
+> +{
+> +	struct usb_ctrlrequest *req;
+> +	int status;
+> +	struct urb *urb;
+> +	struct usbnet *dev = netdev_priv(netdev);
+> +	u16 filter = PACKET_TYPE_DIRECTED |
+> +		     PACKET_TYPE_BROADCAST;
+
+Won't this fit on a single line?
+
+> +
+> +	if (netdev->flags & IFF_PROMISC) {
+> +		/* do not expect to see traffic of other PLCs */
+> +		filter |= PACKET_TYPE_PROMISCUOUS;
+> +		devinfo(dev, "promiscuous mode enabled");
+> +	} else if (netdev->mc_count ||
+> +		  (netdev->flags & IFF_ALLMULTI)) {
+> +		filter |= PACKET_TYPE_ALL_MULTICAST;
+> +		devdbg(dev, "receive all multicast enabled");
+> +	} else {
+> +		/* ~PROMISCUOUS, ~MULTICAST */
+> +		devdbg(dev, "receive own packets only");
+> +	}
+> +
+> +	urb = usb_alloc_urb(0, GFP_ATOMIC);
+> +	if (!urb) {
+> +		devwarn(dev, "Error allocating URB");
+> +		return;
+> +	}
+> +
+> +	req = kmalloc(sizeof *req, GFP_ATOMIC);
+
+sizeof(*req)
+
+> +	if (!req) {
+> +		devwarn(dev, "Error allocating control msg");
+> +		usb_free_urb(urb);
+> +		return;
+
+I'd use gotos instead for error handling since you need similar call in 
+the later error handling block too. Gotos make it somewhat harder to miss 
+some necessary rollback actions in one of the error blocks (not that 
+this case is buggy atm).
+
+> +	}
+> +
+> +	req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+> +	req->bRequest = SET_ETHERNET_PACKET_FILTER;
+> +	req->wValue = cpu_to_le16(filter);
+> +	req->wIndex = 0;
+> +	req->wLength = 0;
+> +
+> +	usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
+> +		(void *)req, NULL, 0,
+> +		int51x1_async_cmd_callback,
+> +		(void *)req);
+> +
+> +	status = usb_submit_urb(urb, GFP_ATOMIC);
+> +	if (status < 0) {
+> +		devwarn(dev, "Error submitting control msg, sts=%d", status);
+> +		kfree(req);
+> +		usb_free_urb(urb);
+
+Ditto.
+
+> +	}
+> +}
+
 -- 
-Best regards, Florian Fainelli
-Email : florian@openwrt.org
-http://openwrt.org
--------------------------------
+ i.
