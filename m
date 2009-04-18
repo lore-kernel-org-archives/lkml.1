@@ -1,146 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbZDRSoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbZDRSsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758989AbZDRSoo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZDRSof
+	id S1756779AbZDRSsc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZDRSsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:44:35 -0400
-Received: from cmpxchg.org ([85.214.51.133]:54755 "EHLO cmpxchg.org"
+	Sat, 18 Apr 2009 14:48:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45386 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753848AbZDRSof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:44:35 -0400
-Date: Sat, 18 Apr 2009 20:43:37 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH for mmotm 0414] vmscan,memcg: reintroduce sc->may_swap
-Message-ID: <20090418184337.GA5556@cmpxchg.org>
-References: <20090418152100.125A.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755133AbZDRSsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 14:48:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Russell King <rmk+lkml@arm.linux.org.uk>, Len Brown <lenb@kernel.org>
+Subject: [PATCH] PM/Suspend: Introduce two new platform callbacks to avoid breakage (Re: 900af0d breaks some embedded suspend/resume)
+Date: Sat, 18 Apr 2009 20:47:47 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <20090417231009.GB6900@flint.arm.linux.org.uk> <200904181626.10388.rjw@sisk.pl> <20090418144132.GC7148@flint.arm.linux.org.uk>
+In-Reply-To: <20090418144132.GC7148@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090418152100.125A.A69D9226@jp.fujitsu.com>
+Message-Id: <200904182047.48009.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi KOSAKI-san,
-
-On Sat, Apr 18, 2009 at 03:26:02PM +0900, KOSAKI Motohiro wrote:
-> Subject: vmscan,memcg: reintroduce sc->may_swap
+On Saturday 18 April 2009, Russell King wrote:
+> On Sat, Apr 18, 2009 at 04:26:09PM +0200, Rafael J. Wysocki wrote:
+> > On Saturday 18 April 2009, Russell King wrote:
+> > > On Sat, Apr 18, 2009 at 03:23:35PM +0200, Rafael J. Wysocki wrote:
+> > > > The patchset in question had been discussed quite extensively before it was
+> > > > merged and it's a pity none of the people caring for the affected platforms
+> > > > took part in those discussions.  That would allow us to avoid the breakage.
+> > > 
+> > > Maybe on some list, but not everyone is subscribed to a million and one
+> > > mailing lists.  I don't have enough time to read those which I'm currently
+> > > subscribed to, so I definitely don't want any more.
+> > > 
+> > > > > or provide alternative equivalent functionality where the platform code is
+> > > > > notified of the PM event prior to the late suspend callback being issued.
+> > > > 
+> > > > There is the .begin() callback that could be used, but if you need the
+> > > > platform to be notified _just_ prior to the late suspend callback, then the
+> > > > only thing I can think of at the moment is the appended patch.
+> > > > 
+> > > > It shouldn't break anything in theory, because the majority of drivers put
+> > > > their devices into low power states in the "regular" suspend callbacks anyway.
+> > > 
+> > > Okay, my requirement is:
+> > > 
+> > > What I need to be able to do is to suspend most devices on the host side
+> > > which may involve talking to a separate microcontroller via I2C to shut
+> > > down power to peripherals.
+> > > 
+> > > Once that's complete, I then need to inform this microcontroller via I2C
+> > > that we're going to be entering suspend mode, and wait for it to acknowledge
+> > > that (after it's done its own suspend preparations).  At that point I can
+> > > shutdown the I2C controller, and enter suspend mode.
+> > 
+> > Would it be an option to use a sysdev for that?
 > 
-> vmscan-rename-scmay_swap-to-may_unmap.patch removed may_swap flag,
-> but memcg had used it as a flag for "we need to use swap?", as the
-> name indicate.
+> No, sysdevs are shut down after IRQs are turned off and the I2C driver
+> has been shut down.  The I2C driver needs IRQs to work in slave mode,
+> and we need slave mode to work.
 > 
-> And in current implementation, memcg cannot reclaim mapped file caches
-> when mem+swap hits the limit.
+> > This patch undoes some previous changes, but I'm not too comfortable with
+> > it, because I think that putting devices into low power states after
+> > .prepare() may not work on some ACPI systems.  Since devices should
+> > generally be put into low power states during the "late" suspend (ie.
+> > when their interrupt handlers are not invoked), it may be quite
+> > inconvenient.
 > 
-> re-introduce may_swap flag and handle it at get_scan_ratio().
-> This patch doesn't influence any scan_control users other than memcg.
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> --
->  mm/vmscan.c |   12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c	2009-04-16 21:25:41.000000000 +0900
-> +++ b/mm/vmscan.c	2009-04-16 21:56:54.000000000 +0900
-> @@ -64,6 +64,9 @@ struct scan_control {
->  	/* Can mapped pages be reclaimed? */
->  	int may_unmap;
->  
-> +	/* Can pages be swapped as part of reclaim? */
-> +	int may_swap;
-> +
->  	/* This context's SWAP_CLUSTER_MAX. If freeing memory for
->  	 * suspend, we effectively ignore SWAP_CLUSTER_MAX.
->  	 * In this context, it doesn't matter that we scan the
-> @@ -1387,7 +1390,7 @@ static void get_scan_ratio(struct zone *
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
->  
->  	/* If we have no swap space, do not bother scanning anon pages. */
-> -	if (nr_swap_pages <= 0) {
-> +	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+> Maybe we need yet more levels of callbacks? :P
 
-I wonder if may_swap is a good name for this effect.  See below the
-__zone_reclaim() comments.
+In fact, as a minimal fix that doesn't invalidate the testing of current Linus'
+tree already done in this cycle, I'd like to apply the appended patch.
 
->  		percent[0] = 0;
->  		percent[1] = 100;
->  		return;
-> @@ -1704,6 +1707,7 @@ unsigned long try_to_free_pages(struct z
->  		.may_writepage = !laptop_mode,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
->  		.may_unmap = 1,
-> +		.may_swap = 1,
->  		.swappiness = vm_swappiness,
->  		.order = order,
->  		.mem_cgroup = NULL,
-> @@ -1724,6 +1728,7 @@ unsigned long try_to_free_mem_cgroup_pag
->  	struct scan_control sc = {
->  		.may_writepage = !laptop_mode,
->  		.may_unmap = 1,
-> +		.may_swap = 1,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
->  		.swappiness = swappiness,
->  		.order = 0,
-> @@ -1734,7 +1739,7 @@ unsigned long try_to_free_mem_cgroup_pag
->  	struct zonelist *zonelist;
->  
->  	if (noswap)
-> -		sc.may_unmap = 0;
-> +		sc.may_swap = 0;
+It adds two new platform suspend callbacks so that we can avoid the apparent
+conflict between ACPI and the other platforms.  Details are in the changelog.
 
-Can this be directly initialized?
+If Len doesn't object, I'd like this one to go to 2.6.30, but I'm going to
+clean up the platform suspend and hibernation callbacks eventually.
 
-struct scan_control sc = {
-	...
-	.may_swap = !noswap,
-	...
-};
+Thanks,
+Rafael
 
->  	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
->  			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> @@ -1774,6 +1779,7 @@ static unsigned long balance_pgdat(pg_da
->  	struct scan_control sc = {
->  		.gfp_mask = GFP_KERNEL,
->  		.may_unmap = 1,
-> +		.may_swap = 1,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
->  		.swappiness = vm_swappiness,
->  		.order = order,
-> @@ -2120,6 +2126,7 @@ unsigned long shrink_all_memory(unsigned
->  	struct scan_control sc = {
->  		.gfp_mask = GFP_KERNEL,
->  		.may_unmap = 0,
-> +		.may_swap = 1,
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM/Suspend: Introduce two new platform callbacks to avoid breakage
 
-shrink_all_memory() is not a user of shrink_zone() -> get_scan_ratio()
-and therefor not affected by this flag.  I think it's better not to
-set it here (just like sc->swappiness).
+Commit 900af0d973856d6feb6fc088c2d0d3fde57707d3 (PM: Change suspend
+code ordering) changed the ordering of suspend code in such a way
+that the platform .prepare() callback is now executed after the
+device drivers' late suspend callbacks have run.  Unfortunately, this
+turns out to break ARM platforms that need to talk via I2C to power
+control devices during the .prepare() callback.
 
->  		.may_writepage = 1,
->  		.isolate_pages = isolate_pages_global,
->  	};
-> @@ -2304,6 +2311,7 @@ static int __zone_reclaim(struct zone *z
->  	struct scan_control sc = {
->  		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
->  		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-> +		.may_swap = 1,
+For this reason introduce two new platform suspend callbacks,
+.prepare_late() and .wake(), that will be called just prior to
+disabling non-boot CPUs and right after bringing them back on line,
+respectively, and use them instead of .prepare() and .finish() for
+ACPI suspend.  Make the PM core execute the .prepare() and .finish()
+platform suspend callbacks where they were executed previously (that
+is, right after calling the regular suspend methods provided by
+device drivers and right before executing their regular resume
+methods, respectively).
 
-Shouldn't this be set to !!(zone_reclaim_mode & RECLAIM_SWAP) as well?
+It is not necessary to make analogous changes to the hibernation
+code and data structures at the moment, because they are only used
+by ACPI platforms.
 
-With set to 1, zone_reclaim() will also reclaim unmapped swap cache
-pages (without swapping) and it might be desirable to do that.  But
-then may_swap is a confusing name.  may_anon?  may_scan_anon?
-scan_anon?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/acpi/sleep.c    |    8 ++++----
+ include/linux/suspend.h |   36 ++++++++++++++++++++++++++----------
+ kernel/power/main.c     |   24 +++++++++++++++++-------
+ 3 files changed, 47 insertions(+), 21 deletions(-)
 
-	Hannes
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -291,20 +291,26 @@ static int suspend_enter(suspend_state_t
+ 
+ 	device_pm_lock();
+ 
++	if (suspend_ops->prepare) {
++		error = suspend_ops->prepare();
++		if (error)
++			goto Done;
++	}
++
+ 	error = device_power_down(PMSG_SUSPEND);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down\n");
+-		goto Done;
++		goto Platfrom_finish;
+ 	}
+ 
+-	if (suspend_ops->prepare) {
+-		error = suspend_ops->prepare();
++	if (suspend_ops->prepare_late) {
++		error = suspend_ops->prepare_late();
+ 		if (error)
+ 			goto Power_up_devices;
+ 	}
+ 
+ 	if (suspend_test(TEST_PLATFORM))
+-		goto Platfrom_finish;
++		goto Platform_wake;
+ 
+ 	error = disable_nonboot_cpus();
+ 	if (error || suspend_test(TEST_CPUS))
+@@ -326,13 +332,17 @@ static int suspend_enter(suspend_state_t
+  Enable_cpus:
+ 	enable_nonboot_cpus();
+ 
+- Platfrom_finish:
+-	if (suspend_ops->finish)
+-		suspend_ops->finish();
++ Platform_wake:
++	if (suspend_ops->wake)
++		suspend_ops->wake();
+ 
+  Power_up_devices:
+ 	device_power_up(PMSG_RESUME);
+ 
++ Platfrom_finish:
++	if (suspend_ops->finish)
++		suspend_ops->finish();
++
+  Done:
+ 	device_pm_unlock();
+ 
+Index: linux-2.6/include/linux/suspend.h
+===================================================================
+--- linux-2.6.orig/include/linux/suspend.h
++++ linux-2.6/include/linux/suspend.h
+@@ -58,10 +58,17 @@ typedef int __bitwise suspend_state_t;
+  *	by @begin().
+  *	@prepare() is called right after devices have been suspended (ie. the
+  *	appropriate .suspend() method has been executed for each device) and
+- *	before the nonboot CPUs are disabled (it is executed with IRQs enabled).
+- *	This callback is optional.  It returns 0 on success or a negative
+- *	error code otherwise, in which case the system cannot enter the desired
+- *	sleep state (@enter() and @finish() will not be called in that case).
++ *	before device drivers' late suspend callbacks are executed.  It returns
++ *	0 on success or a negative error code otherwise, in which case the
++ *	system cannot enter the desired sleep state (@prepare_late(), @enter(),
++ *	@wake(), and @finish() will not be called in that case).
++ *
++ * @prepare_late: Finish preparing the platform for entering the system sleep
++ *	state indicated by @begin().
++ *	@prepare_late is called before disabling nonboot CPUs and after
++ *	device drivers' late suspend callbacks have been executed.  It returns
++ *	0 on success or a negative error code otherwise, in which case the
++ *	system cannot enter the desired sleep state (@enter() and @wake()).
+  *
+  * @enter: Enter the system sleep state indicated by @begin() or represented by
+  *	the argument if @begin() is not implemented.
+@@ -69,19 +76,26 @@ typedef int __bitwise suspend_state_t;
+  *	error code otherwise, in which case the system cannot enter the desired
+  *	sleep state.
+  *
+- * @finish: Called when the system has just left a sleep state, right after
+- *	the nonboot CPUs have been enabled and before devices are resumed (it is
+- *	executed with IRQs enabled).
++ * @wake: Called when the system has just left a sleep state, right after
++ *	the nonboot CPUs have been enabled and before device drivers' early
++ *	resume callbacks are executed.
++ *	This callback is optional, but should be implemented by the platforms
++ *	that implement @prepare_late().  If implemented, it is always called
++ *	after @enter(), even if @enter() fails.
++ *
++ * @finish: Finish wake-up of the platform.
++ *	@finish is called right prior to calling device drivers' regular suspend
++ *	callbacks.
+  *	This callback is optional, but should be implemented by the platforms
+  *	that implement @prepare().  If implemented, it is always called after
+- *	@enter() (even if @enter() fails).
++ *	@enter() and @wake(), if implemented, even if any of them fails.
+  *
+  * @end: Called by the PM core right after resuming devices, to indicate to
+  *	the platform that the system has returned to the working state or
+  *	the transition to the sleep state has been aborted.
+  *	This callback is optional, but should be implemented by the platforms
+- *	that implement @begin(), but platforms implementing @begin() should
+- *	also provide a @end() which cleans up transitions aborted before
++ *	that implement @begin().  Accordingly, platforms implementing @begin()
++ *	should also provide a @end() which cleans up transitions aborted before
+  *	@enter().
+  *
+  * @recover: Recover the platform from a suspend failure.
+@@ -93,7 +107,9 @@ struct platform_suspend_ops {
+ 	int (*valid)(suspend_state_t state);
+ 	int (*begin)(suspend_state_t state);
+ 	int (*prepare)(void);
++	int (*prepare_late)(void);
+ 	int (*enter)(suspend_state_t state);
++	void (*wake)(void);
+ 	void (*finish)(void);
+ 	void (*end)(void);
+ 	void (*recover)(void);
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -300,9 +300,9 @@ static int acpi_suspend_state_valid(susp
+ static struct platform_suspend_ops acpi_suspend_ops = {
+ 	.valid = acpi_suspend_state_valid,
+ 	.begin = acpi_suspend_begin,
+-	.prepare = acpi_pm_prepare,
++	.prepare_late = acpi_pm_prepare,
+ 	.enter = acpi_suspend_enter,
+-	.finish = acpi_pm_finish,
++	.wake = acpi_pm_finish,
+ 	.end = acpi_pm_end,
+ };
+ 
+@@ -328,9 +328,9 @@ static int acpi_suspend_begin_old(suspen
+ static struct platform_suspend_ops acpi_suspend_ops_old = {
+ 	.valid = acpi_suspend_state_valid,
+ 	.begin = acpi_suspend_begin_old,
+-	.prepare = acpi_pm_disable_gpes,
++	.prepare_late = acpi_pm_disable_gpes,
+ 	.enter = acpi_suspend_enter,
+-	.finish = acpi_pm_finish,
++	.wake = acpi_pm_finish,
+ 	.end = acpi_pm_end,
+ 	.recover = acpi_pm_finish,
+ };
