@@ -1,168 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZDRVhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbZDRViK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbZDRVhb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 17:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZDRVhW
+	id S1759166AbZDRViK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 17:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZDRVhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 17:37:22 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:55338 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbZDRVhV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 17:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=kvDqargOtUjRG9rADHEA7eOC7/xaGeJkzt680Owkus9lk9epfBjLl2n4bfl9OooAFj
-         hj9FfPvxXyf8Psa+KP5X4qin85NmCHKpUeTIJl7K3Cwnw1z4t733NxDZoTadTPFGtxnQ
-         RYV2MIMkGr3DLhyXGoaZbammX4YfWhh4c9ais=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Paul Menage <menage@google.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7] cgroup: io-throttle controller (v14)
-Date: Sat, 18 Apr 2009 23:37:09 +0200
-Message-Id: <1240090636-898-1-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Sat, 18 Apr 2009 17:37:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57498 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752655AbZDRVhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 17:37:54 -0400
+Message-ID: <49EA47C5.1010009@kernel.org>
+Date: Sat, 18 Apr 2009 14:36:05 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: clean up setup_clear/force_cpu_cap handling - resend
+References: <49DD97F3.2060005@kernel.org>
+In-Reply-To: <49DD97F3.2060005@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Objective
-~~~~~~~~~
-The objective of the io-throttle controller is to improve IO performance
-predictability of different cgroups that share the same block devices.
+ping.
 
-State of the art (quick overview)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A recent work made by Vivek propose a weighted BW solution introducing
-fair queuing support in the elevator layer and modifying the existent IO
-schedulers to use that functionality
-(https://lists.linux-foundation.org/pipermail/containers/2009-March/016129.html).
+Ingo, can you pick it up?
 
-For the fair queuing part Vivek's IO controller makes use of the BFQ
-code as posted by Paolo and Fabio (http://lkml.org/lkml/2008/11/11/148).
+YH
 
-The dm-ioband controller by the valinux guys is also proposing a
-proportional ticket-based solution fully implemented at the device
-mapper level (http://people.valinux.co.jp/~ryov/dm-ioband/).
+Yinghai Lu wrote:
+> it looks get lost somehow,... resend again.
+> 
+> Impact: fix and cleanup
+> 
+> setup_force_cpu_cap() only have one user xen
+> but it should not reuse cleared_cpu_cpus. it will have problem
+> for smp.
+> 
+> need to have cpu_cpus_set array too.
+> also need to setup handling before all cpus cap AND
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
+> 
+> ---
+>  arch/x86/include/asm/cpufeature.h |    4 ++--
+>  arch/x86/include/asm/processor.h  |    3 ++-
+>  arch/x86/kernel/cpu/common.c      |   17 ++++++++++++-----
+>  3 files changed, 16 insertions(+), 8 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/include/asm/cpufeature.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/cpufeature.h
+> +++ linux-2.6/arch/x86/include/asm/cpufeature.h
+> @@ -192,11 +192,11 @@ extern const char * const x86_power_flag
+>  #define clear_cpu_cap(c, bit)	clear_bit(bit, (unsigned long *)((c)->x86_capability))
+>  #define setup_clear_cpu_cap(bit) do { \
+>  	clear_cpu_cap(&boot_cpu_data, bit);	\
+> -	set_bit(bit, (unsigned long *)cleared_cpu_caps); \
+> +	set_bit(bit, (unsigned long *)cpu_caps_cleared); \
+>  } while (0)
+>  #define setup_force_cpu_cap(bit) do { \
+>  	set_cpu_cap(&boot_cpu_data, bit);	\
+> -	clear_bit(bit, (unsigned long *)cleared_cpu_caps);	\
+> +	set_bit(bit, (unsigned long *)cpu_caps_set);	\
+>  } while (0)
+>  
+>  #define cpu_has_fpu		boot_cpu_has(X86_FEATURE_FPU)
+> Index: linux-2.6/arch/x86/include/asm/processor.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/processor.h
+> +++ linux-2.6/arch/x86/include/asm/processor.h
+> @@ -135,7 +135,8 @@ extern struct cpuinfo_x86	boot_cpu_data;
+>  extern struct cpuinfo_x86	new_cpu_data;
+>  
+>  extern struct tss_struct	doublefault_tss;
+> -extern __u32			cleared_cpu_caps[NCAPINTS];
+> +extern __u32			cpu_caps_cleared[NCAPINTS];
+> +extern __u32			cpu_caps_set[NCAPINTS];
+>  
+>  #ifdef CONFIG_SMP
+>  DECLARE_PER_CPU(struct cpuinfo_x86, cpu_info);
+> Index: linux-2.6/arch/x86/kernel/cpu/common.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/common.c
+> +++ linux-2.6/arch/x86/kernel/cpu/common.c
+> @@ -293,7 +293,8 @@ static const char *__cpuinit table_looku
+>  	return NULL;		/* Not found */
+>  }
+>  
+> -__u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
+> +__u32 cpu_caps_cleared[NCAPINTS] __cpuinitdata;
+> +__u32 cpu_caps_set[NCAPINTS] __cpuinitdata;
+>  
+>  void load_percpu_segment(int cpu)
+>  {
+> @@ -807,6 +808,16 @@ static void __cpuinit identify_cpu(struc
+>  #endif
+>  
+>  	init_hypervisor(c);
+> +
+> +	/*
+> +	 * Clear/Set all flags overriden by options, need do it
+> +	 * before following smp all cpus cap AND.
+> +	 */
+> +	for (i = 0; i < NCAPINTS; i++) {
+> +		c->x86_capability[i] &= ~cpu_caps_cleared[i];
+> +		c->x86_capability[i] |= cpu_caps_set[i];
+> +	}
+> +
+>  	/*
+>  	 * On SMP, boot_cpu_data holds the common feature set between
+>  	 * all CPUs; so make sure that we indicate which features are
+> @@ -819,10 +830,6 @@ static void __cpuinit identify_cpu(struc
+>  			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
+>  	}
+>  
+> -	/* Clear all flags overriden by options */
+> -	for (i = 0; i < NCAPINTS; i++)
+> -		c->x86_capability[i] &= ~cleared_cpu_caps[i];
+> -
+>  #ifdef CONFIG_X86_MCE
+>  	/* Init Machine Check Exception if available. */
+>  	mcheck_init(c);
+> 
 
-The bio-cgroup patch (http://people.valinux.co.jp/~ryov/bio-cgroup/) is
-a BIO tracking mechanism for cgroups, implemented in the cgroup memory
-subsystem. It is maintained by Ryo and it allows dm-ioband to track
-writeback requests issued by kernel threads (pdflush).
-
-Another work by Satoshi implements the cgroup awareness in CFQ, mapping
-per-cgroup priority to CFQ IO priorities and this also provide only the
-proportional BW support (http://lwn.net/Articles/306772/).
-
-Please correct me or integrate if I missed someone or something. :)
-
-Proposed solution
-~~~~~~~~~~~~~~~~~
-Respect to other priority/weight-based solutions the approach used by
-this controller is to explicitly choke applications' requests that
-directly or indirectly generate IO activity in the system (this
-controller addresses both synchronous IO and writeback/buffered IO).
-
-The bandwidth and iops limiting method has the advantage of improving
-the performance predictability at the cost of reducing, in general, the
-overall performance of the system in terms of throughput.
-
-IO throttling and accounting is performed during the submission of IO
-requests and it is independent of the particular IO scheduler.
-
-Detailed informations about design, goal and usage are described in the
-documentation (see [PATCH 1/7]).
-
-Implementation
-~~~~~~~~~~~~~~
-Patchset against latest Linus' git:
-
-  [PATCH 0/7] cgroup: block device IO controller (v14)
-  [PATCH 1/7] io-throttle documentation
-  [PATCH 2/7] res_counter: introduce ratelimiting attributes
-  [PATCH 3/7] page_cgroup: provide a generic page tracking infrastructure
-  [PATCH 4/7] io-throttle controller infrastructure
-  [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
-  [PATCH 6/7] io-throttle instrumentation
-  [PATCH 7/7] export per-task io-throttle statistics to userspace
-
-The v14 all-in-one patch, along with the previous versions, can be found at:
-http://download.systemimager.org/~arighi/linux/patches/io-throttle/
-
-What's new
-~~~~~~~~~~
-In this new version I've embedded the bio-cgroup code inside
-io-throttle, providing the page_cgroup page tracking infrastructure.
-
-This completely removes the complexity and the overhead of associating
-multiple IO controllers (bio-cgroup groups and io-throttle groups) from
-userspace, preserving the same tracking and throttling functionalities
-for writeback IO. And it is also possibel to bind other cgroup
-subsystems with io-throttle.
-
-I've removed the tracking of IO generated by anonymous pages (swap), to
-reduce the overhead of the page tracking functionality (and probably is
-not a good idea to delay IO requests that come from swap-in/swap-out
-operations).
-
-I've also removed the ext3 specific patch to tag journal IO with
-BIO_RW_META to never throttle such IO requests.
-
-As suggested by Ted and Jens we need a more specific solution, where
-filesystems inform the IO subsystem which IO requests come from tasks
-that are holding filesystem exclusive resources (journal IO, metadata,
-etc.). Then, the IO subsystem (both the IO scheduler and the IO
-controller) will be able to dispatched those "special" requests at the
-highest priority to avoid the classic priority inversion problems.
-
-Changelog (v13 -> v14)
-~~~~~~~~~~~~~~~~~~~~~~
-* implemented the bio-cgroup functionality as pure infrastructure for page
-  tracking capability
-* removed the tracking and throttling of IO generated by anonymous pages (swap)
-* updated documentation
-
-Overall diffstat
-~~~~~~~~~~~~~~~~
- Documentation/cgroups/io-throttle.txt |  417 +++++++++++++++++
- block/Makefile                        |    1 +
- block/blk-core.c                      |    8 +
- block/blk-io-throttle.c               |  822 +++++++++++++++++++++++++++++++++
- block/kiothrottled.c                  |  341 ++++++++++++++
- fs/aio.c                              |   12 +
- fs/buffer.c                           |    2 +
- fs/proc/base.c                        |   18 +
- include/linux/blk-io-throttle.h       |  144 ++++++
- include/linux/cgroup_subsys.h         |    6 +
- include/linux/memcontrol.h            |    6 +
- include/linux/mmzone.h                |    4 +-
- include/linux/page_cgroup.h           |   33 ++-
- include/linux/res_counter.h           |   69 ++-
- include/linux/sched.h                 |    7 +
- init/Kconfig                          |   16 +
- kernel/fork.c                         |    7 +
- kernel/res_counter.c                  |   72 +++
- mm/Makefile                           |    3 +-
- mm/bounce.c                           |    2 +
- mm/filemap.c                          |    2 +
- mm/memcontrol.c                       |    6 +
- mm/page-writeback.c                   |    2 +
- mm/page_cgroup.c                      |   95 ++++-
- mm/readahead.c                        |    3 +
- 25 files changed, 2065 insertions(+), 33 deletions(-)
-
--Andrea
