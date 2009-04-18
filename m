@@ -1,87 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZDRJOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZDRJPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZDRJOL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 05:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDRJNy
+	id S1754807AbZDRJPg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 05:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDRJP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 05:13:54 -0400
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:34941 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752477AbZDRJNx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 05:13:53 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-04.arcor-online.net 6D62D33A863
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: Proposal: make RAID6 code optional
-Date: Sat, 18 Apr 2009 11:16:57 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
-References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru>
-In-Reply-To: <49E98AD2.8060601@msgid.tls.msk.ru>
+	Sat, 18 Apr 2009 05:15:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52069 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752621AbZDRJP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 05:15:26 -0400
+Date: Sat, 18 Apr 2009 11:15:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] pci: don't assume pref memio are 64bit -v2
+Message-ID: <20090418091509.GM7678@elte.hu>
+References: <49E992C2.4010707@kernel.org> <49E99303.50004@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3476140.tpsoIuz6W5";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200904181117.03418.prakash@punnoor.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E99303.50004@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3476140.tpsoIuz6W5
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Samstag 18 April 2009 10:09:54 Michael Tokarev wrote:
-> Prakash Punnoor wrote:
-> > Hi,
-> >
-> > as I am using only RAID5 I wonder why the RAID6 code also needs to be
-> > built. Here is a rough patch of making RAID6 optional (but depending on
-> > raid456) without reording of functions to minimize ifdef scattering.
-> > (I also haven't checked yet who needs ASYNC_MEMCPY and ASYNC_XOR...)
-> > It would probably be nicer to make RAID4/5 and RAID6 independently
-> > selectable of each other. But that requires more refactoring, as I can
-> > see.
->
-> Hm.  In "old good days" there were 3 independent kernel modules,
-> named raid4, raid5 and raid6.  Later on, they got merged into one
-> since they share quite alot of the code, and has only a few specific
-> parts.  Now you're trying to separate them back somewhat....
->
-> What's your goal?  What's the problem you're trying to solve?
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-Having duplicate code is not good, of course. But unused code is also not=20
-good. As I said, I only use RAID5, so I don't need RAID6 support. The RAID6=
-=20
-support enlarges kernel (the built-in.o in drivers/md grows from 325kb to=20
-414kb in my case), making boot time and compile time longer - admittedly no=
-t=20
-by a big margin. But then again I could argue: Why not put RAID0,1,10,4,5,6=
-=20
-into one big module? Makes no sense, huh? For me putting 5 and 6 into one=20
-monolithic module makes no sense. A proper architecture would be to have so=
-me=20
-common shared code (in a separate module?), not a monolithic big one.
+> one system with 4g installed ( there is 1g hole)
+> 
+> when 4G installed.
+> BIOS put ACPI etc need the hole
+> [    0.000000] BIOS-provided physical RAM map:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
+> [    0.000000]  BIOS-e820: 000000000009bc00 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000e3000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bffa0000 (usable)
+> [    0.000000]  BIOS-e820: 00000000bffa0000 - 00000000bffae000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000bffae000 - 00000000bfff0000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000bfff0000 - 00000000c0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000ffb00000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+> so in kernel resource will be reserved for 0xbffa0000 - 0xbfff0000 for ACPI
+> 0x100000 -  0xbffa0000 for RAM...
 
-Regards,
+btw., sidenote, it would be nice to enhance the e820 table printout 
+with size and hole info as well. I did this manually yesterday in 
+another mail:
 
-Prakash
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)       0.639 MB RAM
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)     0.001 MB
+                                                [ hole ]       0.250 MB
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)     0.125 MB
+ BIOS-e820: 0000000000100000 - 000000003ed94000 (usable)    1004.5   MB RAM
+ BIOS-e820: 000000003ed94000 - 000000003ee4e000 (ACPI NVS)     0.7   MB
+ BIOS-e820: 000000003ee4e000 - 000000003fea2000 (usable)      16.3   MB RAM
+ BIOS-e820: 000000003fea2000 - 000000003fee9000 (ACPI NVS)     0.3   MB
+ BIOS-e820: 000000003fee9000 - 000000003feed000 (usable)       0.15  MB RAM
+ BIOS-e820: 000000003feed000 - 000000003feff000 (ACPI data     0.07  MB
+ BIOS-e820: 000000003feff000 - 000000003ff00000 (usable)       0.004 MB RAM
+                                                [ hole ]       1.0   MB
+                                                [ hole ]    3072.0   MB
 
---nextPart3476140.tpsoIuz6W5
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+it would be extremely useful to have that in the printout, to see 
+the physical address space layout at a glance. Small holes are easy 
+to miss, and e820 entry sizes are hard to judge at a glance.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+To make this fit well, i'd suggest to drop the 'BIOS-e820: ' prefix 
+- it's redundant.
 
-iEYEABECAAYFAknpmo8ACgkQxU2n/+9+t5gAjQCgnarwbnwbhh6vVIjh28N+tm03
-k3MAnR1E4A2hO/bO3IOR/+10X9FLWOIY
-=sFld
------END PGP SIGNATURE-----
-
---nextPart3476140.tpsoIuz6W5--
+	Ingo
