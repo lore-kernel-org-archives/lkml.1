@@ -1,82 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbZDRU00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbZDRU1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbZDRU00 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 16:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZDRU0R
+	id S1759890AbZDRU1q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 16:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZDRU1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 16:26:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37495 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753461AbZDRU0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 16:26:16 -0400
-Date: Sat, 18 Apr 2009 22:25:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
+	Sat, 18 Apr 2009 16:27:37 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51620 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754118AbZDRU1g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 16:27:36 -0400
+Subject: Re: [PATCH] pci: keep pci device resource name pointer right.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2/3] pci: don't assume pref memio are 64bit -v2
-Message-ID: <20090418202511.GA30144@elte.hu>
-References: <49E992C2.4010707@kernel.org> <49E99303.50004@kernel.org> <20090418200909.GA23229@jurassic.park.msu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090418200909.GA23229@jurassic.park.msu.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       linux-pci@vger.kernel.org
+In-Reply-To: <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com>
+References: <20090416172803.GB16618@elte.hu>
+	 <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain>
+	 <20090416235452.GE21405@elte.hu>
+	 <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain>
+	 <20090417131633.GA30578@elte.hu> <49E8FD0B.2050308@zytor.com>
+	 <49E96731.1000501@kernel.org>
+	 <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain>
+	 <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de>
+	 <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 18 Apr 2009 22:27:26 +0200
+Message-Id: <1240086446.2411.9.camel@poy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
-
-> On Sat, Apr 18, 2009 at 01:44:51AM -0700, Yinghai Lu wrote:
-> > and BIOS set
-> > [    0.240007] pci 0000:00:01.0: bridge 64bit mmio pref: [0xbdf00000-0xddefffff]
+On Sat, 2009-04-18 at 22:00 +0200, Kay Sievers wrote:
+> On Sat, Apr 18, 2009 at 21:23, Greg KH <gregkh@suse.de> wrote:
+> > On Sat, Apr 18, 2009 at 12:19:21PM -0700, Yinghai Lu wrote:
+> >> Linus Torvalds wrote:
 > 
-> An obvious BIOS bug, the bridge base overlaps the physical low RAM 
-> (0x00000000-0xc0000000). Technically speaking, this nonsense 
-> *happens* to work on Intel hardware, so it seems to be quite 
-> common bug nowadays - BIOS writers get lost in ACPI and other 
-> "useful" stuff contradicting the PCI specs.
-
-it doesnt matter whether we call it a BIOS bug or not.
-
-> ...
+> >> > Can we not make the rule be that the name should just be set before?
 > 
-> > +	/* don't allocate too high if the pref mem doesn't support 64bit*/
-> > +	if ((res->flags & (IORESOURCE_PREFETCH | PCI_PREF_RANGE_TYPE_64)) ==
-> > +	    IORESOURCE_PREFETCH)
-> > +		max = 0xffffffff;
+> I guess, that's what they do already, otherwise they could not use dev_name().
 > 
-> This effectively destroys non-x86 64-bit arches. You've been told about
-> that before, so I'm really surprised to see this "patch" once again.
+> >> pci_bus_add_device will call device_add.
+> >>
+> >> actually in device_add
+> >>
+> >>         /* first, register with generic layer. */
+> >>         error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev_name(dev));
+> >>         if (error)
+> >>                 goto Error;
+> >>
+> >> will get one new name for that kobj, old name is freed.
+> >>
+> >> Will try to make kobject_add more smart to reuse the old one.
+> >
+> > I don't understand the problem here, how are you going to change the
+> > kobject core?  Is this just because you aren't getting a name for the
+> > resource?  If so, why would the driver core care about this?
 > 
-> Categorically NACKed.
+> Seems a bit odd what we do when registering a device.
+> 
+> Usually one sets the name with dev_set_name() which will name the
+> kobject. When one later registers the device, we reallocate the same
+> name, so the pointer changes. I guess the problem here is that the pci
+> code remembers the name pointer after it was set, but it will not be
+> the same after the device is live.
+> 
+> We should probably make device_add() pass a NULL as the name, and
+> kobject_add() in that case use the name that is properly set already.
 
-You can ridicule the patch and can NAK it (and rightfully so, it's 
-wrong), but you seem to miss the simple fact that this solves a very 
-real problem.
-
-So consider this patch a documentation and analysis of a real 
-problem which made Linux work on hardware where it did not work 
-before. That's more valuable than 95% of our commits btw.
-
-> P.S. I recall that I had a patch that addressed the issue, and 
-> Ingo made some reasonable comments about it. Will post it 
-> tomorrow.
-
-That should have been pursued far more agressively.
+Only to see if we are on the right track, does that fix the problem? If
+yes, we will fix it properly without the NULL hack deep in the kobject
+call.
 
 Thanks,
+Kay
 
-	Ingo
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index d230ff4..1969b20 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -890,8 +890,8 @@ int device_add(struct device *dev)
+ 	if (parent)
+ 		set_dev_node(dev, dev_to_node(parent));
+ 
+-	/* first, register with generic layer. */
+-	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev_name(dev));
++	/* we require the name to be set before, and pass NULL */
++	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
+ 	if (error)
+ 		goto Error;
+ 
+diff --git a/lib/kobject.c b/lib/kobject.c
+index a6dec32..48565d6 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -218,6 +218,9 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+ 	const char *old_name = kobj->name;
+ 	char *s;
+ 
++	if (kobj->name && !fmt)
++		return 0;
++
+ 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+ 	if (!kobj->name)
+ 		return -ENOMEM;
+
+
