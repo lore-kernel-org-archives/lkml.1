@@ -1,93 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbZDSCl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759676AbZDSCnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759616AbZDSCl2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 22:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbZDSClU
+	id S1759676AbZDSCnr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 22:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZDSCng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 22:41:20 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:37674 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbZDSClT (ORCPT
+	Sat, 18 Apr 2009 22:43:36 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41814 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbZDSCnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 22:41:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=esn+aHgqGEV1vHxi5b5qGzbIXvVmpE9VmcIC27GO8UdifK0WCY3rWQ8vczywmYIwgN
-         fLDHhununlsvP0rmPbOGmuSdUv0ct44/7aLkfctiXcIrRbYG5nJ4C/CS/Wc5UELQ5eWo
-         3dLKrm1zukmqMIVD0eqwoxg7Pnb3Sm9cq6cUo=
+	Sat, 18 Apr 2009 22:43:35 -0400
+Date: Sat, 18 Apr 2009 19:09:07 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: 900af0d breaks some embedded suspend/resume
+Message-ID: <20090418180907.GD7148@flint.arm.linux.org.uk>
+References: <20090417231009.GB6900@flint.arm.linux.org.uk> <200904181626.10388.rjw@sisk.pl> <20090418144132.GC7148@flint.arm.linux.org.uk> <200904181709.47480.rjw@sisk.pl>
 MIME-Version: 1.0
-Date: Sun, 19 Apr 2009 08:41:17 +0600
-Message-ID: <b9df5fa10904181941u4a73fc97i80dfa90a50b8daf5@mail.gmail.com>
-Subject: [PATCH] x86: Fix section mismatches in apic.
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904181709.47480.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Impact: Fix section mismatch
+On Sat, Apr 18, 2009 at 05:09:46PM +0200, Rafael J. Wysocki wrote:
+> On Saturday 18 April 2009, Russell King wrote:
+> > No, sysdevs are shut down after IRQs are turned off and the I2C driver
+> > has been shut down.  The I2C driver needs IRQs to work in slave mode,
+> > and we need slave mode to work.
+> 
+> Hm, but up to and including 2.6.29 we called the late suspend callbacks with
+> interrupts off.
 
-find_unisys_acpi_oem_table() and unmap_unisys_acpi_oem_table() are non
-init functions, but these functions calls some init functions. But we
-need these functions as non-init functions.
+That's not related to the problem - since all that the I2C drivers
+late suspend callback does is shut the I2C driver down.
 
-WARNING: vmlinux.o(.text+0x16250): Section mismatch in reference from
-the function find_unisys_acpi_oem_table() to the function
-.init.text:early_acpi_os_unmap_memory()
-The function find_unisys_acpi_oem_table() references
-the function __init early_acpi_os_unmap_memory().
-This is often because find_unisys_acpi_oem_table lacks a __init
-annotation or the annotation of early_acpi_os_unmap_memory is wrong.
+It's what happens between the normal suspend callback (which occurs
+with IRQs on) and the late suspend callback which I'm interested in,
+which is when the platform's 'prepare' method is called.
 
-WARNING: vmlinux.o(.text+0x16269): Section mismatch in reference from
-the function find_unisys_acpi_oem_table() to the function
-.init.text:early_acpi_os_unmap_memory()
-The function find_unisys_acpi_oem_table() references
-the function __init early_acpi_os_unmap_memory().
-This is often because find_unisys_acpi_oem_table lacks a __init
-annotation or the annotation of early_acpi_os_unmap_memory is wrong.
+> Hmm, what about redefining platform_suspend_ops in the following way:
+> 
+> struct platform_suspend_ops {
+> 	int (*valid)(suspend_state_t state);
+> 	int (*begin)(suspend_state_t state);
+> 	int (*devices_suspended)(void);
+> 	int (*prepare)(void);
+> 	int (*enter)(suspend_state_t state);
+> 	void (*wake)(void);
+> 	int (*resume_devices)(void);
+> 	void (*end)(void);
+> 	void (*recover)(void);
+> };
+> 
+> where:
+> 
+> * begin() will be called before suspending devices (no change)
+> * devices_suspended() will be called after suspending devices (before
+>   suspend_device_irqs())
+> * prepare() will be callled after the late suspend callbacks
+> * enter() will be called to enter the sleep state (no change)
+> * wake() will be called before the early resume callbacks
+> * resume_devices() will be called before resuming devices (after
+>   resume_device_irqs()
+> * end() will be called after resuming devices (no change)
+> 
+> I don't think we'll need more platform hooks than that.
 
-WARNING: vmlinux.o(.text+0x16279): Section mismatch in reference from
-the function find_unisys_acpi_oem_table() to the function
-.init.text:__acpi_map_table()
-The function find_unisys_acpi_oem_table() references
-the function __init __acpi_map_table().
-This is often because find_unisys_acpi_oem_table lacks a __init
-annotation or the annotation of __acpi_map_table is wrong.
+I'd be happy with that.
 
-WARNING: vmlinux.o(.text+0x16297): Section mismatch in reference from
-the function unmap_unisys_acpi_oem_table() to the function
-.init.text:__acpi_unmap_table()
-The function unmap_unisys_acpi_oem_table() references
-the function __init __acpi_unmap_table().
-This is often because unmap_unisys_acpi_oem_table lacks a __init
-annotation or the annotation of __acpi_unmap_table is wrong.
-
-----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-
---- linus/arch/x86/kernel/apic/es7000_32.c	2009-04-10 22:28:47.000000000 +0600
-+++ rakib/arch/x86/kernel/apic/es7000_32.c	2009-04-14 10:19:21.000000000 +0600
-@@ -254,7 +254,7 @@ static int parse_unisys_oem(char *oemptr
- }
-
- #ifdef CONFIG_ACPI
--static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
-+static int __ref find_unisys_acpi_oem_table(unsigned long *oem_addr)
- {
- 	struct acpi_table_header *header = NULL;
- 	struct es7000_oem_table *table;
-@@ -285,7 +285,7 @@ static int find_unisys_acpi_oem_table(un
- 	return 0;
- }
-
--static void unmap_unisys_acpi_oem_table(unsigned long oem_addr)
-+static void __ref unmap_unisys_acpi_oem_table(unsigned long oem_addr)
- {
- 	if (!oem_addr)
- 		return;
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
