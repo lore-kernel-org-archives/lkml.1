@@ -1,296 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758876AbZDROoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZDRO7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758876AbZDROoG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 10:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZDROnt
+	id S1757121AbZDRO7K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 10:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZDRO6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 10:43:49 -0400
-Received: from mail.it-technology.at ([62.99.145.147]:54956 "EHLO
-	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754773AbZDROnr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 10:43:47 -0400
-Message-ID: <fa78241556f71cafd6f0c553a1f8ff25.squirrel@webmail.it-technology.at>
-Date: Sat, 18 Apr 2009 16:43:44 +0200 (CEST)
-Subject: Re: [Resend][PATCH] usb driver for intellon int51x1 based PLC like 
-     devolo dlan duo
-From: "Peter Holik" <peter@holik.at>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "Netdev" <netdev@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
+	Sat, 18 Apr 2009 10:58:54 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:36528 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732AbZDRO6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 10:58:53 -0400
+Date: Sat, 18 Apr 2009 17:58:50 +0300
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: Prakash Punnoor <prakash@punnoor.de>, Michael Tokarev <mjt@tls.msk.ru>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+Message-ID: <20090418145850.GD28512@mea-ext.zmailer.org>
+References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-some fixes to my last mail:
+On Sat, Apr 18, 2009 at 03:56:17PM +0200, Jesper Juhl wrote:
+> On Sat, 18 Apr 2009, Prakash Punnoor wrote:
+> > On Samstag 18 April 2009 10:09:54 Michael Tokarev wrote:
+> > > Prakash Punnoor wrote:
+.....
+> > > What's your goal?  What's the problem you're trying to solve?
+> > 
+> > Having duplicate code is not good, of course. But unused code is also not 
+> > good. As I said, I only use RAID5, so I don't need RAID6 support. The RAID6 
+> > support enlarges kernel (the built-in.o in drivers/md grows from 325kb to 
+> > 414kb in my case), making boot time and compile time longer 
+> 
+> By a few ms perhaps - nothing that you'd ever notice in real life... A 
+> small price to pay for the shared code. If you were to split them all 
+> again, the combined total size would be greater still.
 
 
->> This is a usb driver for the intellon int51x1 based PLC
->> (Powerline Communications) like devolo dlan duo.
->>
->> Signed-off-by: Peter Holik <peter@holik.at>
->> ---
->>  drivers/net/usb/Kconfig   |    8 ++
->>  drivers/net/usb/Makefile  |    1 +
->>  drivers/net/usb/int51x1.c |  268 +++++++++++++++++++++++++++++++++++++++++++++
->> 3 files changed, 277 insertions(+), 0 deletions(-)
->>  create mode 100644 drivers/net/usb/int51x1.c
->>
->> diff --git a/drivers/net/usb/int51x1.c b/drivers/net/usb/int51x1.c new file mode 100644
->> index 0000000..44a8a09
->> --- /dev/null
->> +++ b/drivers/net/usb/int51x1.c
->> @@ -0,0 +1,268 @@
->
->> +static int int51x1_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
->> +{
->> +	int len;
->> +
->> +	if (unlikely(skb->len < INT51X1_HEADER_SIZE)) {
->
-> pskb_may_pull(...)
+I did quick "sum of symbol sizes" lookup of the   raid.ko, and got
+it like this:
 
-ok, done:
+nm -t d -n -S /lib/modules/2.6.27.21-170.2.56.fc10.x86_64/kernel/drivers/md/raid456.ko | grep raid4|awk '{print $2}'|sed -e 's/^0*//g'|awk '{sum+=$1}END{print sum}'
+  ...
 
-static int int51x1_rx_fixup(struct usbnet *dev, struct sk_buff *skb) {
-        int len;
+raid4:   152
+raid5:  7165
+raid6: 75558
 
-        if (!(pskb_may_pull(skb, INT51X1_HEADER_SIZE))) {
-                deverr(dev, "unexpected tiny rx frame");
-                return 0;
-        }
+Entire 64kB of that raid6 is single pre-initialized r/o datablock:  raid6_gfmul
 
-        len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
+So yes, having RAID6 personality as separate module would be appropriate for
+systems that are only interested in RAID4 or RAID5.  Separating the RAID4
+personality wastes space, separating RAID5 ...  barely 2 of 4k memory pages.
 
-        skb_trim(skb, len);
+There are perhaps a few kB more of codes for RAID5 and RAID6 classes - not all
+local functions at each are named with relevant prefix,  but overall I would
+consider extracting RAID6 as a reasonable goal with common codes on RAID4/5.
 
-        return 1;
-}
+> > - admittedly not 
+> > by a big margin. But then again I could argue: Why not put RAID0,1,10,4,5,6 
+> > into one big module? Makes no sense, huh? 
+> 
+> Makes perfect sense to me. Just modprobe raid.o and you have all 
+> raid levels available. That would make a lot of sense. 
 
->> +		deverr(dev, "unexpected tiny rx frame");
->> +		return 0;
->> +	}
->> +
->> +	len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
->> +
->> +	skb_trim(skb, len);
->> +
->> +	return 1;
->> +}
->> +
->> +static struct sk_buff *int51x1_tx_fixup(struct usbnet *dev,
->> +		struct sk_buff *skb, gfp_t flags)
->> +{
->> +	int pack_len = skb->len;
->> +	int headroom = skb_headroom(skb);
->> +	int tailroom = skb_tailroom(skb);
->> +	int need_tail = 0;
->> +	__le16 *len;
->> +
->> +	/*
->> +	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
->> +	 * but we need to know ourself, because this would add to the length
->> +	 * we send down to the device...
->> +	 */
->> +	if (!((pack_len + INT51X1_HEADER_SIZE) % dev->maxpacket))
->> +		need_tail = 1;
->> +
->> +	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
->> +	if ((pack_len + INT51X1_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
->> +		need_tail = dev->maxpacket + 1 - pack_len - INT51X1_HEADER_SIZE;
->
-> This is totally crazy code fragment, first need_tail is used like a boolean?
-> But on the same some +1 scalar trick is being done?
-> Is there some reason why DIV_ROUND_UP (linux/kernel.h)
-> won't do what you want here and then you can trivally find diff = new - old ?
->
+Also, systems with so many disks that they run RAID4/5/6 to begin with are
+likely to have enough memory so that "wasted" 75-80 kB does not matter.
 
+> > For me putting 5 and 6 into one 
+> > monolithic module makes no sense. A proper architecture would be to have some 
+> > common shared code (in a separate module?), not a monolithic big one.
+> 
+> That's also a way, and certainly better than just splitting out raid6.
+> -- 
+> Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+> Plain text mails only, please      http://www.expita.com/nomime.html
 
-sorry i can't follow, can you convert this code to DIV_ROUND_UP
-
-
->> +	if (!skb_cloned(skb) &&
->> +			(headroom + tailroom >= need_tail + INT51X1_HEADER_SIZE)) {
->> +		if (headroom < INT51X1_HEADER_SIZE || tailroom < need_tail) {
->> +			skb->data = memmove(skb->head + INT51X1_HEADER_SIZE,
->> +					skb->data, skb->len);
->> +			skb_set_tail_pointer(skb, skb->len);
->> +		}
->> +	} else {
->> +		struct sk_buff *skb2;
->> +
->> +		skb2 = skb_copy_expand(skb,
->> +				INT51X1_HEADER_SIZE,
->> +				need_tail,
->> +				flags);
->> +		dev_kfree_skb_any(skb);
->> +		if (!skb2)
->> +			return NULL;
->> +		skb = skb2;
->> +	}
->> +
->> +	pack_len += need_tail;
->> +	pack_len &= 0x07ff;
->> +
->> +	len = (__le16 *) __skb_push(skb, INT51X1_HEADER_SIZE);
->> +	*len = cpu_to_le16(pack_len);
->> +
->> +	if(need_tail)
->> +		memset(__skb_put(skb, need_tail), 0, need_tail);
->> +
->> +	return skb;
->> +}
->> +
->> +static void int51x1_async_cmd_callback(struct urb *urb)
->> +{
->> +	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
->> +	int status = urb->status;
->> +
->> +	if (status < 0)
->> +		dev_warn(&urb->dev->dev, "async callback failed with %d\n", status);
->> +
->> +	kfree(req);
->> +	usb_free_urb(urb);
->> +}
->> +
->> +static void int51x1_set_multicast(struct net_device *netdev)
->> +{
->> +	struct usb_ctrlrequest *req;
->> +	int status;
->> +	struct urb *urb;
->> +	struct usbnet *dev = netdev_priv(netdev);
->> +	u16 filter = PACKET_TYPE_DIRECTED |
->> +		     PACKET_TYPE_BROADCAST;
->
-> Won't this fit on a single line?
->
-
-ok, done
-
->> +
->> +	if (netdev->flags & IFF_PROMISC) {
->> +		/* do not expect to see traffic of other PLCs */
->> +		filter |= PACKET_TYPE_PROMISCUOUS;
->> +		devinfo(dev, "promiscuous mode enabled");
->> +	} else if (netdev->mc_count ||
->> +		  (netdev->flags & IFF_ALLMULTI)) {
->> +		filter |= PACKET_TYPE_ALL_MULTICAST;
->> +		devdbg(dev, "receive all multicast enabled");
->> +	} else {
->> +		/* ~PROMISCUOUS, ~MULTICAST */
->> +		devdbg(dev, "receive own packets only");
->> +	}
->> +
->> +	urb = usb_alloc_urb(0, GFP_ATOMIC);
->> +	if (!urb) {
->> +		devwarn(dev, "Error allocating URB");
->> +		return;
->> +	}
->> +
->> +	req = kmalloc(sizeof *req, GFP_ATOMIC);
->
-> sizeof(*req)
->
-
-ok, done
-
->> +	if (!req) {
->> +		devwarn(dev, "Error allocating control msg");
->> +		usb_free_urb(urb);
->> +		return;
->
-> I'd use gotos instead for error handling since you need similar call in the later
-> error handling block too. Gotos make it somewhat harder to miss some necessary
-> rollback actions in one of the error blocks (not that this case is buggy atm).
->
-
-ok, done like you suggested - see at the end
-
->> +	}
->> +
->> +	req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
->> +	req->bRequest = SET_ETHERNET_PACKET_FILTER;
->> +	req->wValue = cpu_to_le16(filter);
->> +	req->wIndex = 0;
->> +	req->wLength = 0;
->> +
->> +	usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
->> +		(void *)req, NULL, 0,
->> +		int51x1_async_cmd_callback,
->> +		(void *)req);
->> +
->> +	status = usb_submit_urb(urb, GFP_ATOMIC);
->> +	if (status < 0) {
->> +		devwarn(dev, "Error submitting control msg, sts=%d", status);
->> +		kfree(req);
->> +		usb_free_urb(urb);
->
-> Ditto.
-
-static void int51x1_set_multicast(struct net_device *netdev)
-{
-        struct usb_ctrlrequest *req;
-        int status;
-        struct urb *urb;
-        struct usbnet *dev = netdev_priv(netdev);
-        u16 filter = PACKET_TYPE_DIRECTED | PACKET_TYPE_BROADCAST;
-
-        if (netdev->flags & IFF_PROMISC) {
-                /* do not expect to see traffic of other PLCs */
-                filter |= PACKET_TYPE_PROMISCUOUS;
-                devinfo(dev, "promiscuous mode enabled");
-        } else if (netdev->mc_count ||
-                  (netdev->flags & IFF_ALLMULTI)) {
-                filter |= PACKET_TYPE_ALL_MULTICAST;
-                devdbg(dev, "receive all multicast enabled");
-        } else {
-                /* ~PROMISCUOUS, ~MULTICAST */
-                devdbg(dev, "receive own packets only");
-        }
-
-        urb = usb_alloc_urb(0, GFP_ATOMIC);
-        if (!urb) {
-                devwarn(dev, "Error allocating URB");
-                return;
-        }
-
-        req = kmalloc(sizeof(*req), GFP_ATOMIC);
-        if (!req) {
-                devwarn(dev, "Error allocating control msg");
-                goto out;
-        }
-
-        req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
-        req->bRequest = SET_ETHERNET_PACKET_FILTER;
-        req->wValue = cpu_to_le16(filter);
-        req->wIndex = 0;
-        req->wLength = 0;
-
-        usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
-                (void *)req, NULL, 0,
-                int51x1_async_cmd_callback,
-                (void *)req);
-
-        status = usb_submit_urb(urb, GFP_ATOMIC);
-        if (status < 0) {
-                devwarn(dev, "Error submitting control msg, sts=%d", status);
-                goto out1;
-        }
-        return;
-out1:
-        kfree(req);
-out:
-        usb_free_urb(urb);
-}
-
-
-cu Peter
-
-
-
+/Matti Aarnio
