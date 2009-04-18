@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZDRTpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZDRTxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZDRTpm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 15:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZDRTpd
+	id S1753947AbZDRTxU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 15:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZDRTxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 15:45:33 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60120 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbZDRTpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 15:45:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Rvu4sUK+p4OL1N+Smuk11m01ZnAiToW2pTlwXq+tH1subiJpG9oZbfznUhFJKEZHxW
-         D6GVV+JCgzlqlSrgcLUz1RZnIu83yn5aANeISiA2Ee1E3grZdw0CYwITUX+hQsBqLcNj
-         nQPKZom5BWxmQxzbON1YXZIOj4kCRkY+HHkB4=
-Date: Sat, 18 Apr 2009 23:45:28 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH -tip] x86: smpboot - wakeup_secondary should be done via
-	__cpuinit section
-Message-ID: <20090418194528.GD25510@lenovo>
+	Sat, 18 Apr 2009 15:53:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51044 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752671AbZDRTxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 15:53:08 -0400
+Message-ID: <49EA2F81.7030302@suse.com>
+Date: Sat, 18 Apr 2009 15:52:33 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] IO-APIC + timer doesn't work!
+References: <49E89D1B.7060800@suse.com> <49E9904A.5030201@web.de>
+In-Reply-To: <49E9904A.5030201@web.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A caller (do_boot_cpu) already has __cpuinit attribute.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Since HOTPLUG_CPU depends on SMP && HOTPLUG it doesn't
-lead to panic at moment.
+Jan Kiszka wrote:
+> Jeff Mahoney wrote:
+>> Hi all -
+>>
+>> I saw this while booting 2.6.30-rc1, -rc2, and today's git, on one of
+>> my development nodes. This output is with apic=debug. With noapic,
+>> it still hung. Both outputs follow.
+>>
+>> git bisect leads to commit 8d6f0c8214928f7c5083dd54ecb69c5d615b516e,
+>> but I'm not seeing anything obvious there. Backing just that change
+>> out doesn't fix it.
 
-[ Impact: cleanup ]
+[snip]
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/smpboot.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Hmmmmm. That somehow reminds me of what I thought I had to fix in the
+> HPET emulation of QEMU just recently [1] - because of 2.6.30-rc's behavior.
+> 
+> Could you try if writing 'delta' a second time makes any difference on
+> that box?
+> 
+> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+> index 648b3a2..523d72b 100644
+> --- a/arch/x86/kernel/hpet.c
+> +++ b/arch/x86/kernel/hpet.c
+> @@ -324,6 +324,7 @@ static void hpet_set_mode(enum clock_event_mode mode,
+>  		       HPET_TN_SETVAL | HPET_TN_32BIT;
+>  		hpet_writel(cfg, HPET_Tn_CFG(timer));
+>  		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+> +		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>  		hpet_start_counter();
+>  		hpet_print_config();
+>  		break;
+> 
 
-Index: linux-2.6.git/arch/x86/kernel/smpboot.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6.git/arch/x86/kernel/smpboot.c
-@@ -504,7 +504,7 @@ void __inquire_remote_apic(int apicid)
-  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
-  * won't ... remember to clear down the APIC, etc later.
-  */
--int __devinit
-+int __cpuinit
- wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
- {
- 	unsigned long send_status, accept_status = 0;
-@@ -538,7 +538,7 @@ wakeup_secondary_cpu_via_nmi(int logical
- 	return (send_status | accept_status);
- }
- 
--static int __devinit
-+static int __cpuinit
- wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
- {
- 	unsigned long send_status, accept_status = 0;
+Thanks, Jan.
+
+That fixed it for me.
+
+- -Jeff
+
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknqL4EACgkQLPWxlyuTD7JGSQCfROvm+88YIifOzWNar0MOCs3F
+s5QAoKDi1IKw0Qrk6dky3iQ+u3sF2eAh
+=pgI6
+-----END PGP SIGNATURE-----
