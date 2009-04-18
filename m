@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZDRPyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbZDRP5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756495AbZDRPyx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 11:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbZDRPyn
+	id S1758551AbZDRP5Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 11:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZDRP5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 11:54:43 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:63703 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbZDRPym (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 11:54:42 -0400
-Message-ID: <49E9F7BE.4090904@codemonkey.ws>
-Date: Sat, 18 Apr 2009 10:54:38 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 18 Apr 2009 11:57:16 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:39110 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755225AbZDRP5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 11:57:15 -0400
+Subject: Re: +
+ mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char.patch added to -mm
+ tree
+From: "Denis V. Lunev" <den@openvz.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090418152635.125D.A69D9226@jp.fujitsu.com>
+References: <200904150009.n3F095J1011993@imap1.linux-foundation.org>
+	 <20090418152635.125D.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: OpenVz kernel team
+Date: Sat, 18 Apr 2009 19:56:35 +0400
+Message-Id: <1240070195.29546.3.camel@iris.sw.ru>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> The related MSRs are emulated. MCE capability is exported via
-> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
-> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
-> such as the mcg_cap. MCE is injected via vcpu ioctl command
-> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
-> not simulated.
->   
+already fixed by Andrew by 
+  mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix
 
-Maybe I'm missing something, but couldn't this be implemented entirely 
-within userspace?  There's nothing VT/SVM specific about this.  If the 
-issue is setting these MSRs from userspace via KVM_SET_MSRS isn't 
-enough, perhaps we should add userspace MSR handling.
-
-Also, if you implement the MSR logic in userspace, it's pretty simple to 
-make it work in the non-TCG case which will be a requirement for 
-upstream merging.
-
-Regards,
-
-Anthony LIguori
+> ------------------------------------------------------
+> Subject: mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: Denis V. Lunev <den@openvz.org>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  drivers/mtd/mtdcore.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -puN
+drivers/mtd/mtdcore.c~mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix drivers/mtd/mtdcore.c
+> ---
+a/drivers/mtd/mtdcore.c~mtd-mtd-in-mtd_release-is-unused-without-config_mtd_char-fix
+> +++ a/drivers/mtd/mtdcore.c
+> @@ -48,7 +48,7 @@ static LIST_HEAD(mtd_notifiers);
+>   */
+>  static void mtd_release(struct device *dev)
+>  {
+> -     dev_t index = MTD_DEVT(dev_to_mtd(dev));
+> +     dev_t index = MTD_DEVT(dev_to_mtd(dev)->index);
+>  
+>       /* remove /dev/mtdXro node if needed */
+>       if (index)
 
