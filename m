@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZDRIqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbZDRItt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbZDRIqt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 04:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZDRIql
+	id S1757749AbZDRItt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 04:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZDRItl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 04:46:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39367 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbZDRIqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 04:46:40 -0400
-Message-ID: <49E99355.6090609@kernel.org>
-Date: Sat, 18 Apr 2009 01:46:13 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 18 Apr 2009 04:49:41 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:42899 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbZDRItl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 04:49:41 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Peter Holik" <peter@holik.at>
+Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
+Date: Sat, 18 Apr 2009 10:49:55 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at> <200904180938.48276.oliver@neukum.org> <0d3ceee0bebd3c68fb0d568239117425.squirrel@webmail.it-technology.at>
+In-Reply-To: <0d3ceee0bebd3c68fb0d568239117425.squirrel@webmail.it-technology.at>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>
-CC: linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] pci: don't printout if the bus res size is 0
-References: <49E992C2.4010707@kernel.org>
-In-Reply-To: <49E992C2.4010707@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904181049.55812.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Samstag 18 April 2009 10:41:37 schrieb Peter Holik:
+> > Without the "|". Just dereference the pointer.
+>
+> this way?
+>
+> len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
 
-also print out if it is prefetechable mmio
+That does the job.
 
-[Impact: cleanup]
+	Regards
+		Oliver
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/pci/setup-bus.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -558,11 +558,13 @@ static void pci_bus_dump_res(struct pci_
- 
-         for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
-                 struct resource *res = bus->resource[i];
--                if (!res)
-+                if (!res || !res->end)
-                         continue;
- 
- 		dev_printk(KERN_DEBUG, &bus->dev, "resource %d %s %pR\n", i,
--			   (res->flags & IORESOURCE_IO) ? "io: " : "mem:", res);
-+			   (res->flags & IORESOURCE_IO) ? "io: " :
-+			    ((res->flags & IORESOURCE_PREFETCH)? "pref mem":"mem:"),
-+			   res);
-         }
- }
- 
