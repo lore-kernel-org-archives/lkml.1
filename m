@@ -1,103 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751118AbZDREn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275AbZDREpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751118AbZDREn1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 00:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZDREnS
+	id S1752275AbZDREpP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 00:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZDREo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 00:43:18 -0400
-Received: from mx27.mail.ru ([94.100.176.41]:50745 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbZDREnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 00:43:18 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: 2.6.30-rc2: format warning in fs/reiserfs/procfs.o
-Date: Sat, 18 Apr 2009 08:43:08 +0400
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-1avb; KDE/4.2.2; i686; ; )
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart16764081.yDPV8SULm7";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200904180843.11714.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+	Sat, 18 Apr 2009 00:44:59 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:61253 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbZDREo6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 00:44:58 -0400
+Date: Sat, 18 Apr 2009 00:44:53 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: raz ben yehuda <raziebe@013.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+Subject: Re: Subject: PATCH : offline scheduler
+In-reply-to: <1240006279.7801.0.camel@raz>
+Message-id: <alpine.LFD.2.00.0904180032000.30751@localhost.localdomain>
+References: <1240006279.7801.0.camel@raz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart16764081.yDPV8SULm7
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, 18 Apr 2009, raz ben yehuda wrote:
 
-  CC [M]  fs/reiserfs/procfs.o
-/home/bor/src/linux-git/fs/reiserfs/procfs.c: In function 'show_journal':
-/home/bor/src/linux-git/fs/reiserfs/procfs.c:393: warning: format '%u'=20
-expects type 'unsigned int', but argument 22 has type 'long unsigned int'
-  LD [M]  fs/reiserfs/reiserfs.o
-
-
-Argument 22 is journal->j_last_flush_trans_id. As far as I can tell in all=
-=20
-contexts where it is used it is assigned unsigned int (and journal->trans_i=
-d=20
-itself is unsigned int as well). So is this patch appropriate? It compiles=
-=20
-cleanly, but I am a bit scared to test it on my sole root reiserfs :)
-
-=2D-
-
-Subject: [PATCH] reiserfs: Make j_last_flush_trans_id unsigned int
-=46rom: Andrey Borzenkov <arvidjaar@mail.ru>
-
-j_last_flush_trans_id is always assigned unsigned int value; so make it
-unsigned int as well. It also removes this warning:
-
-  CC [M]  fs/reiserfs/procfs.o
-/home/bor/src/linux-git/fs/reiserfs/procfs.c: In function 'show_journal':
-/home/bor/src/linux-git/fs/reiserfs/procfs.c:393: warning: format '%u'
-expects type 'unsigned int', but argument 22 has type 'long unsigned int'
-
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
-=2D--
-
- include/linux/reiserfs_fs_sb.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Len Hello 
+> offsched is a platform aimed to assign a service to an off-lined processor.
+> Motivation is explained in: 
+> http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/trunk/Documentation/OFFSCHED.pdf
+> Currently I have implemented two services:
+> 
+> HYBRID REAL TIME LINUX 
+> Implemented as a A 1us timer. This timer shows how a true real time system may co-exist with a 
+> regular linux server. This way there is no enforcement of a real time system requirements on the
+> entire kernel. Full documentation is at:
+> http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/trunk/Documentation/OFFSCHED-RT.pdf
+> 
+> RTOP
+> This piece of software send system statistics to a remove server.
+> The user benefit is that even if the machine is un-accessible (remotely or locally) 
+> RTOP still sends system statistics to a remote server. I have showed in a small paper what RTOP is:
+> http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/trunk/Documentation/OFFSCHED-RTOP.pdf
+> 
+> The patch is mostly a facility for offsched. The exporting of tasklist_lock is because RTOP is implemented as a driver
+> and it must lock the tasks list.
+> This is the 4-th post. I will be grateful for your reply.
+> 
+> Signed-off-by: Raz Ben Yehuda <raziebe@013.net.il>
+> 
+> arch/x86/kernel/process.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+> arch/x86/kernel/smpboot.c |   11 +++++++----
+> include/linux/cpu.h       |   20 ++++++++++++++++++++
+> include/linux/sched.h     |    2 +-
+> kernel/cpu.c              |    1 +
+> kernel/fork.c             |    6 ++++++
+> 6 files changed, 77 insertions(+), 5 deletions(-)
 
 
-diff --git a/include/linux/reiserfs_fs_sb.h b/include/linux/reiserfs_fs_sb.h
-index 5621d87..1d1594a 100644
-=2D-- a/include/linux/reiserfs_fs_sb.h
-+++ b/include/linux/reiserfs_fs_sb.h
-@@ -193,7 +193,7 @@ struct reiserfs_journal {
- 	atomic_t j_wcount;	/* count of writers for current commit */
- 	unsigned long j_bcount;	/* batch count. allows turning X transactions=20
-into 1 */
- 	unsigned long j_first_unflushed_offset;	/* first unflushed transactions=20
-offset */
-=2D	unsigned long j_last_flush_trans_id;	/* last fully flushed journal=20
-timestamp */
-+	unsigned int j_last_flush_trans_id;	/* last fully flushed journal=20
-timestamp */
- 	struct buffer_head *j_header_bh;
-=20
- 	time_t j_trans_start_time;	/* time this transaction started */
+Interesting project Raz, must have been fun to develop!
+
+A couple of comments...
+
+It would probably be of most interest to Ingo and the RT guys on
+linux-rt-users@vger.kernel.org rather than the ACPI guys
+on linux-acpi@vger.kernel.org. (cc updated)
+
+I don't understand the utility of the "offline timer"
+use in section 6.1 of the paper.
+With Nehalem, Intel is finally shipping a hardware TSC that is
+guaranteed to be C-state, P-state, T-state invarient and not to drift --
+so an extremely accurate cycle counter is just an MSR read away
+on all cores...
+
+I also don't understand 6.2, the system monitor use --
+for the hardware also provides numerous perfmon counters
+in hardware for monitoring, and exposing those in a friendly way
+seems to me to be a more interesting exercise than
+trying to do monitoring in software with a dedicated CPU.
+
+For 6.3, the traffic shaper...
+The newer NICs have dedicated hardware to detect and shape
+traffic flows -- again, probably much more efficient than
+dedicating a general purpose processor...
+
+For RT...
+Certainly the performance of a dedicated CPU would be
+what the rt kernel would want to strive for.  I guess
+the question is if you can measure an actual performance
+difference to quanitfy the theoretical beneifts
+of the lack of locks, lack of protection etc.
+
+cheers,
+Len Brown, Intel Open Source Technology Center
 
 
---nextPart16764081.yDPV8SULm7
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknpWl8ACgkQR6LMutpd94x4LQCdFlEfHr1nkILdvtTc6IU9t41Y
-BjMAoKs/TVxPfykHjsKan7ejj/j4azVh
-=of+a
------END PGP SIGNATURE-----
-
---nextPart16764081.yDPV8SULm7--
