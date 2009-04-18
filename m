@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZDRPAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbZDRPER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbZDRPAJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 11:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758542AbZDRO7m
+	id S1758401AbZDRPER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 11:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZDRPEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 10:59:42 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:51228 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758441AbZDRO7l (ORCPT
+	Sat, 18 Apr 2009 11:04:01 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:55107 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbZDRPEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 10:59:41 -0400
-Message-ID: <49E9EAC8.9000706@freemail.hu>
-Date: Sat, 18 Apr 2009 16:59:20 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sat, 18 Apr 2009 11:04:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:subject:message-id:user-agent:mime-version
+         :content-type;
+        b=A4ZWZzImcTTpDcHwjM372XRR/W9qtzTe5RCeX1idLhNGhx+caZYB20gIf9NjgtiB4J
+         iBwfAgSqH6GeUDtrDmU6eM8o4NL3e+KulwiRYkqk+MB4YUVQIEFTj8EwEVzna9HAkw5C
+         B0k1119uvemA6RQX2+uTigLcf8V4e5OdBCm4g=
+Date: Sat, 18 Apr 2009 18:03:34 +0300 (EAT)
+From: Dan Carpenter <error27@gmail.com>
+X-X-Sender: dcarpenter@bicker
+To: smatch-discuss@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: smatch 1.52 released
+Message-ID: <alpine.DEB.2.00.0904181715400.5780@bicker>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@skynet.be>, video4linux-list@redhat.com
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH]: uvcvideo: fill reserved fields with zero of VIDIOC_QUERYMENU
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32720; Body=3 Fuz1=3
-	Fuz2=3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When querying menu items with VIDIOC_QUERYMENU the reserved field
-is not set to zero as required by V4L2 API revision 0.24 [1].
-Add this fill.
+Smatch is a static analysis tool.
 
-The patch was tested with v4l-test 0.11 [2] with CNF7129 webcam found
-on EeePC 901.
+It's looks for different bugs than sparse.  It's uses sparse as a C 
+parser.  It probably can find more complicated bugs than Coccinelle but it 
+doesn't fix them.
 
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r13317.htm#V4L2-QUERYMENU
+The repo is:  http://repo.or.cz/w/smatch.git/
 
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
+I am going to be cycling in southern Africa for the next four months.  I 
+will take an eee but will only have irregular internet access.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.30-rc2/drivers/media/video/uvc/uvc_v4l2.c.orig	2009-04-17 18:31:29.000000000 +0200
-+++ linux-2.6.30-rc2/drivers/media/video/uvc/uvc_v4l2.c	2009-04-18 16:43:20.000000000 +0200
-@@ -46,6 +46,8 @@ static int uvc_v4l2_query_menu(struct uv
- 	struct uvc_menu_info *menu_info;
- 	struct uvc_control_mapping *mapping;
- 	struct uvc_control *ctrl;
-+	__u32 id;
-+	__u32 index;
+There have been many changes since 1.51:
+  * There are no known crashing bugs.
+  * It uses less memory.
+  * It is faster.
+  * Many of the checks have been improved.
+  * It uses a more sophisticated system to represent possible variable 
+    values internally.
+  * There is a new dereferencing ERR_PTR() check.
 
- 	ctrl = uvc_find_control(video, query_menu->id, &mapping);
- 	if (ctrl == NULL || mapping->v4l2_type != V4L2_CTRL_TYPE_MENU)
-@@ -54,6 +56,11 @@ static int uvc_v4l2_query_menu(struct uv
- 	if (query_menu->index >= mapping->menu_count)
- 		return -EINVAL;
+One thing that's fairly cool is that Smatch v1.52 understands the 
+following code.
 
-+	id = query_menu->id;
-+	index = query_menu->index;
-+	memset(query_menu, 0, sizeof(*query_menu));
-+	query_menu->id = id;
-+	query_menu->index = index;
- 	menu_info = &mapping->menu_info[query_menu->index];
- 	strlcpy(query_menu->name, menu_info->name, sizeof query_menu->name);
- 	return 0;
+    foo = down_trylock(&lock);
+    if (foo < 0)            <- implies the lock was not aquired.
+            return;
+                            <- lock is held here.
+
+Anyway, do email me if you have any questions or issues.  I will probably 
+have internet access some days later on next week.
+
+regards,
+dan carpenter
+
+http://bikesafari.net
+
+
