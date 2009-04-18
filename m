@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbZDRXg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbZDRXit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756416AbZDRXg3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 19:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZDRXgU
+	id S1759769AbZDRXit (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 19:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZDRXij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 19:36:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:1377 "EHLO
+	Sat, 18 Apr 2009 19:38:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:3726 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754271AbZDRXgT (ORCPT
+	with ESMTP id S1754879AbZDRXih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 19:36:19 -0400
+	Sat, 18 Apr 2009 19:38:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:x-length:x-uid
-         :x-kmail-transport:x-kmail-quoteprefix:x-kmail-recipients
-         :x-kmail-encryptionstate:x-kmail-signaturestate
-         :x-kmail-signatureactionenabled:x-kmail-encryptactionenabled
-         :x-kmail-cryptomessageformat:x-kmail-identity:user-agent;
-        b=f89iCuKho1/qMJnzSHqIOTQY6GmFiyFz+dclH1LpAwkPc3vbF57h2PFMUfwBIz1iRP
-         5uH2XkslMNfxc1eEZeacfH9fVEdPfU/EOiQrBkuy67ZY7fv0q3POP9lHMr1Q07vXkuAL
-         Z5Jz7zCMAVkL1ThPJIpPkQ7BNRXP1y4oeE28o=
-Date: Sat, 18 Apr 2009 16:36:10 -0700
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=LIng1NlV9mkR93CM+cdnyCq6KkV2AoewLqJ+IEiAnhnW37JxfIYLYkYqEi22e84ZtU
+         yu+t8Gkw6QmhPg0SfPhAggjDmFTs5ku1RQOeqdkZDeKVE/hw5EaEu8cD4kRE4OjDLM8a
+         NaDELRdcNpv1ihpEDfB5vn9RdSOY2K4AcHosc=
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Stefan Sassenberg <stefan.sassenberg@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: /proc/bus/input/devices changing while booting
-Message-ID: <20090418233608.GC32346@dtor-d630.eng.vmware.com>
-References: <49CA59E8.7080201@gmx.de>
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: [PATCH 0/9] Fix unsafe disable_irq usage
+Date: Sat, 18 Apr 2009 16:38:30 -0700
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, dan.j.williams@intel.com,
+       Eric Miao <eric.miao@marvell.com>, linux@arm.linux.org.uk,
+       p_gortmaker@yahoo.com, David Brownell <david-b@pacbell.net>,
+       sameo@linux.intel.com, linux-omap@vger.kernel.org, pierre@ossman.eu,
+       linux-input@vger.kernel.org
+References: <1239861245.29831.113.camel@linux-51e8.site>
+In-Reply-To: <1239861245.29831.113.camel@linux-51e8.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49CA59E8.7080201@gmx.de>
-X-Length: 1175
-X-KMail-Transport: Mialhub
-X-KMail-QuotePrefix: >
-X-KMail-Recipients: Stefan Sassenberg <stefan.sassenberg@gmx.de>, LKML
-	<linux-kernel@vger.kernel.org>
-X-KMail-EncryptionState: N
-X-KMail-SignatureState: N
-X-KMail-SignatureActionEnabled: false
-X-KMail-EncryptActionEnabled: false
-X-KMail-CryptoMessageFormat: 15
-X-KMail-Identity: 579597780
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904181638.30794.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefan,
+Hi Ben,
 
-On Wed, Mar 25, 2009 at 05:20:56PM +0100, Stefan Sassenberg wrote:
-> Hello,
+On Wednesday 15 April 2009 22:54:05 Ben Nizette wrote:
+> After being bitten by unsafe usage of disable_irq from within that irq's
+> handler [1], I went through and used Coccinelle to audit the rest of
+> drivers/ too.  This turned up 9 more unsafe usages.
 >
-> while booting, an init-script on my machine greps the Handlers entry of  
-> a certain device (USB touchscreen) from /proc/bus/input/devices. It ends  
-> with "event2", so I configure my software to listen for events in  
-> /dev/input/event2. A few seconds later /proc/bus/input/devices changes,  
-> the order of the devices is different and the Handlers entry for my  
-> device ends with event1 making my device misconfigured and thus unusable.
+> As Haavard pointed out in that thread, disable_irq waits for running
+> handlers of an irq to complete before returning.  When a handler
+> disable_irq's its own irq then we see a deadlock.
 >
-> Can anybody explain that behaviour? How can I get the final eventX  
-> device file?
+> Note that this wasn't actually observed in the wild until the recent
+> merge of
 >
-> I'm using kernel 2.6.28.8 on an Intel Celeron, chipset ICH5.
+> commit 3aa551c9b4c40018f0e261a178e3d25478dc04a9
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Mon Mar 23 18:28:15 2009 +0100
+>
+>     genirq: add threaded interrupt handler support
+>
+>     Add support for threaded interrupt handlers
+>
 >
 
-Something causes disconnect of your touchscreen. I think this can happen of 
-EHCI is loaded after UHCI/OHCI and they all figure our which devices should be 
-driven by whom. Does it help if you compile EHCI in kernel or make sure it 
-gets loaded first?
+Applied all 4 patches affecting input devices, they should show up next
+time Linus pulls from me. Thank you.
 
 -- 
 Dmitry
