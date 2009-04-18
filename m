@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZDRWiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZDRWpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbZDRWiA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 18:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZDRWhv
+	id S1756490AbZDRWpl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 18:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZDRWpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 18:37:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47207 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753280AbZDRWhv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 18:37:51 -0400
-Date: Sat, 18 Apr 2009 15:31:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
-In-Reply-To: <49EA2983.3070003@kernel.org>
-Message-ID: <alpine.LFD.2.00.0904181530290.2199@localhost.localdomain>
-References: <20090416093152.6605612d@hobbes> <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu> <49E76864.9060309@kernel.org> <20090416172803.GB16618@elte.hu> <49E7916C.7050701@kernel.org>
- <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <49E99054.6050208@kernel.org> <20090418092216.GP7678@elte.hu> <alpine.LFD.2.00.0904181151230.4042@localhost.localdomain> <20090418191425.GA19565@elte.hu> <49EA2983.3070003@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 18 Apr 2009 18:45:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45785 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752733AbZDRWpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 18:45:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 900af0d breaks some embedded suspend/resume
+Date: Sun, 19 Apr 2009 00:44:57 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Len Brown <lenb@kernel.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <20090417231009.GB6900@flint.arm.linux.org.uk> <20090418135323.GA7148@flint.arm.linux.org.uk> <alpine.LFD.2.00.0904181205010.4042@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904181205010.4042@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904190044.58444.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 18 Apr 2009, Yinghai Lu wrote:
+On Saturday 18 April 2009, Linus Torvalds wrote:
 > 
-> From: Linus Torvalds <torvalds@linux-foundation.org>
+> On Sat, 18 Apr 2009, Russell King wrote:
+> > 
+> > What I need to be able to do is to suspend most devices on the host side
+> > which may involve talking to a separate microcontroller via I2C to shut
+> > down power to peripherals.
+> 
+> I suspect that for cases like this, the simplest thing to do is to just 
+> add a marker for "don't mess with my power management, I'm doing 
+> everything through sysdev" for the specified devices.
 
-This is _not_ my patch, and I think this is wrong.
+In this particular case, if sysdev was used, there would be no problem, but the
+platform uses a platform device to suspend-resume the i2c controller.
+In principle we could convert it to use a sysdev, but that would be more
+difficult than the last patch I sent IMO (at least to me).
 
-My patch was about adding entries to the resource region. I very much said 
-that I do _not_ like your approach of editing the e820 memory map itself.
+Also, apparently it is not the only platform doing it.
 
-I think this patch is horrible, and NAK it, and definitely don't want my 
-name on it.
+> Then those i2c controllers (and perhaps some PCI bridges etc) can just set 
+> that bit, and the device would basically turn invisible as far as the PM 
+> layer is concerned.
+> 
+> Not that different from the IRQF_TIMER bit for timer interrupts.
 
-		Linus
+I generally agree and a patch to implemet such a flag has been submitted
+recently.
+
+Thanks,
+Rafael
