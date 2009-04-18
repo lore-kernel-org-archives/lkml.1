@@ -1,158 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZDRSxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbZDRSxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbZDRSxf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759297AbZDRSwd
+	id S1759773AbZDRSxs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbZDRSwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:52:33 -0400
-Received: from georges.telenet-ops.be ([195.130.137.68]:47002 "EHLO
-	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756010AbZDRSw2 (ORCPT
+	Sat, 18 Apr 2009 14:52:38 -0400
+Received: from jacques.telenet-ops.be ([195.130.132.50]:45699 "EHLO
+	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756472AbZDRSw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 18 Apr 2009 14:52:28 -0400
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH/RFC 06/16] m68k: amiga - Floppy platform device conversion
-Date: Sat, 18 Apr 2009 20:52:14 +0200
-Message-Id: <1240080744-14995-7-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH/RFC 04/16] m68k: amiga - Frame buffer platform device conversion
+Date: Sat, 18 Apr 2009 20:52:12 +0200
+Message-Id: <1240080744-14995-5-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240080744-14995-6-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
 References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-5-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-6-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 ---
- arch/m68k/amiga/platform.c |    5 ++++
- drivers/block/amiflop.c    |   47 +++++++++++++++++++------------------------
- 2 files changed, 26 insertions(+), 26 deletions(-)
+ arch/m68k/amiga/platform.c |   15 +++++++++++++
+ drivers/video/amifb.c      |   49 +++++++++++++++++++++++++++----------------
+ 2 files changed, 46 insertions(+), 18 deletions(-)
 
 diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
-index 2e308e7..38f18bf 100644
+index 33a7669..7fa929c 100644
 --- a/arch/m68k/amiga/platform.c
 +++ b/arch/m68k/amiga/platform.c
-@@ -72,6 +72,11 @@ static int __init amiga_init_devices(void)
- 	if (AMIGAHW_PRESENT(AMI_AUDIO))
- 		platform_device_register_simple("amiga-audio", -1, NULL, 0);
+@@ -56,3 +56,18 @@ static int __init amiga_init_bus(void)
+ subsys_initcall(amiga_init_bus);
  
+ #endif /* CONFIG_ZORRO */
 +
-+	/* storage interfaces */
-+	if (AMIGAHW_PRESENT(AMI_FLOPPY))
-+		platform_device_register_simple("amiga-floppy", -1, NULL, 0);
 +
- 	return 0;
- }
- 
-diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
-index 8df436f..76bf7e2 100644
---- a/drivers/block/amiflop.c
-+++ b/drivers/block/amiflop.c
-@@ -65,6 +65,7 @@
- #include <linux/blkdev.h>
- #include <linux/elevator.h>
- #include <linux/interrupt.h>
++static int __init amiga_init_devices(void)
++{
++	if (!MACH_IS_AMIGA)
++		return -ENODEV;
++
++	/* video hardware */
++	if (AMIGAHW_PRESENT(AMI_VIDEO))
++		platform_device_register_simple("amiga-video", -1, NULL, 0);
++
++	return 0;
++}
++
++device_initcall(amiga_init_devices);
+diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+index 82bedd7..36a4018 100644
+--- a/drivers/video/amifb.c
++++ b/drivers/video/amifb.c
+@@ -51,8 +51,9 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+-
 +#include <linux/platform_device.h>
+ #include <linux/uaccess.h>
++
+ #include <asm/system.h>
+ #include <asm/irq.h>
+ #include <asm/amigahw.h>
+@@ -1136,7 +1137,7 @@ static int amifb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg
+ 	 * Interface to the low level console driver
+ 	 */
  
- #include <asm/setup.h>
- #include <asm/uaccess.h>
-@@ -1703,34 +1704,18 @@ static struct kobject *floppy_find(dev_t dev, int *part, void *data)
- 	return get_disk(unit[drive].gendisk);
- }
+-static void amifb_deinit(void);
++static void amifb_deinit(struct platform_device *pdev);
  
--static int __init amiga_floppy_init(void)
-+static int __init amiga_floppy_probe(struct platform_device *pdev)
+ 	/*
+ 	 * Internal routines
+@@ -2247,7 +2248,7 @@ static inline void chipfree(void)
+ 	 * Initialisation
+ 	 */
+ 
+-static int __init amifb_init(void)
++static int __init amifb_probe(struct platform_device *pdev)
  {
- 	int i, ret;
- 
--	if (!MACH_IS_AMIGA)
--		return -ENODEV;
--
--	if (!AMIGAHW_PRESENT(AMI_FLOPPY))
--		return -ENODEV;
--
- 	if (register_blkdev(FLOPPY_MAJOR,"fd"))
- 		return -EBUSY;
- 
--	/*
--	 *  We request DSKPTR, DSKLEN and DSKDATA only, because the other
--	 *  floppy registers are too spreaded over the custom register space
--	 */
--	ret = -EBUSY;
--	if (!request_mem_region(CUSTOM_PHYSADDR+0x20, 8, "amiflop [Paula]")) {
--		printk("fd: cannot get floppy registers\n");
--		goto out_blkdev;
--	}
--
- 	ret = -ENOMEM;
- 	if ((raw_buf = (char *)amiga_chip_alloc (RAW_BUF_SIZE, "Floppy")) ==
- 	    NULL) {
- 		printk("fd: cannot get chip mem buffer\n");
--		goto out_memregion;
-+		goto out_blkdev;
+ 	int tag, i, err = 0;
+ 	u_long chipptr;
+@@ -2262,16 +2263,6 @@ static int __init amifb_init(void)
  	}
- 
- 	ret = -EBUSY;
-@@ -1799,18 +1784,13 @@ out_irq2:
- 	free_irq(IRQ_AMIGA_DSKBLK, NULL);
- out_irq:
- 	amiga_chip_free(raw_buf);
--out_memregion:
--	release_mem_region(CUSTOM_PHYSADDR+0x20, 8);
- out_blkdev:
- 	unregister_blkdev(FLOPPY_MAJOR,"fd");
- 	return ret;
- }
- 
--module_init(amiga_floppy_init);
--#ifdef MODULE
--
- #if 0 /* not safe to unload */
--void cleanup_module(void)
-+static int __exit amiga_floppy_remove(struct platform_device *pdev)
- {
- 	int i;
- 
-@@ -1827,12 +1807,25 @@ void cleanup_module(void)
- 	custom.dmacon = DMAF_DISK; /* disable DMA */
- 	amiga_chip_free(raw_buf);
- 	blk_cleanup_queue(floppy_queue);
--	release_mem_region(CUSTOM_PHYSADDR+0x20, 8);
- 	unregister_blkdev(FLOPPY_MAJOR, "fd");
- }
+ 	amifb_setup(option);
  #endif
+-	if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(AMI_VIDEO))
+-		return -ENODEV;
+-
+-	/*
+-	 * We request all registers starting from bplpt[0]
+-	 */
+-	if (!request_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120,
+-				"amifb [Denise/Lisa]"))
+-		return -EBUSY;
+-
+ 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
  
--#else
-+static struct platform_driver amiga_floppy_driver = {
+ 	switch (amiga_chipset) {
+@@ -2378,6 +2369,7 @@ default_chipset:
+ 	fb_info.fbops = &amifb_ops;
+ 	fb_info.par = &currentpar;
+ 	fb_info.flags = FBINFO_DEFAULT;
++	fb_info.device = &pdev->dev;
+ 
+ 	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, ami_modedb,
+ 			  NUM_TOTAL_MODES, &ami_modedb[defmode], 4)) {
+@@ -2452,18 +2444,18 @@ default_chipset:
+ 	return 0;
+ 
+ amifb_error:
+-	amifb_deinit();
++	amifb_deinit(pdev);
+ 	return err;
+ }
+ 
+-static void amifb_deinit(void)
++static void amifb_deinit(struct platform_device *pdev)
+ {
+ 	if (fb_info.cmap.len)
+ 		fb_dealloc_cmap(&fb_info.cmap);
++	fb_dealloc_cmap(&fb_info.cmap);
+ 	chipfree();
+ 	if (videomemory)
+ 		iounmap((void*)videomemory);
+-	release_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120);
+ 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
+ }
+ 
+@@ -3795,14 +3787,35 @@ static void ami_rebuild_copper(void)
+ 	}
+ }
+ 
+-static void __exit amifb_exit(void)
++static int __exit amifb_remove(struct platform_device *pdev)
+ {
+ 	unregister_framebuffer(&fb_info);
+-	amifb_deinit();
++	amifb_deinit(pdev);
+ 	amifb_video_off();
++	return 0;
++}
++
++static struct platform_driver amifb_driver = {
++	.remove = __exit_p(amifb_remove),
 +	.driver   = {
-+		.name	= "amiga-floppy",
++		.name	= "amiga-video",
 +		.owner	= THIS_MODULE,
 +	},
 +};
 +
-+static int __init amiga_floppy_init(void)
++static int __init amifb_init(void)
 +{
-+	return platform_driver_probe(&amiga_floppy_driver, amiga_floppy_probe);
++	return platform_driver_probe(&amifb_driver, amifb_probe);
+ }
+ 
+ module_init(amifb_init);
++
++static void __exit amifb_exit(void)
++{
++	platform_driver_unregister(&amifb_driver);
 +}
 +
-+module_init(amiga_floppy_init);
-+
-+#ifndef MODULE
- static int __init amiga_floppy_setup (char *str)
- {
- 	int n;
-@@ -1847,3 +1840,5 @@ static int __init amiga_floppy_setup (char *str)
+ module_exit(amifb_exit);
  
- __setup("floppy=", amiga_floppy_setup);
- #endif
-+
-+MODULE_ALIAS("platform:amiga-floppy");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:amiga-video");
 -- 
 1.6.2.3
 
