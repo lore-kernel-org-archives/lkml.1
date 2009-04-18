@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbZDRNzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZDRN42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbZDRNzk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 09:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbZDRNzG
+	id S1757984AbZDRN42 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 09:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbZDRN4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 09:55:06 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41030 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbZDRNzF (ORCPT
+	Sat, 18 Apr 2009 09:56:19 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:25721 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755669AbZDRN4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 09:55:05 -0400
-Date: Sat, 18 Apr 2009 14:53:23 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: 900af0d breaks some embedded suspend/resume
-Message-ID: <20090418135323.GA7148@flint.arm.linux.org.uk>
-References: <20090417231009.GB6900@flint.arm.linux.org.uk> <200904181523.36010.rjw@sisk.pl>
+	Sat, 18 Apr 2009 09:56:18 -0400
+Date: Sat, 18 Apr 2009 15:56:17 +0200 (CEST)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Prakash Punnoor <prakash@punnoor.de>
+cc: Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+In-Reply-To: <200904181117.03418.prakash@punnoor.de>
+Message-ID: <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>
+References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904181523.36010.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 03:23:35PM +0200, Rafael J. Wysocki wrote:
-> The patchset in question had been discussed quite extensively before it was
-> merged and it's a pity none of the people caring for the affected platforms
-> took part in those discussions.  That would allow us to avoid the breakage.
+On Sat, 18 Apr 2009, Prakash Punnoor wrote:
 
-Maybe on some list, but not everyone is subscribed to a million and one
-mailing lists.  I don't have enough time to read those which I'm currently
-subscribed to, so I definitely don't want any more.
-
-> > or provide alternative equivalent functionality where the platform code is
-> > notified of the PM event prior to the late suspend callback being issued.
+> On Samstag 18 April 2009 10:09:54 Michael Tokarev wrote:
+> > Prakash Punnoor wrote:
+> > > Hi,
+> > >
+> > > as I am using only RAID5 I wonder why the RAID6 code also needs to be
+> > > built. Here is a rough patch of making RAID6 optional (but depending on
+> > > raid456) without reording of functions to minimize ifdef scattering.
+> > > (I also haven't checked yet who needs ASYNC_MEMCPY and ASYNC_XOR...)
+> > > It would probably be nicer to make RAID4/5 and RAID6 independently
+> > > selectable of each other. But that requires more refactoring, as I can
+> > > see.
+> >
+> > Hm.  In "old good days" there were 3 independent kernel modules,
+> > named raid4, raid5 and raid6.  Later on, they got merged into one
+> > since they share quite alot of the code, and has only a few specific
+> > parts.  Now you're trying to separate them back somewhat....
+> >
+> > What's your goal?  What's the problem you're trying to solve?
 > 
-> There is the .begin() callback that could be used, but if you need the
-> platform to be notified _just_ prior to the late suspend callback, then the
-> only thing I can think of at the moment is the appended patch.
+> Having duplicate code is not good, of course. But unused code is also not 
+> good. As I said, I only use RAID5, so I don't need RAID6 support. The RAID6 
+> support enlarges kernel (the built-in.o in drivers/md grows from 325kb to 
+> 414kb in my case), making boot time and compile time longer 
+
+By a few ms perhaps - nothing that you'd ever notice in real life... A 
+small price to pay for the shared code. If you were to split them all 
+again, the combined total size would be greater still.
+
+> - admittedly not 
+> by a big margin. But then again I could argue: Why not put RAID0,1,10,4,5,6 
+> into one big module? Makes no sense, huh? 
+
+Makes perfect sense to me. Just modprobe raid.o and you have all 
+raid levels available. That would make a lot of sense. 
+
+> For me putting 5 and 6 into one 
+> monolithic module makes no sense. A proper architecture would be to have some 
+> common shared code (in a separate module?), not a monolithic big one.
 > 
-> It shouldn't break anything in theory, because the majority of drivers put
-> their devices into low power states in the "regular" suspend callbacks anyway.
-
-Okay, my requirement is:
-
-What I need to be able to do is to suspend most devices on the host side
-which may involve talking to a separate microcontroller via I2C to shut
-down power to peripherals.
-
-Once that's complete, I then need to inform this microcontroller via I2C
-that we're going to be entering suspend mode, and wait for it to acknowledge
-that (after it's done its own suspend preparations).  At that point I can
-shutdown the I2C controller, and enter suspend mode.
-
-Upon resume (which is activated by this microcontroller, including jtagging
-the boot code across to the host CPU), we need to tell this microcontroller
-that we're going back to 'run' mode again via I2C, and then resume the
-devices.
-
-This is why we hooked the PXA I2C driver into the late suspend and
-early resume methods, so the I2C driver would be the last to suspend and
-the first to resume, thus allowing it to be used to talk to this micro-
-controller when required.  This worked out nicely because the late suspend
-used to before the platform prepare and platform finish used to happen
-after the early resume methods were called.
-
-So, it looks like your patch to kernel/power/main.c will allow me to
-continue to achieve this.  (Don't know about the disk.c bits, I've
-never used suspend-to-disk.)
+That's also a way, and certainly better than just splitting out raid6.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+
