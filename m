@@ -1,90 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbZDROn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758876AbZDROoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758812AbZDROn0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 10:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbZDROnG
+	id S1758876AbZDROoG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 10:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZDROnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 10:43:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44973 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753591AbZDROnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 10:43:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Russell King <rmk+lkml@arm.linux.org.uk>, Len Brown <lenb@kernel.org>
-Subject: Re: 900af0d breaks some embedded suspend/resume
-Date: Sat, 18 Apr 2009 16:42:31 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <20090417231009.GB6900@flint.arm.linux.org.uk> <20090418135323.GA7148@flint.arm.linux.org.uk> <200904181626.10388.rjw@sisk.pl>
-In-Reply-To: <200904181626.10388.rjw@sisk.pl>
+	Sat, 18 Apr 2009 10:43:49 -0400
+Received: from mail.it-technology.at ([62.99.145.147]:54956 "EHLO
+	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754773AbZDROnr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 10:43:47 -0400
+Message-ID: <fa78241556f71cafd6f0c553a1f8ff25.squirrel@webmail.it-technology.at>
+Date: Sat, 18 Apr 2009 16:43:44 +0200 (CEST)
+Subject: Re: [Resend][PATCH] usb driver for intellon int51x1 based PLC like 
+     devolo dlan duo
+From: "Peter Holik" <peter@holik.at>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: "LKML" <linux-kernel@vger.kernel.org>, "Netdev" <netdev@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904181642.32343.rjw@sisk.pl>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 18 April 2009, Rafael J. Wysocki wrote:
-> On Saturday 18 April 2009, Russell King wrote:
-> > On Sat, Apr 18, 2009 at 03:23:35PM +0200, Rafael J. Wysocki wrote:
-> > > The patchset in question had been discussed quite extensively before it was
-> > > merged and it's a pity none of the people caring for the affected platforms
-> > > took part in those discussions.  That would allow us to avoid the breakage.
-> > 
-> > Maybe on some list, but not everyone is subscribed to a million and one
-> > mailing lists.  I don't have enough time to read those which I'm currently
-> > subscribed to, so I definitely don't want any more.
-> > 
-> > > > or provide alternative equivalent functionality where the platform code is
-> > > > notified of the PM event prior to the late suspend callback being issued.
-> > > 
-> > > There is the .begin() callback that could be used, but if you need the
-> > > platform to be notified _just_ prior to the late suspend callback, then the
-> > > only thing I can think of at the moment is the appended patch.
-> > > 
-> > > It shouldn't break anything in theory, because the majority of drivers put
-> > > their devices into low power states in the "regular" suspend callbacks anyway.
-> > 
-> > Okay, my requirement is:
-> > 
-> > What I need to be able to do is to suspend most devices on the host side
-> > which may involve talking to a separate microcontroller via I2C to shut
-> > down power to peripherals.
-> > 
-> > Once that's complete, I then need to inform this microcontroller via I2C
-> > that we're going to be entering suspend mode, and wait for it to acknowledge
-> > that (after it's done its own suspend preparations).  At that point I can
-> > shutdown the I2C controller, and enter suspend mode.
-> 
-> Would it be an option to use a sysdev for that?
-> 
-> > Upon resume (which is activated by this microcontroller, including jtagging
-> > the boot code across to the host CPU), we need to tell this microcontroller
-> > that we're going back to 'run' mode again via I2C, and then resume the
-> > devices.
-> > 
-> > This is why we hooked the PXA I2C driver into the late suspend and
-> > early resume methods, so the I2C driver would be the last to suspend and
-> > the first to resume, thus allowing it to be used to talk to this micro-
-> > controller when required.  This worked out nicely because the late suspend
-> > used to before the platform prepare and platform finish used to happen
-> > after the early resume methods were called.
-> 
-> Unfortunately I'm not familiar with I2C, so I'm not sure whether or not this
-> would work, but it looks like sysdev could be used instead of platform_driver
-> for i2c_pxa_driver.
-> 
-> If using sysdev here (and analogously in i2c-s3c2410.c) is an option, I'd
-> prefer to do that instead of reordering suspend and resume code once again.
+some fixes to my last mail:
 
-Well, that wouldn't be straightforward, so I think I'll push my patch for
-2.6.30 if Len doesn't object to it.
 
-Thanks,
-Rafael
+>> This is a usb driver for the intellon int51x1 based PLC
+>> (Powerline Communications) like devolo dlan duo.
+>>
+>> Signed-off-by: Peter Holik <peter@holik.at>
+>> ---
+>>  drivers/net/usb/Kconfig   |    8 ++
+>>  drivers/net/usb/Makefile  |    1 +
+>>  drivers/net/usb/int51x1.c |  268 +++++++++++++++++++++++++++++++++++++++++++++
+>> 3 files changed, 277 insertions(+), 0 deletions(-)
+>>  create mode 100644 drivers/net/usb/int51x1.c
+>>
+>> diff --git a/drivers/net/usb/int51x1.c b/drivers/net/usb/int51x1.c new file mode 100644
+>> index 0000000..44a8a09
+>> --- /dev/null
+>> +++ b/drivers/net/usb/int51x1.c
+>> @@ -0,0 +1,268 @@
+>
+>> +static int int51x1_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
+>> +{
+>> +	int len;
+>> +
+>> +	if (unlikely(skb->len < INT51X1_HEADER_SIZE)) {
+>
+> pskb_may_pull(...)
+
+ok, done:
+
+static int int51x1_rx_fixup(struct usbnet *dev, struct sk_buff *skb) {
+        int len;
+
+        if (!(pskb_may_pull(skb, INT51X1_HEADER_SIZE))) {
+                deverr(dev, "unexpected tiny rx frame");
+                return 0;
+        }
+
+        len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
+
+        skb_trim(skb, len);
+
+        return 1;
+}
+
+>> +		deverr(dev, "unexpected tiny rx frame");
+>> +		return 0;
+>> +	}
+>> +
+>> +	len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
+>> +
+>> +	skb_trim(skb, len);
+>> +
+>> +	return 1;
+>> +}
+>> +
+>> +static struct sk_buff *int51x1_tx_fixup(struct usbnet *dev,
+>> +		struct sk_buff *skb, gfp_t flags)
+>> +{
+>> +	int pack_len = skb->len;
+>> +	int headroom = skb_headroom(skb);
+>> +	int tailroom = skb_tailroom(skb);
+>> +	int need_tail = 0;
+>> +	__le16 *len;
+>> +
+>> +	/*
+>> +	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
+>> +	 * but we need to know ourself, because this would add to the length
+>> +	 * we send down to the device...
+>> +	 */
+>> +	if (!((pack_len + INT51X1_HEADER_SIZE) % dev->maxpacket))
+>> +		need_tail = 1;
+>> +
+>> +	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
+>> +	if ((pack_len + INT51X1_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
+>> +		need_tail = dev->maxpacket + 1 - pack_len - INT51X1_HEADER_SIZE;
+>
+> This is totally crazy code fragment, first need_tail is used like a boolean?
+> But on the same some +1 scalar trick is being done?
+> Is there some reason why DIV_ROUND_UP (linux/kernel.h)
+> won't do what you want here and then you can trivally find diff = new - old ?
+>
+
+
+sorry i can't follow, can you convert this code to DIV_ROUND_UP
+
+
+>> +	if (!skb_cloned(skb) &&
+>> +			(headroom + tailroom >= need_tail + INT51X1_HEADER_SIZE)) {
+>> +		if (headroom < INT51X1_HEADER_SIZE || tailroom < need_tail) {
+>> +			skb->data = memmove(skb->head + INT51X1_HEADER_SIZE,
+>> +					skb->data, skb->len);
+>> +			skb_set_tail_pointer(skb, skb->len);
+>> +		}
+>> +	} else {
+>> +		struct sk_buff *skb2;
+>> +
+>> +		skb2 = skb_copy_expand(skb,
+>> +				INT51X1_HEADER_SIZE,
+>> +				need_tail,
+>> +				flags);
+>> +		dev_kfree_skb_any(skb);
+>> +		if (!skb2)
+>> +			return NULL;
+>> +		skb = skb2;
+>> +	}
+>> +
+>> +	pack_len += need_tail;
+>> +	pack_len &= 0x07ff;
+>> +
+>> +	len = (__le16 *) __skb_push(skb, INT51X1_HEADER_SIZE);
+>> +	*len = cpu_to_le16(pack_len);
+>> +
+>> +	if(need_tail)
+>> +		memset(__skb_put(skb, need_tail), 0, need_tail);
+>> +
+>> +	return skb;
+>> +}
+>> +
+>> +static void int51x1_async_cmd_callback(struct urb *urb)
+>> +{
+>> +	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
+>> +	int status = urb->status;
+>> +
+>> +	if (status < 0)
+>> +		dev_warn(&urb->dev->dev, "async callback failed with %d\n", status);
+>> +
+>> +	kfree(req);
+>> +	usb_free_urb(urb);
+>> +}
+>> +
+>> +static void int51x1_set_multicast(struct net_device *netdev)
+>> +{
+>> +	struct usb_ctrlrequest *req;
+>> +	int status;
+>> +	struct urb *urb;
+>> +	struct usbnet *dev = netdev_priv(netdev);
+>> +	u16 filter = PACKET_TYPE_DIRECTED |
+>> +		     PACKET_TYPE_BROADCAST;
+>
+> Won't this fit on a single line?
+>
+
+ok, done
+
+>> +
+>> +	if (netdev->flags & IFF_PROMISC) {
+>> +		/* do not expect to see traffic of other PLCs */
+>> +		filter |= PACKET_TYPE_PROMISCUOUS;
+>> +		devinfo(dev, "promiscuous mode enabled");
+>> +	} else if (netdev->mc_count ||
+>> +		  (netdev->flags & IFF_ALLMULTI)) {
+>> +		filter |= PACKET_TYPE_ALL_MULTICAST;
+>> +		devdbg(dev, "receive all multicast enabled");
+>> +	} else {
+>> +		/* ~PROMISCUOUS, ~MULTICAST */
+>> +		devdbg(dev, "receive own packets only");
+>> +	}
+>> +
+>> +	urb = usb_alloc_urb(0, GFP_ATOMIC);
+>> +	if (!urb) {
+>> +		devwarn(dev, "Error allocating URB");
+>> +		return;
+>> +	}
+>> +
+>> +	req = kmalloc(sizeof *req, GFP_ATOMIC);
+>
+> sizeof(*req)
+>
+
+ok, done
+
+>> +	if (!req) {
+>> +		devwarn(dev, "Error allocating control msg");
+>> +		usb_free_urb(urb);
+>> +		return;
+>
+> I'd use gotos instead for error handling since you need similar call in the later
+> error handling block too. Gotos make it somewhat harder to miss some necessary
+> rollback actions in one of the error blocks (not that this case is buggy atm).
+>
+
+ok, done like you suggested - see at the end
+
+>> +	}
+>> +
+>> +	req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+>> +	req->bRequest = SET_ETHERNET_PACKET_FILTER;
+>> +	req->wValue = cpu_to_le16(filter);
+>> +	req->wIndex = 0;
+>> +	req->wLength = 0;
+>> +
+>> +	usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
+>> +		(void *)req, NULL, 0,
+>> +		int51x1_async_cmd_callback,
+>> +		(void *)req);
+>> +
+>> +	status = usb_submit_urb(urb, GFP_ATOMIC);
+>> +	if (status < 0) {
+>> +		devwarn(dev, "Error submitting control msg, sts=%d", status);
+>> +		kfree(req);
+>> +		usb_free_urb(urb);
+>
+> Ditto.
+
+static void int51x1_set_multicast(struct net_device *netdev)
+{
+        struct usb_ctrlrequest *req;
+        int status;
+        struct urb *urb;
+        struct usbnet *dev = netdev_priv(netdev);
+        u16 filter = PACKET_TYPE_DIRECTED | PACKET_TYPE_BROADCAST;
+
+        if (netdev->flags & IFF_PROMISC) {
+                /* do not expect to see traffic of other PLCs */
+                filter |= PACKET_TYPE_PROMISCUOUS;
+                devinfo(dev, "promiscuous mode enabled");
+        } else if (netdev->mc_count ||
+                  (netdev->flags & IFF_ALLMULTI)) {
+                filter |= PACKET_TYPE_ALL_MULTICAST;
+                devdbg(dev, "receive all multicast enabled");
+        } else {
+                /* ~PROMISCUOUS, ~MULTICAST */
+                devdbg(dev, "receive own packets only");
+        }
+
+        urb = usb_alloc_urb(0, GFP_ATOMIC);
+        if (!urb) {
+                devwarn(dev, "Error allocating URB");
+                return;
+        }
+
+        req = kmalloc(sizeof(*req), GFP_ATOMIC);
+        if (!req) {
+                devwarn(dev, "Error allocating control msg");
+                goto out;
+        }
+
+        req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+        req->bRequest = SET_ETHERNET_PACKET_FILTER;
+        req->wValue = cpu_to_le16(filter);
+        req->wIndex = 0;
+        req->wLength = 0;
+
+        usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
+                (void *)req, NULL, 0,
+                int51x1_async_cmd_callback,
+                (void *)req);
+
+        status = usb_submit_urb(urb, GFP_ATOMIC);
+        if (status < 0) {
+                devwarn(dev, "Error submitting control msg, sts=%d", status);
+                goto out1;
+        }
+        return;
+out1:
+        kfree(req);
+out:
+        usb_free_urb(urb);
+}
+
+
+cu Peter
+
+
+
