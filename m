@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZDRRvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZDRRxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752074AbZDRRvZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 13:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZDRRvP
+	id S1754919AbZDRRxZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 13:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZDRRxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 13:51:15 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:5791 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbZDRRvP convert rfc822-to-8bit (ORCPT
+	Sat, 18 Apr 2009 13:53:16 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40419 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbZDRRxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 13:51:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VKI7fViK+TYrkyywZqhKYcCg3oHOyXbiiCMfwA5TItVi71uBXb2G/fguGKknjQmoMv
-         POE29X7AsJtKfCUApWyfLyh3cF8kVHpCYS4QRPW7LPwjVdlHwRWATRFz9Jy665MpAV9j
-         z6d161R5dOroMeeXPeWfDgfeFpnrdiIHdUVHo=
-MIME-Version: 1.0
-In-Reply-To: <20090415154817.GC5989@nowhere>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com>
-	 <8bd0f97a0904141917g3496f526ifc4fe0bd41c3d1c7@mail.gmail.com>
-	 <alpine.DEB.2.00.0904142238060.31421@gandalf.stny.rr.com>
-	 <20090415154817.GC5989@nowhere>
-Date: Sat, 18 Apr 2009 13:51:14 -0400
-Message-ID: <8bd0f97a0904181051m4fe5c09dw3a727de46507767e@mail.gmail.com>
-Subject: Re: [PATCH v2] vsprintf: introduce %pf
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 18 Apr 2009 13:53:15 -0400
+Date: Sat, 18 Apr 2009 19:55:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: kbuild - introduce support for subdir-ccflags-y
+Message-ID: <20090418175519.GA25541@uranus.ravnborg.org>
+References: <20090418125159.GA23008@uranus.ravnborg.org> <20090418125839.GA3668@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090418125839.GA3668@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 15, 2009 at 11:48, Frederic Weisbecker wrote:
-> On Tue, Apr 14, 2009 at 10:38:36PM -0400, Steven Rostedt wrote:
->> On Tue, 14 Apr 2009, Mike Frysinger wrote:
->> > On Tue, Apr 14, 2009 at 20:00, Frederic Weisbecker wrote:
->> > > - * - 'F' For symbolic function descriptor pointers
->> > > + * - 'F' For symbolic function descriptor pointers with asm offset
->> > > + * - 'f' For simple function symbol
->> >
->> > "asm" is weird here as it isnt an assembly offset (not that i have any
->> > idea what an "assembly offset" even means).  just say "offset".
->>
->> Or perhaps better: function offset, as it ususally means the offset into
->> the function.
->
->
-> Ok, I've tried to keep a balance between all your comments.
-> Tell me what your think about this v2:
+On Sat, Apr 18, 2009 at 01:58:39PM +0100, Russell King wrote:
+> On Sat, Apr 18, 2009 at 02:51:59PM +0200, Sam Ravnborg wrote:
+> > The typical use cases are an architecture or a subsystem that
+> > decide to cover all files with -Werror.
+> > Today alpha, mips and sparc uses -Werror in almost all their
+> > Makefile - with subdir-ccflag-y it is now simpler to do so
+> > as only the top-level directories needs to be covered.
+> 
+> Hmm, this won't make sense for ARM.  We have things like #warning and
+> deprecated functions in machine specific headers, and adding -Werror
+> to the whole of arch/arm/ will result in these causing builds to fail.
 
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+For arm I would suggest the following preparational patch:
+
+diff --git a/arch/arm/Kbuild b/arch/arm/Kbuild
+new file mode 100644
+index 0000000..33b6645
+--- /dev/null
++++ b/arch/arm/Kbuild
+@@ -0,0 +1,7 @@
++# core part of arm kernel
++# The file is referenced from arch/arm/Makefile
++
++core-y                          += kernel/ mm/ common/
++core-$(CONFIG_FPE_NWFPE)        += nwfpe/
++core-$(CONFIG_VFP)              += arch/arm/vfp/
++
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index e84729b..5ccdca1 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -186,18 +186,9 @@ endif
+ 
+ export	TEXT_OFFSET GZFLAGS MMUEXT
+ 
+-# Do we have FASTFPE?
+-FASTFPE		:=arch/arm/fastfpe
+-ifeq ($(FASTFPE),$(wildcard $(FASTFPE)))
+-FASTFPE_OBJ	:=$(FASTFPE)/
+-endif
+-
+ # If we have a machine-specific directory, then include it in the build.
+-core-y				+= arch/arm/kernel/ arch/arm/mm/ arch/arm/common/
++core-y                          += arch/arm/
+ core-y				+= $(machdirs) $(platdirs)
+-core-$(CONFIG_FPE_NWFPE)	+= arch/arm/nwfpe/
+-core-$(CONFIG_FPE_FASTFPE)	+= $(FASTFPE_OBJ)
+-core-$(CONFIG_VFP)		+= arch/arm/vfp/
+ 
+ drivers-$(CONFIG_OPROFILE)      += arch/arm/oprofile/
+ 
+
+[The above patch include deletion of unused FASTFPE stuff]
+
+Then to cover all of kernel/ mm/ common/ nwfpe/ and vfp/
+is a single line in arch/arm/Kbuild.
+
+Another benefit of arch/arm/Kbuild is that you can use:
+
+    make arch/arm/
+
+and get all the above listed directories built.
+
+You would need dedicated subdir-* for oprofile/ as 
+it is linked together with drivers.
+And for machine and platforms it would be a case-by-case
+decision.
+
+So it can be of benefit for arm too - but only if a preparational
+step is done (which brings in other benefits).
+
+If you want the preparational patch - independent of subdir-* support
+then let me know and I will submit a proper patch to you.
+
+	Sam
