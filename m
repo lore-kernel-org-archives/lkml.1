@@ -1,360 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbZDRS54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbZDRS6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760668AbZDRS54 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZDRSw7
+	id S1759915AbZDRS6g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759600AbZDRSxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:52:59 -0400
-Received: from jacques.telenet-ops.be ([195.130.132.50]:45705 "EHLO
-	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757989AbZDRSwa (ORCPT
+	Sat, 18 Apr 2009 14:53:38 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:55746 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759678AbZDRSxg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:52:30 -0400
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-ide@vger.kernel.org
-Subject: [PATCH/RFC 09/16] m68k: amiga - Amiga Gayle IDE platform device conversion
-Date: Sat, 18 Apr 2009 20:52:17 +0200
-Message-Id: <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
-References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-5-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-6-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-7-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-8-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
+	Sat, 18 Apr 2009 14:53:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:x-pgp-key:user-agent;
+        b=marrwdWINl4scfLTOEpGfVRmy51C7wnep/WeOMX8QD/KMGC/9sFPwq0hhK8uYZ/plF
+         Jndve0R4cMNZPggu7PvD+pT+VsZoVgy3QB7bOul5/sBfi8XlpFT54wuIni4MdaDqWUt1
+         rCUTWzd0alX3ZtRhi9hT0Wo/CM1lIsYJWqQ/8=
+Date: Sat, 18 Apr 2009 20:52:34 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] fbdev: fix fillrect for 24bpp modes
+Message-ID: <20090418185234.GA17853@tria>
+Reply-To: spock@gentoo.org
+References: <20090413170954.GA8403@tria> <20090417183617.ed7553cd.krzysztof.h1@poczta.fm> <20090417115048.0c5ca35d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090417115048.0c5ca35d.akpm@linux-foundation.org>
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-ide@vger.kernel.org
+The software fillrect routines do not work properly when the number of
+pixels per machine word is not an integer.  To see that, run the following
+command on a fbdev console with a 24bpp video mode, using a non-accelerated
+driver such as (u)vesafb:
+
+  reset ; echo -e '\e[41mtest\e[K'
+
+The expected result is 'test' displayed on a line with red background.
+Instead of that, 'test' has a red background, but the rest of the line
+(rendered using fillrect()) contains a distored colorful pattern.
+
+This patch fixes the problem by correctly computing rotation shifts.
+It has been tested in a 24bpp mode on 32- and 64-bit little-endian
+machines.
+
+Signed-off-by: Michał Januszewski <spock@gentoo.org>
 ---
- arch/m68k/amiga/platform.c       |   63 +++++++++++++++-
- arch/m68k/include/asm/amigayle.h |    6 ++
- drivers/ide/gayle.c              |  156 +++++++++++++++++++++-----------------
- 3 files changed, 153 insertions(+), 72 deletions(-)
+This version of the patch should work correctly with modes where
+line_length*8 % bpp != 0.
 
-diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
-index 027e4ca..907f6f5 100644
---- a/arch/m68k/amiga/platform.c
-+++ b/arch/m68k/amiga/platform.c
-@@ -11,6 +11,7 @@
- #include <linux/zorro.h>
+It also replaces the right shift by (ffs(bits) - 1) with a division
+by bits, as both operations are optimized into a shift by a constant
+and the latter one increases code readability.
+
+In case this still breaks in some modes, I would appreciate a full
+list of parameters describing the problem, i.e. bpp, line_length
+and the top left coordinate of the rectangle that is painted
+incorrectly.
+
+diff --git a/drivers/video/cfbfillrect.c b/drivers/video/cfbfillrect.c
+index 64b3576..faa1a39 100644
+--- a/drivers/video/cfbfillrect.c
++++ b/drivers/video/cfbfillrect.c
+@@ -9,10 +9,6 @@
+  *
+  * NOTES:
+  *
+- *  The code for depths like 24 that don't have integer number of pixels per
+- *  long is broken and needs to be fixed. For now I turned these types of
+- *  mode off.
+- *
+  *  Also need to add code to deal with cards endians that are different than
+  *  the native cpu endians. I also need to deal with MSB position in the word.
+  *
+@@ -139,7 +135,7 @@ bitfill_unaligned(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
  
- #include <asm/amigahw.h>
-+#include <asm/amigayle.h>
- 
- 
- #ifdef CONFIG_ZORRO
-@@ -55,7 +56,24 @@ static int __init amiga_init_bus(void)
- 
- subsys_initcall(amiga_init_bus);
- 
--#endif /* CONFIG_ZORRO */
-+
-+static int z_dev_present(zorro_id id)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < zorro_num_autocon; i++)
-+		if (zorro_autocon[i].rom.er_Manufacturer == ZORRO_MANUF(id) &&
-+		    zorro_autocon[i].rom.er_Product == ZORRO_PROD(id))
-+			return 1;
-+
-+	return 0;
-+}
-+
-+#else /* !CONFIG_ZORRO */
-+
-+static inline int z_dev_present(zorro_id id) { return 0; }
-+
-+#endif /* !CONFIG_ZORRO */
- 
- 
- static const struct resource a3000_scsi_resource __initconst = {
-@@ -72,8 +90,36 @@ static const struct resource a4000t_scsi_resource __initconst = {
- };
- 
- 
-+static const struct resource a1200_ide_resource __initconst = {
-+	.start	= 0xda0000,
-+	.end	= 0xda1fff,
-+	.flags	= IORESOURCE_MEM,
-+};
-+
-+static const struct gayle_ide_platform_data a1200_ide_pdata __initconst = {
-+	.base		= 0xda0000,
-+	.irqport	= 0xda9000,
-+	.explicit_ack	= 1,
-+};
-+
-+
-+static const struct resource a4000_ide_resource __initconst = {
-+	.start	= 0xdd2000,
-+	.end	= 0xdd3fff,
-+	.flags	= IORESOURCE_MEM,
-+};
-+
-+static const struct gayle_ide_platform_data a4000_ide_pdata __initconst = {
-+	.base		= 0xdd2020,
-+	.irqport	= 0xdd3020,
-+	.explicit_ack	= 0,
-+};
-+
-+
- static int __init amiga_init_devices(void)
- {
-+	struct platform_device *pdev;
-+
- 	if (!MACH_IS_AMIGA)
- 		return -ENODEV;
- 
-@@ -99,6 +145,21 @@ static int __init amiga_init_devices(void)
- 		platform_device_register_simple("amiga-a4000t-scsi", -1,
- 						&a4000t_scsi_resource, 1);
- 
-+	if (AMIGAHW_PRESENT(A1200_IDE) ||
-+	    z_dev_present(ZORRO_PROD_MTEC_VIPER_MK_V_E_MATRIX_530_SCSI_IDE)) {
-+		pdev = platform_device_register_simple("amiga-gayle-ide", -1,
-+						       &a1200_ide_resource, 1);
-+		platform_device_add_data(pdev, &a1200_ide_pdata,
-+					 sizeof(a1200_ide_pdata));
-+	}
-+
-+	if (AMIGAHW_PRESENT(A4000_IDE)) {
-+		pdev = platform_device_register_simple("amiga-gayle-ide", -1,
-+						       &a4000_ide_resource, 1);
-+		platform_device_add_data(pdev, &a4000_ide_pdata,
-+					 sizeof(a4000_ide_pdata));
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/arch/m68k/include/asm/amigayle.h b/arch/m68k/include/asm/amigayle.h
-index bb5a6aa..a01453d 100644
---- a/arch/m68k/include/asm/amigayle.h
-+++ b/arch/m68k/include/asm/amigayle.h
-@@ -104,4 +104,10 @@ struct GAYLE {
- #define GAYLE_CFG_250NS		0x00
- #define GAYLE_CFG_720NS		0x0c
- 
-+struct gayle_ide_platform_data {
-+	unsigned long base;
-+	unsigned long irqport;
-+	int explicit_ack;	/* A1200 IDE needs explicit ack */
-+};
-+
- #endif /* asm-m68k/amigayle.h */
-diff --git a/drivers/ide/gayle.c b/drivers/ide/gayle.c
-index c711951..093e976 100644
---- a/drivers/ide/gayle.c
-+++ b/drivers/ide/gayle.c
-@@ -16,6 +16,7 @@
- #include <linux/init.h>
- #include <linux/zorro.h>
- #include <linux/module.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/setup.h>
- #include <asm/amigahw.h>
-@@ -24,15 +25,6 @@
- 
- 
-     /*
--     *  Bases of the IDE interfaces
--     */
--
--#define GAYLE_BASE_4000	0xdd2020	/* A4000/A4000T */
--#define GAYLE_BASE_1200	0xda0000	/* A1200/A600 and E-Matrix 530 */
--
--#define GAYLE_IDEREG_SIZE	0x2000
--
--    /*
-      *  Offsets from one of the above bases
-      */
- 
-@@ -66,26 +58,25 @@ MODULE_PARM_DESC(doubler, "enable support for IDE doublers");
-      *  Check and acknowledge the interrupt status
-      */
- 
--static int gayle_ack_intr_a4000(ide_hwif_t *hwif)
-+static inline int gayle_ack_intr(ide_hwif_t *hwif)
- {
--    unsigned char ch;
-+	unsigned char ch;
- 
--    ch = z_readb(hwif->io_ports.irq_addr);
--    if (!(ch & GAYLE_IRQ_IDE))
--	return 0;
--    return 1;
-+	ch = z_readb(hwif->io_ports.irq_addr);
-+	if (!(ch & GAYLE_IRQ_IDE))
-+		return 0;
-+	return 1;
- }
- 
--static int gayle_ack_intr_a1200(ide_hwif_t *hwif)
-+static int gayle_ack_intr_explicit(ide_hwif_t *hwif)
- {
--    unsigned char ch;
-+	int ret = gayle_ack_intr(hwif);
-+	if (!ret)
-+		return 0;
- 
--    ch = z_readb(hwif->io_ports.irq_addr);
--    if (!(ch & GAYLE_IRQ_IDE))
--	return 0;
--    (void)z_readb(hwif->io_ports.status_addr);
--    z_writeb(0x7c, hwif->io_ports.irq_addr);
--    return 1;
-+	(void)z_readb(hwif->io_ports.status_addr);
-+	z_writeb(0x7c, hwif->io_ports.irq_addr);
-+	return 1;
- }
- 
- static void __init gayle_setup_ports(hw_regs_t *hw, unsigned long base,
-@@ -120,64 +111,87 @@ static const struct ide_port_info gayle_port_info = {
-      *  Probe for a Gayle IDE interface (and optionally for an IDE doubler)
-      */
- 
--static int __init gayle_init(void)
-+static int __init amiga_gayle_ide_probe(struct platform_device *pdev)
- {
--    unsigned long phys_base, res_start, res_n;
--    unsigned long base, ctrlport, irqport;
--    ide_ack_intr_t *ack_intr;
--    int a4000, i, rc;
--    hw_regs_t hw[GAYLE_NUM_HWIFS], *hws[] = { NULL, NULL, NULL, NULL };
--
--    if (!MACH_IS_AMIGA)
--	return -ENODEV;
--
--    if ((a4000 = AMIGAHW_PRESENT(A4000_IDE)) || AMIGAHW_PRESENT(A1200_IDE))
--	goto found;
--
--#ifdef CONFIG_ZORRO
--    if (zorro_find_device(ZORRO_PROD_MTEC_VIPER_MK_V_E_MATRIX_530_SCSI_IDE,
--			  NULL))
--	goto found;
--#endif
--    return -ENODEV;
--
--found:
--	printk(KERN_INFO "ide: Gayle IDE controller (A%d style%s)\n",
--			 a4000 ? 4000 : 1200,
--			 ide_doubler ? ", IDE doubler" : "");
--
--	if (a4000) {
--	    phys_base = GAYLE_BASE_4000;
--	    irqport = (unsigned long)ZTWO_VADDR(GAYLE_IRQ_4000);
--	    ack_intr = gayle_ack_intr_a4000;
--	} else {
--	    phys_base = GAYLE_BASE_1200;
--	    irqport = (unsigned long)ZTWO_VADDR(GAYLE_IRQ_1200);
--	    ack_intr = gayle_ack_intr_a1200;
-+	struct resource *res;
-+	struct gayle_ide_platform_data *pdata;
-+	unsigned long base, ctrlport, irqport;
-+	ide_ack_intr_t *ack_intr;
-+	unsigned int i;
-+	int error;
-+	hw_regs_t hw[GAYLE_NUM_HWIFS], *hws[] = { NULL, NULL, NULL, NULL };
-+	struct ide_host *host;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res)
-+		return -ENODEV;
-+
-+	if (!request_mem_region(res->start, resource_size(res), "IDE"))
-+		return -EBUSY;
-+
-+	pdata = pdev->dev.platform_data;
-+	pr_info("ide: Gayle IDE controller (A%u style%s)\n",
-+		pdata->explicit_ack ? 1200 : 4000,
-+		ide_doubler ? ", IDE doubler" : "");
-+
-+	base = (unsigned long)ZTWO_VADDR(pdata->base);
-+	ctrlport = 0;
-+	irqport = (unsigned long)ZTWO_VADDR(pdata->irqport);
-+	ack_intr = pdata->explicit_ack ? gayle_ack_intr_explicit
-+				       : gayle_ack_intr;
-+
-+	for (i = 0; i < GAYLE_NUM_PROBE_HWIFS; i++, base += GAYLE_NEXT_PORT) {
-+		if (GAYLE_HAS_CONTROL_REG)
-+			ctrlport = base + GAYLE_CONTROL;
-+
-+		gayle_setup_ports(&hw[i], base, ctrlport, irqport, ack_intr);
-+		hws[i] = &hw[i];
+ 		// Trailing bits
+ 		if (last)
+-			FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
++			FB_WRITEL(comp(pat, FB_READL(dst), last), dst);
  	}
- 
--	res_start = ((unsigned long)phys_base) & ~(GAYLE_NEXT_PORT-1);
--	res_n = GAYLE_IDEREG_SIZE;
-+	error = ide_host_add(&gayle_port_info, hws, &host);
-+	if (error)
-+		goto out;
- 
--	if (!request_mem_region(res_start, res_n, "IDE"))
--		return -EBUSY;
-+	platform_set_drvdata(pdev, host);
-+	return 0;
-+
-+out:
-+	release_mem_region(res->start, resource_size(res));
-+	return error;
-+}
-+
-+static int __exit amiga_gayle_ide_remove(struct platform_device *pdev)
-+{
-+	struct ide_host *host = pdev->dev.driver_data;
-+	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 
--    for (i = 0; i < GAYLE_NUM_PROBE_HWIFS; i++) {
--	base = (unsigned long)ZTWO_VADDR(phys_base + i * GAYLE_NEXT_PORT);
--	ctrlport = GAYLE_HAS_CONTROL_REG ? (base + GAYLE_CONTROL) : 0;
-+	ide_host_remove(host);
-+	release_mem_region(res->start, resource_size(res));
-+	return 0;
-+}
- 
--	gayle_setup_ports(&hw[i], base, ctrlport, irqport, ack_intr);
-+static struct platform_driver amiga_gayle_ide_driver = {
-+	.remove = __exit_p(amiga_gayle_ide_remove),
-+	.driver   = {
-+		.name	= "amiga-gayle-ide",
-+		.owner	= THIS_MODULE,
-+	},
-+};
- 
--	hws[i] = &hw[i];
--    }
-+static int __init amiga_gayle_ide_init(void)
-+{
-+	return platform_driver_probe(&amiga_gayle_ide_driver,
-+				     amiga_gayle_ide_probe);
-+}
- 
--    rc = ide_host_add(&gayle_port_info, hws, NULL);
--    if (rc)
--	release_mem_region(res_start, res_n);
-+module_init(amiga_gayle_ide_init);
- 
--    return rc;
-+static void __exit amiga_gayle_ide_exit(void)
-+{
-+	platform_driver_unregister(&amiga_gayle_ide_driver);
  }
  
--module_init(gayle_init);
-+module_exit(amiga_gayle_ide_exit);
+@@ -281,7 +277,7 @@ bitfill_unaligned_rev(struct fb_info *p, unsigned long __iomem *dst,
  
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:amiga-gayle-ide");
--- 
-1.6.2.3
-
+ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ {
+-	unsigned long pat, fg;
++	unsigned long pat, pat2, fg;
+ 	unsigned long width = rect->width, height = rect->height;
+ 	int bits = BITS_PER_LONG, bytes = bits >> 3;
+ 	u32 bpp = p->var.bits_per_pixel;
+@@ -297,7 +293,7 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ 	else
+ 		fg = rect->color;
+ 
+-	pat = pixel_to_pat( bpp, fg);
++	pat = pixel_to_pat(bpp, fg);
+ 
+ 	dst = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
+ 	dst_idx = ((unsigned long)p->screen_base & (bytes - 1))*8;
+@@ -333,17 +329,16 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	} else {
+-		int right;
+-		int r;
+-		int rot = (left-dst_idx) % bpp;
++		int right, r;
+ 		void (*fill_op)(struct fb_info *p, unsigned long __iomem *dst,
+ 				int dst_idx, unsigned long pat, int left,
+ 				int right, unsigned n, int bits) = NULL;
+-
+-		/* rotate pattern to correct start position */
+-		pat = pat << rot | pat >> (bpp-rot);
+-
+-		right = bpp-left;
++#ifdef __LITTLE_ENDIAN
++		right = left;
++		left = bpp - right;
++#else
++		right = bpp - left;
++#endif
+ 		switch (rect->rop) {
+ 		case ROP_XOR:
+ 			fill_op = bitfill_unaligned_rev;
+@@ -357,12 +352,17 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ 			break;
+ 		}
+ 		while (height--) {
+-			dst += dst_idx >> (ffs(bits) - 1);
++			dst += dst_idx / bits;
+ 			dst_idx &= (bits - 1);
+-			fill_op(p, dst, dst_idx, pat, left, right,
++			r = dst_idx % bpp;
++			/* rotate pattern to the correct start position */
++#ifdef __LITTLE_ENDIAN
++			pat2 = pat << r | pat >> (bpp-r);
++#else
++			pat2 = pat << (bpp-r) | pat >> r;
++#endif
++			fill_op(p, dst, dst_idx, pat2, left, right,
+ 				width*bpp, bits);
+-			r = (p->fix.line_length*8) % bpp;
+-			pat = pat << (bpp-r) | pat >> r;
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	}
+diff --git a/drivers/video/fb_draw.h b/drivers/video/fb_draw.h
+index 1db6221..fa9626e 100644
+--- a/drivers/video/fb_draw.h
++++ b/drivers/video/fb_draw.h
+@@ -33,11 +33,11 @@ pixel_to_pat( u32 bpp, u32 pixel)
+ 	case 8:
+ 		return 0x0101010101010101ul*pixel;
+ 	case 12:
+-		return 0x0001001001001001ul*pixel;
++		return 0x1001001001001001ul*pixel;
+ 	case 16:
+ 		return 0x0001000100010001ul*pixel;
+ 	case 24:
+-		return 0x0000000001000001ul*pixel;
++		return 0x0001000001000001ul*pixel;
+ 	case 32:
+ 		return 0x0000000100000001ul*pixel;
+ 	default:
+@@ -58,11 +58,11 @@ pixel_to_pat( u32 bpp, u32 pixel)
+ 	case 8:
+ 		return 0x01010101ul*pixel;
+ 	case 12:
+-		return 0x00001001ul*pixel;
++		return 0x01001001ul*pixel;
+ 	case 16:
+ 		return 0x00010001ul*pixel;
+ 	case 24:
+-		return 0x00000001ul*pixel;
++		return 0x01000001ul*pixel;
+ 	case 32:
+ 		return 0x00000001ul*pixel;
+ 	default:
+diff --git a/drivers/video/sysfillrect.c b/drivers/video/sysfillrect.c
+index f94d6b6..ff256a4 100644
+--- a/drivers/video/sysfillrect.c
++++ b/drivers/video/sysfillrect.c
+@@ -124,7 +124,7 @@ bitfill_unaligned(struct fb_info *p, unsigned long *dst, int dst_idx,
+ 
+ 		/* Trailing bits */
+ 		if (last)
+-			*dst = comp(pat, *dst, first);
++			*dst = comp(pat, *dst, last);
+ 	}
+ }
+ 
+@@ -242,7 +242,7 @@ bitfill_unaligned_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
+ 
+ void sys_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ {
+-	unsigned long pat, fg;
++	unsigned long pat, pat2, fg;
+ 	unsigned long width = rect->width, height = rect->height;
+ 	int bits = BITS_PER_LONG, bytes = bits >> 3;
+ 	u32 bpp = p->var.bits_per_pixel;
+@@ -292,17 +292,16 @@ void sys_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	} else {
+-		int right;
+-		int r;
+-		int rot = (left-dst_idx) % bpp;
++		int right, r;
+ 		void (*fill_op)(struct fb_info *p, unsigned long *dst,
+ 				int dst_idx, unsigned long pat, int left,
+ 				int right, unsigned n, int bits) = NULL;
+-
+-		/* rotate pattern to correct start position */
+-		pat = pat << rot | pat >> (bpp-rot);
+-
+-		right = bpp-left;
++#ifdef __LITTLE_ENDIAN
++		right = left;
++		left = bpp - right;
++#else
++		right = bpp - left;
++#endif
+ 		switch (rect->rop) {
+ 		case ROP_XOR:
+ 			fill_op = bitfill_unaligned_rev;
+@@ -317,12 +316,17 @@ void sys_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ 			break;
+ 		}
+ 		while (height--) {
+-			dst += dst_idx >> (ffs(bits) - 1);
++			dst += dst_idx / bits;
+ 			dst_idx &= (bits - 1);
+-			fill_op(p, dst, dst_idx, pat, left, right,
++			r = dst_idx % bpp;
++			/* rotate pattern to the correct start position */
++#ifdef __LITTLE_ENDIAN
++			pat2 = pat << r | pat >> (bpp-r);
++#else
++			pat2 = pat << (bpp-r) | pat >> r;
++#endif
++			fill_op(p, dst, dst_idx, pat2, left, right,
+ 				width*bpp, bits);
+-			r = (p->fix.line_length*8) % bpp;
+-			pat = pat << (bpp-r) | pat >> r;
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	}
