@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758481AbZDRAZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZDRAc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758481AbZDRAZP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 20:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZDRAY6
+	id S1758296AbZDRAc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 20:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbZDRAcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 20:24:58 -0400
-Received: from exprod6og102.obsmtp.com ([64.18.1.183]:46626 "HELO
-	exprod6og102.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752256AbZDRAY6 convert rfc822-to-8bit (ORCPT
+	Fri, 17 Apr 2009 20:32:45 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:61747 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753422AbZDRAco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 20:24:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 17 Apr 2009 20:32:44 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Q: crypto/cipher.c
-Date: Fri, 17 Apr 2009 20:24:07 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F9237@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Q: crypto/cipher.c
-Thread-Index: Acm/u/yoZEJNCuwjQ2eL8cwMCSfrhw==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 18 Apr 2009 00:24:56.0176 (UTC) FILETIME=[19A4D700:01C9BFBC]
+Date: Fri, 17 Apr 2009 20:32:42 -0400
+Message-ID: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+Subject: Porting the ibm_newemac driver to use phylib (and other PHY/MAC 
+	questions)
+From: Kyle Moffett <kyle@moffetthome.net>
+To: netdev <netdev@vger.kernel.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-I have a question about the following code in crypto/cipher.c.
+Hello,
 
-static void cipher_crypt_unaligned(void (*fn)(struct crypto_tfm *, u8 *,
-					      const u8 *),
-				   struct crypto_tfm *tfm,
-				   u8 *dst, const u8 *src)
-{
-	unsigned long alignmask = crypto_tfm_alg_alignmask(tfm);
-	unsigned int size = crypto_tfm_alg_blocksize(tfm);
-	u8 buffer[size + alignmask];
-	u8 *tmp = (u8 *)ALIGN((unsigned long)buffer, alignmask + 1);
+I'm currently fiddling with a custom embedded prototype board using
+the ibm_newemac driver with some currently-unsupported PHYs.  Those
+PHYs *are* supported by phylib, but the emac driver seems to have its
+own PHY layer cribbed from the sungem driver.  I'm curious if there's
+some particular reason it hasn't been ported (aside from "nobody has
+bothered yet").
 
-	memcpy(tmp, src, size);
-	fn(tfm, tmp, tmp);
-	memcpy(dst, tmp, size);
-}
+I've temporarily hacked a PHY driver together for the moment, but it
+would be much easier for us to maintain and update our board if the
+PHY drivers were integrated.  As a result I'm also interested in how
+complicated it might be to port the driver (and possibly sungem as
+well) over to phylib, if that is indeed feasible.  Also, if I end up
+going that route, are there others available with other hardware
+variants who would be willing to test my patches on their boards?
 
-Doesn't the size of buffer need to be known at compile time for this
-to actually work? Or do alignmask and size work out to be constants?
+As an aside, would there be any interest in adding an ethtool option
+to enable the features of many PHYs which allow them to transmit data
+even if their receive port has no link (specifically fiber cards, but
+a few copper cards can do something similar).  From a cursory glance,
+a third "duplex" configuration option would seem to make the most
+sense from an end-user point of view.  Specifically, the existing
+options are "full" (simultaneous transmit/receive), "half"
+(time-multiplexed transmit/receive).  Perhaps a "tx" or "tx-only"
+option would be sensible?  Now, the receiving card probably doesn't
+need an "rx-only" mode as "full" should do that just fine; though
+perhaps some cards with unidirectional-link-detection would use
+"rx-only" to intentionally disable that support.  Once an extra couple
+constants are added to linux/ethtool.h and the appropriate config
+options added to ethtool, it should just be up to the drivers to
+detect and handle those config options, no?
 
-This appears to be buggy. But I may just be missing something...
+Comments and suggestions much appreciated.
 
-Thanks,
-Hartley
+Cheers,
+Kyle Moffett
