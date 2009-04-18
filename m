@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZDRVzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbZDRV5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbZDRVzp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 17:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZDRVzf
+	id S1759140AbZDRV5T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 17:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZDRV5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 17:55:35 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:46879 "HELO mx0.towertech.it"
+	Sat, 18 Apr 2009 17:57:07 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:40505 "HELO mx0.towertech.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752470AbZDRVze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 17:55:34 -0400
-Date: Sat, 18 Apr 2009 23:55:29 +0200
+	id S1751672AbZDRV5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 17:57:03 -0400
+Date: Sat, 18 Apr 2009 23:57:00 +0200
 From: Alessandro Zummo <alessandro.zummo@towertech.it>
 To: rtc-linux@googlegroups.com
 Cc: geert@linux-m68k.org, linux-m68k@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH/RFC 15/16] rtc: Add an RTC driver for the
- Ricoh RP5C01
-Message-ID: <20090418235529.47e481e9@i1501.lan.towertech.it>
-In-Reply-To: <1240080744-14995-16-git-send-email-geert@linux-m68k.org>
+Subject: Re: [rtc-linux] [PATCH/RFC 14/16] rtc: Add an RTC driver for the
+ Oki MSM6242
+Message-ID: <20090418235700.4739cad2@i1501.lan.towertech.it>
+In-Reply-To: <1240080744-14995-15-git-send-email-geert@linux-m68k.org>
 References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
 	<1240080744-14995-2-git-send-email-geert@linux-m68k.org>
 	<1240080744-14995-3-git-send-email-geert@linux-m68k.org>
@@ -33,7 +33,6 @@ References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
 	<1240080744-14995-13-git-send-email-geert@linux-m68k.org>
 	<1240080744-14995-14-git-send-email-geert@linux-m68k.org>
 	<1240080744-14995-15-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-16-git-send-email-geert@linux-m68k.org>
 Organization: Tower Technologies
 X-Mailer: Sylpheed
 X-This-Is-A-Real-Message: Yes
@@ -44,73 +43,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Apr 2009 20:52:23 +0200
+On Sat, 18 Apr 2009 20:52:22 +0200
 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
- Hi Geert, thanks for your contributions. Comments below.
 
- Missing patch description.
+ Hi, my comments to the other patch of yours
+ are applicable to this one too.
 
 > 
 > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > Cc: rtc-linux@googlegroups.com
 > ---
->  drivers/rtc/Kconfig      |   10 ++
->  drivers/rtc/Makefile     |    1 +
->  drivers/rtc/rtc-rp5c01.c |  239 ++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 250 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/rtc/rtc-rp5c01.c
+>  drivers/rtc/Kconfig       |    9 ++
+>  drivers/rtc/Makefile      |    1 +
+>  drivers/rtc/rtc-msm6242.c |  285 +++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 295 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/rtc/rtc-msm6242.c
 > 
 > diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> index a0f6297..150fe43 100644
+> index ffe34a1..a0f6297 100644
 > --- a/drivers/rtc/Kconfig
 > +++ b/drivers/rtc/Kconfig
-> @@ -535,6 +535,16 @@ config RTC_DRV_MSM6242
->  	  This driver can also be built as a module. If so, the module
->  	  will be called rtc-msm6242.
+> @@ -526,6 +526,15 @@ config RTC_DRV_PCF50633
+>  	  If you say yes here you get support for the RTC subsystem of the
+>  	  NXP PCF50633 used in embedded systems.
 >  
-> +config RTC_DRV_RP5C01
-> +	tristate "Ricoh RP5C01"
+> +config RTC_DRV_MSM6242
+> +	tristate "Oki MSM6242"
 > +	help
-> +	  If you say yes here you get support for the Ricoh RP5C01
-> +	  timekeeping chip. It is used in some Amiga models (e.g. A3000
-> +	  and A4000).
+> +	  If you say yes here you get support for the Oki MSM6242
+> +	  timekeeping chip. It is used in some Amiga models (e.g. A2000).
 > +
 > +	  This driver can also be built as a module. If so, the module
-> +	  will be called rtc-rp5c01.
+> +	  will be called rtc-msm6242.
 > +
 >  comment "on-CPU RTC drivers"
 >  
 >  config RTC_DRV_OMAP
 > diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-> index c70418b..6176a8a 100644
+> index 6c0639a..c70418b 100644
 > --- a/drivers/rtc/Makefile
 > +++ b/drivers/rtc/Makefile
-> @@ -77,4 +77,5 @@ obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
+> @@ -76,4 +76,5 @@ obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
+>  obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
 >  obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
 >  obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
->  obj-$(CONFIG_RTC_DRV_MSM6242)	+= rtc-msm6242.o
-> +obj-$(CONFIG_RTC_DRV_RP5C01)	+= rtc-rp5c01.o
+> +obj-$(CONFIG_RTC_DRV_MSM6242)	+= rtc-msm6242.o
 >  obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
-
- alphabetic order please
-
-
-> diff --git a/drivers/rtc/rtc-rp5c01.c b/drivers/rtc/rtc-rp5c01.c
+> diff --git a/drivers/rtc/rtc-msm6242.c b/drivers/rtc/rtc-msm6242.c
 > new file mode 100644
-> index 0000000..d997f33
+> index 0000000..c3af4f8
 > --- /dev/null
-> +++ b/drivers/rtc/rtc-rp5c01.c
-> @@ -0,0 +1,239 @@
+> +++ b/drivers/rtc/rtc-msm6242.c
+> @@ -0,0 +1,285 @@
 > +/*
-> + *  Ricoh RP5C01 RTC Driver
+> + *  Oki MSM6242 RTC Driver
 > + *
 > + *  Copyright 2009 Geert Uytterhoeven
 > + *
-> + *  Based on the A3000 TOD code in arch/m68k/amiga/config.c
+> + *  Based on the A2000 TOD code in arch/m68k/amiga/config.c
 > + *  Copyright (C) 1993 Hamish Macdonald
 > + */
 > +
+> +#include <linux/delay.h>
 > +#include <linux/io.h>
 > +#include <linux/kernel.h>
 > +#include <linux/module.h>
@@ -119,162 +114,203 @@ Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > +
 > +
 > +enum {
-> +	RP5C01_1_SECOND		= 0x0,	/* MODE 00 */
-> +	RP5C01_10_SECOND	= 0x1,	/* MODE 00 */
-> +	RP5C01_1_MINUTE		= 0x2,	/* MODE 00 and MODE 01 */
-> +	RP5C01_10_MINUTE	= 0x3,	/* MODE 00 and MODE 01 */
-> +	RP5C01_1_HOUR		= 0x4,	/* MODE 00 and MODE 01 */
-> +	RP5C01_10_HOUR		= 0x5,	/* MODE 00 and MODE 01 */
-> +	RP5C01_DAY_OF_WEEK	= 0x6,	/* MODE 00 and MODE 01 */
-> +	RP5C01_1_DAY		= 0x7,	/* MODE 00 and MODE 01 */
-> +	RP5C01_10_DAY		= 0x8,	/* MODE 00 and MODE 01 */
-> +	RP5C01_1_MONTH		= 0x9,	/* MODE 00 */
-> +	RP5C01_10_MONTH		= 0xa,	/* MODE 00 */
-> +	RP5C01_1_YEAR		= 0xb,	/* MODE 00 */
-> +	RP5C01_10_YEAR		= 0xc,	/* MODE 00 */
-> +
-> +	RP5C01_12_24_SELECT	= 0xa,	/* MODE 01 */
-> +	RP5C01_LEAP_YEAR	= 0xb,	/* MODE 01 */
-> +
-> +	RP5C01_MODE		= 0xd,	/* all modes */
-> +	RP5C01_TEST		= 0xe,	/* all modes */
-> +	RP5C01_RESET		= 0xf,	/* all modes */
+> +	MSM6242_SECOND1		= 0x0,	/* 1-second digit register */
+> +	MSM6242_SECOND10	= 0x1,	/* 10-second digit register */
+> +	MSM6242_MINUTE1		= 0x2,	/* 1-minute digit register */
+> +	MSM6242_MINUTE10	= 0x3,	/* 10-minute digit register */
+> +	MSM6242_HOUR1		= 0x4,	/* 1-hour digit register */
+> +	MSM6242_HOUR10		= 0x5,	/* PM/AM, 10-hour digit register */
+> +	MSM6242_DAY1		= 0x6,	/* 1-day digit register */
+> +	MSM6242_DAY10		= 0x7,	/* 10-day digit register */
+> +	MSM6242_MONTH1		= 0x8,	/* 1-month digit register */
+> +	MSM6242_MONTH10		= 0x9,	/* 10-month digit register */
+> +	MSM6242_YEAR1		= 0xa,	/* 1-year digit register */
+> +	MSM6242_YEAR10		= 0xb,	/* 10-year digit register */
+> +	MSM6242_WEEK		= 0xc,	/* Week register */
+> +	MSM6242_CD		= 0xd,	/* Control Register D */
+> +	MSM6242_CE		= 0xe,	/* Control Register E */
+> +	MSM6242_CF		= 0xf,	/* Control Register F */
 > +};
 > +
-> +#define RP5C01_12_24_SELECT_12	(0 << 0)
-> +#define RP5C01_12_24_SELECT_24	(1 << 0)
+> +#define MSM6242_HOUR10_AM	(0 << 2)
+> +#define MSM6242_HOUR10_PM	(1 << 2)
+> +#define MSM6242_HOUR10_HR_MASK	(3 << 0)
 > +
-> +#define RP5C01_10_HOUR_AM	(0 << 1)
-> +#define RP5C01_10_HOUR_PM	(1 << 1)
+> +#define MSM6242_WEEK_SUNDAY	0
+> +#define MSM6242_WEEK_MONDAY	1
+> +#define MSM6242_WEEK_TUESDAY	2
+> +#define MSM6242_WEEK_WEDNESDAY	3
+> +#define MSM6242_WEEK_THURSDAY	4
+> +#define MSM6242_WEEK_FRIDAY	5
+> +#define MSM6242_WEEK_SATURDAY	6
 > +
-> +#define RP5C01_MODE_TIMER_EN	(1 << 3)	/* timer enable */
-> +#define RP5C01_MODE_ALARM_EN	(1 << 2)	/* alarm enable */
+> +#define MSM6242_CD_30_S_ADJ	(1 << 3)	/* 30-second adjustment */
+> +#define MSM6242_CD_IRQ_FLAG	(1 << 2)
+> +#define MSM6242_CD_BUSY		(1 << 1)
+> +#define MSM6242_CD_HOLD		(1 << 0)
 > +
-> +#define RP5C01_MODE_MODE_MASK	(3 << 0)
-> +#define RP5C01_MODE_MODE00	(0 << 0)	/* time */
-> +#define RP5C01_MODE_MODE01	(1 << 0)	/* alarm, 12h/24h, leap year */
-> +#define RP5C01_MODE_RAM_BLOCK10	(2 << 0)	/* RAM 4 bits x 13 */
-> +#define RP5C01_MODE_RAM_BLOCK11	(3 << 0)	/* RAM 4 bits x 13 */
+> +#define MSM6242_CE_T_MASK	(3 << 2)
+> +#define MSM6242_CE_T_64HZ	(0 << 2)	/* period 1/64 second */
+> +#define MSM6242_CE_T_1HZ	(1 << 2)	/* period 1 second */
+> +#define MSM6242_CE_T_1MINUTE	(2 << 2)	/* period 1 minute */
+> +#define MSM6242_CE_T_1HOUR	(3 << 2)	/* period 1 hour */
 > +
-> +#define RP5C01_RESET_1HZ_PULSE	(1 << 3)
-> +#define RP5C01_RESET_16HZ_PULSE	(1 << 2)
-> +#define RP5C01_RESET_SECOND	(1 << 1)	/* reset divider stages for */
-> +						/* seconds or smaller units */
-> +#define RP5C01_RESET_ALARM	(1 << 0)	/* reset all alarm registers */
+> +#define MSM6242_CE_ITRPT_STND	(1 << 1)
+> +#define MSM6242_CE_MASK		(1 << 0)	/* STD.P output control */
+> +
+> +#define MSM6242_CF_TEST		(1 << 3)
+> +#define MSM6242_CF_12H		(0 << 2)
+> +#define MSM6242_CF_24H		(1 << 2)
+> +#define MSM6242_CF_STOP		(1 << 1)
+> +#define MSM6242_CF_REST		(1 << 0)	/* reset */
 > +
 > +
-> +struct rp5c01_priv {
+> +struct msm6242_priv {
 > +	u32 __iomem *regs;
 > +	struct rtc_device *rtc;
 > +};
 > +
-> +static inline unsigned int rp5c01_read(struct rp5c01_priv *priv,
+> +static inline unsigned int msm6242_read(struct msm6242_priv *priv,
 > +				       unsigned int reg)
 > +{
 > +	return __raw_readl(&priv->regs[reg]) & 0xf;
 > +}
 > +
-> +static inline void rp5c01_write(struct rp5c01_priv *priv, unsigned int val,
+> +static inline void msm6242_write(struct msm6242_priv *priv, unsigned int val,
 > +				unsigned int reg)
 > +{
 > +	return __raw_writel(val, &priv->regs[reg]);
 > +}
 > +
-> +static void rp5c01_lock(struct rp5c01_priv *priv)
+> +static inline void msm6242_set(struct msm6242_priv *priv, unsigned int val,
+> +			       unsigned int reg)
 > +{
-> +	rp5c01_write(priv, RP5C01_MODE_MODE00, RP5C01_MODE);
+> +	msm6242_write(priv, msm6242_read(priv, reg) | val, reg);
 > +}
 > +
-> +static void rp5c01_unlock(struct rp5c01_priv *priv)
+> +static inline void msm6242_clear(struct msm6242_priv *priv, unsigned int val,
+> +				 unsigned int reg)
 > +{
-> +	rp5c01_write(priv, RP5C01_MODE_TIMER_EN | RP5C01_MODE_MODE01,
-> +		     RP5C01_MODE);
+> +	msm6242_write(priv, msm6242_read(priv, reg) & ~val, reg);
 > +}
 > +
-> +static int rp5c01_read_time(struct device *dev, struct rtc_time *tm)
+> +static void msm6242_lock(struct msm6242_priv *priv)
 > +{
-> +	struct rp5c01_priv *priv = dev_get_drvdata(dev);
+> +	int cnt = 5;
 > +
-> +	rp5c01_lock(priv);
+> +	msm6242_set(priv, MSM6242_CD_HOLD, MSM6242_CD);
 > +
-> +	tm->tm_sec  = rp5c01_read(priv, RP5C01_10_SECOND) * 10 +
-> +		      rp5c01_read(priv, RP5C01_1_SECOND);
-> +	tm->tm_min  = rp5c01_read(priv, RP5C01_10_MINUTE) * 10 +
-> +		      rp5c01_read(priv, RP5C01_1_MINUTE);
-> +	tm->tm_hour = rp5c01_read(priv, RP5C01_10_HOUR) * 10 +
-> +		      rp5c01_read(priv, RP5C01_1_HOUR);
-> +	tm->tm_mday = rp5c01_read(priv, RP5C01_10_DAY) * 10 +
-> +		      rp5c01_read(priv, RP5C01_1_DAY);
-> +	tm->tm_wday = rp5c01_read(priv, RP5C01_DAY_OF_WEEK);
-> +	tm->tm_mon  = rp5c01_read(priv, RP5C01_10_MONTH) * 10 +
-> +		      rp5c01_read(priv, RP5C01_1_MONTH) - 1;
-> +	tm->tm_year = rp5c01_read(priv, RP5C01_10_YEAR) * 10 +
-> +		      rp5c01_read(priv, RP5C01_1_YEAR);
+> +	while ((msm6242_read(priv, MSM6242_CD) & MSM6242_CD_BUSY) && cnt--) {
+> +		msm6242_clear(priv, MSM6242_CD_HOLD, MSM6242_CD);
+> +		udelay(70);
+> +		msm6242_set(priv, MSM6242_CD_HOLD, MSM6242_CD);
+> +	}
+> +
+> +	if (!cnt)
+> +		pr_warning("msm6242: timed out waiting for RTC (0x%x)\n",
+> +			   msm6242_read(priv, MSM6242_CD));
+> +}
+> +
+> +static void msm6242_unlock(struct msm6242_priv *priv)
+> +{
+> +	msm6242_clear(priv, MSM6242_CD_HOLD, MSM6242_CD);
+> +}
+> +
+> +static int msm6242_read_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	struct msm6242_priv *priv = dev_get_drvdata(dev);
+> +
+> +	msm6242_lock(priv);
+> +
+> +	tm->tm_sec  = msm6242_read(priv, MSM6242_SECOND10) * 10 +
+> +		      msm6242_read(priv, MSM6242_SECOND1);
+> +	tm->tm_min  = msm6242_read(priv, MSM6242_MINUTE10) * 10 +
+> +		      msm6242_read(priv, MSM6242_MINUTE1);
+> +	tm->tm_hour = (msm6242_read(priv, MSM6242_HOUR10 & 3)) * 10 +
+> +		      msm6242_read(priv, MSM6242_HOUR1);
+> +	tm->tm_mday = msm6242_read(priv, MSM6242_DAY10) * 10 +
+> +		      msm6242_read(priv, MSM6242_DAY1);
+> +	tm->tm_wday = msm6242_read(priv, MSM6242_WEEK);
+> +	tm->tm_mon  = msm6242_read(priv, MSM6242_MONTH10) * 10 +
+> +		      msm6242_read(priv, MSM6242_MONTH1) - 1;
+> +	tm->tm_year = msm6242_read(priv, MSM6242_YEAR10) * 10 +
+> +		      msm6242_read(priv, MSM6242_YEAR1);
 > +	if (tm->tm_year <= 69)
 > +		tm->tm_year += 100;
 > +
-> +	rp5c01_unlock(priv);
+> +	if (!(msm6242_read(priv, MSM6242_CF) & MSM6242_CF_24H)) {
+> +		unsigned int pm = msm6242_read(priv, MSM6242_HOUR10) &
+> +				  MSM6242_HOUR10_PM;
+> +		if (!pm && tm->tm_hour == 12)
+> +			tm->tm_hour = 0;
+> +		else if (pm && tm->tm_hour != 12)
+> +			tm->tm_hour += 12;
+> +	}
+> +
+> +	msm6242_unlock(priv);
 > +
 > +	return rtc_valid_tm(tm);
 > +}
 > +
-> +static int rp5c01_set_time(struct device *dev, struct rtc_time *tm)
+> +static int msm6242_set_time(struct device *dev, struct rtc_time *tm)
 > +{
-> +	struct rp5c01_priv *priv = dev_get_drvdata(dev);
+> +	struct msm6242_priv *priv = dev_get_drvdata(dev);
 > +
-> +	rp5c01_lock(priv);
+> +	msm6242_lock(priv);
 > +
-> +	rp5c01_write(priv, tm->tm_sec / 10, RP5C01_10_SECOND);
-> +	rp5c01_write(priv, tm->tm_sec % 10, RP5C01_1_SECOND);
-> +	rp5c01_write(priv, tm->tm_min / 10, RP5C01_10_MINUTE);
-> +	rp5c01_write(priv, tm->tm_min % 10, RP5C01_1_MINUTE);
-> +	rp5c01_write(priv, tm->tm_hour / 10, RP5C01_10_HOUR);
-> +	rp5c01_write(priv, tm->tm_hour % 10, RP5C01_1_HOUR);
-> +	rp5c01_write(priv, tm->tm_mday / 10, RP5C01_10_DAY);
-> +	rp5c01_write(priv, tm->tm_mday % 10, RP5C01_1_DAY);
+> +	msm6242_write(priv, tm->tm_sec / 10, MSM6242_SECOND10);
+> +	msm6242_write(priv, tm->tm_sec % 10, MSM6242_SECOND1);
+> +	msm6242_write(priv, tm->tm_min / 10, MSM6242_MINUTE10);
+> +	msm6242_write(priv, tm->tm_min % 10, MSM6242_MINUTE1);
+> +	if (msm6242_read(priv, MSM6242_CF) & MSM6242_CF_24H)
+> +		msm6242_write(priv, tm->tm_hour / 10, MSM6242_HOUR10);
+> +	else if (tm->tm_hour >= 12)
+> +		msm6242_write(priv, MSM6242_HOUR10_PM + (tm->tm_hour - 12) / 10,
+> +			      MSM6242_HOUR10);
+> +	else
+> +		msm6242_write(priv, tm->tm_hour / 10, MSM6242_HOUR10);
+> +	msm6242_write(priv, tm->tm_hour % 10, MSM6242_HOUR1);
+> +	msm6242_write(priv, tm->tm_mday / 10, MSM6242_DAY10);
+> +	msm6242_write(priv, tm->tm_mday % 10, MSM6242_DAY1);
 > +	if (tm->tm_wday != -1)
-> +		rp5c01_write(priv, tm->tm_wday, RP5C01_DAY_OF_WEEK);
-> +	rp5c01_write(priv, (tm->tm_mon + 1) / 10, RP5C01_10_MONTH);
-> +	rp5c01_write(priv, (tm->tm_mon + 1) % 10, RP5C01_1_MONTH);
+> +		msm6242_write(priv, tm->tm_wday, MSM6242_WEEK);
+> +	msm6242_write(priv, (tm->tm_mon + 1) / 10, MSM6242_MONTH10);
+> +	msm6242_write(priv, (tm->tm_mon + 1) % 10, MSM6242_MONTH1);
 > +	if (tm->tm_year >= 100)
 > +		tm->tm_year -= 100;
-> +	rp5c01_write(priv, tm->tm_year / 10, RP5C01_10_YEAR);
-> +	rp5c01_write(priv, tm->tm_year % 10, RP5C01_1_YEAR);
+> +	msm6242_write(priv, tm->tm_year / 10, MSM6242_YEAR10);
+> +	msm6242_write(priv, tm->tm_year % 10, MSM6242_YEAR1);
 > +
-> +	rp5c01_unlock(priv);
+> +	msm6242_unlock(priv);
 > +	return 0;
 > +}
 > +
-> +static int rp5c01_set_mmss(struct device *dev, unsigned long secs)
+> +static int msm6242_set_mmss(struct device *dev, unsigned long secs)
 > +{
-> +	struct rp5c01_priv *priv = dev_get_drvdata(dev);
+> +	struct msm6242_priv *priv = dev_get_drvdata(dev);
 > +	unsigned int real_seconds = secs % 60, real_minutes = (secs / 60) % 60;
 > +
-> +	rp5c01_lock(priv);
+> +	msm6242_lock(priv);
 > +
-> +	rp5c01_write(priv, real_seconds / 10, RP5C01_10_SECOND);
-> +	rp5c01_write(priv, real_seconds % 10, RP5C01_1_SECOND);
-> +	rp5c01_write(priv, real_minutes / 10, RP5C01_10_MINUTE);
-> +	rp5c01_write(priv, real_minutes % 10, RP5C01_1_MINUTE);
+> +	msm6242_write(priv, real_seconds / 10, MSM6242_SECOND10);
+> +	msm6242_write(priv, real_seconds % 10, MSM6242_SECOND1);
+> +	msm6242_write(priv, real_minutes / 10, MSM6242_MINUTE10);
+> +	msm6242_write(priv, real_minutes % 10, MSM6242_MINUTE1);
 > +
-> +	rp5c01_unlock(priv);
+> +	msm6242_unlock(priv);
 > +	return 0;
 > +}
 > +
-> +static const struct rtc_class_ops rp5c01_rtc_ops = {
-> +	.read_time	= rp5c01_read_time,
-> +	.set_time	= rp5c01_set_time,
-> +	.set_mmss	= rp5c01_set_mmss,
+> +static const struct rtc_class_ops msm6242_rtc_ops = {
+> +	.read_time	= msm6242_read_time,
+> +	.set_time	= msm6242_set_time,
+> +	.set_mmss	= msm6242_set_mmss,
 > +};
-
- please implement either set_time or set_mmss, not both.
- I don't know the chip but I suspect set_time is the one you need.
-
-
-> +static int __init rp5c01_rtc_probe(struct platform_device *dev)
+> +
+> +static int __init msm6242_rtc_probe(struct platform_device *dev)
 > +{
 > +	struct resource *res;
-> +	struct rp5c01_priv *priv;
+> +	struct msm6242_priv *priv;
 > +	struct rtc_device *rtc;
 > +	int error;
 > +
@@ -292,7 +328,7 @@ Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > +		goto out_free_priv;
 > +	}
 > +
-> +	rtc = rtc_device_register("rtc-rp5c01", &dev->dev, &rp5c01_rtc_ops,
+> +	rtc = rtc_device_register("rtc-msm6242", &dev->dev, &msm6242_rtc_ops,
 > +				  THIS_MODULE);
 > +	if (IS_ERR(rtc)) {
 > +		error = PTR_ERR(rtc);
@@ -310,9 +346,9 @@ Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > +	return error;
 > +}
 > +
-> +static int __exit rp5c01_rtc_remove(struct platform_device *dev)
+> +static int __exit msm6242_rtc_remove(struct platform_device *dev)
 > +{
-> +	struct rp5c01_priv *priv = platform_get_drvdata(dev);
+> +	struct msm6242_priv *priv = platform_get_drvdata(dev);
 > +
 > +	rtc_device_unregister(priv->rtc);
 > +	iounmap(priv->regs);
@@ -320,34 +356,31 @@ Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > +	return 0;
 > +}
 > +
-> +static struct platform_driver rp5c01_rtc_driver = {
+> +static struct platform_driver msm6242_rtc_driver = {
 > +	.driver	= {
-> +		.name	= "rtc-rp5c01",
+> +		.name	= "rtc-msm6242",
 > +		.owner	= THIS_MODULE,
 > +	},
-> +	.remove	= __exit_p(rp5c01_rtc_remove),
+> +	.remove	= __exit_p(msm6242_rtc_remove),
 > +};
 > +
-> +static int __init rp5c01_rtc_init(void)
+> +static int __init msm6242_rtc_init(void)
 > +{
-> +	return platform_driver_probe(&rp5c01_rtc_driver, rp5c01_rtc_probe);
+> +	return platform_driver_probe(&msm6242_rtc_driver, msm6242_rtc_probe);
 > +}
 > +
-> +static void __exit rp5c01_rtc_fini(void)
+> +static void __exit msm6242_rtc_fini(void)
 > +{
-> +	platform_driver_unregister(&rp5c01_rtc_driver);
+> +	platform_driver_unregister(&msm6242_rtc_driver);
 > +}
 > +
-> +module_init(rp5c01_rtc_init);
-> +module_exit(rp5c01_rtc_fini);
+> +module_init(msm6242_rtc_init);
+> +module_exit(msm6242_rtc_fini);
 > +
 > +MODULE_AUTHOR("Geert Uytterhoeven");
-
- it would be fine to have your email here.
-
 > +MODULE_LICENSE("GPL");
-> +MODULE_DESCRIPTION("Ricoh RP5C01 RTC driver");
-> +MODULE_ALIAS("platform:rtc-rp5c01");
+> +MODULE_DESCRIPTION("Oki MSM6242 RTC driver");
+> +MODULE_ALIAS("platform:rtc-msm6242");
 > -- 
 > 1.6.2.3
 > 
