@@ -1,76 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbZDRN77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZDROMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbZDRN77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 09:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbZDRN7t
+	id S1756128AbZDROMa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 10:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZDROMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 09:59:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44845 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753546AbZDRN7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 09:59:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: 900af0d breaks some embedded suspend/resume
-Date: Sat, 18 Apr 2009 15:59:18 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <20090417231009.GB6900@flint.arm.linux.org.uk> <200904181523.36010.rjw@sisk.pl>
-In-Reply-To: <200904181523.36010.rjw@sisk.pl>
+	Sat, 18 Apr 2009 10:12:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53880 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754789AbZDROMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 10:12:21 -0400
+Date: Sat, 18 Apr 2009 10:12:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 3/5] tracing: add same level recursion detection
+In-Reply-To: <20090418071111.GB7678@elte.hu>
+Message-ID: <alpine.DEB.2.00.0904180956130.1016@gandalf.stny.rr.com>
+References: <20090417211135.408179566@goodmis.org> <20090417211231.218150513@goodmis.org> <20090418071111.GB7678@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904181559.19485.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 18 April 2009, Rafael J. Wysocki wrote:
-> On Saturday 18 April 2009, Russell King wrote:
-> > Some platforms need to talk via I2C to power control devices during
-> > the suspend method.  Currently, they do this via the platform PM ops
-> > prepare callback, relying on the I2C driver being hooked into the
-> > 'late' suspend method, and hence being shut down _after_ the prepare
-> > callback.
-> 
-> Well, I was not aware of this dependency and it seems quite unusual for a
-> platform to depend on a driver like this.
-> 
-> > However, as of the above commit, the ordering is changed such that
-> > platforms don't get notified of suspends until after all devices are
-> > well and truely shut down.
-> > 
-> > This can't work, and actively breaks some platforms.
-> 
-> Sorry for that.
-> 
-> The patchset in question had been discussed quite extensively before it was
-> merged and it's a pity none of the people caring for the affected platforms
-> took part in those discussions.  That would allow us to avoid the breakage.
->  
-> > Please come up with another solution for your PCI problems,
-> 
-> I don't think this is possible, sorry.
-> 
-> > or provide alternative equivalent functionality where the platform code is
-> > notified of the PM event prior to the late suspend callback being issued.
-> 
-> There is the .begin() callback that could be used, but if you need the
-> platform to be notified _just_ prior to the late suspend callback, then the
-> only thing I can think of at the moment is the appended patch.
-> 
-> It shouldn't break anything in theory, because the majority of drivers put
-> their devices into low power states in the "regular" suspend callbacks anyway.
 
-Still, if it turns out to break anything, we'll have to think of an alternative
-approach.
+On Sat, 18 Apr 2009, Ingo Molnar wrote:
+> > +
+> > +static void trace_recursive_unlock(void)
+> > +{
+> > +	int level;
+> > +
+> > +	level = trace_irq_level();
+> > +
+> > +	WARN_ON_ONCE(!current->trace_recursion & (1 << level));
+> > +
+> > +	current->trace_recursion &= ~(1 << level);
+> > +}
+> > +
+> >  static DEFINE_PER_CPU(int, rb_need_resched);
+> >  
+> >  /**
+> > @@ -1514,6 +1548,9 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
+> >  	/* If we are tracing schedule, we don't want to recurse */
+> >  	resched = ftrace_preempt_disable();
+> >  
+> > +	if (trace_recursive_lock())
+> > +		goto out_nocheck;
+> 
+> This is obviously a good idea, but i'm nervous about two things 
+> here: overhead and placement.
 
-Which platforms exactly are affected?
+I'm not sure how much overhead is added. It modifies a variable in
+current without the need for any atomic operations.
 
-Rafael
+> 
+> Firstly, the lock/unlock sequence adds to the critical path of all 
+> the tracing infrastructure and makes it slower. Secondly, we do this 
+> in ring_buffer_lock_reserve() only - instead of doing it at the 
+> outmost layer (where recursion protection is the most effective).
+
+The problem with doing it in the outer most layer is that I may need
+to disable preemption. Once I do that, I need to be careful about
+calling preempt_enable or preempt_enable_noresched. If you call
+preempt enable from within the scheduler, you may end up with an
+inifinite recursion. If you use noresched, you may miss a preemption 
+point.
+
+the ftrace_preempt_disable handles this, but the enable needs to be done 
+in another function, and that means the state needs to be passed to that 
+function. It can be done (the ring buffer does this), but instead of 
+rewriting the code the ring buffer does, I simply moved the tests into the 
+ring buffer.
+
+> 
+> So while i've pulled it, it would be nice to rework the concepts 
+> here comprehensively. We have a number of atomics, layers, checks, 
+> and all that adds overhead and complexity.
+
+Agreed. I added this because I thought the lockdep bug was due to
+recurion. It was, but it was due to a spinlock in trace_printk.
+I have yet to hit a bug that this code would have detected, so I'm not 
+sure yet that it is needed. Especially when the ring buffer becomes 
+lockless, then the change of recursion being a problem becomes even more 
+minimal.
+
+> 
+> The best would be to just face it and disable IRQs via 
+> raw_local_irq_save() plus set the trace recursion flag - and do this 
+> around all trace point facilities and as early as possible (they are 
+> not allowed to sleep anyway).
+
+The ring buffer already disables preemption, but disabling interrupts 
+would be even a greater hit on performance. And that gives no protection 
+to NMIs, which can also call tracing.
+
+> 
+> That would remove many of the "what if an IRQ recurses" uglinesses. 
+> CLI/POPF pairs are also very fast on most architectures (a lot of 
+> performance-sensitive code in Linux depends on that). This would 
+> also improve the end result: IRQs would not mix up the order of 
+> trace records occasionally.
+
+Yes, a lot of code in the kernel depends on it, but tracing becomes even a 
+bigger hot path. The best tracers give the lowest overhead, and besides, 
+it gives no protection to NMIs.
+
+The order is presevered even if an IRQ happens. The first one to hit the 
+real "reserve buffer" code will have that order.
+
+I put a lot of work into making sure the buffer can be re-entrant. I would 
+hate to just through it away. It is also needed for tracing NMIs. Letting 
+interrupts reenter the code gives better testing to know that NMIs would 
+work too.
+
+This recursive logic is something that I've even thought about being a 
+compiled in option only (DEBUG). Something to try out if we see a failure. 
+Again, I wrote this to see if the lockdep hang was caused by the ring 
+buffer and even the event tracer. I can move the checks into the events, 
+and use a similar approach as the ring buffer does for preempt disable.
+But this did not help at all in the debugging but let me know that the 
+ring buffer and event tracer were not the reason for the hang. It was the 
+spinlock in trace_print that caused the lockup. And I could have sworn I 
+wrote a patch for that code before. I think it was lost in the rewrites.
+
+-- Steve
+
