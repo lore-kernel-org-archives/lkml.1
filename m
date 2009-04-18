@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZDRQaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbZDRQnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbZDRQaE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 12:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZDRQ3x
+	id S1758062AbZDRQnb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 12:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbZDRQnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 12:29:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58219 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754607AbZDRQ3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 12:29:52 -0400
-Date: Sat, 18 Apr 2009 16:28:24 GMT
-From: tip-bot for Steven Rostedt <rostedt@goodmis.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, akpm@linux-foundation.org, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.DEB.2.00.0904171717080.1016@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0904171717080.1016@gandalf.stny.rr.com>
-Subject: [tip:tracing/core] tracing: remove format attribute of inline function
-Message-ID: <tip-8e668b5b3455207e4540fc7ccab9ecf70142f288@git.kernel.org>
-Git-Commit-ID: 8e668b5b3455207e4540fc7ccab9ecf70142f288
-X-Mailer: tip-git-log-daemon
+	Sat, 18 Apr 2009 12:43:05 -0400
+Received: from mail.it-technology.at ([62.99.145.147]:41197 "EHLO
+	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbZDRQnE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 12:43:04 -0400
+Message-ID: <5c52681c17a9cd66ec59e9d9cad3ee46.squirrel@webmail.it-technology.at>
+In-Reply-To: <Pine.LNX.4.64.0904181834210.3691@wrl-59.cs.helsinki.fi>
+References: <cb6d2886e87af66d945f1052e6eb8a85.squirrel@webmail.it-technology.at>
+    <Pine.LNX.4.64.0904181311470.3600@wrl-59.cs.helsinki.fi>
+    <0681089db5bdc5acc805ed52130dc9a5.squirrel@webmail.it-technology.at>
+    <Pine.LNX.4.64.0904181834210.3691@wrl-59.cs.helsinki.fi>
+Date: Sat, 18 Apr 2009 18:42:59 +0200 (CEST)
+Subject: [PATCH 0/2] usb driver for intellon int51x1 based PLC like devolo 
+     dlan duo
+From: "Peter Holik" <peter@holik.at>
+To: "LKML" <linux-kernel@vger.kernel.org>
+Cc: "Netdev" <netdev@vger.kernel.org>, linux-usb@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 18 Apr 2009 16:28:26 +0000 (UTC)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8e668b5b3455207e4540fc7ccab9ecf70142f288
-Gitweb:     http://git.kernel.org/tip/8e668b5b3455207e4540fc7ccab9ecf70142f288
-Author:     Steven Rostedt <rostedt@goodmis.org>
-AuthorDate: Fri, 17 Apr 2009 17:17:55 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 18 Apr 2009 09:49:10 +0200
+Hi,
 
-tracing: remove format attribute of inline function
+I am submitting a series of 2 patches for inclusion in 2.6.30.
+Here is a brief description of the patch series:
+- because of using the same function get_ethernet_addr as cdc_ether.c
+  i export usbnet_get_ethernet_addr from usbnet and fixed cdc_ether
+  (suggested by Oliver Neukum).
+- usb driver for intellon int51x1 based PLC like devolo dlan duo
+  with improvements suggested by the guys of the mailinglist
 
-Due to a cut and paste error, I added the gcc attribute for printf
-format to the static inline stub of trace_seq_printf.
+cu Peter
 
-This will cause a compile failure.
-
-[ Impact: fix compiler error when CONFIG_TRACING is off ]
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-LKML-Reference: <alpine.DEB.2.00.0904171717080.1016@gandalf.stny.rr.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/trace_seq.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
-index 15ca2c7..37db9bd 100644
---- a/include/linux/trace_seq.h
-+++ b/include/linux/trace_seq.h
-@@ -42,7 +42,6 @@ extern int trace_seq_path(struct trace_seq *s, struct path *path);
- 
- #else /* CONFIG_TRACING */
- static inline int trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
--	__attribute__ ((format (printf, 2, 3)))
- {
- 	return 0;
- }
