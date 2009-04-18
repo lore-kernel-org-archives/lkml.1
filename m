@@ -1,211 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZDRSmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbZDRSoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbZDRSmi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZDRSm3
+	id S1758989AbZDRSoo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZDRSof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:42:29 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:53133 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbZDRSm2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:42:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sBNm7e/bS3TgUb6UgbA8VJnGOQqi99aB8NXXHy+yzZ4dOekIJ8TtFAVKtmq/PWdHbc
-         DXQcIkzeE2xdArz3ysTEkXtTI+Wc73d2mBlBnNZpNFI0sDRyIgvKOtobp4FgqDppLlja
-         w6WsararC9FZPSddegFVQSe952qhiZW73gnNw=
-Date: Sat, 18 Apr 2009 20:42:23 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2 v2] tracing/events: provide string with undefined
-	size support
-Message-ID: <20090418184222.GB6212@nowhere>
-References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com> <1239912812.23397.3432.camel@laptop> <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com> <1239949360.23397.4065.camel@laptop> <c62985530904170159j6f3b5477g411a028e69fd93f6@mail.gmail.com> <1239960548.23397.4282.camel@laptop> <alpine.DEB.2.00.0904170552160.20429@gandalf.stny.rr.com> <alpine.DEB.2.00.0904170613370.20429@gandalf.stny.rr.com>
-MIME-Version: 1.0
+	Sat, 18 Apr 2009 14:44:35 -0400
+Received: from cmpxchg.org ([85.214.51.133]:54755 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753848AbZDRSof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 14:44:35 -0400
+Date: Sat, 18 Apr 2009 20:43:37 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH for mmotm 0414] vmscan,memcg: reintroduce sc->may_swap
+Message-ID: <20090418184337.GA5556@cmpxchg.org>
+References: <20090418152100.125A.A69D9226@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904170613370.20429@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090418152100.125A.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 06:39:56AM -0400, Steven Rostedt wrote:
-> On Fri, 17 Apr 2009, Steven Rostedt wrote:
-> > 
-> > But that said, one could still do what you are suggesting. The "__ending" 
-> > wart still needs to be there, since it must happen at the end of the 
-> > struct.
-> > 
-> > 
-> >         TP_STRUCT__entry(
-> >                 __field(int, str2loc)
-> >                 __field(int, str3loc)
-> > 		__string(str1)
-> > 		__string(str2)
-> >                 __ending_string(data, str3)
-> >         ),
-> >         TP_fast_assign(
-> > 		__entry->str2loc = strlen(str1);
-> > 		__entry->str3loc = strlen(str2) + __entry->str2loc;
-> >                 strcpy(__entry->data, str1);
-> > 		strcpy(__entry->data + __entry->str2loc, str2)
-> > 		strcpy(__entry->data + __entry->str3loc, str3)
-> >         ),
-> >         TP_printk("str1:%s str2:%s str3:%s\n",
-> > 		__entry->data,
-> > 		__entry->data + __entry->str2loc,
-> > 		__entry->date + __entry->str3loc)
-> > 
-> > 
-> > For this to work, we need to just add a define for the __string macro for 
-> > the reservation:
-> > 
-> > #define __string(x)  __str_size_ += strlen(x) + 1;
-> 
-> Hmm, thinking about this more, we could do...
-> 
-> 
-> Make all structs end with:
+Hi KOSAKI-san,
 
+On Sat, Apr 18, 2009 at 03:26:02PM +0900, KOSAKI Motohiro wrote:
+> Subject: vmscan,memcg: reintroduce sc->may_swap
 > 
-> 	char __str_data__[0];
+> vmscan-rename-scmay_swap-to-may_unmap.patch removed may_swap flag,
+> but memcg had used it as a flag for "we need to use swap?", as the
+> name indicate.
 > 
+> And in current implementation, memcg cannot reclaim mapped file caches
+> when mem+swap hits the limit.
 > 
-> then we could just have __string(dec, param), ie.
+> re-introduce may_swap flag and handle it at get_scan_ratio().
+> This patch doesn't influence any scan_control users other than memcg.
 > 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> --
+>  mm/vmscan.c |   12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
 > 
-> 	__string(str1, param_str1)
-> 	__string(str2, param_str2)
-> 	__string(srt3, param_str3)
-> 
-> But instead of defining string as a character, it would just be an index 
-> into the __str_data_.
-> 
-> #define __string(dec, param)	int dec;
-> 
-> 
-> We can break up the TRACE_EVENT macro again to create the declaration:
-> 
-> #undef everything and make empty macros of all we don't use
-> 
-> #define __string(dec, str)	int __str_loc_##dec;
-> 
-> #define TRACE_EVENT(...)	\
-> static void ftrace_raw_event_##call(proto)	\
-> {	\
-> 	struct ring_buffer_event *event;	\
-> 	struct ftrace_raw_##call *entry;	\
-> 	unsigned long flags;			\
-> 	int pc;					\
-> 	int _str_size_ = 0;			\
-> 						\
-> 	tstruct
-> 
-> #include the file
-> 
-> #undef __string
-> #define __string(str, param)	__str_loc_##str = _str_size_; \
-> 				_str_size_ += strlen(param) + 1;
-> 
-> #define TRACE_EVENT(...)
-> 	tstruct
-> 
-> #include the file again
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c	2009-04-16 21:25:41.000000000 +0900
+> +++ b/mm/vmscan.c	2009-04-16 21:56:54.000000000 +0900
+> @@ -64,6 +64,9 @@ struct scan_control {
+>  	/* Can mapped pages be reclaimed? */
+>  	int may_unmap;
+>  
+> +	/* Can pages be swapped as part of reclaim? */
+> +	int may_swap;
+> +
+>  	/* This context's SWAP_CLUSTER_MAX. If freeing memory for
+>  	 * suspend, we effectively ignore SWAP_CLUSTER_MAX.
+>  	 * In this context, it doesn't matter that we scan the
+> @@ -1387,7 +1390,7 @@ static void get_scan_ratio(struct zone *
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  
+>  	/* If we have no swap space, do not bother scanning anon pages. */
+> -	if (nr_swap_pages <= 0) {
+> +	if (!sc->may_swap || (nr_swap_pages <= 0)) {
 
+I wonder if may_swap is a good name for this effect.  See below the
+__zone_reclaim() comments.
 
-While I'm trying to implement this, I'm discovering that it's
-impossible, unless we have only one TRACE_EVENT in the file we are
-including, otherwise we would end up with interleaving functions:
+>  		percent[0] = 0;
+>  		percent[1] = 100;
+>  		return;
+> @@ -1704,6 +1707,7 @@ unsigned long try_to_free_pages(struct z
+>  		.may_writepage = !laptop_mode,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+>  		.may_unmap = 1,
+> +		.may_swap = 1,
+>  		.swappiness = vm_swappiness,
+>  		.order = order,
+>  		.mem_cgroup = NULL,
+> @@ -1724,6 +1728,7 @@ unsigned long try_to_free_mem_cgroup_pag
+>  	struct scan_control sc = {
+>  		.may_writepage = !laptop_mode,
+>  		.may_unmap = 1,
+> +		.may_swap = 1,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+>  		.swappiness = swappiness,
+>  		.order = 0,
+> @@ -1734,7 +1739,7 @@ unsigned long try_to_free_mem_cgroup_pag
+>  	struct zonelist *zonelist;
+>  
+>  	if (noswap)
+> -		sc.may_unmap = 0;
+> +		sc.may_swap = 0;
 
- static void ftrace_raw_event_event1(proto)
- {
-       struct ring_buffer_event *event;
-       struct ftrace_raw_event1 *entry;
-       unsigned long flags;
-       int pc;
-       int _str_size_ = 0;
+Can this be directly initialized?
 
-       tstruct
+struct scan_control sc = {
+	...
+	.may_swap = !noswap,
+	...
+};
 
- static void ftrace_raw_event_event2(proto)     
- {      
-       struct ring_buffer_event *event;         
-       struct ftrace_raw_event2 *entry;   
-       unsigned long flags;                     
-       int pc;                                  
-       int _str_size_ = 0;                      
+>  	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
+>  			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
+> @@ -1774,6 +1779,7 @@ static unsigned long balance_pgdat(pg_da
+>  	struct scan_control sc = {
+>  		.gfp_mask = GFP_KERNEL,
+>  		.may_unmap = 1,
+> +		.may_swap = 1,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+>  		.swappiness = vm_swappiness,
+>  		.order = order,
+> @@ -2120,6 +2126,7 @@ unsigned long shrink_all_memory(unsigned
+>  	struct scan_control sc = {
+>  		.gfp_mask = GFP_KERNEL,
+>  		.may_unmap = 0,
+> +		.may_swap = 1,
 
-       tstruct
+shrink_all_memory() is not a user of shrink_zone() -> get_scan_ratio()
+and therefor not affected by this flag.  I think it's better not to
+set it here (just like sc->swappiness).
 
+>  		.may_writepage = 1,
+>  		.isolate_pages = isolate_pages_global,
+>  	};
+> @@ -2304,6 +2311,7 @@ static int __zone_reclaim(struct zone *z
+>  	struct scan_control sc = {
+>  		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
+>  		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+> +		.may_swap = 1,
 
-So we still need something inside the fast_assign to do the
-assignment job.
+Shouldn't this be set to !!(zone_reclaim_mode & RECLAIM_SWAP) as well?
 
-Something like the following macro will suffice:
+With set to 1, zone_reclaim() will also reclaim unmapped swap cache
+pages (without swapping) and it might be desirable to do that.  But
+then may_swap is a confusing name.  may_anon?  may_scan_anon?
+scan_anon?
 
-#define	__assign_string(field, src)	\
-	strcpy(entry->__ending_str + __str_loc_##field, src);
-
-That's not a big deal, we just actually need this in TP__fast_assign()
-and then we are done.
-
-And also:
-
-
-> The tstruct would do the assign for the user.
-> 
-> Then this is what a TRACE_EVENT would look like:
-> 
-> TRACE_EVENT(my_event,
-> 
-> 	TP_PROTO(char *str1, char *str2, char *str3),
-> 
-> 	TP_ARGS(str1, str2, str3),
-> 
-> 	TP_STRUCT__entry(
-> 		__string(str1, str1)
-> 		__string(str2, str2)
-> 		__string(str3, str3)
-> 	),
-> 
-> 	TP_fast_assign(
-> 		/* empty, strings are automated */
-> 	),
-> 
-> 	TP_printk("str1:%s str2:%s str3:%s\n",
-> 		__entry->__str_data__ + __entry->str1,
-> 		__entry->__str_data__ + __entry->str2,
-> 		__entry->__str_data__ + __entry->str3)
-
-
-
-A simple macro here to simplify that for the users:
-
-#define __get_str(item)		\
-	__entry->__ending_str + __entry->__str_loc_#item
-
-would be much more convenient.
-
-Anyway, I'll submit it and will wait for your comments.
-
-Frederic.
-
-
-> );
-> 
-> 
-> /me feels more evil than ever ;-)
-> 
-> -- Steve
-> 
-> 
-
+	Hannes
