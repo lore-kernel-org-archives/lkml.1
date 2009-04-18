@@ -1,103 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZDRHAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbZDRHDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZDRHAy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 03:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZDRHAp
+	id S1754251AbZDRHDh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 03:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZDRHDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 03:00:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52318 "EHLO mx2.mail.elte.hu"
+	Sat, 18 Apr 2009 03:03:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42332 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbZDRHAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 03:00:45 -0400
-Date: Sat, 18 Apr 2009 09:00:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlsta <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 5/5] lockdep,x86: account for irqs enabled in
-	paranoid_exit
-Message-ID: <20090418070015.GA7678@elte.hu>
-References: <20090417211135.408179566@goodmis.org> <20090417211231.649674806@goodmis.org>
+	id S1753095AbZDRHDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 03:03:22 -0400
+Date: Sat, 18 Apr 2009 09:01:52 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH 1/3] net: introduce a list of device addresses
+	dev_addr_list (v3)
+Message-ID: <20090418070151.GA3370@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090415081720.GA21342@psychotron.englab.brq.redhat.com> <20090415081819.GB21342@psychotron.englab.brq.redhat.com> <20090415180215.GA22540@psychotron.englab.brq.redhat.com> <20090417115723.GE9556@psychotron.englab.brq.redhat.com> <20090417083315.2f089755@nehalam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090417211231.649674806@goodmis.org>
+In-Reply-To: <20090417083315.2f089755@nehalam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fri, Apr 17, 2009 at 05:33:15PM CEST, shemminger@vyatta.com wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+<snip>
 
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> I hit the check_flags error of lockdep:
-> 
-> WARNING: at kernel/lockdep.c:2893 check_flags+0x1a7/0x1d0()
-> [...]
-> hardirqs last  enabled at (12567): [<ffffffff8026206a>] local_bh_enable+0xaa/0x110
-> hardirqs last disabled at (12569): [<ffffffff80610c76>] int3+0x16/0x40
-> softirqs last  enabled at (12566): [<ffffffff80514d2b>] lock_sock_nested+0xfb/0x110
-> softirqs last disabled at (12568): [<ffffffff8058454e>] tcp_prequeue_process+0x2e/0xa0
-> 
-> The check_flags warning of lockdep tells me that lockdep thought interrupts
-> were disabled, but they were really enabled.
-> 
-> The numbers in the above parenthesis show the order of events:
-> 
-> 12566: softirqs last enabled:  lock_sock_nested
-> 12567: hardirqs last enabled:  local_bh_enable
-> 12568: softirqs last disabled: tcp_prequeue_process
-> 12566: hardirqs last disabled: int3
-> 
-> int3 is a breakpoint!
-> 
-> Examining this further, I have CONFIG_NET_TCPPROBE enabled which adds
-> break points into the kernel.
-> 
-> The paranoid_exit of the return of int3 does not account for enabling
-> interrupts on return to kernel. This code is a bit tricky since it
-> is also used by the nmi handler (when lockdep is off), and we must be
-> careful about the swapgs. We can not call kernel code after the swapgs
-> has been performed.
-> 
-> [ Impact: fix lockdep check_flags warning ]
-> 
-> Acked-by: Peter Zijlsta <a.p.zijlstra@chello.nl>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  arch/x86/kernel/entry_64.S |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-> index 1ac9986..987f91f 100644
-> --- a/arch/x86/kernel/entry_64.S
-> +++ b/arch/x86/kernel/entry_64.S
-> @@ -1397,7 +1397,10 @@ ENTRY(paranoid_exit)
->  paranoid_swapgs:
->  	TRACE_IRQS_IRETQ 0
->  	SWAPGS_UNSAFE_STACK
-> +	RESTORE_ALL 8
-> +	jmp irq_return
->  paranoid_restore:
-> +	TRACE_IRQS_IRETQ 0
->  	RESTORE_ALL 8
->  	jmp irq_return
->  paranoid_userspace:
+>> +struct netdev_hw_addr {
+>> +	struct list_head	list;
+>> +	unsigned char		addr[MAX_ADDR_LEN];
+>> +	int			refcount;
+>> +	struct rcu_head		rcu_head;
+>> +};
+>
+>Minor nit, the ordering of elements cause holes that might not be
+>needed.
 
-Nice catch! This is also for upstream really - i'll cherry-pick it 
-into the lockdep urgent queue as well.
+Agree that ordering might be done better. Will do.
+>
+>Space saving? is rcu_head needed or would using synchronize_net
+>make code cleaner and save space. 
+>
 
-	Ingo
+Well I originaly had this done by synchronize_rcu(). Eric argued that it might
+cause especially __hw_addr_del_multiple_ii() to run long and suggested to use
+call_rcu() instead. I plan to switch this to kfree_rcu() (or whatever it's
+called) once it hits the tree.
+
+<snip>
+
+>> +	ha = kzalloc(max(sizeof(*ha), L1_CACHE_BYTES), GFP_ATOMIC);
+>> +	if (!ha)
+>> +		return -ENOMEM;
+>Since you are initializing all fields, kzalloc isn't really needed
+
+Noted.
+>
+>> +	memcpy(ha->addr, addr, addr_len);
+>> +	ha->refcount = 1;
+>> +	list_add_tail_rcu(&ha->list, list);
+>> +	return 0;
+>> +}
+
+<snip>
+
+>> +static void dev_addr_flush(struct net_device *dev)
+>> +{
+>> +	ASSERT_RTNL();
+>> +
+>Since this is local you should be able to audit all
+>the callers and remove this ASSERT.
+
+Okay. I will at least put a comment instead of this.
+>
+>> +	__hw_addr_flush(&dev->dev_addr_list);
+>> +	dev->dev_addr = NULL;
+>> +}
+>> +
+>> +static int dev_addr_init(struct net_device *dev)
+>> +{
+>> +	unsigned char addr[MAX_ADDR_LEN];
+>> +	struct netdev_hw_addr *ha;
+>> +	int err;
+>> +
+>> +	ASSERT_RTNL();
+>Ditto, ASSERT_RTNL makes sense for exposed kernel API and
+>initial testing.
+>
+>> +	INIT_LIST_HEAD(&dev->dev_addr_list);
+>> +	memset(addr, 0, sizeof(*addr));
+>> +	err = __hw_addr_add(&dev->dev_addr_list, addr, sizeof(*addr));
+>> +	if (!err) {
+>> +		/*
+>> +		 * Get the first (previously created) address from the list
+>> +		 * and set dev_addr pointer to this location.
+>> +		 */
+>> +		ha = list_first_entry(&dev->dev_addr_list,
+>> +				      struct netdev_hw_addr, list);
+>> +		dev->dev_addr = ha->addr;
+>> +	}
+>> +	return err;
+>> +}
+
+<snip>
+
