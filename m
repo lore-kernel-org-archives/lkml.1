@@ -1,140 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZDRTxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZDRTyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbZDRTxg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 15:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZDRTxQ
+	id S1755253AbZDRTyY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 15:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZDRTyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 15:53:16 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42452 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755183AbZDRTxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 15:53:15 -0400
-Date: Sat, 18 Apr 2009 21:55:21 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, takata@linux-m32r.org,
-       Christoph Hellwig <hch@lst.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH v2] arm: use include/gen for mach-types.h
-Message-ID: <20090418195521.GA26697@uranus.ravnborg.org>
-References: <20090416150707.GA941@lst.de> <20090416164050.GB4850@uranus.ravnborg.org> <swfmyag9fx8.wl%takata.hirokazu@renesas.com> <alpine.LFD.2.00.0904171034140.4042@localhost.localdomain> <20090417221440.GA16791@uranus.ravnborg.org> <20090418101444.GA9768@flint.arm.linux.org.uk> <20090418181714.GA25786@uranus.ravnborg.org> <alpine.LFD.2.00.0904181226170.4042@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904181226170.4042@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 18 Apr 2009 15:54:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42978 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752244AbZDRTyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 15:54:13 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18b7pphqfobRtimMXEAT9h3AJup9I6QnQFcG0iK4i
+	ouK6VwaoNKtvlL
+Date: Sat, 18 Apr 2009 21:54:11 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: David Miller <davem@davemloft.net>
+cc: florian@openwrt.org, peter@holik.at, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
+In-Reply-To: <20090418.015541.05303908.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0904182146220.14879@axis700.grange>
+References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
+ <200904171632.26091.florian@openwrt.org> <Pine.LNX.4.64.0904172102300.5119@axis700.grange>
+ <20090418.015541.05303908.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mach-types.h is a generated file.
-As we no longer has a .gitignore file in asm-arm the risk
-that somebody by accident commit mach-types.h is big.
+On Sat, 18 Apr 2009, David Miller wrote:
 
-Avoid this by the introduction of include/generated/ to
-hold this (and soon other) generated files.
+> From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Date: Fri, 17 Apr 2009 21:07:52 +0200 (CEST)
+> 
+> > FWIW, I think it's pretty common to name static functions in a .c file, 
+> > which perform auxiliary function, not really specific to the context 
+> > without the respective context-prefix.
+> 
+> I'll remember to think of you next time I run grep on the tree.
 
-The patch includes two small cleanups to arch/arm/Makefile.
-1) delete stale comment
-2) combine two targets in one line and drop unused prerequisite
+Thanks David, very nice of you:-)
 
-The idea to introduce include/generated/ is originally from Al Viro.
+Once an MMC driver has been submitted for a specific platform, which 
+apparently has been derived from an MMC driver for a similar platform. And 
+the submitter has preserved the function prefix... So most functions in 
+the two drivers were called equally. Now that was bad, and I was the one 
+to complain about it, no idea what was the end result with that driver 
+though.
 
-This is the first user of include/generated and therefore this
-patch include changes in top-level Makefile and top-level
-.gitignore to support include/generated
+What I actually meant is that I don't necessarily consider it very 
+inconvenient if different drivers have functions like reg_write() or 
+whatever. I cannot think of many situations when this can be confusing. If 
+you are working with that file and see a call to reg_write() you know 
+where to look for it. If you have an Oops in that function - you just look 
+one function up in the backtrace. One of the cases that might be difficult 
+is if you have an Oops in such a function without a backtrace and it is in 
+a module. Ok, in this case it might be difficult to find out what that 
+was. Otherwise - why would you want to grep the sources for such a 
+function?
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>
+Thanks
+Guennadi
 ---
-
-This patch addresses comments by Al and Linus:
-- use include/generated/
-- just ignore all of include/generated
-- remove include/generated directory in make mrproper
-
-	Sam
-
-diff --git a/.gitignore b/.gitignore
-index 869e1a3..51bd99d 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -49,6 +49,7 @@ include/linux/compile.h
- include/linux/version.h
- include/linux/utsrelease.h
- include/linux/bounds.h
-+include/generated
- 
- # stgit generated dirs
- patches-*
-diff --git a/Makefile b/Makefile
-index bfdef56..6f4208f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1200,7 +1200,7 @@ CLEAN_FILES +=	vmlinux System.map \
-                 .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
- 
- # Directories & files removed with 'make mrproper'
--MRPROPER_DIRS  += include/config include2 usr/include
-+MRPROPER_DIRS  += include/config include2 usr/include include/generated
- MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                   include/linux/autoconf.h include/linux/version.h      \
-                   include/linux/utsrelease.h                            \
-diff --git a/arch/arm/Makefile b/arch/arm/Makefile
-index e84729b..1bedda1 100644
---- a/arch/arm/Makefile
-+++ b/arch/arm/Makefile
-@@ -214,15 +214,9 @@ all:	$(KBUILD_IMAGE)
- 
- boot := arch/arm/boot
- 
--#	Update machine arch and proc symlinks if something which affects
--#	them changed.  We use .arch to indicate when they were updated
--#	last, otherwise make uses the target directory mtime.
--
--archprepare: maketools
--
- PHONY += maketools FORCE
--maketools: include/linux/version.h FORCE
--	$(Q)$(MAKE) $(build)=arch/arm/tools include/asm-arm/mach-types.h
-+archprepare maketools:
-+	$(Q)$(MAKE) $(build)=arch/arm/tools include/generated/mach-types.h
- 
- # Convert bzImage to zImage
- bzImage: zImage
-@@ -233,9 +227,6 @@ zImage Image xipImage bootpImage uImage: vmlinux
- zinstall install: vmlinux
- 	$(Q)$(MAKE) $(build)=$(boot) MACHINE=$(MACHINE) $@
- 
--CLEAN_FILES += include/asm-arm/mach-types.h \
--	       include/asm-arm/arch include/asm-arm/.arch
--
- # We use MRPROPER_FILES and CLEAN_FILES now
- archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
-diff --git a/arch/arm/include/asm/mach-types.h b/arch/arm/include/asm/mach-types.h
-new file mode 100644
-index 0000000..b44d1a1
---- /dev/null
-+++ b/arch/arm/include/asm/mach-types.h
-@@ -0,0 +1,4 @@
-+# mach-types is the list of machine types supported by arm
-+# This file allow us to use: <asm/mach-types.h> when including mach-types
-+
-+#include <generated/mach-types.h>
-diff --git a/arch/arm/tools/Makefile b/arch/arm/tools/Makefile
-index 1dbaa29..635cb18 100644
---- a/arch/arm/tools/Makefile
-+++ b/arch/arm/tools/Makefile
-@@ -4,7 +4,7 @@
- # Copyright (C) 2001 Russell King
- #
- 
--include/asm-arm/mach-types.h: $(src)/gen-mach-types $(src)/mach-types
-+include/generated/mach-types.h: $(src)/gen-mach-types $(src)/mach-types
- 	@echo '  Generating $@'
- 	@mkdir -p $(dir $@)
- 	$(Q)$(AWK) -f $^ > $@ || { rm -f $@; /bin/false; }
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
