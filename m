@@ -1,84 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZDRO7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbZDRO7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZDRO7K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 10:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZDRO6y
+	id S1758495AbZDRO7t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 10:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZDRO7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 10:58:54 -0400
-Received: from z2.cat.iki.fi ([212.16.98.133]:36528 "EHLO z2.cat.iki.fi"
+	Sat, 18 Apr 2009 10:59:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46386 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbZDRO6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 10:58:53 -0400
-Date: Sat, 18 Apr 2009 17:58:50 +0300
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: Prakash Punnoor <prakash@punnoor.de>, Michael Tokarev <mjt@tls.msk.ru>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
-Subject: Re: Proposal: make RAID6 code optional
-Message-ID: <20090418145850.GD28512@mea-ext.zmailer.org>
-References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>
+	id S1753408AbZDRO7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 10:59:36 -0400
+Date: Sat, 18 Apr 2009 16:58:06 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       chrisw@redhat.com, mtosatti@redhat.com, hugh@veritas.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+Message-ID: <20090418145806.GA15228@random.random>
+References: <1239249521-5013-1-git-send-email-ieidus@redhat.com> <1239249521-5013-2-git-send-email-ieidus@redhat.com> <1239249521-5013-3-git-send-email-ieidus@redhat.com> <1239249521-5013-4-git-send-email-ieidus@redhat.com> <1239249521-5013-5-git-send-email-ieidus@redhat.com> <20090414150929.174a9b25.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>
+In-Reply-To: <20090414150929.174a9b25.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 03:56:17PM +0200, Jesper Juhl wrote:
-> On Sat, 18 Apr 2009, Prakash Punnoor wrote:
-> > On Samstag 18 April 2009 10:09:54 Michael Tokarev wrote:
-> > > Prakash Punnoor wrote:
-.....
-> > > What's your goal?  What's the problem you're trying to solve?
-> > 
-> > Having duplicate code is not good, of course. But unused code is also not 
-> > good. As I said, I only use RAID5, so I don't need RAID6 support. The RAID6 
-> > support enlarges kernel (the built-in.o in drivers/md grows from 325kb to 
-> > 414kb in my case), making boot time and compile time longer 
+On Tue, Apr 14, 2009 at 03:09:29PM -0700, Andrew Morton wrote:
+> We need a comment here explaining why we can't use the much preferable
+> lock_page().
 > 
-> By a few ms perhaps - nothing that you'd ever notice in real life... A 
-> small price to pay for the shared code. If you were to split them all 
-> again, the combined total size would be greater still.
+> Why can't we use the much preferable lock_page()?
 
-
-I did quick "sum of symbol sizes" lookup of the   raid.ko, and got
-it like this:
-
-nm -t d -n -S /lib/modules/2.6.27.21-170.2.56.fc10.x86_64/kernel/drivers/md/raid456.ko | grep raid4|awk '{print $2}'|sed -e 's/^0*//g'|awk '{sum+=$1}END{print sum}'
-  ...
-
-raid4:   152
-raid5:  7165
-raid6: 75558
-
-Entire 64kB of that raid6 is single pre-initialized r/o datablock:  raid6_gfmul
-
-So yes, having RAID6 personality as separate module would be appropriate for
-systems that are only interested in RAID4 or RAID5.  Separating the RAID4
-personality wastes space, separating RAID5 ...  barely 2 of 4k memory pages.
-
-There are perhaps a few kB more of codes for RAID5 and RAID6 classes - not all
-local functions at each are named with relevant prefix,  but overall I would
-consider extracting RAID6 as a reasonable goal with common codes on RAID4/5.
-
-> > - admittedly not 
-> > by a big margin. But then again I could argue: Why not put RAID0,1,10,4,5,6 
-> > into one big module? Makes no sense, huh? 
-> 
-> Makes perfect sense to me. Just modprobe raid.o and you have all 
-> raid levels available. That would make a lot of sense. 
-
-Also, systems with so many disks that they run RAID4/5/6 to begin with are
-likely to have enough memory so that "wasted" 75-80 kB does not matter.
-
-> > For me putting 5 and 6 into one 
-> > monolithic module makes no sense. A proper architecture would be to have some 
-> > common shared code (in a separate module?), not a monolithic big one.
-> 
-> That's also a way, and certainly better than just splitting out raid6.
-> -- 
-> Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-> Plain text mails only, please      http://www.expita.com/nomime.html
-
-/Matti Aarnio
+We might but then it'd risk to waste time waiting. It's not worth
+waiting, we want kksmd to be allowed to keep one (in future more than
+one as we scale it smp/numa) CPU busy at all times running memcmp and
+not schedule (other than for need_resched()) to try to free memory at
+the fastest peace possible.
