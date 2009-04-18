@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZDRS5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbZDRS54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759851AbZDRS5j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759449AbZDRSw6
+	id S1760668AbZDRS54 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZDRSw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:52:58 -0400
-Received: from georges.telenet-ops.be ([195.130.137.68]:47001 "EHLO
-	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759115AbZDRSwb (ORCPT
+	Sat, 18 Apr 2009 14:52:59 -0400
+Received: from jacques.telenet-ops.be ([195.130.132.50]:45705 "EHLO
+	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757989AbZDRSwa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:52:31 -0400
+	Sat, 18 Apr 2009 14:52:30 -0400
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, rtc-linux@googlegroups.com
-Subject: [PATCH/RFC 16/16] m68k: amiga - RTC platform device conversion
-Date: Sat, 18 Apr 2009 20:52:24 +0200
-Message-Id: <1240080744-14995-17-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-ide@vger.kernel.org
+Subject: [PATCH/RFC 09/16] m68k: amiga - Amiga Gayle IDE platform device conversion
+Date: Sat, 18 Apr 2009 20:52:17 +0200
+Message-Id: <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240080744-14995-16-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
 References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
@@ -27,272 +27,334 @@ References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-7-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-8-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-11-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-12-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-13-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-14-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-15-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-16-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The A2000 TOD is an Oki MSM6242B, while the A3000 TOD is a Ricoh RP5C01.
-
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: rtc-linux@googlegroups.com
+Cc: linux-ide@vger.kernel.org
 ---
- arch/m68k/amiga/config.c   |  172 --------------------------------------------
- arch/m68k/amiga/platform.c |   17 +++++
- 2 files changed, 17 insertions(+), 172 deletions(-)
+ arch/m68k/amiga/platform.c       |   63 +++++++++++++++-
+ arch/m68k/include/asm/amigayle.h |    6 ++
+ drivers/ide/gayle.c              |  156 +++++++++++++++++++++-----------------
+ 3 files changed, 153 insertions(+), 72 deletions(-)
 
-diff --git a/arch/m68k/amiga/config.c b/arch/m68k/amiga/config.c
-index 6e56275..d060894 100644
---- a/arch/m68k/amiga/config.c
-+++ b/arch/m68k/amiga/config.c
-@@ -97,10 +97,6 @@ static void amiga_get_model(char *model);
- static void amiga_get_hardware_list(struct seq_file *m);
- /* amiga specific timer functions */
- static unsigned long amiga_gettimeoffset(void);
--static int a3000_hwclk(int, struct rtc_time *);
--static int a2000_hwclk(int, struct rtc_time *);
--static int amiga_set_clock_mmss(unsigned long);
--static unsigned int amiga_get_ss(void);
- extern void amiga_mksound(unsigned int count, unsigned int ticks);
- static void amiga_reset(void);
- extern void amiga_init_sound(void);
-@@ -138,10 +134,6 @@ static struct {
- 	}
- };
- 
--static struct resource rtc_resource = {
--	.start = 0x00dc0000, .end = 0x00dcffff
--};
--
- static struct resource ram_resource[NUM_MEMINFO];
- 
- 
-@@ -387,15 +379,6 @@ void __init config_amiga(void)
- 	mach_get_model       = amiga_get_model;
- 	mach_get_hardware_list = amiga_get_hardware_list;
- 	mach_gettimeoffset   = amiga_gettimeoffset;
--	if (AMIGAHW_PRESENT(A3000_CLK)) {
--		mach_hwclk         = a3000_hwclk;
--		rtc_resource.name = "A3000 RTC";
--		request_resource(&iomem_resource, &rtc_resource);
--	} else /* if (AMIGAHW_PRESENT(A2000_CLK)) */ {
--		mach_hwclk         = a2000_hwclk;
--		rtc_resource.name = "A2000 RTC";
--		request_resource(&iomem_resource, &rtc_resource);
--	}
- 
- 	/*
- 	 * default MAX_DMA=0xffffffff on all machines. If we don't do so, the SCSI
-@@ -404,8 +387,6 @@ void __init config_amiga(void)
- 	 */
- 	mach_max_dma_address = 0xffffffff;
- 
--	mach_set_clock_mmss  = amiga_set_clock_mmss;
--	mach_get_ss          = amiga_get_ss;
- 	mach_reset           = amiga_reset;
- #if defined(CONFIG_INPUT_M68K_BEEP) || defined(CONFIG_INPUT_M68K_BEEP_MODULE)
- 	mach_beep            = amiga_mksound;
-@@ -530,159 +511,6 @@ static unsigned long amiga_gettimeoffset(void)
- 	return ticks + offset;
- }
- 
--static int a3000_hwclk(int op, struct rtc_time *t)
--{
--	tod_3000.cntrl1 = TOD3000_CNTRL1_HOLD;
--
--	if (!op) { /* read */
--		t->tm_sec  = tod_3000.second1 * 10 + tod_3000.second2;
--		t->tm_min  = tod_3000.minute1 * 10 + tod_3000.minute2;
--		t->tm_hour = tod_3000.hour1   * 10 + tod_3000.hour2;
--		t->tm_mday = tod_3000.day1    * 10 + tod_3000.day2;
--		t->tm_wday = tod_3000.weekday;
--		t->tm_mon  = tod_3000.month1  * 10 + tod_3000.month2 - 1;
--		t->tm_year = tod_3000.year1   * 10 + tod_3000.year2;
--		if (t->tm_year <= 69)
--			t->tm_year += 100;
--	} else {
--		tod_3000.second1 = t->tm_sec / 10;
--		tod_3000.second2 = t->tm_sec % 10;
--		tod_3000.minute1 = t->tm_min / 10;
--		tod_3000.minute2 = t->tm_min % 10;
--		tod_3000.hour1   = t->tm_hour / 10;
--		tod_3000.hour2   = t->tm_hour % 10;
--		tod_3000.day1    = t->tm_mday / 10;
--		tod_3000.day2    = t->tm_mday % 10;
--		if (t->tm_wday != -1)
--			tod_3000.weekday = t->tm_wday;
--		tod_3000.month1  = (t->tm_mon + 1) / 10;
--		tod_3000.month2  = (t->tm_mon + 1) % 10;
--		if (t->tm_year >= 100)
--			t->tm_year -= 100;
--		tod_3000.year1   = t->tm_year / 10;
--		tod_3000.year2   = t->tm_year % 10;
--	}
--
--	tod_3000.cntrl1 = TOD3000_CNTRL1_FREE;
--
--	return 0;
--}
--
--static int a2000_hwclk(int op, struct rtc_time *t)
--{
--	int cnt = 5;
--
--	tod_2000.cntrl1 = TOD2000_CNTRL1_HOLD;
--
--	while ((tod_2000.cntrl1 & TOD2000_CNTRL1_BUSY) && cnt--) {
--		tod_2000.cntrl1 &= ~TOD2000_CNTRL1_HOLD;
--		udelay(70);
--		tod_2000.cntrl1 |= TOD2000_CNTRL1_HOLD;
--	}
--
--	if (!cnt)
--		printk(KERN_INFO "hwclk: timed out waiting for RTC (0x%x)\n",
--			tod_2000.cntrl1);
--
--	if (!op) { /* read */
--		t->tm_sec  = tod_2000.second1     * 10 + tod_2000.second2;
--		t->tm_min  = tod_2000.minute1     * 10 + tod_2000.minute2;
--		t->tm_hour = (tod_2000.hour1 & 3) * 10 + tod_2000.hour2;
--		t->tm_mday = tod_2000.day1        * 10 + tod_2000.day2;
--		t->tm_wday = tod_2000.weekday;
--		t->tm_mon  = tod_2000.month1      * 10 + tod_2000.month2 - 1;
--		t->tm_year = tod_2000.year1       * 10 + tod_2000.year2;
--		if (t->tm_year <= 69)
--			t->tm_year += 100;
--
--		if (!(tod_2000.cntrl3 & TOD2000_CNTRL3_24HMODE)) {
--			if (!(tod_2000.hour1 & TOD2000_HOUR1_PM) && t->tm_hour == 12)
--				t->tm_hour = 0;
--			else if ((tod_2000.hour1 & TOD2000_HOUR1_PM) && t->tm_hour != 12)
--				t->tm_hour += 12;
--		}
--	} else {
--		tod_2000.second1 = t->tm_sec / 10;
--		tod_2000.second2 = t->tm_sec % 10;
--		tod_2000.minute1 = t->tm_min / 10;
--		tod_2000.minute2 = t->tm_min % 10;
--		if (tod_2000.cntrl3 & TOD2000_CNTRL3_24HMODE)
--			tod_2000.hour1 = t->tm_hour / 10;
--		else if (t->tm_hour >= 12)
--			tod_2000.hour1 = TOD2000_HOUR1_PM +
--				(t->tm_hour - 12) / 10;
--		else
--			tod_2000.hour1 = t->tm_hour / 10;
--		tod_2000.hour2   = t->tm_hour % 10;
--		tod_2000.day1    = t->tm_mday / 10;
--		tod_2000.day2    = t->tm_mday % 10;
--		if (t->tm_wday != -1)
--			tod_2000.weekday = t->tm_wday;
--		tod_2000.month1  = (t->tm_mon + 1) / 10;
--		tod_2000.month2  = (t->tm_mon + 1) % 10;
--		if (t->tm_year >= 100)
--			t->tm_year -= 100;
--		tod_2000.year1   = t->tm_year / 10;
--		tod_2000.year2   = t->tm_year % 10;
--	}
--
--	tod_2000.cntrl1 &= ~TOD2000_CNTRL1_HOLD;
--
--	return 0;
--}
--
--static int amiga_set_clock_mmss(unsigned long nowtime)
--{
--	short real_seconds = nowtime % 60, real_minutes = (nowtime / 60) % 60;
--
--	if (AMIGAHW_PRESENT(A3000_CLK)) {
--		tod_3000.cntrl1 = TOD3000_CNTRL1_HOLD;
--
--		tod_3000.second1 = real_seconds / 10;
--		tod_3000.second2 = real_seconds % 10;
--		tod_3000.minute1 = real_minutes / 10;
--		tod_3000.minute2 = real_minutes % 10;
--
--		tod_3000.cntrl1 = TOD3000_CNTRL1_FREE;
--	} else /* if (AMIGAHW_PRESENT(A2000_CLK)) */ {
--		int cnt = 5;
--
--		tod_2000.cntrl1 |= TOD2000_CNTRL1_HOLD;
--
--		while ((tod_2000.cntrl1 & TOD2000_CNTRL1_BUSY) && cnt--) {
--			tod_2000.cntrl1 &= ~TOD2000_CNTRL1_HOLD;
--			udelay(70);
--			tod_2000.cntrl1 |= TOD2000_CNTRL1_HOLD;
--		}
--
--		if (!cnt)
--			printk(KERN_INFO "set_clock_mmss: timed out waiting for RTC (0x%x)\n", tod_2000.cntrl1);
--
--		tod_2000.second1 = real_seconds / 10;
--		tod_2000.second2 = real_seconds % 10;
--		tod_2000.minute1 = real_minutes / 10;
--		tod_2000.minute2 = real_minutes % 10;
--
--		tod_2000.cntrl1 &= ~TOD2000_CNTRL1_HOLD;
--	}
--
--	return 0;
--}
--
--static unsigned int amiga_get_ss(void)
--{
--	unsigned int s;
--
--	if (AMIGAHW_PRESENT(A3000_CLK)) {
--		tod_3000.cntrl1 = TOD3000_CNTRL1_HOLD;
--		s = tod_3000.second1 * 10 + tod_3000.second2;
--		tod_3000.cntrl1 = TOD3000_CNTRL1_FREE;
--	} else /* if (AMIGAHW_PRESENT(A2000_CLK)) */ {
--		s = tod_2000.second1 * 10 + tod_2000.second2;
--	}
--	return s;
--}
--
- static NORET_TYPE void amiga_reset(void)
-     ATTRIB_NORET;
- 
 diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
-index c985db0..7fd8b41 100644
+index 027e4ca..907f6f5 100644
 --- a/arch/m68k/amiga/platform.c
 +++ b/arch/m68k/amiga/platform.c
-@@ -116,6 +116,13 @@ static const struct gayle_ide_platform_data a4000_ide_pdata __initconst = {
+@@ -11,6 +11,7 @@
+ #include <linux/zorro.h>
+ 
+ #include <asm/amigahw.h>
++#include <asm/amigayle.h>
+ 
+ 
+ #ifdef CONFIG_ZORRO
+@@ -55,7 +56,24 @@ static int __init amiga_init_bus(void)
+ 
+ subsys_initcall(amiga_init_bus);
+ 
+-#endif /* CONFIG_ZORRO */
++
++static int z_dev_present(zorro_id id)
++{
++	unsigned int i;
++
++	for (i = 0; i < zorro_num_autocon; i++)
++		if (zorro_autocon[i].rom.er_Manufacturer == ZORRO_MANUF(id) &&
++		    zorro_autocon[i].rom.er_Product == ZORRO_PROD(id))
++			return 1;
++
++	return 0;
++}
++
++#else /* !CONFIG_ZORRO */
++
++static inline int z_dev_present(zorro_id id) { return 0; }
++
++#endif /* !CONFIG_ZORRO */
+ 
+ 
+ static const struct resource a3000_scsi_resource __initconst = {
+@@ -72,8 +90,36 @@ static const struct resource a4000t_scsi_resource __initconst = {
  };
  
  
-+static const struct resource amiga_rtc_resource __initconst = {
-+	.start	= 0x00dc0000,
-+	.end	= 0x00dcffff,
++static const struct resource a1200_ide_resource __initconst = {
++	.start	= 0xda0000,
++	.end	= 0xda1fff,
 +	.flags	= IORESOURCE_MEM,
++};
++
++static const struct gayle_ide_platform_data a1200_ide_pdata __initconst = {
++	.base		= 0xda0000,
++	.irqport	= 0xda9000,
++	.explicit_ack	= 1,
++};
++
++
++static const struct resource a4000_ide_resource __initconst = {
++	.start	= 0xdd2000,
++	.end	= 0xdd3fff,
++	.flags	= IORESOURCE_MEM,
++};
++
++static const struct gayle_ide_platform_data a4000_ide_pdata __initconst = {
++	.base		= 0xdd2020,
++	.irqport	= 0xdd3020,
++	.explicit_ack	= 0,
 +};
 +
 +
  static int __init amiga_init_devices(void)
  {
- 	struct platform_device *pdev;
-@@ -174,6 +181,16 @@ static int __init amiga_init_devices(void)
- 	if (AMIGAHW_PRESENT(AMI_PARALLEL))
- 		platform_device_register_simple("amiga-parallel", -1, NULL, 0);
++	struct platform_device *pdev;
++
+ 	if (!MACH_IS_AMIGA)
+ 		return -ENODEV;
  
+@@ -99,6 +145,21 @@ static int __init amiga_init_devices(void)
+ 		platform_device_register_simple("amiga-a4000t-scsi", -1,
+ 						&a4000t_scsi_resource, 1);
+ 
++	if (AMIGAHW_PRESENT(A1200_IDE) ||
++	    z_dev_present(ZORRO_PROD_MTEC_VIPER_MK_V_E_MATRIX_530_SCSI_IDE)) {
++		pdev = platform_device_register_simple("amiga-gayle-ide", -1,
++						       &a1200_ide_resource, 1);
++		platform_device_add_data(pdev, &a1200_ide_pdata,
++					 sizeof(a1200_ide_pdata));
++	}
 +
-+	/* real time clocks */
-+	if (AMIGAHW_PRESENT(A2000_CLK))
-+		platform_device_register_simple("rtc-msm6242", -1,
-+						&amiga_rtc_resource, 1);
-+
-+	if (AMIGAHW_PRESENT(A3000_CLK))
-+		platform_device_register_simple("rtc-rp5c01", -1,
-+						&amiga_rtc_resource, 1);
++	if (AMIGAHW_PRESENT(A4000_IDE)) {
++		pdev = platform_device_register_simple("amiga-gayle-ide", -1,
++						       &a4000_ide_resource, 1);
++		platform_device_add_data(pdev, &a4000_ide_pdata,
++					 sizeof(a4000_ide_pdata));
++	}
 +
  	return 0;
  }
  
+diff --git a/arch/m68k/include/asm/amigayle.h b/arch/m68k/include/asm/amigayle.h
+index bb5a6aa..a01453d 100644
+--- a/arch/m68k/include/asm/amigayle.h
++++ b/arch/m68k/include/asm/amigayle.h
+@@ -104,4 +104,10 @@ struct GAYLE {
+ #define GAYLE_CFG_250NS		0x00
+ #define GAYLE_CFG_720NS		0x0c
+ 
++struct gayle_ide_platform_data {
++	unsigned long base;
++	unsigned long irqport;
++	int explicit_ack;	/* A1200 IDE needs explicit ack */
++};
++
+ #endif /* asm-m68k/amigayle.h */
+diff --git a/drivers/ide/gayle.c b/drivers/ide/gayle.c
+index c711951..093e976 100644
+--- a/drivers/ide/gayle.c
++++ b/drivers/ide/gayle.c
+@@ -16,6 +16,7 @@
+ #include <linux/init.h>
+ #include <linux/zorro.h>
+ #include <linux/module.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/setup.h>
+ #include <asm/amigahw.h>
+@@ -24,15 +25,6 @@
+ 
+ 
+     /*
+-     *  Bases of the IDE interfaces
+-     */
+-
+-#define GAYLE_BASE_4000	0xdd2020	/* A4000/A4000T */
+-#define GAYLE_BASE_1200	0xda0000	/* A1200/A600 and E-Matrix 530 */
+-
+-#define GAYLE_IDEREG_SIZE	0x2000
+-
+-    /*
+      *  Offsets from one of the above bases
+      */
+ 
+@@ -66,26 +58,25 @@ MODULE_PARM_DESC(doubler, "enable support for IDE doublers");
+      *  Check and acknowledge the interrupt status
+      */
+ 
+-static int gayle_ack_intr_a4000(ide_hwif_t *hwif)
++static inline int gayle_ack_intr(ide_hwif_t *hwif)
+ {
+-    unsigned char ch;
++	unsigned char ch;
+ 
+-    ch = z_readb(hwif->io_ports.irq_addr);
+-    if (!(ch & GAYLE_IRQ_IDE))
+-	return 0;
+-    return 1;
++	ch = z_readb(hwif->io_ports.irq_addr);
++	if (!(ch & GAYLE_IRQ_IDE))
++		return 0;
++	return 1;
+ }
+ 
+-static int gayle_ack_intr_a1200(ide_hwif_t *hwif)
++static int gayle_ack_intr_explicit(ide_hwif_t *hwif)
+ {
+-    unsigned char ch;
++	int ret = gayle_ack_intr(hwif);
++	if (!ret)
++		return 0;
+ 
+-    ch = z_readb(hwif->io_ports.irq_addr);
+-    if (!(ch & GAYLE_IRQ_IDE))
+-	return 0;
+-    (void)z_readb(hwif->io_ports.status_addr);
+-    z_writeb(0x7c, hwif->io_ports.irq_addr);
+-    return 1;
++	(void)z_readb(hwif->io_ports.status_addr);
++	z_writeb(0x7c, hwif->io_ports.irq_addr);
++	return 1;
+ }
+ 
+ static void __init gayle_setup_ports(hw_regs_t *hw, unsigned long base,
+@@ -120,64 +111,87 @@ static const struct ide_port_info gayle_port_info = {
+      *  Probe for a Gayle IDE interface (and optionally for an IDE doubler)
+      */
+ 
+-static int __init gayle_init(void)
++static int __init amiga_gayle_ide_probe(struct platform_device *pdev)
+ {
+-    unsigned long phys_base, res_start, res_n;
+-    unsigned long base, ctrlport, irqport;
+-    ide_ack_intr_t *ack_intr;
+-    int a4000, i, rc;
+-    hw_regs_t hw[GAYLE_NUM_HWIFS], *hws[] = { NULL, NULL, NULL, NULL };
+-
+-    if (!MACH_IS_AMIGA)
+-	return -ENODEV;
+-
+-    if ((a4000 = AMIGAHW_PRESENT(A4000_IDE)) || AMIGAHW_PRESENT(A1200_IDE))
+-	goto found;
+-
+-#ifdef CONFIG_ZORRO
+-    if (zorro_find_device(ZORRO_PROD_MTEC_VIPER_MK_V_E_MATRIX_530_SCSI_IDE,
+-			  NULL))
+-	goto found;
+-#endif
+-    return -ENODEV;
+-
+-found:
+-	printk(KERN_INFO "ide: Gayle IDE controller (A%d style%s)\n",
+-			 a4000 ? 4000 : 1200,
+-			 ide_doubler ? ", IDE doubler" : "");
+-
+-	if (a4000) {
+-	    phys_base = GAYLE_BASE_4000;
+-	    irqport = (unsigned long)ZTWO_VADDR(GAYLE_IRQ_4000);
+-	    ack_intr = gayle_ack_intr_a4000;
+-	} else {
+-	    phys_base = GAYLE_BASE_1200;
+-	    irqport = (unsigned long)ZTWO_VADDR(GAYLE_IRQ_1200);
+-	    ack_intr = gayle_ack_intr_a1200;
++	struct resource *res;
++	struct gayle_ide_platform_data *pdata;
++	unsigned long base, ctrlport, irqport;
++	ide_ack_intr_t *ack_intr;
++	unsigned int i;
++	int error;
++	hw_regs_t hw[GAYLE_NUM_HWIFS], *hws[] = { NULL, NULL, NULL, NULL };
++	struct ide_host *host;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
++
++	if (!request_mem_region(res->start, resource_size(res), "IDE"))
++		return -EBUSY;
++
++	pdata = pdev->dev.platform_data;
++	pr_info("ide: Gayle IDE controller (A%u style%s)\n",
++		pdata->explicit_ack ? 1200 : 4000,
++		ide_doubler ? ", IDE doubler" : "");
++
++	base = (unsigned long)ZTWO_VADDR(pdata->base);
++	ctrlport = 0;
++	irqport = (unsigned long)ZTWO_VADDR(pdata->irqport);
++	ack_intr = pdata->explicit_ack ? gayle_ack_intr_explicit
++				       : gayle_ack_intr;
++
++	for (i = 0; i < GAYLE_NUM_PROBE_HWIFS; i++, base += GAYLE_NEXT_PORT) {
++		if (GAYLE_HAS_CONTROL_REG)
++			ctrlport = base + GAYLE_CONTROL;
++
++		gayle_setup_ports(&hw[i], base, ctrlport, irqport, ack_intr);
++		hws[i] = &hw[i];
+ 	}
+ 
+-	res_start = ((unsigned long)phys_base) & ~(GAYLE_NEXT_PORT-1);
+-	res_n = GAYLE_IDEREG_SIZE;
++	error = ide_host_add(&gayle_port_info, hws, &host);
++	if (error)
++		goto out;
+ 
+-	if (!request_mem_region(res_start, res_n, "IDE"))
+-		return -EBUSY;
++	platform_set_drvdata(pdev, host);
++	return 0;
++
++out:
++	release_mem_region(res->start, resource_size(res));
++	return error;
++}
++
++static int __exit amiga_gayle_ide_remove(struct platform_device *pdev)
++{
++	struct ide_host *host = pdev->dev.driver_data;
++	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 
+-    for (i = 0; i < GAYLE_NUM_PROBE_HWIFS; i++) {
+-	base = (unsigned long)ZTWO_VADDR(phys_base + i * GAYLE_NEXT_PORT);
+-	ctrlport = GAYLE_HAS_CONTROL_REG ? (base + GAYLE_CONTROL) : 0;
++	ide_host_remove(host);
++	release_mem_region(res->start, resource_size(res));
++	return 0;
++}
+ 
+-	gayle_setup_ports(&hw[i], base, ctrlport, irqport, ack_intr);
++static struct platform_driver amiga_gayle_ide_driver = {
++	.remove = __exit_p(amiga_gayle_ide_remove),
++	.driver   = {
++		.name	= "amiga-gayle-ide",
++		.owner	= THIS_MODULE,
++	},
++};
+ 
+-	hws[i] = &hw[i];
+-    }
++static int __init amiga_gayle_ide_init(void)
++{
++	return platform_driver_probe(&amiga_gayle_ide_driver,
++				     amiga_gayle_ide_probe);
++}
+ 
+-    rc = ide_host_add(&gayle_port_info, hws, NULL);
+-    if (rc)
+-	release_mem_region(res_start, res_n);
++module_init(amiga_gayle_ide_init);
+ 
+-    return rc;
++static void __exit amiga_gayle_ide_exit(void)
++{
++	platform_driver_unregister(&amiga_gayle_ide_driver);
+ }
+ 
+-module_init(gayle_init);
++module_exit(amiga_gayle_ide_exit);
+ 
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:amiga-gayle-ide");
 -- 
 1.6.2.3
 
