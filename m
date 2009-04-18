@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZDRD5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbZDREBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbZDRD5e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 23:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZDRD5Z
+	id S1751547AbZDREBy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 00:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbZDREBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 23:57:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:35628 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbZDRD5Z convert rfc822-to-8bit (ORCPT
+	Sat, 18 Apr 2009 00:01:45 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:40401 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZDREBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 23:57:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=i3BefpNsLLrGk2vxWXi9acpOHPEXEqzHaaO+cLEUxu97Pz1HTHCG0K1VFwr96Tw0Ac
-         QloC1rsxT+n9FdQBxtivwpKFQtlk8JeixnUuzl+XvBi7vsVyDOt15Rkc1OsqNUMVdk+y
-         zbMLXsXPeKswYe891h0hAsDD862A3lxMUWcos=
-MIME-Version: 1.0
-In-Reply-To: <20090417190144.GB3548@kroah.com>
-References: <20090417190144.GB3548@kroah.com>
-Date: Sat, 18 Apr 2009 12:57:23 +0900
-Message-ID: <2f11576a0904172057x5a02cb9dlcd980d26126f8df4@mail.gmail.com>
-Subject: Re: [GIT PATCH] driver core patches for 2.6.31-rc2
-From: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 18 Apr 2009 00:01:45 -0400
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_IoEjqsCKiwZSSr7lsZweqw)"
+Date: Sat, 18 Apr 2009 00:01:30 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
+       toshiba_acpi@memebeam.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] toshiba-acpi: Add support for hotkey notifications
+In-reply-to: <20090331214501.GC29489@srcf.ucam.org>
+Message-id: <alpine.LFD.2.00.0904180000330.30751@localhost.localdomain>
+References: <20090331214501.GC29489@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/18 Greg KH <gregkh@suse.de>:
-> Here are a few driver-core patches for your 2.6.31-rc2 tree.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-2.6.30-rc2?
+--Boundary_(ID_IoEjqsCKiwZSSr7lsZweqw)
+Content-type: TEXT/PLAIN; charset=ISO-8859-7
+Content-transfer-encoding: 8BIT
 
->
-> The biggest patch here is the addition of the early platform driver api.
-> This patch has been in the -mm tree for a few major kernel releases now
-> (around 5 months), and there are a number of drivers pending in some of
-> the arch trees that depend on this api being present.  It doesn't affect
-> any x86 code, so the majority of the world will have no problems with
-> this, and it all gets thrown away after init starts up, so it has no
-> affect on memory sizes.
+drivers/platform/x86/toshiba_acpi.c:854: warning: passing argument 3 of 
+¡acpi_install_notify_handler¢ from incompatible pointer type
+drivers/platform/x86/toshiba_acpi.c:903: warning: passing argument 3 of 
+¡acpi_remove_notify_handler¢ from incompatible pointer type
+
+--Boundary_(ID_IoEjqsCKiwZSSr7lsZweqw)--
