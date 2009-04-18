@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbZDRItt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZDRIz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbZDRItt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 04:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZDRItl
+	id S1756031AbZDRIz6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 04:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZDRIzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 04:49:41 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:42899 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbZDRItl (ORCPT
+	Sat, 18 Apr 2009 04:55:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59567
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752665AbZDRIzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 04:49:41 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Peter Holik" <peter@holik.at>
+	Sat, 18 Apr 2009 04:55:50 -0400
+Date: Sat, 18 Apr 2009 01:55:41 -0700 (PDT)
+Message-Id: <20090418.015541.05303908.davem@davemloft.net>
+To: g.liakhovetski@gmx.de
+Cc: florian@openwrt.org, peter@holik.at, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
-Date: Sat, 18 Apr 2009 10:49:55 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at> <200904180938.48276.oliver@neukum.org> <0d3ceee0bebd3c68fb0d568239117425.squirrel@webmail.it-technology.at>
-In-Reply-To: <0d3ceee0bebd3c68fb0d568239117425.squirrel@webmail.it-technology.at>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0904172102300.5119@axis700.grange>
+References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
+	<200904171632.26091.florian@openwrt.org>
+	<Pine.LNX.4.64.0904172102300.5119@axis700.grange>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904181049.55812.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 18 April 2009 10:41:37 schrieb Peter Holik:
-> > Without the "|". Just dereference the pointer.
->
-> this way?
->
-> len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 17 Apr 2009 21:07:52 +0200 (CEST)
 
-That does the job.
+> FWIW, I think it's pretty common to name static functions in a .c file, 
+> which perform auxiliary function, not really specific to the context 
+> without the respective context-prefix.
 
-	Regards
-		Oliver
-
+I'll remember to think of you next time I run grep on the tree.
