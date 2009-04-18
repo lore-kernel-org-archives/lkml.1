@@ -1,131 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbZDRPdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZDRPpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758557AbZDRPdv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 11:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbZDRPdV
+	id S1756791AbZDRPpo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 11:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbZDRPpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 11:33:21 -0400
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:41756 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755121AbZDRPdS (ORCPT
+	Sat, 18 Apr 2009 11:45:32 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47120 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754022AbZDRPpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 11:33:18 -0400
-Date: Sat, 18 Apr 2009 16:15:54 +0100
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 4/3] rt2860sta: call release_firmware on module exit, else resume is broken
-Message-ID: <505368DED8%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <1239590029.18110.122.camel@deadeye.i.decadent.org.uk>
-References: <1239590029.18110.122.camel@deadeye.i.decadent.org.uk>
-Mail-Followup-To: Ben Hutchings <ben@decadent.org.uk>, Greg Kroah-Hartman 
- <gregkh@suse.de>, linux-kernel@vger.kernel.org, David Woodhouse 
- <dwmw2@infradead.org>, Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
-X-NuLabour-Date: Sat, 8905 Dec 1984 16:15:54 +0100
-MIME-Version: 1.0
+	Sat, 18 Apr 2009 11:45:31 -0400
+Date: Sat, 18 Apr 2009 18:45:29 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Peter Holik <peter@holik.at>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [Resend][PATCH] usb driver for intellon int51x1 based PLC like
+      devolo dlan duo
+In-Reply-To: <0681089db5bdc5acc805ed52130dc9a5.squirrel@webmail.it-technology.at>
+Message-ID: <Pine.LNX.4.64.0904181834210.3691@wrl-59.cs.helsinki.fi>
+References: <cb6d2886e87af66d945f1052e6eb8a85.squirrel@webmail.it-technology.at>
+    <Pine.LNX.4.64.0904181311470.3600@wrl-59.cs.helsinki.fi>
+ <0681089db5bdc5acc805ed52130dc9a5.squirrel@webmail.it-technology.at>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resume breakage is as follows: it takes somewhat longer (firmware request
-timeout), as a result of which the firmware isn't reloaded; and any
-subsequent attempt to trying to bring down the interface results in a panic &
-lockup (SysRq failure on my 901).
+On Sat, 18 Apr 2009, Peter Holik wrote:
 
-Consequently, it's better to request the firmware once and hang onto it until
-the module is unloaded.
+> >> +static struct sk_buff *int51x1_tx_fixup(struct usbnet *dev,
+> >> +		struct sk_buff *skb, gfp_t flags)
+> >> +{
+> >> +	int pack_len = skb->len;
+> >> +	int headroom = skb_headroom(skb);
+> >> +	int tailroom = skb_tailroom(skb);
+> >> +	int need_tail = 0;
+> >> +	__le16 *len;
+> >> +
+> >> +	/*
+> >> +	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
+> >> +	 * but we need to know ourself, because this would add to the length
+> >> +	 * we send down to the device...
+> >> +	 */
+> >> +	if (!((pack_len + INT51X1_HEADER_SIZE) % dev->maxpacket))
+> >> +		need_tail = 1;
+> >> +
+> >> +	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
+> >> +	if ((pack_len + INT51X1_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
+> >> +		need_tail = dev->maxpacket + 1 - pack_len - INT51X1_HEADER_SIZE;
+> >
+> > This is totally crazy code fragment, first need_tail is used like a
+> > boolean? But on the same some +1 scalar trick is being done? Is there some
+> > reason why DIV_ROUND_UP (linux/kernel.h) won't do what you want here and
+> > then you can trivally find diff = new - old ?
+> >
+> 
+> maybe this version is not so crazy for you?
+> 
+>         /* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
+>         if ((pack_len + INT51X1_HEADER_SIZE) < dev->maxpacket)
+>                 need_tail = dev->maxpacket - pack_len - INT51X1_HEADER_SIZE + 1;
+>         /*
+>          * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
+>          * but we need to know ourself, because this would add to the length
+>          * we send down to the device...
+>          */
+>         else if (!((pack_len + INT51X1_HEADER_SIZE) % dev->maxpacket))
+>                 need_tail = 1;
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Certainly looks more obvious, having that + need_tail and the related + 1 
+on the other side of the condition made the original very hard to read 
+(and I failed to read it correctly which was the reason for the wrong 
+DIV_ROUND_UP comment I made). This one is much better. I guess adding
+a temporary var for pack_len + INT51X1_HEADER_SIZE would also make it 
+somewhat nicer looking.
 
-diff -pur a/drivers/staging/rt2860/2860_main_dev.c b/drivers/staging/rt2860/2860_main_dev.c
---- a/drivers/staging/rt2860/2860_main_dev.c
-+++ b/drivers/staging/rt2860/2860_main_dev.c
-@@ -289,6 +289,7 @@ static INT __init rt2860_init_module(VOI
- static VOID __exit rt2860_cleanup_module(VOID)
- {
-     pci_unregister_driver(&rt2860_driver);
-+    NICForgetFirmware();
- }
- 
- module_init(rt2860_init_module);
-diff -pur a/drivers/staging/rt2860/common/rtmp_init.c b/drivers/staging/rt2860/common/rtmp_init.c
---- a/drivers/staging/rt2860/common/rtmp_init.c
-+++ b/drivers/staging/rt2860/common/rtmp_init.c
-@@ -144,6 +144,8 @@ RTMP_REG_PAIR	STAMACRegTable[] =	{
- #define FW_FILENAME "rt2860.bin"
- MODULE_FIRMWARE(FW_FILENAME);
- 
-+const struct firmware *fw = NULL;
-+
- #define FIRMWAREIMAGE_MAX_LENGTH	0x2000
- #define FIRMWARE_MAJOR_VERSION	0
- #define FIRMWARE_MINOR_VERSION	2
-@@ -2583,6 +2585,12 @@ VOID NICEraseFirmware(
- 
- }/* End of NICEraseFirmware */
- 
-+VOID NICForgetFirmware(void)
-+{
-+	release_firmware(fw);
-+	fw = NULL;
-+}
-+
- /*
- 	========================================================================
- 
-@@ -2603,11 +2611,11 @@ VOID NICEraseFirmware(
- NDIS_STATUS NICLoadFirmware(
- 	IN PRTMP_ADAPTER pAd)
- {
--	const struct firmware *fw;
- 	int ret, i;
- 	NDIS_STATUS Status = NDIS_STATUS_SUCCESS;
- 
--	ret = request_firmware(&fw, FW_FILENAME,
-+	ret = fw ? 0 :
-+	      request_firmware(&fw, FW_FILENAME,
- 			       &((POS_COOKIE)pAd->OS_Cookie)->pci_dev->dev);
- 	if (ret) {
- 		printk(KERN_ERR "rt2860sta: firmware file %s request failed (%d)\n",
-@@ -2659,7 +2667,7 @@ NDIS_STATUS NICLoadFirmware(
- 	RTMP_IO_WRITE32(pAd, H2M_BBP_AGENT, 0);
- 	RTMP_IO_WRITE32(pAd, H2M_MAILBOX_CSR, 0);
- 
--	release_firmware(fw);
-+	/*release_firmware(fw);*/
- 
- 	/* Check if MCU is ready - this may work even if firmware load
- 	 * failed: specifically, if firmware was loaded some time ago & the
-@@ -2689,7 +2697,7 @@ NDIS_STATUS NICLoadFirmware(
- 	return Status;
- 
- fail:
--	release_firmware(fw);
-+	/*release_firmware(fw);*/
- 	return NDIS_STATUS_FAILURE;
- } /* End of NICLoadFirmware */
- 
-diff -pur a/drivers/staging/rt2860/rtmp.h b/drivers/staging/rt2860/rtmp.h
---- a/drivers/staging/rt2860/rtmp.h
-+++ b/drivers/staging/rt2860/rtmp.h
-@@ -3571,6 +3571,8 @@ VOID NICEraseFirmware(
- NDIS_STATUS NICLoadFirmware(
- 	IN  PRTMP_ADAPTER   pAd);
- 
-+VOID NICForgetFirmware(void);
-+
- NDIS_STATUS NICLoadRateSwitchingParams(
- 	IN PRTMP_ADAPTER pAd);
- 
+
 -- 
-| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
-| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
-| + Burn less waste. Use less packaging. Waste less.     USE FEWER RESOURCES.
-
-Your society will be sought by people of taste and refinement.
+ i.
