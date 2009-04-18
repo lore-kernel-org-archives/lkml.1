@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZDRWIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZDRWN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbZDRWIj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 18:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZDRWI3
+	id S1754852AbZDRWN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 18:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZDRWNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 18:08:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49258 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753870AbZDRWI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 18:08:29 -0400
-Message-ID: <49EA4EB9.2030307@kernel.org>
-Date: Sat, 18 Apr 2009 15:05:45 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 18 Apr 2009 18:13:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:65394 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbZDRWNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 18:13:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QKJ6zVV0VoRno+QZcjKlbT/wTZ1PXQzQZVi6G9+IgZy+N2yugoQdU3icoFiJoi0inT
+         ntGOH3fyMCc24i5SK41ByDwdbRID0y6ESg4v+xB5IyDc62KeV0BYMljVJ7az8zSSnMJ2
+         o/VH20pLdSNaNt59gP7J0fEAJgtdXIDqS0AEc=
+Date: Sat, 18 Apr 2009 15:13:14 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Lukasz Stelmach <stlman@poczta.fm>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] use multitouch touchpad events as buttons mousedev
+Message-ID: <20090418221313.GB30524@dtor-d630.eng.vmware.com>
+References: <49B46ADA.5060809@poczta.fm> <20090416021126.GE2413@dtor-d630.eng.vmware.com> <49EA1392.5060008@poczta.fm>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] driver: dont update dev_name via device_add path
-References: <20090416235452.GE21405@elte.hu> <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain> <20090417131633.GA30578@elte.hu> <49E8FD0B.2050308@zytor.com> <49E96731.1000501@kernel.org> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com> <1240086446.2411.9.camel@poy> <20090418203718.GD30144@elte.hu>
-In-Reply-To: <20090418203718.GD30144@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EA1392.5060008@poczta.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+On Sat, Apr 18, 2009 at 07:53:22PM +0200, Lukasz Stelmach wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Dmitry Torokhov pisze:
+> > Hi Lukasz,
+> > 
+> > On Mon, Mar 09, 2009 at 02:03:22AM +0100, Lukasz Stelmach wrote:
+> >> Some touchpads can recognize multi-finger taps. They can be used as
+> >> additional buttons (left and middle).
+> >>
+> > 
+> > mousedev is a legacy interface and I don't think this change is needed
+> > since evdev + Synaptics X driver combination works much better with
+> > touchpads anyway.
+> 
+> That is true, however, I happen to use plain old virtual terminal with
+> gpm which uses mousedev. Having that multitouch buttons is, I assure you,
+> awesome.
+> 
 
-notice one system /proc/iomem some entries missed the name for pci_devices
+I see. In this case I suggest switching GPM to use evdev protocol. Since
+I added what I cosider proper evdev support for GPM a few years ago it
+should work OK without need to patch mousedev.
 
-it turns that dev->dev.kobj name is changed after device_add.
-
-for pci code:
-via acpi_pci_root_driver.ops.add (aka acpi_pci_root_add) ==> pci_acpi_scan_root
-is used to scan pci bus/device, and at the same time we read the resource for pci_dev
-in the pci_read_bases, we have res->name = pci_name(pci_dev); pci_name is calling dev_name.
-
-later via acpi_pci_root_driver.ops.start (aka acpi_pci_root_start) ==> pci_bus_add_device to
-add all pci_dev in kobj tree.
-pci_bus_add_device will call device_add.
-
-actually in device_add
-
-        /* first, register with generic layer. */
-        error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev_name(dev));
-        if (error)
-                goto Error;
-
-will get one new name for that kobj, old name is freed.
-
-[Impact: fix corrupted names in /proc/iomem ]
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- drivers/base/core.c |    3 ++-
- lib/kobject.c       |    3 +++
- 2 files changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/base/core.c
-===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -891,7 +891,8 @@ int device_add(struct device *dev)
- 		set_dev_node(dev, dev_to_node(parent));
- 
- 	/* first, register with generic layer. */
--	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev_name(dev));
-+	/* we require the name to be set before, and pass NULL */
-+	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
- 	if (error)
- 		goto Error;
- 
-Index: linux-2.6/lib/kobject.c
-===================================================================
---- linux-2.6.orig/lib/kobject.c
-+++ linux-2.6/lib/kobject.c
-@@ -218,6 +218,9 @@ int kobject_set_name_vargs(struct kobjec
- 	const char *old_name = kobj->name;
- 	char *s;
- 
-+	if (kobj->name && !fmt)
-+		return 0;
-+
- 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
- 	if (!kobj->name)
- 		return -ENOMEM;
+-- 
+Dmitry
