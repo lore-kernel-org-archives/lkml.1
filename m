@@ -1,471 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbZDRSys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbZDRSyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760073AbZDRSys (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZDRSwf
+	id S1759928AbZDRSyH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbZDRSwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:52:35 -0400
-Received: from gerard.telenet-ops.be ([195.130.132.48]:53419 "EHLO
-	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755383AbZDRSw2 (ORCPT
+	Sat, 18 Apr 2009 14:52:40 -0400
+Received: from georges.telenet-ops.be ([195.130.137.68]:46995 "EHLO
+	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757086AbZDRSw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:52:28 -0400
+	Sat, 18 Apr 2009 14:52:29 -0400
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH/RFC 03/16] m68k: amiga - Zorro host bridge platform device conversion
-Date: Sat, 18 Apr 2009 20:52:11 +0200
-Message-Id: <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-input@vger.kernel.org
+Subject: [PATCH/RFC 11/16] m68k: amiga - Mouse platform device conversion
+Date: Sat, 18 Apr 2009 20:52:19 +0200
+Message-Id: <1240080744-14995-12-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1240080744-14995-11-git-send-email-geert@linux-m68k.org>
 References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-5-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-6-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-7-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-8-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-11-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-input@vger.kernel.org
 ---
- arch/m68k/amiga/Makefile   |    2 +-
- arch/m68k/amiga/platform.c |   58 +++++++++++
- drivers/zorro/proc.c       |    6 +-
- drivers/zorro/zorro.c      |  242 +++++++++++++++++++++++---------------------
- include/linux/zorro.h      |    9 --
- 5 files changed, 189 insertions(+), 128 deletions(-)
- create mode 100644 arch/m68k/amiga/platform.c
+ arch/m68k/amiga/platform.c     |    3 +
+ drivers/input/mouse/amimouse.c |   98 +++++++++++++++++++++++++--------------
+ 2 files changed, 66 insertions(+), 35 deletions(-)
 
-diff --git a/arch/m68k/amiga/Makefile b/arch/m68k/amiga/Makefile
-index 6a0d765..11dd30b 100644
---- a/arch/m68k/amiga/Makefile
-+++ b/arch/m68k/amiga/Makefile
-@@ -2,6 +2,6 @@
- # Makefile for Linux arch/m68k/amiga source directory
- #
- 
--obj-y		:= config.o amiints.o cia.o chipram.o amisound.o
-+obj-y		:= config.o amiints.o cia.o chipram.o amisound.o platform.o
- 
- obj-$(CONFIG_AMIGA_PCMCIA)	+= pcmcia.o
 diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
-new file mode 100644
-index 0000000..33a7669
---- /dev/null
+index d427de2..269bafc 100644
+--- a/arch/m68k/amiga/platform.c
 +++ b/arch/m68k/amiga/platform.c
-@@ -0,0 +1,58 @@
-+/*
-+ *  Copyright (C) 2007-2009 Geert Uytterhoeven
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
-+ */
+@@ -165,6 +165,9 @@ static int __init amiga_init_devices(void)
+ 	if (AMIGAHW_PRESENT(AMI_KEYBOARD))
+ 		platform_device_register_simple("amiga-keyboard", -1, NULL, 0);
+ 
++	if (AMIGAHW_PRESENT(AMI_MOUSE))
++		platform_device_register_simple("amiga-mouse", -1, NULL, 0);
 +
-+#include <linux/init.h>
+ 	return 0;
+ }
+ 
+diff --git a/drivers/input/mouse/amimouse.c b/drivers/input/mouse/amimouse.c
+index a185ac7..ff5f61a 100644
+--- a/drivers/input/mouse/amimouse.c
++++ b/drivers/input/mouse/amimouse.c
+@@ -21,6 +21,7 @@
+ #include <linux/init.h>
+ #include <linux/input.h>
+ #include <linux/interrupt.h>
 +#include <linux/platform_device.h>
-+#include <linux/zorro.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/setup.h>
+@@ -34,10 +35,10 @@ MODULE_DESCRIPTION("Amiga mouse driver");
+ MODULE_LICENSE("GPL");
+ 
+ static int amimouse_lastx, amimouse_lasty;
+-static struct input_dev *amimouse_dev;
+ 
+-static irqreturn_t amimouse_interrupt(int irq, void *dummy)
++static irqreturn_t amimouse_interrupt(int irq, void *data)
+ {
++	struct input_dev *dev = data;
+ 	unsigned short joy0dat, potgor;
+ 	int nx, ny, dx, dy;
+ 
+@@ -59,14 +60,14 @@ static irqreturn_t amimouse_interrupt(int irq, void *dummy)
+ 
+ 	potgor = amiga_custom.potgor;
+ 
+-	input_report_rel(amimouse_dev, REL_X, dx);
+-	input_report_rel(amimouse_dev, REL_Y, dy);
++	input_report_rel(dev, REL_X, dx);
++	input_report_rel(dev, REL_Y, dy);
+ 
+-	input_report_key(amimouse_dev, BTN_LEFT,   ciaa.pra & 0x40);
+-	input_report_key(amimouse_dev, BTN_MIDDLE, potgor & 0x0100);
+-	input_report_key(amimouse_dev, BTN_RIGHT,  potgor & 0x0400);
++	input_report_key(dev, BTN_LEFT,   ciaa.pra & 0x40);
++	input_report_key(dev, BTN_MIDDLE, potgor & 0x0100);
++	input_report_key(dev, BTN_RIGHT,  potgor & 0x0400);
+ 
+-	input_sync(amimouse_dev);
++	input_sync(dev);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -74,63 +75,90 @@ static irqreturn_t amimouse_interrupt(int irq, void *dummy)
+ static int amimouse_open(struct input_dev *dev)
+ {
+ 	unsigned short joy0dat;
++	int error;
+ 
+ 	joy0dat = amiga_custom.joy0dat;
+ 
+ 	amimouse_lastx = joy0dat & 0xff;
+ 	amimouse_lasty = joy0dat >> 8;
+ 
+-	if (request_irq(IRQ_AMIGA_VERTB, amimouse_interrupt, 0, "amimouse", amimouse_interrupt)) {
+-                printk(KERN_ERR "amimouse.c: Can't allocate irq %d\n", IRQ_AMIGA_VERTB);
+-                return -EBUSY;
+-        }
++	error = request_irq(IRQ_AMIGA_VERTB, amimouse_interrupt, 0, "amimouse",
++			    dev);
++	if (error)
++		dev_err(&dev->dev, "Can't allocate irq %d\n", IRQ_AMIGA_VERTB);
+ 
+-        return 0;
++	return error;
+ }
+ 
+ static void amimouse_close(struct input_dev *dev)
+ {
+-	free_irq(IRQ_AMIGA_VERTB, amimouse_interrupt);
++	free_irq(IRQ_AMIGA_VERTB, dev);
+ }
+ 
+-static int __init amimouse_init(void)
++static int __init amimouse_probe(struct platform_device *pdev)
+ {
+ 	int err;
++	struct input_dev *dev;
+ 
+-	if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(AMI_MOUSE))
+-		return -ENODEV;
+-
+-	amimouse_dev = input_allocate_device();
+-	if (!amimouse_dev)
++	dev = input_allocate_device();
++	if (!dev)
+ 		return -ENOMEM;
+ 
+-	amimouse_dev->name = "Amiga mouse";
+-	amimouse_dev->phys = "amimouse/input0";
+-	amimouse_dev->id.bustype = BUS_AMIGA;
+-	amimouse_dev->id.vendor = 0x0001;
+-	amimouse_dev->id.product = 0x0002;
+-	amimouse_dev->id.version = 0x0100;
++	dev->name = pdev->name;
++	dev->phys = "amimouse/input0";
++	dev->id.bustype = BUS_AMIGA;
++	dev->id.vendor = 0x0001;
++	dev->id.product = 0x0002;
++	dev->id.version = 0x0100;
+ 
+-	amimouse_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REL);
+-	amimouse_dev->relbit[0] = BIT_MASK(REL_X) | BIT_MASK(REL_Y);
+-	amimouse_dev->keybit[BIT_WORD(BTN_LEFT)] = BIT_MASK(BTN_LEFT) |
++	dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REL);
++	dev->relbit[0] = BIT_MASK(REL_X) | BIT_MASK(REL_Y);
++	dev->keybit[BIT_WORD(BTN_LEFT)] = BIT_MASK(BTN_LEFT) |
+ 		BIT_MASK(BTN_MIDDLE) | BIT_MASK(BTN_RIGHT);
+-	amimouse_dev->open = amimouse_open;
+-	amimouse_dev->close = amimouse_close;
++	dev->open = amimouse_open;
++	dev->close = amimouse_close;
++	dev->dev.parent = &pdev->dev;
+ 
+-	err = input_register_device(amimouse_dev);
++	err = input_register_device(dev);
+ 	if (err) {
+-		input_free_device(amimouse_dev);
++		input_free_device(dev);
+ 		return err;
+ 	}
+ 
++	platform_set_drvdata(pdev, dev);
 +
-+#include <asm/amigahw.h>
+ 	return 0;
+ }
+ 
+-static void __exit amimouse_exit(void)
++static int __exit amimouse_remove(struct platform_device *pdev)
+ {
+-        input_unregister_device(amimouse_dev);
++	struct input_dev *dev = platform_get_drvdata(pdev);
 +
-+
-+#ifdef CONFIG_ZORRO
-+
-+static const struct resource zorro_resources[] __initconst = {
-+	/* Zorro II regions (on Zorro II/III) */
-+	{
-+		.name	= "Zorro II exp",
-+		.start	= 0x00e80000,
-+		.end	= 0x00efffff,
-+		.flags	= IORESOURCE_MEM,
-+	}, {
-+		.name	= "Zorro II mem",
-+		.start	= 0x00200000,
-+		.end	= 0x009fffff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	/* Zorro III regions (on Zorro III only) */
-+	{
-+		.name	= "Zorro III exp",
-+		.start	= 0xff000000,
-+		.end	= 0xffffffff,
-+		.flags	= IORESOURCE_MEM,
-+	}, {
-+		.name	= "Zorro III cfg",
-+		.start	= 0x40000000,
-+		.end	= 0x7fffffff,
-+		.flags	= IORESOURCE_MEM,
-+	}
-+};
-+
-+
-+static int __init amiga_init_bus(void)
-+{
-+	if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(ZORRO))
-+		return -ENODEV;
-+
-+	platform_device_register_simple("amiga-zorro", -1, zorro_resources,
-+					AMIGAHW_PRESENT(ZORRO3) ? 4 : 2);
++	platform_set_drvdata(pdev, NULL);
++	input_unregister_device(dev);
 +	return 0;
 +}
 +
-+subsys_initcall(amiga_init_bus);
-+
-+#endif /* CONFIG_ZORRO */
-diff --git a/drivers/zorro/proc.c b/drivers/zorro/proc.c
-index d47c47f..3c7046d 100644
---- a/drivers/zorro/proc.c
-+++ b/drivers/zorro/proc.c
-@@ -97,7 +97,7 @@ static void zorro_seq_stop(struct seq_file *m, void *v)
- 
- static int zorro_seq_show(struct seq_file *m, void *v)
- {
--	u_int slot = *(loff_t *)v;
-+	unsigned int slot = *(loff_t *)v;
- 	struct zorro_dev *z = &zorro_autocon[slot];
- 
- 	seq_printf(m, "%02x\t%08x\t%08lx\t%08lx\t%02x\n", slot, z->id,
-@@ -129,7 +129,7 @@ static const struct file_operations zorro_devices_proc_fops = {
- 
- static struct proc_dir_entry *proc_bus_zorro_dir;
- 
--static int __init zorro_proc_attach_device(u_int slot)
-+static int __init zorro_proc_attach_device(unsigned int slot)
- {
- 	struct proc_dir_entry *entry;
- 	char name[4];
-@@ -146,7 +146,7 @@ static int __init zorro_proc_attach_device(u_int slot)
- 
- static int __init zorro_proc_init(void)
- {
--	u_int slot;
-+	unsigned int slot;
- 
- 	if (MACH_IS_AMIGA && AMIGAHW_PRESENT(ZORRO)) {
- 		proc_bus_zorro_dir = proc_mkdir("bus/zorro", NULL);
-diff --git a/drivers/zorro/zorro.c b/drivers/zorro/zorro.c
-index d45fb34..3a3cad9 100644
---- a/drivers/zorro/zorro.c
-+++ b/drivers/zorro/zorro.c
-@@ -15,6 +15,7 @@
- #include <linux/zorro.h>
- #include <linux/bitops.h>
- #include <linux/string.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/setup.h>
- #include <asm/amigahw.h>
-@@ -26,24 +27,17 @@
-      *  Zorro Expansion Devices
-      */
- 
--u_int zorro_num_autocon = 0;
-+unsigned int zorro_num_autocon;
- struct zorro_dev zorro_autocon[ZORRO_NUM_AUTO];
- 
- 
-     /*
--     *  Single Zorro bus
-+     *  Zorro bus
-      */
- 
--struct zorro_bus zorro_bus = {\
--    .resources = {
--	/* Zorro II regions (on Zorro II/III) */
--	{ .name = "Zorro II exp", .start = 0x00e80000, .end = 0x00efffff },
--	{ .name = "Zorro II mem", .start = 0x00200000, .end = 0x009fffff },
--	/* Zorro III regions (on Zorro III only) */
--	{ .name = "Zorro III exp", .start = 0xff000000, .end = 0xffffffff },
--	{ .name = "Zorro III cfg", .start = 0x40000000, .end = 0x7fffffff }
--    },
--    .name = "Zorro bus"
-+struct zorro_bus {
-+	struct list_head devices;	/* list of devices on this bus */
-+	struct device dev;
- };
- 
- 
-@@ -53,18 +47,19 @@ struct zorro_bus zorro_bus = {\
- 
- struct zorro_dev *zorro_find_device(zorro_id id, struct zorro_dev *from)
- {
--    struct zorro_dev *z;
-+	struct zorro_dev *z;
- 
--    if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(ZORRO))
--	return NULL;
-+	if (!zorro_num_autocon)
-+		return NULL;
- 
--    for (z = from ? from+1 : &zorro_autocon[0];
--	 z < zorro_autocon+zorro_num_autocon;
--	 z++)
--	if (id == ZORRO_WILDCARD || id == z->id)
--	    return z;
--    return NULL;
-+	for (z = from ? from+1 : &zorro_autocon[0];
-+	     z < zorro_autocon+zorro_num_autocon;
-+	     z++)
-+		if (id == ZORRO_WILDCARD || id == z->id)
-+			return z;
-+	return NULL;
- }
-+EXPORT_SYMBOL(zorro_find_device);
- 
- 
-     /*
-@@ -83,121 +78,138 @@ struct zorro_dev *zorro_find_device(zorro_id id, struct zorro_dev *from)
-      */
- 
- DECLARE_BITMAP(zorro_unused_z2ram, 128);
-+EXPORT_SYMBOL(zorro_unused_z2ram);
- 
- 
- static void __init mark_region(unsigned long start, unsigned long end,
- 			       int flag)
- {
--    if (flag)
--	start += Z2RAM_CHUNKMASK;
--    else
--	end += Z2RAM_CHUNKMASK;
--    start &= ~Z2RAM_CHUNKMASK;
--    end &= ~Z2RAM_CHUNKMASK;
--
--    if (end <= Z2RAM_START || start >= Z2RAM_END)
--	return;
--    start = start < Z2RAM_START ? 0x00000000 : start-Z2RAM_START;
--    end = end > Z2RAM_END ? Z2RAM_SIZE : end-Z2RAM_START;
--    while (start < end) {
--	u32 chunk = start>>Z2RAM_CHUNKSHIFT;
- 	if (flag)
--	    set_bit(chunk, zorro_unused_z2ram);
-+		start += Z2RAM_CHUNKMASK;
- 	else
--	    clear_bit(chunk, zorro_unused_z2ram);
--	start += Z2RAM_CHUNKSIZE;
--    }
-+		end += Z2RAM_CHUNKMASK;
-+	start &= ~Z2RAM_CHUNKMASK;
-+	end &= ~Z2RAM_CHUNKMASK;
-+
-+	if (end <= Z2RAM_START || start >= Z2RAM_END)
-+		return;
-+	start = start < Z2RAM_START ? 0x00000000 : start-Z2RAM_START;
-+	end = end > Z2RAM_END ? Z2RAM_SIZE : end-Z2RAM_START;
-+	while (start < end) {
-+		u32 chunk = start>>Z2RAM_CHUNKSHIFT;
-+		if (flag)
-+			set_bit(chunk, zorro_unused_z2ram);
-+		else
-+			clear_bit(chunk, zorro_unused_z2ram);
-+		start += Z2RAM_CHUNKSIZE;
-+	}
- }
- 
- 
--static struct resource __init *zorro_find_parent_resource(struct zorro_dev *z)
-+static struct resource __init *zorro_find_parent_resource(
-+	struct platform_device *bridge, struct zorro_dev *z)
- {
--    int i;
-+	int i;
- 
--    for (i = 0; i < zorro_bus.num_resources; i++)
--	if (zorro_resource_start(z) >= zorro_bus.resources[i].start &&
--	    zorro_resource_end(z) <= zorro_bus.resources[i].end)
--		return &zorro_bus.resources[i];
--    return &iomem_resource;
-+	for (i = 0; i < bridge->num_resources; i++) {
-+		struct resource *r = &bridge->resource[i];
-+		if (zorro_resource_start(z) >= r->start &&
-+		    zorro_resource_end(z) <= r->end)
-+			return r;
-+	}
-+	return &iomem_resource;
- }
- 
- 
--    /*
--     *  Initialization
--     */
- 
--static int __init zorro_init(void)
-+static int __init amiga_zorro_probe(struct platform_device *pdev)
- {
--    struct zorro_dev *z;
--    unsigned int i;
--    int error;
--
--    if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(ZORRO))
--	return 0;
--
--    pr_info("Zorro: Probing AutoConfig expansion devices: %d device%s\n",
--	   zorro_num_autocon, zorro_num_autocon == 1 ? "" : "s");
--
--    /* Initialize the Zorro bus */
--    INIT_LIST_HEAD(&zorro_bus.devices);
--    dev_set_name(&zorro_bus.dev, "zorro");
--    error = device_register(&zorro_bus.dev);
--    if (error) {
--	pr_err("Zorro: Error registering zorro_bus\n");
--	return error;
--    }
--
--    /* Request the resources */
--    zorro_bus.num_resources = AMIGAHW_PRESENT(ZORRO3) ? 4 : 2;
--    for (i = 0; i < zorro_bus.num_resources; i++)
--	request_resource(&iomem_resource, &zorro_bus.resources[i]);
--
--    /* Register all devices */
--    for (i = 0; i < zorro_num_autocon; i++) {
--	z = &zorro_autocon[i];
--	z->id = (z->rom.er_Manufacturer<<16) | (z->rom.er_Product<<8);
--	if (z->id == ZORRO_PROD_GVP_EPC_BASE) {
--	    /* GVP quirk */
--	    unsigned long magic = zorro_resource_start(z)+0x8000;
--	    z->id |= *(u16 *)ZTWO_VADDR(magic) & GVP_PRODMASK;
--	}
--	sprintf(z->name, "Zorro device %08x", z->id);
--	zorro_name_device(z);
--	z->resource.name = z->name;
--	if (request_resource(zorro_find_parent_resource(z), &z->resource))
--	    pr_err("Zorro: Address space collision on device %s %pR\n",
--		   z->name, &z->resource);
--	dev_set_name(&z->dev, "%02x", i);
--	z->dev.parent = &zorro_bus.dev;
--	z->dev.bus = &zorro_bus_type;
--	error = device_register(&z->dev);
-+	struct zorro_bus *bus;
-+	struct zorro_dev *z;
-+	struct resource *r;
-+	unsigned int i;
-+	int error;
-+
-+	/* Initialize the Zorro bus */
-+	bus = kzalloc(sizeof(*bus), GFP_KERNEL);
-+	if (!bus)
-+		return -ENOMEM;
-+
-+	INIT_LIST_HEAD(&bus->devices);
-+	bus->dev.parent = &pdev->dev;
-+	dev_set_name(&bus->dev, "zorro");
-+	error = device_register(&bus->dev);
- 	if (error) {
--	    pr_err("Zorro: Error registering device %s\n", z->name);
--	    continue;
-+		pr_err("Zorro: Error registering zorro_bus\n");
-+		kfree(bus);
-+		return error;
- 	}
--	error = zorro_create_sysfs_dev_files(z);
--	if (error)
--	    dev_err(&z->dev, "Error creating sysfs files\n");
--    }
--
--    /* Mark all available Zorro II memory */
--    zorro_for_each_dev(z) {
--	if (z->rom.er_Type & ERTF_MEMLIST)
--	    mark_region(zorro_resource_start(z), zorro_resource_end(z)+1, 1);
--    }
--
--    /* Unmark all used Zorro II memory */
--    for (i = 0; i < m68k_num_memory; i++)
--	if (m68k_memory[i].addr < 16*1024*1024)
--	    mark_region(m68k_memory[i].addr,
--			m68k_memory[i].addr+m68k_memory[i].size, 0);
--
--    return 0;
-+	platform_set_drvdata(pdev, bus);
-+
-+	/* Register all devices */
-+	pr_info("Zorro: Probing AutoConfig expansion devices: %u device%s\n",
-+		 zorro_num_autocon, zorro_num_autocon == 1 ? "" : "s");
-+
-+	for (i = 0; i < zorro_num_autocon; i++) {
-+		z = &zorro_autocon[i];
-+		z->id = (z->rom.er_Manufacturer<<16) | (z->rom.er_Product<<8);
-+		if (z->id == ZORRO_PROD_GVP_EPC_BASE) {
-+			/* GVP quirk */
-+			unsigned long magic = zorro_resource_start(z)+0x8000;
-+			z->id |= *(u16 *)ZTWO_VADDR(magic) & GVP_PRODMASK;
-+		}
-+		sprintf(z->name, "Zorro device %08x", z->id);
-+		zorro_name_device(z);
-+		z->resource.name = z->name;
-+		r = zorro_find_parent_resource(pdev, z);
-+		error = request_resource(r, &z->resource);
-+		if (error)
-+			dev_err(&bus->dev,
-+				"Address space collision on device %s %pR\n",
-+				z->name, &z->resource);
-+		dev_set_name(&z->dev, "%02x", i);
-+		z->dev.parent = &bus->dev;
-+		z->dev.bus = &zorro_bus_type;
-+		error = device_register(&z->dev);
-+		if (error) {
-+			dev_err(&bus->dev, "Error registering device %s\n",
-+				z->name);
-+			continue;
-+		}
-+		error = zorro_create_sysfs_dev_files(z);
-+		if (error)
-+			dev_err(&z->dev, "Error creating sysfs files\n");
-+	}
-+
-+	/* Mark all available Zorro II memory */
-+	zorro_for_each_dev(z) {
-+		if (z->rom.er_Type & ERTF_MEMLIST)
-+			mark_region(zorro_resource_start(z),
-+				    zorro_resource_end(z)+1, 1);
-+	}
-+
-+	/* Unmark all used Zorro II memory */
-+	for (i = 0; i < m68k_num_memory; i++)
-+		if (m68k_memory[i].addr < 16*1024*1024)
-+			mark_region(m68k_memory[i].addr,
-+				    m68k_memory[i].addr+m68k_memory[i].size,
-+				    0);
-+
-+	return 0;
- }
- 
--subsys_initcall(zorro_init);
-+static struct platform_driver amiga_zorro_driver = {
++static struct platform_driver amimouse_driver = {
++	.remove = __exit_p(amimouse_remove),
 +	.driver   = {
-+		.name	= "amiga-zorro",
++		.name	= "amiga-mouse",
 +		.owner	= THIS_MODULE,
 +	},
 +};
- 
--EXPORT_SYMBOL(zorro_find_device);
--EXPORT_SYMBOL(zorro_unused_z2ram);
-+static int __init amiga_zorro_init(void)
++
++static int __init amimouse_init(void)
 +{
-+	return platform_driver_probe(&amiga_zorro_driver, amiga_zorro_probe);
++	return platform_driver_probe(&amimouse_driver, amimouse_probe);
+ }
+ 
+ module_init(amimouse_init);
++
++static void __exit amimouse_exit(void)
++{
++	platform_driver_unregister(&amimouse_driver);
 +}
 +
-+module_init(amiga_zorro_init);
- 
- MODULE_LICENSE("GPL");
-diff --git a/include/linux/zorro.h b/include/linux/zorro.h
-index 908db1b..7bf9db5 100644
---- a/include/linux/zorro.h
-+++ b/include/linux/zorro.h
-@@ -141,15 +141,6 @@ struct zorro_dev {
-      *  Zorro bus
-      */
- 
--struct zorro_bus {
--    struct list_head devices;		/* list of devices on this bus */
--    unsigned int num_resources;		/* number of resources */
--    struct resource resources[4];	/* address space routed to this bus */
--    struct device dev;
--    char name[10];
--};
--
--extern struct zorro_bus zorro_bus;	/* single Zorro bus */
- extern struct bus_type zorro_bus_type;
- 
- 
+ module_exit(amimouse_exit);
++
++MODULE_ALIAS("platform:amiga-mouse");
 -- 
 1.6.2.3
 
