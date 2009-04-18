@@ -1,118 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbZDRU1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbZDRU23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759890AbZDRU1q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 16:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZDRU1h
+	id S1759169AbZDRU23 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 16:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbZDRU2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 16:27:37 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:51620 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbZDRU1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 16:27:36 -0400
-Subject: Re: [PATCH] pci: keep pci device resource name pointer right.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Sat, 18 Apr 2009 16:28:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38883 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754071AbZDRU2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 16:28:19 -0400
+Date: Sat, 18 Apr 2009 22:27:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        linux-pci@vger.kernel.org
-In-Reply-To: <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com>
-References: <20090416172803.GB16618@elte.hu>
-	 <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain>
-	 <20090416235452.GE21405@elte.hu>
-	 <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain>
-	 <20090417131633.GA30578@elte.hu> <49E8FD0B.2050308@zytor.com>
-	 <49E96731.1000501@kernel.org>
-	 <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain>
-	 <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de>
-	 <ac3eb2510904181300v2593c36dua6c2420828860706@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 18 Apr 2009 22:27:26 +0200
-Message-Id: <1240086446.2411.9.camel@poy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] driver: dont update dev_name if it is not changed
+Message-ID: <20090418202704.GB30144@elte.hu>
+References: <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain> <20090417131633.GA30578@elte.hu> <49E8FD0B.2050308@zytor.com> <49E96731.1000501@kernel.org> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> <49EA3176.4010901@kernel.org> <20090418201114.GA27903@elte.hu> <49EA3617.9020602@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EA3617.9020602@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-18 at 22:00 +0200, Kay Sievers wrote:
-> On Sat, Apr 18, 2009 at 21:23, Greg KH <gregkh@suse.de> wrote:
-> > On Sat, Apr 18, 2009 at 12:19:21PM -0700, Yinghai Lu wrote:
-> >> Linus Torvalds wrote:
-> 
-> >> > Can we not make the rule be that the name should just be set before?
-> 
-> I guess, that's what they do already, otherwise they could not use dev_name().
-> 
-> >> pci_bus_add_device will call device_add.
+
+* Yinghai Lu <yinghai@kernel.org> wrote:
+
+> Ingo Molnar wrote:
+> > * Yinghai Lu <yinghai@kernel.org> wrote:
+> > 
+> >> notice one system /proc/iomem some entries missed the name for pci_devices
 > >>
-> >> actually in device_add
+> >> it turns that dev->dev.kobj name is changed after device_add.
 > >>
-> >>         /* first, register with generic layer. */
-> >>         error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev_name(dev));
-> >>         if (error)
-> >>                 goto Error;
+> >> [Impact: fix corrupted names in /proc/iomem ]
 > >>
-> >> will get one new name for that kobj, old name is freed.
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > >>
-> >> Will try to make kobject_add more smart to reuse the old one.
-> >
-> > I don't understand the problem here, how are you going to change the
-> > kobject core?  Is this just because you aren't getting a name for the
-> > resource?  If so, why would the driver core care about this?
-> 
-> Seems a bit odd what we do when registering a device.
-> 
-> Usually one sets the name with dev_set_name() which will name the
-> kobject. When one later registers the device, we reallocate the same
-> name, so the pointer changes. I guess the problem here is that the pci
-> code remembers the name pointer after it was set, but it will not be
-> the same after the device is live.
-> 
-> We should probably make device_add() pass a NULL as the name, and
-> kobject_add() in that case use the name that is properly set already.
+> >> ---
+> >>  lib/kobject.c |   13 +++++++++++--
+> >>  1 file changed, 11 insertions(+), 2 deletions(-)
+> >>
+> >> Index: linux-2.6/lib/kobject.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/lib/kobject.c
+> >> +++ linux-2.6/lib/kobject.c
+> >> @@ -216,12 +216,21 @@ int kobject_set_name_vargs(struct kobjec
+> >>  				  va_list vargs)
+> >>  {
+> >>  	const char *old_name = kobj->name;
+> >> +	char *new_name;
+> >>  	char *s;
+> >>  
+> >> -	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> >> -	if (!kobj->name)
+> >> +	new_name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> >> +	if (!new_name)
+> >>  		return -ENOMEM;
+> >>  
+> >> +	/* different ? */
+> >> +	if (!strcmp(new_name, old_name)) {
+> >> +		kfree(new_name);
+> >> +		return 0;
+> >> +	}
+> >> +
+> >> +	kobj->name = new_name;
+> >> +
+> >>  	/* ewww... some of these buggers have '/' in the name ... */
+> >>  	while ((s = strchr(kobj->name, '/')))
+> >>  		s[0] = '!';
+> > 
+> > So we used the old name in the resource code, and the kfree() here 
+> > corrupted the /proc/iomem output?
+> > 
+> if it is not changed, we still use old_name. and new_name get freed
 
-Only to see if we are on the right track, does that fix the problem? If
-yes, we will fix it properly without the NULL hack deep in the kobject
-call.
+I know - you are talking about your patch.
 
-Thanks,
-Kay
+But i'm talking about the current, unpatched upstream code. It got a 
+string displayed in /proc/iomem that got kfree()d? [and this is why 
+the entries vanished?]
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index d230ff4..1969b20 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -890,8 +890,8 @@ int device_add(struct device *dev)
- 	if (parent)
- 		set_dev_node(dev, dev_to_node(parent));
- 
--	/* first, register with generic layer. */
--	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev_name(dev));
-+	/* we require the name to be set before, and pass NULL */
-+	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
- 	if (error)
- 		goto Error;
- 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index a6dec32..48565d6 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -218,6 +218,9 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
- 	const char *old_name = kobj->name;
- 	char *s;
- 
-+	if (kobj->name && !fmt)
-+		return 0;
-+
- 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
- 	if (!kobj->name)
- 		return -ENOMEM;
+That is badness somewhere _else_ (not in the kobject core i think), 
+and your patch does not solve the real badness, it works around its 
+symptoms AFAICS - like the first patch.
 
-
+	Ingo
