@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbZDRAzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbZDRA6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758658AbZDRAzZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Apr 2009 20:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDRAzL
+	id S1759387AbZDRA6s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Apr 2009 20:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbZDRA6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Apr 2009 20:55:11 -0400
-Received: from exprod6og108.obsmtp.com ([64.18.1.21]:47006 "HELO
-	exprod6og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751400AbZDRAzK convert rfc822-to-8bit (ORCPT
+	Fri, 17 Apr 2009 20:58:40 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11261 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752777AbZDRA6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Apr 2009 20:55:10 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 17 Apr 2009 20:58:39 -0400
+Date: Fri, 17 Apr 2009 18:58:38 -0600
+From: dougthompson@xmission.com
+To: djiang@mvista.com, jharan@Brocade.COM, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/1] edac: ppc mpc85xx fix mc err detect
+Message-ID: <49e925be.mjq9Fl6et5TONkn5%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] mm/vmalloc.c: fix sparse warning
-Date: Fri, 17 Apr 2009 20:55:06 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909015F9239@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] mm/vmalloc.c: fix sparse warning
-Thread-Index: Acm/wFCS3FopZ0JYRhWhf7elac5sow==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 18 Apr 2009 00:55:07.0943 (UTC) FILETIME=[518A8B70:01C9BFC0]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse warning in mm/vmalloc.c.
+From: Dave Jiang <djiang@mvista.com>
 
-  warning: symbol 'tmp' shadows an earlier one
+Error found by Jeff Haran <jharan@Brocade.COM>
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+The error detect register is 0s when no errors are detected.
+The check code is incorrect, so reverse check sense.
+
+Cc: Jeff Haran <jharan@Brocade.COM>
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 
 ---
+commit 1d8cad7d0ecbe9fad3c70b959804e6c6632e236c
+tree ed8e099c0c0b775b1c11b94dfc794491a915e144
+parent b0cbc861a3c05e634520b049b5cc27ad6febb51f
+author Dave Jiang <djiang@mvista.com> Mon, 13 Apr 2009 10:16:53 -0700
+committer Dave Jiang <djiang@mvista.com> Mon, 13 Apr 2009 10:16:53 -0700
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index fab1987..4959a30 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -292,13 +292,13 @@ static void __insert_vmap_area(struct vmap_area
-*va)
- 	struct rb_node *tmp;
+ drivers/edac/mpc85xx_edac.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 4637a4a..7c8c2d7 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -674,7 +674,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ 	int row_index;
  
- 	while (*p) {
--		struct vmap_area *tmp;
-+		struct vmap_area *tmp_va;
+ 	err_detect = in_be32(pdata->mc_vbase + MPC85XX_MC_ERR_DETECT);
+-	if (err_detect)
++	if (!err_detect)
+ 		return;
  
- 		parent = *p;
--		tmp = rb_entry(parent, struct vmap_area, rb_node);
--		if (va->va_start < tmp->va_end)
-+		tmp_va = rb_entry(parent, struct vmap_area, rb_node);
-+		if (va->va_start < tmp_va->va_end)
- 			p = &(*p)->rb_left;
--		else if (va->va_end > tmp->va_start)
-+		else if (va->va_end > tmp_va->va_start)
- 			p = &(*p)->rb_right;
- 		else
- 			BUG(); 
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "Err Detect Register: %#8.8x\n",
