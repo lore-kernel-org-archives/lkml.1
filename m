@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbZDRPER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbZDRPIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758401AbZDRPER (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 11:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZDRPEB
+	id S1757978AbZDRPIY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 11:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZDRPIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 11:04:01 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:55107 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753408AbZDRPEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 11:04:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:subject:message-id:user-agent:mime-version
-         :content-type;
-        b=A4ZWZzImcTTpDcHwjM372XRR/W9qtzTe5RCeX1idLhNGhx+caZYB20gIf9NjgtiB4J
-         iBwfAgSqH6GeUDtrDmU6eM8o4NL3e+KulwiRYkqk+MB4YUVQIEFTj8EwEVzna9HAkw5C
-         B0k1119uvemA6RQX2+uTigLcf8V4e5OdBCm4g=
-Date: Sat, 18 Apr 2009 18:03:34 +0300 (EAT)
-From: Dan Carpenter <error27@gmail.com>
-X-X-Sender: dcarpenter@bicker
-To: smatch-discuss@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: smatch 1.52 released
-Message-ID: <alpine.DEB.2.00.0904181715400.5780@bicker>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 18 Apr 2009 11:08:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57057 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753408AbZDRPIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 11:08:13 -0400
+Date: Sat, 18 Apr 2009 17:07:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: kbuild - introduce support for subdir-ccflags-y
+Message-ID: <20090418150750.GA24059@elte.hu>
+References: <20090418125159.GA23008@uranus.ravnborg.org> <20090418125839.GA3668@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090418125839.GA3668@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Smatch is a static analysis tool.
 
-It's looks for different bugs than sparse.  It's uses sparse as a C 
-parser.  It probably can find more complicated bugs than Coccinelle but it 
-doesn't fix them.
+* Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-The repo is:  http://repo.or.cz/w/smatch.git/
+> On Sat, Apr 18, 2009 at 02:51:59PM +0200, Sam Ravnborg wrote:
+> > The typical use cases are an architecture or a subsystem that
+> > decide to cover all files with -Werror.
+> > Today alpha, mips and sparc uses -Werror in almost all their
+> > Makefile - with subdir-ccflag-y it is now simpler to do so
+> > as only the top-level directories needs to be covered.
+> 
+> Hmm, this won't make sense for ARM.  We have things like #warning 
+> and deprecated functions in machine specific headers, and adding 
+> -Werror to the whole of arch/arm/ will result in these causing 
+> builds to fail.
 
-I am going to be cycling in southern Africa for the next four months.  I 
-will take an eee but will only have irregular internet access.
+This is optional - if you dont want it, you dont set it.
 
-There have been many changes since 1.51:
-  * There are no known crashing bugs.
-  * It uses less memory.
-  * It is faster.
-  * Many of the checks have been improved.
-  * It uses a more sophisticated system to represent possible variable 
-    values internally.
-  * There is a new dereferencing ERR_PTR() check.
-
-One thing that's fairly cool is that Smatch v1.52 understands the 
-following code.
-
-    foo = down_trylock(&lock);
-    if (foo < 0)            <- implies the lock was not aquired.
-            return;
-                            <- lock is held here.
-
-Anyway, do email me if you have any questions or issues.  I will probably 
-have internet access some days later on next week.
-
-regards,
-dan carpenter
-
-http://bikesafari.net
-
-
+	Ingo
