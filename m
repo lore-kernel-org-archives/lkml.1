@@ -1,276 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZDRJIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZDRJOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbZDRJIf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 05:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZDRJI1
+	id S1755994AbZDRJOL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 05:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDRJNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 05:08:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42666 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752112AbZDRJIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 05:08:25 -0400
-Date: Sat, 18 Apr 2009 11:08:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David John <davidjon@xenontk.org>, stable@kernel.org
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [for stable] x86, PAT: Remove page granularity tracking for
-	vm_insert_pfn maps
-Message-ID: <20090418090804.GL7678@elte.hu>
-References: <49E6D8FE.80908@xenontk.org> <86802c440904160018j5c4842d8t92742b6a1b2e4514@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC46587A0784@orsmsx505.amr.corp.intel.com> <49E967E7.5070800@xenontk.org>
+	Sat, 18 Apr 2009 05:13:54 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:34941 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752477AbZDRJNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 05:13:53 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-04.arcor-online.net 6D62D33A863
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: Proposal: make RAID6 code optional
+Date: Sat, 18 Apr 2009 11:16:57 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
+References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru>
+In-Reply-To: <49E98AD2.8060601@msgid.tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E967E7.5070800@xenontk.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart3476140.tpsoIuz6W5";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200904181117.03418.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart3476140.tpsoIuz6W5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* David John <davidjon@xenontk.org> wrote:
+On Samstag 18 April 2009 10:09:54 Michael Tokarev wrote:
+> Prakash Punnoor wrote:
+> > Hi,
+> >
+> > as I am using only RAID5 I wonder why the RAID6 code also needs to be
+> > built. Here is a rough patch of making RAID6 optional (but depending on
+> > raid456) without reording of functions to minimize ifdef scattering.
+> > (I also haven't checked yet who needs ASYNC_MEMCPY and ASYNC_XOR...)
+> > It would probably be nicer to make RAID4/5 and RAID6 independently
+> > selectable of each other. But that requires more refactoring, as I can
+> > see.
+>
+> Hm.  In "old good days" there were 3 independent kernel modules,
+> named raid4, raid5 and raid6.  Later on, they got merged into one
+> since they share quite alot of the code, and has only a few specific
+> parts.  Now you're trying to separate them back somewhat....
+>
+> What's your goal?  What's the problem you're trying to solve?
 
-> On 04/16/2009 11:08 PM, Pallipadi, Venkatesh wrote:
-> > 
-> > Specifically the patch here will help (not sure whether it cleanly applies over 29.1.
-> > 
-> > http://marc.info/?l=linux-kernel&m=123923026401648&w=2
-> > 
-> > Thanks,
-> > Venki
-> >  
-> 
-> Thanks Venkatesh, that patch fixes the problem. This should be 
-> submitted to -stable as I know at least one other person who has 
-> this regression and the latest Fedora kernels have the problem as 
-> well.
+Having duplicate code is not good, of course. But unused code is also not=20
+good. As I said, I only use RAID5, so I don't need RAID6 support. The RAID6=
+=20
+support enlarges kernel (the built-in.o in drivers/md grows from 325kb to=20
+414kb in my case), making boot time and compile time longer - admittedly no=
+t=20
+by a big margin. But then again I could argue: Why not put RAID0,1,10,4,5,6=
+=20
+into one big module? Makes no sense, huh? For me putting 5 and 6 into one=20
+monolithic module makes no sense. A proper architecture would be to have so=
+me=20
+common shared code (in a separate module?), not a monolithic big one.
 
-It's now upstream via:
+Regards,
 
-4b06504: x86, PAT: Remove page granularity tracking for vm_insert_pfn maps
+Prakash
 
-also attached below. It cherry-picks fine on top of v2.6.29.
+--nextPart3476140.tpsoIuz6W5
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
------------>
->From 4b065046273afa01ec8e3de7da407e8d3599251d Mon Sep 17 00:00:00 2001
-From: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-Date: Wed, 8 Apr 2009 15:37:16 -0700
-Subject: [PATCH] x86, PAT: Remove page granularity tracking for vm_insert_pfn maps
+iEYEABECAAYFAknpmo8ACgkQxU2n/+9+t5gAjQCgnarwbnwbhh6vVIjh28N+tm03
+k3MAnR1E4A2hO/bO3IOR/+10X9FLWOIY
+=sFld
+-----END PGP SIGNATURE-----
 
-This change resolves the problem of too many single page entries
-in pat_memtype_list and "freeing invalid memtype" errors with i915,
-reported here:
-
-  http://marc.info/?l=linux-kernel&m=123845244713183&w=2
-
-Remove page level granularity track and untrack of vm_insert_pfn.
-memtype tracking at page granularity does not scale and cleaner
-approach would be for the driver to request a type for a bigger
-IO address range or PCI io memory range for that device, either at
-mmap time or driver init time and just use that type during
-vm_insert_pfn.
-
-This patch just removes the track/untrack of vm_insert_pfn. That
-means we will be in same state as 2.6.28, with respect to these APIs.
-
-Newer APIs for the drivers to request a memtype for a bigger region
-is coming soon.
-
-[ Impact: fix Xorg startup warnings and hangs ]
-
-Reported-by: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Tested-by: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-LKML-Reference: <20090408223716.GC3493@linux-os.sc.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pat.c |   98 ++++++++++------------------------------------------
- 1 files changed, 19 insertions(+), 79 deletions(-)
-
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index cc5e0e2..41c8057 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -669,29 +669,28 @@ static void free_pfn_range(u64 paddr, unsigned long size)
-  *
-  * If the vma has a linear pfn mapping for the entire range, we get the prot
-  * from pte and reserve the entire vma range with single reserve_pfn_range call.
-- * Otherwise, we reserve the entire vma range, my ging through the PTEs page
-- * by page to get physical address and protection.
-  */
- int track_pfn_vma_copy(struct vm_area_struct *vma)
- {
--	int retval = 0;
--	unsigned long i, j;
- 	resource_size_t paddr;
- 	unsigned long prot;
--	unsigned long vma_start = vma->vm_start;
--	unsigned long vma_end = vma->vm_end;
--	unsigned long vma_size = vma_end - vma_start;
-+	unsigned long vma_size = vma->vm_end - vma->vm_start;
- 	pgprot_t pgprot;
- 
- 	if (!pat_enabled)
- 		return 0;
- 
-+	/*
-+	 * For now, only handle remap_pfn_range() vmas where
-+	 * is_linear_pfn_mapping() == TRUE. Handling of
-+	 * vm_insert_pfn() is TBD.
-+	 */
- 	if (is_linear_pfn_mapping(vma)) {
- 		/*
- 		 * reserve the whole chunk covered by vma. We need the
- 		 * starting address and protection from pte.
- 		 */
--		if (follow_phys(vma, vma_start, 0, &prot, &paddr)) {
-+		if (follow_phys(vma, vma->vm_start, 0, &prot, &paddr)) {
- 			WARN_ON_ONCE(1);
- 			return -EINVAL;
- 		}
-@@ -699,28 +698,7 @@ int track_pfn_vma_copy(struct vm_area_struct *vma)
- 		return reserve_pfn_range(paddr, vma_size, &pgprot, 1);
- 	}
- 
--	/* reserve entire vma page by page, using pfn and prot from pte */
--	for (i = 0; i < vma_size; i += PAGE_SIZE) {
--		if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
--			continue;
--
--		pgprot = __pgprot(prot);
--		retval = reserve_pfn_range(paddr, PAGE_SIZE, &pgprot, 1);
--		if (retval)
--			goto cleanup_ret;
--	}
- 	return 0;
--
--cleanup_ret:
--	/* Reserve error: Cleanup partial reservation and return error */
--	for (j = 0; j < i; j += PAGE_SIZE) {
--		if (follow_phys(vma, vma_start + j, 0, &prot, &paddr))
--			continue;
--
--		free_pfn_range(paddr, PAGE_SIZE);
--	}
--
--	return retval;
- }
- 
- /*
-@@ -730,50 +708,28 @@ cleanup_ret:
-  * prot is passed in as a parameter for the new mapping. If the vma has a
-  * linear pfn mapping for the entire range reserve the entire vma range with
-  * single reserve_pfn_range call.
-- * Otherwise, we look t the pfn and size and reserve only the specified range
-- * page by page.
-- *
-- * Note that this function can be called with caller trying to map only a
-- * subrange/page inside the vma.
-  */
- int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t *prot,
- 			unsigned long pfn, unsigned long size)
- {
--	int retval = 0;
--	unsigned long i, j;
--	resource_size_t base_paddr;
- 	resource_size_t paddr;
--	unsigned long vma_start = vma->vm_start;
--	unsigned long vma_end = vma->vm_end;
--	unsigned long vma_size = vma_end - vma_start;
-+	unsigned long vma_size = vma->vm_end - vma->vm_start;
- 
- 	if (!pat_enabled)
- 		return 0;
- 
-+	/*
-+	 * For now, only handle remap_pfn_range() vmas where
-+	 * is_linear_pfn_mapping() == TRUE. Handling of
-+	 * vm_insert_pfn() is TBD.
-+	 */
- 	if (is_linear_pfn_mapping(vma)) {
- 		/* reserve the whole chunk starting from vm_pgoff */
- 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
- 		return reserve_pfn_range(paddr, vma_size, prot, 0);
- 	}
- 
--	/* reserve page by page using pfn and size */
--	base_paddr = (resource_size_t)pfn << PAGE_SHIFT;
--	for (i = 0; i < size; i += PAGE_SIZE) {
--		paddr = base_paddr + i;
--		retval = reserve_pfn_range(paddr, PAGE_SIZE, prot, 0);
--		if (retval)
--			goto cleanup_ret;
--	}
- 	return 0;
--
--cleanup_ret:
--	/* Reserve error: Cleanup partial reservation and return error */
--	for (j = 0; j < i; j += PAGE_SIZE) {
--		paddr = base_paddr + j;
--		free_pfn_range(paddr, PAGE_SIZE);
--	}
--
--	return retval;
- }
- 
- /*
-@@ -784,39 +740,23 @@ cleanup_ret:
- void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
- 			unsigned long size)
- {
--	unsigned long i;
- 	resource_size_t paddr;
--	unsigned long prot;
--	unsigned long vma_start = vma->vm_start;
--	unsigned long vma_end = vma->vm_end;
--	unsigned long vma_size = vma_end - vma_start;
-+	unsigned long vma_size = vma->vm_end - vma->vm_start;
- 
- 	if (!pat_enabled)
- 		return;
- 
-+	/*
-+	 * For now, only handle remap_pfn_range() vmas where
-+	 * is_linear_pfn_mapping() == TRUE. Handling of
-+	 * vm_insert_pfn() is TBD.
-+	 */
- 	if (is_linear_pfn_mapping(vma)) {
- 		/* free the whole chunk starting from vm_pgoff */
- 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
- 		free_pfn_range(paddr, vma_size);
- 		return;
- 	}
--
--	if (size != 0 && size != vma_size) {
--		/* free page by page, using pfn and size */
--		paddr = (resource_size_t)pfn << PAGE_SHIFT;
--		for (i = 0; i < size; i += PAGE_SIZE) {
--			paddr = paddr + i;
--			free_pfn_range(paddr, PAGE_SIZE);
--		}
--	} else {
--		/* free entire vma, page by page, using the pfn from pte */
--		for (i = 0; i < vma_size; i += PAGE_SIZE) {
--			if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
--				continue;
--
--			free_pfn_range(paddr, PAGE_SIZE);
--		}
--	}
- }
- 
- pgprot_t pgprot_writecombine(pgprot_t prot)
+--nextPart3476140.tpsoIuz6W5--
