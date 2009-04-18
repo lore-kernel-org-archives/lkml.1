@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZDROTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbZDRO0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbZDROTH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 10:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZDROSy
+	id S1757071AbZDRO0E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 10:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbZDROZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 10:18:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57900 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754294AbZDROSy (ORCPT
+	Sat, 18 Apr 2009 10:25:51 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34824 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755497AbZDROZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 10:18:54 -0400
-Date: Sat, 18 Apr 2009 10:18:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/5] tracing/events: enable code with EVENT_TRACING not
- EVENT_TRACER
-In-Reply-To: <20090418071307.GC7678@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904181017010.1016@gandalf.stny.rr.com>
-References: <20090417211135.408179566@goodmis.org> <20090417211230.723241189@goodmis.org> <20090418071307.GC7678@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 18 Apr 2009 10:25:50 -0400
+Date: Sat, 18 Apr 2009 15:25:40 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: hooanon05@yahoo.co.jp
+Cc: David Woodhouse <dwmw2@infradead.org>, bfields@citi.umich.edu,
+       hch@infradead.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] Fix i_mutex handling in nfsd readdir.
+Message-ID: <20090418142540.GR26366@ZenIV.linux.org.uk>
+References: <8036.1237474444@jrobl> <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl> <1239960739.3428.33.camel@macbook.infradead.org> <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk> <20090417225306.GO26366@ZenIV.linux.org.uk> <1240013753.21423.86.camel@macbook.infradead.org> <905.1240024314@jrobl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <905.1240024314@jrobl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 18 Apr 2009, Ingo Molnar wrote:
-
+On Sat, Apr 18, 2009 at 12:11:54PM +0900, hooanon05@yahoo.co.jp wrote:
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> David Woodhouse:
+> > This patch fixes it by locking the directory's i_mutex again before
+> > calling the filldir functions. The original deadlocks which commit
+> > 14f7dd63 was designed to avoid are still avoided, because they were due
+> > to fs-internal locking, not i_mutex.
+> 	:::
+> > --- a/fs/namei.c
+> > +++ b/fs/namei.c
+> > @@ -1248,6 +1248,8 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
+> >  	int err;
+> >  	struct qstr this;
+> >  
+> > +	WARN_ON_ONCE(!mutex_is_locked(&base->d_inode->i_mutex));
+> > +
+> >  	err = __lookup_one_len(name, &this, base, len);
 > 
-> > -#ifdef CONFIG_EVENT_TRACER
-> > +#ifdef CONFIG_EVENT_TRACING
-> 
-> Hm, my crystal ball predicts many such incidents in future years to 
-> come.
-> 
-> This:
-> 
->   s/CONFIG_EVENT_TRACER/CONFIG_EVENT_TRACER_PLUGIN
-> 
-> might help. Or not.
+> I'd suggest this checking is done only when CONFIG_DEBUG_KERNEL (or
+> something) is enabled. Because unconditional checking costs high for the
+> well-reviewed lookup code.
 
-The problem is that a plugin is defined (by me anyway) as something in the 
-"available_tracers" file. The event tracer does not qualify as one. But I 
-see the confusion with the current naming.
-
-What about:
-
-	s/CONFIG_EVENT_TRACER/CONFIG_ENABLE_EVENT_TRACING/
-
-It pretty much says what it does.
-
-??
-
--- Steve
-
+Frankly, I'd rather have DEBUG_WARN... conditional on that, rather than
+cluttering code with ifdefs...
