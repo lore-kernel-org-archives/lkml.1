@@ -1,148 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZDRGsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZDRGyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbZDRGsi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 02:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZDRGs3
+	id S1754497AbZDRGyS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 02:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZDRGyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 02:48:29 -0400
-Received: from mail.it-technology.at ([62.99.145.147]:35119 "EHLO
-	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbZDRGs3 (ORCPT
+	Sat, 18 Apr 2009 02:54:05 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:50723 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751547AbZDRGyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 02:48:29 -0400
-Message-ID: <a3ca03e82d9afad72346dc5b4ae251c7.squirrel@webmail.it-technology.at>
-In-Reply-To: <200904171632.26091.florian@openwrt.org>
-References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
-    <200904171632.26091.florian@openwrt.org>
-Date: Sat, 18 Apr 2009 08:48:22 +0200 (CEST)
-Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
-From: "Peter Holik" <peter@holik.at>
-To: "Florian Fainelli" <florian@openwrt.org>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Sat, 18 Apr 2009 02:54:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AoMFAM4P6UlMQW1W/2dsb2JhbACBTswug30G
+Date: Sat, 18 Apr 2009 02:53:31 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 1/4] tracing: move __DO_TRACE out of line
+Message-ID: <20090418065331.GA1942@Krystal>
+References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-2-git-send-email-jeremy@goop.org> <20090417154640.GB8253@elte.hu> <20090417161005.GA16361@Krystal> <20090417162326.GG8253@elte.hu> <49E8D91F.1060005@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <49E8D91F.1060005@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 02:29:33 up 49 days,  2:55,  2 users,  load average: 0.27, 0.51,
+	0.75
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi Peter,
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Ingo Molnar wrote:
+>> I meant to suggest to Jeremy to measure the effect of this  
+>> out-of-lining, in terms of instruction count in the hotpath.
+>>   
 >
-> Nice to see such a driver coming up!
-
-thanks
-
-> Le Friday 17 April 2009 16:10:24 Peter Holik, vous avez écrit :
->> Signed-off-by: Peter Holik <peter@holik.at>
->> ---
->>  drivers/net/usb/Kconfig    |    7 +
->>  drivers/net/usb/Makefile   |    2 +-
->>  drivers/net/usb/intellon.c |  273
->> ++++++++++++++++++++++++++++++++++++++++++++ 3 files changed, 281
->> insertions(+), 1 deletions(-)
->>  create mode 100644 drivers/net/usb/intellon.c
->>
->> diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
->> index 8ee2103..068faa5 100644
->> --- a/drivers/net/usb/Kconfig
->> +++ b/drivers/net/usb/Kconfig
->> @@ -345,4 +345,11 @@ config USB_HSO
->>  	  To compile this driver as a module, choose M here: the
->>  	  module will be called hso.
->>
->> +config USB_NET_INTELLON
->> +	tristate "Intellon PLC based usb adapter"
->> +	depends on USB_USBNET
->> +	help
->> +	  Choose this option if you're using a PLC (Powerline Communications)
->> +	  solution with an Intellon chip, like the "devolo dLan duo".
->> +
+> OK, here's a comparison for trace_sched_switch, comparing inline and out  
+> of line tracing functions, with CONFIG_PREEMPT enabled:
 >
-> Please be more specific, i.e: using a USB-based PLC (...) solution.
-
-> There might be support for PLC PHYs connected to a MII-bus in a near future, even
-> though they will not reside in drivers/net/usb/.
-
-What do you mean with the last sentence?
-
->>  endmenu
->> diff --git a/drivers/net/usb/Makefile b/drivers/net/usb/Makefile
->> index 88a87ee..0fccfe9 100644
->> --- a/drivers/net/usb/Makefile
->> +++ b/drivers/net/usb/Makefile
->> @@ -19,4 +19,4 @@ obj-$(CONFIG_USB_NET_CDC_SUBSET)	+= cdc_subset.o
->>  obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
->>  obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
->>  obj-$(CONFIG_USB_USBNET)	+= usbnet.o
->> -
->> +obj-$(CONFIG_USB_NET_INTELLON)	+= intellon.o
+> The inline __DO_TRACE version of trace_sched_switch inserts 20  
+> instructions, assembling to 114 bytes of code in the hot path:
 >
-> I would not name this intellon for the same reasons as explained below, but
-> rather int51x1.c since this driver will for instance not work with HomePlug
-> AV designs which use different Intellon integrated chips like the 6000 and
-> 6300 series.
 
-work in progress...
+[...]
 
->> diff --git a/drivers/net/usb/intellon.c b/drivers/net/usb/intellon.c
->> new file mode 100644
->> index 0000000..c9fcc38
->> --- /dev/null
->> +++ b/drivers/net/usb/intellon.c
->> @@ -0,0 +1,273 @@
->> +/*
->> + * Copyright (c) 2009 Peter Holik
->> + *
->> + * Intellon PLC (Powerline Communications) usb net driver
 >
-> Intellon INT51x1 PLC ...
-> [snip]
+> __do_trace_sched_switch is a fair bit larger, mostly due to function  
+> preamble frame and reg save/restore, and some unfortunate and  
+> unnecessary register thrashing (why not keep rdi,rsi,rdx where they  
+> are?).  But it isn't that much larger than the inline version: 34  
+> instructions, 118 bytes.  This code will also be shared among all  
+> instances of the tracepoint (not in this case, because sched_switch is  
+> unique, but other tracepoints have multiple users).
 >
->> +
->> +static u8 nibble(unsigned char c)
->> +{
->> +	if (likely(isdigit(c)))
->> +		return c - '0';
->> +	c = toupper(c);
->> +	if (likely(isxdigit(c)))
->> +		return 10 + c - 'A';
->> +	return 0;
->> +}
+
+[...]
+
+> So, conclusion: putting the tracepoint code out of line significantly  
+> reduces the hot-path code size at each tracepoint (114 bytes down to 31  
+> in this case, 27% the size).  This should reduce the overhead of having  
+> tracing configured but not enabled.  The saving won't be as large for  
+> tracepoints with fewer arguments or without CONFIG_PREEMPT, but I chose  
+> this example because it is realistic and undeniably a hot path.  And  
+> when doing pvops tracing, 80 new events with hundreds of callsites  
+> around the kernel, this is really going to add up.
 >
-> Please prefix this with intellon_ (or int51x1_) for instance to avoid any
-> possible namespace clash.
+> The tradeoff is that the actual tracing function is a little larger, but  
+> not dramatically so.  I would expect some performance hit when the  
+> tracepoint is actually enabled.  This may be mitigated increased icache  
+> hits when a tracepoint has multiple sites.
 >
->> +
->> +static inline int get_ethernet_addr(struct usbnet *dev)
->> +{
->> +	int             tmp, i;
->> +	unsigned char   buf [13];
->> +
->> +	tmp = usb_string(dev->udev, 3, buf, sizeof buf);
->> +	if (tmp != 12) {
->> +		devdbg(dev, "bad MAC string fetch, %d\n", tmp);
->> +		if (tmp >= 0)
->> +			tmp = -EINVAL;
->> +		return tmp;
->> +	}
->> +	for (i = tmp = 0; i < 6; i++, tmp += 2)
->> +		dev->net->dev_addr [i] =
->> +			(nibble(buf [tmp]) << 4) + nibble(buf [tmp + 1]);
->> +	return 0;
->> +}
+> (BTW, I realized that we don't need to pass &__tracepoint_FOO to  
+> __do_trace_FOO(), since its always going to be the same; this simplifies  
+> the calling convention at the callsite, and it also makes void  
+> tracepoints work again.)
 >
-> Same here.
+>    J
 
-Disagree, because i've taken "nibble" and "get_ethernet_addr" from cdc_ether.c
-to have the same code (the version of Jan was different).
+Yep, keeping "void" working is a niceness I would like to keep. So about
+this supposed "near-zero function call impact", I decided to take LTTng
+for a little test. I compare tracing the "core set" of Google
+tracepoints with the tracepoints inline and out-of line. Here is the
+result :
 
-> Please fix the intellon prefixing with something more specific to the driver
-> like int51x1_ and I am ok with that driver.
+tbench test
 
-ok
+kernel : 2.6.30-rc1
 
-cu Peter
+running on a 8-cores x86_64, localhost server
 
+tracepoints inactive :
+
+2051.20 MB/sec
+
+"google" tracepoints activated, flight recorder mode (overwrite) tracing
+
+inline tracepoints
+
+1704.70 MB/sec (16.9 % slower than baseline)
+
+out-of-line tracepoints
+
+1635.14 MB/sec (20.3 % slower than baseline)
+
+So the overall tracer impact is 20 % bigger just by making the
+tracepoints out-of-line. This is going to add up quickly if we add as
+much function calls as we currently find in the event tracer fast path,
+but LTTng, OTOH, has been designed to minimize the number of such
+function calls, and you see a good example of why it's been such an
+important design goal above.
+
+About cache-line usage, I agree that in some cases gcc does not seem
+intelligent enough to move those code paths away from the fast path.
+What we would really whant there is -freorder-blocks-and-partition, but
+I doubt we want this for the whole kernel, as it makes some jumps
+slightly larger. One thing we should maybe look into is to add some kind
+of "very unlikely" builtin expect to gcc that would teach it to really
+put the branch in a cache-cold location, no matter what.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
