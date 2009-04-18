@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZDRUXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbZDRUXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbZDRUXH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 16:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZDRUWy
+	id S1759455AbZDRUXs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 16:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZDRUXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 16:22:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58168 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbZDRUWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 16:22:53 -0400
-Message-ID: <49EA3617.9020602@kernel.org>
-Date: Sat, 18 Apr 2009 13:20:39 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] driver: dont update dev_name if it is not changed
-References: <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <20090416235452.GE21405@elte.hu> <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain> <20090417131633.GA30578@elte.hu> <49E8FD0B.2050308@zytor.com> <49E96731.1000501@kernel.org> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> <49EA3176.4010901@kernel.org> <20090418201114.GA27903@elte.hu>
-In-Reply-To: <20090418201114.GA27903@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Apr 2009 16:23:38 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:39853 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754366AbZDRUXi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 16:23:38 -0400
+Subject: Re: [git pull] Fixes to 2.6.30rc2
+From: Eric Anholt <eric@anholt.net>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090418.015905.92829818.davem@davemloft.net>
+References: <1240001399.11172.121.camel@gaiman.anholt.net>
+	 <20090418.015905.92829818.davem@davemloft.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bv25eaKn6mHuEgFkOsDj"
+Date: Sat, 18 Apr 2009 13:23:36 -0700
+Message-Id: <1240086216.11172.2954.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> notice one system /proc/iomem some entries missed the name for pci_devices
->>
->> it turns that dev->dev.kobj name is changed after device_add.
->>
->> [Impact: fix corrupted names in /proc/iomem ]
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> ---
->>  lib/kobject.c |   13 +++++++++++--
->>  1 file changed, 11 insertions(+), 2 deletions(-)
->>
->> Index: linux-2.6/lib/kobject.c
->> ===================================================================
->> --- linux-2.6.orig/lib/kobject.c
->> +++ linux-2.6/lib/kobject.c
->> @@ -216,12 +216,21 @@ int kobject_set_name_vargs(struct kobjec
->>  				  va_list vargs)
->>  {
->>  	const char *old_name = kobj->name;
->> +	char *new_name;
->>  	char *s;
->>  
->> -	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
->> -	if (!kobj->name)
->> +	new_name = kvasprintf(GFP_KERNEL, fmt, vargs);
->> +	if (!new_name)
->>  		return -ENOMEM;
->>  
->> +	/* different ? */
->> +	if (!strcmp(new_name, old_name)) {
->> +		kfree(new_name);
->> +		return 0;
->> +	}
->> +
->> +	kobj->name = new_name;
->> +
->>  	/* ewww... some of these buggers have '/' in the name ... */
->>  	while ((s = strchr(kobj->name, '/')))
->>  		s[0] = '!';
-> 
-> So we used the old name in the resource code, and the kfree() here 
-> corrupted the /proc/iomem output?
-> 
-if it is not changed, we still use old_name. and new_name get freed
 
-YH
+--=-bv25eaKn6mHuEgFkOsDj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Sat, 2009-04-18 at 01:59 -0700, David Miller wrote:
+> From: Eric Anholt <eric@anholt.net>
+> Date: Fri, 17 Apr 2009 13:49:59 -0700
+>=20
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-in=
+tel-next
+>=20
+> Eric, any plans to ever push your work through David Airlie's DRM
+> tree?  I've been watching this for a few weeks and I'm mystified why
+> the Intel DRM drier stuff is so special that is always goes seperate.
+>=20
+> It's seems foolish for David to manage the infrastructure and core DRM
+> changes, as well as those for radeon and the other drivers other than
+> Intel, which could potentially cause merge issues and conflicts with
+> your driver changes.
+>=20
+> Why not do Intel DRM driver development via his tree?  I just don't
+> get it. :-/
+
+Inside of the merge window, I am going through Dave again because he
+requested it (though delays meant that I didn't get a major cleanup in
+this merge window).  However, Dave is also quite busy, and not stealing
+his time every few days to pull my tree for just forwarding bugfixes on
+seems to be a win.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-bv25eaKn6mHuEgFkOsDj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknqNsgACgkQHUdvYGzw6ve7YACfVzKzpS/OoyP0m3fejzkRtEIM
+9voAnRH43m/AUWer5cgA98m0gzfVO/wW
+=7E+Z
+-----END PGP SIGNATURE-----
+
+--=-bv25eaKn6mHuEgFkOsDj--
