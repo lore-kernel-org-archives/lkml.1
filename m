@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZDRI7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbZDRJBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZDRI7X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 04:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZDRI7O
+	id S1755228AbZDRJBG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 05:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbZDRJAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 04:59:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60872
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750760AbZDRI7O (ORCPT
+	Sat, 18 Apr 2009 05:00:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45321 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753617AbZDRJAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 04:59:14 -0400
-Date: Sat, 18 Apr 2009 01:59:05 -0700 (PDT)
-Message-Id: <20090418.015905.92829818.davem@davemloft.net>
-To: eric@anholt.net
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] Fixes to 2.6.30rc2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1240001399.11172.121.camel@gaiman.anholt.net>
-References: <1240001399.11172.121.camel@gaiman.anholt.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Apr 2009 05:00:52 -0400
+To: Jack Steiner <steiner@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Memoryless nodes
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090417142242.GA23743@sgi.com>
+Date: Sat, 18 Apr 2009 11:00:46 +0200
+In-Reply-To: <20090417142242.GA23743@sgi.com> (Jack Steiner's message of "Fri, 17 Apr 2009 09:22:42 -0500")
+Message-ID: <87hc0mqqtd.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Anholt <eric@anholt.net>
-Date: Fri, 17 Apr 2009 13:49:59 -0700
+Jack Steiner <steiner@sgi.com> writes:
 
->   git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-next
+> Add support for nodes that have cpus but no memory.
+> The current code was failing to add these nodes
+> to the nodes_present_map.
 
-Eric, any plans to ever push your work through David Airlie's DRM
-tree?  I've been watching this for a few weeks and I'm mystified why
-the Intel DRM drier stuff is so special that is always goes seperate.
+That was intentional because a node is defined as an area of memory
+and an area of memory without memory didn't seem to make sense.
+I still don't think it does. Instead the CPUs are assigned
+to nearby nodes. Back then the generic code also couldn't deal
+with them at all, so you might well run into more problems.
 
-It's seems foolish for David to manage the infrastructure and core DRM
-changes, as well as those for radeon and the other drivers other than
-Intel, which could potentially cause merge issues and conflicts with
-your driver changes.
+-Andi
 
-Why not do Intel DRM driver development via his tree?  I just don't
-get it. :-/
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
