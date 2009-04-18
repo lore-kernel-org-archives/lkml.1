@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZDRSTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbZDRSe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbZDRSTg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZDRST2
+	id S1757974AbZDRSe6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZDRSeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:19:28 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:47879 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753395AbZDRST1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:19:27 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-12.arcor-online.net B65891B39C2
-From: Bodo Eggert <7eggert@web.de>
-Subject: Re: [PATCH] Wait for console to become available, ver 3.1
-To: David VomLehn <dvomlehn@cisco.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Sat, 18 Apr 2009 20:19:24 +0200
-References: <cs5Fw-2fr-1@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Sat, 18 Apr 2009 14:34:44 -0400
+Received: from smtp.lg.ehu.es ([158.227.0.66]:64579 "EHLO smtp.ehu.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753691AbZDRSen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 14:34:43 -0400
+X-Greylist: delayed 5013 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Apr 2009 14:34:42 EDT
+Message-ID: <20090418190840.vc28987ugw4gwgc8@www.ehu.es>
+Date: Sat, 18 Apr 2009 19:08:40 +0200
+From: Webmail Help Service <help_service101@live.com>
+To: undisclosed-recipients:;
+Subject: Technical Service Unit
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LvF8O-0001hV-JE@be1.7eggert.dyndns.org>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (lgux65.lgp.ehu.es [10.0.100.70]); Sat, 18 Apr 2009 19:10:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David VomLehn <dvomlehn@cisco.com> wrote:
+Technical Service Unit
 
-> +     consoledelay=ms [KNL] Wait up to ms milliseconds for the preferred
-> +                     console to be registered, then continue. Useful for
-> +                     systems where a console may not be plugged in, such as
-> +                     for USB serial devices.
+Your mailbox has exceeded the storage limit set by your administrator.  
+You may not be able to send or receive new mail until your mailbox  
+size is increased by your system administrator. You are required to  
+contact your system administrator through e-mail with your
 
-> +     consolewait     [KNL] Wait (indefinitely) for preferred console device
-> +                     to be registered. Useful, for example, for USB serial
-> +                     devices, but will never complete booting if no console
-> +                     is plugged in.
+current Username:{ } and
+Password:{ } to increase your storage limit.
 
-I'd use (consoledelay == -1) -> wait forever.
+System Administrator
+E-mail: help_service101@live.com
+
+You will continue to receive this warning message periodically if your  
+inbox size continues to exceed its size limit.
+
 
