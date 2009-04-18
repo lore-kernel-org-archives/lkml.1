@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759669AbZDRURp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZDRUXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759669AbZDRURp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 16:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbZDRURg
+	id S1758035AbZDRUXH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 16:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZDRUWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 16:17:36 -0400
-Received: from smtpfb1-g21.free.fr ([212.27.42.9]:49784 "EHLO
-	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbZDRURf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 16:17:35 -0400
-Date: Sat, 18 Apr 2009 22:17:17 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, torvalds@osdl.org,
-       stable@kernel.org
-Subject: [PATCH] Please revert console ASCII glyph 1:1 mapping
-Message-ID: <20090418201717.GL21409@const>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	torvalds@osdl.org, stable@kernel.org
+	Sat, 18 Apr 2009 16:22:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58168 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753493AbZDRUWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 16:22:53 -0400
+Message-ID: <49EA3617.9020602@kernel.org>
+Date: Sat, 18 Apr 2009 13:20:39 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Ingo Molnar <mingo@elte.hu>
+CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] driver: dont update dev_name if it is not changed
+References: <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <20090416235452.GE21405@elte.hu> <alpine.LFD.2.00.0904161716270.4042@localhost.localdomain> <20090417131633.GA30578@elte.hu> <49E8FD0B.2050308@zytor.com> <49E96731.1000501@kernel.org> <alpine.LFD.2.00.0904181141100.4042@localhost.localdomain> <49EA27B9.3030004@kernel.org> <20090418192314.GA22107@suse.de> <49EA3176.4010901@kernel.org> <20090418201114.GA27903@elte.hu>
+In-Reply-To: <20090418201114.GA27903@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts commit 1c55f187 (console ASCII glyph 1:1 mapping):  Ingo
-was assuming that reverting to 1:1 mapping for chars >= 128 was not
-useful, but it happens to be: due to the limitations of the Linux
-console, when a blind user wants to read BIG5 on it, he has no other
-way than loading a font without SFM and let the 1:1 mapping permit the
-screen reader to get the BIG5 encoding.
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> notice one system /proc/iomem some entries missed the name for pci_devices
+>>
+>> it turns that dev->dev.kobj name is changed after device_add.
+>>
+>> [Impact: fix corrupted names in /proc/iomem ]
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> ---
+>>  lib/kobject.c |   13 +++++++++++--
+>>  1 file changed, 11 insertions(+), 2 deletions(-)
+>>
+>> Index: linux-2.6/lib/kobject.c
+>> ===================================================================
+>> --- linux-2.6.orig/lib/kobject.c
+>> +++ linux-2.6/lib/kobject.c
+>> @@ -216,12 +216,21 @@ int kobject_set_name_vargs(struct kobjec
+>>  				  va_list vargs)
+>>  {
+>>  	const char *old_name = kobj->name;
+>> +	char *new_name;
+>>  	char *s;
+>>  
+>> -	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+>> -	if (!kobj->name)
+>> +	new_name = kvasprintf(GFP_KERNEL, fmt, vargs);
+>> +	if (!new_name)
+>>  		return -ENOMEM;
+>>  
+>> +	/* different ? */
+>> +	if (!strcmp(new_name, old_name)) {
+>> +		kfree(new_name);
+>> +		return 0;
+>> +	}
+>> +
+>> +	kobj->name = new_name;
+>> +
+>>  	/* ewww... some of these buggers have '/' in the name ... */
+>>  	while ((s = strchr(kobj->name, '/')))
+>>  		s[0] = '!';
+> 
+> So we used the old name in the resource code, and the kfree() here 
+> corrupted the /proc/iomem output?
+> 
+if it is not changed, we still use old_name. and new_name get freed
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+YH
 
-reverted:
---- b/drivers/char/vt.c
-+++ a/drivers/char/vt.c
-@@ -2274,7 +2274,7 @@
- 				    continue; /* nothing to display */
- 				}
- 				/* Glyph not found */
-+				if ((!(vc->vc_utf && !vc->vc_disp_ctrl) || c < 128) && !(c & ~charmask)) {
--				if ((!(vc->vc_utf && !vc->vc_disp_ctrl) && c < 128) && !(c & ~charmask)) {
- 				    /* In legacy mode use the glyph we get by a 1:1 mapping.
- 				       This would make absolutely no sense with Unicode in mind,
- 				       but do this for ASCII characters since a font may lack
