@@ -1,192 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZDRNEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZDRNTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbZDRNEb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 09:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbZDRNEV
+	id S1756920AbZDRNTp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 09:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZDRNTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 09:04:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:39649 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754599AbZDRNET convert rfc822-to-8bit (ORCPT
+	Sat, 18 Apr 2009 09:19:37 -0400
+Received: from mail-gx0-f208.google.com ([209.85.217.208]:43730 "EHLO
+	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752714AbZDRNTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 09:04:19 -0400
+	Sat, 18 Apr 2009 09:19:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=elH4D/QvvFvvMLEQOqLuGqDS3i0pV6QPhWKUXXzZqJDQVYCz/9Fk9CN0Z4NWJ7KU2y
-         US3v/W/rjUehsVcRr5Pok0c7RJwU8pc60h7ODIeWLI/u4kW9gMH54JcCBwVQubTwFsdA
-         /LZeVX9VSvcu7/pDRSS9qGEngD4Z+DtcQ4q6A=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ji/5hhTU+ENONwI856A+kR/J272Gg4vx/5LFgriZTfEI2cKE2VaN3wcAPbTRHjmyUA
+         N2ZHPA/9peAhaMUIYMEKw+/MRpDXzp6maddmKwvrv0pxn4OtnyzXSjfAS/E4zpzVrcz1
+         jAPfWpySd53DjA3qCfvC6I6p/t6US5u6f1CNI=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0904102019220.21577@localhost.localdomain>
-References: <8db1092f0904070037q426fd8dcx4aa48c70e40b5d6c@mail.gmail.com>
-	 <20090409212028.7b2aa88c.akpm@linux-foundation.org>
-	 <8db1092f0904100340g7b7eb310y805e8680a32e3ac8@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101329170.21577@localhost.localdomain>
-	 <8db1092f0904100747w297a0daas9ebd05486d06e706@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101819070.21577@localhost.localdomain>
-	 <8db1092f0904100952x64048907gea6bbaf25488de26@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101854250.21577@localhost.localdomain>
-	 <8db1092f0904101057x56000b73w9de3227b2a3a9abb@mail.gmail.com>
-	 <alpine.LFD.2.00.0904102019220.21577@localhost.localdomain>
-Date: Sat, 18 Apr 2009 21:04:18 +0800
-Message-ID: <a8e1da0904180604k8108bc5hf95705c42d80fcf9@mail.gmail.com>
-Subject: Re: [2.6.29-git12] BUG: scheduling while atomic: swapper/0/0x10000100
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org, marcel@holtmann.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090417141358.GD29086@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	 <1236823015-4183-2-git-send-email-vgoyal@redhat.com>
+	 <20090312001146.74591b9d.akpm@linux-foundation.org>
+	 <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com>
+	 <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux>
+	 <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux>
+	 <20090417141358.GD29086@redhat.com>
+Date: Sat, 18 Apr 2009 18:49:33 +0530
+X-Google-Sender-Auth: fccb25b677be0f5a
+Message-ID: <661de9470904180619k34e7998ch755a2ad3bed9ce5e@mail.gmail.com>
+Subject: Re: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       menage@google.com, peterz@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 2:25 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Maciej,
->
-> On Fri, 10 Apr 2009, Maciej Rutecki wrote:
->> 2009/4/10 Thomas Gleixner <tglx@linutronix.de>:
+On Fri, Apr 17, 2009 at 7:43 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
+>> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+>> > > I think it would be possible to implement both proportional and limiting
+>> > > rules at the same level (e.g., the IO scheduler), but we need also to
+>> > > address the memory consumption problem (I still need to review your
+>> > > patchset in details and I'm going to test it soon :), so I don't know if
+>> > > you already addressed this issue).
+>> > >
+>> >
+>> > Can you please elaborate a bit on this? Are you concerned about that data
+>> > structures created to solve the problem consume a lot of memory?
 >>
->> [...]
->> > Please upload trace.bz2 file to some place.
+>> Sorry I was not very clear here. With memory consumption I mean wasting
+>> the memory with hard/slow reclaimable dirty pages or pending IO
+>> requests.
 >>
->> http://unixy.pl/maciek/download/kernel/2.6.30-rc1-git3/laptop/trace-2.6.30-rc1-git3.bz2
+>> If there's only a global limit on dirty pages, any cgroup can exhaust
+>> that limit and cause other cgroups/processes to block when they try to
+>> write to disk.
+>>
+>> But, ok, the IO controller is not probably the best place to implement
+>> such functionality. I should rework on the per cgroup dirty_ratio:
+>>
+>> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+>>
+>> Last time we focused too much on the best interfaces to define dirty
+>> pages limit, and I never re-posted an updated version of this patchset.
+>> Now I think we can simply provide the same dirty_ratio/dirty_bytes
+>> interface that we provide globally, but per cgroup.
+>>
+>> >
+>> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
+>> > > in the cgroup that exceeds its limit, how do we avoid the waste of
+>> > > memory due to the succeeding IO requests and the increasingly dirty
+>> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
+>> > > but I think we talked about this problem in a previous email... sorry I
+>> > > don't find the discussion in my mail archives.
+>> > >
+>> > > IMHO a nice approach would be to measure IO consumption at the IO
+>> > > scheduler level, and control IO applying proportional weights / absolute
+>> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
+>> > > time block the tasks from dirtying memory that will generate additional
+>> > > IO requests.
+>> > >
+>> > > Anyway, there's no need to provide this with a single IO controller, we
+>> > > could split the problem in two parts: 1) provide a proportional /
+>> > > absolute IO controller in the IO schedulers and 2) allow to set, for
+>> > > example, a maximum limit of dirty pages for each cgroup.
+>> > >
+>> >
+>> > I think setting a maximum limit on dirty pages is an interesting thought.
+>> > It sounds like as if memory controller can handle it?
+>>
+>> Exactly, the same above.
 >
-> Ok. That gives us the necessary information:
+> Thinking more about it. Memory controller can probably enforce the higher
+> limit but it would not easily translate into a fixed upper async write
+> rate. Till the process hits the page cache limit or is slowed down by
+> dirty page writeout, it can get a very high async write BW.
 >
->  <idle>-0       1d... 76597263us : do_softirq <-irq_exit
->  <idle>-0       1d... 76597263us : __do_softirq <-do_softirq
->  <idle>-0       1..s. 76597264us : tasklet_action <-__do_softirq
->  <idle>-0       1..s. 76597265us : hci_rx_task <-tasklet_action
->  <idle>-0       1..s. 76597266us : _read_lock <-hci_rx_task
->  <idle>-0       1..s. 76597267us : skb_dequeue <-hci_rx_task
->  <idle>-0       1..s. 76597268us : _spin_lock_irqsave <-skb_dequeue
->  <idle>-0       1d.s. 76597269us : _spin_unlock_irqrestore <-skb_dequeue
->  <idle>-0       1..s. 76597270us : hci_send_to_sock <-hci_rx_task
->  <idle>-0       1..s. 76597270us+: _read_lock <-hci_send_to_sock
->  <idle>-0       1..s. 76597272us : skb_clone <-hci_send_to_sock
->  <idle>-0       1..s. 76597273us : kmem_cache_alloc <-skb_clone
->  <idle>-0       1..s. 76597274us : __skb_clone <-skb_clone
->  <idle>-0       1..s. 76597275us : __copy_skb_header <-__skb_clone
->  <idle>-0       1..s. 76597276us : skb_push <-hci_send_to_sock
->  <idle>-0       1..s. 76597277us : sock_queue_rcv_skb <-hci_send_to_sock
->  <idle>-0       1..s. 76597278us : sk_filter <-sock_queue_rcv_skb
->  <idle>-0       1..s. 76597279us : security_sock_rcv_skb <-sk_filter
->  <idle>-0       1..s. 76597280us : cap_socket_sock_rcv_skb <-security_sock_rcv_skb
->  <idle>-0       1..s. 76597280us : local_bh_disable <-sk_filter
->  <idle>-0       1..s. 76597281us : local_bh_enable <-sk_filter
->  <idle>-0       1..s. 76597282us : skb_queue_tail <-sock_queue_rcv_skb
->  <idle>-0       1..s. 76597283us : _spin_lock_irqsave <-skb_queue_tail
->  <idle>-0       1d.s. 76597284us : _spin_unlock_irqrestore <-skb_queue_tail
->  <idle>-0       1..s. 76597285us : sock_def_readable <-sock_queue_rcv_skb
->  <idle>-0       1..s. 76597286us : _read_lock <-sock_def_readable
->  <idle>-0       1..s. 76597286us : __wake_up_sync_key <-sock_def_readable
->  <idle>-0       1..s. 76597287us : _spin_lock_irqsave <-__wake_up_sync_key
->  <idle>-0       1d.s. 76597288us : __wake_up_common <-__wake_up_sync_key
->  <idle>-0       1d.s. 76597289us : pollwake <-__wake_up_common
->  <idle>-0       1d.s. 76597290us : default_wake_function <-pollwake
->  <idle>-0       1d.s. 76597290us : try_to_wake_up <-default_wake_function
->  <idle>-0       1d.s. 76597292us : update_shares <-try_to_wake_up
->  <idle>-0       1d.s. 76597293us : walk_tg_tree <-update_shares
->  <idle>-0       1d.s. 76597294us : tg_nop <-walk_tg_tree
->  <idle>-0       1d.s. 76597294us : tg_nop <-walk_tg_tree
->  <idle>-0       1d.s. 76597295us : tg_shares_up <-walk_tg_tree
->  <idle>-0       1d.s. 76597297us : tg_nop <-walk_tg_tree
->  <idle>-0       1d.s. 76597297us : tg_shares_up <-walk_tg_tree
->  <idle>-0       1d.s. 76597298us : tg_nop <-walk_tg_tree
->  <idle>-0       1d.s. 76597299us : tg_shares_up <-walk_tg_tree
->  <idle>-0       1d.s. 76597300us : tg_nop <-walk_tg_tree
->  <idle>-0       1d.s. 76597301us : tg_shares_up <-walk_tg_tree
->  <idle>-0       1d.s. 76597302us : tg_nop <-walk_tg_tree
->  <idle>-0       1d.s. 76597303us : tg_shares_up <-walk_tg_tree
->  <idle>-0       1d.s. 76597304us : tg_shares_up <-walk_tg_tree
->  <idle>-0       1d.s. 76597305us+: task_rq_lock <-try_to_wake_up
->  <idle>-0       1d.s. 76597314us : _spin_lock <-task_rq_lock
->  <idle>-0       1d.s. 76597315us : select_task_rq_fair <-try_to_wake_up
->  <idle>-0       1d.s. 76597316us : activate_task <-try_to_wake_up
->  <idle>-0       1d.s. 76597317us : enqueue_task_fair <-activate_task
->  <idle>-0       1d.s. 76597317us : enqueue_entity <-enqueue_task_fair
->  <idle>-0       1d.s. 76597318us : update_curr <-enqueue_entity
->  <idle>-0       1d.s. 76597319us : place_entity <-enqueue_entity
->  <idle>-0       1d.s. 76597320us : enqueue_entity <-enqueue_task_fair
->  <idle>-0       1d.s. 76597321us : update_curr <-enqueue_entity
->  <idle>-0       1d.s. 76597321us : place_entity <-enqueue_entity
->  <idle>-0       1d.s. 76597322us : check_preempt_curr_idle <-try_to_wake_up
->  <idle>-0       1d.s. 76597323us : resched_task <-check_preempt_curr_idle
->  <idle>-0       1dNs. 76597324us : _spin_unlock_irqrestore <-try_to_wake_up
->  <idle>-0       1dNs. 76597325us+: _spin_unlock_irqrestore <-__wake_up_sync_key
->  <idle>-0       1.Ns. 76597326us : hci_event_packet <-hci_rx_task
->  <idle>-0       1.Ns. 76597327us : skb_pull <-hci_event_packet
->  <idle>-0       1.Ns. 76597328us : _spin_lock <-hci_event_packet
->  <idle>-0       1.Ns. 76597330us : del_timer <-hci_event_packet
->  <idle>-0       1.Ns. 76597331us : hci_conn_add_sysfs <-hci_event_packet
->  <idle>-0       1.Ns. 76597332us+: dev_set_name <-hci_conn_add_sysfs
+> So memory controller page cache limit will help but it would not direclty
+> translate into what max bw limit patches are doing.
+>
+> Even if we do max bw control at IO scheduler level, async writes are
+> problematic again. IO controller will not be able to throttle the process
+> until it sees actuall write request. In big memory systems, writeout might
+> not happen for some time and till then it will see a high throughput.
+>
+> So doing async write throttling at higher layer and not at IO scheduler
+> layer gives us the opprotunity to produce more accurate results.
+>
+> For sync requests, I think IO scheduler max bw control should work fine.
+>
+> BTW, andrea, what is the use case of your patches? Andrew had mentioned
+> that some people are already using it. I am curious to know will a
+> proportional BW controller will solve the issues/requirements of these
+> people or they have specific requirement of traffic shaping and max bw
+> controller only.
+>
+> [..]
+>> > > > Can you please give little more details here regarding how QoS requirements
+>> > > > are not met with proportional weight?
+>> > >
+>> > > With proportional weights the whole bandwidth is allocated if no one
+>> > > else is using it. When IO is submitted other tasks with a higher weight
+>> > > can be forced to sleep until the IO generated by the low weight tasks is
+>> > > not completely dispatched. Or any extent of the priority inversion
+>> > > problems.
+>> >
+>> > Hmm..., I am not very sure here. When admin is allocating the weights, he
+>> > has the whole picture. He knows how many groups are conteding for the disk
+>> > and what could be the worst case scenario. So if I have got two groups
+>> > with A and B with weight 1 and 2 and both are contending, then as an
+>> > admin one would expect to get 33% of BW for group A in worst case (if
+>> > group B is continuously backlogged). If B is not contending than A can get
+>> > 100% of BW. So while configuring the system, will one not plan for worst
+>> > case (33% for A, and 66 % for B)?
+>>
+>> OK, I'm quite convinced.. :)
+>>
+>> To a large degree, if we want to provide a BW reservation strategy we
+>> must provide an interface that allows cgroups to ask for time slices
+>> such as max/min 5 IO requests every 50ms or something like that.
+>> Probably the same functionality can be achieved translating time slices
+>> from weights, percentages or absolute BW limits.
+>
+> Ok, I would like to split it in two parts.
+>
+> I think providng minimum gurantee in absolute terms like 5 IO request
+> every 50ms will be very hard because IO scheduler has no control over
+> how many competitors are there. An easier thing will be to have minimum
+> gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
+> shall have to create right cgroup hierarchy and assign weights properly and
+> then admin can calculate what % of disk slice a particular group will get
+> as minimum gurantee. (This is more complicated than this as there are
+> time slices which are not accounted to any groups. During queue switch
+> cfq starts the time slice counting only after first request has completed
+> to offset the impact of seeking and i guess also NCQ).
+>
+> I think it should be possible to give max bandwidth gurantees in absolute
+> terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
+> scheduler has to do is to not allow dispatch from a particular queue if
+> it has crossed its limit and then either let the disk idle or move onto
+> next eligible queue.
+>
+> The only issue here will be async writes. max bw gurantee for async writes
+> at IO scheduler level might not mean much to application because of page
+> cache.
 
-Marcel, this is caused by hci conn id changes, originally the conn id
-is like "acl:xx:xx:xx:xx:xx:xx", then it was changed to
-"hdev_name:connection_handle", yes use the handle looks better, but it
-need to be done in the event handling function.
+I see so much of the memory controller coming up. Since we've been
+discussing so many of these design points on mail, I wonder if it
+makes sense to summarize them somewhere (a wiki?). Would anyone like
+to take a shot at it?
 
-What do you think about change back to original way plus hdev_name?
-like:  "hdev_name:xx:xx:xx:xx:xx:xx"
-
-
-diff -uprN a/net/bluetooth/hci_conn.c b/net/bluetooth/hci_conn.c
---- a/net/bluetooth/hci_conn.c	2009-04-18 19:45:21.000000000 +0800
-+++ b/net/bluetooth/hci_conn.c	2009-04-18 19:45:15.000000000 +0800
-@@ -247,6 +247,8 @@ struct hci_conn *hci_conn_add(struct hci
- 	if (hdev->notify)
- 		hdev->notify(hdev, HCI_NOTIFY_CONN_ADD);
-
-+	hci_conn_add_sysfs(conn);
-+
- 	tasklet_enable(&hdev->tx_task);
-
- 	return conn;
-diff -uprN a/net/bluetooth/hci_event.c b/net/bluetooth/hci_event.c
---- a/net/bluetooth/hci_event.c	2009-04-18 19:45:28.000000000 +0800
-+++ b/net/bluetooth/hci_event.c	2009-04-18 19:45:15.000000000 +0800
-@@ -878,8 +878,6 @@ static inline void hci_conn_complete_evt
- 		} else
- 			conn->state = BT_CONNECTED;
-
--		hci_conn_add_sysfs(conn);
--
- 		if (test_bit(HCI_AUTH, &hdev->flags))
- 			conn->link_mode |= HCI_LM_AUTH;
-
-@@ -1656,8 +1654,6 @@ static inline void hci_sync_conn_complet
- 	if (!ev->status) {
- 		conn->handle = __le16_to_cpu(ev->handle);
- 		conn->state  = BT_CONNECTED;
--
--		hci_conn_add_sysfs(conn);
- 	} else
- 		conn->state = BT_CLOSED;
-
-diff -uprN a/net/bluetooth/hci_sysfs.c b/net/bluetooth/hci_sysfs.c
---- a/net/bluetooth/hci_sysfs.c	2009-04-18 19:45:35.000000000 +0800
-+++ b/net/bluetooth/hci_sysfs.c	2009-04-18 19:45:15.000000000 +0800
-@@ -101,6 +101,7 @@ static void add_conn(struct work_struct
- void hci_conn_add_sysfs(struct hci_conn *conn)
- {
- 	struct hci_dev *hdev = conn->hdev;
-+	bdaddr_t *ba = &conn->dst;
-
- 	BT_DBG("conn %p", conn);
-
-@@ -108,7 +109,11 @@ void hci_conn_add_sysfs(struct hci_conn
- 	conn->dev.class = bt_class;
- 	conn->dev.parent = &hdev->dev;
-
--	dev_set_name(&conn->dev, "%s:%d", hdev->name, conn->handle);
-+	dev_set_name(&conn->dev,
-+			"%s:%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-+			hdev->name,
-+			ba->b[5], ba->b[4], ba->b[3],
-+			ba->b[2], ba->b[1], ba->b[0]);
-
- 	dev_set_drvdata(&conn->dev, conn);
+Balbir
