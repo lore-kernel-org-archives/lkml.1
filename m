@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbZDRSzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbZDRSzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760249AbZDRSzf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 14:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759372AbZDRSwr
+	id S932083AbZDRSzv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 14:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZDRSws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 14:52:47 -0400
-Received: from juliette.telenet-ops.be ([195.130.137.74]:59947 "EHLO
-	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757764AbZDRSw3 (ORCPT
+	Sat, 18 Apr 2009 14:52:48 -0400
+Received: from brigitte.telenet-ops.be ([195.130.137.66]:55369 "EHLO
+	brigitte.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758905AbZDRSwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 14:52:29 -0400
+	Sat, 18 Apr 2009 14:52:31 -0400
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH/RFC 12/16] m68k: amiga - Serial port platform device conversion
-Date: Sat, 18 Apr 2009 20:52:20 +0200
-Message-Id: <1240080744-14995-13-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-input@vger.kernel.org
+Subject: [PATCH/RFC 10/16] m68k: amiga - Keyboard platform device conversion
+Date: Sat, 18 Apr 2009 20:52:18 +0200
+Message-Id: <1240080744-14995-11-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240080744-14995-12-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
 References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
@@ -28,164 +28,192 @@ References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-8-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
  <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-11-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-12-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-input@vger.kernel.org
 ---
- arch/m68k/amiga/platform.c |    3 ++
- drivers/char/amiserial.c   |   61 +++++++++++++++++++++++++------------------
- 2 files changed, 38 insertions(+), 26 deletions(-)
+ arch/m68k/amiga/platform.c      |    5 ++
+ drivers/input/keyboard/amikbd.c |   97 +++++++++++++++++++++++----------------
+ 2 files changed, 63 insertions(+), 39 deletions(-)
 
 diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
-index 269bafc..52aa62d 100644
+index 907f6f5..d427de2 100644
 --- a/arch/m68k/amiga/platform.c
 +++ b/arch/m68k/amiga/platform.c
-@@ -168,6 +168,9 @@ static int __init amiga_init_devices(void)
- 	if (AMIGAHW_PRESENT(AMI_MOUSE))
- 		platform_device_register_simple("amiga-mouse", -1, NULL, 0);
+@@ -160,6 +160,11 @@ static int __init amiga_init_devices(void)
+ 					 sizeof(a4000_ide_pdata));
+ 	}
  
-+	if (AMIGAHW_PRESENT(AMI_SERIAL))
-+		platform_device_register_simple("amiga-serial", -1, NULL, 0);
++
++	/* other I/O hardware */
++	if (AMIGAHW_PRESENT(AMI_KEYBOARD))
++		platform_device_register_simple("amiga-keyboard", -1, NULL, 0);
 +
  	return 0;
  }
  
-diff --git a/drivers/char/amiserial.c b/drivers/char/amiserial.c
-index fd3ebd1..6826dd1 100644
---- a/drivers/char/amiserial.c
-+++ b/drivers/char/amiserial.c
-@@ -83,6 +83,7 @@ static char *serial_version = "4.30";
- #include <linux/slab.h>
- #include <linux/init.h>
- #include <linux/bitops.h>
+diff --git a/drivers/input/keyboard/amikbd.c b/drivers/input/keyboard/amikbd.c
+index 35149ec..79172af 100644
+--- a/drivers/input/keyboard/amikbd.c
++++ b/drivers/input/keyboard/amikbd.c
+@@ -35,6 +35,7 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/keyboard.h>
 +#include <linux/platform_device.h>
  
- #include <asm/setup.h>
+ #include <asm/amigaints.h>
+ #include <asm/amigahw.h>
+@@ -154,10 +155,9 @@ static const char *amikbd_messages[8] = {
+ 	[7] = KERN_WARNING "amikbd: keyboard interrupt\n"
+ };
  
-@@ -1953,29 +1954,16 @@ static const struct tty_operations serial_ops = {
- /*
-  * The serial driver boot-time initialization code!
-  */
--static int __init rs_init(void)
-+static int __init amiga_serial_probe(struct platform_device *pdev)
+-static struct input_dev *amikbd_dev;
+-
+-static irqreturn_t amikbd_interrupt(int irq, void *dummy)
++static irqreturn_t amikbd_interrupt(int irq, void *data)
  {
- 	unsigned long flags;
- 	struct serial_state * state;
- 	int error;
++	struct input_dev *dev = data;
+ 	unsigned char scancode, down;
  
--	if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(AMI_SERIAL))
+ 	scancode = ~ciaa.sdr;		/* get and invert scancode (keyboard is active low) */
+@@ -170,47 +170,42 @@ static irqreturn_t amikbd_interrupt(int irq, void *dummy)
+ 
+ 	if (scancode < 0x78) {		/* scancodes < 0x78 are keys */
+ 		if (scancode == 98) {	/* CapsLock is a toggle switch key on Amiga */
+-			input_report_key(amikbd_dev, scancode, 1);
+-			input_report_key(amikbd_dev, scancode, 0);
++			input_report_key(dev, scancode, 1);
++			input_report_key(dev, scancode, 0);
+ 		} else {
+-			input_report_key(amikbd_dev, scancode, down);
++			input_report_key(dev, scancode, down);
+ 		}
+ 
+-		input_sync(amikbd_dev);
++		input_sync(dev);
+ 	} else				/* scancodes >= 0x78 are error codes */
+ 		printk(amikbd_messages[scancode - 0x78]);
+ 
+ 	return IRQ_HANDLED;
+ }
+ 
+-static int __init amikbd_init(void)
++static int __init amikbd_probe(struct platform_device *pdev)
+ {
++	struct input_dev *dev;
+ 	int i, j, err;
+ 
+-	if (!AMIGAHW_PRESENT(AMI_KEYBOARD))
 -		return -ENODEV;
 -
- 	serial_driver = alloc_tty_driver(1);
- 	if (!serial_driver)
- 		return -ENOMEM;
- 
--	/*
--	 *  We request SERDAT and SERPER only, because the serial registers are
--	 *  too spreaded over the custom register space
--	 */
--	if (!request_mem_region(CUSTOM_PHYSADDR+0x30, 4,
--				"amiserial [Paula]")) {
--		error = -EBUSY;
--		goto fail_put_tty_driver;
--	}
+-	if (!request_mem_region(CIAA_PHYSADDR-1+0xb00, 0x100, "amikeyb"))
+-		return -EBUSY;
 -
- 	IRQ_ports = NULL;
+-	amikbd_dev = input_allocate_device();
+-	if (!amikbd_dev) {
+-		printk(KERN_ERR "amikbd: not enough memory for input device\n");
+-		err = -ENOMEM;
+-		goto fail1;
++	dev = input_allocate_device();
++	if (!dev) {
++		dev_err(&pdev->dev, "Not enough memory for input device\n");
++		return -ENOMEM;
+ 	}
  
- 	show_serial_version();
-@@ -1997,7 +1985,7 @@ static int __init rs_init(void)
+-	amikbd_dev->name = "Amiga Keyboard";
+-	amikbd_dev->phys = "amikbd/input0";
+-	amikbd_dev->id.bustype = BUS_AMIGA;
+-	amikbd_dev->id.vendor = 0x0001;
+-	amikbd_dev->id.product = 0x0001;
+-	amikbd_dev->id.version = 0x0100;
++	dev->name = pdev->name;
++	dev->phys = "amikbd/input0";
++	dev->id.bustype = BUS_AMIGA;
++	dev->id.vendor = 0x0001;
++	dev->id.product = 0x0001;
++	dev->id.version = 0x0100;
++	dev->dev.parent = &pdev->dev;
  
- 	error = tty_register_driver(serial_driver);
- 	if (error)
--		goto fail_release_mem_region;
-+		goto fail_put_tty_driver;
+-	amikbd_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
++	dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
  
- 	state = rs_table;
- 	state->magic = SSTATE_MAGIC;
-@@ -2049,23 +2037,24 @@ static int __init rs_init(void)
- 	ciab.ddra |= (SER_DTR | SER_RTS);   /* outputs */
- 	ciab.ddra &= ~(SER_DCD | SER_CTS | SER_DSR);  /* inputs */
+ 	for (i = 0; i < 0x78; i++)
+-		set_bit(i, amikbd_dev->keybit);
++		set_bit(i, dev->keybit);
  
-+	platform_set_drvdata(pdev, state);
+ 	for (i = 0; i < MAX_NR_KEYMAPS; i++) {
+ 		static u_short temp_map[NR_KEYS] __initdata;
+@@ -229,30 +224,54 @@ static int __init amikbd_init(void)
+ 		memcpy(key_maps[i], temp_map, sizeof(temp_map));
+ 	}
+ 	ciaa.cra &= ~0x41;	 /* serial data in, turn off TA */
+-	if (request_irq(IRQ_AMIGA_CIAA_SP, amikbd_interrupt, 0, "amikbd",
+-			amikbd_interrupt)) {
+-		err = -EBUSY;
++	err = request_irq(IRQ_AMIGA_CIAA_SP, amikbd_interrupt, 0, "amikbd",
++			  dev);
++	if (err)
+ 		goto fail2;
+-	}
+ 
+-	err = input_register_device(amikbd_dev);
++	err = input_register_device(dev);
+ 	if (err)
+ 		goto fail3;
+ 
++	platform_set_drvdata(pdev, dev);
 +
  	return 0;
  
- fail_free_irq:
- 	free_irq(IRQ_AMIGA_TBE, state);
- fail_unregister:
- 	tty_unregister_driver(serial_driver);
--fail_release_mem_region:
--	release_mem_region(CUSTOM_PHYSADDR+0x30, 4);
- fail_put_tty_driver:
- 	put_tty_driver(serial_driver);
- 	return error;
+- fail3:	free_irq(IRQ_AMIGA_CIAA_SP, amikbd_interrupt);
+- fail2:	input_free_device(amikbd_dev);
+- fail1:	release_mem_region(CIAA_PHYSADDR - 1 + 0xb00, 0x100);
++ fail3:	free_irq(IRQ_AMIGA_CIAA_SP, dev);
++ fail2:	input_free_device(dev);
+ 	return err;
  }
  
--static __exit void rs_exit(void) 
-+static int __exit amiga_serial_remove(struct platform_device *pdev)
- {
- 	int error;
--	struct async_struct *info = rs_table[0].info;
-+	struct serial_state *state = platform_get_drvdata(pdev);
-+	struct async_struct *info = state->info;
- 
- 	/* printk("Unloading %s: version %s\n", serial_name, serial_version); */
- 	tasklet_kill(&info->tlet);
-@@ -2074,19 +2063,38 @@ static __exit void rs_exit(void)
- 		       error);
- 	put_tty_driver(serial_driver);
- 
--	if (info) {
--	  rs_table[0].info = NULL;
--	  kfree(info);
--	}
-+	rs_table[0].info = NULL;
-+	kfree(info);
- 
- 	free_irq(IRQ_AMIGA_TBE, rs_table);
- 	free_irq(IRQ_AMIGA_RBF, rs_table);
- 
--	release_mem_region(CUSTOM_PHYSADDR+0x30, 4);
-+	platform_set_drvdata(pdev, NULL);
+-static void __exit amikbd_exit(void)
++static int __exit amikbd_remove(struct platform_device *pdev)
++{
++	struct input_dev *dev = platform_get_drvdata(pdev);
 +
-+	return error;
++	platform_set_drvdata(pdev, NULL);
++	free_irq(IRQ_AMIGA_CIAA_SP, dev);
++	input_unregister_device(dev);
++	return 0;
 +}
 +
-+static struct platform_driver amiga_serial_driver = {
-+	.remove = __exit_p(amiga_serial_remove),
++static struct platform_driver amikbd_driver = {
++	.remove = __exit_p(amikbd_remove),
 +	.driver   = {
-+		.name	= "amiga-serial",
++		.name	= "amiga-keyboard",
 +		.owner	= THIS_MODULE,
 +	},
 +};
 +
-+static int __init amiga_serial_init(void)
-+{
-+	return platform_driver_probe(&amiga_serial_driver, amiga_serial_probe);
-+}
-+
-+module_init(amiga_serial_init);
-+
-+static void __exit amiga_serial_exit(void)
-+{
-+	platform_driver_unregister(&amiga_serial_driver);
++static int __init amikbd_init(void)
+ {
+-	free_irq(IRQ_AMIGA_CIAA_SP, amikbd_interrupt);
+-	input_unregister_device(amikbd_dev);
+-	release_mem_region(CIAA_PHYSADDR - 1 + 0xb00, 0x100);
++	return platform_driver_probe(&amikbd_driver, amikbd_probe);
  }
  
--module_init(rs_init)
--module_exit(rs_exit)
-+module_exit(amiga_serial_exit);
- 
- 
- #if defined(CONFIG_SERIAL_CONSOLE) && !defined(MODULE)
-@@ -2153,3 +2161,4 @@ console_initcall(amiserial_console_init);
- #endif /* CONFIG_SERIAL_CONSOLE && !MODULE */
- 
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:amiga-serial");
+ module_init(amikbd_init);
++
++static void __exit amikbd_exit(void)
++{
++	platform_driver_unregister(&amikbd_driver);
++}
++
+ module_exit(amikbd_exit);
++
++MODULE_ALIAS("platform:amiga-keyboard");
 -- 
 1.6.2.3
 
