@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbZDRHQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZDRHYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbZDRHQi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 03:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZDRHQ3
+	id S1753789AbZDRHYo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 03:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZDRHYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 03:16:29 -0400
-Received: from mail.it-technology.at ([62.99.145.147]:54066 "EHLO
-	mail.it-technology.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbZDRHQ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 03:16:29 -0400
-Message-ID: <8472e581ef388a89b5ee8a7ed8dd1fdc.squirrel@webmail.it-technology.at>
-In-Reply-To: <200904171641.33546.oliver@neukum.org>
-References: <2c05d20b7e24c4bf9cbfba19b9891f70.squirrel@webmail.it-technology.at>
-    <200904171641.33546.oliver@neukum.org>
-Date: Sat, 18 Apr 2009 09:16:28 +0200 (CEST)
-Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
-From: "Peter Holik" <peter@holik.at>
-To: "Oliver Neukum" <oliver@neukum.org>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
+	Sat, 18 Apr 2009 03:24:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59103 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751310AbZDRHYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 03:24:35 -0400
+Date: Sat, 18 Apr 2009 09:24:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "Han, Weidong" <weidong.han@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "Kay, Allen M" <allen.m.kay@intel.com>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
+Subject: Re: [PATCH 3/5] x86, intr-remap: enable interrupt remapping early
+Message-ID: <20090418072414.GF7678@elte.hu>
+References: <1239957736-6161-1-git-send-email-weidong.han@intel.com> <1239957736-6161-4-git-send-email-weidong.han@intel.com> <20090417141310.GD23493@elte.hu> <1240011743.27006.8496.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240011743.27006.8496.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Am Freitag 17 April 2009 16:10:24 schrieb Peter Holik:
->
-> +static int intellon_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
-> +{
-> +       int len;
-> +
-> +       if (unlikely(skb->len < INTELLON_HEADER_SIZE)) {
-> +               deverr(dev, "unexpected tiny rx frame");
-> +               return 0;
-> +       }
-> +
-> +       len = (skb->data[skb->len - 2] | (skb->data[skb->len - 1] << 8));
->
-> Please use a conversion function.
 
-do you mean
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-len = le16_to_cpu(skb->data[skb->len - 2] | (skb->data[skb->len - 1] << 8));
+> On Fri, 2009-04-17 at 07:13 -0700, Ingo Molnar wrote:
+> > * Weidong Han <weidong.han@intel.com> wrote:
+> > 
+> > > --- a/arch/x86/kernel/apic/apic.c
+> > > +++ b/arch/x86/kernel/apic/apic.c
+> > > @@ -118,6 +118,8 @@ static int x2apic_preenabled;
+> > >  static int disable_x2apic;
+> > >  static __init int setup_nox2apic(char *str)
+> > >  {
+> > > +	if (x2apic_enabled())
+> > > +		panic("Bios already enabled x2apic, can't enforce nox2apic");
+> > 
+> > Could you please turn that into something like:
+> 
+> I have couple of patches cleaning these up(including some 
+> warnings). I will post them shortly.
 
-> +       } else {
-> +               struct sk_buff *skb2;
-> +
-> +               skb2 = skb_copy_expand(skb,
-> +                               INTELLON_HEADER_SIZE,
-> +                               need_tail,
-> +                               flags);
-> +               dev_kfree_skb_any(skb);
-> +               if (!skb2)
-> +                       return skb2;
->
-> If you return NULL in an error case, write it so explicitely.
+ok!
 
-ok
+> > > +ir_failed:
+> > > +	if (x2apic_preenabled)
+> > > +		panic("x2apic enabled by bios. But IR enabling failed");
+> > 
+> > What is the likelyhood that we can continue in compat mode? If 
+> > there's some chance, we should rather print a KERN_WARNING and 
+> > should try to continue. If IRQs are not coming we'll hang shortly 
+> > afterwards anyway.
+> 
+> Typically only on high end platforms we will see x2apic enabled by 
+> BIOS before OS handover. And in these cases, BIOS should have 
+> already enabled interrupt-remapping in extended interrupt mode, 
+> before handing over control to OS. If the extended interrupt mode 
+> is set, HW will block the compatibility format interrupts anyway. 
+> And I think its better to panic rather than hanging at random 
+> places(depending on which interrupts are already in remapped 
+> format and which are not). This way, it will be easy for anyone to 
+> figure out what is happening.
 
-> +       __skb_push(skb, INTELLON_HEADER_SIZE);
-> +
-> +       skb->data[0] = pack_len & 0xFF;
-> +       skb->data[1] = (pack_len & 0x700) >> 8;
->
-> Again, a conversion function is called for.
+fair enough.
 
-is this correct
-
-  __le16 *len;
-.
-.
-.
-  pack_len &= 0x07ff;
-
-  len = (__le16 *) __skb_push(skb, INT51X1_HEADER_SIZE);
-  *len = cpu_to_le16(pack_len);
-
-
-cu Peter
-
+	Ingo
