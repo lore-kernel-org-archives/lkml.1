@@ -1,210 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZDRKhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZDRKi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbZDRKhr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 06:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZDRKhd
+	id S1757085AbZDRKi2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 06:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbZDRKiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 06:37:33 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53698 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754009AbZDRKhc (ORCPT
+	Sat, 18 Apr 2009 06:38:16 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:36656 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754931AbZDRKiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 06:37:32 -0400
-Date: Sat, 18 Apr 2009 13:37:29 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Peter Holik <peter@holik.at>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: [Resend][PATCH] usb driver for intellon int51x1 based PLC like
-      devolo dlan duo
-In-Reply-To: <cb6d2886e87af66d945f1052e6eb8a85.squirrel@webmail.it-technology.at>
-Message-ID: <Pine.LNX.4.64.0904181311470.3600@wrl-59.cs.helsinki.fi>
-References: <cb6d2886e87af66d945f1052e6eb8a85.squirrel@webmail.it-technology.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Apr 2009 06:38:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :user-agent;
+        b=lrmy1e5z4eYACqwjVFi5RRtmpNRksfGH1LY8qU59eOyCghpvNgHjI8ImdtmPm27GkK
+         9imPB1R2h5y/wNlFhIpHVH/WAZm63nTj7IX1YhZ1ofa8kBY9W48r+La7NlJYLUY5s8jN
+         h3Au2Ab0Ftz0qiFhIkWwyt3zoa2oszmtXFbZ0=
+Date: Sat, 18 Apr 2009 18:36:42 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com
+Subject: [PATCH]fix a warning on drivers/scsi/NCR_D700.c
+Message-ID: <20090418103642.GA4432@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Apr 2009, Peter Holik wrote:
+fix this warning:
 
-> This is a usb driver for the intellon int51x1 based PLC
-> (Powerline Communications) like devolo dlan duo.
-> 
-> Signed-off-by: Peter Holik <peter@holik.at>
-> ---
->  drivers/net/usb/Kconfig   |    8 ++
->  drivers/net/usb/Makefile  |    1 +
->  drivers/net/usb/int51x1.c |  268 +++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 277 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/net/usb/int51x1.c
-> 
-> diff --git a/drivers/net/usb/int51x1.c b/drivers/net/usb/int51x1.c
-> new file mode 100644
-> index 0000000..44a8a09
-> --- /dev/null
-> +++ b/drivers/net/usb/int51x1.c
-> @@ -0,0 +1,268 @@
+drivers/scsi/NCR_D700.c: In function ‘NCR_D700_probe’:
+drivers/scsi/NCR_D700.c:322: warning: passing argument 2 of ‘request_irq’ from incompatible pointer type
+drivers/scsi/NCR_D700.c:322: warning: passing argument 2 of ‘request_irq’ from incompatible pointer type
+drivers/scsi/NCR_D700.c:322: warning: passing argument 2 of ‘request_irq’ from incompatible pointer type
 
-> +static int int51x1_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
-> +{
-> +	int len;
-> +
-> +	if (unlikely(skb->len < INT51X1_HEADER_SIZE)) {
 
-pskb_may_pull(...)
+Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+---
+ drivers/scsi/NCR_D700.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> +		deverr(dev, "unexpected tiny rx frame");
-> +		return 0;
-> +	}
-> +
-> +	len = le16_to_cpu(*(__le16 *)&skb->data[skb->len - 2]);
-> +
-> +	skb_trim(skb, len);
-> +
-> +	return 1;
-> +}
-> +
-> +static struct sk_buff *int51x1_tx_fixup(struct usbnet *dev,
-> +		struct sk_buff *skb, gfp_t flags)
-> +{
-> +	int pack_len = skb->len;
-> +	int headroom = skb_headroom(skb);
-> +	int tailroom = skb_tailroom(skb);
-> +	int need_tail = 0;
-> +	__le16 *len;
-> +
-> +	/*
-> +	 * usbnet would send a ZLP if packetlength mod urbsize == 0 for us,
-> +	 * but we need to know ourself, because this would add to the length
-> +	 * we send down to the device...
-> +	 */
-> +	if (!((pack_len + INT51X1_HEADER_SIZE) % dev->maxpacket))
-> +		need_tail = 1;
-> +
-> +	/* if packet and our header is smaler than 64 pad to 64 (+ ZLP) */
-> +	if ((pack_len + INT51X1_HEADER_SIZE + need_tail) < dev->maxpacket + 1)
-> +		need_tail = dev->maxpacket + 1 - pack_len - INT51X1_HEADER_SIZE;
-
-This is totally crazy code fragment, first need_tail is used like a 
-boolean? But on the same some +1 scalar trick is being done? Is there some 
-reason why DIV_ROUND_UP (linux/kernel.h) won't do what you want here and 
-then you can trivally find diff = new - old ?
-
-> +	if (!skb_cloned(skb) &&
-> +			(headroom + tailroom >= need_tail + INT51X1_HEADER_SIZE)) {
-> +		if (headroom < INT51X1_HEADER_SIZE || tailroom < need_tail) {
-> +			skb->data = memmove(skb->head + INT51X1_HEADER_SIZE,
-> +					skb->data, skb->len);
-> +			skb_set_tail_pointer(skb, skb->len);
-> +		}
-> +	} else {
-> +		struct sk_buff *skb2;
-> +
-> +		skb2 = skb_copy_expand(skb,
-> +				INT51X1_HEADER_SIZE,
-> +				need_tail,
-> +				flags);
-> +		dev_kfree_skb_any(skb);
-> +		if (!skb2)
-> +			return NULL;
-> +		skb = skb2;
-> +	}
-> +
-> +	pack_len += need_tail;
-> +	pack_len &= 0x07ff;
-> +
-> +	len = (__le16 *) __skb_push(skb, INT51X1_HEADER_SIZE);
-> +	*len = cpu_to_le16(pack_len);
-> +
-> +	if(need_tail)
-> +		memset(__skb_put(skb, need_tail), 0, need_tail);
-> +
-> +	return skb;
-> +}
-> +
-> +static void int51x1_async_cmd_callback(struct urb *urb)
-> +{
-> +	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
-> +	int status = urb->status;
-> +
-> +	if (status < 0)
-> +		dev_warn(&urb->dev->dev, "async callback failed with %d\n", status);
-> +
-> +	kfree(req);
-> +	usb_free_urb(urb);
-> +}
-> +
-> +static void int51x1_set_multicast(struct net_device *netdev)
-> +{
-> +	struct usb_ctrlrequest *req;
-> +	int status;
-> +	struct urb *urb;
-> +	struct usbnet *dev = netdev_priv(netdev);
-> +	u16 filter = PACKET_TYPE_DIRECTED |
-> +		     PACKET_TYPE_BROADCAST;
-
-Won't this fit on a single line?
-
-> +
-> +	if (netdev->flags & IFF_PROMISC) {
-> +		/* do not expect to see traffic of other PLCs */
-> +		filter |= PACKET_TYPE_PROMISCUOUS;
-> +		devinfo(dev, "promiscuous mode enabled");
-> +	} else if (netdev->mc_count ||
-> +		  (netdev->flags & IFF_ALLMULTI)) {
-> +		filter |= PACKET_TYPE_ALL_MULTICAST;
-> +		devdbg(dev, "receive all multicast enabled");
-> +	} else {
-> +		/* ~PROMISCUOUS, ~MULTICAST */
-> +		devdbg(dev, "receive own packets only");
-> +	}
-> +
-> +	urb = usb_alloc_urb(0, GFP_ATOMIC);
-> +	if (!urb) {
-> +		devwarn(dev, "Error allocating URB");
-> +		return;
-> +	}
-> +
-> +	req = kmalloc(sizeof *req, GFP_ATOMIC);
-
-sizeof(*req)
-
-> +	if (!req) {
-> +		devwarn(dev, "Error allocating control msg");
-> +		usb_free_urb(urb);
-> +		return;
-
-I'd use gotos instead for error handling since you need similar call in 
-the later error handling block too. Gotos make it somewhat harder to miss 
-some necessary rollback actions in one of the error blocks (not that 
-this case is buggy atm).
-
-> +	}
-> +
-> +	req->bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
-> +	req->bRequest = SET_ETHERNET_PACKET_FILTER;
-> +	req->wValue = cpu_to_le16(filter);
-> +	req->wIndex = 0;
-> +	req->wLength = 0;
-> +
-> +	usb_fill_control_urb(urb, dev->udev, usb_sndctrlpipe(dev->udev, 0),
-> +		(void *)req, NULL, 0,
-> +		int51x1_async_cmd_callback,
-> +		(void *)req);
-> +
-> +	status = usb_submit_urb(urb, GFP_ATOMIC);
-> +	if (status < 0) {
-> +		devwarn(dev, "Error submitting control msg, sts=%d", status);
-> +		kfree(req);
-> +		usb_free_urb(urb);
-
-Ditto.
-
-> +	}
-> +}
+diff --git a/drivers/scsi/NCR_D700.c b/drivers/scsi/NCR_D700.c
+index c889d84..1cdf09a 100644
+--- a/drivers/scsi/NCR_D700.c
++++ b/drivers/scsi/NCR_D700.c
+@@ -224,7 +224,7 @@ NCR_D700_probe_one(struct NCR_D700_private *p, int siop, int irq,
+ 	return ret;
+ }
+ 
+-static int
++static irqreturn_t
+ NCR_D700_intr(int irq, void *data)
+ {
+ 	struct NCR_D700_private *p = (struct NCR_D700_private *)data;
+-- 
+1.5.6.5
 
 -- 
- i.
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
