@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZDSI2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbZDSIbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbZDSI2Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZDSI0m
+	id S1757038AbZDSIbd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZDSIbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:26:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55388 "EHLO hera.kernel.org"
+	Sun, 19 Apr 2009 04:31:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60588 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758386AbZDSI0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:26:38 -0400
-Date: Sun, 19 Apr 2009 08:25:51 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@gmail.com>
+	id S1751966AbZDSIbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:31:21 -0400
+Date: Sun, 19 Apr 2009 08:30:38 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, tglx@linutronix.de, gorcunov@gmail.com,
-       mingo@elte.hu
+       gorcunov@openvz.org, yhlu.kernel@gmail.com, tglx@linutronix.de,
+       xemul@openvz.org, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, tglx@linutronix.de, gorcunov@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <20090418194528.GD25510@lenovo>
-References: <20090418194528.GD25510@lenovo>
-Subject: [tip:x86/apic] x86: smpboot - wakeup_secondary should be done via __cpuinit section
-Message-ID: <tip-cece3155d869a50ba534ed161b5a05e8a29dcad0@git.kernel.org>
-Git-Commit-ID: cece3155d869a50ba534ed161b5a05e8a29dcad0
+       gorcunov@openvz.org, yhlu.kernel@gmail.com, tglx@linutronix.de,
+       xemul@openvz.org, mingo@elte.hu
+In-Reply-To: <20090419074311.GA8670@lenovo>
+References: <20090419074311.GA8670@lenovo>
+Subject: [tip:x86/apic] x86: es7000, uv - use __cpuinit for kicking secondary cpus
+Message-ID: <tip-667c5296cc76fefe0abcb79228952b28d9af45e3@git.kernel.org>
+Git-Commit-ID: 667c5296cc76fefe0abcb79228952b28d9af45e3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:52 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:30:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cece3155d869a50ba534ed161b5a05e8a29dcad0
-Gitweb:     http://git.kernel.org/tip/cece3155d869a50ba534ed161b5a05e8a29dcad0
-Author:     Cyrill Gorcunov <gorcunov@gmail.com>
-AuthorDate: Sat, 18 Apr 2009 23:45:28 +0400
+Commit-ID:  667c5296cc76fefe0abcb79228952b28d9af45e3
+Gitweb:     http://git.kernel.org/tip/667c5296cc76fefe0abcb79228952b28d9af45e3
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Sun, 19 Apr 2009 11:43:11 +0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Apr 2009 10:22:14 +0200
+CommitDate: Sun, 19 Apr 2009 10:28:53 +0200
 
-x86: smpboot - wakeup_secondary should be done via __cpuinit section
+x86: es7000, uv - use __cpuinit for kicking secondary cpus
 
-A caller (do_boot_cpu) already has __cpuinit attribute.
+The caller already has __cpuinit attribute.
 
-Since HOTPLUG_CPU depends on SMP && HOTPLUG it doesn't
-lead to panic at moment.
-
-[ Impact: cleanup ]
+[ Impact: save memory, address section mismatch warning ]
 
 Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-LKML-Reference: <20090418194528.GD25510@lenovo>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>
+LKML-Reference: <20090419074311.GA8670@lenovo>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/smpboot.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/apic/es7000_32.c   |    2 +-
+ arch/x86/kernel/apic/x2apic_uv_x.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index bf8ad63..d2e8de9 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -504,7 +504,7 @@ void __inquire_remote_apic(int apicid)
-  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
-  * won't ... remember to clear down the APIC, etc later.
-  */
--int __devinit
-+int __cpuinit
- wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
- {
- 	unsigned long send_status, accept_status = 0;
-@@ -538,7 +538,7 @@ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
- 	return (send_status | accept_status);
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index 1c11b81..8e07c14 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -145,7 +145,7 @@ es7000_rename_gsi(int ioapic, int gsi)
+ 	return gsi;
  }
  
--static int __devinit
-+static int __cpuinit
- wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+-static int wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
++static int __cpuinit wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
  {
- 	unsigned long send_status, accept_status = 0;
+ 	unsigned long vect = 0, psaival = 0;
+ 
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index de1a50a..873bf71 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -91,7 +91,7 @@ static void uv_vector_allocation_domain(int cpu, struct cpumask *retmask)
+ 	cpumask_set_cpu(cpu, retmask);
+ }
+ 
+-static int uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
++static int __cpuinit uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
+ {
+ #ifdef CONFIG_SMP
+ 	unsigned long val;
