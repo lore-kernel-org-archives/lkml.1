@@ -1,94 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbZDSSev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZDSSlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758465AbZDSSev (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 14:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbZDSSel
+	id S1756211AbZDSSlg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 14:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZDSSlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 14:34:41 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:58097 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755932AbZDSSel convert rfc822-to-8bit (ORCPT
+	Sun, 19 Apr 2009 14:41:25 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:43638 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751831AbZDSSlY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 14:34:41 -0400
-Date: Mon, 20 Apr 2009 03:34:46 +0900 (JST)
-Message-Id: <20090420.033446.65190767.anemo@mba.ocn.ne.jp>
-To: dan.j.williams@intel.com
-Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
+	Sun, 19 Apr 2009 14:41:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pOc/+gbB5kWSM+YQnrqdWWcZgev+P2NiB3+4iVxj07xIwwIa1pGVz4GnIkCOT0PG4E
+         7SwSDglsobHG4hCRlFP7IY1gaw4VhFx7J8IIiNinkv6u8D+NOM68IeMkkOLT1o5l8iB5
+         kj6DxXotJVXCHfJ/J7zKvzqH5qvL9MaK4UYq4=
+MIME-Version: 1.0
+In-Reply-To: <20090418235529.47e481e9@i1501.lan.towertech.it>
+References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-9-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-10-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-11-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-12-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-13-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-14-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-15-git-send-email-geert@linux-m68k.org>
+	 <1240080744-14995-16-git-send-email-geert@linux-m68k.org>
+	 <20090418235529.47e481e9@i1501.lan.towertech.it>
+Date: Sun, 19 Apr 2009 20:41:21 +0200
+X-Google-Sender-Auth: c24fef9d98dc698b
+Message-ID: <10f740e80904191141i599af898wd47535cabd8c9184@mail.gmail.com>
+Subject: Re: [rtc-linux] [PATCH/RFC 15/16] rtc: Add an RTC driver for the 
+	Ricoh RP5C01
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, linux-m68k@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] DMA: TXx9 Soc DMA Controller driver (v2)
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <e9c3a7c20904181305l5a7ea5dcy881b7faec8e447bf@mail.gmail.com>
-References: <1239033288-3086-1-git-send-email-anemo@mba.ocn.ne.jp>
-	<e9c3a7c20904181305l5a7ea5dcy881b7faec8e447bf@mail.gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Apr 2009 13:05:15 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
-> Not quite "ackable" yet...
+Hi Alessandro,
 
-Thank you for review!
+On Sat, Apr 18, 2009 at 23:55, Alessandro Zummo
+<alessandro.zummo@towertech.it> wrote:
+> On Sat, 18 Apr 2009 20:52:23 +0200 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Â Hi Geert, thanks for your contributions. Comments below.
+>
+> Â Missing patch description.
 
-> > +#ifdef CONFIG_MACH_TX49XX
-> > +#define TXX9_DMA_MAY_HAVE_64BIT_REGS
-> > +#define TXX9_DMA_HAVE_CCR_LE
-> > +#define TXX9_DMA_HAVE_SMPCHN
-> > +#define TXX9_DMA_HAVE_IRQ_PER_CHAN
-> > +#endif
-> > +
-> > +#ifdef TXX9_DMA_HAVE_SMPCHN
-> > +#define TXX9_DMA_USE_SIMPLE_CHAIN
-> > +#endif
-> > +
-> 
-> There seems to be a lot of ifdef magic in the code based on these
-> defines.  Can we move this magic and some of the pure definitions to
-> drivers/dma/txx9dmac.h?  (See the "#ifdefs are ugly" section of
-> Documentation/SubmittingPatches)
+git-am is happy with the one-line summary in the subject:-line, and
+there's not much more to say.
 
-OK, I will try to clean them up.  But since I don't want to export
-internal implementation details, some of the magics will be left in
-txx9dmac.c, perhaps.
+>> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>> Cc: rtc-linux@googlegroups.com
+>> ---
+>> Â drivers/rtc/Kconfig Â  Â  Â | Â  10 ++
+>> Â drivers/rtc/Makefile Â  Â  | Â  Â 1 +
+>> Â drivers/rtc/rtc-rp5c01.c | Â 239 ++++++++++++++++++++++++++++++++++++++++++++++
+>> Â 3 files changed, 250 insertions(+), 0 deletions(-)
+>> Â create mode 100644 drivers/rtc/rtc-rp5c01.c
+>>
+>> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+>> index a0f6297..150fe43 100644
+>> --- a/drivers/rtc/Kconfig
+>> +++ b/drivers/rtc/Kconfig
+>> @@ -535,6 +535,16 @@ config RTC_DRV_MSM6242
+>> Â  Â  Â  Â  This driver can also be built as a module. If so, the module
+>> Â  Â  Â  Â  will be called rtc-msm6242.
+>>
+>> +config RTC_DRV_RP5C01
+>> + Â  Â  tristate "Ricoh RP5C01"
+>> + Â  Â  help
+>> + Â  Â  Â  If you say yes here you get support for the Ricoh RP5C01
+>> + Â  Â  Â  timekeeping chip. It is used in some Amiga models (e.g. A3000
+>> + Â  Â  Â  and A4000).
+>> +
+>> + Â  Â  Â  This driver can also be built as a module. If so, the module
+>> + Â  Â  Â  will be called rtc-rp5c01.
+>> +
+>> Â comment "on-CPU RTC drivers"
+>>
+>> Â config RTC_DRV_OMAP
+>> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+>> index c70418b..6176a8a 100644
+>> --- a/drivers/rtc/Makefile
+>> +++ b/drivers/rtc/Makefile
+>> @@ -77,4 +77,5 @@ obj-$(CONFIG_RTC_DRV_WM8350) Â  Â  Â  Â += rtc-wm8350.o
+>> Â obj-$(CONFIG_RTC_DRV_X1205) Â += rtc-x1205.o
+>> Â obj-$(CONFIG_RTC_DRV_PCF50633) Â  Â  Â  += rtc-pcf50633.o
+>> Â obj-$(CONFIG_RTC_DRV_MSM6242) Â  Â  Â  Â += rtc-msm6242.o
+>> +obj-$(CONFIG_RTC_DRV_RP5C01) += rtc-rp5c01.o
+>> Â obj-$(CONFIG_RTC_DRV_PS3) Â  Â += rtc-ps3.o
+>
+> Â alphabetic order please
 
-> > +static struct dma_async_tx_descriptor *
-> > +txx9dmac_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
-> > +               size_t len, unsigned long flags)
-> [..]
-> > +               if (!first) {
-> > +                       first = desc;
-> > +               } else {
-> > +                       desc_write_CHAR(dc, prev, desc->txd.phys);
-> > +                       dma_sync_single_for_device(chan2parent(&dc->chan),
-> > +                                       prev->txd.phys, ddev->descsize,
-> > +                                       DMA_TO_DEVICE);
-> > +                       list_add_tail(&desc->desc_node,
-> > +                                       &first->txd.tx_list);
-> > +               }
-> 
-> Is there a reason to keep f'irst' off of the tx_list?  It seems like
-> you could simplify this logic and get rid of the scary looking
-> list_splice followed by list_add in txx9dmac_desc_put.  It also seems
-> odd that the descriptors on tx_list are not reachable from the
-> dc->queue list after a submit... but maybe I am missing a subtle
-> detail?
+Will do.
 
-Well, I'm not sure what do you mean...
+>> +static const struct rtc_class_ops rp5c01_rtc_ops = {
+>> + Â  Â  .read_time Â  Â  Â = rp5c01_read_time,
+>> + Â  Â  .set_time Â  Â  Â  = rp5c01_set_time,
+>> + Â  Â  .set_mmss Â  Â  Â  = rp5c01_set_mmss,
+>> +};
+>
+> Â please implement either set_time or set_mmss, not both.
+> Â I don't know the chip but I suspect set_time is the one you need.
 
-The completion callback handler of the first descriptor should be
-called _after_ the completion of the _last_ child of the descriptor.
-Also I use desc_node for both dc->queue, dc->active_list and
-txd.tx_list.  So if I putted all children to dc->queue or
-dc->active_list, txx9dmac_descriptor_complete() (or its caller) will
-be more complex.
+OK, I will remove .set_mmss. Got to confused by looking into how
+everything is used...
+BTW, the only remaining users of rtc_set_mmss() seem to be
+arch/sparc/kernel/time_{32,64}.c?
 
-Or do you mean adding another list_head to maintain txd.tx_list?  Or
-something another at all?
+>> +MODULE_AUTHOR("Geert Uytterhoeven");
+>
+> Â it would be fine to have your email here.
 
----
-Atsushi Nemoto
+Will do.
+
+OK, if I take the result (for both rtc-rp5c01 and rtc-msm6242) through
+the m68k tree?
+Thanks!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
