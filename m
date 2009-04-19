@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbZDSG1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbZDSG2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbZDSG1J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 02:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbZDSG0l
+	id S1760379AbZDSG2U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 02:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZDSG2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 02:26:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35717 "EHLO mx2.redhat.com"
+	Sun, 19 Apr 2009 02:28:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58166 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756092AbZDSG0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 02:26:40 -0400
-Date: Sun, 19 Apr 2009 11:54:48 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
-       Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-Message-ID: <20090419062448.GA13272@amit-x200.pnq.redhat.com>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com> <1239910921.21233.98.camel@think.oraclecorp.com> <20090417180906.GA8363@amit-x200.pnq.redhat.com> <20090417201342.GF26479@mit.edu> <20090418060312.GA10943@amit-x200.pnq.redhat.com> <1240039701.6298.12.camel@marge.simson.net>
+	id S1755410AbZDSG2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 02:28:03 -0400
+From: Neil Brown <neilb@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Matti Aarnio" <matti.aarnio@zmailer.org>,
+       "Jesper Juhl" <jj@chaosbits.net>,
+       "Prakash Punnoor" <prakash@punnoor.de>,
+       "Michael Tokarev" <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Date: Sun, 19 Apr 2009 16:28:11 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240039701.6298.12.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18922.50299.133847.743973@notabene.brown>
+Subject: Re: Proposal: make RAID6 code optional
+In-Reply-To: message from NeilBrown on Sunday April 19
+References: <200904180946.27722.prakash@punnoor.de>
+	<49E98AD2.8060601@msgid.tls.msk.ru>
+	<200904181117.03418.prakash@punnoor.de>
+	<alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>
+	<20090418145850.GD28512@mea-ext.zmailer.org>
+	<49EA8766.9070605@zytor.com>
+	<2954ad7f6081b2a6da33f861b0654626.squirrel@neil.brown.name>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Sat) Apr 18 2009 [09:28:21], Mike Galbraith wrote:
-> On Sat, 2009-04-18 at 11:33 +0530, Amit Shah wrote:
-> > On (Fri) Apr 17 2009 [16:13:42], Theodore Tso wrote:
-> > > On Fri, Apr 17, 2009 at 11:39:06PM +0530, Amit Shah wrote:
-> > > > # 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
-> > > > 
-> > > > filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
-> > > > ext3-guarded	85		97	459		90
-> > > > ext3-writeback 86		95	140		94
-> > > > ext3-ordered	86		96	277		95
-> > > > 
-> > > > Running the test in single user mode, I get the following results:
-> > > > 
-> > > > # 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
-> > > > 
-> > > > filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
-> > > > ext3-guarded	84		86	163		91
-> > > > ext3-writeback 84		88	217		91
-> > > > ext3-ordered	84		86	226		91
-> > > 
-> > > 
-> > > The difference between guarded and writeback in chunk-4096 looking at
-> > > your desktop timings and your single user times is.... surprising. 
-> > 
-> > Surely. I re-ran the guarded test immediately after that one and got a
-> > time of 353s with the desktop. Another run much latergave me a 189s time,
-> > so it seems to vary quite a lot. Initially when I was getting high
-> > numbers, I thought it could be related to the IO scheduler but looks like
-> > it's just some background tasks trying to get cpu or io time. Of course,
-> > the whole system becomes sluggish once these tests start.
-> > 
-> > > In particular, the fact that the guarded time is 3 times longer than
-> > > ext3-writeback when the desktop is running, and 20% faster in single
-> > > user mode.  Are these results reproducible?  And do you have any
-> > > thoughts as to what might be causing them?
-> > 
-> > I initially thought there was something but I also got lower numbers
-> > (189s), so I can't really say what it is even though I call sync before
-> > starting the tests.
+On Sunday April 19, neilb@suse.de wrote:
 > 
-> Probably because you're swapping heavily, and that is perturbing your
+> In 2.6.30, the Q syndrome code has been moved into a separate module,
+> so raid456.ko should be quite a bit smaller.
 
-The variance only affects the 4k test; the other times more or less
-remain the same.
+Of course that doesn't really help as there will be a dependency
+between raid456.ko and pq.ko so you cannot avoid having pq.ko loaded
+while using raid5.
 
-		Amit
+It might make sense to create a raid6 module that just contains 
+The call to register_md_personality(raid6_personality) and some
+linkage so that the code in raid456.ko can get to the code in pq.ko.
+
+This is probably worth trying one the raid6 async offload stuff
+stabilises.
+
+NeilBrown
