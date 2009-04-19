@@ -1,122 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZDSUYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757100AbZDSUwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757922AbZDSUYt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 16:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZDSUYj
+	id S1757100AbZDSUwZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 16:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZDSUwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 16:24:39 -0400
-Received: from smtp6-g21.free.fr ([212.27.42.6]:57816 "EHLO smtp6-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755814AbZDSUYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 16:24:39 -0400
-From: Yannick Roehlly <yannick.roehlly@free.fr>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
-Date: Sun, 19 Apr 2009 22:24:23 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2; KDE/4.2.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+	Sun, 19 Apr 2009 16:52:09 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:41282 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755814AbZDSUwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 16:52:07 -0400
+Date: Sun, 19 Apr 2009 16:51:54 -0400
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, hooanon05@yahoo.co.jp,
+       hch@infradead.org,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-References: <49E00E9F.8030605@kernel.org> <200904192135.36389.yannick.roehlly@free.fr> <86802c440904191259w4d9687f8u835b1a3d15e84e61@mail.gmail.com> (sfid-20090419_222050_328698_FFFFFFFFEA2BD084)
-In-Reply-To: <86802c440904191259w4d9687f8u835b1a3d15e84e61@mail.gmail.com>
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH v2] Fix i_mutex handling in nfsd readdir
+Message-ID: <20090419205154.GA18110@fieldses.org>
+References: <8036.1237474444@jrobl> <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl> <1239960739.3428.33.camel@macbook.infradead.org> <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk> <20090417225306.GO26366@ZenIV.linux.org.uk> <1240013753.21423.86.camel@macbook.infradead.org> <1240144069.3589.156.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_4h46JAoj0X6ZKpF"
-Message-Id: <200904192224.24429.yannick.roehlly@free.fr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240144069.3589.156.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_4h46JAoj0X6ZKpF
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, Apr 19, 2009 at 01:27:49PM +0100, David Woodhouse wrote:
+> Commit 14f7dd63 ("Copy XFS readdir hack into nfsd code") introduced a
+> bug to generic code which had been extant for a long time in the XFS
+> version -- it started to call through into lookup_one_len() and hence
+> into the file systems' ->lookup() methods without i_mutex held on the
+> directory.
+> 
+> This patch fixes it by locking the directory's i_mutex again before
+> calling the filldir functions. The original deadlocks which commit
+> 14f7dd63 was designed to avoid are still avoided, because they were due
+> to fs-internal locking, not i_mutex.
+> 
+> Commit 05f4f678 ("nfsd4: don't do lookup within readdir in recovery
+> code") introduced a similar problem there, which this also addresses.
+> 
+> While we're at it, fix the return type of nfsd_buffered_readdir() which
+> should be a __be32 not an int -- it's an NFS errno, not a Linux errno.
+> And return nfserrno(-ENOMEM) when allocation fails, not just -ENOMEM.
+> Sparse would have caught both of those if it wasn't so busy bitching
+> about __cold__.
+> 
+> Commit 05f4f678 ("nfsd4: don't do lookup within readdir in recovery
+> code") introduced a similar problem with calling lookup_one_len()
+> without i_mutex, which this patch also addresses.
+> 
+> Reported-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> Umm-I-can-live-with-that-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> Still haven't tested the NFSv4 bit -- Bruce?
 
-Le Sunday 19 April 2009 21:59:47 Yinghai Lu, vous avez =E9crit :
-> On Sun, Apr 19, 2009 at 12:35 PM, Yannick Roehlly
-> thanks. can you post cat /proc/iomem ?
+Thanks, there's an iterator in there that calls a passed-in function,
+some examples of which were taking the i_mutex--so some fixing up is
+needed.  I'll follow up with a patch once I've got one tested.
 
-Here it is.
+--b.
 
-Yannick
-
-
-
---Boundary-00=_4h46JAoj0X6ZKpF
-Content-Type: text/plain;
-  charset="UTF-8";
-  name="iomem"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="iomem"
-
-00000000-0000ffff : reserved
-00010000-0009bbff : System RAM
-0009bc00-0009ffff : reserved
-000e3000-000fffff : reserved
-00100000-bff9ffff : System RAM
-  00200000-00470375 : Kernel code
-  00470376-005aaadf : Kernel data
-  00677000-0073b01b : Kernel bss
-bffa0000-bffadfff : ACPI Tables
-bffae000-bffeffff : ACPI Non-volatile Storage
-bfff0000-bfffffff : reserved
-c0000000-cfffffff : PCI Bus 0000:01
-  c0000000-cfffffff : 0000:01:00.0
-ddf00000-dfefffff : PCI Bus 0000:06
-e0000000-efffffff : PCI MMCONFIG 0 [00-ff]
-  e0000000-efffffff : pnp 00:0c
-fdd00000-fddfffff : PCI Bus 0000:01
-  fddc0000-fdddffff : 0000:01:00.0
-  fddf0000-fddfffff : 0000:01:00.0
-fde00000-fdefffff : PCI Bus 0000:02
-  fdea0000-fdebffff : 0000:02:00.0
-  fdec0000-fdefffff : 0000:02:00.0
-    fdec0000-fdefffff : atl1
-fdf00000-fdffffff : PCI Bus 0000:03
-  fdffe000-fdffffff : 0000:03:00.0
-    fdffe000-fdffffff : iwlagn
-fe000000-fe0fffff : PCI Bus 0000:04
-  fe0fe000-fe0fffff : 0000:04:00.0
-    fe0fe000-fe0fffff : ahci
-fe100000-fe8fffff : PCI Bus 0000:06
-fe900000-fe9fffff : PCI Bus 0000:08
-  fe9e0000-fe9effff : 0000:08:00.0
-  fe9ffc00-fe9fffff : 0000:08:00.0
-fea00000-feafffff : PCI Bus 0000:09
-  feafe800-feafe8ff : 0000:09:01.4
-  feafec00-feafecff : 0000:09:01.3
-  feaff000-feaff0ff : 0000:09:01.2
-  feaff400-feaff4ff : 0000:09:01.1
-    feaff400-feaff4ff : mmc0
-  feaff800-feafffff : 0000:09:01.0
-    feaff800-feafffff : ohci1394
-febf8000-febfbfff : 0000:00:1b.0
-  febf8000-febfbfff : ICH HD audio
-febff000-febff3ff : 0000:00:1d.7
-  febff000-febff3ff : ehci_hcd
-febff400-febff7ff : 0000:00:1a.7
-  febff400-febff7ff : ehci_hcd
-febff800-febfffff : 0000:00:1f.2
-  febff800-febfffff : ahci
-fec00000-fec00fff : IOAPIC 0
-  fec00000-fec00fff : pnp 00:0a
-fed00000-fed003ff : HPET 0
-fed14000-fed19fff : pnp 00:01
-fed1c000-fed1ffff : pnp 00:08
-fed20000-fed3ffff : pnp 00:08
-fed45000-fed89fff : pnp 00:08
-fee00000-fee00fff : Local APIC
-  fee00000-fee00fff : reserved
-    fee00000-fee00fff : pnp 00:0a
-ffb00000-ffffffff : reserved
-  ffb00000-ffbfffff : pnp 00:08
-  fff00000-ffffffff : pnp 00:08
-100000000-13fffffff : System RAM
-
---Boundary-00=_4h46JAoj0X6ZKpF--
+> 
+> This time I remembered to remove the no-longer-used 'done:' label from
+> nfsd_buffered_readdir() too.
+> 
+> diff --git a/fs/namei.c b/fs/namei.c
+> index b8433eb..78f253c 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -1248,6 +1248,8 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
+>  	int err;
+>  	struct qstr this;
+>  
+> +	WARN_ON_ONCE(!mutex_is_locked(&base->d_inode->i_mutex));
+> +
+>  	err = __lookup_one_len(name, &this, base, len);
+>  	if (err)
+>  		return ERR_PTR(err);
+> diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+> index 3444c00..210709c 100644
+> --- a/fs/nfsd/nfs4recover.c
+> +++ b/fs/nfsd/nfs4recover.c
+> @@ -229,21 +229,23 @@ nfsd4_list_rec_dir(struct dentry *dir, recdir_func *f)
+>  		goto out;
+>  	status = vfs_readdir(filp, nfsd4_build_namelist, &names);
+>  	fput(filp);
+> +	mutex_lock(&dir->d_inode->i_mutex);
+>  	while (!list_empty(&names)) {
+>  		entry = list_entry(names.next, struct name_list, list);
+>  
+>  		dentry = lookup_one_len(entry->name, dir, HEXDIR_LEN-1);
+>  		if (IS_ERR(dentry)) {
+>  			status = PTR_ERR(dentry);
+> -			goto out;
+> +			break;
+>  		}
+>  		status = f(dir, dentry);
+>  		dput(dentry);
+>  		if (status)
+> -			goto out;
+> +			break;
+>  		list_del(&entry->list);
+>  		kfree(entry);
+>  	}
+> +	mutex_unlock(&dir->d_inode->i_mutex);
+>  out:
+>  	while (!list_empty(&names)) {
+>  		entry = list_entry(names.next, struct name_list, list);
+> diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+> index ab93fcf..0874299 100644
+> --- a/fs/nfsd/vfs.c
+> +++ b/fs/nfsd/vfs.c
+> @@ -1885,8 +1885,8 @@ static int nfsd_buffered_filldir(void *__buf, const char *name, int namlen,
+>  	return 0;
+>  }
+>  
+> -static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+> -				 struct readdir_cd *cdp, loff_t *offsetp)
+> +static __be32 nfsd_buffered_readdir(struct file *file, filldir_t func,
+> +				    struct readdir_cd *cdp, loff_t *offsetp)
+>  {
+>  	struct readdir_data buf;
+>  	struct buffered_dirent *de;
+> @@ -1896,11 +1896,12 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+>  
+>  	buf.dirent = (void *)__get_free_page(GFP_KERNEL);
+>  	if (!buf.dirent)
+> -		return -ENOMEM;
+> +		return nfserrno(-ENOMEM);
+>  
+>  	offset = *offsetp;
+>  
+>  	while (1) {
+> +		struct inode *dir_inode = file->f_path.dentry->d_inode;
+>  		unsigned int reclen;
+>  
+>  		cdp->err = nfserr_eof; /* will be cleared on successful read */
+> @@ -1919,26 +1920,38 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+>  		if (!size)
+>  			break;
+>  
+> +		/*
+> +		 * Various filldir functions may end up calling back into
+> +		 * lookup_one_len() and the file system's ->lookup() method.
+> +		 * These expect i_mutex to be held, as it would within readdir.
+> +		 */
+> +		host_err = mutex_lock_killable(&dir_inode->i_mutex);
+> +		if (host_err)
+> +			break;
+> +
+>  		de = (struct buffered_dirent *)buf.dirent;
+>  		while (size > 0) {
+>  			offset = de->offset;
+>  
+>  			if (func(cdp, de->name, de->namlen, de->offset,
+>  				 de->ino, de->d_type))
+> -				goto done;
+> +				break;
+>  
+>  			if (cdp->err != nfs_ok)
+> -				goto done;
+> +				break;
+>  
+>  			reclen = ALIGN(sizeof(*de) + de->namlen,
+>  				       sizeof(u64));
+>  			size -= reclen;
+>  			de = (struct buffered_dirent *)((char *)de + reclen);
+>  		}
+> +		mutex_unlock(&dir_inode->i_mutex);
+> +		if (size > 0) /* We bailed out early */
+> +			break;
+> +
+>  		offset = vfs_llseek(file, 0, SEEK_CUR);
+>  	}
+>  
+> - done:
+>  	free_page((unsigned long)(buf.dirent));
+>  
+>  	if (host_err)
+> 
+> -- 
+> dwmw2
+> 
