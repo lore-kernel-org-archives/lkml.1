@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbZDSCGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZDSCIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758955AbZDSCGk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 22:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZDSCGb
+	id S1758045AbZDSCIg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 22:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZDSCIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 22:06:31 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2620 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbZDSCGa (ORCPT
+	Sat, 18 Apr 2009 22:08:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57701 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752516AbZDSCIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 22:06:30 -0400
-Subject: Re: RFC: introduce struct ksymbol
-From: Joe Perches <joe@perches.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090418160910.GA6212@nowhere>
-References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com>
-	 <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
-	 <200904152021.41427.rusty@rustcorp.com.au>
-	 <1239954933.31728.12.camel@localhost>  <20090418160910.GA6212@nowhere>
-Content-Type: text/plain
-Date: Sat, 18 Apr 2009 19:05:57 -0700
-Message-Id: <1240106757.31116.117.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+	Sat, 18 Apr 2009 22:08:24 -0400
+Message-ID: <49EA8766.9070605@zytor.com>
+Date: Sat, 18 Apr 2009 19:07:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Matti Aarnio <matti.aarnio@zmailer.org>
+CC: Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
+       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org>
+In-Reply-To: <20090418145850.GD28512@mea-ext.zmailer.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-18 at 18:09 +0200, Frederic Weisbecker wrote:
-> The only problem is the end result:
+Matti Aarnio wrote:
 > 
-> %pSnosm, %pSno, %pSosm, ...
+> I did quick "sum of symbol sizes" lookup of the   raid.ko, and got
+> it like this:
 > 
-> One could end up stuck reading such a format, trying
-> to guess if the developer wanted to print the symbol +
-> "nosm" or something...
+> nm -t d -n -S /lib/modules/2.6.27.21-170.2.56.fc10.x86_64/kernel/drivers/md/raid456.ko | grep raid4|awk '{print $2}'|sed -e 's/^0*//g'|awk '{sum+=$1}END{print sum}'
+>   ...
 > 
-> But since I don't see any point in printing nosm directly after
-> a symbol... :)
+> raid4:   152
+> raid5:  7165
+> raid6: 75558
+> 
+> Entire 64kB of that raid6 is single pre-initialized r/o datablock:  raid6_gfmul
+> 
+> So yes, having RAID6 personality as separate module would be appropriate for
+> systems that are only interested in RAID4 or RAID5.  Separating the RAID4
+> personality wastes space, separating RAID5 ...  barely 2 of 4k memory pages.
+> 
 
-You couldn't do that anymore anyway.
+RAID 4 is really just another layout scheme for RAID 5.  But yes, moving
+RAID 6 to a separate module makes sense.  The amount of RAID 5 code not
+used by RAID 6 is fairly trivial, so the right way to do this is to have
+ the raid6 module depend on the raid5 module.
 
-The %p<TYPE> convention already swallows all
-alphanumeric characters that immediately follow %p.
+There used to be a raid6 module which was forked from raid5, with a lot
+of duplicate code.  That really made really no sense.
 
-vsprintf.c line 1043
-		case FORMAT_TYPE_PTR:
-			str = pointer(fmt+1, str, end, va_arg(args, void *),
-				      spec);
-			while (isalnum(*fmt))
-				fmt++;
-			break;
+	-hpa
 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
