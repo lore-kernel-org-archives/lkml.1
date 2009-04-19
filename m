@@ -1,124 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbZDSLOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbZDSLWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbZDSLOz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 07:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbZDSLOo
+	id S1759001AbZDSLWc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 07:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbZDSLWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 07:14:44 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:37199 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755536AbZDSLOo (ORCPT
+	Sun, 19 Apr 2009 07:22:19 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:47681 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755939AbZDSLWS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 07:14:44 -0400
-Date: Sun, 19 Apr 2009 13:16:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, rakib.mullick@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Fix false positive section mismatch warnings in the apic code
-Message-ID: <20090419111650.GA19873@uranus.ravnborg.org>
-References: <b9df5fa10904181941u4a73fc97i80dfa90a50b8daf5@mail.gmail.com> <tip-aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7@git.kernel.org> <49EAF31C.8020108@gmail.com> <20090419095759.GA4808@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090419095759.GA4808@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 19 Apr 2009 07:22:18 -0400
+Message-ID: <49EB0962.2060309@cosmosbay.com>
+Date: Sun, 19 Apr 2009 13:22:10 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Tzungder Lin <tzungder@gmail.com>
+CC: netdev@vger.kernel.org, davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
+References: <528f811a0904190316v22621684o3047e37bf8e78bda@mail.gmail.com>
+In-Reply-To: <528f811a0904190316v22621684o3047e37bf8e78bda@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 19 Apr 2009 13:22:11 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19, 2009 at 11:57:59AM +0200, Ingo Molnar wrote:
+Tzungder Lin a écrit :
+> From: Jonathan Lin <jon.lin@vatics.com, tzungder@gmail.com>
 > 
-> * Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
+> In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before
+> setting up the DMA buffer address. In this interval where RX was
+> enabled and DMA buffer address is not yet set up, any incoming
+> broadcast packet would be send to a strange physical address:
+> 0x003e8800 which is the default value of DMA buffer address.
+> Unfortunately, this address is used by Linux kernel. So kernel panics.
+> This patch fix it by setting up DMA buffer address before RX enabled
+> and everything is fine even under broadcast packets attack.
 > 
-> > tip-bot for Rakib Mullick pisze:
-> > > Commit-ID:  aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7
-> > > Gitweb:     http://git.kernel.org/tip/aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7
-> > > Author:     Rakib Mullick <rakib.mullick@gmail.com>
-> > > AuthorDate: Sun, 19 Apr 2009 08:41:17 +0600
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Sun, 19 Apr 2009 11:28:18 +0200
-> > > 
-> > > x86: Fix false positive section mismatch warnings in the apic code
-> > > 
-> > > find_unisys_acpi_oem_table() and unmap_unisys_acpi_oem_table() 
-> > > are non init functions, but these functions calls some init 
-> > > functions. But we need these functions as non-init functions.
-> > 
-> > Why? This warning seems to be valid.
+> Signed-off-by: Jonathan Lin <jon.lin@vatics.com, tzungder@gmail.com>
 > 
-> It's put into struct apic::acpi_madt_oem_check - which is a non-init 
-> structure. That particular field is only used from init context - 
-> but other fields are used all the time.
+> ---
 > 
-> Sam, what's the preferred way to handle these? We could mark the 
-> function pointer prototype there as __initdata, but i suspect we'll 
-> still get the warning in that case.
+> --- linux-2.6.29.1/drivers/net/8139too.c.orig	2009-04-19
+> 17:50:38.000000000 +0800
+> +++ linux-2.6.29.1/drivers/net/8139too.c	2009-04-19 17:52:51.000000000 +0800
+> @@ -1382,6 +1382,10 @@ static void rtl8139_hw_start (struct net
+>  	RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
+>  	RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
+> 
+> +	tp->cur_rx = 0;
+> +	/* init Rx ring buffer DMA address BEFORE Rx enabled*/
+> +	RTL_W32_F (RxBuf, tp->rx_ring_dma);
+> +	
+>  	/* Must enable Tx/Rx before setting transfer thresholds! */
+>  	RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
+> 
+> @@ -1389,8 +1393,6 @@ static void rtl8139_hw_start (struct net
+>  	RTL_W32 (RxConfig, tp->rx_config);
+>  	RTL_W32 (TxConfig, rtl8139_tx_config);
+> 
+> -	tp->cur_rx = 0;
+> -
+>  	rtl_check_media (dev, 1);
+> 
+>  	if (tp->chipset >= CH_8139B) {
+> @@ -1405,9 +1407,6 @@ static void rtl8139_hw_start (struct net
+>  	/* Lock Config[01234] and BMCR register writes */
+>  	RTL_W8 (Cfg9346, Cfg9346_Lock);
+> 
+> -	/* init Rx ring buffer DMA address */
+> -	RTL_W32_F (RxBuf, tp->rx_ring_dma);
+> -
+>  	/* init Tx buffer DMA addresses */
+>  	for (i = 0; i < NUM_TX_DESC; i++)
+>  		RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] -
+> tp->tx_bufs));
+> --
 
-If I understand it correct we have the following:
+Hi Jonathan
 
-(data) struct apic apic_es7000.acpi_madt_oem_check =>
-(function) es7000_acpi_madt_oem_check =>
-(function) find_unisys_acpi_oem_table
-(__init) early_acpi_os_unmap_memory
+There are at least two small problems on this patch submission.
 
-So the real fix is to:
-1) annotate find_unisys_acpi_oem_table __init
-2) annotate es7000_acpi_madt_oem_check __init
-3) teach modpost that struct apic apic_es7000 may reference __init
+1) Please chose one of email address for Signoff line, not two :)
 
-Step 3 is done using __refdata
+For example : Signed-off-by: Jonathan Lin <tzungder@gmail.com>
 
-Based on the above analysis I would assume the best fix
-would look like this the following.
-[I only looked at the first warning]
+You'll be soon flooded by spams, so dont ease spamers life :)
 
-Rabik/Marcin - if you agree in the analysis could you produce
-a proper patch and send to Ingo - thanks.
+2) Try to find out why your email got two lines wrapped
+    You can read Documentation/email-clients.txt if you want extensive documentation.
+    You can also test this by sending your 'patch' to yourself and check if
+    no lines were wrapped before sending the 'official patch'
 
-You can add my:
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-if the patch is ok.
+I dont want to bother you Jonathan, as it is pretty hard for a newcomer to learn
+this things, but I feel that you might find other bugs in linux kernel, so this
+learning is likely a good investment, both for you and others.
 
-	Sam
-
-
-diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-index 1c11b81..810d5ce 100644
---- a/arch/x86/kernel/apic/es7000_32.c
-+++ b/arch/x86/kernel/apic/es7000_32.c
-@@ -254,7 +254,7 @@ static int parse_unisys_oem(char *oemptr)
- }
- 
- #ifdef CONFIG_ACPI
--static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
-+static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
- {
- 	struct acpi_table_header *header = NULL;
- 	struct es7000_oem_table *table;
-@@ -306,7 +306,7 @@ static int es7000_check_dsdt(void)
- static int es7000_acpi_ret;
- 
- /* Hook from generic ACPI tables.c */
--static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	unsigned long oem_addr = 0;
- 	int check_dsdt;
-@@ -717,7 +717,11 @@ struct apic apic_es7000_cluster = {
- 	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
- };
- 
--struct apic apic_es7000 = {
-+/*
-+ * .acpi_madt_oem_check references an init function which is ok.
-+ * Annotate with __refdata to silence section mismatch warning
-+ */
-+struct apic __refdata apic_es7000 = {
- 
- 	.name				= "es7000",
- 	.probe				= probe_es7000,
-
+Thanks
 
