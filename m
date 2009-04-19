@@ -1,70 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbZDSN5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZDSN5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761320AbZDSN5e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 09:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbZDSN50
+	id S1761009AbZDSN5v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 09:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760722AbZDSN5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 09:57:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39765 "EHLO mx3.mail.elte.hu"
+	Sun, 19 Apr 2009 09:57:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48343 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755012AbZDSN5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 09:57:25 -0400
-Date: Sun, 19 Apr 2009 15:56:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, rakib.mullick@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Fix false positive section mismatch
-	warnings in the apic code
-Message-ID: <20090419135639.GA28919@elte.hu>
-References: <b9df5fa10904181941u4a73fc97i80dfa90a50b8daf5@mail.gmail.com> <tip-aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7@git.kernel.org> <49EAF31C.8020108@gmail.com> <20090419095759.GA4808@elte.hu> <49EAFACD.6040302@gmail.com>
+	id S1759962AbZDSN5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 09:57:38 -0400
+Date: Sun, 19 Apr 2009 09:54:28 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Message-ID: <20090419135428.GH8493@redhat.com>
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49EAFACD.6040302@gmail.com>
+In-Reply-To: <20090417231244.GB6972@linux>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-
-> Ingo Molnar wrote:
-> > * Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+On Sat, Apr 18, 2009 at 01:12:45AM +0200, Andrea Righi wrote:
+> On Fri, Apr 17, 2009 at 01:39:55PM -0400, Vivek Goyal wrote:
+> > On Tue, Apr 14, 2009 at 10:21:12PM +0200, Andrea Righi wrote:
 > > 
-> >> tip-bot for Rakib Mullick pisze:
-> >>> Commit-ID:  aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7
-> >>> Gitweb:     http://git.kernel.org/tip/aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7
-> >>> Author:     Rakib Mullick <rakib.mullick@gmail.com>
-> >>> AuthorDate: Sun, 19 Apr 2009 08:41:17 +0600
-> >>> Committer:  Ingo Molnar <mingo@elte.hu>
-> >>> CommitDate: Sun, 19 Apr 2009 11:28:18 +0200
-> >>>
-> >>> x86: Fix false positive section mismatch warnings in the apic code
-> >>>
-> >>> find_unisys_acpi_oem_table() and unmap_unisys_acpi_oem_table() 
-> >>> are non init functions, but these functions calls some init 
-> >>> functions. But we need these functions as non-init functions.
-> >> Why? This warning seems to be valid.
+> > [..]
+> > > +4.2. Buffered I/O (write-back) tracking
+> > > +
+> > > +For buffered writes the scenario is a bit more complex, because the writes in
+> > > +the page cache are processed asynchronously by kernel threads (pdflush), using
+> > > +a write-back policy. So the real writes to the underlying block devices occur
+> > > +in a different I/O context respect to the task that originally generated the
+> > > +dirty pages.
+> > > +
+> > > +The I/O bandwidth controller uses the following solution to resolve this
+> > > +problem.
+> > > +
+> > > +If the operation is a buffered write, we can charge the right cgroup looking at
+> > > +the owner of the first page involved in the I/O operation, that gives the
+> > > +context that generated the I/O activity at the source. This information can be
+> > > +retrieved using the page_cgroup functionality originally provided by the cgroup
+> > > +memory controller [4], and now provided specifically by the bio-cgroup
+> > > +controller [5].
+> > > +
+> > > +In this way we can correctly account the I/O cost to the right cgroup, but we
+> > > +cannot throttle the current task in this stage, because, in general, it is a
+> > > +different task (e.g., pdflush that is processing asynchronously the dirty
+> > > +page).
+> > > +
+> > > +For this reason, all the write-back requests that are not directly submitted by
+> > > +the real owner and that need to be throttled are not dispatched immediately in
+> > > +submit_bio(). Instead, they are added into an rbtree and processed
+> > > +asynchronously by a dedicated kernel thread: kiothrottled.
+> > > +
 > > 
-> > It's put into struct apic::acpi_madt_oem_check - which is a 
-> > non-init structure. That particular field is only used from init 
-> > context - but other fields are used all the time.
+> > Hi Andrea,
 > 
-> Can we have a rule that "every __ref usage should have a comment 
-> explaining why __ref is safe in this place"?
+> Hi Vivek,
+> 
+> > 
+> > I am trying to go through your patches now and also planning to test it
+> 
+> thanks for trying to test first of all.
+> 
+> > out. While reading the documentation async write handling interested
+> > me. IIUC, looks like you are throttling writes once they are being 
+> > written to the disk (either by pdflush or in the context of the process
+> > because vm_dirty_ratio crossed etc).
+> 
+> Correct, more exactly in submit_bio().
+> 
+> The difference between synchronous IO and writeback IO is that in the
+> first case the task itself is throttled via schedule_timeout_killable();
+> in the second case pdflush is never throttled, the IO requests instead
+> are simply added into a rbtree and dispatched asynchronously by another
+> kernel thread (kiothrottled) using a EDF-like scheduling. More exactly,
+> a deadline is evaluated for each writeback IO request looking at the
+> cgroup BW and iops/sec limits, then kiothrottled periodically selects
+> and dispatches the requests with an elapsed deadline.
+> 
+> > 
+> > If that's the case, will a process not see an increased rate of writes
+> > till we are not hitting dirty_background_ratio?
+> 
+> Correct. And this is a good behaviour IMHO. At the same time we have a
+> smooth BW usage (according to the cgroup limits I mean) even in presence
+> of writeback IO only.
+> 
+> > 
+> > Secondly, if above is giving acceptable performance resutls, then we
+> > should be able to provide max bw control at IO scheduler level (along
+> > with proportional bw control)?
+> > 
+> > So instead of doing max bw and proportional bw implementation in two
+> > places with the help of different controllers, I think we can do it
+> > with the help of one controller at one place. 
+> > 
+> > Please do have a look at my patches also to figure out if that's possible
+> > or not. I think it should be possible.
+> > 
+> > Keeping both at single place should simplify the things.
+> 
+> Absolutely agree to do both proportional and max BW limiting in a single
+> place. I still need to figure which is the best place, if the IO
+> scheduler in the elevator, when the IO requests are submitted. A natural
+> way IMHO is to control the submission of requests, also Andrew seemed to
+> be convinced about this approach. Anyway, I've already scheduled to test
+> your patchset and I'd like to see if it's possible to merge our works,
+> or select the best from ours patchsets.
+> 
 
-Yes, that's prudent.
+Hmm..., thinking more about it, it reminded me of one problem though
+of doing it at IO scheduler level. Its very hard to provide max bw control
+at intermediate logical devices (ex, software raid configurations).
 
-	Ingo
+Thanks
+Vivek
