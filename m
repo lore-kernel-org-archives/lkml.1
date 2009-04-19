@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZDSSXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZDSSb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZDSSXm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 14:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbZDSSXd
+	id S1756642AbZDSSb4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 14:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbZDSSbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 14:23:33 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:23777 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948AbZDSSXc convert rfc822-to-8bit (ORCPT
+	Sun, 19 Apr 2009 14:31:46 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:56577 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755545AbZDSSbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 14:23:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=BYZ2TZbDaFmFLf0llkcsuhgKOHJCvJCnEjbOK76kcEhv7ye0VBoqaI7QLkquozQHPg
-         9+1uatrKvmFHVf+qmHsJDLQLCAbDgRJmPXmYEkgnHtr1K67CyyBLWNGw8O4m/soFwLy4
-         X5TpJvocDpPmkw+MRJ4F/nAMYNU67LAbNqu9I=
+	Sun, 19 Apr 2009 14:31:45 -0400
+Date: Sun, 19 Apr 2009 19:31:43 +0100
+From: Andrew Price <andy@andrewprice.me.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [Bug #13120] BUG: using rootfstype=ext4 causes oops
+Message-ID: <20090419183143.GB24066@sucs.org>
+Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <nY3-4PrO6XH.A.zGH.Fw85JB@chimera>
 MIME-Version: 1.0
-In-Reply-To: <20090418232533.GB23201@kroah.com>
-References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
-	 <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
-	 <20090418232533.GB23201@kroah.com>
-Date: Sun, 19 Apr 2009 20:23:30 +0200
-X-Google-Sender-Auth: 88dc56cabf7e7cc9
-Message-ID: <10f740e80904191123w64e951beya329e4e91aa7765@mail.gmail.com>
-Subject: Re: [PATCH/RFC 01/16] platform: Make platform resources input 
-	parameters const
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <nY3-4PrO6XH.A.zGH.Fw85JB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19, 2009 at 01:25, Greg KH <greg@kroah.com> wrote:
-> On Sat, Apr 18, 2009 at 08:52:09PM +0200, Geert Uytterhoeven wrote:
->> Make the platform resources input parameters of platform_device_add_resources()
->> and platform_device_register_simple() const, as the resources are copied and
->> never modified.
->>
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> Cc: Greg Kroah-Hartman <gregkh@suse.de>
->
-> If you need this for your other patches, no objection from me, feel free
+On Thu, Apr 16, 2009 at 11:45:07PM +0200, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13120
+> Subject		: BUG: using rootfstype=ext4 causes oops
+> Submitter	: Andrew Price <andy@andrewprice.me.uk>
+> Date		: 2009-04-15 20:59 (2 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123982932807371&w=4
+> Handled-By	: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=123991090816794&w=4
 
-Yes, my other patches depend on it.
-
-> to take it through your tree (or I can take it through mine if you
-> want.)
-
-OK, will take it. Thanks!
-
-> Either way, feel free to add:
->        Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->
-> to it.
-
-Acked-by, I assume...
-
-Gr{oetje,eeting}s,
-
-						Geert
+Fixed in commit f505d49ffd25ed062e76ffd17568d3937fcd338c "ide: fix
+barriers support" (which was merged in
+df89f1ba971b3df2b7e1bc46ca7ce867539186fa ).
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Andrew Price
