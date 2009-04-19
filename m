@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756322AbZDSG0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbZDSG1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756322AbZDSG0u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 02:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZDSG0i
+	id S1760227AbZDSG1J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 02:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbZDSG0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 02:26:38 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:34295 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755359AbZDSG0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 02:26:37 -0400
-Date: Sun, 19 Apr 2009 08:28:41 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kbuild <linux-kbuild@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: kbuild - introduce support for subdir-ccflags-y
-Message-ID: <20090419062841.GA17801@uranus.ravnborg.org>
-References: <20090418125159.GA23008@uranus.ravnborg.org> <20090418125839.GA3668@flint.arm.linux.org.uk> <20090418150750.GA24059@elte.hu> <20090418180953.GE7148@flint.arm.linux.org.uk> <f73f7ab80904182017n7f27f49ck48ba200deb99388a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 19 Apr 2009 02:26:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35717 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756092AbZDSG0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 02:26:40 -0400
+Date: Sun, 19 Apr 2009 11:54:48 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Add ext3 data=guarded mode
+Message-ID: <20090419062448.GA13272@amit-x200.pnq.redhat.com>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com> <1239910921.21233.98.camel@think.oraclecorp.com> <20090417180906.GA8363@amit-x200.pnq.redhat.com> <20090417201342.GF26479@mit.edu> <20090418060312.GA10943@amit-x200.pnq.redhat.com> <1240039701.6298.12.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f73f7ab80904182017n7f27f49ck48ba200deb99388a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1240039701.6298.12.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 11:17:44PM -0400, Kyle Moffett wrote:
-> On Sat, Apr 18, 2009 at 2:09 PM, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > On Sat, Apr 18, 2009 at 05:07:50PM +0200, Ingo Molnar wrote:
-> >> * Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> >> > On Sat, Apr 18, 2009 at 02:51:59PM +0200, Sam Ravnborg wrote:
-> >> > > The typical use cases are an architecture or a subsystem that
-> >> > > decide to cover all files with -Werror.
-> >> > > Today alpha, mips and sparc uses -Werror in almost all their
-> >> > > Makefile - with subdir-ccflag-y it is now simpler to do so
-> >> > > as only the top-level directories needs to be covered.
-> >> >
-> >> > Hmm, this won't make sense for ARM.  We have things like #warning
-> >> > and deprecated functions in machine specific headers, and adding
-> >> > -Werror to the whole of arch/arm/ will result in these causing
-> >> > builds to fail.
-> >>
-> >> This is optional - if you dont want it, you dont set it.
-> >
-> > Please read _all_ of my mail, particularly the bit where it talks about
-> > it being useful for a certain subset.
+On (Sat) Apr 18 2009 [09:28:21], Mike Galbraith wrote:
+> On Sat, 2009-04-18 at 11:33 +0530, Amit Shah wrote:
+> > On (Fri) Apr 17 2009 [16:13:42], Theodore Tso wrote:
+> > > On Fri, Apr 17, 2009 at 11:39:06PM +0530, Amit Shah wrote:
+> > > > # 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
+> > > > 
+> > > > filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
+> > > > ext3-guarded	85		97	459		90
+> > > > ext3-writeback 86		95	140		94
+> > > > ext3-ordered	86		96	277		95
+> > > > 
+> > > > Running the test in single user mode, I get the following results:
+> > > > 
+> > > > # 4GiB file, kernel 9f76208c33984ab777eace5d07a4e36e88703e02 + ext3-guarded
+> > > > 
+> > > > filesystem	posix-fallocate	mmap	chunk-4096	chunk-8192
+> > > > ext3-guarded	84		86	163		91
+> > > > ext3-writeback 84		88	217		91
+> > > > ext3-ordered	84		86	226		91
+> > > 
+> > > 
+> > > The difference between guarded and writeback in chunk-4096 looking at
+> > > your desktop timings and your single user times is.... surprising. 
+> > 
+> > Surely. I re-ran the guarded test immediately after that one and got a
+> > time of 353s with the desktop. Another run much latergave me a 189s time,
+> > so it seems to vary quite a lot. Initially when I was getting high
+> > numbers, I thought it could be related to the IO scheduler but looks like
+> > it's just some background tasks trying to get cpu or io time. Of course,
+> > the whole system becomes sluggish once these tests start.
+> > 
+> > > In particular, the fact that the guarded time is 3 times longer than
+> > > ext3-writeback when the desktop is running, and 20% faster in single
+> > > user mode.  Are these results reproducible?  And do you have any
+> > > thoughts as to what might be causing them?
+> > 
+> > I initially thought there was something but I also got lower numbers
+> > (189s), so I can't really say what it is even though I call sync before
+> > starting the tests.
 > 
-> It's my impression that on x86 it's a config option whether or not to
-> build with -Werror.  You could do the exact same thing with an
-> internal inverted-logic CONFIG_ARM_ALLOW_WARNINGS option and make all
-> the boards triggering warnings "select ARM_ALLOW_WARNINGS".  Then have
-> a user-visible config option "ARM_USER_ALLOW_WARNINGS" which also
-> selects the internal option.  That adds some additional kconfig-level
-> documentation on which subarch combos need some love.
+> Probably because you're swapping heavily, and that is perturbing your
 
-Correct - but Russell's original comment was that the subdir-* feature
-was of no use for arm. And this is correct with the current way
-the individual directories are specified.
+The variance only affects the 4k test; the other times more or less
+remain the same.
 
-If you compare arch/x86/kernel/ and arch/arm/kernel/ you will see
-that x86 has 3 subdirectories where arm has none.
-
-Another measure:
-Arm has 12 Makefiles outside mach* and plat* where x86 has 24 Makefiles.
-
-Ao unless Russell decide to take the patch that refactor all the core-*
-stuff out in a Kbuild file arm has no use of subdir-ccflags-y and
-can use the already existing ccflags-y if they decide to cover
-most of arm with -Werror.
-
-	Sam
+		Amit
