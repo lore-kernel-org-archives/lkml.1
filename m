@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757809AbZDSS5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZDSTA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757809AbZDSS5O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 14:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbZDSS45
+	id S1758894AbZDSTA4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 15:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbZDSTAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 14:56:57 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:38386 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753375AbZDSS44 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 14:56:56 -0400
-Date: Sun, 19 Apr 2009 20:56:52 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: geert@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 15/16] rtc: Add an RTC driver for
- the  Ricoh RP5C01
-Message-ID: <20090419205652.44b0b7e9@i1501.lan.towertech.it>
-In-Reply-To: <10f740e80904191141i599af898wd47535cabd8c9184@mail.gmail.com>
-References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-9-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-10-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-11-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-12-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-13-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-14-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-15-git-send-email-geert@linux-m68k.org>
-	<1240080744-14995-16-git-send-email-geert@linux-m68k.org>
-	<20090418235529.47e481e9@i1501.lan.towertech.it>
-	<10f740e80904191141i599af898wd47535cabd8c9184@mail.gmail.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 19 Apr 2009 15:00:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40271 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755665AbZDSTAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 15:00:46 -0400
+Date: Sun, 19 Apr 2009 19:00:44 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.37.1
+Message-ID: <20090419190044.GA1493@hera.kernel.org>
+Reply-To: w@1wt.eu
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 19:00:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Apr 2009 20:41:21 +0200
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Hello,
 
-> >  please implement either set_time or set_mmss, not both.
-> >  I don't know the chip but I suspect set_time is the one you need.
-> 
-> OK, I will remove .set_mmss. Got to confused by looking into how
-> everything is used...
-> BTW, the only remaining users of rtc_set_mmss() seem to be
-> arch/sparc/kernel/time_{32,64}.c?
+As there have been a few minor fixes pending for a while now, I thought
+it was time to release 2.4.37.1. Most of these fixes concern minor
+security issues which have been backported from 2.6 (mostly local DoSes).
+In my opinion, only people with local users might consider upgrading, if
+those people still exist !
 
- Yes. The facility is there for drives, not users. For some chips it's easier
- to implement a set_mmss like interface so it's better to have the rtc framewrk
- to convert between the twos than to have repeated code in drivers.
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.1.bz2
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.1
 
-> OK, if I take the result (for both rtc-rp5c01 and rtc-msm6242) through
-> the m68k tree?
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
 
- that's ok, you can add my acked by.
--- 
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
 
- Best regards,
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+Reminder for those who are still unaware of it : 2.6.27 will be maintained
+for years and is already quite stable. If you're still running 2.4 without
+any particular reason, please give 2.6.27-stable a try and report any
+regression, should you face any.
 
-  http://www.towertech.it
+Regards,
+Willy
+
+--
+
+Summary of changes from v2.4.37 to v2.4.37.1
+============================================
+
+Alan Cox (1):
+      af_rose/x25: Sanity check the maximum user frame size
+
+Oleg Nesterov (2):
+      exit_notify: kill the wrong capable(CAP_KILL) check
+      copy_process: fix CLONE_PARENT && parent_exec_id interaction
+
+Serge E. Hallyn (1):
+      CAP_FS_MASK: add CAP_LINUX_IMMUTABLE and CAP_MKNOD
+
+Willy Tarreau (4):
+      ATM: ensure we don't listen twice on a socket
+      scripts: backport checkpatch.pl from mainline 2.6
+      net: Fix soft lockups/OOM issues w/ unix garbage collector (CVE-2008-5300)
+      Change VERSION to 2.4.37.1
 
