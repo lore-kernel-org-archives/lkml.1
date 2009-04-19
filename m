@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZDSBCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758342AbZDSBDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbZDSBCT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 21:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZDSBCK
+	id S1758342AbZDSBDw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 21:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZDSBDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 21:02:10 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49991 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276AbZDSBCJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 21:02:09 -0400
-Message-ID: <49EA77DE.7040700@oracle.com>
-Date: Sat, 18 Apr 2009 18:01:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Andres Salomon <dilinger@queued.net>
-CC: akpm@linux-foundation.org, david-b@pacbell.net, jordan@cosmicpenguin.net,
-       katzj@redhat.com, tiwai@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cs553x: fix build dependency problems
-References: <200904062355.n36NtLTf018342@imap1.linux-foundation.org>	<49DFA576.6040005@oracle.com> <20090412215203.45e2a876@ephemeral> <49E2BEE2.8070305@oracle.com>
-In-Reply-To: <49E2BEE2.8070305@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 18 Apr 2009 21:03:41 -0400
+Received: from smtp.knology.net ([24.214.63.101]:56468 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753858AbZDSBDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Apr 2009 21:03:40 -0400
+Subject: Re: [PATCH net-next] myri10ge: allow per-board firmware overriding
+From: David Dillow <dave@thedillows.org>
+To: Brice Goglin <brice@myri.com>
+Cc: Stanislaw Gruszka <sgruszka@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux Network Development list <netdev@vger.kernel.org>
+In-Reply-To: <49EA1DAC.1000602@myri.com>
+References: <49E7239B.4000309@myri.com>
+	 <20090417095038.49b745bf@dhcp-lab-109.englab.brq.redhat.com>
+	 <49EA1DAC.1000602@myri.com>
+Content-Type: text/plain
+Date: Sat, 18 Apr 2009 20:56:57 -0400
+Message-Id: <1240102617.5342.6.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.49EA77B0.0053:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andres, how does this look to you?
+On Sat, 2009-04-18 at 20:36 +0200, Brice Goglin wrote:
+> Stanislaw Gruszka wrote:
+>
+> > This would help in situation like this - admin will not have to thinking
+> > about boards initialization ordering. Besides some other drivers (like MTD
+> > cmd partitions) use own parsing for similar things, I think would be
+> > nice to unify things. What You think?
+> >   
+> 
+> We actually thought about supporting "eth2:fwname1,eth0:fwname2". But it
+> might be hard to implement in this case due to udev possible renaming
+> interfaces and this firmware names being needed *before* the renaming.
+> So yes, an automatic way to handle such parameter strings might be good,
+> but maybe not in this exact case.
 
-It fixes the problems that I know about.
+It seems like this could be done in user space, using the PCI bus ID as
+a key to select the firmware. The uevent identifies which device is
+requesting the firmware, so some modification to /lib/udev/firmware.sh
+should do it.
 
+Not that I really want to encourage relying on the bus ID being part of
+the path to the firmware files, as if no one uses it, it makes it easier
+to cache firmware files for multiple devices, but that's work for
+another day and the ABI is already set anyway...
 
+Dave
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Fix multiple build errors due to cs553x-gpio using GPIO APIs
-and using PCI APIs.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- mmotm-2009-0417-1519.orig/arch/x86/Kconfig
-+++ mmotm-2009-0417-1519/arch/x86/Kconfig
-@@ -1969,7 +1969,8 @@ config GEODE_MFGPT_TIMER
- 
- config OLPC
- 	bool "One Laptop Per Child support"
--	select GPIO_CS553X
-+	select GPIO_CS553X if PCI
-+	select GPIOLIB if PCI
- 	default n
- 	---help---
- 	  Add support for detecting the unique features of the OLPC
