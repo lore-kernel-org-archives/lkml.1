@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbZDSWBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbZDSWCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbZDSWBi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 18:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZDSWB3
+	id S1752910AbZDSWCv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 18:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZDSWCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 18:01:29 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:19034 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZDSWB2 (ORCPT
+	Sun, 19 Apr 2009 18:02:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55501 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZDSWCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 18:01:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=ZpAp3fo4UTdDTxCTOZ48JiQsIjJDD5cQdcQiaVvA/yFGLwMid32EQQrDRyKBUshHVo
-         SRhY872uGcPEPBoJF9Xd5U4zGomldLzAtNbHDpC68NTuHTfH+r8aN+Sv1TVqaYAFhZ8q
-         7rnIAumZmuFm85/vpbqCaYCyqiuGjcjZS99pA=
+	Sun, 19 Apr 2009 18:02:42 -0400
+Message-ID: <49EB9F59.4080904@zytor.com>
+Date: Sun, 19 Apr 2009 15:02:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Date: Sun, 19 Apr 2009 15:01:27 -0700
-Message-ID: <dd18b0c30904191501r62054705kcc2866cfd86a9f1e@mail.gmail.com>
-Subject: arch/x86/mm/pgtable.c:352: error: incorrect sharing of tree nodes
-From: Justin Mattock <justinmattock@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Roland Dreier <rdreier@cisco.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Hitoshi Mitake <h.mitake@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain> <adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu>
+In-Reply-To: <20090419214602.GA21527@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well I've just put in the latest gcc and am hitting errors
-with libc, and now the kernel:
+Ingo Molnar wrote:
+> 
+> Look at the drivers that define their own wrappers:
+> 
+> #ifndef readq
+> static inline unsigned long long readq(void __iomem *addr)
+> {
+>         return readl(addr) | (((unsigned long long)readl(addr + 4)) << 32LL);
+> }
+> #endif
+> 
+> ... it's the obvious 32-bit semantics for reading a 64-bit value 
+> from an mmio address. We made that available on 32-bit too.
+> 
+> It's being used ... and has been in use for some time. Where's the 
+> problem? readl is serializing on all default-ioremap mmio targets on 
+> x86 so there's no ambiguity in ordering.
+> 
 
-  CC      arch/x86/mm/pgtable.o
-arch/x86/mm/pgtable.c: In function 'pgd_prepopulate_pmd':
-arch/x86/mm/pgtable.c:352: error: incorrect sharing of tree nodes
-D.24886.pud.pgd = swapper_pg_dir[i];
+I think his point is that they're not atomic.  For what it's worth,
+atomic readq()/writeq() *are* possible with any x86-32 CPU which
+supports MMX, but it is very costly to do in the kernel since it
+involves touching the FPU state.
 
-swapper_pg_dir[i]
-arch/x86/mm/pgtable.c:352: internal compiler error: verify_stmts failed
-Please submit a full bug report,
-with preprocessed source if appropriate.
-See <http://gcc.gnu.org/bugs.html> for instructions.
-make[1]: *** [arch/x86/mm/pgtable.o] Error 1
-make: *** [arch/x86/mm] Error 2
+For the vast number of users, a non-atomic primitive which is available
+for both 32- and 64-bit x86 is a win.  For a small number of users,
+it'll be confusing, and for a very small minority it's going to be
+desirable to have the atomic primitive.
 
+The reason the non-atomic is generally fine is because most device
+drivers are inherently single-threaded on a per-hardware device basis.
 
-sounds like I'm downgrading gcc..
+	-hpa
 
 -- 
-Justin P. Mattock
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
