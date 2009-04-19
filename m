@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbZDSHnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZDSIRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbZDSHnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 03:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZDSHnR
+	id S1755217AbZDSIRW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZDSIRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 03:43:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:19639 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbZDSHnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 03:43:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=IwKK1SNJlPljNfa35/OXlA77SLL7JrwbfdhtrlOOgtghCL6fBl7VvpoebyFueRUka3
-         HhVe3ARQHVX6ISyvUjBuxrNac2yERp5eAukLYVYXUwlDzYctE+jjAsl0oeXIIRCwNkAp
-         F/xlx5eqL8419+3yk8WJmtYCDo3R4D8fkZfio=
-Date: Sun, 19 Apr 2009 11:43:11 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: [PATCH -tip] x86: es7000, uv - use __cpuinit for kicking secondary
-	cpus
-Message-ID: <20090419074311.GA8670@lenovo>
+	Sun, 19 Apr 2009 04:17:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47439 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751966AbZDSIRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:17:07 -0400
+Date: Sun, 19 Apr 2009 10:16:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Ralf Baechle <ralf@linux-mips.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mips@linux-mips.org,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: mips build failure
+Message-ID: <20090419081641.GA23906@elte.hu>
+References: <20090419172436.6d0e741a.sfr@canb.auug.org.au> <1240126361.3423.5.camel@falcon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1240126361.3423.5.camel@falcon>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The caller already has __cpuinit attribute.
 
-[ Impact: cleanup ]
+* Wu Zhangjin <wuzhangjin@gmail.com> wrote:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+> On Sun, 2009-04-19 at 17:24 +1000, Stephen Rothwell wrote:
+> > Hi Ralf,
+> > 
+> > You probably already now about this, but our build (mips ip32_defconfig)
+> > of Linus' tree (commit aefe6475720bd5eb8aacbc881488f3aa65618562 "Merge
+> > branch 'upstream-linus' of
+> > git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev") gets
+> > these errors (we have actually been getting these errors since 2.6.30-rc1):
+> > 
+> > In file included from arch/mips/include/asm/compat.h:7,
+> >                  from include/linux/compat.h:15,
+> >                  from arch/mips/kernel/asm-offsets.c:12:
+> > include/linux/seccomp.h: In function 'prctl_get_seccomp':
+> > include/linux/seccomp.h:30: error: 'EINVAL' undeclared (first use in this function)
+> > include/linux/seccomp.h:30: error: (Each undeclared identifier is reported only once
+> > include/linux/seccomp.h:30: error: for each function it appears in.)
+> > include/linux/seccomp.h: In function 'prctl_set_seccomp':
+> > include/linux/seccomp.h:35: error: 'EINVAL' undeclared (first use in this function)
+> > 
+> 
+> perhaps you can fix it like this:
+> 
+> include/linux/seccomp.h
+> 
+>  22 #else /* CONFIG_SECCOMP */
+>  23 
+>  24 +#include <asm-generic/errno-base.h>
+>  25 
+>  26 typedef struct { } seccomp_t;
+> 
+> in reality, there is a previous email sent by Ralf for it:
+> 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0904.2/01152.html
 
-I've no ability to test this but it should not bring
-any problems I believe.
+Yes, that looks like the right kind of fix.
 
- arch/x86/kernel/apic/es7000_32.c   |    2 +-
- arch/x86/kernel/apic/x2apic_uv_x.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Ralf, will you push that fix upstream, or should i do it?
 
-Index: linux-2.6.git/arch/x86/kernel/apic/es7000_32.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/es7000_32.c
-+++ linux-2.6.git/arch/x86/kernel/apic/es7000_32.c
-@@ -145,7 +145,7 @@ es7000_rename_gsi(int ioapic, int gsi)
- 	return gsi;
- }
- 
--static int wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
-+static int __cpuinit wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
- {
- 	unsigned long vect = 0, psaival = 0;
- 
-Index: linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -105,7 +105,7 @@ static void uv_vector_allocation_domain(
- 	cpumask_set_cpu(cpu, retmask);
- }
- 
--static int uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
-+static int __cpuinit uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
- {
- #ifdef CONFIG_SMP
- 	unsigned long val;
+Thanks,
+
+	Ingo
