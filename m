@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZDSERB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbZDSESj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZDSERB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 00:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbZDSEQw
+	id S1757421AbZDSESj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 00:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZDSES3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 00:16:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37450
+	Sun, 19 Apr 2009 00:18:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37455
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750777AbZDSEQv (ORCPT
+	by vger.kernel.org with ESMTP id S1750777AbZDSES2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 00:16:51 -0400
-Date: Sat, 18 Apr 2009 21:16:43 -0700 (PDT)
-Message-Id: <20090418.211643.248446717.davem@davemloft.net>
-To: eric@anholt.net
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       airlied@linux.ie
-Subject: Re: [git pull] Fixes to 2.6.30rc2
+	Sun, 19 Apr 2009 00:18:28 -0400
+Date: Sat, 18 Apr 2009 21:18:20 -0700 (PDT)
+Message-Id: <20090418.211820.197285479.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: khc@pm.waw.pl, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [BUG] 2.6.30-rc broke ixp4xx_eth, firmware breakage?
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1240086216.11172.2954.camel@gaiman.anholt.net>
-References: <1240001399.11172.121.camel@gaiman.anholt.net>
-	<20090418.015905.92829818.davem@davemloft.net>
-	<1240086216.11172.2954.camel@gaiman.anholt.net>
+In-Reply-To: <200904182153.n3ILrP6j027453@pilspetsen.it.uu.se>
+References: <200904182153.n3ILrP6j027453@pilspetsen.it.uu.se>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,27 +26,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Anholt <eric@anholt.net>
-Date: Sat, 18 Apr 2009 13:23:36 -0700
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Sat, 18 Apr 2009 23:53:25 +0200 (MEST)
 
-> On Sat, 2009-04-18 at 01:59 -0700, David Miller wrote:
->> Eric, any plans to ever push your work through David Airlie's DRM
->> tree?  I've been watching this for a few weeks and I'm mystified why
->> the Intel DRM drier stuff is so special that is always goes seperate.
->> 
->> It's seems foolish for David to manage the infrastructure and core DRM
->> changes, as well as those for radeon and the other drivers other than
->> Intel, which could potentially cause merge issues and conflicts with
->> your driver changes.
->> 
->> Why not do Intel DRM driver development via his tree?  I just don't
->> get it. :-/
+> The ixp4xx_eth driver for my IXP420 XScale box (Synology DS101)
+> worked fine in kernel 2.6.29. Now trying to boot 2.6.30-rc2 I'm
+> greeted with the following failure during init:
 > 
-> Inside of the merge window, I am going through Dave again because he
-> requested it (though delays meant that I didn't get a major cleanup in
-> this merge window).  However, Dave is also quite busy, and not stealing
-> his time every few days to pull my tree for just forwarding bugfixes on
-> seems to be a win.
+> Bringing up interface eth0:  RTNETLINK answers: No such file or directory
+> Failed to bring up eth0.
+> [FAILED]
+> 
+> There's a fairly long (at least 10 seconds) delay between the 'Bringing up'
+> message and the RTNETLINK error.
+> 
+> A diff between the 2.6.29 and 2.6.30-rc2 boot logs indicates that
+> the firmware doesn't get loaded:
 
-So you're essentially claiming that Dave isn't being a responsive
-enough maintainer of the DRM subsystem?
+Please make sure CONFIG_FIRMWARE_IN_KERNEL is set in your
+configuration if this driver is being built statically
+into your kernel.
+
+Otherwise, if modular, make sure the firmware files get installed into
+the correct location and are available in the filesystem when the
+driver loads.
