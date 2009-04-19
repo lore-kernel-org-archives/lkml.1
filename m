@@ -1,114 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZDSHMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZDSHTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948AbZDSHMz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 03:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZDSHMp
+	id S1754910AbZDSHTR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 03:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZDSHS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 03:12:45 -0400
-Received: from mxout12.netvision.net.il ([194.90.6.37]:40646 "EHLO
-	mxout12.netvision.net.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbZDSHMo (ORCPT
+	Sun, 19 Apr 2009 03:18:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47045 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751156AbZDSHS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 03:12:44 -0400
-Date: Sun, 19 Apr 2009 13:12:43 +0300
-From: raz ben yehuda <raziebe@013.net>
-Subject: Re: Subject: PATCH : offline scheduler
-In-reply-to: <alpine.LFD.2.00.0904180032000.30751@localhost.localdomain>
-To: Len Brown <lenb@kernel.org>
-Cc: raz ben yehuda <raziebe@013.net>, lkml <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Message-id: <1240135963.3395.23.camel@raz>
-MIME-version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3)
-Content-type: text/plain
-Content-transfer-encoding: 7BIT
-References: <1240006279.7801.0.camel@raz>
- <alpine.LFD.2.00.0904180032000.30751@localhost.localdomain>
+	Sun, 19 Apr 2009 03:18:57 -0400
+Subject: Re: [PATCH] Fix i_mutex handling in nfsd readdir.
+From: David Woodhouse <dwmw2@infradead.org>
+To: hooanon05@yahoo.co.jp
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, bfields@citi.umich.edu,
+       hch@infradead.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <905.1240024314@jrobl>
+References: <8036.1237474444@jrobl>
+	 <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl>
+	 <1239960739.3428.33.camel@macbook.infradead.org>
+	 <20090417193233.GM26366@ZenIV.linux.org.uk>
+	 <1240006620.19059.41.camel@macbook.infradead.org>
+	 <20090417224350.GN26366@ZenIV.linux.org.uk>
+	 <20090417225306.GO26366@ZenIV.linux.org.uk>
+	 <1240013753.21423.86.camel@macbook.infradead.org>  <905.1240024314@jrobl>
+Content-Type: text/plain
+Date: Sun, 19 Apr 2009 08:18:49 +0100
+Message-Id: <1240125529.3589.44.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-first , i really appreciate having Len Brown reading my paper. you also
-have my sympathy :)
-On Sat, 2009-04-18 at 00:44 -0400, Len Brown wrote:
-> On Sat, 18 Apr 2009, raz ben yehuda wrote:
+On Sat, 2009-04-18 at 12:11 +0900, hooanon05@yahoo.co.jp wrote:
+> David Woodhouse:
+> > This patch fixes it by locking the directory's i_mutex again before
+> > calling the filldir functions. The original deadlocks which commit
+> > 14f7dd63 was designed to avoid are still avoided, because they were due
+> > to fs-internal locking, not i_mutex.
+> 	:::
+> > --- a/fs/namei.c
+> > +++ b/fs/namei.c
+> > @@ -1248,6 +1248,8 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
+> >  	int err;
+> >  	struct qstr this;
+> >  
+> > +	WARN_ON_ONCE(!mutex_is_locked(&base->d_inode->i_mutex));
+> > +
+> >  	err = __lookup_one_len(name, &this, base, len);
 > 
-> > Len Hello 
-> > offsched is a platform aimed to assign a service to an off-lined processor.
-> > Motivation is explained in: 
-> > http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/trunk/Documentation/OFFSCHED.pdf
-> > Currently I have implemented two services:
-> > 
-> > HYBRID REAL TIME LINUX 
-> > Implemented as a A 1us timer. This timer shows how a true real time system may co-exist with a 
-> > regular linux server. This way there is no enforcement of a real time system requirements on the
-> > entire kernel. Full documentation is at:
-> > http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/trunk/Documentation/OFFSCHED-RT.pdf
-> > 
-> > RTOP
-> > This piece of software send system statistics to a remove server.
-> > The user benefit is that even if the machine is un-accessible (remotely or locally) 
-> > RTOP still sends system statistics to a remote server. I have showed in a small paper what RTOP is:
-> > http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/trunk/Documentation/OFFSCHED-RTOP.pdf
-> > 
-> > The patch is mostly a facility for offsched. The exporting of tasklist_lock is because RTOP is implemented as a driver
-> > and it must lock the tasks list.
-> > This is the 4-th post. I will be grateful for your reply.
-> > 
-> > Signed-off-by: Raz Ben Yehuda <raziebe@013.net.il>
-> > 
-> > arch/x86/kernel/process.c |   42 ++++++++++++++++++++++++++++++++++++++++++
-> > arch/x86/kernel/smpboot.c |   11 +++++++----
-> > include/linux/cpu.h       |   20 ++++++++++++++++++++
-> > include/linux/sched.h     |    2 +-
-> > kernel/cpu.c              |    1 +
-> > kernel/fork.c             |    6 ++++++
-> > 6 files changed, 77 insertions(+), 5 deletions(-)
-> 
-> 
-> Interesting project Raz, must have been fun to develop!
-> 
-> A couple of comments...
-> 
-> It would probably be of most interest to Ingo and the RT guys on
-> linux-rt-users@vger.kernel.org rather than the ACPI guys
-> on linux-acpi@vger.kernel.org. (cc updated)
-> 
-> I don't understand the utility of the "offline timer"
-> use in section 6.1 of the paper.
-> With Nehalem, Intel is finally shipping a hardware TSC that is
-> guaranteed to be C-state, P-state, T-state invarient and not to drift --
-> so an extremely accurate cycle counter is just an MSR read away
-> on all cores...
-> 
-I was not clear . I meant timer and not a clock. Having a more accurate
-TSC is even better, because reading from hpet or cmos clocks
-takes too long time.
-> I also don't understand 6.2, the system monitor use --
-> for the hardware also provides numerous perfmon counters
-> in hardware for monitoring, and exposing those in a friendly way
-> seems to me to be a more interesting exercise than
-> trying to do monitoring in software with a dedicated CPU.
-rtop is meant to be used only when you cannot access the machine because it is 
-too overloaded. RTOP pushes information out from the system.
-> For 6.3, the traffic shaper...
-> The newer NICs have dedicated hardware to detect and shape
-> traffic flows -- again, probably much more efficient than
-> dedicating a general purpose processor...
-You are correct.I think i will design a new kind of offlet, one than can offload 
-the entire tcp stack, this way i will have nice ultra fast web server. I
-cannot rely on TOE as a general solution for all interfaces. and I do
-not think TOE is support ether channeling.  
-> For RT...
-> Certainly the performance of a dedicated CPU would be
-> what the rt kernel would want to strive for.  I guess
-> the question is if you can measure an actual performance
-> difference to quanitfy the theoretical beneifts
-> of the lack of locks, lack of protection etc.
-well, you are correct , again. i will provide benchmarks(if my 
-tutor will allow me to change my plans that is).
-> cheers,
-> Len Brown, Intel Open Source Technology Center
-> 
-> 
+> I'd suggest this checking is done only when CONFIG_DEBUG_KERNEL (or
+> something) is enabled. Because unconditional checking costs high for the
+> well-reviewed lookup code.
+
+It's supposed to be locked. It's likely to have been locked quite
+recently, so it'll be in the cache. I don't think the mutex_is_locked()
+check is going to be that expensive, is it?
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
