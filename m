@@ -1,92 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbZDSNHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbZDSNLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760988AbZDSNHN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 09:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760241AbZDSNG6
+	id S1760104AbZDSNLF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 09:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbZDSNKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 09:06:58 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:49963 "EHLO isrv.corpit.ru"
+	Sun, 19 Apr 2009 09:10:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37579 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758242AbZDSNG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 09:06:57 -0400
-Message-ID: <49EB21EF.3060600@msgid.tls.msk.ru>
-Date: Sun, 19 Apr 2009 17:06:55 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1758081AbZDSNKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 09:10:53 -0400
+Date: Sun, 19 Apr 2009 09:08:49 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, arozansk@redhat.com, jmoyer@redhat.com,
+       oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Subject: Re: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
+Message-ID: <20090419130849.GC8493@redhat.com>
+References: <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux> <20090417141358.GD29086@redhat.com> <e98e18940904171109r17ccb054kb7879f8d02ac26b5@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Mark Lord <lkml@rtr.ca>,
-       =?UTF-8?B?Um9nw6lyaW8gQnJpdG8=?= <rbrito@ime.usp.br>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Quick question about libata and hdparm
-References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <49EB1A33.7050808@rtr.ca> <49EB1C9C.3000105@msgid.tls.msk.ru> <49EB1FB3.5000609@garzik.org>
-In-Reply-To: <49EB1FB3.5000609@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e98e18940904171109r17ccb054kb7879f8d02ac26b5@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Michael Tokarev wrote:
->> Mark Lord wrote:
->> []
->>> Nearly all of the hdparm flags work fine with libata and SATA/PATA 
->>> drives.
->>> Among the *very few* that do not, are the -m and -d flags.  -c will 
->>> be working
->>> in the newest kernels, but not yet in most distro kernels.
->>>
->>> The -d flag is not permitted by libata, as the kernel prefers to 
->>> completely
->>> dictate DMA / PIO, and it does do a rather good job of it.
->>
->> Well, the kernel does a good job here in *almost* all cases.
->> The problematic case is when a device has some bad/unreadable
->> blocks/sectors.  When such a place occurs on read, libata
->> (or whatever it is) performs several retries, each time
->> using "less aggressive" settings - like reducing UDMA and
->> PIO mode till the lowest possible PIO/33.  And the device
->> stays in that mode until reboot, even if the problematic
->> sector has been relocated.  So it'd be nice to be able to
->> reset the mode back in such cases.
+On Fri, Apr 17, 2009 at 11:09:51AM -0700, Nauman Rafique wrote:
+> On Fri, Apr 17, 2009 at 7:13 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
+> >> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+> >> > > I think it would be possible to implement both proportional and limiting
+> >> > > rules at the same level (e.g., the IO scheduler), but we need also to
+> >> > > address the memory consumption problem (I still need to review your
+> >> > > patchset in details and I'm going to test it soon :), so I don't know if
+> >> > > you already addressed this issue).
+> >> > >
+> >> >
+> >> > Can you please elaborate a bit on this? Are you concerned about that data
+> >> > structures created to solve the problem consume a lot of memory?
+> >>
+> >> Sorry I was not very clear here. With memory consumption I mean wasting
+> >> the memory with hard/slow reclaimable dirty pages or pending IO
+> >> requests.
+> >>
+> >> If there's only a global limit on dirty pages, any cgroup can exhaust
+> >> that limit and cause other cgroups/processes to block when they try to
+> >> write to disk.
+> >>
+> >> But, ok, the IO controller is not probably the best place to implement
+> >> such functionality. I should rework on the per cgroup dirty_ratio:
+> >>
+> >> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+> >>
+> >> Last time we focused too much on the best interfaces to define dirty
+> >> pages limit, and I never re-posted an updated version of this patchset.
+> >> Now I think we can simply provide the same dirty_ratio/dirty_bytes
+> >> interface that we provide globally, but per cgroup.
+> >>
+> >> >
+> >> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
+> >> > > in the cgroup that exceeds its limit, how do we avoid the waste of
+> >> > > memory due to the succeeding IO requests and the increasingly dirty
+> >> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
+> >> > > but I think we talked about this problem in a previous email... sorry I
+> >> > > don't find the discussion in my mail archives.
+> >> > >
+> >> > > IMHO a nice approach would be to measure IO consumption at the IO
+> >> > > scheduler level, and control IO applying proportional weights / absolute
+> >> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
+> >> > > time block the tasks from dirtying memory that will generate additional
+> >> > > IO requests.
+> >> > >
+> >> > > Anyway, there's no need to provide this with a single IO controller, we
+> >> > > could split the problem in two parts: 1) provide a proportional /
+> >> > > absolute IO controller in the IO schedulers and 2) allow to set, for
+> >> > > example, a maximum limit of dirty pages for each cgroup.
+> >> > >
+> >> >
+> >> > I think setting a maximum limit on dirty pages is an interesting thought.
+> >> > It sounds like as if memory controller can handle it?
+> >>
+> >> Exactly, the same above.
+> >
+> > Thinking more about it. Memory controller can probably enforce the higher
+> > limit but it would not easily translate into a fixed upper async write
+> > rate. Till the process hits the page cache limit or is slowed down by
+> > dirty page writeout, it can get a very high async write BW.
+> >
+> > So memory controller page cache limit will help but it would not direclty
+> > translate into what max bw limit patches are doing.
+> >
+> > Even if we do max bw control at IO scheduler level, async writes are
+> > problematic again. IO controller will not be able to throttle the process
+> > until it sees actuall write request. In big memory systems, writeout might
+> > not happen for some time and till then it will see a high throughput.
+> >
+> > So doing async write throttling at higher layer and not at IO scheduler
+> > layer gives us the opprotunity to produce more accurate results.
 > 
-> Do you have a log?
+> Wouldn't 'doing control on writes at a higher layer' have the same
+> problems as the ones we talk about in dm-ioband? What if the cgroup
+> being throttled for dirtying pages has a high weight assigned to it at
+> the IO scheduler level? What if there are threads of different classes
+> within that cgroup, and we would want to let RT task dirty the pages
+> before BE tasks? I am not sure all these questions make sense, but
+> just wanted to raise issues that might pop up.
+> 
+> If the whole system is designed with cgroups in mind, then throttling
+> at IO scheduler layer should lead to backlog, that could be seen at
+> higher level. For example, if a cgroup is not getting service at IO
+> scheduler level, it should run out of request descriptors, and thus
+> the thread writing back dirty pages should notice it (if its pdflush,
+> blocking it is probably not the best idea). And that should mean the
+> cgroup should hit the dirty threshold, and disallow the task to dirty
+> further pages. There is a possibility though that getting all this
+> right might be an overkill and we can get away with a simpler
+> solution.
 
-Hmm.  Just a week ago I were reading several bad disks - one
-dying drive from a laptop with many bad blocks on it and several
-scsi drives that were in a server room where an airconditioner
-failed and ambient temp were as high as 78C.  Ran that off an
-rescue cd, without any permanent storage to save logs.  It was
-quite time-consuming process - I had to use ddrescue to recover
-data, and I had  to reboot several times to get the (sata) disk
-to work in UDMA6 mode again (ddrescue saves state and resumes
-from place it were stopped before).  So no - I don't have logs
-right now even if I saw it very recently.
+Currently, if pdflush can't keep up and processes are dirtying the
+page cache at higher rate than we will cross vm_dirty_ratio and
+process will be made to write back some of dirty pages. That should
+make sure that processes will be automatically throttled at IO scheduler
+(Assuming process tries to write its own pages and does not pick randomly
+some other processes's pages). Currently I think a processes can pick
+any inode for writeback and not necessarily the inode the process is
+dirtying.
 
-> libata worries about speed changes for CRC errors and the like, not for 
-> media errors that involve sector relocation.
-
-Maybe I were not clear enough.  The relocation event were triggered
-especially *after* failure to read the bad block(s).  I tried to
-read the bad blocks with ddrescue, during which drive returned
-"media error" (in case of scsi drives) and - probably, but i'm
-not sure - crc errors in case of sata, and libata (in case of
-sata) reduced the mode the drive is working at and retried.
-Later on I just wrote something to the problematic place to
-trigger relocation and continued, but the drive (now reading
-good portions) stays in PIO/33 mode anyway, which is slow and
-I had to reboot to speed it up again.
-
-So it seems there's no disagreement - the drive actually returned
-something similar to CRC errors, and it has nothing to do with
-sector relocation.
-
-What I mean by mentioning relocated sectors is that the drive
-stays in "lower" mode after - even if the problematic sector
-is fixed already.
-
-But this is not something you encounter 20 times a day, hopefully :)
-
-/mjt
+Thanks
+Vivek
