@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZDSRpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZDSRwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZDSRpS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 13:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZDSRpB
+	id S1756177AbZDSRwj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 13:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZDSRw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 13:45:01 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:34827 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbZDSRpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 13:45:00 -0400
-Date: Sun, 19 Apr 2009 19:44:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, hch@lst.de
-Subject: Re: [PATCH 0/2] Putting bio_list into struct request?
-Message-ID: <20090419174459.GL4593@kernel.dk>
-References: <20090419161234.GA12105@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090419161234.GA12105@havoc.gtf.org>
+	Sun, 19 Apr 2009 13:52:29 -0400
+Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:47031 "HELO
+	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752778AbZDSRw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 13:52:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=UQMy5veiBf69C8vAtsZyD5Bq9/t1TcRGAJtCBpqOBI1n8hZf5vI3P2BA1+YM1c/XdKqormJ14mcejMKhdGqFaVhCCYS+kT2XLvUzQi2Bcks2UGpxYcXF3jVBfC6Cf1YF;
+Date: Sun, 19 Apr 2009 10:52:24 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
+Message-ID: <20090419105224.7ededc1d@hobbes>
+In-Reply-To: <20090419090615.GA30631@elte.hu>
+References: <49E76864.9060309@kernel.org>
+	<20090416172803.GB16618@elte.hu>
+	<49E7916C.7050701@kernel.org>
+	<alpine.LFD.2.00.0904161540590.4042@localhost.localdomain>
+	<49E99054.6050208@kernel.org>
+	<alpine.LFD.2.00.0904181142530.4042@localhost.localdomain>
+	<49EA57C4.1000603@kernel.org>
+	<alpine.LFD.2.00.0904181602030.2199@localhost.localdomain>
+	<alpine.LFD.2.00.0904182149240.2199@localhost.localdomain>
+	<20090419090208.GA30211@elte.hu>
+	<20090419090615.GA30631@elte.hu>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19 2009, Jeff Garzik wrote:
-> 
-> Now that we have bio_list in include/linux/bio.h, I wanted to see what
-> would happen when I replaced rq->{bio,biotail} with rq->bio_list.
-> 
-> Personally, I think the result is more readable, and indicates to all
-> users that rq->bio is really a list (even if a list with one entry).
-> Also, it highlights some bio users in downstream drivers, and hopefully
-> serves to increase the amount of bio-related review in those drivers.
+On Sun, 19 Apr 2009 11:06:15 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Well, I disagree, but perhaps I'm just used to it... Plus the patch
-actually adds more lines than it deletes, and the resulting code is
-larger. I think that's a pretty good hint not to use helpers, at least
-for core code. It's more important in drivers, where we want
-easy-to-use and understand helpers, since it minimizes bugs in code
-written by people who may not be intimate with the block layer etc.
-
-> The first patch is a straightforward replacement, with no code or
-> behavior changes (any such is a bug in the patch...):
 > 
-> 	- null/not-null tests become bio_list_empty()
-> 	- rq->bio becomes rq->bio_list.head
-> 	- rq->biotail becomes rq->bio_list.tail
-> 	- in a few cases, bio_list_xxx functions are called
-> 	  as appropriate
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> The second patch are fixes to what I believe are minor bugs in the
-> bio-list-aware block core.  Even if patch #1 is not accepted, these
-> fixes are likely needed regardless.  Typically the bugs are of the type
-> "we forgot to update rq->biotail".
+> > Cool! Yinghai, mind (re-)sending the latest version of the 
+> > remaining two patches, so what we can pick this up into the x86 
+> > tree and get it tested? I'd say it's for v2.6.31. (unless someone 
+> > can think of a strong reason to do this sooner.)
+> 
+> Hm, there's one patch in that lot that does:
+> 
+>  drivers/pci/bus.c	 |    8 +++++++-
+>  drivers/pci/probe.c     |    8 ++++++--
+>  drivers/pci/setup-bus.c |   40
+> +++++++++++++++++++++++++++++++--------- 3 files changed, 44
+> insertions(+), 12 deletions(-)
+> 
+> Which should go via the PCI tree.
+> 
+> I can set up an isolated x86/pci-gap topic that i'll send to Jesse 
+> to pull (once it looks to be stable), as the other patches modify 
+> the e820 code which we'd like to test in the x86 tree first.
+> 
+> Jesse, Linus, Yinghai, does that look like a good plan to you?
 
-It's not bugs, as soon as you clear ->bio there's no list to begin with.
-->biotail is only ever used for back merging checks. If we didn't do
-back merging, we would not need to access the tail element ever. I
-suspect the reason why the resulting code is larger is exactly because
-it's not a 1:1 transition. When we do a back merge, we don't have to
-check of ->tail is set. It always is.
+Yep, that's fine with me.
 
 -- 
-Jens Axboe
-
+Jesse Barnes, Intel Open Source Technology Center
