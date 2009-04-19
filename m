@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758452AbZDSI1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbZDSI1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758452AbZDSI1E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbZDSI0E
+	id S1760088AbZDSI1n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZDSI02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:26:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55362 "EHLO hera.kernel.org"
+	Sun, 19 Apr 2009 04:26:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55383 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756096AbZDSIZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:25:59 -0400
-Date: Sun, 19 Apr 2009 08:25:16 GMT
+	id S1757342AbZDSI00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:26:26 -0400
+Date: Sun, 19 Apr 2009 08:25:39 GMT
 From: tip-bot for Weidong Han <weidong.han@intel.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,40 +18,34 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
        David.Woodhouse@intel.com, mingo@elte.hu
-In-Reply-To: <1239957736-6161-4-git-send-email-weidong.han@intel.com>
-References: <1239957736-6161-4-git-send-email-weidong.han@intel.com>
-Subject: [tip:x86/apic] x86, intr-remap: enable interrupt remapping early
-Message-ID: <tip-937582382c71b75b29fbb92615629494e1a05ac0@git.kernel.org>
-Git-Commit-ID: 937582382c71b75b29fbb92615629494e1a05ac0
+In-Reply-To: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
+References: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
+Subject: [tip:x86/apic] x86, intr-remap: fix x2apic/intr-remap resume
+Message-ID: <tip-9a2755c3569e4db92bd9b1daadeddb4045b0cccd@git.kernel.org>
+Git-Commit-ID: 9a2755c3569e4db92bd9b1daadeddb4045b0cccd
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:18 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  937582382c71b75b29fbb92615629494e1a05ac0
-Gitweb:     http://git.kernel.org/tip/937582382c71b75b29fbb92615629494e1a05ac0
+Commit-ID:  9a2755c3569e4db92bd9b1daadeddb4045b0cccd
+Gitweb:     http://git.kernel.org/tip/9a2755c3569e4db92bd9b1daadeddb4045b0cccd
 Author:     Weidong Han <weidong.han@intel.com>
-AuthorDate: Fri, 17 Apr 2009 16:42:14 +0800
+AuthorDate: Fri, 17 Apr 2009 16:42:16 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Apr 2009 10:21:43 +0200
+CommitDate: Sun, 19 Apr 2009 10:22:05 +0200
 
-x86, intr-remap: enable interrupt remapping early
+x86, intr-remap: fix x2apic/intr-remap resume
 
-Currently, when x2apic is not enabled, interrupt remapping
-will be enabled in init_dmars(), where it is too late to remap
-ioapic interrupts, that is, ioapic interrupts are really in
-compatibility mode, not remappable mode.
+Interrupt remapping was decoupled from x2apic. Shouldn't check
+x2apic before resume interrupt remapping. Otherwise, interrupt
+remapping won't be resumed when x2apic is not enabled.
 
-This patch always enables interrupt remapping before ioapic
-setup, it guarantees all interrupts will be remapped when
-interrupt remapping is enabled. Thus it doesn't need to set
-the compatibility interrupt bit.
-
-[ Impact: refactor intr-remap init sequence, enable fuller remap mode ]
+[ Impact: fix potential intr-remap resume hang on !x2apic ]
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Weidong Han <weidong.han@intel.com>
@@ -59,266 +53,60 @@ Acked-by: David Woodhouse <David.Woodhouse@intel.com>
 Cc: iommu@lists.linux-foundation.org
 Cc: allen.m.kay@intel.com
 Cc: fenghua.yu@intel.com
-LKML-Reference: <1239957736-6161-4-git-send-email-weidong.han@intel.com>
+LKML-Reference: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/apic.h  |    7 ++--
- arch/x86/kernel/apic/apic.c  |   76 ++++++++++++++++++++----------------------
- drivers/pci/intel-iommu.c    |    9 -----
- drivers/pci/intr_remapping.c |   28 ++++++++--------
- include/linux/dmar.h         |    1 +
- 5 files changed, 54 insertions(+), 67 deletions(-)
+ arch/x86/kernel/apic/apic.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index d4cb7e5..fbdd654 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -169,7 +169,6 @@ static inline u64 native_x2apic_icr_read(void)
- extern int x2apic, x2apic_phys;
- extern void check_x2apic(void);
- extern void enable_x2apic(void);
--extern void enable_IR_x2apic(void);
- extern void x2apic_icr_write(u32 low, u32 id);
- static inline int x2apic_enabled(void)
- {
-@@ -190,18 +189,18 @@ static inline void check_x2apic(void)
- static inline void enable_x2apic(void)
- {
- }
--static inline void enable_IR_x2apic(void)
--{
--}
- static inline int x2apic_enabled(void)
- {
- 	return 0;
- }
- 
- #define	x2apic	0
-+#define	x2apic_preenabled 0
- 
- #endif
- 
-+extern void enable_IR_x2apic(void);
-+
- extern int get_physical_broadcast(void);
- 
- extern void apic_disable(void);
 diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 83e47fe..0cf1eea 100644
+index 0cf1eea..7b41a32 100644
 --- a/arch/x86/kernel/apic/apic.c
 +++ b/arch/x86/kernel/apic/apic.c
-@@ -141,6 +141,8 @@ static int x2apic_preenabled;
- static int disable_x2apic;
- static __init int setup_nox2apic(char *str)
- {
-+	if (x2apic_enabled())
-+		panic("Bios already enabled x2apic, can't enforce nox2apic");
- 	disable_x2apic = 1;
- 	setup_clear_cpu_cap(X86_FEATURE_X2APIC);
- 	return 0;
-@@ -1345,6 +1347,7 @@ void enable_x2apic(void)
- 		wrmsr(MSR_IA32_APICBASE, msr | X2APIC_ENABLE, 0);
+@@ -2032,7 +2032,7 @@ static int lapic_resume(struct sys_device *dev)
+ 		return 0;
+ 
+ 	local_irq_save(flags);
+-	if (x2apic) {
++	if (intr_remapping_enabled) {
+ 		ioapic_entries = alloc_ioapic_entries();
+ 		if (!ioapic_entries) {
+ 			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
+@@ -2048,8 +2048,10 @@ static int lapic_resume(struct sys_device *dev)
+ 
+ 		mask_IO_APIC_setup(ioapic_entries);
+ 		mask_8259A();
+-		enable_x2apic();
  	}
- }
-+#endif /* CONFIG_X86_X2APIC */
- 
- void __init enable_IR_x2apic(void)
- {
-@@ -1353,32 +1356,21 @@ void __init enable_IR_x2apic(void)
- 	unsigned long flags;
- 	struct IO_APIC_route_entry **ioapic_entries = NULL;
- 
--	if (!cpu_has_x2apic)
--		return;
--
--	if (!x2apic_preenabled && disable_x2apic) {
--		pr_info("Skipped enabling x2apic and Interrupt-remapping "
--			"because of nox2apic\n");
--		return;
-+	ret = dmar_table_init();
-+	if (ret) {
-+		pr_debug("dmar_table_init() failed with %d:\n", ret);
-+		goto ir_failed;
- 	}
- 
--	if (x2apic_preenabled && disable_x2apic)
--		panic("Bios already enabled x2apic, can't enforce nox2apic");
--
--	if (!x2apic_preenabled && skip_ioapic_setup) {
--		pr_info("Skipped enabling x2apic and Interrupt-remapping "
--			"because of skipping io-apic setup\n");
--		return;
-+	if (!intr_remapping_supported()) {
-+		pr_debug("intr-remapping not supported\n");
-+		goto ir_failed;
- 	}
- 
--	ret = dmar_table_init();
--	if (ret) {
--		pr_info("dmar_table_init() failed with %d:\n", ret);
- 
--		if (x2apic_preenabled)
--			panic("x2apic enabled by bios. But IR enabling failed");
--		else
--			pr_info("Not enabling x2apic,Intr-remapping\n");
-+	if (!x2apic_preenabled && skip_ioapic_setup) {
-+		pr_info("Skipped enabling intr-remap because of skipping "
-+			"io-apic setup\n");
- 		return;
- 	}
- 
-@@ -1398,20 +1390,25 @@ void __init enable_IR_x2apic(void)
- 	mask_IO_APIC_setup(ioapic_entries);
- 	mask_8259A();
- 
--	ret = enable_intr_remapping(EIM_32BIT_APIC_ID);
--
--	if (ret && x2apic_preenabled) {
--		local_irq_restore(flags);
--		panic("x2apic enabled by bios. But IR enabling failed");
--	}
-+#ifdef CONFIG_X86_X2APIC
-+	if (cpu_has_x2apic)
-+		ret = enable_intr_remapping(EIM_32BIT_APIC_ID);
-+	else
-+#endif
-+		ret = enable_intr_remapping(EIM_8BIT_APIC_ID);
- 
- 	if (ret)
- 		goto end_restore;
- 
--	if (!x2apic) {
-+	pr_info("Enabled Interrupt-remapping\n");
 +
-+#ifdef CONFIG_X86_X2APIC
-+	if (cpu_has_x2apic && !x2apic) {
- 		x2apic = 1;
- 		enable_x2apic();
-+		pr_info("Enabled x2apic\n");
- 	}
-+#endif
++	if (x2apic)
++		enable_x2apic();
+ #else
+ 	if (!apic_pm_state.active)
+ 		return 0;
+@@ -2097,10 +2099,12 @@ static int lapic_resume(struct sys_device *dev)
+ 	apic_read(APIC_ESR);
  
- end_restore:
- 	if (ret)
-@@ -1426,30 +1423,29 @@ end_restore:
+ #ifdef CONFIG_INTR_REMAP
+-	if (intr_remapping_enabled)
+-		reenable_intr_remapping(EIM_32BIT_APIC_ID);
++	if (intr_remapping_enabled) {
++		if (x2apic)
++			reenable_intr_remapping(EIM_32BIT_APIC_ID);
++		else
++			reenable_intr_remapping(EIM_8BIT_APIC_ID);
+ 
+-	if (x2apic) {
+ 		unmask_8259A();
+ 		restore_IO_APIC_setup(ioapic_entries);
+ 		free_ioapic_entries(ioapic_entries);
+@@ -2109,7 +2113,6 @@ static int lapic_resume(struct sys_device *dev)
+ 
  	local_irq_restore(flags);
  
- end:
--	if (!ret) {
--		if (!x2apic_preenabled)
--			pr_info("Enabled x2apic and interrupt-remapping\n");
--		else
--			pr_info("Enabled Interrupt-remapping\n");
--	} else
--		pr_err("Failed to enable Interrupt-remapping and x2apic\n");
- 	if (ioapic_entries)
- 		free_ioapic_entries(ioapic_entries);
-+
-+	if (!ret)
-+		return;
-+
-+ir_failed:
-+	if (x2apic_preenabled)
-+		panic("x2apic enabled by bios. But IR enabling failed");
-+	else if (cpu_has_x2apic)
-+		pr_info("Not enabling x2apic,Intr-remapping\n");
- #else
- 	if (!cpu_has_x2apic)
- 		return;
- 
- 	if (x2apic_preenabled)
- 		panic("x2apic enabled prior OS handover,"
--		      " enable CONFIG_INTR_REMAP");
 -
--	pr_info("Enable CONFIG_INTR_REMAP for enabling intr-remapping "
--		" and x2apic\n");
-+		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
- #endif
- 
- 	return;
- }
--#endif /* CONFIG_X86_X2APIC */
-+
- 
- #ifdef CONFIG_X86_64
- /*
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 001b328..9ce8f07 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -1968,15 +1968,6 @@ static int __init init_dmars(void)
- 		}
- 	}
- 
--#ifdef CONFIG_INTR_REMAP
--	if (!intr_remapping_enabled) {
--		ret = enable_intr_remapping(0);
--		if (ret)
--			printk(KERN_ERR
--			       "IOMMU: enable interrupt remapping failed\n");
--	}
--#endif
--
- 	/*
- 	 * For each rmrr
- 	 *   for each dev attached to rmrr
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index f5e0ea7..5c21426 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -423,20 +423,6 @@ static void iommu_set_intr_remapping(struct intel_iommu *iommu, int mode)
- 		      readl, (sts & DMA_GSTS_IRTPS), sts);
- 	spin_unlock_irqrestore(&iommu->register_lock, flags);
- 
--	if (mode == 0) {
--		spin_lock_irqsave(&iommu->register_lock, flags);
--
--		/* enable comaptiblity format interrupt pass through */
--		cmd = iommu->gcmd | DMA_GCMD_CFI;
--		iommu->gcmd |= DMA_GCMD_CFI;
--		writel(cmd, iommu->reg + DMAR_GCMD_REG);
--
--		IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG,
--			      readl, (sts & DMA_GSTS_CFIS), sts);
--
--		spin_unlock_irqrestore(&iommu->register_lock, flags);
--	}
--
- 	/*
- 	 * global invalidation of interrupt entry cache before enabling
- 	 * interrupt-remapping.
-@@ -516,6 +502,20 @@ end:
- 	spin_unlock_irqrestore(&iommu->register_lock, flags);
+ 	return 0;
  }
  
-+int __init intr_remapping_supported(void)
-+{
-+	struct dmar_drhd_unit *drhd;
-+
-+	for_each_drhd_unit(drhd) {
-+		struct intel_iommu *iommu = drhd->iommu;
-+
-+		if (!ecap_ir_support(iommu->ecap))
-+			return 0;
-+	}
-+
-+	return 1;
-+}
-+
- int __init enable_intr_remapping(int eim)
- {
- 	struct dmar_drhd_unit *drhd;
-diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-index e397dc3..06f592a 100644
---- a/include/linux/dmar.h
-+++ b/include/linux/dmar.h
-@@ -108,6 +108,7 @@ struct irte {
- };
- #ifdef CONFIG_INTR_REMAP
- extern int intr_remapping_enabled;
-+extern int intr_remapping_supported(void);
- extern int enable_intr_remapping(int);
- extern void disable_intr_remapping(void);
- extern int reenable_intr_remapping(int);
