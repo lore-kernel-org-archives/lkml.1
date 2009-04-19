@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbZDRXit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZDSAX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759769AbZDRXit (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 19:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZDRXij
+	id S1758776AbZDSAX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 20:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZDSAXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 19:38:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:3726 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754879AbZDRXih (ORCPT
+	Sat, 18 Apr 2009 20:23:48 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:38806 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367AbZDSAXs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 19:38:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=LIng1NlV9mkR93CM+cdnyCq6KkV2AoewLqJ+IEiAnhnW37JxfIYLYkYqEi22e84ZtU
-         yu+t8Gkw6QmhPg0SfPhAggjDmFTs5ku1RQOeqdkZDeKVE/hw5EaEu8cD4kRE4OjDLM8a
-         NaDELRdcNpv1ihpEDfB5vn9RdSOY2K4AcHosc=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Ben Nizette <bn@niasdigital.com>
-Subject: Re: [PATCH 0/9] Fix unsafe disable_irq usage
-Date: Sat, 18 Apr 2009 16:38:30 -0700
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, dan.j.williams@intel.com,
-       Eric Miao <eric.miao@marvell.com>, linux@arm.linux.org.uk,
-       p_gortmaker@yahoo.com, David Brownell <david-b@pacbell.net>,
-       sameo@linux.intel.com, linux-omap@vger.kernel.org, pierre@ossman.eu,
-       linux-input@vger.kernel.org
-References: <1239861245.29831.113.camel@linux-51e8.site>
-In-Reply-To: <1239861245.29831.113.camel@linux-51e8.site>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904181638.30794.dmitry.torokhov@gmail.com>
+	Sat, 18 Apr 2009 20:23:48 -0400
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Transfer-Encoding: 8BIT
+Message-Id: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br>
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+To: linux-kernel@vger.kernel.org
+From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Subject: Quick question about libata and hdparm
+Date: Sat, 18 Apr 2009 21:22:11 -0300
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+Dear people,
 
-On Wednesday 15 April 2009 22:54:05 Ben Nizette wrote:
-> After being bitten by unsafe usage of disable_irq from within that irq's
-> handler [1], I went through and used Coccinelle to audit the rest of
-> drivers/ too.  This turned up 9 more unsafe usages.
->
-> As Haavard pointed out in that thread, disable_irq waits for running
-> handlers of an irq to complete before returning.  When a handler
-> disable_irq's its own irq then we see a deadlock.
->
-> Note that this wasn't actually observed in the wild until the recent
-> merge of
->
-> commit 3aa551c9b4c40018f0e261a178e3d25478dc04a9
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Mon Mar 23 18:28:15 2009 +0100
->
->     genirq: add threaded interrupt handler support
->
->     Add support for threaded interrupt handlers
->
->
+I have one small question regarding the libata drivers and the  
+interaction with hdparm.
 
-Applied all 4 patches affecting input devices, they should show up next
-time Linus pulls from me. Thank you.
+I am presently using PATA/IDE devices only, but some distributions  
+provide kernels with libata by default (and some defconfigs also use  
+libata even for IDE devices).
 
--- 
-Dmitry
+Using the usual IDE drivers, I can use/query various parameters with  
+hdparm, like, for instance, the -m option, the -c option or even  
+disabling DMA. With the libata drivers, this is all that I get:
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+lutz:~# hdparm /dev/sda
+
+/dev/sda:
+  IO_support    =  0 (default)
+  readonly      =  0 (off)
+  readahead     = 256 (on)
+  geometry      = 48641/255/63, sectors = 781420655, start = 0
+lutz:~# hdparm -c 1 /dev/sda
+
+/dev/sda:
+  setting 32-bit IO_support flag to 1
+  HDIO_SET_32BIT failed: Invalid argument
+  IO_support    =  0 (default)
+lutz:~# hdparm -m 16 /dev/sda
+
+/dev/sda:
+  setting multcount to 16
+  HDIO_SET_MULTCOUNT failed: Inappropriate ioctl for device
+  HDIO_GET_MULTCOUNT failed: Inappropriate ioctl for device
+lutz:~#
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Am I doing something incorrectly? I would like at least to understand  
+what is happening and, if possible, to fine-tune some settings.
+
+If necessary, please let me know and I will provide any further  
+information that may be needed.
+
+
+Thanks in advance, Rogério Brito.
+
