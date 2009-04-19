@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZDSHTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZDSHU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbZDSHTR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 03:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZDSHS6
+	id S1756195AbZDSHU0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 03:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZDSHUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 03:18:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47045 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbZDSHS5 (ORCPT
+	Sun, 19 Apr 2009 03:20:11 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:55419 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbZDSHUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 03:18:57 -0400
-Subject: Re: [PATCH] Fix i_mutex handling in nfsd readdir.
-From: David Woodhouse <dwmw2@infradead.org>
-To: hooanon05@yahoo.co.jp
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, bfields@citi.umich.edu,
-       hch@infradead.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <905.1240024314@jrobl>
-References: <8036.1237474444@jrobl>
-	 <1237475837.16359.106.camel@macbook.infradead.org> <8913.1237476890@jrobl>
-	 <1239960739.3428.33.camel@macbook.infradead.org>
-	 <20090417193233.GM26366@ZenIV.linux.org.uk>
-	 <1240006620.19059.41.camel@macbook.infradead.org>
-	 <20090417224350.GN26366@ZenIV.linux.org.uk>
-	 <20090417225306.GO26366@ZenIV.linux.org.uk>
-	 <1240013753.21423.86.camel@macbook.infradead.org>  <905.1240024314@jrobl>
-Content-Type: text/plain
-Date: Sun, 19 Apr 2009 08:18:49 +0100
-Message-Id: <1240125529.3589.44.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+	Sun, 19 Apr 2009 03:20:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Py4LxVXfcAHJf5gKa2c6y7g4dF1FCAl92Ksq4r6JX9kW9i8kgQc8EbxkMYxjPn2exA
+         2jtW0fJA6ZQu2yQt7y1T4JanuTJJnjRea/iO8NezXfNGGJ3SOLmv8WQNX1juZVQKhUaz
+         S1P20H19Hj03zNFKVctqfKXB8dqgQjTVgtO4Y=
+MIME-Version: 1.0
+In-Reply-To: <20090419015614.GA6926@srcf.ucam.org>
+References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
+	 <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk>
+	 <20090209234911.GB862@elte.hu>
+	 <5030E21460%linux@youmustbejoking.demon.co.uk>
+	 <20090210150431.GA26798@srcf.ucam.org>
+	 <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
+	 <20090419015614.GA6926@srcf.ucam.org>
+Date: Sun, 19 Apr 2009 09:20:07 +0200
+Message-ID: <71cd59b00904190020x7d946c29w736d89fc27d39594@mail.gmail.com>
+Subject: Re: [PATCH] eee-laptop: Register as a pci-hotplug device
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-18 at 12:11 +0900, hooanon05@yahoo.co.jp wrote:
-> David Woodhouse:
-> > This patch fixes it by locking the directory's i_mutex again before
-> > calling the filldir functions. The original deadlocks which commit
-> > 14f7dd63 was designed to avoid are still avoided, because they were due
-> > to fs-internal locking, not i_mutex.
-> 	:::
-> > --- a/fs/namei.c
-> > +++ b/fs/namei.c
-> > @@ -1248,6 +1248,8 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
-> >  	int err;
-> >  	struct qstr this;
-> >  
-> > +	WARN_ON_ONCE(!mutex_is_locked(&base->d_inode->i_mutex));
-> > +
-> >  	err = __lookup_one_len(name, &this, base, len);
-> 
-> I'd suggest this checking is done only when CONFIG_DEBUG_KERNEL (or
-> something) is enabled. Because unconditional checking costs high for the
-> well-reviewed lookup code.
+> +       result = eeepc_setup_pci_hotplug();
+> +
+> +       /*
+> +        * If we get -EBUSY then something else is handling the PCI hotplug -
+> +        * don't fail in this case
+> +        */
+> +
+> +       if (result == -EBUSY)
+> +               return 0;
+> +       else if (result)
+> +               goto pci_fail;
+> +
+>        eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
+>        eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
+>
 
-It's supposed to be locked. It's likely to have been locked quite
-recently, so it'll be in the cache. I don't think the mutex_is_locked()
-check is going to be that expensive, is it?
+> -       eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+> -       eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
+> +       if (ehotk->hotplug_slot) {
+> +               eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+> +               eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
+> +               pci_hp_deregister(ehotk->hotplug_slot);
+> +       }
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Hi,
+This patch conflict with
+http://git.iksaif.net/?p=acpi4asus.git;a=commitdiff;h=8082f39bb3d4a27c7bb03a76e72c70c86d55117b;hp=7ec0a7290797f57b780f792d12f4bcc19c83aa4f
+A quick fix is to do :
 
+eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
+if (ehotk->hotplug_slot)
+      pci_hp_deregister(ehotk->hotplug_slot);
+
+but I'm not sure it's correct.
+I should have sent a series sooner to avoid that :/
+Thanks
