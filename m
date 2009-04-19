@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZDSRdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZDSRpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbZDSRdy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 13:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZDSRdq
+	id S1755872AbZDSRpS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 13:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZDSRpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 13:33:46 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41069 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbZDSRdp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 13:33:45 -0400
-Date: Sun, 19 Apr 2009 19:33:42 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] Don't print lockdep taint message for !LOCKDEP
-Message-ID: <20090419173342.GA18041@basil.nowhere.org>
+	Sun, 19 Apr 2009 13:45:01 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34827 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751008AbZDSRpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 13:45:00 -0400
+Date: Sun, 19 Apr 2009 19:44:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, hch@lst.de
+Subject: Re: [PATCH 0/2] Putting bio_list into struct request?
+Message-ID: <20090419174459.GL4593@kernel.dk>
+References: <20090419161234.GA12105@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090419161234.GA12105@havoc.gtf.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't print lockdep taint message for !LOCKDEP
+On Sun, Apr 19 2009, Jeff Garzik wrote:
+> 
+> Now that we have bio_list in include/linux/bio.h, I wanted to see what
+> would happen when I replaced rq->{bio,biotail} with rq->bio_list.
+> 
+> Personally, I think the result is more readable, and indicates to all
+> users that rq->bio is really a list (even if a list with one entry).
+> Also, it highlights some bio users in downstream drivers, and hopefully
+> serves to increase the amount of bio-related review in those drivers.
 
-I was surprised to see a 
+Well, I disagree, but perhaps I'm just used to it... Plus the patch
+actually adds more lines than it deletes, and the resulting code is
+larger. I think that's a pretty good hint not to use helpers, at least
+for core code. It's more important in drivers, where we want
+easy-to-use and understand helpers, since it minimizes bugs in code
+written by people who may not be intimate with the block layer etc.
 
-Disabling lockdep due to kernel taint
+> The first patch is a straightforward replacement, with no code or
+> behavior changes (any such is a bug in the patch...):
+> 
+> 	- null/not-null tests become bio_list_empty()
+> 	- rq->bio becomes rq->bio_list.head
+> 	- rq->biotail becomes rq->bio_list.tail
+> 	- in a few cases, bio_list_xxx functions are called
+> 	  as appropriate
+> 
+> The second patch are fixes to what I believe are minor bugs in the
+> bio-list-aware block core.  Even if patch #1 is not accepted, these
+> fixes are likely needed regardless.  Typically the bugs are of the type
+> "we forgot to update rq->biotail".
 
-message in my lockdep disabled kernel. This patch ifdefs this message
-to not be printed when lockdep is not enabled.
+It's not bugs, as soon as you clear ->bio there's no list to begin with.
+->biotail is only ever used for back merging checks. If we didn't do
+back merging, we would not need to access the tail element ever. I
+suspect the reason why the resulting code is larger is exactly because
+it's not a 1:1 transition. When we do a back merge, we don't have to
+check of ->tail is set. It always is.
 
-BTW in my case it was due to a thermal event. I'm not sure it's really
-needed to disable lockdep on thermal events, but I left this alone for
-now.
+-- 
+Jens Axboe
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- kernel/panic.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6.30-rc2-ak/kernel/panic.c
-===================================================================
---- linux-2.6.30-rc2-ak.orig/kernel/panic.c	2009-04-15 11:14:36.000000000 +0200
-+++ linux-2.6.30-rc2-ak/kernel/panic.c	2009-04-19 19:29:07.000000000 +0200
-@@ -213,6 +213,7 @@
- 
- void add_taint(unsigned flag)
- {
-+#ifdef CONFIG_LOCKDEP
- 	/*
- 	 * Can't trust the integrity of the kernel anymore.
- 	 * We don't call directly debug_locks_off() because the issue
-@@ -222,6 +223,7 @@
- 	 */
- 	if (flag != TAINT_CRAP && flag != TAINT_WARN && __debug_locks_off())
- 		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
-+#endif
- 
- 	set_bit(flag, &tainted_mask);
- }
