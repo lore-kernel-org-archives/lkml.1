@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbZDSLWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbZDSLZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759001AbZDSLWc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 07:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbZDSLWT
+	id S1759910AbZDSLZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 07:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbZDSLZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 07:22:19 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47681 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755939AbZDSLWS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 07:22:18 -0400
-Message-ID: <49EB0962.2060309@cosmosbay.com>
-Date: Sun, 19 Apr 2009 13:22:10 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sun, 19 Apr 2009 07:25:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:48035 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756804AbZDSLZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 07:25:15 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
+Date: Sun, 19 Apr 2009 20:55:02 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Tim Abbott <tabbott@mit.edu>
+References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org>
+In-Reply-To: <20090416021928.040177084@goodmis.org>
 MIME-Version: 1.0
-To: Tzungder Lin <tzungder@gmail.com>
-CC: netdev@vger.kernel.org, davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-References: <528f811a0904190316v22621684o3047e37bf8e78bda@mail.gmail.com>
-In-Reply-To: <528f811a0904190316v22621684o3047e37bf8e78bda@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 19 Apr 2009 13:22:11 +0200 (CEST)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904192055.04213.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tzungder Lin a écrit :
-> From: Jonathan Lin <jon.lin@vatics.com, tzungder@gmail.com>
+On Thu, 16 Apr 2009 11:48:31 am Steven Rostedt wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
-> While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
-> In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before
-> setting up the DMA buffer address. In this interval where RX was
-> enabled and DMA buffer address is not yet set up, any incoming
-> broadcast packet would be send to a strange physical address:
-> 0x003e8800 which is the default value of DMA buffer address.
-> Unfortunately, this address is used by Linux kernel. So kernel panics.
-> This patch fix it by setting up DMA buffer address before RX enabled
-> and everything is fine even under broadcast packets attack.
+> Impact: fix and clean up
 > 
-> Signed-off-by: Jonathan Lin <jon.lin@vatics.com, tzungder@gmail.com>
+> The hooks in the module code for the function tracer must be called
+> before any of that module code runs. The function tracer hooks
+> modify the module (replacing calls to mcount to nops). If the code
+> is executed while the change occurs, then the CPU can take a GPF.
 > 
-> ---
+> To handle the above with a bit of paranoia, I originally implemented
+> the hooks as calls directly from the module code.
 > 
-> --- linux-2.6.29.1/drivers/net/8139too.c.orig	2009-04-19
-> 17:50:38.000000000 +0800
-> +++ linux-2.6.29.1/drivers/net/8139too.c	2009-04-19 17:52:51.000000000 +0800
-> @@ -1382,6 +1382,10 @@ static void rtl8139_hw_start (struct net
->  	RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
->  	RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
-> 
-> +	tp->cur_rx = 0;
-> +	/* init Rx ring buffer DMA address BEFORE Rx enabled*/
-> +	RTL_W32_F (RxBuf, tp->rx_ring_dma);
-> +	
->  	/* Must enable Tx/Rx before setting transfer thresholds! */
->  	RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
-> 
-> @@ -1389,8 +1393,6 @@ static void rtl8139_hw_start (struct net
->  	RTL_W32 (RxConfig, tp->rx_config);
->  	RTL_W32 (TxConfig, rtl8139_tx_config);
-> 
-> -	tp->cur_rx = 0;
-> -
->  	rtl_check_media (dev, 1);
-> 
->  	if (tp->chipset >= CH_8139B) {
-> @@ -1405,9 +1407,6 @@ static void rtl8139_hw_start (struct net
->  	/* Lock Config[01234] and BMCR register writes */
->  	RTL_W8 (Cfg9346, Cfg9346_Lock);
-> 
-> -	/* init Rx ring buffer DMA address */
-> -	RTL_W32_F (RxBuf, tp->rx_ring_dma);
-> -
->  	/* init Tx buffer DMA addresses */
->  	for (i = 0; i < NUM_TX_DESC; i++)
->  		RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] -
-> tp->tx_bufs));
-> --
+> After examining the notifier calls, it looks as though the start up
+> notify is called before any of the module's code is executed. This makes
+> the use of the notify safe with ftrace.
 
-Hi Jonathan
+Hi Steven,
 
-There are at least two small problems on this patch submission.
+   Unfortunately not: we do parse_args, which can call into the module code.
+(Though it shouldn't do anything "significant", as it won't get a chance to
+clean up if module load fails later).
 
-1) Please chose one of email address for Signoff line, not two :)
+I think you need to do something else in general.  Share the module_mutex for
+the ftrace code?  The ksplice guys have a similar issue, so maybe we should
+generalize this into a "kernel_text" mutex?
 
-For example : Signed-off-by: Jonathan Lin <tzungder@gmail.com>
-
-You'll be soon flooded by spams, so dont ease spamers life :)
-
-2) Try to find out why your email got two lines wrapped
-    You can read Documentation/email-clients.txt if you want extensive documentation.
-    You can also test this by sending your 'patch' to yourself and check if
-    no lines were wrapped before sending the 'official patch'
-
-I dont want to bother you Jonathan, as it is pretty hard for a newcomer to learn
-this things, but I feel that you might find other bugs in linux kernel, so this
-learning is likely a good investment, both for you and others.
-
-Thanks
-
+Thanks,
+Rusty.
