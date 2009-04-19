@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbZDSX1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZDSX11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751520AbZDSX1J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 19:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZDSX0x
+	id S1752254AbZDSX11 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 19:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZDSX1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 19:26:53 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:64179 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZDSX0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 19:26:52 -0400
-X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Apr 2009 19:26:52 EDT
-X-IronPort-AV: E=Sophos;i="4.40,213,1238976000"; 
-   d="scan'208";a="34030070"
-Message-ID: <49EBB0F7.3050606@cisco.com>
-Date: Sun, 19 Apr 2009 16:17:11 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] Wait for console to become available, v2
-References: <20090416190837.GA26734@cuplxvomd02.corp.sa.net> <874owlqcce.fsf@basil.nowhere.org> <49EB5008.1090000@cisco.com> <20090419163923.GS14687@one.firstfloor.org>
-In-Reply-To: <20090419163923.GS14687@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 19 Apr 2009 19:27:01 -0400
+Received: from main.gmane.org ([80.91.229.2]:40086 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752052AbZDSX1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 19:27:00 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bojan Smojver <bojan@rexursive.com>
+Subject: Re: [PATCH RFC] ext3 data=guarded v3
+Date: Sun, 19 Apr 2009 23:26:48 +0000 (UTC)
+Message-ID: <loom.20090419T232336-411@post.gmane.org>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <49E63110.60507@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 150.101.121.179 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032713 Fedora/3.0.8-1.fc10 Firefox/3.0.8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Sun, Apr 19, 2009 at 09:23:36AM -0700, David VomLehn wrote:
->> Andi Kleen wrote:
->>> VomLehn <dvomlehn@cisco.com> writes:
-...
->>> Also a setting to panic in this case might be useful, normally a system
->>> without console is not very useful and needs to be rebooted anyways.
->> Umm, those of us in the embedded space have the, perhaps misguided, 
->> notion that our systems are quite useful without consoles...
-> 
-> That seems more like a special case that shouldn't be default?
+Eric Sandeen <sandeen <at> redhat.com> writes:
 
-I have to disagree. Panicing because you can't open /dev/console is 
-likely to mean that you get no output at all and so no chance to see a 
-message explaining why the open failed. If the open failure is all that 
-happened, the rest of the system may very well come up normally. You 
-would then be able to look at the kernel log and diagnose the issue.
+> Chris, thanks for getting this going.  I think this is a great idea, as
+> it gives us most of the performance benefits of writeback without the
+> security issues.
 
-In any case, the purpose of this patch is fix USB consoles to work as 
-they did before parallelized startup. This involves addressing a race 
-condition that, theoretically, always existed but which previously 
-hadn't been a problem. Changing the behavior when init_post() can't open 
-/dev/console seems out of scope.
+Shouldn't writeback be fixed (if performance impact isn't too great), instead of
+having a new mode?
 
-> -Andi
+--
+Bojan
+
+
 
