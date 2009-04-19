@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbZDSVMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZDSVOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751963AbZDSVMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 17:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZDSVMK
+	id S1752285AbZDSVOy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 17:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZDSVOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 17:12:10 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:38625 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbZDSVMJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 17:12:09 -0400
-X-IronPort-AV: E=Sophos;i="4.40,213,1238976000"; 
-   d="scan'208";a="173709331"
-From: Roland Dreier <rdreier@cisco.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Hitoshi Mitake <h.mitake@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
-References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Sun, 19 Apr 2009 14:12:07 -0700
-In-Reply-To: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>
-	(Robert P. J. Day's message of "Sun, 19 Apr 2009 15:45:02 -0400
-	(EDT)")
-Message-ID: <adaab6c1h7c.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 19 Apr 2009 17:14:42 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:62661 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750811AbZDSVOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 17:14:41 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Apr 2009 21:12:07.0832 (UTC) FILETIME=[7F332180:01C9C133]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Transfer-Encoding: 7bit
+Message-ID: <18923.37936.480968.59086@pilspetsen.it.uu.se>
+Date: Sun, 19 Apr 2009 23:14:24 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: David Miller <davem@davemloft.net>, khc@pm.waw.pl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, hugh@veritas.com
+Subject: Re: [BUG] 2.6.30-rc broke ixp4xx_eth, firmware breakage?
+In-Reply-To: <18922.61340.630534.74677@pilspetsen.it.uu.se>
+References: <200904182153.n3ILrP6j027453@pilspetsen.it.uu.se>
+	<20090418.211820.197285479.davem@davemloft.net>
+	<18922.61340.630534.74677@pilspetsen.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > from arch/x86/Kconfig:
- > 	...
- >         select HAVE_READQ
- >         select HAVE_WRITEQ
- > 	...
+Mikael Pettersson writes:
+ > David Miller writes:
+ >  > From: Mikael Pettersson <mikpe@it.uu.se>
+ >  > Date: Sat, 18 Apr 2009 23:53:25 +0200 (MEST)
+ >  > 
+ >  > > The ixp4xx_eth driver for my IXP420 XScale box (Synology DS101)
+ >  > > worked fine in kernel 2.6.29. Now trying to boot 2.6.30-rc2 I'm
+ >  > > greeted with the following failure during init:
+ >  > > 
+ >  > > Bringing up interface eth0:  RTNETLINK answers: No such file or directory
+ >  > > Failed to bring up eth0.
+ >  > > [FAILED]
+ >  > > 
+ >  > > There's a fairly long (at least 10 seconds) delay between the 'Bringing up'
+ >  > > message and the RTNETLINK error.
+ >  > > 
+ >  > > A diff between the 2.6.29 and 2.6.30-rc2 boot logs indicates that
+ >  > > the firmware doesn't get loaded:
+ >  > 
+ >  > Please make sure CONFIG_FIRMWARE_IN_KERNEL is set in your
+ >  > configuration if this driver is being built statically
+ >  > into your kernel.
  > 
- > yet there are no such defined Kconfig vars anywhere.  thoughts?
+ > ixp4xx_eth is built as a module and I have CONFIG_FIRMWARE_IN_KERNEL unset.
+ > 
+ >  > Otherwise, if modular, make sure the firmware files get installed into
+ >  > the correct location and are available in the filesystem when the
+ >  > driver loads.
+ > 
+ > The firmware isn't shipped with the kernel but is something users have to
+ > download from Intel, build, and install themselves; once installed they work
+ > across kernel versions. The files reside in /lib/firmware/'s top-level
+ > directory, and they are available since firmware loading (triggered by init's
+ > attempt to up eth0) occurs after / has been mounted. My userspace uses oldish
+ > firmware-aware hotplug since udev's too heavy-weight.
+ > 
+ > This all works with 2.6.29 and older 2.6.2x kernels.
+ > 
+ > I'll do a bisect.
 
-git blame shows that this came in from 2c5643b1 ("x86: provide
-readq()/writeq() on 32-bit too").  And that commit looks very dubious
-indeed to me -- it defines readq() and writeq() in a way that is not
-atomic and probably won't generate single 64-bit bus cycles.
+Bisection identified Arjan's f520360d93cdc37de5d972dac4bf3bdef6a7f6a7
+"kobject: don't block for each kobject_uevent" as the culprit.
+Hugh Dickins reverted that change a few days ago in commit
+05f54c13cd0c33694eec39a265475c5d6cf223cf, noting that it was buggy
+and broke CONFIG_UEVENT_HELPER_PATH by prematurely releasing memory
+needed when exec:ing the helper program.
 
-Now, many drivers do "#ifndef readq <define my own implementation> #endif"
-but exactly what is required is very hardware-dependent, and accessing
-32-bit halves in the wrong order may lead to very subtle bugs.  For
-example, the changelog for e23a59e1 ("niu: Fix readq implementation when
-architecture does not provide one.") says:
+I tested 2.6.30-rc2 + Hugh's patch and with that everything works again.
 
-    In particular one of the issues is whether the top 32-bits
-    or the bottom 32-bits of the 64-bit register should be read
-    first.  There could be side effects, and in fact that is
-    exactly the problem here.
+Krzysztof: you can relax, ixp4xx_eth was just an innocent bystander.
 
-By coincidence, the 32-bit x86 implementation is actually OK for niu,
-but I didn't audit every similar driver, and I don't think any
-implementation of readq()/writeq() that generates multiple bus cycles is
-suitable in general -- it doesn't meet the requirements of the API.
+Hugh: thanks for the revert, consider this a late Acked-by.
 
-So I would strongly suggest reverting 2c5643b1 since as far as I can
-tell it just sets a trap for subtle bugs that only show up on 32-bit
-x86 -- any portable driver still needs to provide readq()/writeq() for
-other 32-bit architectures, so it doesn't really help anyone.
-
- - R.
+/Mikael
