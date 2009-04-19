@@ -1,68 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbZDSAef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZDSAwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758400AbZDSAef (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 20:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZDSAe0
+	id S1755237AbZDSAwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 20:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZDSAwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 20:34:26 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56052 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753667AbZDSAeZ (ORCPT
+	Sat, 18 Apr 2009 20:52:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45826 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbZDSAwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 20:34:25 -0400
-Message-ID: <49EA7111.7040907@zytor.com>
-Date: Sat, 18 Apr 2009 17:32:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 18 Apr 2009 20:52:06 -0400
+Date: Sat, 18 Apr 2009 20:52:02 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2 v2] tracing/events: provide string with undefined
+ size support
+In-Reply-To: <20090418184222.GB6212@nowhere>
+Message-ID: <alpine.DEB.2.00.0904182050210.1016@gandalf.stny.rr.com>
+References: <1239912047-6282-1-git-send-email-fweisbec@gmail.com> <1239912812.23397.3432.camel@laptop> <c62985530904161328g299e8a67q2012a577e8a2f1a4@mail.gmail.com> <1239949360.23397.4065.camel@laptop> <c62985530904170159j6f3b5477g411a028e69fd93f6@mail.gmail.com>
+ <1239960548.23397.4282.camel@laptop> <alpine.DEB.2.00.0904170552160.20429@gandalf.stny.rr.com> <alpine.DEB.2.00.0904170613370.20429@gandalf.stny.rr.com> <20090418184222.GB6212@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
-References: <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes> <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu> <49E76864.9060309@kernel.org> <20090416172803.GB16618@elte.hu> <49E7916C.7050701@kernel.org> <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <49E99054.6050208@kernel.org> <alpine.LFD.2.00.0904181142530.4042@localhost.localdomain> <49EA57C4.1000603@kernel.org> <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
->>
->> 00000100-000973ff : System RAM
->> 00097400-0009ffff : reserved
->> 000a0000-000bffff : PCI Bus #00
->> 000c0000-000cffff : pnp 00:0c
->> 000e0000-000fffff : pnp 00:0c
->> 00100000-b7f9ffff : System RAM
->>   00200000-00c68f6b : Kernel code
->>   00c68f6c-01332f7f : Kernel data
->>   015a6000-01fcaa57 : Kernel bss
->>   20000000-23ffffff : GART
->> b7fa0000-b7fadfff : RAM buffer
->> b7fae000-b7faffff : System RAM
->> b7fb0000-b7fbdfff : ACPI Tables
->> b7fbe000-b7feffff : ACPI Non-volatile Storage
->> b7ff0000-b7ffffff : reserved
+
+On Sat, 18 Apr 2009, Frederic Weisbecker wrote:
+> > 
+> > #undef __string
+> > #define __string(str, param)	__str_loc_##str = _str_size_; \
+> > 				_str_size_ += strlen(param) + 1;
+> > 
+> > #define TRACE_EVENT(...)
+> > 	tstruct
+> > 
+> > #include the file again
 > 
-> Hmm. That looks correct to me. We filled in that odd area between 
-> b7fa0000-b7fadfff that went unmentioned in the e820 tables.
 > 
-> And that _is_ a really odd hole. I wonder what it is all about. But the 
-> approach does seem to have done the right thing.
+> While I'm trying to implement this, I'm discovering that it's
+> impossible, unless we have only one TRACE_EVENT in the file we are
+> including, otherwise we would end up with interleaving functions:
 > 
+>  static void ftrace_raw_event_event1(proto)
+>  {
+>        struct ring_buffer_event *event;
+>        struct ftrace_raw_event1 *entry;
+>        unsigned long flags;
+>        int pc;
+>        int _str_size_ = 0;
+> 
+>        tstruct
+> 
+>  static void ftrace_raw_event_event2(proto)     
+>  {      
+>        struct ring_buffer_event *event;         
+>        struct ftrace_raw_event2 *entry;   
+>        unsigned long flags;                     
+>        int pc;                                  
+>        int _str_size_ = 0;                      
+> 
+>        tstruct
 
-Looks to me as through the BIOS rounded the end of available memory to a
-64K boundary after subtracting the ACPI storage.  That might have been
-done to work around an OS loader bug somewhere.
+Ug, that's right.
 
-	-hpa
+> 
+> 
+> So we still need something inside the fast_assign to do the
+> assignment job.
+> 
+> Something like the following macro will suffice:
+> 
+> #define	__assign_string(field, src)	\
+> 	strcpy(entry->__ending_str + __str_loc_##field, src);
+> 
+> That's not a big deal, we just actually need this in TP__fast_assign()
+> and then we are done.
+> 
+> And also:
+> 
+> 
+> > The tstruct would do the assign for the user.
+> > 
+> > Then this is what a TRACE_EVENT would look like:
+> > 
+> > TRACE_EVENT(my_event,
+> > 
+> > 	TP_PROTO(char *str1, char *str2, char *str3),
+> > 
+> > 	TP_ARGS(str1, str2, str3),
+> > 
+> > 	TP_STRUCT__entry(
+> > 		__string(str1, str1)
+> > 		__string(str2, str2)
+> > 		__string(str3, str3)
+> > 	),
+> > 
+> > 	TP_fast_assign(
+> > 		/* empty, strings are automated */
+> > 	),
+> > 
+> > 	TP_printk("str1:%s str2:%s str3:%s\n",
+> > 		__entry->__str_data__ + __entry->str1,
+> > 		__entry->__str_data__ + __entry->str2,
+> > 		__entry->__str_data__ + __entry->str3)
+> 
+> 
+> 
+> A simple macro here to simplify that for the users:
+> 
+> #define __get_str(item)		\
+> 	__entry->__ending_str + __entry->__str_loc_#item
+> 
+> would be much more convenient.
+> 
+> Anyway, I'll submit it and will wait for your comments.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Sure, do what you think is needed. Make sure the change log has an 
+example that includes multiple strings.
 
+Thanks,
+
+-- Steve
