@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZDSVOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbZDSV2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752285AbZDSVOy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 17:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZDSVOm
+	id S1752490AbZDSV2Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 17:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbZDSV2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 17:14:42 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:62661 "EHLO aun.it.uu.se"
+	Sun, 19 Apr 2009 17:28:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59154 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbZDSVOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 17:14:41 -0400
+	id S1750902AbZDSV2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 17:28:00 -0400
+Message-ID: <49EB9758.3020506@garzik.org>
+Date: Sun, 19 Apr 2009 17:27:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18923.37936.480968.59086@pilspetsen.it.uu.se>
-Date: Sun, 19 Apr 2009 23:14:24 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: David Miller <davem@davemloft.net>, khc@pm.waw.pl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, hugh@veritas.com
-Subject: Re: [BUG] 2.6.30-rc broke ixp4xx_eth, firmware breakage?
-In-Reply-To: <18922.61340.630534.74677@pilspetsen.it.uu.se>
-References: <200904182153.n3ILrP6j027453@pilspetsen.it.uu.se>
-	<20090418.211820.197285479.davem@davemloft.net>
-	<18922.61340.630534.74677@pilspetsen.it.uu.se>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+To: =?UTF-8?B?Um9nw6lyaW8gQnJpdG8=?= <rbrito@ime.usp.br>
+CC: Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Quick question about libata and hdparm
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <49EB1A33.7050808@rtr.ca> <49EB1C9C.3000105@msgid.tls.msk.ru> <49EB1FB3.5000609@garzik.org> <20090419201132.GB2891@ime.usp.br>
+In-Reply-To: <20090419201132.GB2891@ime.usp.br>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson writes:
- > David Miller writes:
- >  > From: Mikael Pettersson <mikpe@it.uu.se>
- >  > Date: Sat, 18 Apr 2009 23:53:25 +0200 (MEST)
- >  > 
- >  > > The ixp4xx_eth driver for my IXP420 XScale box (Synology DS101)
- >  > > worked fine in kernel 2.6.29. Now trying to boot 2.6.30-rc2 I'm
- >  > > greeted with the following failure during init:
- >  > > 
- >  > > Bringing up interface eth0:  RTNETLINK answers: No such file or directory
- >  > > Failed to bring up eth0.
- >  > > [FAILED]
- >  > > 
- >  > > There's a fairly long (at least 10 seconds) delay between the 'Bringing up'
- >  > > message and the RTNETLINK error.
- >  > > 
- >  > > A diff between the 2.6.29 and 2.6.30-rc2 boot logs indicates that
- >  > > the firmware doesn't get loaded:
- >  > 
- >  > Please make sure CONFIG_FIRMWARE_IN_KERNEL is set in your
- >  > configuration if this driver is being built statically
- >  > into your kernel.
- > 
- > ixp4xx_eth is built as a module and I have CONFIG_FIRMWARE_IN_KERNEL unset.
- > 
- >  > Otherwise, if modular, make sure the firmware files get installed into
- >  > the correct location and are available in the filesystem when the
- >  > driver loads.
- > 
- > The firmware isn't shipped with the kernel but is something users have to
- > download from Intel, build, and install themselves; once installed they work
- > across kernel versions. The files reside in /lib/firmware/'s top-level
- > directory, and they are available since firmware loading (triggered by init's
- > attempt to up eth0) occurs after / has been mounted. My userspace uses oldish
- > firmware-aware hotplug since udev's too heavy-weight.
- > 
- > This all works with 2.6.29 and older 2.6.2x kernels.
- > 
- > I'll do a bisect.
+Rogério Brito wrote:
+> Hi, Jeff.
+> 
+> On Apr 19 2009, Jeff Garzik wrote:
+>> Michael Tokarev wrote:
+>>> Well, the kernel does a good job here in *almost* all cases.
+>>> The problematic case is when a device has some bad/unreadable
+>>> blocks/sectors.  When such a place occurs on read, libata
+>>> (or whatever it is) performs several retries, each time
+>>> using "less aggressive" settings - like reducing UDMA and
+>>> PIO mode till the lowest possible PIO/33.  And the device
+>>> stays in that mode until reboot, even if the problematic
+>>> sector has been relocated.  So it'd be nice to be able to
+>>> reset the mode back in such cases.
+>> Do you have a log?
+> 
+> I have a log here of libata reducing UDMA speed. I don't know if this is
+> any hardware problem or not (I think not), but I do see libata
+> complaining and reducing the speed of the drive.
 
-Bisection identified Arjan's f520360d93cdc37de5d972dac4bf3bdef6a7f6a7
-"kobject: don't block for each kobject_uevent" as the culprit.
-Hugh Dickins reverted that change a few days ago in commit
-05f54c13cd0c33694eec39a265475c5d6cf223cf, noting that it was buggy
-and broke CONFIG_UEVENT_HELPER_PATH by prematurely releasing memory
-needed when exec:ing the helper program.
+Well, it's supposed to reduce speed in several circumstances... just not 
+Michael's.  :)
 
-I tested 2.6.30-rc2 + Hugh's patch and with that everything works again.
+	Jeff
 
-Krzysztof: you can relax, ixp4xx_eth was just an innocent bystander.
 
-Hugh: thanks for the revert, consider this a late Acked-by.
 
-/Mikael
