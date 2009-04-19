@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbZDSElx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZDSE5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbZDSElx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 00:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZDSEll
+	id S1752961AbZDSE5y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 00:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZDSE5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 00:41:41 -0400
-Received: from smtp.knology.net ([24.214.63.101]:48355 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbZDSEll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 00:41:41 -0400
-Subject: Re: [PATCH net-next] myri10ge: allow per-board firmware overriding
-From: David Dillow <dave@thedillows.org>
-To: David Miller <davem@davemloft.net>
-Cc: brice@myri.com, sgruszka@redhat.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20090418.210927.229687293.davem@davemloft.net>
-References: <20090417095038.49b745bf@dhcp-lab-109.englab.brq.redhat.com>
-	 <49EA1DAC.1000602@myri.com>
-	 <1240102617.5342.6.camel@obelisk.thedillows.org>
-	 <20090418.210927.229687293.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sun, 19 Apr 2009 00:41:39 -0400
-Message-Id: <1240116099.5342.18.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Apr 2009 00:57:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59800 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751015AbZDSE5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 00:57:39 -0400
+Date: Sat, 18 Apr 2009 21:50:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [PATCH] x86/pci: make pci_mem_start to be aligned only -v4
+In-Reply-To: <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904182149240.2199@localhost.localdomain>
+References: <49E00E9F.8030605@kernel.org> <49E4F6D6.6030709@kernel.org> <49E4F71F.10107@kernel.org> <alpine.LFD.2.00.0904141359020.18124@localhost.localdomain> <49E52A7A.4070607@kernel.org> <49E52D3F.1090206@kernel.org> <20090416093152.6605612d@hobbes>
+ <alpine.LFD.2.00.0904160938090.4042@localhost.localdomain> <20090416165640.GA13927@elte.hu> <49E76864.9060309@kernel.org> <20090416172803.GB16618@elte.hu> <49E7916C.7050701@kernel.org> <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain>
+ <49E99054.6050208@kernel.org> <alpine.LFD.2.00.0904181142530.4042@localhost.localdomain> <49EA57C4.1000603@kernel.org> <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-18 at 21:09 -0700, David Miller wrote:
-> From: David Dillow <dave@thedillows.org>
-> Date: Sat, 18 Apr 2009 20:56:57 -0400
+
+
+On Sat, 18 Apr 2009, Linus Torvalds wrote:
 > 
-> > It seems like this could be done in user space, using the PCI bus ID as
-> > a key to select the firmware.
-> 
-> PCI BUS ID's are not in any way unique, you would need to include the
-> PCI Domain as well.
+> And that _is_ a really odd hole. I wonder what it is all about. But the 
+> approach does seem to have done the right thing.
 
-I had that in mind, but I wasn't precise in my wording. I think that
-info is there as well. IIRC, and brief glance at the code suggests, that
-the uevent for the firmware requests gets the environment variable
-DEVPATH that would contains that info:
+I'll commit the reserve_region_with_split() change. There are no actual 
+users of it now, so committing that change doesn't really do anything, but 
+I like removing code, and with the only current potential user actively 
+wanting just the simpler behavior, why keep the code around?
 
-DEVPATH=/devices/pci0000:00/0000:00:1e.0/0000:09:01.0
-
-Now I'm curious, so I'll probably re-verify that with udevmonitor, a
-recent kernel and the typhoon driver, since it is the only thing I have
-that requests firmware. But sometime after I sleep...
-
+		Linus
