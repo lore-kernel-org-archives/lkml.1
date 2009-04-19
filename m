@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZDSHU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbZDSHYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZDSHU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 03:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZDSHUL
+	id S1756273AbZDSHYz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 03:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZDSHYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 03:20:11 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:55419 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbZDSHUK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 03:20:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Py4LxVXfcAHJf5gKa2c6y7g4dF1FCAl92Ksq4r6JX9kW9i8kgQc8EbxkMYxjPn2exA
-         2jtW0fJA6ZQu2yQt7y1T4JanuTJJnjRea/iO8NezXfNGGJ3SOLmv8WQNX1juZVQKhUaz
-         S1P20H19Hj03zNFKVctqfKXB8dqgQjTVgtO4Y=
-MIME-Version: 1.0
-In-Reply-To: <20090419015614.GA6926@srcf.ucam.org>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
-	 <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk>
-	 <20090209234911.GB862@elte.hu>
-	 <5030E21460%linux@youmustbejoking.demon.co.uk>
-	 <20090210150431.GA26798@srcf.ucam.org>
-	 <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
-	 <20090419015614.GA6926@srcf.ucam.org>
-Date: Sun, 19 Apr 2009 09:20:07 +0200
-Message-ID: <71cd59b00904190020x7d946c29w736d89fc27d39594@mail.gmail.com>
-Subject: Re: [PATCH] eee-laptop: Register as a pci-hotplug device
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Apr 2009 03:24:47 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42317 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751156AbZDSHYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 03:24:46 -0400
+Date: Sun, 19 Apr 2009 17:24:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
+       "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>
+Subject: mips build failure
+Message-Id: <20090419172436.6d0e741a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__19_Apr_2009_17_24_36_+1000_P.qBmo6YX6D.ipq0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +       result = eeepc_setup_pci_hotplug();
-> +
-> +       /*
-> +        * If we get -EBUSY then something else is handling the PCI hotplug -
-> +        * don't fail in this case
-> +        */
-> +
-> +       if (result == -EBUSY)
-> +               return 0;
-> +       else if (result)
-> +               goto pci_fail;
-> +
->        eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
->        eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
->
+--Signature=_Sun__19_Apr_2009_17_24_36_+1000_P.qBmo6YX6D.ipq0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> -       eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
-> -       eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
-> +       if (ehotk->hotplug_slot) {
-> +               eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
-> +               eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
-> +               pci_hp_deregister(ehotk->hotplug_slot);
-> +       }
+Hi Ralf,
 
-Hi,
-This patch conflict with
-http://git.iksaif.net/?p=acpi4asus.git;a=commitdiff;h=8082f39bb3d4a27c7bb03a76e72c70c86d55117b;hp=7ec0a7290797f57b780f792d12f4bcc19c83aa4f
-A quick fix is to do :
+You probably already now about this, but our build (mips ip32_defconfig)
+of Linus' tree (commit aefe6475720bd5eb8aacbc881488f3aa65618562 "Merge
+branch 'upstream-linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev") gets
+these errors (we have actually been getting these errors since 2.6.30-rc1):
 
-eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
-eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
-if (ehotk->hotplug_slot)
-      pci_hp_deregister(ehotk->hotplug_slot);
+In file included from arch/mips/include/asm/compat.h:7,
+                 from include/linux/compat.h:15,
+                 from arch/mips/kernel/asm-offsets.c:12:
+include/linux/seccomp.h: In function 'prctl_get_seccomp':
+include/linux/seccomp.h:30: error: 'EINVAL' undeclared (first use in this f=
+unction)
+include/linux/seccomp.h:30: error: (Each undeclared identifier is reported =
+only once
+include/linux/seccomp.h:30: error: for each function it appears in.)
+include/linux/seccomp.h: In function 'prctl_set_seccomp':
+include/linux/seccomp.h:35: error: 'EINVAL' undeclared (first use in this f=
+unction)
 
-but I'm not sure it's correct.
-I should have sent a series sooner to avoid that :/
-Thanks
+Bisected down to commit ac44021fccd8f1f2b267b004f23a2e8d7ef05f7b
+"kmemtrace, rcu: don't include unnecessary headers, allow kmemtrace w/
+tracepoints".
+
+http://kisskb.ellerman.id.au/kisskb/buildresult/330240/
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__19_Apr_2009_17_24_36_+1000_P.qBmo6YX6D.ipq0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknq0bQACgkQjjKRsyhoI8yPyACgvM2RG8LekwRKKrz1issoqozl
+rzwAoJH3Zo9zZpFTraxbCIvFPO+pfJJw
+=AUJx
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__19_Apr_2009_17_24_36_+1000_P.qBmo6YX6D.ipq0--
