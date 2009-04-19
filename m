@@ -1,166 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZDSNrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760342AbZDSNtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761155AbZDSNrO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 09:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbZDSNqx
+	id S1760342AbZDSNtm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 09:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758167AbZDSNtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 09:46:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40163 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760487AbZDSNqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 09:46:51 -0400
-Date: Sun, 19 Apr 2009 09:42:01 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <righi.andrea@gmail.com>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090419134201.GF8493@redhat.com>
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux>
+	Sun, 19 Apr 2009 09:49:33 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:21738 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757468AbZDSNtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 09:49:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=abdehXTDWpsm0n0km78C3Zpt5tI2nPP+Se5+SZ1fkN8XljAqxdt36dOsmFASPoP6RA
+         dQ/inRbA96GVOlVU41u+Bg3PPhuYRYqd5KsuUSHHkcPr9alauteRFSHEPlnEZzxaFSV9
+         tzbweOBwf/UTY5hatxuFylGrobKQ1mI1oK874=
+Date: Sun, 19 Apr 2009 15:49:28 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH] tracing/core: Add current context on tracing recursion
+	warning
+Message-ID: <20090419134927.GA6262@nowhere>
+References: <1240117295-6873-1-git-send-email-fweisbec@gmail.com> <49EAC15E.7080702@cn.fujitsu.com> <20090419123430.GA5967@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090417231244.GB6972@linux>
+In-Reply-To: <20090419123430.GA5967@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 01:12:45AM +0200, Andrea Righi wrote:
-> On Fri, Apr 17, 2009 at 01:39:55PM -0400, Vivek Goyal wrote:
-> > On Tue, Apr 14, 2009 at 10:21:12PM +0200, Andrea Righi wrote:
+On Sun, Apr 19, 2009 at 02:34:32PM +0200, Frederic Weisbecker wrote:
+> On Sun, Apr 19, 2009 at 02:14:54PM +0800, Li Zefan wrote:
+> > Frederic Weisbecker wrote:
+> > > Hi,
+> > > 
+> > > Here is the v3 of the __string() field patchset.
+> > > It applies suggestions from Steven and Peter with some arrangements.
+> > > 
+> > > This time, filtering is not supported (though it is ready in a pending patch).
+> > > I wanted to provide it but it looks like filtering has been broken recently.
+> > > Once I set a usual string filter, no more traces appear, and clearing it
+> > > doesn't change anything.
+> > > 
 > > 
-> > [..]
-> > > +4.2. Buffered I/O (write-back) tracking
-> > > +
-> > > +For buffered writes the scenario is a bit more complex, because the writes in
-> > > +the page cache are processed asynchronously by kernel threads (pdflush), using
-> > > +a write-back policy. So the real writes to the underlying block devices occur
-> > > +in a different I/O context respect to the task that originally generated the
-> > > +dirty pages.
-> > > +
-> > > +The I/O bandwidth controller uses the following solution to resolve this
-> > > +problem.
-> > > +
-> > > +If the operation is a buffered write, we can charge the right cgroup looking at
-> > > +the owner of the first page involved in the I/O operation, that gives the
-> > > +context that generated the I/O activity at the source. This information can be
-> > > +retrieved using the page_cgroup functionality originally provided by the cgroup
-> > > +memory controller [4], and now provided specifically by the bio-cgroup
-> > > +controller [5].
-> > > +
-> > > +In this way we can correctly account the I/O cost to the right cgroup, but we
-> > > +cannot throttle the current task in this stage, because, in general, it is a
-> > > +different task (e.g., pdflush that is processing asynchronously the dirty
-> > > +page).
-> > > +
-> > > +For this reason, all the write-back requests that are not directly submitted by
-> > > +the real owner and that need to be throttled are not dispatched immediately in
-> > > +submit_bio(). Instead, they are added into an rbtree and processed
-> > > +asynchronously by a dedicated kernel thread: kiothrottled.
-> > > +
-> > 
-> > Hi Andrea,
+> > I tried it, and triggered a WARNING, and ring buffers was
+> > disabled permanently:
 > 
-> Hi Vivek,
 > 
-> > 
-> > I am trying to go through your patches now and also planning to test it
+> I've also seen this warning but on another event.
+> I don't think this is related to this patchset but
+> more about the tracing recursion detection.
 > 
-> thanks for trying to test first of all.
+> For exemple, here we are in an Irq event, which doesn't
+> use the __string() thing. For such off-case, the only change
+> is a variable declaration and a + 0 operation.
 > 
-> > out. While reading the documentation async write handling interested
-> > me. IIUC, looks like you are throttling writes once they are being 
-> > written to the disk (either by pdflush or in the context of the process
-> > because vm_dirty_ratio crossed etc).
-> 
-> Correct, more exactly in submit_bio().
-> 
-> The difference between synchronous IO and writeback IO is that in the
-> first case the task itself is throttled via schedule_timeout_killable();
-> in the second case pdflush is never throttled, the IO requests instead
-> are simply added into a rbtree and dispatched asynchronously by another
-> kernel thread (kiothrottled) using a EDF-like scheduling. More exactly,
-> a deadline is evaluated for each writeback IO request looking at the
-> cgroup BW and iops/sec limits, then kiothrottled periodically selects
-> and dispatches the requests with an elapsed deadline.
-> 
+> Another thing: I've only seen it in a selftest.
 
-Ok, i will look into the logic of translating cgroup BW limits into
-deadline. But as Nauman pointed out that we probably will run into 
-issues of tasks with in cgroup as we loose that notion of class and prio.
 
-> > 
-> > If that's the case, will a process not see an increased rate of writes
-> > till we are not hitting dirty_background_ratio?
-> 
-> Correct. And this is a good behaviour IMHO. At the same time we have a
-> smooth BW usage (according to the cgroup limits I mean) even in presence
-> of writeback IO only.
-> 
+Worst: I can't reproduce it anymore.
+What were you doing when you got such warning? Were you
+in a selftest, or trying a usual event?
 
-Hmm.., I am not able to understand this. The very fact that you will see
-a high rate of async writes (more than specified by cgroup max BW), till
-you hit dirty_background_ratio, isn't it against the goals of max bw
-controller? You wanted to see a consistent view of rate even if spare BW
-is available, and this scenario goes against that? 
+Also, could you test the following patch. It will give us
+more informations about the tracing recursion.
 
-Think of an hypothetical configuration of 10G RAM with dirty ratio say
-set to 20%. Assume not much of write out is taking place in the system.
-So for first 2G of writes, application will be able to write it at cpu
-speed and no throttling will kick in and a cgroup will easily cross it
-max BW? 
-  
-> > 
-> > Secondly, if above is giving acceptable performance resutls, then we
-> > should be able to provide max bw control at IO scheduler level (along
-> > with proportional bw control)?
-> > 
-> > So instead of doing max bw and proportional bw implementation in two
-> > places with the help of different controllers, I think we can do it
-> > with the help of one controller at one place. 
-> > 
-> > Please do have a look at my patches also to figure out if that's possible
-> > or not. I think it should be possible.
-> > 
-> > Keeping both at single place should simplify the things.
-> 
-> Absolutely agree to do both proportional and max BW limiting in a single
-> place. I still need to figure which is the best place, if the IO
-> scheduler in the elevator, when the IO requests are submitted. A natural
-> way IMHO is to control the submission of requests, also Andrew seemed to
-> be convinced about this approach. Anyway, I've already scheduled to test
-> your patchset and I'd like to see if it's possible to merge our works,
-> or select the best from ours patchsets.
-> 
+You can find it on:
 
-Are we not already controlling submission of request (at crude level).
-If application is doing writeout at high rate, then it hits vm_dirty_ratio
-hits and this application is forced to do write out and hence it is slowed
-down and is not allowed to submit writes at high rate.
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing tracing/recursion
 
-Just that it is not a very fair scheme right now as during right out
-a high prio/high weight cgroup application can start writing out some
-other cgroups' pages.
+It's against tip/tracing/core
 
-For this we probably need to have some combination of solutions like
-per cgroup upper limit on dirty pages. Secondly probably if an application
-is slowed down because of hitting vm_drity_ratio, it should try to
-write out the inode it is dirtying first instead of picking any random
-inode and associated pages. This will ensure that a high weight
-application can quickly get through the write outs and see higher
-throughput from the disk.
+Thanks!
 
-Thanks
-Vivek
+---
+>From d13bf59ca011b976c561f623e3189a4a5b94370e Mon Sep 17 00:00:00 2001
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Sun, 19 Apr 2009 15:30:19 +0200
+Subject: [PATCH] tracing/core: Add current context on tracing recursion warning
+
+In case of tracing recursion detection, we only get the stacktrace.
+But the current context may be very useful to debug the issue.
+
+This patch adds the softirq/hardirq/nmi context with the warning
+using lockdep context display to have a familiar output.
+
+[ Impact: more information in tracing recursion ]
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/ring_buffer.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index b421b0e..27a6e7d 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1493,8 +1493,21 @@ static int trace_recursive_lock(void)
+ 	level = trace_irq_level();
+ 
+ 	if (unlikely(current->trace_recursion & (1 << level))) {
++		static atomic_t warned;
++
+ 		/* Disable all tracing before we do anything else */
+ 		tracing_off_permanent();
++
++		if (atomic_inc_return(&warned) == 1) {
++			printk(KERN_WARNING "Tracing recursion: "
++				"[HC%u[%lu]:SC%u[%lu]:NMI[%lu]:HE%u:SE%u]\n",
++				current->hardirq_context,
++				hardirq_count() >> HARDIRQ_SHIFT,
++				current->softirq_context,
++				softirq_count() >> SOFTIRQ_SHIFT,
++				in_nmi(), current->hardirqs_enabled,
++				current->softirqs_enabled);
++		}
+ 		WARN_ON_ONCE(1);
+ 		return -1;
+ 	}
+-- 
+1.6.1
+
+
