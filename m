@@ -1,218 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbZDSNDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbZDSNGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760693AbZDSNDs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 09:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757034AbZDSNDj
+	id S1760320AbZDSNGf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 09:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758242AbZDSNGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 09:03:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51420 "EHLO mx2.redhat.com"
+	Sun, 19 Apr 2009 09:06:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57424 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751862AbZDSNDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 09:03:37 -0400
-Date: Sun, 19 Apr 2009 08:59:03 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, arozansk@redhat.com, jmoyer@redhat.com,
-       oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, menage@google.com,
-       peterz@infradead.org
-Subject: Re: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
-Message-ID: <20090419125903.GB8493@redhat.com>
-References: <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux> <20090417141358.GD29086@redhat.com> <e98e18940904171109r17ccb054kb7879f8d02ac26b5@mail.gmail.com>
+	id S1757034AbZDSNGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 09:06:24 -0400
+Message-ID: <49EB2190.2020503@redhat.com>
+Date: Sun, 19 Apr 2009 16:05:20 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e98e18940904171109r17ccb054kb7879f8d02ac26b5@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: sen wang <wangsen.linux@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, kvm-devel <kvm@vger.kernel.org>
+Subject: Re: port kvm to arm
+References: <454c71700904180641p764d13afyd42c753c37bda2cf@mail.gmail.com>	 <alpine.LFD.2.00.0904181202030.4042@localhost.localdomain>	 <49EAE219.5040002@redhat.com> <454c71700904190518o66a286f6s5425c177cdb7b048@mail.gmail.com>
+In-Reply-To: <454c71700904190518o66a286f6s5425c177cdb7b048@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 11:09:51AM -0700, Nauman Rafique wrote:
-> On Fri, Apr 17, 2009 at 7:13 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
-> >> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
-> >> > > I think it would be possible to implement both proportional and limiting
-> >> > > rules at the same level (e.g., the IO scheduler), but we need also to
-> >> > > address the memory consumption problem (I still need to review your
-> >> > > patchset in details and I'm going to test it soon :), so I don't know if
-> >> > > you already addressed this issue).
-> >> > >
-> >> >
-> >> > Can you please elaborate a bit on this? Are you concerned about that data
-> >> > structures created to solve the problem consume a lot of memory?
-> >>
-> >> Sorry I was not very clear here. With memory consumption I mean wasting
-> >> the memory with hard/slow reclaimable dirty pages or pending IO
-> >> requests.
-> >>
-> >> If there's only a global limit on dirty pages, any cgroup can exhaust
-> >> that limit and cause other cgroups/processes to block when they try to
-> >> write to disk.
-> >>
-> >> But, ok, the IO controller is not probably the best place to implement
-> >> such functionality. I should rework on the per cgroup dirty_ratio:
-> >>
-> >> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
-> >>
-> >> Last time we focused too much on the best interfaces to define dirty
-> >> pages limit, and I never re-posted an updated version of this patchset.
-> >> Now I think we can simply provide the same dirty_ratio/dirty_bytes
-> >> interface that we provide globally, but per cgroup.
-> >>
-> >> >
-> >> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
-> >> > > in the cgroup that exceeds its limit, how do we avoid the waste of
-> >> > > memory due to the succeeding IO requests and the increasingly dirty
-> >> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
-> >> > > but I think we talked about this problem in a previous email... sorry I
-> >> > > don't find the discussion in my mail archives.
-> >> > >
-> >> > > IMHO a nice approach would be to measure IO consumption at the IO
-> >> > > scheduler level, and control IO applying proportional weights / absolute
-> >> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
-> >> > > time block the tasks from dirtying memory that will generate additional
-> >> > > IO requests.
-> >> > >
-> >> > > Anyway, there's no need to provide this with a single IO controller, we
-> >> > > could split the problem in two parts: 1) provide a proportional /
-> >> > > absolute IO controller in the IO schedulers and 2) allow to set, for
-> >> > > example, a maximum limit of dirty pages for each cgroup.
-> >> > >
-> >> >
-> >> > I think setting a maximum limit on dirty pages is an interesting thought.
-> >> > It sounds like as if memory controller can handle it?
-> >>
-> >> Exactly, the same above.
-> >
-> > Thinking more about it. Memory controller can probably enforce the higher
-> > limit but it would not easily translate into a fixed upper async write
-> > rate. Till the process hits the page cache limit or is slowed down by
-> > dirty page writeout, it can get a very high async write BW.
-> >
-> > So memory controller page cache limit will help but it would not direclty
-> > translate into what max bw limit patches are doing.
-> >
-> > Even if we do max bw control at IO scheduler level, async writes are
-> > problematic again. IO controller will not be able to throttle the process
-> > until it sees actuall write request. In big memory systems, writeout might
-> > not happen for some time and till then it will see a high throughput.
-> >
-> > So doing async write throttling at higher layer and not at IO scheduler
-> > layer gives us the opprotunity to produce more accurate results.
-> 
-> Wouldn't 'doing control on writes at a higher layer' have the same
-> problems as the ones we talk about in dm-ioband? What if the cgroup
-> being throttled for dirtying pages has a high weight assigned to it at
-> the IO scheduler level? What if there are threads of different classes
-> within that cgroup, and we would want to let RT task dirty the pages
-> before BE tasks? I am not sure all these questions make sense, but
-> just wanted to raise issues that might pop up.
-> 
+(copying kvm@vger.kernel.org, where most kvm development happens)
 
-Yes, i would think that you will run into same issues if one is not
-maintaining separate queues. The only difference is that we are throttling
-only async writes and i am not sure how well the notion of fairness is
-defined for async writes in current system as most of the time nobody
-has cared too much for latency of async writes (fsync is the exception).
+sen wang wrote:
+> I have some idea about the ARM KVM.
+>
+> I have register a project ,named"arm-kvm", to port KVM to arm.
+> I'll kick off the ARM KVM porting next week.
+>
+> This is my plan:
+>
+> step 1   Make a guest linux run on the Hypervisor-linux.
+>
+> From the Hypervisor-linux's viewpoint, The guest is a thread of him. 
+> which is like the X86 KVM.But,In this step,the guest-linux has no IO. 
+> It is based on roofs. The physical memroy is allocated to the guest os 
+> at creating time. The guest-linux still run in the privileged 
+> mode,which handle the user mode memory exeception ,SWI system call ... 
+> But the guest-linux will not touch the hardware devices.The physical 
+> interrupt should be controlled by Hypervisor-linux. So the 
+> Hypervisor-linux can switch it off when interrupt happens. And the 
+> Hypervisor-linux will provide some vitual system devices like system 
+> timer and interrupt controller for guest.
+>
+> Because lack of hardware support,The guest linux should know when to 
+> exit,for exemple the idle time,the kernel panic, the guest should 
+> voluntarily exit VM --which is like a thread switch.
+>
+> so there is another job: modification of Hypervisor-linux to support 
+> arm,and modification of qemu for arm KVM
 
-But in general, yes, putting things into a single queue again puts into
-the same situation where we loose the notion of class and prio with-in
-cgroup. So any design which tries to do that probably is not a very good
-idea.
+You'll can hook read[bwl]() and similar functions to use hypercalls, 
+which will allow you to use emulated devices in qemu, even without  full 
+mmu virtualization.
 
-> If the whole system is designed with cgroups in mind, then throttling
-> at IO scheduler layer should lead to backlog, that could be seen at
-> higher level. For example, if a cgroup is not getting service at IO
-> scheduler level, it should run out of request descriptors, and thus
-> the thread writing back dirty pages should notice it (if its pdflush,
-> blocking it is probably not the best idea). And that should mean the
-> cgroup should hit the dirty threshold, and disallow the task to dirty
-> further pages. There is a possibility though that getting all this
-> right might be an overkill and we can get away with a simpler
-> solution. One possibility seems to be that we provide some feedback
-> from IO scheduling layer to higher layers, that cgroup is hitting its
-> write bandwith limit, and should not be allowed to dirty any more
-> pages.
+>
+> step 2   Make guest IO work
+>
+> The guest should have IO functions.Of course, IT is the virtIO. we 
+> should make the virtIO work on the arm kvm.The arm has no hardware 
+> virtualization extension like intel VT. But,In the guest virtIO 
+> driver, when need start IO,the guest should voluntarily exit VM--so it 
+> like IO-exit of the intel VT.
 
-I think bdi_write_congested(), already provides the feedback to upper
-layer about how congested the queue is and it is likely that any thread
-submitting new write request to this bdi will be made to sleep before
-it gets the reqeust descriptor.
+If you make emulated devices work, then you can defer this to the last 
+step.  virtio is only an optimization.
 
-I think in new scheme of thing, this notion of per device congestion shall
-have to changed into per device per cgroup congestion.
+>
+>
+> step 3   add memory virtualization for guest
+>
+> just make the guest run in the user mode，porting the x86 kvm memory 
+> virtualization function for arm kvm,and so on. But I think we should 
+> keep the work mode of step 1 as a option for user. sometime, I think 
+> the guest handle the physical memory directly is not a bad thing.
+>
+>
+> step 4   use the trustzone
+>
+> from arm V6, there is a hardware extension of trustzone. We can make 
+> use of it. let the Hypervisor-linux run int the monitor state,the 
+> guest run in the non-security state. But,the guest os run as 
+> normal--linux kernel in the privileged mode,the user program in the 
+> user mode.So architecture is more elegant.
 
-Thanks
-Vivek
+Does the monitor state have its own userspace?  If not, how are you 
+going to run qemu?
 
+>
+> step5   more guest os
+> the work mode of step 1 has the advantage: we don't need modify the 
+> guest much,which make port wince,symbain possible. for, you know,we 
+> don't have so much source codes for those os.
+>
+> welcome join the "arm-kvm" team. thanks
 
-> 
-> >
-> > For sync requests, I think IO scheduler max bw control should work fine.
-> >
-> > BTW, andrea, what is the use case of your patches? Andrew had mentioned
-> > that some people are already using it. I am curious to know will a
-> > proportional BW controller will solve the issues/requirements of these
-> > people or they have specific requirement of traffic shaping and max bw
-> > controller only.
-> >
-> > [..]
-> >> > > > Can you please give little more details here regarding how QoS requirements
-> >> > > > are not met with proportional weight?
-> >> > >
-> >> > > With proportional weights the whole bandwidth is allocated if no one
-> >> > > else is using it. When IO is submitted other tasks with a higher weight
-> >> > > can be forced to sleep until the IO generated by the low weight tasks is
-> >> > > not completely dispatched. Or any extent of the priority inversion
-> >> > > problems.
-> >> >
-> >> > Hmm..., I am not very sure here. When admin is allocating the weights, he
-> >> > has the whole picture. He knows how many groups are conteding for the disk
-> >> > and what could be the worst case scenario. So if I have got two groups
-> >> > with A and B with weight 1 and 2 and both are contending, then as an
-> >> > admin one would expect to get 33% of BW for group A in worst case (if
-> >> > group B is continuously backlogged). If B is not contending than A can get
-> >> > 100% of BW. So while configuring the system, will one not plan for worst
-> >> > case (33% for A, and 66 % for B)?
-> >>
-> >> OK, I'm quite convinced.. :)
-> >>
-> >> To a large degree, if we want to provide a BW reservation strategy we
-> >> must provide an interface that allows cgroups to ask for time slices
-> >> such as max/min 5 IO requests every 50ms or something like that.
-> >> Probably the same functionality can be achieved translating time slices
-> >> from weights, percentages or absolute BW limits.
-> >
-> > Ok, I would like to split it in two parts.
-> >
-> > I think providng minimum gurantee in absolute terms like 5 IO request
-> > every 50ms will be very hard because IO scheduler has no control over
-> > how many competitors are there. An easier thing will be to have minimum
-> > gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
-> > shall have to create right cgroup hierarchy and assign weights properly and
-> > then admin can calculate what % of disk slice a particular group will get
-> > as minimum gurantee. (This is more complicated than this as there are
-> > time slices which are not accounted to any groups. During queue switch
-> > cfq starts the time slice counting only after first request has completed
-> > to offset the impact of seeking and i guess also NCQ).
-> >
-> > I think it should be possible to give max bandwidth gurantees in absolute
-> > terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
-> > scheduler has to do is to not allow dispatch from a particular queue if
-> > it has crossed its limit and then either let the disk idle or move onto
-> > next eligible queue.
-> >
-> > The only issue here will be async writes. max bw gurantee for async writes
-> > at IO scheduler level might not mean much to application because of page
-> > cache.
-> >
-> > Thanks
-> > Vivek
-> >
+Good luck :)
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
