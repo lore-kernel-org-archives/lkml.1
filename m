@@ -1,105 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbZDSI10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbZDSI17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbZDSI10 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbZDSI0F
+	id S1760310AbZDSI17 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZDSI0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:26:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55370 "EHLO hera.kernel.org"
+	Sun, 19 Apr 2009 04:26:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45582 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756150AbZDSI0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:26:02 -0400
-Date: Sun, 19 Apr 2009 08:25:28 GMT
-From: tip-bot for Weidong Han <weidong.han@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       David.Woodhouse@intel.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       David.Woodhouse@intel.com, mingo@elte.hu
-In-Reply-To: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
-References: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
-Subject: [tip:x86/apic] x86, intr-remap: add option to disable interrupt remapping
-Message-ID: <tip-03ea81550676296d94596e4337c771c6ba29f542@git.kernel.org>
-Git-Commit-ID: 03ea81550676296d94596e4337c771c6ba29f542
-X-Mailer: tip-git-log-daemon
+	id S1757942AbZDSI0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:26:36 -0400
+Message-ID: <49EAE035.6000908@redhat.com>
+Date: Sun, 19 Apr 2009 11:26:29 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:30 +0000 (UTC)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
+References: <1239653210-10422-1-git-send-email-glommer@redhat.com> <49E45894.7090700@redhat.com> <49E4B4D4.1020903@zytor.com> <49E4B654.6060101@redhat.com> <49E4B8E9.7050703@zytor.com> <49E6F7D6.8010107@redhat.com> <49E7B3EB.6060101@zytor.com>
+In-Reply-To: <49E7B3EB.6060101@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  03ea81550676296d94596e4337c771c6ba29f542
-Gitweb:     http://git.kernel.org/tip/03ea81550676296d94596e4337c771c6ba29f542
-Author:     Weidong Han <weidong.han@intel.com>
-AuthorDate: Fri, 17 Apr 2009 16:42:15 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Apr 2009 10:21:54 +0200
+H. Peter Anvin wrote:
+> Avi Kivity wrote:
+>>
+>> We don't emulate guest user mode.
+>>
+>> Well, if guest userspace can convince its kernel to give it access to 
+>> some memory mapped I/O register, I guess it can execute repeated 'mov 
+>> ss, mmio' and starve the guest kernel.
+>>
+>
+> It doesn't need a MMIO register to do that, even.
+>
 
-x86, intr-remap: add option to disable interrupt remapping
+Can you explain how?
 
-Add option "nointremap" to disable interrupt remapping.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-[ Impact: add new boot option ]
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Weidong Han <weidong.han@intel.com>
-Acked-by: David Woodhouse <David.Woodhouse@intel.com>
-Cc: iommu@lists.linux-foundation.org
-Cc: allen.m.kay@intel.com
-Cc: fenghua.yu@intel.com
-LKML-Reference: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/kernel-parameters.txt |    3 +++
- drivers/pci/intr_remapping.c        |   11 +++++++++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 33989d2..843cb66 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1533,6 +1533,9 @@ and is between 256 and 4096 characters. It is defined in the file
- 	noinitrd	[RAM] Tells the kernel not to load any configured
- 			initial RAM disk.
- 
-+	nointremap	[X86-64, Intel-IOMMU] Do not enable interrupt
-+			remapping.
-+
- 	nointroute	[IA-64]
- 
- 	nojitter	[IA64] Disables jitter checking for ITC timers.
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index 5c21426..842039e 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -15,6 +15,14 @@ static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
- static int ir_ioapic_num;
- int intr_remapping_enabled;
- 
-+static int disable_intremap;
-+static __init int setup_nointremap(char *str)
-+{
-+	disable_intremap = 1;
-+	return 0;
-+}
-+early_param("nointremap", setup_nointremap);
-+
- struct irq_2_iommu {
- 	struct intel_iommu *iommu;
- 	u16 irte_index;
-@@ -506,6 +514,9 @@ int __init intr_remapping_supported(void)
- {
- 	struct dmar_drhd_unit *drhd;
- 
-+	if (disable_intremap)
-+		return 0;
-+
- 	for_each_drhd_unit(drhd) {
- 		struct intel_iommu *iommu = drhd->iommu;
- 
