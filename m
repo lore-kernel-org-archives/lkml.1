@@ -1,117 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZDSJAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZDSJBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZDSJAJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 05:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZDSI74
+	id S1756829AbZDSJBV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 05:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZDSJBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:59:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:16446 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZDSI7z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:59:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Fub2verTXvd2cDBorr2O+CAL/uyL6CKIM9rI3zwu3yqe+ZsE7PXmcyhafrq7MWKzeN
-         EbjmUjzn/Eoczv82ceYuIfHcSpSWWERr06UMWOAZFtERqQ8QOmjuGcpS533lF4p3EbJZ
-         1nAjAlPCUNuza2PpJK2JCX+f7ejVdRRbi1q4Q=
+	Sun, 19 Apr 2009 05:01:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49527 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbZDSJBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 05:01:03 -0400
+Date: Sun, 19 Apr 2009 10:59:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: kbuild - introduce support for subdir-ccflags-y
+Message-ID: <20090419085914.GA25898@elte.hu>
+References: <20090418125159.GA23008@uranus.ravnborg.org> <20090418125839.GA3668@flint.arm.linux.org.uk> <20090418150750.GA24059@elte.hu> <20090418180953.GE7148@flint.arm.linux.org.uk> <f73f7ab80904182017n7f27f49ck48ba200deb99388a@mail.gmail.com> <20090419062841.GA17801@uranus.ravnborg.org>
 MIME-Version: 1.0
-In-Reply-To: <20090418184337.GA5556@cmpxchg.org>
-References: <20090418152100.125A.A69D9226@jp.fujitsu.com>
-	 <20090418184337.GA5556@cmpxchg.org>
-Date: Sun, 19 Apr 2009 17:59:54 +0900
-X-Google-Sender-Auth: 4e75ed79f0483de6
-Message-ID: <2f11576a0904190159t2898edfal858ba12d3460c4e5@mail.gmail.com>
-Subject: Re: [PATCH for mmotm 0414] vmscan,memcg: reintroduce sc->may_swap
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090419062841.GA17801@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-Hi
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
->> @@ -1724,6 +1728,7 @@ unsigned long try_to_free_mem_cgroup_pag
->>       struct scan_control sc = {
->>               .may_writepage = !laptop_mode,
->>               .may_unmap = 1,
->> +             .may_swap = 1,
->>               .swap_cluster_max = SWAP_CLUSTER_MAX,
->>               .swappiness = swappiness,
->>               .order = 0,
->> @@ -1734,7 +1739,7 @@ unsigned long try_to_free_mem_cgroup_pag
->>       struct zonelist *zonelist;
->>
->>       if (noswap)
->> -             sc.may_unmap = 0;
->> +             sc.may_swap = 0;
->
-> Can this be directly initialized?
->
-> struct scan_control sc = {
->        ...
->        .may_swap = !noswap,
->        ...
-> };
+> On Sat, Apr 18, 2009 at 11:17:44PM -0400, Kyle Moffett wrote:
+> > On Sat, Apr 18, 2009 at 2:09 PM, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > > On Sat, Apr 18, 2009 at 05:07:50PM +0200, Ingo Molnar wrote:
+> > >> * Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > >> > On Sat, Apr 18, 2009 at 02:51:59PM +0200, Sam Ravnborg wrote:
+> > >> > > The typical use cases are an architecture or a subsystem that
+> > >> > > decide to cover all files with -Werror.
+> > >> > > Today alpha, mips and sparc uses -Werror in almost all their
+> > >> > > Makefile - with subdir-ccflag-y it is now simpler to do so
+> > >> > > as only the top-level directories needs to be covered.
+> > >> >
+> > >> > Hmm, this won't make sense for ARM.  We have things like #warning
+> > >> > and deprecated functions in machine specific headers, and adding
+> > >> > -Werror to the whole of arch/arm/ will result in these causing
+> > >> > builds to fail.
+> > >>
+> > >> This is optional - if you dont want it, you dont set it.
+> > >
+> > > Please read _all_ of my mail, particularly the bit where it talks about
+> > > it being useful for a certain subset.
+> > 
+> > It's my impression that on x86 it's a config option whether or not to
+> > build with -Werror.  You could do the exact same thing with an
+> > internal inverted-logic CONFIG_ARM_ALLOW_WARNINGS option and make all
+> > the boards triggering warnings "select ARM_ALLOW_WARNINGS".  Then have
+> > a user-visible config option "ARM_USER_ALLOW_WARNINGS" which also
+> > selects the internal option.  That adds some additional kconfig-level
+> > documentation on which subarch combos need some love.
+> 
+> Correct - but Russell's original comment was that the subdir-* 
+> feature was of no use for arm. And this is correct with the 
+> current way the individual directories are specified.
+> 
+> If you compare arch/x86/kernel/ and arch/arm/kernel/ you will see 
+> that x86 has 3 subdirectories where arm has none.
+> 
+> Another measure: Arm has 12 Makefiles outside mach* and plat* 
+> where x86 has 24 Makefiles.
+> 
+> Ao unless Russell decide to take the patch that refactor all the 
+> core-* stuff out in a Kbuild file arm has no use of 
+> subdir-ccflags-y and can use the already existing ccflags-y if 
+> they decide to cover most of arm with -Werror.
 
-your proposal is better coding style. but I also prefer condig style
-consistency.
-I think we should change may_unmap and may_swap at the same time.
-Thus, I'd like to does it by another patch.
+Yes. This is an optional facility entirely - if some arch does
+not need or does not want it, it does not have to care.
 
+Sparc is the example to follow here: it has had unconditional 
+-Werror builds (for its architecture files) for years. It has
+done so without any explicit kbuild help beyond a single-line
+ccflags-y := -Werror rule. Sparc has 7 makefiles and it has a 
+well-tested compiler environment.
 
+We cannot do the same on x86 straight away: it's being built
+on a very wide variety of compiler versions, by a very wide
+range of people: more than 95% of our Linux kernel testers are
+on x86.
 
->> @@ -2120,6 +2126,7 @@ unsigned long shrink_all_memory(unsigned
->>       struct scan_control sc = {
->>               .gfp_mask = GFP_KERNEL,
->>               .may_unmap = 0,
->> +             .may_swap = 1,
->
-> shrink_all_memory() is not a user of shrink_zone() -> get_scan_ratio()
-> and therefor not affected by this flag.  I think it's better not to
-> set it here (just like sc->swappiness).
+Some of those compiler versions emit bogus warnings that cannot
+be worked around in the kernel in any sane way - and a forced
+-Werror build would thus become a (needless) show-stopper there.
+It will also take some time to flush out any remaining warnings.
 
-Will fix. thanks.
+All in one, we want arch/x86 to become a -Werror-clean architecture 
+and we want all the advantages of that, but we didnt want to do any 
+artificial 'break the world' flag day.
 
+So we are doing a hybrid approach instead, we are adding a 
+default-off .config option, and we are doing it all smoothly and 
+gradually.
 
+The reason we asked Sam whether he can think of any kbuild help 
+(again, which is strictly optional) was that we didnt want to 
+propagate a 5-6 lines hybrid Makefile rule into 24 makefiles.
 
->>               .may_writepage = 1,
->>               .isolate_pages = isolate_pages_global,
->>       };
->> @@ -2304,6 +2311,7 @@ static int __zone_reclaim(struct zone *z
->>       struct scan_control sc = {
->>               .may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
->>               .may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
->> +             .may_swap = 1,
->
-> Shouldn't this be set to !!(zone_reclaim_mode & RECLAIM_SWAP) as well?
->
-> With set to 1, zone_reclaim() will also reclaim unmapped swap cache
-> pages (without swapping) and it might be desirable to do that.
+We could have done this all via a special makefile rule entirely
+in arch/x86/ that is included in every secondary makefile - but
+we also wanted to give other architectures an optional, librarized
+kbuild facility to do the same, if they so choose.
 
-In general, you are right.
-but another patch is better. this patch should only change memcg behavior.
+Thanks,
 
-I plan to change this. I'm making some zone reclaim test case, after it,
-I can post the patch.
-
-
-> But
-> then may_swap is a confusing name.  may_anon?  may_scan_anon?
-> scan_anon?
-
-Why?
-may_swap = 0 mean no swap-out directly. not anon only.
-it's because shmem page stay in LRU_ANON.
+	Ingo
