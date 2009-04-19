@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZDSXDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbZDSX1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751460AbZDSXDu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 19:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZDSXDl
+	id S1751520AbZDSX1J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 19:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZDSX0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 19:03:41 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:52699 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZDSXDl convert rfc822-to-8bit (ORCPT
+	Sun, 19 Apr 2009 19:26:53 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:64179 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbZDSX0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 19:03:41 -0400
+	Sun, 19 Apr 2009 19:26:52 -0400
+X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Apr 2009 19:26:52 EDT
+X-IronPort-AV: E=Sophos;i="4.40,213,1238976000"; 
+   d="scan'208";a="34030070"
+Message-ID: <49EBB0F7.3050606@cisco.com>
+Date: Sun, 19 Apr 2009 16:17:11 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <495563870904181941o5a66126dgb59d8cad2b7a66f2@mail.gmail.com>
-References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
-	 <74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>
-	 <20090417170707.B6C95C4004F@mail150-wa4.bigfish.com>
-	 <fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
-	 <495563870904181941o5a66126dgb59d8cad2b7a66f2@mail.gmail.com>
-Date: Mon, 20 Apr 2009 09:03:40 +1000
-Message-ID: <1d3f23370904191603s37a6a34clccc397707394650b@mail.gmail.com>
-Subject: Re: [microblaze-uclinux] [PATCH 11/11] microblaze: Kconfig: Enable 
-	drivers for Microblaze
-From: John Williams <john.williams@petalogix.com>
-To: microblaze-uclinux@itee.uq.edu.au
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
-       John Linn <john.linn@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] Wait for console to become available, v2
+References: <20090416190837.GA26734@cuplxvomd02.corp.sa.net> <874owlqcce.fsf@basil.nowhere.org> <49EB5008.1090000@cisco.com> <20090419163923.GS14687@one.firstfloor.org>
+In-Reply-To: <20090419163923.GS14687@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19, 2009 at 12:41 PM, Stephen Neuendorffer
-<stephen.neuendorffer@gmail.com> wrote:
->
->
-> On Fri, Apr 17, 2009 at 10:49 PM, Grant Likely <grant.likely@secretlab.ca>
-> wrote:
->>
->> On Fri, Apr 17, 2009 at 11:06 AM, Stephen Neuendorffer
->> <stephen.neuendorffer@xilinx.com> wrote:
->> >
->> > Can we have XILINX_DRIVERS, please?  That way this can also be enabled
->> > on any architecture that has FPGA peripherals.
->>
->> I've thought about this more, and I'd really rather not.  The list of
->> affected drivers is short and is not a large maintenance burden.  I
->> don't think a list of 2 or 3 architecture selects for each driver is
->> unreasonable.  A "XILINX_DRIVERS" config item doesn't really help much
->> anyway.  At any given time one of these drivers may be needed on
->> another platform.  ie. the SystemACE device is present on at least one
->> non-virtex, non-spartan platform.
->
-> Which is exactly why having it architecture dependent isn't right...  All of
-> these drivers
-> could be needed and used on any OF-based platform.  If you have a platform
-> (for instance, a processor connected to an FPGA which has these peripherals
-> in the FPGA) then you should be able to enable these drivers.  Just my 2
-> cents...
+Andi Kleen wrote:
+> On Sun, Apr 19, 2009 at 09:23:36AM -0700, David VomLehn wrote:
+>> Andi Kleen wrote:
+>>> VomLehn <dvomlehn@cisco.com> writes:
+...
+>>> Also a setting to panic in this case might be useful, normally a system
+>>> without console is not very useful and needs to be rebooted anyways.
+>> Umm, those of us in the embedded space have the, perhaps misguided, 
+>> notion that our systems are quite useful without consoles...
+> 
+> That seems more like a special case that shouldn't be default?
 
-What about the radical approach of having NO architecture
-filters/selectors?  Even if some random i386 user selects one of these
-drivers, so what?  It will still compile cleanly (if it doesn't we
-have to fix it), but there'll be no platform_device_register() call in
-their machine startup to actually cause driver / device binding.
+I have to disagree. Panicing because you can't open /dev/console is 
+likely to mean that you get no output at all and so no chance to see a 
+message explaining why the open failed. If the open failure is all that 
+happened, the rest of the system may very well come up normally. You 
+would then be able to look at the kernel log and diagnose the issue.
 
-No harm, no foul.  Problem goes away.
+In any case, the purpose of this patch is fix USB consoles to work as 
+they did before parallelized startup. This involves addressing a race 
+condition that, theoretically, always existed but which previously 
+hadn't been a problem. Changing the behavior when init_post() can't open 
+/dev/console seems out of scope.
 
-Then, as Grant points out, the rare cases where non-Xilinx platforms
-do use this stuff, they'll presumably know what they're doing and it's
-their responsibility to register the appropriate platform_device
-structures and make the magic happen.
+> -Andi
 
-John
--- 
-John Williams, PhD, B.Eng, B.IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
