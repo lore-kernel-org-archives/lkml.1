@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbZDSQOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbZDSQRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761674AbZDSQOk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 12:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761132AbZDSQO3
+	id S1761567AbZDSQRT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 12:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760310AbZDSQRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 12:14:29 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:37955 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761109AbZDSQO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 12:14:28 -0400
-Date: Sun, 19 Apr 2009 12:14:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, axboe@kernel.dk,
-       hch@lst.de
-Subject: [PATCH 2/2] Fix bugs found during bio_list update
-Message-ID: <20090419161427.GB12531@havoc.gtf.org>
-References: <20090419161234.GA12105@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090419161234.GA12105@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 19 Apr 2009 12:17:07 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:35083 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758571AbZDSQRF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 12:17:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=EcDO5UuPijrkmnNnNUwnTARQVlj/KPbXUhHc1MRosJm1QkXbLixY7vyf0B7ChpYQcn
+         OcddiCJm1y4NH2g+ewkLEmMv9pKKZghT9qn1ThYOQsNqc+bePCNinn54t+nTgTtj5vI7
+         47H3xmmqASC1EPcacjN9XZDmwfc9LVJNfFfWg=
+MIME-Version: 1.0
+Date: Sun, 19 Apr 2009 18:09:44 +0200
+Message-ID: <c384c5ea0904190909i1b5ec8car615fdc76e302b871@mail.gmail.com>
+Subject: splice_read() for device drivers?
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Note - the very first change is not so much a fix as a cleanup.
-bio_list_pop(), however, is a fix.
 
-commit 18f987e9059c08bd61e5bded13d019cf521ada13
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Sun Apr 19 12:01:55 2009 -0400
+I have a device driver for data acquisition that currently exposes a
+character device. The device driver performs DMA transfers directly
+into/from user space on read/write().
 
-    block: Be sure to initialize bio list tail properly
-    
-    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+If I want the driver to support splicing, must I implement
+splice_read/write() ops? Can I make them directly DMA into the splice
+pipe buffer pages?
 
- block/blk-core.c  |    5 +++--
- block/blk-map.c   |    3 ++-
- block/blk-merge.c |    2 +-
- 3 files changed, 6 insertions(+), 4 deletions(-)
+I found no current implementation of splice_read/write(), except for
+filesystem drivers.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 0ec8621..a2cd281 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1753,11 +1753,12 @@ static int __end_that_request_first(struct request *req, int error,
- 	blk_account_io_completion(req, nr_bytes);
- 
- 	total_bytes = bio_nbytes = 0;
--	while ((bio = req->bio_list.head) != NULL) {
-+	bio = req->bio_list.head;
-+	while (bio) {
- 		int nbytes;
- 
- 		if (nr_bytes >= bio->bi_size) {
--			req->bio_list.head = bio->bi_next;
-+			bio_list_pop(&req->bio_list);
- 			nbytes = bio->bi_size;
- 			req_bio_endio(req, bio, nbytes, error);
- 			next_idx = 0;
-diff --git a/block/blk-map.c b/block/blk-map.c
-index 437b916..ca849d3 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -159,7 +159,7 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
- 	return 0;
- unmap_rq:
- 	blk_rq_unmap_user(bio);
--	rq->bio_list.head = NULL;
-+	rq->bio_list.head = rq->bio_list.tail = NULL;
- 	return ret;
- }
- EXPORT_SYMBOL(blk_rq_map_user);
-@@ -312,6 +312,7 @@ int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
- 
- 	blk_rq_bio_prep(q, rq, bio);
- 	blk_queue_bounce(q, &rq->bio_list.head);
-+	rq->bio_list.tail = rq->bio_list.head;
- 	rq->buffer = rq->data = NULL;
- 	return 0;
- }
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index a1a23ae..6dc74d8 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -409,7 +409,7 @@ static int attempt_merge(struct request_queue *q, struct request *req,
- 		req->cpu = next->cpu;
- 
- 	/* owner-ship of bio passed from next to req */
--	next->bio_list.head = NULL;
-+	next->bio_list.head = next->bio_list.tail = NULL;
- 	__blk_put_request(q, next);
- 	return 1;
- }
+Is there a write-up on this or a reference implementation? Any work in
+progress for LDD4 or such?
+
+Regards,
+-- 
+Leon
