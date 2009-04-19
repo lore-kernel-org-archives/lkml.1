@@ -1,123 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZDSELb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbZDSEP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZDSELb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 00:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbZDSELW
+	id S1753168AbZDSEP0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 00:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbZDSEPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 00:11:22 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:59424 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750777AbZDSELW (ORCPT
+	Sun, 19 Apr 2009 00:15:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36729
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750876AbZDSEPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 00:11:22 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqsGACw+6klMQW1W/2dsb2JhbACBTssWg30G
-Date: Sun, 19 Apr 2009 00:11:19 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] x86 entry_64.S lockdep fix
-Message-ID: <20090419041119.GB26365@Krystal>
-References: <20090416161746.831882528@goodmis.org> <1239900469.23397.3128.camel@laptop> <alpine.DEB.2.00.0904161343110.20429@gandalf.stny.rr.com> <1239904428.23397.3278.camel@laptop> <alpine.DEB.2.00.0904162254270.20429@gandalf.stny.rr.com> <alpine.DEB.2.00.0904170002030.20429@gandalf.stny.rr.com> <20090417045229.GA30001@Krystal> <alpine.DEB.2.00.0904170706510.20429@gandalf.stny.rr.com> <20090417221942.GA24619@Krystal> <alpine.DEB.2.00.0904180953390.1016@gandalf.stny.rr.com>
+	Sun, 19 Apr 2009 00:15:12 -0400
+Date: Sat, 18 Apr 2009 21:15:03 -0700 (PDT)
+Message-Id: <20090418.211503.13481677.davem@davemloft.net>
+To: g.liakhovetski@gmx.de
+Cc: florian@openwrt.org, peter@holik.at, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0904182146220.14879@axis700.grange>
+References: <Pine.LNX.4.64.0904172102300.5119@axis700.grange>
+	<20090418.015541.05303908.davem@davemloft.net>
+	<Pine.LNX.4.64.0904182146220.14879@axis700.grange>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904180953390.1016@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:08:32 up 50 days, 34 min,  2 users,  load average: 0.73, 0.79,
-	0.67
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Fri, 17 Apr 2009, Mathieu Desnoyers wrote:
-> > 
-> > I happened to have the following patch hanging around in my LTTng tree
-> > for a while. Would it solve your problem by any chance ? I had to move
-> > it a bit around in my patchset to put it before the nmi-safe int3
-> > handler patch I have, but it should apply correctly.
-> > 
-> > 
-> > x86 entry_64.S lockdep fix
-> > 
-> > Add missing lockdep irq on instrumentation to entry_64.S.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > ---
-> >  arch/x86/kernel/entry_64.S |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6-lttng/arch/x86/kernel/entry_64.S
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/arch/x86/kernel/entry_64.S	2009-04-17 17:44:18.000000000 -0400
-> > +++ linux-2.6-lttng/arch/x86/kernel/entry_64.S	2009-04-17 17:53:42.000000000 -0400
-> > @@ -1420,9 +1420,9 @@ ENTRY(paranoid_exit)
-> >  	testl $3,CS(%rsp)
-> >  	jnz   paranoid_userspace
-> >  paranoid_swapgs:
-> > -	TRACE_IRQS_IRETQ 0
-> >  	SWAPGS_UNSAFE_STACK
-> >  paranoid_restore:
-> > +	TRACE_IRQS_IRETQ 0
-> 
-> This is buggy. If you go here via userspace, you just did a swapgs, and 
-> the %gs register (process context) is now zero. If you call kernel code 
-> that does anything with "current" you will crash the system.
-> 
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Sat, 18 Apr 2009 21:54:11 +0200 (CEST)
 
-Argh, I should not have extracted my fix from my patchset and try to
-reorder the patches that late in the day. Sorry, you are indeed right.
-On the bright side, the patch I send earlier has never hit a repository.
-Here is a more sensible version.
+> If you are working with that file and see a call to reg_write() you
+> know where to look for it.
 
+I would never use such a generic name for a driver local routine.
 
-Add missing lockdep irq on instrumentation to entry_64.S.
+For example, in the tg3 driver we use "tr32()" and "tw32()" so that
+at least some inkling of the driver name, even if it is just one
+character, prefixes the name.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/x86/kernel/entry_64.S |    3 +++
- 1 file changed, 3 insertions(+)
+This extends to other driver's I've written.  The niu driver thus
+uses "tr64()" and "nw64()".
 
-Index: linux-2.6-lttng/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/entry_64.S	2009-04-17 18:34:51.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/entry_64.S	2009-04-18 23:41:28.000000000 -0400
-@@ -1422,7 +1422,10 @@ ENTRY(paranoid_exit)
- paranoid_swapgs:
- 	TRACE_IRQS_IRETQ 0
- 	SWAPGS_UNSAFE_STACK
-+	RESTORE_ALL 8
-+	jmp irq_return
- paranoid_restore:
-+	TRACE_IRQS_IRETQ 0
- 	RESTORE_ALL 8
- 	jmp irq_return
- paranoid_userspace:
-
-
-
-> -- Steve
-> 
-> 
-> >  	RESTORE_ALL 8
-> >  	jmp irq_return
-> >  paranoid_userspace:
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+This is just common sense as far as I'm concerned.  It is just
+as straight forward as not using variable names like 'foo'.
