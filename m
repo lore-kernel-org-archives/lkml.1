@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbZDSQRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbZDSQXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761567AbZDSQRT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 12:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760310AbZDSQRH
+	id S1761682AbZDSQXz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 12:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760825AbZDSQXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 12:17:07 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:35083 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758571AbZDSQRF (ORCPT
+	Sun, 19 Apr 2009 12:23:44 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:25866 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760650AbZDSQXn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 12:17:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=EcDO5UuPijrkmnNnNUwnTARQVlj/KPbXUhHc1MRosJm1QkXbLixY7vyf0B7ChpYQcn
-         OcddiCJm1y4NH2g+ewkLEmMv9pKKZghT9qn1ThYOQsNqc+bePCNinn54t+nTgTtj5vI7
-         47H3xmmqASC1EPcacjN9XZDmwfc9LVJNfFfWg=
+	Sun, 19 Apr 2009 12:23:43 -0400
+X-IronPort-AV: E=Sophos;i="4.40,213,1238976000"; 
+   d="scan'208";a="156352910"
+Message-ID: <49EB5008.1090000@cisco.com>
+Date: Sun, 19 Apr 2009 09:23:36 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Date: Sun, 19 Apr 2009 18:09:44 +0200
-Message-ID: <c384c5ea0904190909i1b5ec8car615fdc76e302b871@mail.gmail.com>
-Subject: splice_read() for device drivers?
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] Wait for console to become available, v2
+References: <20090416190837.GA26734@cuplxvomd02.corp.sa.net> <874owlqcce.fsf@basil.nowhere.org>
+In-Reply-To: <874owlqcce.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Andi Kleen wrote:
+> VomLehn <dvomlehn@cisco.com> writes:
+>> History
+>> v2	Wait for the preferred console rather than any console. Make the
+>> 	delay interval a tunable.
+> 
+> CONFIG tunables are usually a bad idea. What should a binary distribution
+> kernel set? Better make it a boot option with a reasonable default.
+
+Your point about boot options is well taken; I released a more recent 
+version of this patch with boot options last Friday and would appreciate 
+your comments.
+
+> Also a setting to panic in this case might be useful, normally a system
+> without console is not very useful and needs to be rebooted anyways.
+
+Umm, those of us in the embedded space have the, perhaps misguided, 
+notion that our systems are quite useful without consoles...
+
+But, more to the specific point, the console code is pretty smart. If 
+you set your delay interval too short and the console comes up later, 
+you won't see output to /dev/console, but you *will* see kernel printk 
+output, including the message that no console could be opened. This 
+would, hopefully, point the user to the problem. I can also make the 
+message more specific about which parameter to set in that case.
+
+> 
+> -Andi
 
 
-I have a device driver for data acquisition that currently exposes a
-character device. The device driver performs DMA transfers directly
-into/from user space on read/write().
-
-If I want the driver to support splicing, must I implement
-splice_read/write() ops? Can I make them directly DMA into the splice
-pipe buffer pages?
-
-I found no current implementation of splice_read/write(), except for
-filesystem drivers.
-
-Is there a write-up on this or a reference implementation? Any work in
-progress for LDD4 or such?
-
-Regards,
--- 
-Leon
