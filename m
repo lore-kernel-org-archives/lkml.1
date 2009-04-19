@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbZDSI1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbZDSI10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760088AbZDSI1n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZDSI02
+	id S1757681AbZDSI10 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbZDSI0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:26:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55383 "EHLO hera.kernel.org"
+	Sun, 19 Apr 2009 04:26:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55370 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757342AbZDSI00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:26:26 -0400
-Date: Sun, 19 Apr 2009 08:25:39 GMT
+	id S1756150AbZDSI0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:26:02 -0400
+Date: Sun, 19 Apr 2009 08:25:28 GMT
 From: tip-bot for Weidong Han <weidong.han@intel.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,34 +18,32 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
        David.Woodhouse@intel.com, mingo@elte.hu
-In-Reply-To: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
-References: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
-Subject: [tip:x86/apic] x86, intr-remap: fix x2apic/intr-remap resume
-Message-ID: <tip-9a2755c3569e4db92bd9b1daadeddb4045b0cccd@git.kernel.org>
-Git-Commit-ID: 9a2755c3569e4db92bd9b1daadeddb4045b0cccd
+In-Reply-To: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
+References: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
+Subject: [tip:x86/apic] x86, intr-remap: add option to disable interrupt remapping
+Message-ID: <tip-03ea81550676296d94596e4337c771c6ba29f542@git.kernel.org>
+Git-Commit-ID: 03ea81550676296d94596e4337c771c6ba29f542
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:41 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9a2755c3569e4db92bd9b1daadeddb4045b0cccd
-Gitweb:     http://git.kernel.org/tip/9a2755c3569e4db92bd9b1daadeddb4045b0cccd
+Commit-ID:  03ea81550676296d94596e4337c771c6ba29f542
+Gitweb:     http://git.kernel.org/tip/03ea81550676296d94596e4337c771c6ba29f542
 Author:     Weidong Han <weidong.han@intel.com>
-AuthorDate: Fri, 17 Apr 2009 16:42:16 +0800
+AuthorDate: Fri, 17 Apr 2009 16:42:15 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Apr 2009 10:22:05 +0200
+CommitDate: Sun, 19 Apr 2009 10:21:54 +0200
 
-x86, intr-remap: fix x2apic/intr-remap resume
+x86, intr-remap: add option to disable interrupt remapping
 
-Interrupt remapping was decoupled from x2apic. Shouldn't check
-x2apic before resume interrupt remapping. Otherwise, interrupt
-remapping won't be resumed when x2apic is not enabled.
+Add option "nointremap" to disable interrupt remapping.
 
-[ Impact: fix potential intr-remap resume hang on !x2apic ]
+[ Impact: add new boot option ]
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Weidong Han <weidong.han@intel.com>
@@ -53,60 +51,55 @@ Acked-by: David Woodhouse <David.Woodhouse@intel.com>
 Cc: iommu@lists.linux-foundation.org
 Cc: allen.m.kay@intel.com
 Cc: fenghua.yu@intel.com
-LKML-Reference: <1239957736-6161-6-git-send-email-weidong.han@intel.com>
+LKML-Reference: <1239957736-6161-5-git-send-email-weidong.han@intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apic/apic.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ Documentation/kernel-parameters.txt |    3 +++
+ drivers/pci/intr_remapping.c        |   11 +++++++++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 0cf1eea..7b41a32 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -2032,7 +2032,7 @@ static int lapic_resume(struct sys_device *dev)
- 		return 0;
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 33989d2..843cb66 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1533,6 +1533,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	noinitrd	[RAM] Tells the kernel not to load any configured
+ 			initial RAM disk.
  
- 	local_irq_save(flags);
--	if (x2apic) {
-+	if (intr_remapping_enabled) {
- 		ioapic_entries = alloc_ioapic_entries();
- 		if (!ioapic_entries) {
- 			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
-@@ -2048,8 +2048,10 @@ static int lapic_resume(struct sys_device *dev)
- 
- 		mask_IO_APIC_setup(ioapic_entries);
- 		mask_8259A();
--		enable_x2apic();
- 	}
++	nointremap	[X86-64, Intel-IOMMU] Do not enable interrupt
++			remapping.
 +
-+	if (x2apic)
-+		enable_x2apic();
- #else
- 	if (!apic_pm_state.active)
- 		return 0;
-@@ -2097,10 +2099,12 @@ static int lapic_resume(struct sys_device *dev)
- 	apic_read(APIC_ESR);
+ 	nointroute	[IA-64]
  
- #ifdef CONFIG_INTR_REMAP
--	if (intr_remapping_enabled)
--		reenable_intr_remapping(EIM_32BIT_APIC_ID);
-+	if (intr_remapping_enabled) {
-+		if (x2apic)
-+			reenable_intr_remapping(EIM_32BIT_APIC_ID);
-+		else
-+			reenable_intr_remapping(EIM_8BIT_APIC_ID);
+ 	nojitter	[IA64] Disables jitter checking for ITC timers.
+diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
+index 5c21426..842039e 100644
+--- a/drivers/pci/intr_remapping.c
++++ b/drivers/pci/intr_remapping.c
+@@ -15,6 +15,14 @@ static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
+ static int ir_ioapic_num;
+ int intr_remapping_enabled;
  
--	if (x2apic) {
- 		unmask_8259A();
- 		restore_IO_APIC_setup(ioapic_entries);
- 		free_ioapic_entries(ioapic_entries);
-@@ -2109,7 +2113,6 @@ static int lapic_resume(struct sys_device *dev)
++static int disable_intremap;
++static __init int setup_nointremap(char *str)
++{
++	disable_intremap = 1;
++	return 0;
++}
++early_param("nointremap", setup_nointremap);
++
+ struct irq_2_iommu {
+ 	struct intel_iommu *iommu;
+ 	u16 irte_index;
+@@ -506,6 +514,9 @@ int __init intr_remapping_supported(void)
+ {
+ 	struct dmar_drhd_unit *drhd;
  
- 	local_irq_restore(flags);
- 
--
- 	return 0;
- }
++	if (disable_intremap)
++		return 0;
++
+ 	for_each_drhd_unit(drhd) {
+ 		struct intel_iommu *iommu = drhd->iommu;
  
