@@ -1,65 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZDSDR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZDSD7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZDSDR4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Apr 2009 23:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZDSDRq
+	id S1754823AbZDSD7y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Apr 2009 23:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZDSD7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Apr 2009 23:17:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:5132 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbZDSDRp convert rfc822-to-8bit (ORCPT
+	Sat, 18 Apr 2009 23:59:45 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:43492 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751404AbZDSD7o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Apr 2009 23:17:45 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090418180953.GE7148@flint.arm.linux.org.uk>
-References: <20090418125159.GA23008@uranus.ravnborg.org>
-	 <20090418125839.GA3668@flint.arm.linux.org.uk>
-	 <20090418150750.GA24059@elte.hu>
-	 <20090418180953.GE7148@flint.arm.linux.org.uk>
-Date: Sat, 18 Apr 2009 23:17:44 -0400
-Message-ID: <f73f7ab80904182017n7f27f49ck48ba200deb99388a@mail.gmail.com>
-Subject: Re: kbuild - introduce support for subdir-ccflags-y
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 18 Apr 2009 23:59:44 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ai8FAOo66klMQW1W/2dsb2JhbACBTssQg30G
+Date: Sat, 18 Apr 2009 23:59:38 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] tracing: move __DO_TRACE out of line
+Message-ID: <20090419035938.GA26365@Krystal>
+References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-2-git-send-email-jeremy@goop.org> <20090417154640.GB8253@elte.hu> <20090417161005.GA16361@Krystal> <20090417162326.GG8253@elte.hu> <49E8D91F.1060005@goop.org> <20090418065331.GA1942@Krystal> <alpine.DEB.2.00.0904181013450.1016@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0904181013450.1016@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 23:43:45 up 50 days, 9 min,  2 users,  load average: 0.32, 0.55,
+	0.57
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 2:09 PM, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> On Sat, Apr 18, 2009 at 05:07:50PM +0200, Ingo Molnar wrote:
->> * Russell King <rmk+lkml@arm.linux.org.uk> wrote:
->> > On Sat, Apr 18, 2009 at 02:51:59PM +0200, Sam Ravnborg wrote:
->> > > The typical use cases are an architecture or a subsystem that
->> > > decide to cover all files with -Werror.
->> > > Today alpha, mips and sparc uses -Werror in almost all their
->> > > Makefile - with subdir-ccflag-y it is now simpler to do so
->> > > as only the top-level directories needs to be covered.
->> >
->> > Hmm, this won't make sense for ARM.  We have things like #warning
->> > and deprecated functions in machine specific headers, and adding
->> > -Werror to the whole of arch/arm/ will result in these causing
->> > builds to fail.
->>
->> This is optional - if you dont want it, you dont set it.
->
-> Please read _all_ of my mail, particularly the bit where it talks about
-> it being useful for a certain subset.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Sat, 18 Apr 2009, Mathieu Desnoyers wrote:
+> > 
+> > tbench test
+> > 
+> > kernel : 2.6.30-rc1
+> > 
+> > running on a 8-cores x86_64, localhost server
+> > 
+> > tracepoints inactive :
+> > 
+> > 2051.20 MB/sec
+> 
+> Is this with or without inlined trace points?
+> 
+> It would be interesting to see:
+> 
+> time with tracepoints not configured at all
+> 
+> time with inline tracepoints (inactive)
+> 
+> time with out-of-line tracepoints (inactive)
+> 
+> Because if inline trace points affect the use of normal operations when 
+> inactive, that would be a cause against trace points all together.
+> 
 
-It's my impression that on x86 it's a config option whether or not to
-build with -Werror.  You could do the exact same thing with an
-internal inverted-logic CONFIG_ARM_ALLOW_WARNINGS option and make all
-the boards triggering warnings "select ARM_ALLOW_WARNINGS".  Then have
-a user-visible config option "ARM_USER_ALLOW_WARNINGS" which also
-selects the internal option.  That adds some additional kconfig-level
-documentation on which subarch combos need some love.
+I've done a few performance measurements which lead to interesting
+conclusions.
 
-Cheers,
-Kyle Moffett
+Here is the conclusions I gather from the following tbench tests on the LTTng
+tree :
+
+- Dormant tracepoints, when sprinkled all over the place, have a very small, but
+  measurable, footprint on kernel stress-test workloads (3 % for the
+  whole 2.6.30-rc1 LTTng tree).
+
+- "Immediate values" help lessening this impact significantly (3 % -> 2.5 %).
+
+- Static jump patching would diminish impact even more, but would require gcc
+  modifications to be acceptable. I did some prototypes using instruction
+  pattern matching in the past which was judged too complex.
+
+- I strongly recommend adding per-subsystem config-out option for heavy
+  users like kmemtrace or pvops. Compiling-out kmemtrace instrumentation
+  brings the performance impact from 2.5 % down to 1.9 % slowdown.
+
+- Putting the tracepoint out-of-line is a no-go, as it slows down *both* the
+  dormant (3 % -> 4.7 %) and the active (+20% to tracer overhead) tracepoints
+  compared to inline tracepoints.
+
+I also think someone should have a closer look at how GCC handles unlikely()
+branches in static inline functions. For some reason, it does not seem to put
+code in cache-cold cacheline in some cases. Improving the compiler optimisations
+could help in those cases, not only for tracepoints, but for all other affected
+facilities (e.g. BUG_ON()).
+
+In conclusion, adding tracepoints should come at least with performance impact
+measurements. For instance, the scheduler tracepoints have shown to have been
+tested to have no significant performance impact, but it is not the case for
+kmemtrace as my tests show. It makes sense, in this case, to put such invasive
+tracepoints (kmemtrace, pvops) under a per-subsystem config option.
+I would also recommend merging immediate values as a short-term
+performance improvement and putting some resources on adding static jump
+patching support to gcc.
+
+Tracepoints are cheap, but not completely free.
+
+Disclaimer : using tbench is probably the worse-case scenario we can
+think of in terms of using the tracepoint code paths very frequently.
+I dont expect more "balanced" workloads to exhibit such measurable
+performance impact. Anyone willing to talk about the general performance
+impact of tracepoints should _really_ run tests on a wider variety of
+workloads.
+
+Linux 2.6.30-rc1, LTTng tree
+(includes both mainline tracepoints and LTTng tracepoints)
+
+(tbench 8, in MB/sec)
+
+Tracepoints all compiled-out :
+
+run 1 :                2091.50
+run 2 (after reboot) : 2089.50 (baseline)
+run 3 (after reboot) : 2083.61
+
+Dormant tracepoints :
+
+inline, no immediate value optimization
+
+run 1 :                1990.63
+run 2 (after reboot) : 2025.38 (3 %)
+run 3 (after reboot) : 2028.81
+
+out-of-line, no immediate value optimization
+
+run 1 :                1990.66
+run 2 (after reboot) : 1990.19 (4.7 %)
+run 3 (after reboot) : 1977.79
+
+inline, immediate value optimization
+
+run 1 :                2035.99 (2.5 %)
+run 2 (after reboot) : 2036.11
+run 3 (after reboot) : 2035.75
+
+inline, immediate value optimization, configuring out kmemtrace tracepoints
+
+run 1 :                2048.08 (1.9 %)
+run 2 (after reboot) : 2055.53
+run 3 (after reboot) : 2046.49
+
+Mathieu
+
+
+> -- Steve
+> 
+> > 
+> > "google" tracepoints activated, flight recorder mode (overwrite) tracing
+> > 
+> > inline tracepoints
+> > 
+> > 1704.70 MB/sec (16.9 % slower than baseline)
+> > 
+> > out-of-line tracepoints
+> > 
+> > 1635.14 MB/sec (20.3 % slower than baseline)
+> > 
+> > So the overall tracer impact is 20 % bigger just by making the
+> > tracepoints out-of-line. This is going to add up quickly if we add as
+> > much function calls as we currently find in the event tracer fast path,
+> > but LTTng, OTOH, has been designed to minimize the number of such
+> > function calls, and you see a good example of why it's been such an
+> > important design goal above.
+> > 
+> > About cache-line usage, I agree that in some cases gcc does not seem
+> > intelligent enough to move those code paths away from the fast path.
+> > What we would really whant there is -freorder-blocks-and-partition, but
+> > I doubt we want this for the whole kernel, as it makes some jumps
+> > slightly larger. One thing we should maybe look into is to add some kind
+> > of "very unlikely" builtin expect to gcc that would teach it to really
+> > put the branch in a cache-cold location, no matter what.
+> > 
+> > Mathieu
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
