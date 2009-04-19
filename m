@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbZDSKU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZDSKu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbZDSKU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 06:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZDSKUT
+	id S1755594AbZDSKu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 06:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZDSKuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 06:20:19 -0400
-Received: from mail-bw0-f211.google.com ([209.85.218.211]:46764 "EHLO
-	mail-bw0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbZDSKUS (ORCPT
+	Sun, 19 Apr 2009 06:50:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46034 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZDSKuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 06:20:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wSQNM3aXgjtFkNUEN8ZytSYd0J+jHvVJW8UL5MKkkzkS+xIPbjI3tF6nqyGlzj6k6g
-         7P+Yh+Vy8UL4zV3vFIb4RfVc+ndYSOufoXSoNMJdghiTLyAdxF/k78ALEdfIt8wPCb1E
-         YVAv2cPwLtL6NyOjUgD5xbxPaxCwoWWcmxy8E=
-Message-ID: <49EAFACD.6040302@gmail.com>
-Date: Sun, 19 Apr 2009 12:19:57 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, rakib.mullick@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Fix false positive section mismatch warnings
- in the apic code
-References: <b9df5fa10904181941u4a73fc97i80dfa90a50b8daf5@mail.gmail.com> <tip-aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7@git.kernel.org> <49EAF31C.8020108@gmail.com> <20090419095759.GA4808@elte.hu>
-In-Reply-To: <20090419095759.GA4808@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 19 Apr 2009 06:50:11 -0400
+Subject: Re: [PATCH] Allow preemption during lazy mmu updates
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <49EAF9D6.1010600@redhat.com>
+References: <1238176963-21093-1-git-send-email-jeremy@goop.org>
+	 <20090408145440.GN12931@elte.hu> <1239203512.4557.2575.camel@laptop>
+	 <49EAF9D6.1010600@redhat.com>
+Content-Type: text/plain
+Date: Sun, 19 Apr 2009 12:47:25 +0200
+Message-Id: <1240138045.8618.1083.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+On Sun, 2009-04-19 at 13:15 +0300, Avi Kivity wrote:
+> Peter Zijlstra wrote:
+> > On Wed, 2009-04-08 at 16:54 +0200, Ingo Molnar wrote:
+> >   
+> >>>  kernel/sched.c                     |    2 -
+> >>>       
+> >> Needs the ack of ... oh, never mind - this one is fine i guess ;-)
+> >>     
+> >
+> > Ah, about that. This new preemption hook has slightly different
+> > requirements than the current preempt-notifiers have (hence the new
+> > hook), I was wondering if KVM (afaik currently the only preempt-notifier
+> > consumer) could live with these requirements.
+> >
+> > That is, could these be merged?
+> >   
 > 
->> tip-bot for Rakib Mullick pisze:
->>> Commit-ID:  aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7
->>> Gitweb:     http://git.kernel.org/tip/aa57a15ad17d284e62fbd24cf7e0eb628b2cb3f7
->>> Author:     Rakib Mullick <rakib.mullick@gmail.com>
->>> AuthorDate: Sun, 19 Apr 2009 08:41:17 +0600
->>> Committer:  Ingo Molnar <mingo@elte.hu>
->>> CommitDate: Sun, 19 Apr 2009 11:28:18 +0200
->>>
->>> x86: Fix false positive section mismatch warnings in the apic code
->>>
->>> find_unisys_acpi_oem_table() and unmap_unisys_acpi_oem_table() 
->>> are non init functions, but these functions calls some init 
->>> functions. But we need these functions as non-init functions.
->> Why? This warning seems to be valid.
+> What are the slight differences in requirements?
 > 
-> It's put into struct apic::acpi_madt_oem_check - which is a non-init 
-> structure. That particular field is only used from init context - 
-> but other fields are used all the time.
+> KVM wants to run in non-preemptible, interrupts-enabled context.
 
-Can we have a rule that "every __ref usage should have a comment explaining
-why __ref is safe in this place"? 
+The fire_sched_out bit is a little earlier, but I don't think that is a
+particularly worrysome, but the most important difference was that
+fire_sched_in in far too late. arch_end_context_switch() is done right
+in the middle of switch_to() because it needs the TS bit or somesuch.
 
-Marcin
+I'll let Jeremy explain details, as I've long since forgotten them :-)
 
