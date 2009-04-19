@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZDSHil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbZDSHnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbZDSHil (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 03:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZDSHid
+	id S1756210AbZDSHnZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 03:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZDSHnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 03:38:33 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56774 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbZDSHic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 03:38:32 -0400
-Date: Sun, 19 Apr 2009 17:38:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: wuzhangjin@gmail.com
-Cc: Ralf Baechle <ralf@linux-mips.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mips@linux-mips.org,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: mips build failure
-Message-Id: <20090419173825.29bc6f02.sfr@canb.auug.org.au>
-In-Reply-To: <1240126361.3423.5.camel@falcon>
-References: <20090419172436.6d0e741a.sfr@canb.auug.org.au>
-	<1240126361.3423.5.camel@falcon>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__19_Apr_2009_17_38_25_+1000_1mZuFtPmgLFl.VOD"
+	Sun, 19 Apr 2009 03:43:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:19639 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbZDSHnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 03:43:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=IwKK1SNJlPljNfa35/OXlA77SLL7JrwbfdhtrlOOgtghCL6fBl7VvpoebyFueRUka3
+         HhVe3ARQHVX6ISyvUjBuxrNac2yERp5eAukLYVYXUwlDzYctE+jjAsl0oeXIIRCwNkAp
+         F/xlx5eqL8419+3yk8WJmtYCDo3R4D8fkZfio=
+Date: Sun, 19 Apr 2009 11:43:11 +0400
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: [PATCH -tip] x86: es7000, uv - use __cpuinit for kicking secondary
+	cpus
+Message-ID: <20090419074311.GA8670@lenovo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__19_Apr_2009_17_38_25_+1000_1mZuFtPmgLFl.VOD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The caller already has __cpuinit attribute.
 
-Hi,
+[ Impact: cleanup ]
 
-On Sun, 19 Apr 2009 15:32:41 +0800 Wu Zhangjin <wuzhangjin@gmail.com> wrote:
->
-> in reality, there is a previous email sent by Ralf for it:
->=20
-> http://lkml.indiana.edu/hypermail/linux/kernel/0904.2/01152.html
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
-Thanks.
+I've no ability to test this but it should not bring
+any problems I believe.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ arch/x86/kernel/apic/es7000_32.c   |    2 +-
+ arch/x86/kernel/apic/x2apic_uv_x.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---Signature=_Sun__19_Apr_2009_17_38_25_+1000_1mZuFtPmgLFl.VOD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknq1PEACgkQjjKRsyhoI8w8cwCeI4pRu5adiJ0hkSKOJfnLwNII
-hGsAn3AGrt1y7L1Lsl8ZzSQmRlpch7wU
-=KlRL
------END PGP SIGNATURE-----
-
---Signature=_Sun__19_Apr_2009_17_38_25_+1000_1mZuFtPmgLFl.VOD--
+Index: linux-2.6.git/arch/x86/kernel/apic/es7000_32.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/es7000_32.c
++++ linux-2.6.git/arch/x86/kernel/apic/es7000_32.c
+@@ -145,7 +145,7 @@ es7000_rename_gsi(int ioapic, int gsi)
+ 	return gsi;
+ }
+ 
+-static int wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
++static int __cpuinit wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
+ {
+ 	unsigned long vect = 0, psaival = 0;
+ 
+Index: linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux-2.6.git/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -105,7 +105,7 @@ static void uv_vector_allocation_domain(
+ 	cpumask_set_cpu(cpu, retmask);
+ }
+ 
+-static int uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
++static int __cpuinit uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
+ {
+ #ifdef CONFIG_SMP
+ 	unsigned long val;
