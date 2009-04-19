@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbZDSIjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZDSIwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760231AbZDSIjm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbZDSIjc
+	id S1756293AbZDSIwE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZDSIvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:39:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34700 "EHLO mx2.redhat.com"
+	Sun, 19 Apr 2009 04:51:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48993 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753744AbZDSIjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:39:31 -0400
-Message-ID: <49EAE334.9020803@redhat.com>
-Date: Sun, 19 Apr 2009 11:39:16 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752484AbZDSIvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:51:50 -0400
+Message-ID: <49EAE602.3090802@kernel.org>
+Date: Sun, 19 Apr 2009 17:51:14 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws>
-In-Reply-To: <49E9F7BE.4090904@codemonkey.ws>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] make hd_struct->in_flight atomic to avoid	diskstat
+  corruption
+References: <200904161254.41433.knikanth@suse.de> <20090416073557.GU5178@kernel.dk> <200904161445.03955.knikanth@suse.de> <49E74377.6050209@kernel.org> <20090416163254.GQ5178@kernel.dk>
+In-Reply-To: <20090416163254.GQ5178@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:51:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Huang Ying wrote:
->> The related MSRs are emulated. MCE capability is exported via
->> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
->> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
->> such as the mcg_cap. MCE is injected via vcpu ioctl command
->> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
->> not simulated.
->>   
->
-> Maybe I'm missing something, but couldn't this be implemented entirely 
-> within userspace?  There's nothing VT/SVM specific about this.  If the 
-> issue is setting these MSRs from userspace via KVM_SET_MSRS isn't 
-> enough, perhaps we should add userspace MSR handling.
->
+Hello,
 
-You also need to inject the MCE.
+Jens Axboe wrote:
+> On Thu, Apr 16 2009, Tejun Heo wrote:
+>> Hello, Nikanth, Jens.
+>>
+>> Nikanth Karthikesan wrote:
+>>>> Hmm. Did you observe this behaviour?
+>>> Sorry, not on current kernels. But on a very old 2.6.5 kernel.
+>>>
+>>> Reading Documentation/iostats.txt and the changelog of commit 
+>>> e71bf0d0ee89e51b92776391c5634938236977d5 made me assume that this could be a 
+>>> problem even today.
+>> The only problem we can run into there is if a request doesn't get
+>> attributed to a partition on issue but gets attributed to a partition
+>> on completion, which seems to be possible if a new partition is added
+>> while IO on the whole device which fell into the new partition area is
+>> already in progress, which, on the first glance, seems possible if the
+>> admin tries really hard.  I think we can get around the problem by
+>> doing part->in_flight = min(max(new_val, part0->in_flight), 0) in
+>> dec_in_flight().  This is pretty extreme corner case tho.
+> 
+> Heh, that is pretty extreme. I'd prefer just quiescing the queue,
+> perhaps we should do that for partition map swaps.
+
+Yeah, I think that would be the better approach for swapping ptbl.
+RCU isn't really necessary there.
+
+Thanks.
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+tejun
