@@ -1,189 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751751AbZDSWtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZDSXDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751751AbZDSWtm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 18:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZDSWtd
+	id S1751460AbZDSXDu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 19:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZDSXDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 18:49:33 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:63031 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZDSWtc (ORCPT
+	Sun, 19 Apr 2009 19:03:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:52699 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZDSXDl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 18:49:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=l3iipjrlcGr0kqvJKUjgn0LjxuWFiUVzbBE0SZgne+AONbf7OQZm1xyzXT+bs2iM2j
-         /JQWiuhnk8xnWof+fepRBHO/xt6r82iXvavgVNrai+ex0wY8gHV4Zrlqlb+D8Zalg7FQ
-         f5vjH5RqOuwho13KIe2BRm47T1JkNYkD1I9G8=
-Message-ID: <49EBAA65.80701@gmail.com>
-Date: Mon, 20 Apr 2009 00:49:09 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
+	Sun, 19 Apr 2009 19:03:41 -0400
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #13067] iwl3945: wlan0: beacon loss from AP - sending probe
- request
-References: <crKhD-25m-3@gated-at.bofh.it> <crKhG-25m-5@gated-at.bofh.it> <crN5T-6s8-5@gated-at.bofh.it> <cs3u2-7kZ-13@gated-at.bofh.it>
-In-Reply-To: <cs3u2-7kZ-13@gated-at.bofh.it>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <495563870904181941o5a66126dgb59d8cad2b7a66f2@mail.gmail.com>
+References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
+	 <74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>
+	 <20090417170707.B6C95C4004F@mail150-wa4.bigfish.com>
+	 <fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
+	 <495563870904181941o5a66126dgb59d8cad2b7a66f2@mail.gmail.com>
+Date: Mon, 20 Apr 2009 09:03:40 +1000
+Message-ID: <1d3f23370904191603s37a6a34clccc397707394650b@mail.gmail.com>
+Subject: Re: [microblaze-uclinux] [PATCH 11/11] microblaze: Kconfig: Enable 
+	drivers for Microblaze
+From: John Williams <john.williams@petalogix.com>
+To: microblaze-uclinux@itee.uq.edu.au
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+       John Linn <john.linn@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/17/2009 11:10 PM, Rafael J. Wysocki wrote:
-> On Friday 17 April 2009, Justin Madru wrote:
->> Rafael J. Wysocki wrote:
->>> This message has been generated automatically as a part of a report
->>> of recent regressions.
->>>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.29.  Please verify if it still should be listed and let me know
->>> (either way).
->>>
->>>
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13067
->>> Subject		: iwl3945: wlan0: beacon loss from AP - sending probe request
->>> Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
->>> Date		: 2009-04-05 9:11 (12 days old)
->>> References	: http://marc.info/?l=linux-kernel&m=123892272218266&w=4
->>>
->>>
->>>   
->> I'm getting this on .30rc2, so I confirm that it's still an issue (I'm 
->> not the original submitter).
->> It's really annoying because it's filling my logs like crazy. Below is 
+On Sun, Apr 19, 2009 at 12:41 PM, Stephen Neuendorffer
+<stephen.neuendorffer@gmail.com> wrote:
+>
+>
+> On Fri, Apr 17, 2009 at 10:49 PM, Grant Likely <grant.likely@secretlab.ca>
+> wrote:
+>>
+>> On Fri, Apr 17, 2009 at 11:06 AM, Stephen Neuendorffer
+>> <stephen.neuendorffer@xilinx.com> wrote:
+>> >
+>> > Can we have XILINX_DRIVERS, please?  That way this can also be enabled
+>> > on any architecture that has FPGA peripherals.
+>>
+>> I've thought about this more, and I'd really rather not.  The list of
+>> affected drivers is short and is not a large maintenance burden.  I
+>> don't think a list of 2 or 3 architecture selects for each driver is
+>> unreasonable.  A "XILINX_DRIVERS" config item doesn't really help much
+>> anyway.  At any given time one of these drivers may be needed on
+>> another platform.  ie. the SystemACE device is present on at least one
+>> non-virtex, non-spartan platform.
+>
+> Which is exactly why having it architecture dependent isn't right...  All of
+> these drivers
+> could be needed and used on any OF-based platform.  If you have a platform
+> (for instance, a processor connected to an FPGA which has these peripherals
+> in the FPGA) then you should be able to enable these drivers.  Just my 2
+> cents...
 
-Quite similar here, same kernel. I don't get this on 2.6.29 or 2.6.28:
+What about the radical approach of having NO architecture
+filters/selectors?  Even if some random i386 user selects one of these
+drivers, so what?  It will still compile cleanly (if it doesn't we
+have to fix it), but there'll be no platform_device_register() call in
+their machine startup to actually cause driver / device binding.
 
-[drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+No harm, no foul.  Problem goes away.
 
-CPU0 attaching NULL sched-domain.
+Then, as Grant points out, the rare cases where non-Xilinx platforms
+do use this stuff, they'll presumably know what they're doing and it's
+their responsibility to register the appropriate platform_device
+structures and make the magic happen.
 
-CPU1 attaching NULL sched-domain.
-
-CPU0 attaching sched-domain:
-
- domain 0: span 0-1 level MC
-
-  groups: 0 1
-
-CPU1 attaching sched-domain:
-
- domain 0: span 0-1 level MC
-
-  groups: 1 0
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: beacon loss from AP 00:1d:92:1d:1e:8e - sending probe request
-wlan0: no probe response from AP 00:1d:92:1d:1e:8e - disassociating
-wlan0: authenticate with AP 00:1d:92:1d:1e:8e
-wlan0: authenticate with AP 00:1d:92:1d:1e:8e
-wlan0: authenticated
-wlan0: associate with AP 00:1d:92:1d:1e:8e
-wlan0: RX ReassocResp from 00:1d:92:1d:1e:8e (capab=0x411 status=0 aid=1)
-wlan0: associated
-
-Regards,
-Niel
-
+John
+-- 
+John Williams, PhD, B.Eng, B.IT
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
