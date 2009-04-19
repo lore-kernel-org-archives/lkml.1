@@ -1,181 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbZDSNqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZDSNrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760952AbZDSNqv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 09:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbZDSNql
+	id S1761155AbZDSNrO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 09:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbZDSNqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 09:46:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40158 "EHLO mx2.redhat.com"
+	Sun, 19 Apr 2009 09:46:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40163 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751862AbZDSNqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 09:46:40 -0400
-Date: Sun, 19 Apr 2009 09:45:08 -0400
+	id S1760487AbZDSNqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 09:46:51 -0400
+Date: Sun, 19 Apr 2009 09:42:01 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Subject: Re: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
-Message-ID: <20090419134508.GG8493@redhat.com>
-References: <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux> <20090417141358.GD29086@redhat.com> <661de9470904180619k34e7998ch755a2ad3bed9ce5e@mail.gmail.com>
+To: Andrea Righi <righi.andrea@gmail.com>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Message-ID: <20090419134201.GF8493@redhat.com>
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <661de9470904180619k34e7998ch755a2ad3bed9ce5e@mail.gmail.com>
+In-Reply-To: <20090417231244.GB6972@linux>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 06:49:33PM +0530, Balbir Singh wrote:
-> On Fri, Apr 17, 2009 at 7:43 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
-> >> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
-> >> > > I think it would be possible to implement both proportional and limiting
-> >> > > rules at the same level (e.g., the IO scheduler), but we need also to
-> >> > > address the memory consumption problem (I still need to review your
-> >> > > patchset in details and I'm going to test it soon :), so I don't know if
-> >> > > you already addressed this issue).
-> >> > >
-> >> >
-> >> > Can you please elaborate a bit on this? Are you concerned about that data
-> >> > structures created to solve the problem consume a lot of memory?
-> >>
-> >> Sorry I was not very clear here. With memory consumption I mean wasting
-> >> the memory with hard/slow reclaimable dirty pages or pending IO
-> >> requests.
-> >>
-> >> If there's only a global limit on dirty pages, any cgroup can exhaust
-> >> that limit and cause other cgroups/processes to block when they try to
-> >> write to disk.
-> >>
-> >> But, ok, the IO controller is not probably the best place to implement
-> >> such functionality. I should rework on the per cgroup dirty_ratio:
-> >>
-> >> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
-> >>
-> >> Last time we focused too much on the best interfaces to define dirty
-> >> pages limit, and I never re-posted an updated version of this patchset.
-> >> Now I think we can simply provide the same dirty_ratio/dirty_bytes
-> >> interface that we provide globally, but per cgroup.
-> >>
-> >> >
-> >> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
-> >> > > in the cgroup that exceeds its limit, how do we avoid the waste of
-> >> > > memory due to the succeeding IO requests and the increasingly dirty
-> >> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
-> >> > > but I think we talked about this problem in a previous email... sorry I
-> >> > > don't find the discussion in my mail archives.
-> >> > >
-> >> > > IMHO a nice approach would be to measure IO consumption at the IO
-> >> > > scheduler level, and control IO applying proportional weights / absolute
-> >> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
-> >> > > time block the tasks from dirtying memory that will generate additional
-> >> > > IO requests.
-> >> > >
-> >> > > Anyway, there's no need to provide this with a single IO controller, we
-> >> > > could split the problem in two parts: 1) provide a proportional /
-> >> > > absolute IO controller in the IO schedulers and 2) allow to set, for
-> >> > > example, a maximum limit of dirty pages for each cgroup.
-> >> > >
-> >> >
-> >> > I think setting a maximum limit on dirty pages is an interesting thought.
-> >> > It sounds like as if memory controller can handle it?
-> >>
-> >> Exactly, the same above.
-> >
-> > Thinking more about it. Memory controller can probably enforce the higher
-> > limit but it would not easily translate into a fixed upper async write
-> > rate. Till the process hits the page cache limit or is slowed down by
-> > dirty page writeout, it can get a very high async write BW.
-> >
-> > So memory controller page cache limit will help but it would not direclty
-> > translate into what max bw limit patches are doing.
-> >
-> > Even if we do max bw control at IO scheduler level, async writes are
-> > problematic again. IO controller will not be able to throttle the process
-> > until it sees actuall write request. In big memory systems, writeout might
-> > not happen for some time and till then it will see a high throughput.
-> >
-> > So doing async write throttling at higher layer and not at IO scheduler
-> > layer gives us the opprotunity to produce more accurate results.
-> >
-> > For sync requests, I think IO scheduler max bw control should work fine.
-> >
-> > BTW, andrea, what is the use case of your patches? Andrew had mentioned
-> > that some people are already using it. I am curious to know will a
-> > proportional BW controller will solve the issues/requirements of these
-> > people or they have specific requirement of traffic shaping and max bw
-> > controller only.
-> >
+On Sat, Apr 18, 2009 at 01:12:45AM +0200, Andrea Righi wrote:
+> On Fri, Apr 17, 2009 at 01:39:55PM -0400, Vivek Goyal wrote:
+> > On Tue, Apr 14, 2009 at 10:21:12PM +0200, Andrea Righi wrote:
+> > 
 > > [..]
-> >> > > > Can you please give little more details here regarding how QoS requirements
-> >> > > > are not met with proportional weight?
-> >> > >
-> >> > > With proportional weights the whole bandwidth is allocated if no one
-> >> > > else is using it. When IO is submitted other tasks with a higher weight
-> >> > > can be forced to sleep until the IO generated by the low weight tasks is
-> >> > > not completely dispatched. Or any extent of the priority inversion
-> >> > > problems.
-> >> >
-> >> > Hmm..., I am not very sure here. When admin is allocating the weights, he
-> >> > has the whole picture. He knows how many groups are conteding for the disk
-> >> > and what could be the worst case scenario. So if I have got two groups
-> >> > with A and B with weight 1 and 2 and both are contending, then as an
-> >> > admin one would expect to get 33% of BW for group A in worst case (if
-> >> > group B is continuously backlogged). If B is not contending than A can get
-> >> > 100% of BW. So while configuring the system, will one not plan for worst
-> >> > case (33% for A, and 66 % for B)?
-> >>
-> >> OK, I'm quite convinced.. :)
-> >>
-> >> To a large degree, if we want to provide a BW reservation strategy we
-> >> must provide an interface that allows cgroups to ask for time slices
-> >> such as max/min 5 IO requests every 50ms or something like that.
-> >> Probably the same functionality can be achieved translating time slices
-> >> from weights, percentages or absolute BW limits.
-> >
-> > Ok, I would like to split it in two parts.
-> >
-> > I think providng minimum gurantee in absolute terms like 5 IO request
-> > every 50ms will be very hard because IO scheduler has no control over
-> > how many competitors are there. An easier thing will be to have minimum
-> > gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
-> > shall have to create right cgroup hierarchy and assign weights properly and
-> > then admin can calculate what % of disk slice a particular group will get
-> > as minimum gurantee. (This is more complicated than this as there are
-> > time slices which are not accounted to any groups. During queue switch
-> > cfq starts the time slice counting only after first request has completed
-> > to offset the impact of seeking and i guess also NCQ).
-> >
-> > I think it should be possible to give max bandwidth gurantees in absolute
-> > terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
-> > scheduler has to do is to not allow dispatch from a particular queue if
-> > it has crossed its limit and then either let the disk idle or move onto
-> > next eligible queue.
-> >
-> > The only issue here will be async writes. max bw gurantee for async writes
-> > at IO scheduler level might not mean much to application because of page
-> > cache.
+> > > +4.2. Buffered I/O (write-back) tracking
+> > > +
+> > > +For buffered writes the scenario is a bit more complex, because the writes in
+> > > +the page cache are processed asynchronously by kernel threads (pdflush), using
+> > > +a write-back policy. So the real writes to the underlying block devices occur
+> > > +in a different I/O context respect to the task that originally generated the
+> > > +dirty pages.
+> > > +
+> > > +The I/O bandwidth controller uses the following solution to resolve this
+> > > +problem.
+> > > +
+> > > +If the operation is a buffered write, we can charge the right cgroup looking at
+> > > +the owner of the first page involved in the I/O operation, that gives the
+> > > +context that generated the I/O activity at the source. This information can be
+> > > +retrieved using the page_cgroup functionality originally provided by the cgroup
+> > > +memory controller [4], and now provided specifically by the bio-cgroup
+> > > +controller [5].
+> > > +
+> > > +In this way we can correctly account the I/O cost to the right cgroup, but we
+> > > +cannot throttle the current task in this stage, because, in general, it is a
+> > > +different task (e.g., pdflush that is processing asynchronously the dirty
+> > > +page).
+> > > +
+> > > +For this reason, all the write-back requests that are not directly submitted by
+> > > +the real owner and that need to be throttled are not dispatched immediately in
+> > > +submit_bio(). Instead, they are added into an rbtree and processed
+> > > +asynchronously by a dedicated kernel thread: kiothrottled.
+> > > +
+> > 
+> > Hi Andrea,
 > 
-> I see so much of the memory controller coming up. Since we've been
-> discussing so many of these design points on mail, I wonder if it
-> makes sense to summarize them somewhere (a wiki?). Would anyone like
-> to take a shot at it?
+> Hi Vivek,
+> 
+> > 
+> > I am trying to go through your patches now and also planning to test it
+> 
+> thanks for trying to test first of all.
+> 
+> > out. While reading the documentation async write handling interested
+> > me. IIUC, looks like you are throttling writes once they are being 
+> > written to the disk (either by pdflush or in the context of the process
+> > because vm_dirty_ratio crossed etc).
+> 
+> Correct, more exactly in submit_bio().
+> 
+> The difference between synchronous IO and writeback IO is that in the
+> first case the task itself is throttled via schedule_timeout_killable();
+> in the second case pdflush is never throttled, the IO requests instead
+> are simply added into a rbtree and dispatched asynchronously by another
+> kernel thread (kiothrottled) using a EDF-like scheduling. More exactly,
+> a deadline is evaluated for each writeback IO request looking at the
+> cgroup BW and iops/sec limits, then kiothrottled periodically selects
+> and dispatches the requests with an elapsed deadline.
+> 
 
-Balbir, this is definitely a good idea. Just that once we have had some
-more discussion and some sort of understanding of issues, it might make
-more sense.
+Ok, i will look into the logic of translating cgroup BW limits into
+deadline. But as Nauman pointed out that we probably will run into 
+issues of tasks with in cgroup as we loose that notion of class and prio.
 
-Got a question for you. Does memory controller already have the per cgroup
-dirty pages limit? If no, has this been discussed in the past? if yes,
-what was the conclsion?
+> > 
+> > If that's the case, will a process not see an increased rate of writes
+> > till we are not hitting dirty_background_ratio?
+> 
+> Correct. And this is a good behaviour IMHO. At the same time we have a
+> smooth BW usage (according to the cgroup limits I mean) even in presence
+> of writeback IO only.
+> 
+
+Hmm.., I am not able to understand this. The very fact that you will see
+a high rate of async writes (more than specified by cgroup max BW), till
+you hit dirty_background_ratio, isn't it against the goals of max bw
+controller? You wanted to see a consistent view of rate even if spare BW
+is available, and this scenario goes against that? 
+
+Think of an hypothetical configuration of 10G RAM with dirty ratio say
+set to 20%. Assume not much of write out is taking place in the system.
+So for first 2G of writes, application will be able to write it at cpu
+speed and no throttling will kick in and a cgroup will easily cross it
+max BW? 
+  
+> > 
+> > Secondly, if above is giving acceptable performance resutls, then we
+> > should be able to provide max bw control at IO scheduler level (along
+> > with proportional bw control)?
+> > 
+> > So instead of doing max bw and proportional bw implementation in two
+> > places with the help of different controllers, I think we can do it
+> > with the help of one controller at one place. 
+> > 
+> > Please do have a look at my patches also to figure out if that's possible
+> > or not. I think it should be possible.
+> > 
+> > Keeping both at single place should simplify the things.
+> 
+> Absolutely agree to do both proportional and max BW limiting in a single
+> place. I still need to figure which is the best place, if the IO
+> scheduler in the elevator, when the IO requests are submitted. A natural
+> way IMHO is to control the submission of requests, also Andrew seemed to
+> be convinced about this approach. Anyway, I've already scheduled to test
+> your patchset and I'd like to see if it's possible to merge our works,
+> or select the best from ours patchsets.
+> 
+
+Are we not already controlling submission of request (at crude level).
+If application is doing writeout at high rate, then it hits vm_dirty_ratio
+hits and this application is forced to do write out and hence it is slowed
+down and is not allowed to submit writes at high rate.
+
+Just that it is not a very fair scheme right now as during right out
+a high prio/high weight cgroup application can start writing out some
+other cgroups' pages.
+
+For this we probably need to have some combination of solutions like
+per cgroup upper limit on dirty pages. Secondly probably if an application
+is slowed down because of hitting vm_drity_ratio, it should try to
+write out the inode it is dirtying first instead of picking any random
+inode and associated pages. This will ensure that a high weight
+application can quickly get through the write outs and see higher
+throughput from the disk.
 
 Thanks
 Vivek
