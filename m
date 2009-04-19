@@ -1,157 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZDSJYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbZDSJ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZDSJYA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 05:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbZDSJXu
+	id S1756273AbZDSJ0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 05:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZDSJ0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 05:23:50 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56123 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZDSJXt (ORCPT
+	Sun, 19 Apr 2009 05:26:08 -0400
+Received: from m50-135.163.com ([123.125.50.135]:37056 "HELO m50-135.163.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753450AbZDSJ0H convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 05:23:49 -0400
-Date: Sun, 19 Apr 2009 11:25:55 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: [GIT] kbuild
-Message-ID: <20090419092555.GA19213@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sun, 19 Apr 2009 05:26:07 -0400
+From: "derekzheng" <zhengxiang9@163.com>
+To: "'linuxppc-dev'" <linuxppc-dev@ozlabs.org>,
+       <microblaze-uclinux@itee.uq.edu.au>, <linux-kernel@vger.kernel.org>
+References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com> <fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
+In-Reply-To: <fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
+Subject: who know's what is "TestFloat cases" and how to test this feature on the Freescale MPC8536DS board
+Date: Sun, 19 Apr 2009 17:25:26 +0800
+Message-ID: <003001c9c0d0$c6919510$53b4bf30$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acm/6Z7XMofHg6L2RD2WTrMRLYv+lAA1VE+w
+Content-Language: zh-cn
+x-cr-hashedpuzzle: Dkay FLyK FtfX I+rn NvE8 OwNt QTyu X6Mt ZaHC b6CI cS6N ctVA e61z f1ud g+MH g+lt;3;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA7AGwAaQBuAHUAeABwAHAAYwAtAGQAZQB2AEAAbwB6AGwAYQBiAHMALgBvAHIAZwA7AG0AaQBjAHIAbwBiAGwAYQB6AGUALQB1AGMAbABpAG4AdQB4AEAAaQB0AGUAZQAuAHUAcQAuAGUAZAB1AC4AYQB1AA==;Sosha1_v1;7;{DBE18CB0-064D-4F32-B5AA-69D01F1B0056};egBoAGUAbgBnAHgAaQBhAG4AZwA5AEAAMQA2ADMALgBjAG8AbQA=;Sun, 19 Apr 2009 09:25:17 GMT;dwBoAG8AIABrAG4AbwB3ACcAcwAgAHcAaABhAHQAIABpAHMAIAAiAFQAZQBzAHQARgBsAG8AYQB0ACAAYwBhAHMAZQBzACIAIABhAG4AZAAgAGgAbwB3ACAAdABvACAAdABlAHMAdAAgAHQAaABpAHMAIABmAGUAYQB0AHUAcgBlACAAbwBuACAAdABoAGUAIABGAHIAZQBlAHMAYwBhAGwAZQAgAE0AUABDADgANQAzADYARABTACAAYgBvAGEAcgBkAA==
+x-cr-puzzleid: {DBE18CB0-064D-4F32-B5AA-69D01F1B0056}
+X-CM-TRANSID: D9GowLD7RbUH7upJe7ElLw--.50483S2
+X-Coremail-Antispam: 1Uf129KBjDUn29KB7ZKAUJUUUUUYxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUjMxYjxAI6xkYrwAYjxAI6xAIw28IcVW8ZrWlb7IF0VCF04k20xvE
+	w2I207IF0wAYjxAI6xCIbckI1I0E57IF64kEYxAxM7k0a2IF6r1UM7kC6x804xWl14x267
+	AKxVWUJVW8JwAFxVCF77xC6IxKo4kEV4yl1I0EscIYIxCEI4klw4CSwwAFIxvE14AKwVWU
+	JVWUGwA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_GcCE3s1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_
+	GcCE3s1l57IF6s8CjcxG0xyl5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14
+	v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwACjcxG0xvY0x0EwIxGrwAC62BYpTIE1TZK
+	A3svLVAKvSnIqfZI6r4l7I0Y64k_MxkFs20EY4vE8sxKj4xv1wCY1Ik26cxK6x8YrwCY1I
+	k26cxK6xAEc7vF620IrwCY02Avz4vE14v_GFWlc2IjII80xcxEwVAKI48JMxAIw28IcxkI
+	7VAKI48JMxCjnVAqn7xvrwC2zVAF1VAY17CE14v26r1Y6r17YxBIdaVFxhVjvjDU0xZFpf
+	9x07jIq2NUUUUU=
+X-CM-SenderInfo: x2kh0wx0ld0wqz6rljoofrz/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+Hi all guys:
 
-We have on the lists recently discussed two features:
-1) Move generated files to include/generated
-2) Introduce support for subdir-ccflags-y
+The Freescale MPC8536DS board Integrated TestFloat cases, and I do not know how to test this feature on this board.
+Please tell me how to test it if you known
 
-Both features has low risk of introducing regressions
-and including them now allow us to use the features for next
-merge window.
+Thanks very much!
 
-This will for example allow arm to support mach-types.h in
-include/generated without touching files outside arch/arm.
-
-Please pull.
-
-	Sam
-
-The following changes since commit ff54250a0ebab7f90a5f848a0ba63f999830c872:
-  Linus Torvalds (1):
-        Remove 'recurse into child resources' logic from 'reserve_region_with_split()'
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
-
-Sam Ravnborg (2):
-      kbuild: support include/generated
-      kbuild: introduce subdir-ccflags-y
-
- .gitignore                         |    1 +
- Documentation/kbuild/makefiles.txt |   10 ++++++++++
- Makefile                           |    2 +-
- scripts/Makefile.build             |    3 +++
- scripts/Makefile.lib               |    9 +++++++--
- 5 files changed, 22 insertions(+), 3 deletions(-)
+Derek
 
 
-diff --git a/.gitignore b/.gitignore
-index 869e1a3..51bd99d 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -49,6 +49,7 @@ include/linux/compile.h
- include/linux/version.h
- include/linux/utsrelease.h
- include/linux/bounds.h
-+include/generated
- 
- # stgit generated dirs
- patches-*
-diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-index d4b0567..d76cfd8 100644
---- a/Documentation/kbuild/makefiles.txt
-+++ b/Documentation/kbuild/makefiles.txt
-@@ -316,6 +316,16 @@ more details, with real examples.
- 		#arch/m68k/fpsp040/Makefile
- 		ldflags-y := -x
- 
-+    subdir-ccflags-y, subdir-asflags-y
-+	The two flags listed above are similar to ccflags-y and as-falgs-y.
-+	The difference is that the subdir- variants has effect for the kbuild
-+	file where tey are present and all subdirectories.
-+	Options specified using subdir-* are added to the commandline before
-+	the options specified using the non-subdir variants.
-+
-+	Example:
-+		subdir-ccflags-y := -Werror
-+
-     CFLAGS_$@, AFLAGS_$@
- 
- 	CFLAGS_$@ and AFLAGS_$@ only apply to commands in current
-diff --git a/Makefile b/Makefile
-index bfdef56..6f4208f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1200,7 +1200,7 @@ CLEAN_FILES +=	vmlinux System.map \
-                 .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
- 
- # Directories & files removed with 'make mrproper'
--MRPROPER_DIRS  += include/config include2 usr/include
-+MRPROPER_DIRS  += include/config include2 usr/include include/generated
- MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                   include/linux/autoconf.h include/linux/version.h      \
-                   include/linux/utsrelease.h                            \
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 39a9642..5c4b7a4 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -27,6 +27,9 @@ ccflags-y  :=
- cppflags-y :=
- ldflags-y  :=
- 
-+subdir-asflags-y :=
-+subdir-ccflags-y :=
-+
- # Read auto.conf if it exists, otherwise ignore
- -include include/config/auto.conf
- 
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 9796195..cba61ca 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -4,6 +4,11 @@ ccflags-y  += $(EXTRA_CFLAGS)
- cppflags-y += $(EXTRA_CPPFLAGS)
- ldflags-y  += $(EXTRA_LDFLAGS)
- 
-+#
-+# flags that take effect in sub directories
-+export KBUILD_SUBDIR_ASFLAGS := $(KBUILD_SUBDIR_ASFLAGS) $(subdir-asflags-y)
-+export KBUILD_SUBDIR_CCFLAGS := $(KBUILD_SUBDIR_CCFLAGS) $(subdir-ccflags-y)
-+
- # Figure out what we need to build from the various variables
- # ===========================================================================
- 
-@@ -104,10 +109,10 @@ else
- debug_flags =
- endif
- 
--orig_c_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS)                     \
-+orig_c_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(KBUILD_SUBDIR_CCFLAGS) \
-                  $(ccflags-y) $(CFLAGS_$(basetarget).o)
- _c_flags       = $(filter-out $(CFLAGS_REMOVE_$(basetarget).o), $(orig_c_flags))
--_a_flags       = $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS)                     \
-+_a_flags       = $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) $(KBUILD_SUBDIR_ASFLAGS) \
-                  $(asflags-y) $(AFLAGS_$(basetarget).o)
- _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(@F))
- 
+
