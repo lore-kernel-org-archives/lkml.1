@@ -1,38 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbZDSPci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbZDSPj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760650AbZDSPci (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 11:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbZDSPca
+	id S1760834AbZDSPj1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 11:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZDSPjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 11:32:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35618 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756907AbZDSPc3 (ORCPT
+	Sun, 19 Apr 2009 11:39:18 -0400
+Received: from qmta01.westchester.pa.mail.comcast.net ([76.96.62.16]:45951
+	"EHLO QMTA01.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752687AbZDSPjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 11:32:29 -0400
-Date: Sun, 19 Apr 2009 16:32:28 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Zhenwen Xu <helight.xu@gmail.com>
-Cc: linux-kernel@vger.kernel.org, eparis@redhat.com, linux-audit@redhat.com
-Subject: Re: [PATCH] this mutex_lock is miss used
-Message-ID: <20090419153228.GU26366@ZenIV.linux.org.uk>
-References: <20090419140355.GA16609@helight>
+	Sun, 19 Apr 2009 11:39:17 -0400
+Message-ID: <49EB45A3.4040402@comcast.net>
+Date: Sun, 19 Apr 2009 11:39:15 -0400
+From: John Richard Moser <nigelenki@comcast.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090419140355.GA16609@helight>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: Allocate on Flush in vfat?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19, 2009 at 10:03:55PM +0800, Zhenwen Xu wrote:
-> 
-> This mutex_lock and mutex_unlock has no use in such way.
+Would it be completely unpossible, in theory, to add allocate-on-flush 
+to vfat?  I don't see a reason why, it's just a driver semantic and not 
+a disk data structure semantic...
 
-Incorrect.  They delay sending response until we are out of audit_receive().
-
-> It should be like this way:
-
-No, it should not.  In particular, it should *NOT* be held while sending
-these packets.
+I'm looking at a USB stick copying gigs of data and thinking about this. 
+I have doubts there's any real world advantage, although in the same 
+theory you could backport AOF to ext3/2 or you couldn't.
