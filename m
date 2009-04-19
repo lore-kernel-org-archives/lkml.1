@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbZDSI17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZDSI2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbZDSI17 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZDSI0i
+	id S1758447AbZDSI2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZDSI0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:26:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45582 "EHLO mx2.redhat.com"
+	Sun, 19 Apr 2009 04:26:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55388 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757942AbZDSI0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:26:36 -0400
-Message-ID: <49EAE035.6000908@redhat.com>
-Date: Sun, 19 Apr 2009 11:26:29 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1758386AbZDSI0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:26:38 -0400
+Date: Sun, 19 Apr 2009 08:25:51 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, tglx@linutronix.de, gorcunov@gmail.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, tglx@linutronix.de, gorcunov@gmail.com,
+       mingo@elte.hu
+In-Reply-To: <20090418194528.GD25510@lenovo>
+References: <20090418194528.GD25510@lenovo>
+Subject: [tip:x86/apic] x86: smpboot - wakeup_secondary should be done via __cpuinit section
+Message-ID: <tip-cece3155d869a50ba534ed161b5a05e8a29dcad0@git.kernel.org>
+Git-Commit-ID: cece3155d869a50ba534ed161b5a05e8a29dcad0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
-References: <1239653210-10422-1-git-send-email-glommer@redhat.com> <49E45894.7090700@redhat.com> <49E4B4D4.1020903@zytor.com> <49E4B654.6060101@redhat.com> <49E4B8E9.7050703@zytor.com> <49E6F7D6.8010107@redhat.com> <49E7B3EB.6060101@zytor.com>
-In-Reply-To: <49E7B3EB.6060101@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:25:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Avi Kivity wrote:
->>
->> We don't emulate guest user mode.
->>
->> Well, if guest userspace can convince its kernel to give it access to 
->> some memory mapped I/O register, I guess it can execute repeated 'mov 
->> ss, mmio' and starve the guest kernel.
->>
->
-> It doesn't need a MMIO register to do that, even.
->
+Commit-ID:  cece3155d869a50ba534ed161b5a05e8a29dcad0
+Gitweb:     http://git.kernel.org/tip/cece3155d869a50ba534ed161b5a05e8a29dcad0
+Author:     Cyrill Gorcunov <gorcunov@gmail.com>
+AuthorDate: Sat, 18 Apr 2009 23:45:28 +0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 19 Apr 2009 10:22:14 +0200
 
-Can you explain how?
+x86: smpboot - wakeup_secondary should be done via __cpuinit section
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+A caller (do_boot_cpu) already has __cpuinit attribute.
 
+Since HOTPLUG_CPU depends on SMP && HOTPLUG it doesn't
+lead to panic at moment.
+
+[ Impact: cleanup ]
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+LKML-Reference: <20090418194528.GD25510@lenovo>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/smpboot.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index bf8ad63..d2e8de9 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -504,7 +504,7 @@ void __inquire_remote_apic(int apicid)
+  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
+  * won't ... remember to clear down the APIC, etc later.
+  */
+-int __devinit
++int __cpuinit
+ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
+ {
+ 	unsigned long send_status, accept_status = 0;
+@@ -538,7 +538,7 @@ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
+ 	return (send_status | accept_status);
+ }
+ 
+-static int __devinit
++static int __cpuinit
+ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+ {
+ 	unsigned long send_status, accept_status = 0;
