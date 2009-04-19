@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbZDSIbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbZDSIcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757038AbZDSIbd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 04:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZDSIbW
+	id S1759653AbZDSIcc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 04:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZDSIcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 04:31:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60588 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbZDSIbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 04:31:21 -0400
-Date: Sun, 19 Apr 2009 08:30:38 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, yhlu.kernel@gmail.com, tglx@linutronix.de,
-       xemul@openvz.org, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, yhlu.kernel@gmail.com, tglx@linutronix.de,
-       xemul@openvz.org, mingo@elte.hu
-In-Reply-To: <20090419074311.GA8670@lenovo>
-References: <20090419074311.GA8670@lenovo>
-Subject: [tip:x86/apic] x86: es7000, uv - use __cpuinit for kicking secondary cpus
-Message-ID: <tip-667c5296cc76fefe0abcb79228952b28d9af45e3@git.kernel.org>
-Git-Commit-ID: 667c5296cc76fefe0abcb79228952b28d9af45e3
-X-Mailer: tip-git-log-daemon
+	Sun, 19 Apr 2009 04:32:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44416 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751966AbZDSIcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 04:32:22 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18CNVJjg1UCjQQKMFw4IhMg+kZd1uA6Gj5aekAVLx
+	mc7zNvHBKAz9os
+Date: Sun, 19 Apr 2009 10:32:24 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: David Miller <davem@davemloft.net>
+cc: florian@openwrt.org, peter@holik.at, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb driver for intellon based PLC like devolo dlan duo
+In-Reply-To: <20090418.211503.13481677.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0904191025060.4369@axis700.grange>
+References: <Pine.LNX.4.64.0904172102300.5119@axis700.grange>
+ <20090418.015541.05303908.davem@davemloft.net> <Pine.LNX.4.64.0904182146220.14879@axis700.grange>
+ <20090418.211503.13481677.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Apr 2009 08:30:40 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  667c5296cc76fefe0abcb79228952b28d9af45e3
-Gitweb:     http://git.kernel.org/tip/667c5296cc76fefe0abcb79228952b28d9af45e3
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Sun, 19 Apr 2009 11:43:11 +0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Apr 2009 10:28:53 +0200
+On Sat, 18 Apr 2009, David Miller wrote:
 
-x86: es7000, uv - use __cpuinit for kicking secondary cpus
+> From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Date: Sat, 18 Apr 2009 21:54:11 +0200 (CEST)
+> 
+> > If you are working with that file and see a call to reg_write() you
+> > know where to look for it.
+> 
+> I would never use such a generic name for a driver local routine.
+> 
+> For example, in the tg3 driver we use "tr32()" and "tw32()" so that
+> at least some inkling of the driver name, even if it is just one
+> character, prefixes the name.
+> 
+> This extends to other driver's I've written.  The niu driver thus
+> uses "tr64()" and "nw64()".
 
-The caller already has __cpuinit attribute.
+Ok, we currently have drivers for mt9m001, mt9m111, mt9t031, and mt9v022. 
+Which letter would you take for them?:-) You'd have to take at least two 
+characters like "m0", "m1", "t0", and "v0" but that wouldn't be very 
+intuitive IMHO either. Take four characters like m001r16() and it looks 
+pretty bad compared to all routines being called mt9m001_*.
 
-[ Impact: save memory, address section mismatch warning ]
+> This is just common sense as far as I'm concerned.  It is just
+> as straight forward as not using variable names like 'foo'.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>
-LKML-Reference: <20090419074311.GA8670@lenovo>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I'd say that's subjective (not the latter, but the former):-)
 
-
+Thanks
+Guennadi
 ---
- arch/x86/kernel/apic/es7000_32.c   |    2 +-
- arch/x86/kernel/apic/x2apic_uv_x.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-index 1c11b81..8e07c14 100644
---- a/arch/x86/kernel/apic/es7000_32.c
-+++ b/arch/x86/kernel/apic/es7000_32.c
-@@ -145,7 +145,7 @@ es7000_rename_gsi(int ioapic, int gsi)
- 	return gsi;
- }
- 
--static int wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
-+static int __cpuinit wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
- {
- 	unsigned long vect = 0, psaival = 0;
- 
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index de1a50a..873bf71 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -91,7 +91,7 @@ static void uv_vector_allocation_domain(int cpu, struct cpumask *retmask)
- 	cpumask_set_cpu(cpu, retmask);
- }
- 
--static int uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
-+static int __cpuinit uv_wakeup_secondary(int phys_apicid, unsigned long start_rip)
- {
- #ifdef CONFIG_SMP
- 	unsigned long val;
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
