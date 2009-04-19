@@ -1,145 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761729AbZDSNof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbZDSNqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761729AbZDSNof (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 09:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760857AbZDSNld
+	id S1760952AbZDSNqv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 09:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbZDSNql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 09:41:33 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:53348 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758584AbZDSNlW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 09:41:22 -0400
-From: Markus Heidelberg <markus.heidelberg@web.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Markus Heidelberg <markus.heidelberg@web.de>
-Subject: [PATCH 07/10] kconfig qconf: add namespace for use of Key_ enum values
-Date: Sun, 19 Apr 2009 15:41:24 +0200
-Message-Id: <1240148487-27584-8-git-send-email-markus.heidelberg@web.de>
-X-Mailer: git-send-email 1.6.3.rc1.24.g467d50
-In-Reply-To: <1240148487-27584-1-git-send-email-markus.heidelberg@web.de>
-References: <1240148487-27584-1-git-send-email-markus.heidelberg@web.de>
-X-Provags-ID: V01U2FsdGVkX19ZPXG9cl4NbHdrZeVrH/4NtQXC5RmUlqhtx1bk
-	nCJQhy69pRgvx6+JrdsnqUBLBUbWL4rxojRV5MEImzqtDEFLI7
-	/s1qq+sXosbKSlLxnrYA==
+	Sun, 19 Apr 2009 09:46:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40158 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751862AbZDSNqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 09:46:40 -0400
+Date: Sun, 19 Apr 2009 09:45:08 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       menage@google.com, peterz@infradead.org
+Subject: Re: IO controller discussion (Was: Re: [PATCH 01/10] Documentation)
+Message-ID: <20090419134508.GG8493@redhat.com>
+References: <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312001146.74591b9d.akpm@linux-foundation.org> <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com> <20090407064046.GB20498@redhat.com> <20090408203756.GB10077@linux> <20090416183753.GE8896@redhat.com> <20090417093656.GA5246@linux> <20090417141358.GD29086@redhat.com> <661de9470904180619k34e7998ch755a2ad3bed9ce5e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <661de9470904180619k34e7998ch755a2ad3bed9ce5e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-They are defined in the 'Qt' namespace.
+On Sat, Apr 18, 2009 at 06:49:33PM +0530, Balbir Singh wrote:
+> On Fri, Apr 17, 2009 at 7:43 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Fri, Apr 17, 2009 at 11:37:28AM +0200, Andrea Righi wrote:
+> >> On Thu, Apr 16, 2009 at 02:37:53PM -0400, Vivek Goyal wrote:
+> >> > > I think it would be possible to implement both proportional and limiting
+> >> > > rules at the same level (e.g., the IO scheduler), but we need also to
+> >> > > address the memory consumption problem (I still need to review your
+> >> > > patchset in details and I'm going to test it soon :), so I don't know if
+> >> > > you already addressed this issue).
+> >> > >
+> >> >
+> >> > Can you please elaborate a bit on this? Are you concerned about that data
+> >> > structures created to solve the problem consume a lot of memory?
+> >>
+> >> Sorry I was not very clear here. With memory consumption I mean wasting
+> >> the memory with hard/slow reclaimable dirty pages or pending IO
+> >> requests.
+> >>
+> >> If there's only a global limit on dirty pages, any cgroup can exhaust
+> >> that limit and cause other cgroups/processes to block when they try to
+> >> write to disk.
+> >>
+> >> But, ok, the IO controller is not probably the best place to implement
+> >> such functionality. I should rework on the per cgroup dirty_ratio:
+> >>
+> >> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+> >>
+> >> Last time we focused too much on the best interfaces to define dirty
+> >> pages limit, and I never re-posted an updated version of this patchset.
+> >> Now I think we can simply provide the same dirty_ratio/dirty_bytes
+> >> interface that we provide globally, but per cgroup.
+> >>
+> >> >
+> >> > > IOW if we simply don't dispatch requests and we don't throttle the tasks
+> >> > > in the cgroup that exceeds its limit, how do we avoid the waste of
+> >> > > memory due to the succeeding IO requests and the increasingly dirty
+> >> > > pages in the page cache (that are also hard to reclaim)? I may be wrong,
+> >> > > but I think we talked about this problem in a previous email... sorry I
+> >> > > don't find the discussion in my mail archives.
+> >> > >
+> >> > > IMHO a nice approach would be to measure IO consumption at the IO
+> >> > > scheduler level, and control IO applying proportional weights / absolute
+> >> > > limits _both_ at the IO scheduler / elevator level _and_ at the same
+> >> > > time block the tasks from dirtying memory that will generate additional
+> >> > > IO requests.
+> >> > >
+> >> > > Anyway, there's no need to provide this with a single IO controller, we
+> >> > > could split the problem in two parts: 1) provide a proportional /
+> >> > > absolute IO controller in the IO schedulers and 2) allow to set, for
+> >> > > example, a maximum limit of dirty pages for each cgroup.
+> >> > >
+> >> >
+> >> > I think setting a maximum limit on dirty pages is an interesting thought.
+> >> > It sounds like as if memory controller can handle it?
+> >>
+> >> Exactly, the same above.
+> >
+> > Thinking more about it. Memory controller can probably enforce the higher
+> > limit but it would not easily translate into a fixed upper async write
+> > rate. Till the process hits the page cache limit or is slowed down by
+> > dirty page writeout, it can get a very high async write BW.
+> >
+> > So memory controller page cache limit will help but it would not direclty
+> > translate into what max bw limit patches are doing.
+> >
+> > Even if we do max bw control at IO scheduler level, async writes are
+> > problematic again. IO controller will not be able to throttle the process
+> > until it sees actuall write request. In big memory systems, writeout might
+> > not happen for some time and till then it will see a high throughput.
+> >
+> > So doing async write throttling at higher layer and not at IO scheduler
+> > layer gives us the opprotunity to produce more accurate results.
+> >
+> > For sync requests, I think IO scheduler max bw control should work fine.
+> >
+> > BTW, andrea, what is the use case of your patches? Andrew had mentioned
+> > that some people are already using it. I am curious to know will a
+> > proportional BW controller will solve the issues/requirements of these
+> > people or they have specific requirement of traffic shaping and max bw
+> > controller only.
+> >
+> > [..]
+> >> > > > Can you please give little more details here regarding how QoS requirements
+> >> > > > are not met with proportional weight?
+> >> > >
+> >> > > With proportional weights the whole bandwidth is allocated if no one
+> >> > > else is using it. When IO is submitted other tasks with a higher weight
+> >> > > can be forced to sleep until the IO generated by the low weight tasks is
+> >> > > not completely dispatched. Or any extent of the priority inversion
+> >> > > problems.
+> >> >
+> >> > Hmm..., I am not very sure here. When admin is allocating the weights, he
+> >> > has the whole picture. He knows how many groups are conteding for the disk
+> >> > and what could be the worst case scenario. So if I have got two groups
+> >> > with A and B with weight 1 and 2 and both are contending, then as an
+> >> > admin one would expect to get 33% of BW for group A in worst case (if
+> >> > group B is continuously backlogged). If B is not contending than A can get
+> >> > 100% of BW. So while configuring the system, will one not plan for worst
+> >> > case (33% for A, and 66 % for B)?
+> >>
+> >> OK, I'm quite convinced.. :)
+> >>
+> >> To a large degree, if we want to provide a BW reservation strategy we
+> >> must provide an interface that allows cgroups to ask for time slices
+> >> such as max/min 5 IO requests every 50ms or something like that.
+> >> Probably the same functionality can be achieved translating time slices
+> >> from weights, percentages or absolute BW limits.
+> >
+> > Ok, I would like to split it in two parts.
+> >
+> > I think providng minimum gurantee in absolute terms like 5 IO request
+> > every 50ms will be very hard because IO scheduler has no control over
+> > how many competitors are there. An easier thing will be to have minimum
+> > gurantees on share basis. For minimum BW (disk time slice) gurantee, admin
+> > shall have to create right cgroup hierarchy and assign weights properly and
+> > then admin can calculate what % of disk slice a particular group will get
+> > as minimum gurantee. (This is more complicated than this as there are
+> > time slices which are not accounted to any groups. During queue switch
+> > cfq starts the time slice counting only after first request has completed
+> > to offset the impact of seeking and i guess also NCQ).
+> >
+> > I think it should be possible to give max bandwidth gurantees in absolute
+> > terms, like io/s or sectors/sec or MB/sec etc, because only thing IO
+> > scheduler has to do is to not allow dispatch from a particular queue if
+> > it has crossed its limit and then either let the disk idle or move onto
+> > next eligible queue.
+> >
+> > The only issue here will be async writes. max bw gurantee for async writes
+> > at IO scheduler level might not mean much to application because of page
+> > cache.
+> 
+> I see so much of the memory controller coming up. Since we've been
+> discussing so many of these design points on mail, I wonder if it
+> makes sense to summarize them somewhere (a wiki?). Would anyone like
+> to take a shot at it?
 
-Fixes the following compiler errors after a quick conversion with 'qt3to4',
-which occured with g++ 3.4.6 and 4.1.2, but not anymore with 4.3.2.
+Balbir, this is definitely a good idea. Just that once we have had some
+more discussion and some sort of understanding of issues, it might make
+more sense.
 
-scripts/kconfig/qconf.cc: In member function 'virtual void ConfigLineEdit::keyPressEvent(QKeyEvent*)':
-scripts/kconfig/qconf.cc:311: error: 'Key_Escape' was not declared in this scope
-scripts/kconfig/qconf.cc:313: error: 'Key_Return' was not declared in this scope
-scripts/kconfig/qconf.cc:314: error: 'Key_Enter' was not declared in this scope
+Got a question for you. Does memory controller already have the per cgroup
+dirty pages limit? If no, has this been discussed in the past? if yes,
+what was the conclsion?
 
-scripts/kconfig/qconf.cc: In member function 'virtual void ConfigList::keyPressEvent(QKeyEvent*)':
-scripts/kconfig/qconf.cc:653: error: 'Key_Escape' was not declared in this scope
-scripts/kconfig/qconf.cc:666: error: 'Key_Return' was not declared in this scope
-scripts/kconfig/qconf.cc:667: error: 'Key_Enter' was not declared in this scope
-scripts/kconfig/qconf.cc:681: error: 'Key_Space' was not declared in this scope
-scripts/kconfig/qconf.cc:684: error: 'Key_N' was not declared in this scope
-scripts/kconfig/qconf.cc:687: error: 'Key_M' was not declared in this scope
-scripts/kconfig/qconf.cc:690: error: 'Key_Y' was not declared in this scope
-
-scripts/kconfig/qconf.cc: In constructor 'ConfigMainWindow::ConfigMainWindow()':
-scripts/kconfig/qconf.cc:1329: error: 'CTRL' was not declared in this scope
-scripts/kconfig/qconf.cc:1329: error: 'Key_Q' was not declared in this scope
-scripts/kconfig/qconf.cc:1331: error: 'Key_L' was not declared in this scope
-scripts/kconfig/qconf.cc:1333: error: 'Key_S' was not declared in this scope
-scripts/kconfig/qconf.cc:1340: error: 'Key_F' was not declared in this scope
-
-Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
----
- scripts/kconfig/qconf.cc |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
-
-diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
-index 7433dac..afae613 100644
---- a/scripts/kconfig/qconf.cc
-+++ b/scripts/kconfig/qconf.cc
-@@ -297,10 +297,10 @@ void ConfigLineEdit::show(ConfigItem* i)
- void ConfigLineEdit::keyPressEvent(QKeyEvent* e)
- {
- 	switch (e->key()) {
--	case Key_Escape:
-+	case Qt::Key_Escape:
- 		break;
--	case Key_Return:
--	case Key_Enter:
-+	case Qt::Key_Return:
-+	case Qt::Key_Enter:
- 		sym_set_string_value(item->menu->sym, text().latin1());
- 		parent()->updateList(item);
- 		break;
-@@ -639,7 +639,7 @@ void ConfigList::keyPressEvent(QKeyEvent* ev)
- 	struct menu *menu;
- 	enum prop_type type;
- 
--	if (ev->key() == Key_Escape && mode != fullMode && mode != listMode) {
-+	if (ev->key() == Qt::Key_Escape && mode != fullMode && mode != listMode) {
- 		emit parentSelected();
- 		ev->accept();
- 		return;
-@@ -652,8 +652,8 @@ void ConfigList::keyPressEvent(QKeyEvent* ev)
- 	item = (ConfigItem*)i;
- 
- 	switch (ev->key()) {
--	case Key_Return:
--	case Key_Enter:
-+	case Qt::Key_Return:
-+	case Qt::Key_Enter:
- 		if (item->goParent) {
- 			emit parentSelected();
- 			break;
-@@ -667,16 +667,16 @@ void ConfigList::keyPressEvent(QKeyEvent* ev)
- 			emit menuSelected(menu);
- 			break;
- 		}
--	case Key_Space:
-+	case Qt::Key_Space:
- 		changeValue(item);
- 		break;
--	case Key_N:
-+	case Qt::Key_N:
- 		setValue(item, no);
- 		break;
--	case Key_M:
-+	case Qt::Key_M:
- 		setValue(item, mod);
- 		break;
--	case Key_Y:
-+	case Qt::Key_Y:
- 		setValue(item, yes);
- 		break;
- 	default:
-@@ -1315,18 +1315,18 @@ ConfigMainWindow::ConfigMainWindow(void)
- 	backAction = new QAction("Back", QPixmap(xpm_back), _("Back"), 0, this);
- 	  connect(backAction, SIGNAL(activated()), SLOT(goBack()));
- 	  backAction->setEnabled(FALSE);
--	QAction *quitAction = new QAction("Quit", _("&Quit"), CTRL+Key_Q, this);
-+	QAction *quitAction = new QAction("Quit", _("&Quit"), Qt::CTRL + Qt::Key_Q, this);
- 	  connect(quitAction, SIGNAL(activated()), SLOT(close()));
--	QAction *loadAction = new QAction("Load", QPixmap(xpm_load), _("&Load"), CTRL+Key_L, this);
-+	QAction *loadAction = new QAction("Load", QPixmap(xpm_load), _("&Load"), Qt::CTRL + Qt::Key_L, this);
- 	  connect(loadAction, SIGNAL(activated()), SLOT(loadConfig()));
--	saveAction = new QAction("Save", QPixmap(xpm_save), _("&Save"), CTRL+Key_S, this);
-+	saveAction = new QAction("Save", QPixmap(xpm_save), _("&Save"), Qt::CTRL + Qt::Key_S, this);
- 	  connect(saveAction, SIGNAL(activated()), SLOT(saveConfig()));
- 	conf_set_changed_callback(conf_changed);
- 	// Set saveAction's initial state
- 	conf_changed();
- 	QAction *saveAsAction = new QAction("Save As...", _("Save &As..."), 0, this);
- 	  connect(saveAsAction, SIGNAL(activated()), SLOT(saveConfigAs()));
--	QAction *searchAction = new QAction("Find", _("&Find"), CTRL+Key_F, this);
-+	QAction *searchAction = new QAction("Find", _("&Find"), Qt::CTRL + Qt::Key_F, this);
- 	  connect(searchAction, SIGNAL(activated()), SLOT(searchConfig()));
- 	QAction *singleViewAction = new QAction("Single View", QPixmap(xpm_single_view), _("Single View"), 0, this);
- 	  connect(singleViewAction, SIGNAL(activated()), SLOT(showSingleView()));
--- 
-1.6.3.rc1.24.g467d50
-
+Thanks
+Vivek
