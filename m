@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZDTPow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZDTPqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbZDTPow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbZDTPoG
+	id S1756564AbZDTPqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 11:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbZDTPqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:44:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35585 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755716AbZDTPoE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:44:04 -0400
-Message-Id: <20090420154400.576625110@goodmis.org>
-References: <20090420154325.698204138@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 20 Apr 2009 11:43:27 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] tracing: create menuconfig for tracing infrastructure
-Content-Disposition: inline; filename=0002-tracing-create-menuconfig-for-tracing-infrastructur.patch
+	Mon, 20 Apr 2009 11:46:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37151 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755834AbZDTPqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 11:46:21 -0400
+Date: Mon, 20 Apr 2009 17:46:19 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Mateusz Mandera <ormi.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       p_gortmaker@yahoo.com, trivial@kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH]8390p: Get rid of init_module/cleanup_module
+In-Reply-To: <667b0cb60904110555k442f3959k9140d355b00980cd@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.0904201744380.13028@wotan.suse.de>
+References: <667b0cb60904110555k442f3959k9140d355b00980cd@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Sat, 11 Apr 2009, Mateusz Mandera wrote:
 
-During testing we often use randconfig to test various kernels.
-The current configuration set up does not give an easy way to disable
-all tracing with a single config. The case where randconfig would
-test all tracing disabled is very unlikely.
+> This trivial patch just "gets rid of" init_module and cleanup_module
+> from drivers/net/8390p.c
+> 
+> Signed-off-by: Mateusz Mandera <ormi.linux@gmail.com>
+> ---
+> diff --git a/drivers/net/8390p.c b/drivers/net/8390p.c
+> index da863c9..ec9e3ca 100644
+> --- a/drivers/net/8390p.c
+> +++ b/drivers/net/8390p.c
+> @@ -97,16 +97,15 @@ void NS8390p_init(struct net_device *dev, int startp)
+>  }
+>  EXPORT_SYMBOL(NS8390p_init);
+> 
+> -#if defined(MODULE)
+> -
+> -int init_module(void)
+> +static int __init 8390p_init_module(void)
+>  {
+>  	return 0;
+>  }
+> 
+> -void cleanup_module(void)
+> +static void __exit 8390p_cleanup_module(void)
+>  {
+>  }
+> 
+> -#endif /* MODULE */
+> +module_init(8390p_init_module);
+> +module_exit(8390p_cleanup_module);
+>  MODULE_LICENSE("GPL");
 
-This patch adds a config option to enable or disable all tracing.
-It is hooked into the tracing menu just like other submenus are done.
-
-[ Impact: allow randconfig to easily produce all traces disabled ]
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/Kconfig |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 3ee28db..3fa36d2 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -77,7 +77,12 @@ config TRACING_SUPPORT
- 
- if TRACING_SUPPORT
- 
--menu "Tracers"
-+menuconfig FTRACE
-+	bool "Tracers"
-+	help
-+	 Enable the kernel tracing infrastructure.
-+
-+if FTRACE
- 
- config FUNCTION_TRACER
- 	bool "Kernel Function Tracer"
-@@ -462,7 +467,7 @@ config MMIOTRACE_TEST
- 
- 	  Say N, unless you absolutely know what you are doing.
- 
--endmenu
-+endif # FTRACE
- 
- endif # TRACING_SUPPORT
- 
--- 
-1.6.2.1
+I'd rather have this merged through subsystem tree than trivial tree, 
+adding netdev to CC.
 
 -- 
+Jiri Kosina
+SUSE Labs
