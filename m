@@ -1,77 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbZDTNDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbZDTNGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755617AbZDTNDu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 09:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbZDTNDh
+	id S1755720AbZDTNGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 09:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZDTNG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 09:03:37 -0400
-Received: from dns.vivotek.com ([211.21.25.250]:21896 "EHLO edge.vivotek.tw"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752897AbZDTNDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 09:03:36 -0400
-X-Greylist: delayed 330 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 09:03:35 EDT
-From: <jon.lin@vatics.com>
-To: <davem@davemloft.net>
-CC: <dada1@cosmosbay.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <jon.lin@vatics.com>
-Date: Mon, 20 Apr 2009 20:58:01 +0800
-Subject: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-Thread-Topic: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-Thread-Index: AcnBt6LCwscjlqmYTNuQvyyEnAKdYQ==
-Message-ID: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: zh-TW, en-US
-Content-Type: text/plain; charset="big5"
-MIME-Version: 1.0
+	Mon, 20 Apr 2009 09:06:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55721 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752552AbZDTNG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 09:06:28 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/rasQD2ejr3qM/z5bVTSqsSwlTZxLod8UwmEIkHa
+	o7buIJnr7zQPeB
+Subject: Re: [PATCH] Add ext3 data=guarded mode
+From: Mike Galbraith <efault@gmx.de>
+To: Amit Shah <amit.shah@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, Theodore Tso <tytso@mit.edu>,
+       Chris Mason <chris.mason@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+In-Reply-To: <20090420125653.GA28858@amit-x200.pnq.redhat.com>
+References: <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
+	 <1239910921.21233.98.camel@think.oraclecorp.com>
+	 <20090417180906.GA8363@amit-x200.pnq.redhat.com>
+	 <20090417201342.GF26479@mit.edu>
+	 <20090418060312.GA10943@amit-x200.pnq.redhat.com>
+	 <1240039701.6298.12.camel@marge.simson.net>
+	 <20090419062448.GA13272@amit-x200.pnq.redhat.com>
+	 <1240218437.7005.27.camel@marge.simson.net>
+	 <20090420092604.GB14699@duck.suse.cz>
+	 <1240229714.6469.33.camel@marge.simson.net>
+	 <20090420125653.GA28858@amit-x200.pnq.redhat.com>
+Content-Type: text/plain
+Date: Mon, 20 Apr 2009 15:06:23 +0200
+Message-Id: <1240232783.6154.5.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.65
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3KD3vqu016413
 
-From: Jonathan Lin <jon.lin@vatics.com>
+On Mon, 2009-04-20 at 18:26 +0530, Amit Shah wrote:
 
-While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
-In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA buffer address. In this interval where RX was enabled and DMA buffer address is not yet set up, any incoming broadcast packet would be send to a strange physical address:
-0x003e8800 which is the default value of DMA buffer address.
-Unfortunately, this address is used by Linux kernel. So kernel panics.
-This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
+> I'll re-run the tests later tonight..
 
-Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+I ran ext3 in all journaling modes (one run), and there was spit
+difference.
 
---- linux-2.6.29.1/drivers/net/8139too.c.orig   2009-04-19 17:50:38.000000000 +0800
-+++ linux-2.6.29.1/drivers/net/8139too.c        2009-04-19 17:52:51.000000000 +0800
-@@ -1382,6 +1382,10 @@ static void rtl8139_hw_start (struct net
-        RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
-        RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
+(the mmap test is a bit slow and unfriendly)
 
-+       tp->cur_rx = 0;
-+       /* init Rx ring buffer DMA address BEFORE Rx enabled*/
-+       RTL_W32_F (RxBuf, tp->rx_ring_dma);
-+
-        /* Must enable Tx/Rx before setting transfer thresholds! */
-        RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
+marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=ordered,acl,user_xattr
+posix-fallocate run time:
+        seconds:microseconds: 1240230249:280060
+        seconds:microseconds: 1240230303:989879
+        (approx 54s)
+mmap run time:
+        seconds:microseconds: 1240230304:67286
+        seconds:microseconds: 1240230363:882957
+        (approx 59s)
+4096-sized chunk run time:
+        seconds:microseconds: 1240230363:989225
+        seconds:microseconds: 1240230419:242924
+        (approx 56s)
+8192-sized chunk run time:
+        seconds:microseconds: 1240230419:365540
+        seconds:microseconds: 1240230473:307148
+        (approx 54s)
+marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=writeback,acl,user_xattr
+posix-fallocate run time:
+        seconds:microseconds: 1240230511:276152
+        seconds:microseconds: 1240230565:40419
+        (approx 54s)
+mmap run time:
+        seconds:microseconds: 1240230571:139959
+        seconds:microseconds: 1240230633:254590
+        (approx 62s)
+4096-sized chunk run time:
+        seconds:microseconds: 1240230639:300132
+        seconds:microseconds: 1240230693:95665
+        (approx 54s)
+8192-sized chunk run time:
+        seconds:microseconds: 1240230698:655975
+        seconds:microseconds: 1240230753:902749
+        (approx 55s)
+marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=guarded,acl,user_xattr
+posix-fallocate run time:
+        seconds:microseconds: 1240230802:594939
+        seconds:microseconds: 1240230856:602117
+        (approx 54s)
+mmap run time:
+        seconds:microseconds: 1240230862:792587
+        seconds:microseconds: 1240230924:985089
+        (approx 62s)
+4096-sized chunk run time:
+        seconds:microseconds: 1240230930:827949
+        seconds:microseconds: 1240230985:663422
+        (approx 55s)
+8192-sized chunk run time:
+        seconds:microseconds: 1240230991:483085
+        seconds:microseconds: 1240231046:601340
+        (approx 55s)
+marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=journal,acl,user_xattr
+posix-fallocate run time:
+        seconds:microseconds: 1240231074:745621
+        seconds:microseconds: 1240231128:740106
+        (approx 54s)
+mmap run time:
+        seconds:microseconds: 1240231134:830362
+        seconds:microseconds: 1240231193:939029
+        (approx 59s)
+4096-sized chunk run time:
+        seconds:microseconds: 1240231199:800554
+        seconds:microseconds: 1240231254:600778
+        (approx 55s)
+8192-sized chunk run time:
+        seconds:microseconds: 1240231260:386834
+        seconds:microseconds: 1240231315:121745
+        (approx 55s)
 
-@@ -1389,8 +1393,6 @@ static void rtl8139_hw_start (struct net
-        RTL_W32 (RxConfig, tp->rx_config);
-        RTL_W32 (TxConfig, rtl8139_tx_config);
 
--       tp->cur_rx = 0;
--
-        rtl_check_media (dev, 1);
 
-        if (tp->chipset >= CH_8139B) {
-@@ -1405,9 +1407,6 @@ static void rtl8139_hw_start (struct net
-        /* Lock Config[01234] and BMCR register writes */
-        RTL_W8 (Cfg9346, Cfg9346_Lock);
-
--       /* init Rx ring buffer DMA address */
--       RTL_W32_F (RxBuf, tp->rx_ring_dma);
--
-        /* init Tx buffer DMA addresses */
-        for (i = 0; i < NUM_TX_DESC; i++)
-                RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] - tp->tx_bufs));
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
