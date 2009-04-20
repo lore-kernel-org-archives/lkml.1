@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZDTH01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZDTH0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbZDTH01 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZDTH0R
+	id S1753181AbZDTH0n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZDTH0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:26:17 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:26728 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZDTH0Q (ORCPT
+	Mon, 20 Apr 2009 03:26:21 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:38317 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753444AbZDTH0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pDWktyD/LrtowlYdbJP8ck9+pCjVUoT0mTKN8hvUfppx1TzxDNULHlzdCAzlI1xN//
-         ++PxXKGoUnnKxcw32AdwMTZxXS4pd1PaMqzTx16KPyfiT+HwXqhGSgthphvtsGBGT0rb
-         DgJlIkxgv0rZgu7feGtusVyVQP7EUeL2mG8qo=
-Date: Mon, 20 Apr 2009 09:26:09 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] trace_workqueue: use list_for_each_entry() instead
-	of list_for_each_entry_safe()
-Message-ID: <20090420072608.GB6081@nowhere>
-References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere> <20090415141250.AC46.A69D9226@jp.fujitsu.com> <49EC1943.8080606@cn.fujitsu.com> <49EC1D12.7060207@cn.fujitsu.com>
+	Mon, 20 Apr 2009 03:26:19 -0400
+Date: Mon, 20 Apr 2009 09:26:16 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in
+ crypto_{,de}compress_{update,final}() (was: Re: [PATCH/RFC] crypto: compress
+ - Add comp_request.total_out (was: Re: [PATCH 6/6] squashfs: Make SquashFS
+ 4 use the new pcomp crypto interface))
+In-Reply-To: <20090420060313.GA891@gondor.apana.org.au>
+Message-ID: <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be>
+References: <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be>
+ <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EC1D12.7060207@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 02:58:26PM +0800, Zhaolei wrote:
-> No need to use list_for_each_entry_safe() in iteration without delete node,
-> we use list_for_each_entry() instead.
+On Mon, 20 Apr 2009, Herbert Xu wrote:
+> On Tue, Mar 24, 2009 at 05:33:01PM +0100, Geert Uytterhoeven wrote:
+> > Here's an alternative patch, which does exactly that.
+> > Phillip, what do you think?
+> > 
+> > Thanks for your comments!
+> > 
+> > >From be7d630f96a85d3ce48716b8e328563ba217647b Mon Sep 17 00:00:00 2001
+> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > Date: Tue, 24 Mar 2009 17:19:05 +0100
+> > Subject: [PATCH] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
+> > 
+> > If crypto_{,de}compress_{update,final}() succeed, return the actual number of
+> > bytes produced instead of zero, so their users don't have to calculate that
+> > theirselves.
+> > 
+> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_workqueue.c |   10 ++++------
->  1 files changed, 4 insertions(+), 6 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-> index 984b917..934b27c 100644
-> --- a/kernel/trace/trace_workqueue.c
-> +++ b/kernel/trace/trace_workqueue.c
-> @@ -47,12 +47,11 @@ probe_workqueue_insertion(struct task_struct *wq_thread,
->  			  struct work_struct *work)
->  {
->  	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> -	struct cpu_workqueue_stats *node, *next;
-> +	struct cpu_workqueue_stats *node;
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> -	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
-> -							list) {
-> +	list_for_each_entry(node, &workqueue_cpu_stat(cpu)->list, list) {
->  		if (node->pid == wq_thread->pid) {
->  			atomic_inc(&node->inserted);
->  			goto found;
-> @@ -69,12 +68,11 @@ probe_workqueue_execution(struct task_struct *wq_thread,
->  			  struct work_struct *work)
->  {
->  	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> -	struct cpu_workqueue_stats *node, *next;
-> +	struct cpu_workqueue_stats *node;
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> -	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
-> -							list) {
-> +	list_for_each_entry(node, &workqueue_cpu_stat(cpu)->list, list) {
->  		if (node->pid == wq_thread->pid) {
->  			node->executed++;
->  			goto found;
+> I certainly prefer this version over the other one? Do you want to
+> submit crypto API portion of this?
 
+If you think I should submit it now, I can do it. But I'm still waiting for
+Phillip's comments.
 
-Thanks, looks good.
+With kind regards,
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com> 
+Geert Uytterhoeven
+Software Architect
 
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
