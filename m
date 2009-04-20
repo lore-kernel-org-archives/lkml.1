@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZDTKPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZDTKTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbZDTKPF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 06:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZDTKOv
+	id S1754401AbZDTKTU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 06:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZDTKTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 06:14:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51794
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752721AbZDTKOu (ORCPT
+	Mon, 20 Apr 2009 06:19:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49320 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362AbZDTKTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 06:14:50 -0400
-Date: Mon, 20 Apr 2009 03:14:39 -0700 (PDT)
-Message-Id: <20090420.031439.55595103.davem@davemloft.net>
-To: tzungder@gmail.com
-Cc: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <528f811a0904191854o3a354e8fif6a8d65f8da94965@mail.gmail.com>
-References: <528f811a0904190316v22621684o3047e37bf8e78bda@mail.gmail.com>
-	<528f811a0904191854o3a354e8fif6a8d65f8da94965@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 20 Apr 2009 06:19:11 -0400
+Subject: Re: [PATCH 0/3] Fix rt28{6,7}0sta to use firmware loader
+From: David Woodhouse <dwmw2@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Ben Hutchings <ben@decadent.org.uk>, linux-kernel@vger.kernel.org,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <20090414022418.GA17760@suse.de>
+References: <1239589992.18110.117.camel@deadeye.i.decadent.org.uk>
+	 <20090413024445.GA12860@suse.de>
+	 <1239667961.18110.166.camel@deadeye.i.decadent.org.uk>
+	 <20090414022418.GA17760@suse.de>
+Content-Type: text/plain
+Date: Mon, 20 Apr 2009 11:19:06 +0100
+Message-Id: <1240222746.17844.35.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tzungder Lin <tzungder@gmail.com>
-Date: Mon, 20 Apr 2009 09:54:10 +0800
-
-> From: Jonathan Lin <tzungder@gmail.com>
+On Mon, 2009-04-13 at 19:24 -0700, Greg KH wrote:
+> On Tue, Apr 14, 2009 at 01:12:41AM +0100, Ben Hutchings wrote:
+> > On Sun, 2009-04-12 at 19:44 -0700, Greg KH wrote:
+> > > On Mon, Apr 13, 2009 at 03:33:12AM +0100, Ben Hutchings wrote:
+> > > > Greg,
+> > > > 
+> > > > The Ralink drivers rt2860sta, rt2870sta and rt3070sta contain non-free
+> > > > firmware which should be distributed separately.
+> > > 
+> > > Where is it now distributed?  I don't want to break people's machines
+> > > that were working before this patch is applied.
+> > 
+> > The canonical source is
+> > <http://www.ralinktech.com/ralink/Home/Support/Linux.html>
 > 
-> While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
-> In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before
-> setting up the DMA buffer address. In this interval where RX was
-> enabled and DMA buffer address is not yet set up, any incoming
-> broadcast packet would be send to a strange physical address:
-> 0x003e8800 which is the default value of DMA buffer address.
-> Unfortunately, this address is used by Linux kernel. So kernel panics.
-> This patch fix it by setting up DMA buffer address before RX enabled
-> and everything is fine even under broadcast packets attack.
-> 
-> Signed-off-by: Jonathan Lin <tzungder@gmail.com>
+> Yes, and that is where I got the code that is in the driver tree that
+> you are objecting to now :)
 
-Your email client corrupted this patch, breaking up long lines
-and substituting tabs with space characters among other things.
+You shouldn't have done. We stopped including firmware for new wireless
+drivers _years_ ago. It's perfectly normal that users are expected to
+fetch the firmware separately (or their distribution does it for them).
+ 
+> > The files are now also in the Debian repository for our firmware-nonfree
+> > package and in <http://git.decadent.org.uk/git/linux-firmware.git>.
+> > I've asked David Woodhouse to pull from that into his linux-firmware.git
+> > so that they get into other distros.
 
-Please fix this up and resubmit.
+I'd be a lot happier with that having a signed-off-by from within
+Ralink, even though the licence is unambiguous. But I've pulled it
+anyway, this time. You can download the 'release' at
+http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=snapshot;h=HEAD
 
-I would suggest trying to send the patch to yourself and then trying
-to apply what arrives in your inbox, just as I would.
+(Still haven't really worked out what the best strategy for 'releases'
+is, given that people should just be using the latest version from the
+tree. Maybe an automatic git-archive from cron each day, if something's
+change from the previous day?)
 
-Thanks.
+-- 
+dwmw2
+
