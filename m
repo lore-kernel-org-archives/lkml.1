@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbZDTW0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbZDTW04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbZDTW0Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbZDTWUc
+	id S1758824AbZDTW04 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757861AbZDTWUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:20:32 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37344 "EHLO gir.skynet.ie"
+	Mon, 20 Apr 2009 18:20:34 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37290 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757581AbZDTWU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:20:26 -0400
+	id S1757890AbZDTWU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:20:27 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 17/25] Do not call get_pageblock_migratetype() more than necessary
-Date: Mon, 20 Apr 2009 23:20:03 +0100
-Message-Id: <1240266011-11140-18-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 19/25] Do not setup zonelist cache when there is only one node
+Date: Mon, 20 Apr 2009 23:20:05 +0100
+Message-Id: <1240266011-11140-20-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
 References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
@@ -31,77 +31,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_pageblock_migratetype() is potentially called twice for every page
-free. Once, when being freed to the pcp lists and once when being freed
-back to buddy. When freeing from the pcp lists, it is known what the
-pageblock type was at the time of free so use it rather than rechecking.
-In low memory situations under memory pressure, this might skew
-anti-fragmentation slightly but the interference is minimal and
-decisions that are fragmenting memory are being made anyway.
+There is a zonelist cache which is used to track zones that are not in
+the allowed cpuset or found to be recently full. This is to reduce cache
+footprint on large machines. On smaller machines, it just incurs cost
+for no gain. This patch only uses the zonelist cache when there are NUMA
+nodes.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 ---
- mm/page_alloc.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+ mm/page_alloc.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index c57c602..a1ca038 100644
+index bf4b8d9..ec01d8f 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -456,16 +456,18 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
-  */
+@@ -1440,6 +1440,8 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 	/* Determine in advance if the zonelist needs filtering */
+ 	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
+ 		zonelist_filter = 1;
++	if (num_online_nodes() > 1)
++		zonelist_filter = 1;
  
- static inline void __free_one_page(struct page *page,
--		struct zone *zone, unsigned int order)
-+		struct zone *zone, unsigned int order,
-+		int migratetype)
- {
- 	unsigned long page_idx;
- 	int order_size = 1 << order;
--	int migratetype = get_pageblock_migratetype(page);
- 
- 	if (unlikely(PageCompound(page)))
- 		if (unlikely(destroy_compound_page(page, order)))
- 			return;
- 
-+	VM_BUG_ON(migratetype == -1);
-+
- 	page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);
- 
- 	VM_BUG_ON(page_idx & (order_size - 1));
-@@ -534,17 +536,18 @@ static void free_pages_bulk(struct zone *zone, int count,
- 		page = list_entry(list->prev, struct page, lru);
- 		/* have to delete it as __free_one_page list manipulates */
- 		list_del(&page->lru);
--		__free_one_page(page, zone, order);
-+		__free_one_page(page, zone, order, page_private(page));
- 	}
- 	spin_unlock(&zone->lock);
- }
- 
--static void free_one_page(struct zone *zone, struct page *page, int order)
-+static void free_one_page(struct zone *zone, struct page *page, int order,
-+				int migratetype)
- {
- 	spin_lock(&zone->lock);
- 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
- 	zone->pages_scanned = 0;
--	__free_one_page(page, zone, order);
-+	__free_one_page(page, zone, order, migratetype);
- 	spin_unlock(&zone->lock);
- }
- 
-@@ -569,7 +572,8 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 
- 	local_irq_save(flags);
- 	__count_vm_events(PGFREE, 1 << order);
--	free_one_page(page_zone(page), page, order);
-+	free_one_page(page_zone(page), page, order,
-+					get_pageblock_migratetype(page));
- 	local_irq_restore(flags);
- }
- 
+ zonelist_scan:
+ 	/*
+@@ -1484,8 +1486,12 @@ this_zone_full:
+ 			zlc_mark_zone_full(zonelist, z);
+ try_next_zone:
+ 		if (NUMA_BUILD && zonelist_filter) {
+-			if (!did_zlc_setup) {
+-				/* do zlc_setup after the first zone is tried */
++			if (!did_zlc_setup && num_online_nodes() > 1) {
++				/*
++				 * do zlc_setup after the first zone is tried
++				 * but only if there are multiple nodes to make
++				 * it worthwhile
++				 */
+ 				allowednodes = zlc_setup(zonelist, alloc_flags);
+ 				zlc_active = 1;
+ 			}
 -- 
 1.5.6.5
 
