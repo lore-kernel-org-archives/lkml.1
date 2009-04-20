@@ -1,176 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbZDTVkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbZDTVkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757816AbZDTVkA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbZDTVju
+	id S1757671AbZDTVkf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757778AbZDTVkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:39:50 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:57814 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756992AbZDTVjt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:39:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AukFAL6F7ElMQW1W/2dsb2JhbACBTtAng30G
-Date: Mon, 20 Apr 2009 17:39:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] tracing: move __DO_TRACE out of line
-Message-ID: <20090420213936.GA12986@Krystal>
-References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-2-git-send-email-jeremy@goop.org> <20090417154640.GB8253@elte.hu> <20090417161005.GA16361@Krystal> <20090417162326.GG8253@elte.hu> <49E8D91F.1060005@goop.org> <20090418065331.GA1942@Krystal> <alpine.DEB.2.00.0904181013450.1016@gandalf.stny.rr.com> <20090419035938.GA26365@Krystal> <49EBB609.9030407@goop.org>
+	Mon, 20 Apr 2009 17:40:22 -0400
+Received: from cmpxchg.org ([85.214.51.133]:60908 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757309AbZDTVkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 17:40:21 -0400
+Date: Mon, 20 Apr 2009 23:38:56 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, riel@redhat.com,
+       hugh@veritas.com
+Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
+Message-ID: <20090420213856.GA26266@cmpxchg.org>
+References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <1240259085-25872-3-git-send-email-hannes@cmpxchg.org> <20090420203119.GA26066@cmpxchg.org> <20090420135303.75471bc1.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49EBB609.9030407@goop.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:32:14 up 51 days, 17:58,  2 users,  load average: 1.24, 0.68,
-	0.51
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090420135303.75471bc1.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Mathieu Desnoyers wrote:
->> Here is the conclusions I gather from the following tbench tests on the LTTng
->> tree :
->>
->> - Dormant tracepoints, when sprinkled all over the place, have a very small, but
->>   measurable, footprint on kernel stress-test workloads (3 % for the
->>   whole 2.6.30-rc1 LTTng tree).
->>
->> - "Immediate values" help lessening this impact significantly (3 % -> 2.5 %).
->>
->> - Static jump patching would diminish impact even more, but would require gcc
->>   modifications to be acceptable. I did some prototypes using instruction
->>   pattern matching in the past which was judged too complex.
->>
->> - I strongly recommend adding per-subsystem config-out option for heavy
->>   users like kmemtrace or pvops. Compiling-out kmemtrace instrumentation
->>   brings the performance impact from 2.5 % down to 1.9 % slowdown.
->>
->> - Putting the tracepoint out-of-line is a no-go, as it slows down *both* the
->>   dormant (3 % -> 4.7 %) and the active (+20% to tracer overhead) tracepoints
->>   compared to inline tracepoints.
->>   
+On Mon, Apr 20, 2009 at 01:53:03PM -0700, Andrew Morton wrote:
+> On Mon, 20 Apr 2009 22:31:19 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
+> 
+> > A test program creates an anonymous memory mapping the size of the
+> > system's RAM (2G).  It faults all pages of it linearly, then kicks off
+> > 128 reclaimers (on 4 cores) that map, fault and unmap 2G in sum and
+> > parallel, thereby evicting the first mapping onto swap.
+> > 
+> > The time is then taken for the initial mapping to get faulted in from
+> > swap linearly again, thus measuring how bad the 128 reclaimers
+> > distributed the pages on the swap space.
+> > 
+> >   Average over 5 runs, standard deviation in parens:
+> > 
+> >       swap-in          user            system            total
+> > 
+> > old:  74.97s (0.38s)   0.52s (0.02s)   291.07s (3.28s)   2m52.66s (0m1.32s)
+> > new:  45.26s (0.68s)   0.53s (0.01s)   250.47s (5.17s)   2m45.93s (0m2.63s)
+> > 
+> > where old is current mmotm snapshot 2009-04-17-15-19 and new is these
+> > three patches applied to it.
+> > 
+> > Test program attached.  Kernbench didn't show any differences on my
+> > single core x86 laptop with 256mb ram (poor thing).
+> 
+> qsbench is pretty good at fragmenting swapspace.  It would be vaguely
+> interesting to see what effect you've had on its runtime.
+> 
+> I've found that qsbench's runtimes are fairly chaotic when it's
+> operating at the transition point between all-in-core and
+> madly-swapping, so a bit of thought and caution is needed.
 >
-> That's an interestingly counter-intuitive result.  Do you have any  
-> theories how this might happen?  The only mechanism I can think of is  
-> that, because the inline code sections are smaller, gcc is less inclined  
-> to put the if(unlikely) code out of line, so the amount of hot-patch  
-> code is higher.  But still, 1.7% is a massive increase in overhead,  
-> especially compared to the relative differences of the other changes.
->
+> I used to run it with
+> 
+> 	./qsbench -p 4 -m 96
+> 
+> on a 256MB machine and it had sufficiently repeatable runtimes to be
+> useful.
+> 
+> There's a copy of qsbench in
+> http://userweb.kernel.org/~akpm/stuff/ext3-tools.tar.gz
 
-Hrm, there is an approximation I've done in my test code to minimize the
-development time, and it might explain it. I have simplistically changed the
+Thanks a lot.
 
-static inline
-for
-static noinline
+> I wonder what effect this patch has upon hibernate/resume performance.
 
-in DECLARE_TRACE(), and have not modified DEFINE_TRACE. Therefore,
-some duplicated instances of the function are defined. We should clearly
-re-do those tests with your approach of extern prototype in the
-DECLARE_TRACE and add proto and args arguments to DEFINE_TRACE, where
-the callback would be declared. I'd be very interested to see the
-result. For a limited instrumentation modification, one could
-concentrate on kmemtrace instrumentation, given I've shown that cover
-enough sites that its performance impact, under tbench, seems to be
-consistently perceivable.
-
-However I have very limited time on my hands, and I won't be able to do
-the modification required to test this in the LTTng setup applied to all
-the instrumentation. I also don't have the hardware and cpu time to
-perform the 10 runs of each you are talking about, given that the 3 runs
-already monopolized my development machine for way too long.
-
-Mathieu, who really has to focus back on his ph.d. thesis :/
-
->> Tracepoints all compiled-out :
->>
->> run 1 :                2091.50
->> run 2 (after reboot) : 2089.50 (baseline)
->> run 3 (after reboot) : 2083.61
->>
->> Dormant tracepoints :
->>
->> inline, no immediate value optimization
->>
->> run 1 :                1990.63
->> run 2 (after reboot) : 2025.38 (3 %)
->> run 3 (after reboot) : 2028.81
->>
->> out-of-line, no immediate value optimization
->>
->> run 1 :                1990.66
->> run 2 (after reboot) : 1990.19 (4.7 %)
->> run 3 (after reboot) : 1977.79
->>
->> inline, immediate value optimization
->>
->> run 1 :                2035.99 (2.5 %)
->> run 2 (after reboot) : 2036.11
->> run 3 (after reboot) : 2035.75
->>
->> inline, immediate value optimization, configuring out kmemtrace tracepoints
->>
->> run 1 :                2048.08 (1.9 %)
->> run 2 (after reboot) : 2055.53
->> run 3 (after reboot) : 2046.49
->>   
->
-> So what are you doing here?  Are you doing 3 runs, then comparing he  
-> median measurement in each case?
->
-> The trouble is that your run to run variations are at least as large as  
-> the difference you're trying to detect.  For example in run 1 of  
-> "inline, no immediate value optimization" you got 1990.6MB/s throughput,  
-> and then runs 2 & 3 both went up to ~2025.  Why?  That's a huge jump.
->
-> The "out-of-line, no immediate value optimization" runs 1&2 has the same  
-> throughput as run 1 of the previous test, 1990MB/s, while run 3 is a bit  
-> worse.  OK, so perhaps its slower.  But why are runs 1&2 more or less  
-> identical to inline/run1?
->
-> What would happen if you happened to do 10 iterations of these tests?   
-> There just seems like too much run to run variation to make 3 runs  
-> statistically meaningful.
->
-> I'm not picking on you personally, because I had exactly the same  
-> problems when trying to benchmark the overhead of pvops.  The  
-> reboot/rerun variations were at least as large as the effects I'm trying  
-> to measure, and I'm just feeling suspicious of all the results.
->
-> I think there's something fundimentally off about about this kind of  
-> kernel benchmark methodology.  The results are not stable and are not -  
-> I think - reliable.  Unfortunately I don't have enough of a background  
-> in statistics to really analyze what's going on here, or how we should  
-> change the test/measurement methodology to get results that we can  
-> really stand by.
->
-> I don't even have a good explanation for why there are such large  
-> boot-to-boot variations anyway.  The normal explanation is "cache  
-> effects", but what is actually changing here?  The kernel image is  
-> identical, loaded into the same physical pages each time, and mapped  
-> into the same virtual address.  So the I&D caches and tlb should get  
-> exactly the same access patterns for the kernel code itself.  The  
-> dynamically allocated memory is going to vary, and have different cache  
-> interactions, but is that enough to explain these kinds of variations?   
-> If so, we're going to need to do a lot more iterations to see any signal  
-> from our actual changes over the noise that "cache effects" are throwing  
-> our way...
->
->    J
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Good point, I will test this.
