@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbZDTWVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbZDTWVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758057AbZDTWVM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbZDTWUU
+	id S1758124AbZDTWVc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757699AbZDTWUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:20:20 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37227 "EHLO gir.skynet.ie"
+	Mon, 20 Apr 2009 18:20:22 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37264 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756835AbZDTWUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:20:16 -0400
+	id S1756875AbZDTWUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:20:17 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,104 +21,334 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 00/25] Cleanup and optimise the page allocator V6
-Date: Mon, 20 Apr 2009 23:19:46 +0100
-Message-Id: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 03/25] Do not check NUMA node ID when the caller knows the node is valid
+Date: Mon, 20 Apr 2009 23:19:49 +0100
+Message-Id: <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is V6 of the cleanup and optimisation of the page allocator and it
-should be ready for wider testing. Please consider a possibility for
-merging as a Pass 1 at making the page allocator faster. Other passes
-will occur later when this one has had a bit of exercise. This patchset
-is based on mmotm-2009-04-17 but I haven't widely tested it myself due to
-problems I'm encountering with the test grid I use (mostly unrelated to
-the kernel). It doesn't apply cleanly to linux-next due to dependencies on
-patches in -mm but the conflicts are fairly straight-forward to resolve.
-I'm working on getting three local test machines built to test there but
-it'll take a while and I wanted to get these patches out.
+Callers of alloc_pages_node() can optionally specify -1 as a node to mean
+"allocate from the current node". However, a number of the callers in fast
+paths know for a fact their node is valid. To avoid a comparison and branch,
+this patch adds alloc_pages_exact_node() that only checks the nid with
+VM_BUG_ON(). Callers that know their node is valid are then converted.
 
-Hence, the following report is the same from V5 and based on an older
-kernel. However, I expect similar results in a newer kernel.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+---
+ arch/ia64/hp/common/sba_iommu.c   |    2 +-
+ arch/ia64/kernel/mca.c            |    3 +--
+ arch/ia64/kernel/uncached.c       |    3 ++-
+ arch/ia64/sn/pci/pci_dma.c        |    3 ++-
+ arch/powerpc/platforms/cell/ras.c |    2 +-
+ arch/x86/kvm/vmx.c                |    2 +-
+ drivers/misc/sgi-gru/grufile.c    |    2 +-
+ drivers/misc/sgi-xp/xpc_uv.c      |    2 +-
+ include/linux/gfp.h               |    9 +++++++++
+ include/linux/mm.h                |    1 -
+ kernel/profile.c                  |    8 ++++----
+ mm/filemap.c                      |    2 +-
+ mm/hugetlb.c                      |    4 ++--
+ mm/mempolicy.c                    |    2 +-
+ mm/migrate.c                      |    2 +-
+ mm/slab.c                         |    4 ++--
+ mm/slob.c                         |    4 ++--
+ 17 files changed, 32 insertions(+), 23 deletions(-)
 
-======== Old Report ========
-
-Performance is improved in a variety of cases but note it's not universal due
-to lock contention which I'll explain later. Text is reduced by 497 bytes on
-the x86-64 config I checked. 18.78% less clock cycles were sampled in the page
-allocator paths excluding zeroing which is roughly the same in either kernel,
-L1 cache misses are reduced by about 7.36% and L2 cache misses were reduced
-by 17.91% cache misses incurred within the allocator itself are reduced.
-
-The lock contention on some machines goes up for the the zone->lru_lock
-and zone->lock locks which can regress some workloads even though others on
-the same machine still go faster. For netperf, a lock called slock-AF_INET
-seemed very important although I didn't look too closely other than noting
-contention went up. The zone->lock gets hammered a lot by high order allocs
-and frees coming from SLUB which are not covered by the PCP allocator in
-this patchset. zone->lru_lock goes up is less clear but as it's page cache
-releases but overall contention may be up because CPUs are spending less
-time with interrupts disabled and more time trying to do real work but
-contending on the locks.
-
-============
-
-Change since V5
-  o Rebase to mmotm-2009-04-17
-
-Changes since V4
-  o Drop the more controversial patches for now and focus on the "obvious win"
-    material.
-  o Add reviewed-by notes
-  o Fix changelog entry to say __rmqueue_fallback instead __rmqueue
-  o Add unlikely() for the clearMlocked check
-  o Change where PGFREE is accounted in free_hot_cold_page() to have symmetry
-    with __free_pages_ok()
-  o Convert num_online_nodes() to use a static value so that callers do
-    not have to be individually updated
-  o Rebase to mmotm-2003-03-13
-
-Changes since V3
-  o Drop the more controversial patches for now and focus on the "obvious win"
-    material
-  o Add reviewed-by notes
-  o Fix changelog entry to say __rmqueue_fallback instead __rmqueue
-  o Add unlikely() for the clearMlocked check
-  o Change where PGFREE is accounted in free_hot_cold_page() to have symmetry
-    with __free_pages_ok()
-
-Changes since V2
-  o Remove brances by treating watermark flags as array indices
-  o Remove branch by assuming __GFP_HIGH == ALLOC_HIGH
-  o Do not check for compound on every page free
-  o Remove branch by always ensuring the migratetype is known on free
-  o Simplify buffered_rmqueue further
-  o Reintroduce improved version of batched bulk free of pcp pages
-  o Use allocation flags as an index to zone watermarks
-  o Work out __GFP_COLD only once
-  o Reduce the number of times zone stats are updated
-  o Do not dump reserve pages back into the allocator. Instead treat them
-    as MOVABLE so that MIGRATE_RESERVE gets used on the max-order-overlapped
-    boundaries without causing trouble
-  o Allow pages up to PAGE_ALLOC_COSTLY_ORDER to use the per-cpu allocator.
-    order-1 allocations are frequently enough in particular to justify this
-  o Rearrange inlining such that the hot-path is inlined but not in a way
-    that increases the text size of the page allocator
-  o Make the check for needing additional zonelist filtering due to NUMA
-    or cpusets as light as possible
-  o Do not destroy compound pages going to the PCP lists
-  o Delay the merging of buddies until a high-order allocation needs them
-    or anti-fragmentation is being forced to fallback
-
-Changes since V1
-  o Remove the ifdef CONFIG_CPUSETS from inside get_page_from_freelist()
-  o Use non-lock bit operations for clearing the mlock flag
-  o Factor out alloc_flags calculation so it is only done once (Peter)
-  o Make gfp.h a bit prettier and clear-cut (Peter)
-  o Instead of deleting a debugging check, replace page_count() in the
-    free path with a version that does not check for compound pages (Nick)
-  o Drop the alteration for hot/cold page freeing until we know if it
-    helps or not
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 56ceb68..fe63b2d 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -1131,7 +1131,7 @@ sba_alloc_coherent (struct device *dev, size_t size, dma_addr_t *dma_handle, gfp
+ #ifdef CONFIG_NUMA
+ 	{
+ 		struct page *page;
+-		page = alloc_pages_node(ioc->node == MAX_NUMNODES ?
++		page = alloc_pages_exact_node(ioc->node == MAX_NUMNODES ?
+ 		                        numa_node_id() : ioc->node, flags,
+ 		                        get_order(size));
+ 
+diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
+index 8f33a88..5b17bd4 100644
+--- a/arch/ia64/kernel/mca.c
++++ b/arch/ia64/kernel/mca.c
+@@ -1829,8 +1829,7 @@ ia64_mca_cpu_init(void *cpu_data)
+ 			data = mca_bootmem();
+ 			first_time = 0;
+ 		} else
+-			data = page_address(alloc_pages_node(numa_node_id(),
+-					GFP_KERNEL, get_order(sz)));
++			data = __get_free_pages(GFP_KERNEL, get_order(sz));
+ 		if (!data)
+ 			panic("Could not allocate MCA memory for cpu %d\n",
+ 					cpu);
+diff --git a/arch/ia64/kernel/uncached.c b/arch/ia64/kernel/uncached.c
+index 8eff8c1..6ba72ab 100644
+--- a/arch/ia64/kernel/uncached.c
++++ b/arch/ia64/kernel/uncached.c
+@@ -98,7 +98,8 @@ static int uncached_add_chunk(struct uncached_pool *uc_pool, int nid)
+ 
+ 	/* attempt to allocate a granule's worth of cached memory pages */
+ 
+-	page = alloc_pages_node(nid, GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
++	page = alloc_pages_exact_node(nid,
++				GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
+ 				IA64_GRANULE_SHIFT-PAGE_SHIFT);
+ 	if (!page) {
+ 		mutex_unlock(&uc_pool->add_chunk_mutex);
+diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
+index d876423..98b6849 100644
+--- a/arch/ia64/sn/pci/pci_dma.c
++++ b/arch/ia64/sn/pci/pci_dma.c
+@@ -90,7 +90,8 @@ static void *sn_dma_alloc_coherent(struct device *dev, size_t size,
+ 	 */
+ 	node = pcibus_to_node(pdev->bus);
+ 	if (likely(node >=0)) {
+-		struct page *p = alloc_pages_node(node, flags, get_order(size));
++		struct page *p = alloc_pages_exact_node(node,
++						flags, get_order(size));
+ 
+ 		if (likely(p))
+ 			cpuaddr = page_address(p);
+diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
+index 5f961c4..16ba671 100644
+--- a/arch/powerpc/platforms/cell/ras.c
++++ b/arch/powerpc/platforms/cell/ras.c
+@@ -122,7 +122,7 @@ static int __init cbe_ptcal_enable_on_node(int nid, int order)
+ 
+ 	area->nid = nid;
+ 	area->order = order;
+-	area->pages = alloc_pages_node(area->nid, GFP_KERNEL, area->order);
++	area->pages = alloc_pages_exact_node(area->nid, GFP_KERNEL, area->order);
+ 
+ 	if (!area->pages)
+ 		goto out_free_area;
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index c6997c0..eaa149f 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1258,7 +1258,7 @@ static struct vmcs *alloc_vmcs_cpu(int cpu)
+ 	struct page *pages;
+ 	struct vmcs *vmcs;
+ 
+-	pages = alloc_pages_node(node, GFP_KERNEL, vmcs_config.order);
++	pages = alloc_pages_exact_node(node, GFP_KERNEL, vmcs_config.order);
+ 	if (!pages)
+ 		return NULL;
+ 	vmcs = page_address(pages);
+diff --git a/drivers/misc/sgi-gru/grufile.c b/drivers/misc/sgi-gru/grufile.c
+index 9ba90f3..796ac70 100644
+--- a/drivers/misc/sgi-gru/grufile.c
++++ b/drivers/misc/sgi-gru/grufile.c
+@@ -306,7 +306,7 @@ static int gru_init_tables(unsigned long gru_base_paddr, void *gru_base_vaddr)
+ 		pnode = uv_node_to_pnode(nid);
+ 		if (bid < 0 || gru_base[bid])
+ 			continue;
+-		page = alloc_pages_node(nid, GFP_KERNEL, order);
++		page = alloc_pages_exact_node(nid, GFP_KERNEL, order);
+ 		if (!page)
+ 			goto fail;
+ 		gru_base[bid] = page_address(page);
+diff --git a/drivers/misc/sgi-xp/xpc_uv.c b/drivers/misc/sgi-xp/xpc_uv.c
+index 9172fcd..c76677a 100644
+--- a/drivers/misc/sgi-xp/xpc_uv.c
++++ b/drivers/misc/sgi-xp/xpc_uv.c
+@@ -232,7 +232,7 @@ xpc_create_gru_mq_uv(unsigned int mq_size, int cpu, char *irq_name,
+ 	mq->mmr_blade = uv_cpu_to_blade_id(cpu);
+ 
+ 	nid = cpu_to_node(cpu);
+-	page = alloc_pages_node(nid, GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
++	page = alloc_pages_exact_node(nid, GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
+ 				pg_order);
+ 	if (page == NULL) {
+ 		dev_err(xpc_part, "xpc_create_gru_mq_uv() failed to alloc %d "
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 760f6c0..c7429b8 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -5,6 +5,7 @@
+ #include <linux/stddef.h>
+ #include <linux/linkage.h>
+ #include <linux/topology.h>
++#include <linux/mmdebug.h>
+ 
+ struct vm_area_struct;
+ 
+@@ -189,6 +190,14 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+ 	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
+ }
+ 
++static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
++						unsigned int order)
++{
++	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
++
++	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
++}
++
+ #ifdef CONFIG_NUMA
+ extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
+ 
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 9c916e4..2d86bc8 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -7,7 +7,6 @@
+ 
+ #include <linux/gfp.h>
+ #include <linux/list.h>
+-#include <linux/mmdebug.h>
+ #include <linux/mmzone.h>
+ #include <linux/rbtree.h>
+ #include <linux/prio_tree.h>
+diff --git a/kernel/profile.c b/kernel/profile.c
+index 7724e04..62e08db 100644
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -371,7 +371,7 @@ static int __cpuinit profile_cpu_callback(struct notifier_block *info,
+ 		node = cpu_to_node(cpu);
+ 		per_cpu(cpu_profile_flip, cpu) = 0;
+ 		if (!per_cpu(cpu_profile_hits, cpu)[1]) {
+-			page = alloc_pages_node(node,
++			page = alloc_pages_exact_node(node,
+ 					GFP_KERNEL | __GFP_ZERO,
+ 					0);
+ 			if (!page)
+@@ -379,7 +379,7 @@ static int __cpuinit profile_cpu_callback(struct notifier_block *info,
+ 			per_cpu(cpu_profile_hits, cpu)[1] = page_address(page);
+ 		}
+ 		if (!per_cpu(cpu_profile_hits, cpu)[0]) {
+-			page = alloc_pages_node(node,
++			page = alloc_pages_exact_node(node,
+ 					GFP_KERNEL | __GFP_ZERO,
+ 					0);
+ 			if (!page)
+@@ -570,14 +570,14 @@ static int create_hash_tables(void)
+ 		int node = cpu_to_node(cpu);
+ 		struct page *page;
+ 
+-		page = alloc_pages_node(node,
++		page = alloc_pages_exact_node(node,
+ 				GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
+ 				0);
+ 		if (!page)
+ 			goto out_cleanup;
+ 		per_cpu(cpu_profile_hits, cpu)[1]
+ 				= (struct profile_hit *)page_address(page);
+-		page = alloc_pages_node(node,
++		page = alloc_pages_exact_node(node,
+ 				GFP_KERNEL | __GFP_ZERO | GFP_THISNODE,
+ 				0);
+ 		if (!page)
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 5256582..0ad1eb1 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -521,7 +521,7 @@ struct page *__page_cache_alloc(gfp_t gfp)
+ {
+ 	if (cpuset_do_page_mem_spread()) {
+ 		int n = cpuset_mem_spread_node();
+-		return alloc_pages_node(n, gfp, 0);
++		return alloc_pages_exact_node(n, gfp, 0);
+ 	}
+ 	return alloc_pages(gfp, 0);
+ }
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28c655b..1234486 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -630,7 +630,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+ 	if (h->order >= MAX_ORDER)
+ 		return NULL;
+ 
+-	page = alloc_pages_node(nid,
++	page = alloc_pages_exact_node(nid,
+ 		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|
+ 						__GFP_REPEAT|__GFP_NOWARN,
+ 		huge_page_order(h));
+@@ -649,7 +649,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+  * Use a helper variable to find the next node and then
+  * copy it back to hugetlb_next_nid afterwards:
+  * otherwise there's a window in which a racer might
+- * pass invalid nid MAX_NUMNODES to alloc_pages_node.
++ * pass invalid nid MAX_NUMNODES to alloc_pages_exact_node.
+  * But we don't need to use a spin_lock here: it really
+  * doesn't matter if occasionally a racer chooses the
+  * same nid as we do.  Move nid forward in the mask even
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 8a5d2b8..c32bc15 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -796,7 +796,7 @@ static void migrate_page_add(struct page *page, struct list_head *pagelist,
+ 
+ static struct page *new_node_page(struct page *page, unsigned long node, int **x)
+ {
+-	return alloc_pages_node(node, GFP_HIGHUSER_MOVABLE, 0);
++	return alloc_pages_exact_node(node, GFP_HIGHUSER_MOVABLE, 0);
+ }
+ 
+ /*
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 068655d..5a24923 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -802,7 +802,7 @@ static struct page *new_page_node(struct page *p, unsigned long private,
+ 
+ 	*result = &pm->status;
+ 
+-	return alloc_pages_node(pm->node,
++	return alloc_pages_exact_node(pm->node,
+ 				GFP_HIGHUSER_MOVABLE | GFP_THISNODE, 0);
+ }
+ 
+diff --git a/mm/slab.c b/mm/slab.c
+index 3da2640..1c680e8 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1699,7 +1699,7 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+ 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
+ 		flags |= __GFP_RECLAIMABLE;
+ 
+-	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
++	page = alloc_pages_exact_node(nodeid, flags, cachep->gfporder);
+ 	if (!page)
+ 		return NULL;
+ 
+@@ -3254,7 +3254,7 @@ retry:
+ 		if (local_flags & __GFP_WAIT)
+ 			local_irq_enable();
+ 		kmem_flagcheck(cache, flags);
+-		obj = kmem_getpages(cache, local_flags, -1);
++		obj = kmem_getpages(cache, local_flags, numa_node_id());
+ 		if (local_flags & __GFP_WAIT)
+ 			local_irq_disable();
+ 		if (obj) {
+diff --git a/mm/slob.c b/mm/slob.c
+index 3e7acbc..ffeb218 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -46,7 +46,7 @@
+  * NUMA support in SLOB is fairly simplistic, pushing most of the real
+  * logic down to the page allocator, and simply doing the node accounting
+  * on the upper levels. In the event that a node id is explicitly
+- * provided, alloc_pages_node() with the specified node id is used
++ * provided, alloc_pages_exact_node() with the specified node id is used
+  * instead. The common case (or when the node id isn't explicitly provided)
+  * will default to the current node, as per numa_node_id().
+  *
+@@ -243,7 +243,7 @@ static void *slob_new_pages(gfp_t gfp, int order, int node)
+ 
+ #ifdef CONFIG_NUMA
+ 	if (node != -1)
+-		page = alloc_pages_node(node, gfp, order);
++		page = alloc_pages_exact_node(node, gfp, order);
+ 	else
+ #endif
+ 		page = alloc_pages(gfp, order);
+-- 
+1.5.6.5
 
