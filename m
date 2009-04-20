@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZDTJGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbZDTJHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZDTJGH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDTJFk
+	id S1754427AbZDTJHd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 05:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZDTJHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:05:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40160 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754598AbZDTJFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:05:38 -0400
-Message-ID: <49EC3AD6.3090905@redhat.com>
-Date: Mon, 20 Apr 2009 12:05:26 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add MCE support to KVM
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com>
-In-Reply-To: <49EC3987.2040001@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 20 Apr 2009 05:07:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43766 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751285AbZDTJHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 05:07:22 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+65FNVx/G6WLV6i+T2YCNh3pI4cDiQxDze3v7huO
+	4MLsTsu03xmqwO
+Subject: Re: [PATCH] Add ext3 data=guarded mode
+From: Mike Galbraith <efault@gmx.de>
+To: Amit Shah <amit.shah@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+In-Reply-To: <20090419062448.GA13272@amit-x200.pnq.redhat.com>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
+	 <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
+	 <1239910921.21233.98.camel@think.oraclecorp.com>
+	 <20090417180906.GA8363@amit-x200.pnq.redhat.com>
+	 <20090417201342.GF26479@mit.edu>
+	 <20090418060312.GA10943@amit-x200.pnq.redhat.com>
+	 <1240039701.6298.12.camel@marge.simson.net>
+	 <20090419062448.GA13272@amit-x200.pnq.redhat.com>
+Content-Type: text/plain
+Date: Mon, 20 Apr 2009 11:07:17 +0200
+Message-Id: <1240218437.7005.27.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
-> On 04/20/09 10:26, Avi Kivity wrote:
->> Gerd Hoffmann wrote:
->>> The xen pv-on-hvm drivers use an msr to indicate "please place the
->>> hypercall page here". Handling that in kernel isn't an option IMHO.
->>
->> The contents of the hypercall page are vendor specific. This can be
->> handled from userspace (though ideally we'd abstract the cpu vendor
->> away).
->
-> Well, xenner doesn't do vmcalls, so the page isn't vendor specific.  
+On Sun, 2009-04-19 at 11:54 +0530, Amit Shah wrote:
+> On (Sat) Apr 18 2009 [09:28:21], Mike Galbraith wrote:
 
-Well, for true pv (not pv-on-hvm) it wouldn't use the MSR, would it?
+> > Probably because you're swapping heavily, and that is perturbing your
+> 
+> The variance only affects the 4k test; the other times more or less
+> remain the same.
 
-> It looks different for 32bit / 64bit guests though.  And it actually 
-> can be multiple pages (with one msr write per page).  So the interface 
-> for in-kernel handling would be more complex than "here is a hypercall 
-> page for you".
+My box disagrees.
 
-To different MSRs, or multiple writes to the same MSR?
+(bumps ulimits to test 4BG... OS+swap live on sdb btw)
 
->
-> > The Hyper-V hypercall page is more problematic, as it's specified to 
-> > be an overlay; the page doesn't have to exist in guest RAM.
->
-> In userspace it should be easy to handle though as qemu can just 
-> create a new memory slot, right?
+./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=foo,acl,user_xattr
 
-It depends if the MSR may be considered global, or is required to be 
-per-cpu.  Need to refresh my memory on this, but I remember reading this 
-and saying 'yuck'.
+foo=guarded
+4k   225  141   80  142  361
+8k    74   96  362   78   84
+mm    55   57   57   57   57
 
--- 
-error compiling committee.c: too many arguments to function
+foo=writeback
+4k   179  264  187  125   93
+8k    94  161   73  334   84
+mm    57   58   57   56   57
+
+foo=ordered
+4k    81   74   76   80   75
+8k    77   76  224   79   79 
+mm    59   56   60   58   59
+
+foo=journal
+4k    95  297   69   83  420
+8k    73  139  158   80   78
+mm    57   58   56   59   56
+
+./test-file-zero-alloc-speed 2 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=foo,acl,user_xattr
+
+foo=guarded
+4k    28   27   27   28   28
+8k    28   27   27   28   27
+
+foo=writeback
+4k    27   27   27   27   27
+8k    28   28   27   27   28
+
+All journal modes seem subject to bad throughput under heavy pressure,
+though data=ordered seems much less likely to suffer for some reason.
+Major difference _seems_ to be that write()+largefile induces very much
+swap activity.
+
+	-Mike
 
