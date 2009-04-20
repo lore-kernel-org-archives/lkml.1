@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZDTBUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbZDTBU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbZDTBUb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 21:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZDTBUO
+	id S1753401AbZDTBU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 21:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZDTBUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 21:20:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58451 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbZDTBUM (ORCPT
+	Sun, 19 Apr 2009 21:20:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49902 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053AbZDTBUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 21:20:12 -0400
-Message-ID: <49EBCDB0.7000505@jp.fujitsu.com>
-Date: Mon, 20 Apr 2009 10:19:44 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sun, 19 Apr 2009 21:20:48 -0400
+Message-ID: <49EBCDC0.1020001@zytor.com>
+Date: Sun, 19 Apr 2009 18:20:00 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [RESEND][PATCH -tip 0/3] x86, mce: re-implement options for corrected
- errors
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Roland Dreier <rdreier@cisco.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Hitoshi Mitake <h.mitake@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>	<adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu> <adaws9gywkd.fsf@cisco.com>
+In-Reply-To: <adaws9gywkd.fsf@cisco.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> > * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
-> > 
->> >> Hi Ingo,
->> >>
->> >> Sorry, could you drop patch 1/3 and 3/3 from your -tip tree? Andi 
->> >> and I discussed some and agreed disabling CMCI need to be done in 
->> >> different way (at least parameter name).
-> > 
-> > Could you please send a patch that changes the parameter name?
+Roland Dreier wrote:
+> 
+> Notice that it reads from addr+4 *before* it reads from addr, rather
+> than after as in your example (and in fact your example depends on
+> undefined compiler semantics, since there is no sequence point between
+> the two operands of the | operator).  Now, I don't know that hardware,
+> so I don't know if it makes a difference, but the niu example I gave in
+> my original email shows that given hardware with clear-on-read
+> registers, the order does very much matter.
+> 
 
-I'm going to post three patches from now, heading two for revert
-and last one for re-implement.
+At least for x86, the order should be low-high, because that is the
+order that those two transactions would be seen on a 32-bit bus
+downstream from the CPU if the CPU issued a 64-bit transaction.
 
+The only sane way to handle this as something other than per-driver
+hacks would be something like:
 
-Thanks,
-H.Seto
+#include <linux/io64.h>		/* Any 64-bit I/O OK */
 
+#include <linux/io64lh.h>	/* Low-high splitting OK */
+
+#include <linux/io64hl.h>	/* High-low splitting OK */
+
+#include <linux/io64atomic.h>	/* 64-bit I/O must be atomic */
+
+... i.e. letting the driver choose what fallback method it will accept.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
