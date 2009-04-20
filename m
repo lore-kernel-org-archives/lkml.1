@@ -1,178 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbZDTUXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZDTU0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbZDTUXg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbZDTUXQ
+	id S1756938AbZDTU0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZDTU0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:23:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47744 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756369AbZDTUXO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:23:14 -0400
-Date: Mon, 20 Apr 2009 13:21:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: vaka@newmail.ru
-Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: Include in a kernel a patch for tuner support AverMedia Studio
- 505
-Message-Id: <20090420132112.d5f5b30e.akpm@linux-foundation.org>
-In-Reply-To: <op.usg239qgd7v8y6@vaka>
-References: <op.usg239qgd7v8y6@vaka>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 16:26:09 -0400
+Received: from cmpxchg.org ([85.214.51.133]:47560 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753924AbZDTU0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 16:26:08 -0400
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Rik van Riel <riel@redhat.com>, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 3/3][rfc] vmscan: batched swap slot allocation
+Date: Mon, 20 Apr 2009 22:24:45 +0200
+Message-Id: <1240259085-25872-3-git-send-email-hannes@cmpxchg.org>
+X-Mailer: git-send-email 1.6.2.1.135.gde769
+In-Reply-To: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
+References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 13:25:11 +0400
-vaka@newmail.ru wrote:
+Every swap slot allocation tries to be subsequent to the previous one
+to help keeping the LRU order of anon pages intact when they are
+swapped out.
 
-> I have written a patch for the tuner AverMedia Studio 505 that it was  
-> correctly defined.
-> I hope that you include this patch in a kernel
-> This patch for a kernel 2.6.29.1
+With an increasing number of concurrent reclaimers, the average
+distance between two subsequent slot allocations of one reclaimer
+increases as well.  The contiguous LRU list chunks each reclaimer
+swaps out get 'multiplexed' on the swap space as they allocate the
+slots concurrently.
 
-Thanks.
+	2 processes isolating 15 pages each and allocating swap slots
+	concurrently:
 
-Please cc the appropriate mailing list (linux-media@vger.kernel.org)
-and if possible maintainer(s) on kernel patches.
+	#0			#1
 
-I changed the card's number frmo 155 to 158 while integrating the patch
-onto the linux-next tree.
+	page 0 slot 0		page 15 slot 1
+	page 1 slot 2		page 16 slot 3
+	page 2 slot 4		page 17 slot 5
+	...
 
-Please send us a Signed-off-by: for this patch, as per
-Documetation/SubmittingPatches.
+	-> average slot distance of 2
 
+All reclaimers being equally fast, this becomes a problem when the
+total number of concurrent reclaimers gets so high that even equal
+distribution makes the average distance between the slots of one
+reclaimer too wide for optimistic swap-in to compensate.
 
+But right now, one reclaimer can take much longer than another one
+because its pages are mapped into more page tables and it has thus
+more work to do and the faster reclaimer will allocate multiple swap
+slots between two slot allocations of the slower one.
 
-From: Vasiliy Temnikov <vaka@newmail.ru>
+This patch makes shrink_page_list() allocate swap slots in batches,
+collecting all the anonymous memory pages in a list without
+rescheduling and actual reclaim in between.  And only after all anon
+pages are swap cached, unmap and write-out starts for them.
 
-Add tuner support AverMedia AverTV Studio 505.
+While this does not fix the fundamental issue of slot distribution
+increasing with reclaimers, it mitigates the problem by balancing the
+resulting fragmentation equally between the allocators.
 
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Hermann Pitton <hermann-pitton@arcor.de>
-Cc: Michael Krufky <mkrufky@linuxtv.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>
 ---
+ mm/vmscan.c |   49 +++++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 41 insertions(+), 8 deletions(-)
 
- Documentation/video4linux/CARDLIST.saa7134  |    1 
- drivers/media/video/saa7134/saa7134-cards.c |   43 ++++++++++++++++++
- drivers/media/video/saa7134/saa7134-input.c |    1 
- drivers/media/video/saa7134/saa7134-video.c |    2 
- drivers/media/video/saa7134/saa7134.h       |    1 
- 5 files changed, 47 insertions(+), 1 deletion(-)
-
-diff -puN Documentation/video4linux/CARDLIST.saa7134~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505 Documentation/video4linux/CARDLIST.saa7134
---- a/Documentation/video4linux/CARDLIST.saa7134~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505
-+++ a/Documentation/video4linux/CARDLIST.saa7134
-@@ -156,3 +156,4 @@
- 155 -> Hauppauge WinTV-HVR1120 ATSC/QAM-Hybrid  [0070:6706,0070:6708]
- 156 -> Hauppauge WinTV-HVR1110r3                [0070:6707,0070:6709,0070:670a]
- 157 -> Avermedia AVerTV Studio 507UA            [1461:a11b]
-+158 -> AverMedia AverTV Studio 505              [1461:a115]
-diff -puN drivers/media/video/saa7134/saa7134-cards.c~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505 drivers/media/video/saa7134/saa7134-cards.c
---- a/drivers/media/video/saa7134/saa7134-cards.c~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505
-+++ a/drivers/media/video/saa7134/saa7134-cards.c
-@@ -1364,6 +1364,42 @@ struct saa7134_board saa7134_boards[] = 
- 			.amux = LINE1,
- 		},
- 	},
-+	[SAA7134_BOARD_AVERMEDIA_STUDIO_505] = {
-+		/* Vasiliy Temnikov <vaka@newmail.ru> */
-+		.name           = "AverMedia AverTV Studio 505",
-+		.audio_clock    = 0x00187de7,
-+		.tuner_type     = TUNER_PHILIPS_FM1216ME_MK3,
-+		.radio_type     = UNSET,
-+		.tuner_addr	= ADDR_UNSET,
-+		.radio_addr	= ADDR_UNSET,
-+		.tda9887_conf   = TDA9887_PRESENT,
-+		.inputs         = {{
-+			.name = name_tv,
-+			.vmux = 1,
-+			.amux = LINE2,
-+			.tv   = 1,
-+		},{
-+			.name = name_comp1,
-+			.vmux = 0,
-+			.amux = LINE2,
-+		},{
-+			.name = name_comp2,
-+			.vmux = 3,
-+			.amux = LINE2,
-+		},{
-+			.name = name_svideo,
-+			.vmux = 8,
-+			.amux = LINE2,
-+		}},
-+		.radio = {
-+			.name = name_radio,
-+			.amux = LINE2,
-+		},
-+		.mute = {
-+			.name = name_mute,
-+			.amux = LINE1,
-+		},
-+	},
- 	[SAA7134_BOARD_UPMOST_PURPLE_TV] = {
- 		.name           = "UPMOST PURPLE TV",
- 		.audio_clock    = 0x00187de7,
-@@ -5049,6 +5085,12 @@ struct pci_device_id saa7134_pci_tbl[] =
- 		.vendor       = PCI_VENDOR_ID_PHILIPS,
- 		.device       = PCI_DEVICE_ID_PHILIPS_SAA7130,
- 		.subvendor    = 0x1461, /* Avermedia Technologies Inc */
-+		.subdevice    = 0xa115,
-+		.driver_data  = SAA7134_BOARD_AVERMEDIA_STUDIO_505,
-+	},{
-+		.vendor       = PCI_VENDOR_ID_PHILIPS,
-+		.device       = PCI_DEVICE_ID_PHILIPS_SAA7130,
-+		.subvendor    = 0x1461, /* Avermedia Technologies Inc */
- 		.subdevice    = 0x2108,
- 		.driver_data  = SAA7134_BOARD_AVERMEDIA_305,
- 	},{
-@@ -6144,6 +6186,7 @@ int saa7134_board_init1(struct saa7134_d
- 	case SAA7134_BOARD_KWORLD_VSTREAM_XPERT:
- 	case SAA7134_BOARD_KWORLD_XPERT:
- 	case SAA7134_BOARD_AVERMEDIA_STUDIO_305:
-+	case SAA7134_BOARD_AVERMEDIA_STUDIO_505:
- 	case SAA7134_BOARD_AVERMEDIA_305:
- 	case SAA7134_BOARD_AVERMEDIA_STUDIO_307:
- 	case SAA7134_BOARD_AVERMEDIA_307:
-diff -puN drivers/media/video/saa7134/saa7134-input.c~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505 drivers/media/video/saa7134/saa7134-input.c
---- a/drivers/media/video/saa7134/saa7134-input.c~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505
-+++ a/drivers/media/video/saa7134/saa7134-input.c
-@@ -445,6 +445,7 @@ int saa7134_input_init1(struct saa7134_d
- 	case SAA7134_BOARD_AVERMEDIA_305:
- 	case SAA7134_BOARD_AVERMEDIA_307:
- 	case SAA7134_BOARD_AVERMEDIA_STUDIO_305:
-+	case SAA7134_BOARD_AVERMEDIA_STUDIO_505:
- 	case SAA7134_BOARD_AVERMEDIA_STUDIO_307:
- 	case SAA7134_BOARD_AVERMEDIA_STUDIO_507:
- 	case SAA7134_BOARD_AVERMEDIA_STUDIO_507UA:
-diff -puN drivers/media/video/saa7134/saa7134-video.c~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505 drivers/media/video/saa7134/saa7134-video.c
---- a/drivers/media/video/saa7134/saa7134-video.c~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505
-+++ a/drivers/media/video/saa7134/saa7134-video.c
-@@ -39,7 +39,7 @@ static unsigned int gbuffers      = 8;
- static unsigned int noninterlaced; /* 0 */
- static unsigned int gbufsize      = 720*576*4;
- static unsigned int gbufsize_max  = 720*576*4;
--static char secam[] = "--";
-+static char secam[] = "dk";
- module_param(video_debug, int, 0644);
- MODULE_PARM_DESC(video_debug,"enable debug messages [video]");
- module_param(gbuffers, int, 0444);
-diff -puN drivers/media/video/saa7134/saa7134.h~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505 drivers/media/video/saa7134/saa7134.h
---- a/drivers/media/video/saa7134/saa7134.h~drivers-media-video-saa7134-add-tuner-support-for-avermedia-studio-505
-+++ a/drivers/media/video/saa7134/saa7134.h
-@@ -159,6 +159,7 @@ struct saa7134_format {
- #define SAA7134_BOARD_AVERMEDIA_DVD_EZMAKER 33
- #define SAA7134_BOARD_NOVAC_PRIMETV7133 34
- #define SAA7134_BOARD_AVERMEDIA_STUDIO_305 35
-+#define SAA7134_BOARD_AVERMEDIA_STUDIO_505 158
- #define SAA7134_BOARD_UPMOST_PURPLE_TV 36
- #define SAA7134_BOARD_ITEMS_MTV005     37
- #define SAA7134_BOARD_CINERGY200       38
-_
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 70092fa..b3823fe 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -592,24 +592,42 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 					enum pageout_io sync_writeback)
+ {
+ 	LIST_HEAD(ret_pages);
++	LIST_HEAD(swap_pages);
+ 	struct pagevec freed_pvec;
+-	int pgactivate = 0;
++	int pgactivate = 0, restart = 0;
+ 	unsigned long nr_reclaimed = 0;
+ 
+ 	cond_resched();
+ 
+ 	pagevec_init(&freed_pvec, 1);
++restart:
+ 	while (!list_empty(page_list)) {
+ 		struct address_space *mapping;
+ 		struct page *page;
+ 		int may_enter_fs;
+ 		int referenced;
+ 
+-		cond_resched();
++		if (list_empty(&swap_pages))
++			cond_resched();
+ 
+ 		page = lru_to_page(page_list);
+ 		list_del(&page->lru);
+ 
++		if (restart) {
++			/*
++			 * We are allowed to do IO when we restart for
++			 * swap pages.
++			 */
++			may_enter_fs = 1;
++			/*
++			 * Referenced pages will be sorted out by
++			 * try_to_unmap() and unmapped (anon!) pages
++			 * are not to be referenced anymore.
++			 */
++			referenced = 0;
++			goto reclaim;
++		}
++
+ 		if (!trylock_page(page))
+ 			goto keep;
+ 
+@@ -655,14 +673,24 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		 * Anonymous process memory has backing store?
+ 		 * Try to allocate it some swap space here.
+ 		 */
+-		if (PageAnon(page) && !PageSwapCache(page)) {
+-			if (!(sc->gfp_mask & __GFP_IO))
+-				goto keep_locked;
+-			if (!add_to_swap(page))
+-				goto activate_locked;
+-			may_enter_fs = 1;
++		if (PageAnon(page)) {
++			if (!PageSwapCache(page)) {
++				if (!(sc->gfp_mask & __GFP_IO))
++					goto keep_locked;
++				if (!add_to_swap(page))
++					goto activate_locked;
++			} else if (!may_enter_fs)
++				/*
++				 * It's no use to batch when we are
++				 * not allocating swap for this GFP
++				 * mask.
++				 */
++				goto reclaim;
++			list_add(&page->lru, &swap_pages);
++			continue;
+ 		}
+ 
++	reclaim:
+ 		mapping = page_mapping(page);
+ 
+ 		/*
+@@ -794,6 +822,11 @@ keep:
+ 		list_add(&page->lru, &ret_pages);
+ 		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
+ 	}
++	if (!list_empty(&swap_pages)) {
++		list_splice_init(&swap_pages, page_list);
++		restart = 1;
++		goto restart;
++	}
+ 	list_splice(&ret_pages, page_list);
+ 	if (pagevec_count(&freed_pvec))
+ 		__pagevec_free(&freed_pvec);
+-- 
+1.6.2.1.135.gde769
 
