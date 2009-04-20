@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZDTHbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbZDTHlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753093AbZDTHbV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZDTHbL
+	id S1752270AbZDTHlX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZDTHlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:31:11 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47292 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270AbZDTHbK (ORCPT
+	Mon, 20 Apr 2009 03:41:14 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:44592 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189AbZDTHlN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:31:10 -0400
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RESEND][PATCH -tip 3/3] x86, mce: Add new option mce=no_cmci and mce=ignore_ce
-From: Andi Kleen <andi@firstfloor.org>
-References: <49EBCDB0.7000505@jp.fujitsu.com>
-	<49EBCF87.4090608@jp.fujitsu.com>
-Date: Mon, 20 Apr 2009 09:31:08 +0200
-In-Reply-To: <49EBCF87.4090608@jp.fujitsu.com> (Hidetoshi Seto's message of "Mon, 20 Apr 2009 10:27:35 +0900")
-Message-ID: <87myabpyrn.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 20 Apr 2009 03:41:13 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: who know's what is "TestFloat cases" and how to test this feature onthe Freescale MPC8536DS board
+Date: Mon, 20 Apr 2009 15:41:02 +0800
+Message-ID: <0A1FE637C2C7E148B9573BB60CC630E520FC0A@zch01exm26.fsl.freescale.net>
+In-Reply-To: <003001c9c0d0$c6919510$53b4bf30$@com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: who know's what is "TestFloat cases" and how to test this feature onthe Freescale MPC8536DS board
+Thread-Index: Acm/6Z7XMofHg6L2RD2WTrMRLYv+lAA1VE+wADLzD8A=
+References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com><fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com> <003001c9c0d0$c6919510$53b4bf30$@com>
+From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
+To: "derekzheng" <zhengxiang9@163.com>,
+       "linuxppc-dev" <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
 
-> This patch introduces a couple of boot option for x86_64 mce.
->
-> The "mce=no_cmci" boot option disables cmci feature.
-> Since cmci is a new feature so having boot controls to disable
-> it will be a help if the hardware is misbehaving.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b13201=freescale.com@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+b13201=freescale.com@ozlabs.org] 
+> On Behalf Of derekzheng
+> Sent: Sunday, April 19, 2009 5:25 PM
+> To: 'linuxppc-dev'; microblaze-uclinux@itee.uq.edu.au; 
+> linux-kernel@vger.kernel.org
+> Subject: who know's what is "TestFloat cases" and how to test 
+> this feature onthe Freescale MPC8536DS board
+> 
+> Hi all guys:
+> 
+> The Freescale MPC8536DS board Integrated TestFloat cases, and 
+> I do not know how to test this feature on this board.
+> Please tell me how to test it if you known
+> 
 
-Acked-by: Andi Kleen <ak@linux.intel.com>
-
-Although I expect on Nehalem you'll get more problems without CMCI
-than with due to the shared banks. Perhaps the documentation
-should make that clearer.
-
->
-> The "mce=ignore_ce" boot option disables features for corrected
-> errors, i.e. polling timer and cmci.  Usually this disablement
-> is not recommended, however it will be a help if there are some
-> conflict with the BIOS or hardware monitoring applications etc.
-
-Same problem as with the earlier patch.  You need a point
-somewhere where the event is cleared, otherwise all hell
-breaks loose.
-
->  static int mce_dont_init;
-> +int cmci_disabled;
-> +int ignore_ce;
-
-For global variables you should use a mce_ prefix to not pollute
-global name space.
-
-> diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-> index d6b72df..64c0dd9 100644
-> --- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-> +++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-> @@ -109,6 +109,9 @@ static int cmci_supported(int *banks)
->  {
->  	u64 cap;
->  
-> +	if (cmci_disabled | ignore_ce)
-
-I presume you meant || here
-
--Amndi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+You can find the user manual "E500v2 SPE Floating Point" in BSP iso.
