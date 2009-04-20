@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbZDTAgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751534AbZDTAkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752085AbZDTAgn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 20:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZDTAge
+	id S1751534AbZDTAkO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 20:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZDTAj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 20:36:34 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59390 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbZDTAgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 20:36:33 -0400
-Message-ID: <49EBC3BF.50404@cn.fujitsu.com>
-Date: Mon, 20 Apr 2009 08:37:19 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Sun, 19 Apr 2009 20:39:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38938 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750960AbZDTAj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 20:39:58 -0400
+Date: Mon, 20 Apr 2009 02:38:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] tracing/core: Add current context on tracing recursion
- warning
-References: <1240117295-6873-1-git-send-email-fweisbec@gmail.com> <49EAC15E.7080702@cn.fujitsu.com> <20090419123430.GA5967@nowhere> <20090419134927.GA6262@nowhere> <20090419172837.GA5992@nowhere>
-In-Reply-To: <20090419172837.GA5992@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 00/14] convert voyager over to the x86 quirks model
+Message-ID: <20090420003857.GA10438@elte.hu>
+References: <1239724300-16371-1-git-send-email-James.Bottomley@HansenPartnership.com> <20090414165722.GD2089@elte.hu> <20090414180832.GA25692@elte.hu> <49E79B1E.9090405@garzik.org> <20090419233518.GA765@elte.hu> <49EBB9D0.6060307@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EBB9D0.6060307@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Now I can reproduce it. It seems to happen when I set a filter,
 
-Right, you said filter seems to be broken, so I tried to set a filter
-and enabled the trace event, and got this warning.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-> but also on other situations:
-> 
-> Bisected back to:
-> 
-> commit 261842b7c9099f56de2eb969c8ad65402d68e00e
-> tracing: add same level recursion detection
-> 
-> It might be caused by a bug in this patch or
-> by real tracing recursions on some places.
+>> Regarding the new x86/Voyager submission: architecture or core 
+>> kernel level code always has a higher barrier of entry than 
+>> driver code for a number of good reasons:
+>
+> No, my point is that it is blatantly unfair to remove code, then 
+> reset standards for inclusion far, far higher than at which it 
+> left the tree.
+
+Oh, i'm all for including new code optimistically. (in fact i'm 
+probably a bit over-inclusive)
+
+But i'm not at all for easily re-including known problematic code 
+that has been removed. Including known problematic code under the 
+same standard as removal i'd call 'very stupid'.
+
+IMO it is a fundamentally good engineering practice to learn from 
+past experience and to learn from past mistakes and to require a 
+higher standard if an old standard failed to produce an acceptable 
+result first time around.
+
+_Especially_ so for such an extremely obsolete piece of hardware 
+with a single upstream user+developer and a dismal upstream track 
+record ... We really have to learn to say 'no' at a certain point
+...
+
+I dont care about Voyager that much - but i do care about not doing 
+stupid things intentionally in the code i (co-)maintain.
+
+Anyway, as i said it in the previous mail - in the end it's up to 
+Linus and he can override our NAK if we are wrong about it.
+
+	Ingo
