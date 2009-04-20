@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZDTVY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbZDTVYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757849AbZDTVY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbZDTVXs
+	id S1752219AbZDTVYl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbZDTVXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 20 Apr 2009 17:23:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:57579 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757716AbZDTVXs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Apr 2009 17:23:48 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:56867 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757737AbZDTVXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:23:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=f47e5EH9ocCxgyaWNi3C+HdP/F68EJgV0trQFP1/mZQRvvbf0wlISxyIpnL9zGOdYt
+         FEjFarijYu1kWqvcAWG/fIlPhpddlNnQObH6wX8/eJhc7tBh4wSNNMuDC4ZpC6q/Yiwz
+         Sx5SbXtwWZdiaOMUvNTjtYnCrK3HTrwutCV4k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18924.59347.375292.102385@cargo.ozlabs.ibm.com>
-Date: Tue, 21 Apr 2009 07:23:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
-In-Reply-To: <49ECBE0A.7010303@cosmosbay.com>
-References: <20090415170111.6e1ca264@nehalam>
-	<alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
-	<49E72E83.50702@trash.net>
-	<20090416.153354.170676392.davem@davemloft.net>
-	<20090416234955.GL6924@linux.vnet.ibm.com>
-	<20090417012812.GA25534@linux.vnet.ibm.com>
-	<20090418094001.GA2369@ioremap.net>
-	<20090418141455.GA7082@linux.vnet.ibm.com>
-	<20090420103414.1b4c490f@nehalam>
-	<49ECBE0A.7010303@cosmosbay.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+In-Reply-To: <20090420084747.GA7286@alberich.amd.com>
+References: <20090417100155.GE16198@alberich.amd.com>
+	 <20090417162115.GF8253@elte.hu>
+	 <86802c440904171226g520e3b67h7318ff0f80f1e782@mail.gmail.com>
+	 <20090420084747.GA7286@alberich.amd.com>
+Date: Mon, 20 Apr 2009 14:23:47 -0700
+Message-ID: <86802c440904201423y7d1290e5m5b0e2529f3a81fc3@mail.gmail.com>
+Subject: Re: [PATCH] pci: derive nearby CPUs from device's instead of bus' 
+	NUMA information
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet writes:
+On Mon, Apr 20, 2009 at 1:47 AM, Andreas Herrmann
+<andreas.herrmann3@amd.com> wrote:
+> On Fri, Apr 17, 2009 at 12:26:54PM -0700, Yinghai Lu wrote:
+>> On Fri, Apr 17, 2009 at 9:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> > const struct cpumask * cpumask_of_pcidev(struct pci_dev *dev)
+>> > {
+>> >        if (dev->numa_node == -1)
+>> >                return cpumask_of_pcibus(to_pci_dev(dev)->bus);
+>> >
+>> >        return cpumask_of_node(dev_to_node(dev));
+>> > }
+>> >
+>> > ? This would work fine in all cases.
+>
+> Yes, I think so. That's the general solution w/o additional
+> "ifdefing".
+>
+>> you are right, dev_to_node(dev) could return -1 on 64bit, if there is
+>> no memory on that node.
+>
+> Hmm, I thought just in the CONFIG_NUMA=n case -1 is returned.
+>
+> During initialization the struct device's numa_node is set to -1 and
+> later on the information is inherited from the parent numa_node.
+>
+parent numa_node could be -1 too.
 
-> OK, but we still have a problem on machines with >= 250 cpus,
-> because calling 250 times spin_lock() is going to overflow preempt_count,
-> as each spin_lock() increases preempt_count by one.
+in amd_bus.c
+int get_mp_bus_to_node(int busnum)
+{
+        int node = -1;
 
-Huh?  Each cpu has its own separate preempt_count.
+        if (busnum < 0 || busnum > (BUS_NR - 1))
+                return node;
 
-Paul.
+        node = mp_bus_to_node[busnum];
+
+        /*
+         * let numa_node_id to decide it later in dma_alloc_pages
+         * if there is no ram on that node
+         */
+        if (node != -1 && !node_online(node))
+                node = -1;
+
+        return node;
+}
+
+
+YH
