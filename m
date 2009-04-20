@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZDTIho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZDTIkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbZDTIho (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 04:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZDTIh3
+	id S1753963AbZDTIkH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 04:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZDTIjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 04:37:29 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46589 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753809AbZDTIh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 04:37:28 -0400
-Date: Mon, 20 Apr 2009 09:35:23 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Nigel Cunningham <ncunningham-lkml@crca.org.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH] PM/Suspend: Introduce two new platform callbacks to
-	avoid breakage (Re: 900af0d breaks some embedded suspend/resume)
-Message-ID: <20090420083523.GB16002@flint.arm.linux.org.uk>
-References: <20090417231009.GB6900@flint.arm.linux.org.uk> <200904181626.10388.rjw@sisk.pl> <20090418144132.GC7148@flint.arm.linux.org.uk> <200904182047.48009.rjw@sisk.pl> <1240183907.8867.22.camel@nigel-laptop>
+	Mon, 20 Apr 2009 04:39:55 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53282 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751913AbZDTIjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 04:39:54 -0400
+Message-ID: <49EC34C1.6010709@cn.fujitsu.com>
+Date: Mon, 20 Apr 2009 16:39:29 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240183907.8867.22.camel@nigel-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrea Righi <righi.andrea@gmail.com>
+CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] cgroup: io-throttle controller (v14)
+References: <1240090636-898-1-git-send-email-righi.andrea@gmail.com>
+In-Reply-To: <1240090636-898-1-git-send-email-righi.andrea@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 09:31:47AM +1000, Nigel Cunningham wrote:
-> >  	}
-> >  
-> > -	if (suspend_ops->prepare) {
-> > -		error = suspend_ops->prepare();
-> > +	if (suspend_ops->prepare_late) {
-> > +		error = suspend_ops->prepare_late();
-> >  		if (error)
-> >  			goto Power_up_devices;
-> >  	}
+Andrea Righi wrote:
+...
 > 
-> Doesn't this invalidate testing that's already been done? Drivers
-> implementing prepare() (arm omap1, pxa, omap2, s3c and powerpc mpc52xx
-> and lite5200) are now going to have it called pre device_power_down.
+> Implementation
+> ~~~~~~~~~~~~~~
+> Patchset against latest Linus' git:
+> 
+>   [PATCH 0/7] cgroup: block device IO controller (v14)
+>   [PATCH 1/7] io-throttle documentation
+>   [PATCH 2/7] res_counter: introduce ratelimiting attributes
+>   [PATCH 3/7] page_cgroup: provide a generic page tracking infrastructure
+>   [PATCH 4/7] io-throttle controller infrastructure
+>   [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
+>   [PATCH 6/7] io-throttle instrumentation
+>   [PATCH 7/7] export per-task io-throttle statistics to userspace
 
-... which is the way it has always been done prior to the change which
-broke stuff.  So this patch is putting the ordering back the way it was
-which has been well proven to work on these platforms.
+  Hi Andrea,
 
-So we're not invalidating any testing.
+  I'd like to have a try this patchset, would you tell what's the kernel version
+  and bio-cgroup version based on?
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Regards
+Gui Jianfeng
+
