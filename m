@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZDTChj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZDTCuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753165AbZDTChj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 22:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZDTChZ
+	id S1753316AbZDTCuN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 22:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZDTCt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 22:37:25 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:33488
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751212AbZDTChY (ORCPT
+	Sun, 19 Apr 2009 22:49:58 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:54433 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbZDTCt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 22:37:24 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AogBAOd860l8qNY8/2dsb2JhbAAIzA+DfQY
-X-IronPort-AV: E=Sophos;i="4.40,214,1238947200"; 
-   d="scan'208";a="422362264"
-Subject: [PATCH] favr32: improve touchscreen response
-From: Ben Nizette <ben@niasdigital.com>
-To: "haavard.skinnemoen" <haavard.skinnemoen@atmel.com>
-Cc: kernel <kernel@avr32linux.org>,
-       "Egtvedt, Hans-Christian" <Hans-Christian.Egtvedt@atmel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 20 Apr 2009 12:36:53 +1000
-Message-Id: <1240195013.24329.38.camel@linux-51e8.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Apr 2009 22:49:57 -0400
+Date: Mon, 20 Apr 2009 03:49:54 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT] kbuild
+Message-ID: <20090420024954.GW26366@ZenIV.linux.org.uk>
+References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org> <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain> <20090420014158.GV26366@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420014158.GV26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ezLCD+101 board (to which an favr-32 is fitted) has a long,
-unshielded, nasty lead between the touch panel and the ads7843 touch
-controller.  In order to get satisfactory response then, we need to
-employ every noise-reduction trick in the driver's arsenal.  After
-extensive fiddling I've found some good settings:
+On Mon, Apr 20, 2009 at 02:41:58AM +0100, Al Viro wrote:
+> On Sun, Apr 19, 2009 at 05:52:32PM -0700, Linus Torvalds wrote:
+> > 
+> > 
+> > On Mon, 20 Apr 2009, Sam Ravnborg wrote:
+> > > 
+> > > You will soon see a path from me where I fix sh too.
+> > 
+> > Can we do a global 'sed s:asm/asm-offsets.h:generated/asm-offsets.h:g' 
+> > thing too? And then get rid of the include/asm symlink?
+> > 
+> > That asm-offsets.h mess is scary. I don't quite know why kvm on ia64 seems 
+> > to do it's own asm-offsets.h file, for example. And arch/blackfin/Makefile 
+> > mentions arch/$(ARCH)/include/asm/asm-offsets.h (but does it actually do 
+> > one?).
+> 
+> We'll need to update uml as well (contents of shared/kern_constants.h)
 
-1) We keep vref on all the time to dramatically reduce settling times
-(at the cost of a tiny increase in power consumption).
+BTW, while we are at it...  There's a way to deal with arch/um without
+that kind of contortions, provided that we are willing to use -idirafter.
 
-2) Despite 1 the settling time is still non-zero.  500uS is plenty of
-time for the signals to settle
+For the current tree the minimal patch would be just this, and after that
+we can simply replace all kern_constants.h includes with asm/asm-offsets.h
+or generated/asm-offsets.h.  And remove kern_constants.h completely once
+that is done.
 
-3) Despite 1 and 2 there's still a little bit of noise around.  By
-setting a pen recheck delay we make the panel feel less touchy and
-twitchy.
+Moreover, once include/generated gets in, we can move user_constants.h
+over there and lose the "add -I$(SHARED_HEADERS) to ARCH_INCLUDE for
+O=... builds bit" in arch/um/Makefile as well.
 
-Someone with more time and patience myself might be able to tune this
-numbers further but these settings are now perfectly acceptable for
-normal use.
 
-Tested on ezLCD+101 though should only improve response on other ezLCD+/
-favr-32 boards too.
-
-Signed-off-by: Ben Nizette <bn@niasdigital.com>
-
----
- arch/avr32/boards/favr-32/setup.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/avr32/boards/favr-32/setup.c b/arch/avr32/boards/favr-32/setup.c
-index 58203d1..f1152fa 100644
---- a/arch/avr32/boards/favr-32/setup.c
-+++ b/arch/avr32/boards/favr-32/setup.c
-@@ -72,6 +72,10 @@ static struct ads7846_platform_data ads7843_data = {
- 	.debounce_max		= 20,
- 	.debounce_rep		= 4,
- 	.debounce_tol		= 5,
-+	
-+	.keep_vref_on		= true,
-+	.settle_delay_usecs	= 500,
-+	.penirq_recheck_delay_usecs = 100,
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index 0728def..dce2d7f 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -47,7 +47,7 @@ KBUILD_AFLAGS += $(ARCH_INCLUDE)
  
- 	/* The ads7843 pendown irq is just connected to regular
- 	 * gpio and therefore can only trigger interrupts on
--- 
-1.6.0.2
-
-
+ USER_CFLAGS = $(patsubst $(KERNEL_DEFINES),,$(patsubst -D__KERNEL__,,\
+ 	$(patsubst -I%,,$(KBUILD_CFLAGS)))) $(ARCH_INCLUDE) $(MODE_INCLUDE) \
+-	$(filter -I%,$(CFLAGS)) -D_FILE_OFFSET_BITS=64
++	$(filter -I%,$(CFLAGS)) -D_FILE_OFFSET_BITS=64 -idirafter include
+ 
+ include $(srctree)/$(ARCH_DIR)/Makefile-$(SUBARCH)
+ 
+@@ -150,6 +150,6 @@ $(SHARED_HEADERS)/user_constants.h: $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s
+ 
+ $(SHARED_HEADERS)/kern_constants.h:
+ 	$(Q)mkdir -p $(dir $@)
+-	$(Q)echo '#include "../../../../include/asm/asm-offsets.h"' >$@
++	$(Q)echo '#include <asm/asm-offsets.h>' >$@
+ 
+ export SUBARCH USER_CFLAGS CFLAGS_NO_HARDENING OS HEADER_ARCH DEV_NULL_PATH
