@@ -1,98 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbZDTViD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbZDTVjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbZDTViD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:38:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZDTVhv
+	id S1757361AbZDTVjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZDTVjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:37:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36829 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZDTVhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:37:50 -0400
-Date: Mon, 20 Apr 2009 17:37:38 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: nauman@google.com, fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
-       jmoyer@redhat.com, dm-devel@redhat.com, jens.axboe@oracle.com,
-       agk@redhat.com, balbir@linux.vnet.ibm.com,
-       Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [dm-devel] Re: dm-ioband: Test results.
-Message-ID: <20090420213738.GB9080@redhat.com>
-References: <20090416.114750.226794985.ryov@valinux.co.jp> <20090416141125.GB8896@redhat.com> <e98e18940904161324p9833457vdf699d66bb323591@mail.gmail.com> <20090420.172959.193682665.ryov@valinux.co.jp>
+	Mon, 20 Apr 2009 17:39:24 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:34100 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbZDTVjX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 17:39:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VsU0h+gAVKRkel30loJGX+OVKHyfcI0kk9vR1/u1Jjv6hCwP/dzjWT0bVQwo3kl5hI
+         PpN26PTydl+BTRJkEjhaUpg2NcKq+0g3AVWbuuosgsHCTZZmRLCp/pTW86al08GxIiS+
+         IEQNKvCQ1/iuoKAzl2Ipe4s6wXmzRNFcTeNe8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090420.172959.193682665.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <13606.1240262581@death.nxdomain.ibm.com>
+References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com>
+	 <49ECBBF0.80202@cosmosbay.com>
+	 <30257.1240252651@death.nxdomain.ibm.com>
+	 <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com>
+	 <7609.1240259780@death.nxdomain.ibm.com>
+	 <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com>
+	 <13606.1240262581@death.nxdomain.ibm.com>
+Date: Mon, 20 Apr 2009 23:39:21 +0200
+Message-ID: <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com>
+Subject: Re: bond interface arp, vlan and trunk / network question
+From: stefan novak <lms.brubaker@gmail.com>
+To: Jay Vosburgh <fubar@us.ibm.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 05:29:59PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek and Nauman,
-> 
-> > On Thu, Apr 16, 2009 at 7:11 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > On Thu, Apr 16, 2009 at 11:47:50AM +0900, Ryo Tsuruta wrote:
-> > >> Hi Vivek,
-> > >>
-> > >> > General thoughts about dm-ioband
-> > >> > ================================
-> > >> > - Implementing control at second level has the advantage tha one does not
-> > >> >   have to muck with IO scheduler code. But then it also has the
-> > >> >   disadvantage that there is no communication with IO scheduler.
-> > >> >
-> > >> > - dm-ioband is buffering bio at higher layer and then doing FIFO release
-> > >> >   of these bios. This FIFO release can lead to priority inversion problems
-> > >> >   in certain cases where RT requests are way behind BE requests or
-> > >> >   reader starvation where reader bios are getting hidden behind writer
-> > >> >   bios etc. These are hard to notice issues in user space. I guess above
-> > >> >   RT results do highlight the RT task problems. I am still working on
-> > >> >   other test cases and see if i can show the probelm.
-> > 
-> > Ryo, I could not agree more with Vivek here. At Google, we have very
-> > stringent requirement for latency of our RT requests. If RT requests
-> > get queued in any higher layer (behind BE requests), all bets are off.
-> > I don't find doing IO control at two layer for this particular reason.
-> > The upper layer (dm-ioband in this case) would have to make sure that
-> > RT requests are released immediately, irrespective of the state (FIFO
-> > queuing and tokens held). And the lower layer (IO scheduling layer)
-> > has to do the same. This requirement is not specific to us. I have
-> > seen similar comments from filesystem folks here previously, in the
-> > context of metadata updates being submitted as RT. Basically, the
-> > semantics of RT class has to be preserved by any solution that is
-> > build on top of CFQ scheduler.
-> 
-> I could see the priority inversion by running Vivek's script and I
-> understand how RT requests has to be handled. I'll create a patch
-> which makes dm-ioband cooperates with CFQ scheduler. However, do you
-> think we need some kind of limitation on processes which belong to the
-> RT class to prevent the processes from depleting bandwidth?
+ip route get 172.21.0.254
+172.21.0.254 dev bond0.600  src 172.21.0.1
+    cache  mtu 1500 advmss 1460 hoplimit 64
 
-I think to begin with, we can keep the same behavior as CFQ. An RT task
-can starve other tasks.
+ifconfig -a :
+bond0     Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
+          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
+          RX packets:62221072 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1152153 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:4037489679 (3.7 GiB)  TX bytes:124861822 (119.0 MiB)
 
-But we should provide two configurations and user can choose any one.
-If RT task is in root group, it will starve other sibling tasks/groups. If
-it is with-in a cgroup, then it will starve its sibling only with-in that
-cgroup and will not impact other cgroups.
+bond0.200 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
+          inet addr:172.22.0.1  Bcast:172.22.0.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
+          RX packets:5 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:250 (250.0 b)  TX bytes:252 (252.0 b)
 
-What I mean is following.
+bond0.500 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
+          inet addr:172.20.0.1  Bcast:172.20.0.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
+          RX packets:26448 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:33570 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:6278388 (5.9 MiB)  TX bytes:6429404 (6.1 MiB)
 
-			root
-			/  \
-		      RT   group1
+bond0.600 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
+          inet addr:172.21.0.1  Bcast:172.21.0.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
+          RX packets:1911 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:8665 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:98604 (96.2 KiB)  TX bytes:1208395 (1.1 MiB)
 
-In above configuration RT task will starve everybody else.
+eth0      Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
+          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
+          RX packets:881723 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1074651 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:108550619 (103.5 MiB)  TX bytes:115574099 (110.2 MiB)
+          Memory:f8220000-f8240000
 
-			root
-		        /   \
-		   group1   group2
-		   /  \
-	         RT   BE
+eth1      Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
+          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
+          RX packets:61339352 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:77510 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:3928939240 (3.6 GiB)  TX bytes:9290795 (8.8 MiB)
+          Memory:f8260000-f8280000
 
-In above configuration  RT task will starve only sibling in group1 but
-will not starve the tasks in group2 or in root.
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:105468 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:105468 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:7016087 (6.6 MiB)  TX bytes:7016087 (6.6 MiB)
 
-Thanks
-Vivek
+
+>        You set arp_interval to 30, so you get one probe every 30
+> milliseconds, 33 per second.
+
+Yes, sure. my mistake....
+
+>        There's no "self test" or anything like that, if that's what you
+> mean.  If the ARPs work (make the round trip) the link is up, if they
+> don't, the link is down.  That's subject to some details related to
+> arp_validate, but is basically it.
+
+Ok. my interfaces are now up with arp_validate set to 0/none.
+Everything works as expected, thank you.
+But with arp_validate set to all the interfaces are always down. :(
+I think that i have to use the all option because i have many servers
+in that vlan?
