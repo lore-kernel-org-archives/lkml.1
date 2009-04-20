@@ -1,815 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbZDTSVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZDTSVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755016AbZDTSVa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 14:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZDTSVM
+	id S1755383AbZDTSVp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 14:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZDTSVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 14:21:12 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54213 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753754AbZDTSVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 14:21:09 -0400
-Date: Mon, 20 Apr 2009 11:21:01 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org, dada1@cosmosbay.com,
-       jeff.chua.linux@gmail.com, paulus@samba.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
-Message-ID: <20090420182101.GH6822@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090415170111.6e1ca264@nehalam> <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam>
+	Mon, 20 Apr 2009 14:21:17 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:57325 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754118AbZDTSVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 14:21:15 -0400
+X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 14:21:14 EDT
+Message-ID: <49ECBAE2.2080308@dell.com>
+Date: Mon, 20 Apr 2009 13:11:46 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420103414.1b4c490f@nehalam>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: mjg59@srcf.ucam.org
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Add support for Eject hotkey in dell-wmi
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC03E03A2E1CC52A978F4E278"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 10:34:14AM -0700, Stephen Hemminger wrote:
-> This version of x_tables (ip/ip6/arp) locking uses a per-cpu
-> recursive lock that can be nested. It is sort of like existing kernel_lock,
-> rwlock_t and even old 2.4 brlock.
-> 
-> "Reader" is ip/arp/ip6 tables rule processing which runs per-cpu.
-> It needs to ensure that the rules are not being changed while packet
-> is being processed.
-> 
-> "Writer" is used in two cases: first is replacing rules in which case
-> all packets in flight have to be processed before rules are swapped,
-> then counters are read from the old (stale) info. Second case is where
-> counters need to be read on the fly, in this case all CPU's are blocked
-> from further rule processing until values are aggregated.
-> 
-> The idea for this came from an earlier version done by Eric Dumazet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  This reduces the contention of a
-> single reader lock (in 2.6.29) without the delay of synchronize_net()
-> (in 2.6.30-rc2). 
-> 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC03E03A2E1CC52A978F4E278
+Content-Type: multipart/mixed;
+ boundary="------------090107030500060303050807"
 
-This looks good to me!
+This is a multi-part message in MIME format.
+--------------090107030500060303050807
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-But I have to ask the stupid question...  Would it be possible for
-the "write" side to acquire the locks one at a time, accumulating and
-resetting the counts for that CPU, then advancing to the next CPU?
+Hi:
 
-If this is possible, then lockdep is much happier and the disruption
-to readers is much less.
+I've gotten word that future Dell consumer laptops are transitioning
+several hotkeys to WMI instead.  Here's a patch to enable the first to
+enable the Eject hotkey.  I'm attaching it since my mail server
+(exchange) would mangle it otherwise.
 
-							Thanx, Paul
+Thanks,
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com
-> 
-> ---
-> Changes from earlier patches.
->   - function name changes
->   - disable bottom half in info_rdlock
-> 
-> These should still be addressed but beyond the scope of the problem
->   - lockdep mapping; really a tradeoff between LOCKDEP special clutter
->     and clarity
->   - Figure out how to stop sparse warning
->   - hot plug CPU case, if kernel is built with large # of CPU's, skip
->     the inactive ones; migrate values when CPU is removed.
-> 
->  include/linux/netfilter/x_tables.h |   10 +--
->  net/ipv4/netfilter/arp_tables.c    |  110 +++++++---------------------------
->  net/ipv4/netfilter/ip_tables.c     |  110 +++++++---------------------------
->  net/ipv6/netfilter/ip6_tables.c    |  108 +++++++---------------------------
->  net/netfilter/x_tables.c           |  117 ++++++++++++++++++++++++++++++-------
->  5 files changed, 174 insertions(+), 281 deletions(-)
-> 
-> --- a/include/linux/netfilter/x_tables.h	2009-04-20 07:58:17.609890831 -0700
-> +++ b/include/linux/netfilter/x_tables.h	2009-04-20 09:39:34.163891182 -0700
-> @@ -354,9 +354,6 @@ struct xt_table
->  	/* What hooks you will enter on */
->  	unsigned int valid_hooks;
-> 
-> -	/* Lock for the curtain */
-> -	struct mutex lock;
-> -
->  	/* Man behind the curtain... */
->  	struct xt_table_info *private;
-> 
-> @@ -434,8 +431,11 @@ extern void xt_proto_fini(struct net *ne
-> 
->  extern struct xt_table_info *xt_alloc_table_info(unsigned int size);
->  extern void xt_free_table_info(struct xt_table_info *info);
-> -extern void xt_table_entry_swap_rcu(struct xt_table_info *old,
-> -				    struct xt_table_info *new);
-> +
-> +extern void xt_info_rdlock_bh(void) __acquires(xt_info_lock);
-> +extern void xt_info_rdunlock_bh(void) __releases(xt_info_lock);
-> +extern void xt_info_wrlock_bh(void) __acquires(xt_info_lock);
-> +extern void xt_info_wrunlock_bh(void) __releases(xt_info_lock);
-> 
->  /*
->   * This helper is performance critical and must be inlined
-> --- a/net/ipv4/netfilter/ip_tables.c	2009-04-20 07:58:17.590949808 -0700
-> +++ b/net/ipv4/netfilter/ip_tables.c	2009-04-20 09:25:16.452078280 -0700
-> @@ -338,10 +338,9 @@ ipt_do_table(struct sk_buff *skb,
->  	tgpar.hooknum = hook;
-> 
->  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
-> -
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	xt_info_rdlock_bh();
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
-> 
->  	e = get_entry(table_base, private->hook_entry[hook]);
-> 
-> @@ -436,8 +435,7 @@ ipt_do_table(struct sk_buff *skb,
->  			e = (void *)e + e->next_offset;
->  		}
->  	} while (!hotdrop);
-> -
-> -	rcu_read_unlock_bh();
-> +	xt_info_rdunlock_bh();
-> 
->  #ifdef DEBUG_ALLOW_ALL
->  	return NF_ACCEPT;
-> @@ -918,60 +916,6 @@ get_counters(const struct xt_table_info 
->  				  counters,
->  				  &i);
->  	}
-> -
-> -}
-> -
-> -/* We're lazy, and add to the first CPU; overflow works its fey magic
-> - * and everything is OK. */
-> -static int
-> -add_counter_to_entry(struct ipt_entry *e,
-> -		     const struct xt_counters addme[],
-> -		     unsigned int *i)
-> -{
-> -	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> -
-> -	(*i)++;
-> -	return 0;
-> -}
-> -
-> -/* Take values from counters and add them back onto the current cpu */
-> -static void put_counters(struct xt_table_info *t,
-> -			 const struct xt_counters counters[])
-> -{
-> -	unsigned int i, cpu;
-> -
-> -	local_bh_disable();
-> -	cpu = smp_processor_id();
-> -	i = 0;
-> -	IPT_ENTRY_ITERATE(t->entries[cpu],
-> -			  t->size,
-> -			  add_counter_to_entry,
-> -			  counters,
-> -			  &i);
-> -	local_bh_enable();
-> -}
-> -
-> -
-> -static inline int
-> -zero_entry_counter(struct ipt_entry *e, void *arg)
-> -{
-> -	e->counters.bcnt = 0;
-> -	e->counters.pcnt = 0;
-> -	return 0;
-> -}
-> -
-> -static void
-> -clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
-> -{
-> -	unsigned int cpu;
-> -	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
-> -
-> -	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
-> -	for_each_possible_cpu(cpu) {
-> -		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
-> -		IPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
-> -				  zero_entry_counter, NULL);
-> -	}
->  }
-> 
->  static struct xt_counters * alloc_counters(struct xt_table *table)
-> @@ -979,7 +923,6 @@ static struct xt_counters * alloc_counte
->  	unsigned int countersize;
->  	struct xt_counters *counters;
->  	struct xt_table_info *private = table->private;
-> -	struct xt_table_info *info;
-> 
->  	/* We need atomic snapshot of counters: rest doesn't change
->  	   (other than comefrom, which userspace doesn't care
-> @@ -988,30 +931,13 @@ static struct xt_counters * alloc_counte
->  	counters = vmalloc_node(countersize, numa_node_id());
-> 
->  	if (counters == NULL)
-> -		goto nomem;
-> -
-> -	info = xt_alloc_table_info(private->size);
-> -	if (!info)
-> -		goto free_counters;
-> -
-> -	clone_counters(info, private);
-> +		return ERR_PTR(-ENOMEM);
-> 
-> -	mutex_lock(&table->lock);
-> -	xt_table_entry_swap_rcu(private, info);
-> -	synchronize_net();	/* Wait until smoke has cleared */
-> -
-> -	get_counters(info, counters);
-> -	put_counters(private, counters);
-> -	mutex_unlock(&table->lock);
-> -
-> -	xt_free_table_info(info);
-> +	xt_info_wrlock_bh();
-> +	get_counters(private, counters);
-> +	xt_info_wrunlock_bh();
-> 
->  	return counters;
-> -
-> - free_counters:
-> -	vfree(counters);
-> - nomem:
-> -	return ERR_PTR(-ENOMEM);
->  }
-> 
->  static int
-> @@ -1377,6 +1303,18 @@ do_replace(struct net *net, void __user 
->  	return ret;
->  }
-> 
-> +/* We're lazy, and add to the first CPU; overflow works its fey magic
-> + * and everything is OK. */
-> +static int
-> +add_counter_to_entry(struct ipt_entry *e,
-> +		     const struct xt_counters addme[],
-> +		     unsigned int *i)
-> +{
-> +	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> +
-> +	(*i)++;
-> +	return 0;
-> +}
-> 
->  static int
->  do_add_counters(struct net *net, void __user *user, unsigned int len, int compat)
-> @@ -1437,25 +1375,23 @@ do_add_counters(struct net *net, void __
->  		goto free;
->  	}
-> 
-> -	mutex_lock(&t->lock);
-> +	xt_info_wrlock_bh();
->  	private = t->private;
->  	if (private->number != num_counters) {
->  		ret = -EINVAL;
->  		goto unlock_up_free;
->  	}
-> 
-> -	preempt_disable();
->  	i = 0;
->  	/* Choose the copy that is on our node */
-> -	loc_cpu_entry = private->entries[raw_smp_processor_id()];
-> +	loc_cpu_entry = private->entries[smp_processor_id()];
->  	IPT_ENTRY_ITERATE(loc_cpu_entry,
->  			  private->size,
->  			  add_counter_to_entry,
->  			  paddc,
->  			  &i);
-> -	preempt_enable();
->   unlock_up_free:
-> -	mutex_unlock(&t->lock);
-> +	xt_info_wrunlock_bh();
->  	xt_table_unlock(t);
->  	module_put(t->me);
->   free:
-> --- a/net/netfilter/x_tables.c	2009-04-20 07:58:17.558895273 -0700
-> +++ b/net/netfilter/x_tables.c	2009-04-20 10:29:00.719320837 -0700
-> @@ -625,20 +625,6 @@ void xt_free_table_info(struct xt_table_
->  }
->  EXPORT_SYMBOL(xt_free_table_info);
-> 
-> -void xt_table_entry_swap_rcu(struct xt_table_info *oldinfo,
-> -			     struct xt_table_info *newinfo)
-> -{
-> -	unsigned int cpu;
-> -
-> -	for_each_possible_cpu(cpu) {
-> -		void *p = oldinfo->entries[cpu];
-> -		rcu_assign_pointer(oldinfo->entries[cpu], newinfo->entries[cpu]);
-> -		newinfo->entries[cpu] = p;
-> -	}
-> -
-> -}
-> -EXPORT_SYMBOL_GPL(xt_table_entry_swap_rcu);
-> -
->  /* Find table by name, grabs mutex & ref.  Returns ERR_PTR() on error. */
->  struct xt_table *xt_find_table_lock(struct net *net, u_int8_t af,
->  				    const char *name)
-> @@ -676,6 +662,94 @@ void xt_compat_unlock(u_int8_t af)
->  EXPORT_SYMBOL_GPL(xt_compat_unlock);
->  #endif
-> 
-> +/*
-> + * The info table entries are per-cpu, and are usually updated
-> + * only by the current CPU.
-> + */
-> +
-> +struct xt_info_lock {
-> +	spinlock_t 	   lock;
-> +	int   	   	   depth;	/* # readers - 1 */
-> +};
-> +static DEFINE_PER_CPU(struct xt_info_lock, xt_info_locks);
-> +
-> +static void xt_info_lock_init(struct xt_info_lock *lock)
-> +{
-> +	spin_lock_init(&lock->lock);
-> +	lock->depth = -1;
-> +}
-> +
-> +/**
-> + * xt_table_info_rdlock_bh - recursive read lock for xt table info
-> + *
-> + * Filter processing calls xt_info_lock_bh which acts like a reader
-> + * lock that can be locked recursively acquired. This only holds off
-> + * xt_info_lock_all, not other calls to xt_info_lock_bh.
-> + */
-> +void xt_info_rdlock_bh(void)
-> +{
-> +	struct xt_info_lock *lock;
-> +
-> +	local_bh_disable();
-> +	lock = &__get_cpu_var(xt_info_locks);
-> +	if (likely(++lock->depth == 0))
-> +		spin_lock(&lock->lock);
-> +}
-> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
-> +
-> +/**
-> + * xt_info_rdunlock_bh - release recursive table info lock
-> + *
-> + * Used after filter has updated
-> + */
-> +void xt_info_rdunlock_bh(void)
-> +{
-> +	struct xt_info_lock *lock = &__get_cpu_var(xt_info_locks);
-> +
-> +	BUG_ON(lock->depth < 0);
-> +	if (likely(--lock->depth < 0))
-> +		spin_unlock(&lock->lock);
-> +	local_bh_enable();
-> +}
-> +EXPORT_SYMBOL_GPL(xt_info_rdunlock_bh);
-> +
-> +/**
-> + * xt_info_wrlock_bh - lock xt table info for update
-> + *
-> + * Locks out all readers, and blocks bottom half
-> + */
-> +void xt_info_wrlock_bh(void)
-> +{
-> +	int i;
-> +
-> +	local_bh_disable();
-> +	for_each_possible_cpu(i) {
-> +		struct xt_info_lock *lock = &per_cpu(xt_info_locks, i);
-> +		spin_lock(&lock->lock);
-> +		BUG_ON(lock->depth != -1);
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(xt_info_wrlock_bh);
-> +
-> +/**
-> + * xt_info_wrunlock_bh - lock xt table info for update
-> + *
-> + * Unlocks all readers, and unblocks bottom half
-> + */
-> +void xt_info_wrunlock_bh(void) __releases(&lock->lock)
-> +{
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		struct xt_info_lock *lock = &per_cpu(xt_info_locks, i);
-> +		BUG_ON(lock->depth != -1);
-> +		spin_unlock(&lock->lock);
-> +	}
-> +	local_bh_enable();
-> +}
-> +EXPORT_SYMBOL_GPL(xt_info_wrunlock_bh);
-> +
-> +
->  struct xt_table_info *
->  xt_replace_table(struct xt_table *table,
->  	      unsigned int num_counters,
-> @@ -685,22 +759,21 @@ xt_replace_table(struct xt_table *table,
->  	struct xt_table_info *oldinfo, *private;
-> 
->  	/* Do the substitution. */
-> -	mutex_lock(&table->lock);
-> +	xt_info_wrlock_bh();
->  	private = table->private;
->  	/* Check inside lock: is the old number correct? */
->  	if (num_counters != private->number) {
->  		duprintf("num_counters != table->private->number (%u/%u)\n",
->  			 num_counters, private->number);
-> -		mutex_unlock(&table->lock);
-> +		xt_info_wrunlock_bh();
->  		*error = -EAGAIN;
->  		return NULL;
->  	}
->  	oldinfo = private;
-> -	rcu_assign_pointer(table->private, newinfo);
-> -	newinfo->initial_entries = oldinfo->initial_entries;
-> -	mutex_unlock(&table->lock);
-> +	table->private =  newinfo;
-> +	newinfo->initial_entries = private->initial_entries;
-> +	xt_info_wrunlock_bh();
-> 
-> -	synchronize_net();
->  	return oldinfo;
->  }
->  EXPORT_SYMBOL_GPL(xt_replace_table);
-> @@ -734,7 +807,6 @@ struct xt_table *xt_register_table(struc
-> 
->  	/* Simplifies replace_table code. */
->  	table->private = bootstrap;
-> -	mutex_init(&table->lock);
-> 
->  	if (!xt_replace_table(table, 0, newinfo, &ret))
->  		goto unlock;
-> @@ -1149,6 +1221,9 @@ static int __init xt_init(void)
->  {
->  	int i, rv;
-> 
-> +	for_each_possible_cpu(i)
-> +		xt_info_lock_init(&per_cpu(xt_info_locks, i));
-> +
->  	xt = kmalloc(sizeof(struct xt_af) * NFPROTO_NUMPROTO, GFP_KERNEL);
->  	if (!xt)
->  		return -ENOMEM;
-> --- a/net/ipv6/netfilter/ip6_tables.c	2009-04-20 07:58:17.569948056 -0700
-> +++ b/net/ipv6/netfilter/ip6_tables.c	2009-04-20 09:29:03.593890771 -0700
-> @@ -365,9 +365,9 @@ ip6t_do_table(struct sk_buff *skb,
-> 
->  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
-> 
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	xt_info_rdlock_bh();
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
-> 
->  	e = get_entry(table_base, private->hook_entry[hook]);
-> 
-> @@ -466,7 +466,7 @@ ip6t_do_table(struct sk_buff *skb,
->  #ifdef CONFIG_NETFILTER_DEBUG
->  	((struct ip6t_entry *)table_base)->comefrom = NETFILTER_LINK_POISON;
->  #endif
-> -	rcu_read_unlock_bh();
-> +	xt_info_rdunlock_bh();
-> 
->  #ifdef DEBUG_ALLOW_ALL
->  	return NF_ACCEPT;
-> @@ -949,64 +949,11 @@ get_counters(const struct xt_table_info 
->  	}
->  }
-> 
-> -/* We're lazy, and add to the first CPU; overflow works its fey magic
-> - * and everything is OK. */
-> -static int
-> -add_counter_to_entry(struct ip6t_entry *e,
-> -		     const struct xt_counters addme[],
-> -		     unsigned int *i)
-> -{
-> -	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> -
-> -	(*i)++;
-> -	return 0;
-> -}
-> -
-> -/* Take values from counters and add them back onto the current cpu */
-> -static void put_counters(struct xt_table_info *t,
-> -			 const struct xt_counters counters[])
-> -{
-> -	unsigned int i, cpu;
-> -
-> -	local_bh_disable();
-> -	cpu = smp_processor_id();
-> -	i = 0;
-> -	IP6T_ENTRY_ITERATE(t->entries[cpu],
-> -			   t->size,
-> -			   add_counter_to_entry,
-> -			   counters,
-> -			   &i);
-> -	local_bh_enable();
-> -}
-> -
-> -static inline int
-> -zero_entry_counter(struct ip6t_entry *e, void *arg)
-> -{
-> -	e->counters.bcnt = 0;
-> -	e->counters.pcnt = 0;
-> -	return 0;
-> -}
-> -
-> -static void
-> -clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
-> -{
-> -	unsigned int cpu;
-> -	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
-> -
-> -	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
-> -	for_each_possible_cpu(cpu) {
-> -		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
-> -		IP6T_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
-> -				   zero_entry_counter, NULL);
-> -	}
-> -}
-> -
->  static struct xt_counters *alloc_counters(struct xt_table *table)
->  {
->  	unsigned int countersize;
->  	struct xt_counters *counters;
->  	struct xt_table_info *private = table->private;
-> -	struct xt_table_info *info;
-> 
->  	/* We need atomic snapshot of counters: rest doesn't change
->  	   (other than comefrom, which userspace doesn't care
-> @@ -1015,30 +962,13 @@ static struct xt_counters *alloc_counter
->  	counters = vmalloc_node(countersize, numa_node_id());
-> 
->  	if (counters == NULL)
-> -		goto nomem;
-> -
-> -	info = xt_alloc_table_info(private->size);
-> -	if (!info)
-> -		goto free_counters;
-> +		return ERR_PTR(-ENOMEM);
-> 
-> -	clone_counters(info, private);
-> -
-> -	mutex_lock(&table->lock);
-> -	xt_table_entry_swap_rcu(private, info);
-> -	synchronize_net();	/* Wait until smoke has cleared */
-> -
-> -	get_counters(info, counters);
-> -	put_counters(private, counters);
-> -	mutex_unlock(&table->lock);
-> -
-> -	xt_free_table_info(info);
-> +	xt_info_wrlock_bh();
-> +	get_counters(private, counters);
-> +	xt_info_wrunlock_bh();
-> 
->  	return counters;
-> -
-> - free_counters:
-> -	vfree(counters);
-> - nomem:
-> -	return ERR_PTR(-ENOMEM);
->  }
-> 
->  static int
-> @@ -1405,6 +1335,19 @@ do_replace(struct net *net, void __user 
->  	return ret;
->  }
-> 
-> +/* We're lazy, and add to the first CPU; overflow works its fey magic
-> + * and everything is OK. */
-> +static int
-> +add_counter_to_entry(struct ip6t_entry *e,
-> +		     const struct xt_counters addme[],
-> +		     unsigned int *i)
-> +{
-> +	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> +
-> +	(*i)++;
-> +	return 0;
-> +}
-> +
->  static int
->  do_add_counters(struct net *net, void __user *user, unsigned int len,
->  		int compat)
-> @@ -1465,25 +1408,24 @@ do_add_counters(struct net *net, void __
->  		goto free;
->  	}
-> 
-> -	mutex_lock(&t->lock);
-> +	xt_info_wrlock_bh();
->  	private = t->private;
->  	if (private->number != num_counters) {
->  		ret = -EINVAL;
->  		goto unlock_up_free;
->  	}
-> 
-> -	preempt_disable();
->  	i = 0;
->  	/* Choose the copy that is on our node */
-> -	loc_cpu_entry = private->entries[raw_smp_processor_id()];
-> +	loc_cpu_entry = private->entries[smp_processor_id()];
->  	IP6T_ENTRY_ITERATE(loc_cpu_entry,
->  			  private->size,
->  			  add_counter_to_entry,
->  			  paddc,
->  			  &i);
-> -	preempt_enable();
-> +
->   unlock_up_free:
-> -	mutex_unlock(&t->lock);
-> +	xt_info_wrunlock_bh();
->  	xt_table_unlock(t);
->  	module_put(t->me);
->   free:
-> --- a/net/ipv4/netfilter/arp_tables.c	2009-04-20 07:58:17.578890388 -0700
-> +++ b/net/ipv4/netfilter/arp_tables.c	2009-04-20 09:27:02.254203584 -0700
-> @@ -253,9 +253,9 @@ unsigned int arpt_do_table(struct sk_buf
->  	indev = in ? in->name : nulldevname;
->  	outdev = out ? out->name : nulldevname;
-> 
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	xt_info_rdlock_bh();
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
-> 
->  	e = get_entry(table_base, private->hook_entry[hook]);
->  	back = get_entry(table_base, private->underflow[hook]);
-> @@ -273,6 +273,7 @@ unsigned int arpt_do_table(struct sk_buf
-> 
->  			hdr_len = sizeof(*arp) + (2 * sizeof(struct in_addr)) +
->  				(2 * skb->dev->addr_len);
-> +
->  			ADD_COUNTER(e->counters, hdr_len, 1);
-> 
->  			t = arpt_get_target(e);
-> @@ -328,8 +329,7 @@ unsigned int arpt_do_table(struct sk_buf
->  			e = (void *)e + e->next_offset;
->  		}
->  	} while (!hotdrop);
-> -
-> -	rcu_read_unlock_bh();
-> +	xt_info_rdunlock_bh();
-> 
->  	if (hotdrop)
->  		return NF_DROP;
-> @@ -734,65 +734,11 @@ static void get_counters(const struct xt
->  	}
->  }
-> 
-> -
-> -/* We're lazy, and add to the first CPU; overflow works its fey magic
-> - * and everything is OK. */
-> -static int
-> -add_counter_to_entry(struct arpt_entry *e,
-> -		     const struct xt_counters addme[],
-> -		     unsigned int *i)
-> -{
-> -	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> -
-> -	(*i)++;
-> -	return 0;
-> -}
-> -
-> -/* Take values from counters and add them back onto the current cpu */
-> -static void put_counters(struct xt_table_info *t,
-> -			 const struct xt_counters counters[])
-> -{
-> -	unsigned int i, cpu;
-> -
-> -	local_bh_disable();
-> -	cpu = smp_processor_id();
-> -	i = 0;
-> -	ARPT_ENTRY_ITERATE(t->entries[cpu],
-> -			  t->size,
-> -			  add_counter_to_entry,
-> -			  counters,
-> -			  &i);
-> -	local_bh_enable();
-> -}
-> -
-> -static inline int
-> -zero_entry_counter(struct arpt_entry *e, void *arg)
-> -{
-> -	e->counters.bcnt = 0;
-> -	e->counters.pcnt = 0;
-> -	return 0;
-> -}
-> -
-> -static void
-> -clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
-> -{
-> -	unsigned int cpu;
-> -	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
-> -
-> -	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
-> -	for_each_possible_cpu(cpu) {
-> -		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
-> -		ARPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
-> -				  zero_entry_counter, NULL);
-> -	}
-> -}
-> -
->  static struct xt_counters *alloc_counters(struct xt_table *table)
->  {
->  	unsigned int countersize;
->  	struct xt_counters *counters;
->  	struct xt_table_info *private = table->private;
-> -	struct xt_table_info *info;
-> 
->  	/* We need atomic snapshot of counters: rest doesn't change
->  	 * (other than comefrom, which userspace doesn't care
-> @@ -802,30 +748,13 @@ static struct xt_counters *alloc_counter
->  	counters = vmalloc_node(countersize, numa_node_id());
-> 
->  	if (counters == NULL)
-> -		goto nomem;
-> -
-> -	info = xt_alloc_table_info(private->size);
-> -	if (!info)
-> -		goto free_counters;
-> +		return ERR_PTR(-ENOMEM);
-> 
-> -	clone_counters(info, private);
-> -
-> -	mutex_lock(&table->lock);
-> -	xt_table_entry_swap_rcu(private, info);
-> -	synchronize_net();	/* Wait until smoke has cleared */
-> -
-> -	get_counters(info, counters);
-> -	put_counters(private, counters);
-> -	mutex_unlock(&table->lock);
-> -
-> -	xt_free_table_info(info);
-> +	xt_info_wrlock_bh();
-> +	get_counters(private, counters);
-> +	xt_info_wrunlock_bh();
-> 
->  	return counters;
-> -
-> - free_counters:
-> -	vfree(counters);
-> - nomem:
-> -	return ERR_PTR(-ENOMEM);
->  }
-> 
->  static int copy_entries_to_user(unsigned int total_size,
-> @@ -1165,6 +1094,19 @@ static int do_replace(struct net *net, v
->  	return ret;
->  }
-> 
-> +/* We're lazy, and add to the first CPU; overflow works its fey magic
-> + * and everything is OK. */
-> +static int
-> +add_counter_to_entry(struct arpt_entry *e,
-> +		     const struct xt_counters addme[],
-> +		     unsigned int *i)
-> +{
-> +	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> +
-> +	(*i)++;
-> +	return 0;
-> +}
-> +
->  static int do_add_counters(struct net *net, void __user *user, unsigned int len,
->  			   int compat)
->  {
-> @@ -1224,14 +1166,13 @@ static int do_add_counters(struct net *n
->  		goto free;
->  	}
-> 
-> -	mutex_lock(&t->lock);
-> +	xt_info_wrlock_bh();
->  	private = t->private;
->  	if (private->number != num_counters) {
->  		ret = -EINVAL;
->  		goto unlock_up_free;
->  	}
-> 
-> -	preempt_disable();
->  	i = 0;
->  	/* Choose the copy that is on our node */
->  	loc_cpu_entry = private->entries[smp_processor_id()];
-> @@ -1240,10 +1181,9 @@ static int do_add_counters(struct net *n
->  			   add_counter_to_entry,
->  			   paddc,
->  			   &i);
-> -	preempt_enable();
-> - unlock_up_free:
-> -	mutex_unlock(&t->lock);
-> 
-> + unlock_up_free:
-> +	xt_info_wrunlock_bh();
->  	xt_table_unlock(t);
->  	module_put(t->me);
->   free:
+--------------090107030500060303050807
+Content-Type: text/x-patch;
+ name="dell-wmi-eject.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline;
+ filename="dell-wmi-eject.patch"
+
+--- a/drivers/platform/x86/dell-wmi.c~	2009-04-20 07:41:12.000000000 -050=
+0
++++ b/drivers/platform/x86/dell-wmi.c	2009-04-20 07:42:04.000000000 -0500=
+
+@@ -50,6 +50,7 @@
+=20
+ static struct key_entry dell_wmi_keymap[] =3D {
+ 	{KE_KEY, 0xe045, KEY_PROG1},
++	{KE_KEY, 0xe009, KEY_EJECTCD},
+ 	{KE_END, 0}
+ };
+=20
+
+--------------090107030500060303050807--
+
+--------------enigC03E03A2E1CC52A978F4E278
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknsuuIACgkQ2CrZjkA73Ys68wCgkfPAGhrzgnC46qSIZdfMtnzS
+r18AniwOe4LrV1Bt4/W4jMe37nn5iXm6
+=zAnW
+-----END PGP SIGNATURE-----
+
+--------------enigC03E03A2E1CC52A978F4E278--
