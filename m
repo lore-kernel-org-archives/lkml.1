@@ -1,259 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZDTEKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbZDTEPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbZDTEKb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 00:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZDTEKW
+	id S1753773AbZDTEPd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 00:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbZDTEPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 00:10:22 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38363 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbZDTEKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 00:10:21 -0400
-Date: Mon, 20 Apr 2009 14:10:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for April 20
-Message-Id: <20090420141011.66e826ba.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__20_Apr_2009_14_10_11_+1000_H.OUis=.etvlpP3."
+	Mon, 20 Apr 2009 00:15:23 -0400
+Received: from smtpout2.uol.com.br ([200.221.4.193]:59478 "EHLO
+	smtp.uol.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750743AbZDTEPX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 00:15:23 -0400
+X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 00:15:22 EDT
+DomainKey-Signature: a=rsa-sha1; s=ubzo; d=uol.com.br; c=nofws; q=dns;
+	h=dkim-signature:message-id:date:from:user-agent:
+	mime-version:to:subject:content-type:content-transfer-encoding;
+	b=A25urg81uwRw5hLnI9AaX1CGBI4hB/sQdMRSwS8FJvJryD4ccorgY9n779pUxu2kX
+	IoIoCUxyeAhyB//Tt4puQ==
+Message-ID: <49EBF483.8000908@uol.com.br>
+Date: Mon, 20 Apr 2009 01:05:23 -0300
+From: Adriano dos Santos Fernandes <adrianosf@uol.com.br>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers: memory_open cleanup - lookup minor device number
+ from devlist
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SIG5: b6f345e3da3e2b663e2b2e2d81082f48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__20_Apr_2009_14_10_11_+1000_H.OUis=.etvlpP3.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+memory_open ignores devlist and does a switch for each item, duplicating 
+code
+and conditional definitions.
 
-Hi all,
+Clean it adding backing_dev_info to devlist and use it to lookup for the 
+minor
+device.
 
-Changes since 20090417:
+Signed-off-by: Adriano dos Santos Fernandes <adrianosf@uol.com.br>
+---
 
-This tree will not build a powerpc allyesconfig.
+ drivers/char/mem.c |  115 
+++++++++++++++++++++-------------------------------
+ 1 files changed, 45 insertions(+), 70 deletions(-)
 
-New Tree:
-	configfs (split out from ocfs2)
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index 8f05c38..9e350f2 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -861,59 +861,58 @@ static const struct file_operations kmsg_fops = {
+     .write =    kmsg_write,
+ };
+ 
+-static int memory_open(struct inode * inode, struct file * filp)
+-{
+-    int ret = 0;
+-
+-    lock_kernel();
+-    switch (iminor(inode)) {
+-        case 1:
+-            filp->f_op = &mem_fops;
+-            filp->f_mapping->backing_dev_info =
+-                &directly_mappable_cdev_bdi;
+-            break;
++static const struct {
++    unsigned int        minor;
++    char            *name;
++    umode_t            mode;
++    const struct file_operations    *fops;
++    struct backing_dev_info    *dev_info;
++} devlist[] = { /* list of minor devices */
++    {1, "mem",     S_IRUSR | S_IWUSR | S_IRGRP, &mem_fops,
++        &directly_mappable_cdev_bdi},
+ #ifdef CONFIG_DEVKMEM
+-        case 2:
+-            filp->f_op = &kmem_fops;
+-            filp->f_mapping->backing_dev_info =
+-                &directly_mappable_cdev_bdi;
+-            break;
++    {2, "kmem",    S_IRUSR | S_IWUSR | S_IRGRP, &kmem_fops,
++        &directly_mappable_cdev_bdi},
+ #endif
+-        case 3:
+-            filp->f_op = &null_fops;
+-            break;
++    {3, "null",    S_IRUGO | S_IWUGO,           &null_fops, NULL},
+ #ifdef CONFIG_DEVPORT
+-        case 4:
+-            filp->f_op = &port_fops;
+-            break;
++    {4, "port",    S_IRUSR | S_IWUSR | S_IRGRP, &port_fops, NULL},
+ #endif
+-        case 5:
+-            filp->f_mapping->backing_dev_info = &zero_bdi;
+-            filp->f_op = &zero_fops;
+-            break;
+-        case 7:
+-            filp->f_op = &full_fops;
+-            break;
+-        case 8:
+-            filp->f_op = &random_fops;
+-            break;
+-        case 9:
+-            filp->f_op = &urandom_fops;
+-            break;
+-        case 11:
+-            filp->f_op = &kmsg_fops;
+-            break;
++    {5, "zero",    S_IRUGO | S_IWUGO,           &zero_fops, &zero_bdi},
++    {7, "full",    S_IRUGO | S_IWUGO,           &full_fops, NULL},
++    {8, "random",  S_IRUGO | S_IWUSR,           &random_fops, NULL},
++    {9, "urandom", S_IRUGO | S_IWUSR,           &urandom_fops, NULL},
++    {11,"kmsg",    S_IRUGO | S_IWUSR,           &kmsg_fops, NULL},
+ #ifdef CONFIG_CRASH_DUMP
+-        case 12:
+-            filp->f_op = &oldmem_fops;
+-            break;
++    {12,"oldmem",    S_IRUSR | S_IWUSR | S_IRGRP, &oldmem_fops, NULL},
+ #endif
+-        default:
+-            unlock_kernel();
+-            return -ENXIO;
++};
++
++static int memory_open(struct inode * inode, struct file * filp)
++{
++    int ret = 0;
++    int i;
++
++    lock_kernel();
++
++    for (i = 0; i < ARRAY_SIZE(devlist); i++) {
++        if (devlist[i].minor == iminor(inode)) {
++            filp->f_op = devlist[i].fops;
++            if (devlist[i].dev_info) {
++                filp->f_mapping->backing_dev_info =
++                    devlist[i].dev_info;
++            }
++
++            break;
++        }
+     }
+-    if (filp->f_op && filp->f_op->open)
+-        ret = filp->f_op->open(inode,filp);
++
++    if (i == ARRAY_SIZE(devlist))
++        ret = -ENXIO;
++    else
++        if (filp->f_op && filp->f_op->open)
++            ret = filp->f_op->open(inode,filp);
++
+     unlock_kernel();
+     return ret;
+ }
+@@ -922,30 +921,6 @@ static const struct file_operations memory_fops = {
+     .open        = memory_open,    /* just a selector for the real open */
+ };
+ 
+-static const struct {
+-    unsigned int        minor;
+-    char            *name;
+-    umode_t            mode;
+-    const struct file_operations    *fops;
+-} devlist[] = { /* list of minor devices */
+-    {1, "mem",     S_IRUSR | S_IWUSR | S_IRGRP, &mem_fops},
+-#ifdef CONFIG_DEVKMEM
+-    {2, "kmem",    S_IRUSR | S_IWUSR | S_IRGRP, &kmem_fops},
+-#endif
+-    {3, "null",    S_IRUGO | S_IWUGO,           &null_fops},
+-#ifdef CONFIG_DEVPORT
+-    {4, "port",    S_IRUSR | S_IWUSR | S_IRGRP, &port_fops},
+-#endif
+-    {5, "zero",    S_IRUGO | S_IWUGO,           &zero_fops},
+-    {7, "full",    S_IRUGO | S_IWUGO,           &full_fops},
+-    {8, "random",  S_IRUGO | S_IWUSR,           &random_fops},
+-    {9, "urandom", S_IRUGO | S_IWUSR,           &urandom_fops},
+-    {11,"kmsg",    S_IRUGO | S_IWUSR,           &kmsg_fops},
+-#ifdef CONFIG_CRASH_DUMP
+-    {12,"oldmem",    S_IRUSR | S_IWUSR | S_IRGRP, &oldmem_fops},
+-#endif
+-};
+-
+ static struct class *mem_class;
+ 
+ static int __init chr_dev_init(void)
 
-Changed tree:
-	ocfs2 (new location and maintainer)
-
-Dropped trees (temporary): (sorry Andrew)
-	usb (import problem)
-	staging (depends on usb)
-
-The usb quilt series failed to import, so I had to drop it (and the
-staging tree that depends on it) for today.
-
-The net tree gained a build failure so I used the version from
-next-20090417.
-
-The ttydev tree gained a build failure so I used the version from
-next-20090417.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 134 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging configfs/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-$ git reset --hard HEAD^
-Merging refs/next/20090417/net
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-$ git reset --hard HEAD^
-Merging refs/next/20090417/ttydev
-CONFLICT (content): Merge conflict in drivers/serial/8250_pci.c
-CONFLICT (content): Merge conflict in fs/devpts/inode.c
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slob.c
-Merging suspend/linux-next
-Merging nilfs2/for-next
-Merging quilt/driver-core
-Merging scsi-post-merge/master
-
---Signature=_Mon__20_Apr_2009_14_10_11_+1000_H.OUis=.etvlpP3.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknr9aMACgkQjjKRsyhoI8yOJgCguLcdixV7T+lBMg1NTTmmBW5q
-vVcAnjHs8GGoPOykdrJXaZNPSjxB8/Eg
-=2xcj
------END PGP SIGNATURE-----
-
---Signature=_Mon__20_Apr_2009_14_10_11_+1000_H.OUis=.etvlpP3.--
