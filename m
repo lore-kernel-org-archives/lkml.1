@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZDTUqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZDTUtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbZDTUqI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:46:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbZDTUpz
+	id S1757303AbZDTUtS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZDTUtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:45:55 -0400
-Received: from smtp.flash.net.br ([201.46.240.48]:35537 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755425AbZDTUpy (ORCPT
+	Mon, 20 Apr 2009 16:49:05 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:61065 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbZDTUtD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:45:54 -0400
-Date: Mon, 20 Apr 2009 17:45:02 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Michael Tokarev <mjt@tls.msk.ru>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Quick question about libata and hdparm
-Message-ID: <20090420204502.GB15230@ime.usp.br>
-References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <49EB9758.3020506@garzik.org> <20090420173526.GA7935@ime.usp.br> <200904202231.25670.bzolnier@gmail.com>
+	Mon, 20 Apr 2009 16:49:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=SveMrc0EijU0bYRoNpgy4gVEWihQocjlCcoXNVh0xycs3Q1qbsb6WyWcK2u4qUXkg2
+         7HWTpfAT5nnv703kii6qtkbSym3oPqwW9RZo/Yl0449dKm/UkPEJJw4wUT1byxqS5jam
+         z+3bDIzwWu1hxrGAiZltXUn3Z1igBeq5b+mAs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jens Axboe <axboe@kernel.dk>
+Subject: Re: [RFC][PATCH] block: enable by default support for large devices and files on 32-bit archs
+Date: Mon, 20 Apr 2009 22:52:08 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
+References: <200903281916.06905.bzolnier@gmail.com>
+In-Reply-To: <200903281916.06905.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200904202231.25670.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904202252.08619.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 20 2009, Bartlomiej Zolnierkiewicz wrote:
-> DISCLAIMER: I'm not handling this bugreport, this is best
-> done by pata_pdc202xx_old Maintainer or libata Maintainer.
-
-Right.
-
-> Rogério, if the issue is reproducible you can give this patch a try...
-
-100% reproducible at each and every boot.
-
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] pata_pdc202xx_old: fix UDMA33 handling
+On Saturday 28 March 2009 19:16:06 Bartlomiej Zolnierkiewicz wrote:
 > 
-> The original driver doesn't use 66 MHz clock for UDMA33.
+> Enable by default support for large devices and files (CONFIG_LBD):
 > 
-> [ The alternative solution would be to adjust UDMA33 timings
->   for 66 MHz clock but I think that it is safer to stick with
->   old & tested behavior for now. ]
+> - With 1TB disks being a commodity hardware it is quite easy to hit 2TB
+>   limitation while building RAIDs etc. and many distros have been using
+>   CONFIG_LBD=y by default already (at least Fedora 10 and openSUSE 11.1).
+> 
+> - This should also prevent a subtle ext4 filesystem compatibility issue:
+>   mke2fs.ext4 defaults to creating filesystems with huge_files feature
+>   enabled and such filesystems cannot be later mounted read-write on
+>   machines with CONFIG_LBD=n (it should be quite easy to hit this issue
+>   when trying to use filesystem created using distro kernel on system
+>   running the self-build kernel, think about USB disk enclosures & co.).
+> 
+> While at it:
+> 
+> - Clarify config option help text w.r.t. mounting ext4 filesystems
+>   (they can be mounted with CONFIG_LBD=n but in the read-only mode).
+> 
+> Cc: "Theodore Ts'o" <tytso@mit.edu>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> Unfortunately to also update the existings [def]configs the config option
+> rename would be needed.  Actually, since the performance impact and kernel
+> size increase seem to be minimal (at least on x86-32) maybe we should just
+> go ahead and remove CONFIG_LBD (== always use 64-bit sector_t/blkcnt_t)?
+> 
+> I can make needed changes once there is agreement on preferred approach...
 
-Untarring the kernel right now. Will report back in a few minutes.
+Jens, any thoughts on this?
 
+[ Please note that the patch below should be safe for 2.6.30. ]
 
-Thanks, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+>  block/Kconfig |   11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+> 
+> Index: b/block/Kconfig
+> ===================================================================
+> --- a/block/Kconfig
+> +++ b/block/Kconfig
+> @@ -26,6 +26,7 @@ if BLOCK
+>  config LBD
+>  	bool "Support for large block devices and files"
+>  	depends on !64BIT
+> +	default y
+>  	help
+>  	  Enable block devices or files of size 2TB and larger.
+>  
+> @@ -38,11 +39,13 @@ config LBD
+>  
+>  	  The ext4 filesystem requires that this feature be enabled in
+>  	  order to support filesystems that have the huge_file feature
+> -	  enabled.    Otherwise, it will refuse to mount any filesystems
+> -	  that use the huge_file feature, which is enabled by default
+> -	  by mke2fs.ext4.   The GFS2 filesystem also requires this feature.
+> +	  enabled.  Otherwise, it will refuse to mount in the read-write
+> +	  mode any filesystems that use the huge_file feature, which is
+> +	  enabled by default by mke2fs.ext4.
+>  
+> -	  If unsure, say N.
+> +	  The GFS2 filesystem also requires this feature.
+> +
+> +	  If unsure, say Y.
+>  
+>  config BLK_DEV_IO_TRACE
+>  	bool "Support for tracing block io actions"
+> 
