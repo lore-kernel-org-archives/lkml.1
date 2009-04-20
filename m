@@ -1,95 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZDTHNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZDTHQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151AbZDTHNq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZDTHNh
+	id S1753128AbZDTHQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDTHQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:13:37 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:63272 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbZDTHNg convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 03:16:18 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:34759 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbZDTHQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:13:36 -0400
-From: "Zhang, Sonic" <Sonic.Zhang@analog.com>
-X-IronPort-AV: E=Sophos;i="4.40,215,1238990400"; 
-   d="scan'208";a="86550166"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] bfin_5xx: misplaced parentheses
-Date: Mon, 20 Apr 2009 15:13:38 +0800
-Message-ID: <0F1B54C89D5F954D8535DB252AF412FA03E77D30@chinexm1.ad.analog.com>
-In-Reply-To: <49E7951E.5020408@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] bfin_5xx: misplaced parentheses
-Thread-Index: Acm+0gckKRCUz49iS1+AiEEQCqtmtQCtV39w
-References: <49E7951E.5020408@gmail.com>
-To: "Roel Kluin" <roel.kluin@gmail.com>
-CC: "Andrew Morton" <akpm@linux-foundation.org>,
-       "lkml" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 20 Apr 2009 07:13:13.0501 (UTC) FILETIME=[78037CD0:01C9C187]
+	Mon, 20 Apr 2009 03:16:17 -0400
+Date: Mon, 20 Apr 2009 09:15:04 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       benh@kernel.crashing.org, heiko.carstens@de.ibm.com, paulus@samba.org,
+       tony.luck@intel.com, seto.hidetoshi@jp.fujitsu.com,
+       jeremy@xensource.com, a.p.zijlstra@chello.nl, mingo@elte.hu,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [RFC][PATCH] /proc/stat idle field for idle cpus
+Message-ID: <20090420091504.0f619d8f@skybase>
+In-Reply-To: <20090417160211.4fa36fb7.akpm@linux-foundation.org>
+References: <20090414141851.3174f880@skybase>
+	<20090417160211.4fa36fb7.akpm@linux-foundation.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
+On Fri, 17 Apr 2009 16:02:11 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Acked-by: Sonic Zhang <sonic.zhang@analog.com>
+> Looks OK to me.  Please merge it via the s390 tree.
+> 
+> Do other architectures need to fix this?
 
+Thanks Andrew for the quick review. Other architecture might want to
+implement this as well, with tick-less the idle numbers in /proc/stat
+are just way off. The implementation of the arch_idle_time is not easy
+I'm afraid, the sleep time of each cpu needs to be measured in a way
+that it can be read from neighbouring cpus (and it should better be a
+precise). Not something I would want to have to implement for x86.
 
-Sonic 
+-- 
+blue skies,
+   Martin.
 
------Original Message-----
-From: Roel Kluin [mailto:roel.kluin@gmail.com] 
-Sent: Friday, April 17, 2009 4:29 AM
-To: Zhang, Sonic
-Cc: Andrew Morton; lkml
-Subject: [PATCH] bfin_5xx: misplaced parentheses
+"Reality continues to ruin my life." - Calvin.
 
-`!' has a higher precedence than `&', parentheses are misplaced.
-
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c index
-18ba812..d86123e 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -166,7 +166,7 @@ static void bfin_serial_start_tx(struct uart_port
-*port)
- 	struct tty_struct *tty = uart->port.info->port.tty;
- 
- #ifdef CONFIG_SERIAL_BFIN_HARD_CTSRTS
--	if (uart->scts &&
-(!bfin_serial_get_mctrl(&uart->port)&TIOCM_CTS)) {
-+	if (uart->scts && !(bfin_serial_get_mctrl(&uart->port) &
-TIOCM_CTS)) {
- 		uart->scts = 0;
- 		uart_handle_cts_change(&uart->port, uart->scts);
- 	}
-@@ -368,7 +368,7 @@ static irqreturn_t bfin_serial_tx_int(int irq, void
-*dev_id)
- 	struct bfin_serial_port *uart = dev_id;
- 
- #ifdef CONFIG_SERIAL_BFIN_HARD_CTSRTS
--	if (uart->scts &&
-(!bfin_serial_get_mctrl(&uart->port)&TIOCM_CTS)) {
-+	if (uart->scts && !(bfin_serial_get_mctrl(&uart->port) &
-TIOCM_CTS)) {
- 		uart->scts = 0;
- 		uart_handle_cts_change(&uart->port, uart->scts);
- 	}
-@@ -504,7 +504,7 @@ static irqreturn_t bfin_serial_dma_tx_int(int irq,
-void *dev_id)
- 	struct circ_buf *xmit = &uart->port.info->xmit;
- 
- #ifdef CONFIG_SERIAL_BFIN_HARD_CTSRTS
--	if (uart->scts &&
-(!bfin_serial_get_mctrl(&uart->port)&TIOCM_CTS)) {
-+	if (uart->scts &&
-!(bfin_serial_get_mctrl(&uart->port)&TIOCM_CTS)) {
- 		uart->scts = 0;
- 		uart_handle_cts_change(&uart->port, uart->scts);
- 	}
