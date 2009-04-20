@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZDTWWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbZDTWWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbZDTWWZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbZDTWUZ
+	id S1758340AbZDTWWq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbZDTWUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 20 Apr 2009 18:20:25 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37284 "EHLO gir.skynet.ie"
+Received: from gir.skynet.ie ([193.1.99.77]:37309 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757203AbZDTWUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:20:18 -0400
+	id S1757361AbZDTWUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:20:19 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 05/25] Break up the allocator entry point into fast and slow paths
-Date: Mon, 20 Apr 2009 23:19:51 +0100
-Message-Id: <1240266011-11140-6-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 07/25] Check in advance if the zonelist needs additional filtering
+Date: Mon, 20 Apr 2009 23:19:53 +0100
+Message-Id: <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
 References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
@@ -31,436 +31,111 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The core of the page allocator is one giant function which allocates memory
-on the stack and makes calculations that may not be needed for every
-allocation. This patch breaks up the allocator path into fast and slow
-paths for clarity. Note the slow paths are still inlined but the entry is
-marked unlikely.  If they were not inlined, it actally increases text size
-to generate the as there is only one call site.
+Zonelist are filtered based on nodemasks for memory policies normally.
+It can be additionally filters on cpusets if they exist as well as
+noting when zones are full. These simple checks are expensive enough to
+be noticed in profiles. This patch checks in advance if zonelist
+filtering will ever be needed. If not, then the bulk of the checks are
+skipped.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 ---
- mm/page_alloc.c |  356 ++++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 222 insertions(+), 134 deletions(-)
+ include/linux/cpuset.h |    2 ++
+ mm/page_alloc.c        |   37 ++++++++++++++++++++++++++-----------
+ 2 files changed, 28 insertions(+), 11 deletions(-)
 
+diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
+index a5740fc..978e2f1 100644
+--- a/include/linux/cpuset.h
++++ b/include/linux/cpuset.h
+@@ -97,6 +97,8 @@ static inline void set_mems_allowed(nodemask_t nodemask)
+ 
+ #else /* !CONFIG_CPUSETS */
+ 
++#define number_of_cpusets (0)
++
+ static inline int cpuset_init(void) { return 0; }
+ static inline void cpuset_init_smp(void) {}
+ 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 3bed856..13b4d11 100644
+index c8465d0..3613ba4 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1460,47 +1460,172 @@ try_next_zone:
- 	return page;
- }
+@@ -1137,7 +1137,11 @@ failed:
+ #define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
+ #define ALLOC_HARDER		0x10 /* try to alloc harder */
+ #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
++#ifdef CONFIG_CPUSETS
+ #define ALLOC_CPUSET		0x40 /* check for correct cpuset */
++#else
++#define ALLOC_CPUSET		0x00
++#endif /* CONFIG_CPUSETS */
  
--/*
-- * This is the 'heart' of the zoned buddy allocator.
-- */
--struct page *
--__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
--			struct zonelist *zonelist, nodemask_t *nodemask)
-+static inline int
-+should_alloc_retry(gfp_t gfp_mask, unsigned int order,
-+				unsigned long pages_reclaimed)
- {
--	const gfp_t wait = gfp_mask & __GFP_WAIT;
--	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
--	struct zoneref *z;
--	struct zone *zone;
--	struct page *page;
--	struct reclaim_state reclaim_state;
--	struct task_struct *p = current;
--	int do_retry;
--	int alloc_flags;
--	unsigned long did_some_progress;
--	unsigned long pages_reclaimed = 0;
-+	/* Do not loop if specifically requested */
-+	if (gfp_mask & __GFP_NORETRY)
-+		return 0;
+ #ifdef CONFIG_FAIL_PAGE_ALLOC
  
--	lockdep_trace_alloc(gfp_mask);
-+	/*
-+	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
-+	 * means __GFP_NOFAIL, but that may not be true in other
-+	 * implementations.
-+	 */
-+	if (order <= PAGE_ALLOC_COSTLY_ORDER)
-+		return 1;
-+
-+	/*
-+	 * For order > PAGE_ALLOC_COSTLY_ORDER, if __GFP_REPEAT is
-+	 * specified, then we retry until we no longer reclaim any pages
-+	 * (above), or we've reclaimed an order of pages at least as
-+	 * large as the allocation's order. In both cases, if the
-+	 * allocation still fails, we stop retrying.
-+	 */
-+	if (gfp_mask & __GFP_REPEAT && pages_reclaimed < (1 << order))
-+		return 1;
+@@ -1401,6 +1405,7 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
+ 	int zlc_active = 0;		/* set if using zonelist_cache */
+ 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
++	int zonelist_filter = 0;
  
--	might_sleep_if(wait);
-+	/*
-+	 * Don't let big-order allocations loop unless the caller
-+	 * explicitly requests that.
-+	 */
-+	if (gfp_mask & __GFP_NOFAIL)
-+		return 1;
+ 	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+ 							&preferred_zone);
+@@ -1411,6 +1416,10 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
  
--	if (should_fail_alloc_page(gfp_mask, order))
--		return NULL;
-+	return 0;
-+}
+ 	VM_BUG_ON(order >= MAX_ORDER);
  
--	/* the list of zones suitable for gfp_mask */
--	z = zonelist->_zonerefs;
--	if (unlikely(!z->zone)) {
--		/*
--		 * Happens if we have an empty zonelist as a result of
--		 * GFP_THISNODE being used on a memoryless node
--		 */
-+static inline struct page *
-+__alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
-+	struct zonelist *zonelist, enum zone_type high_zoneidx,
-+	nodemask_t *nodemask)
-+{
-+	struct page *page;
++	/* Determine in advance if the zonelist needs filtering */
++	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
++		zonelist_filter = 1;
 +
-+	/* Acquire the OOM killer lock for the zones in zonelist */
-+	if (!try_set_zone_oom(zonelist, gfp_mask)) {
-+		schedule_timeout_uninterruptible(1);
- 		return NULL;
- 	}
- 
--restart:
--	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
--			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
-+	/*
-+	 * Go through the zonelist yet one more time, keep very high watermark
-+	 * here, this is only to catch a parallel oom killing, we must fail if
-+	 * we're still under heavy pressure.
-+	 */
-+	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
-+		order, zonelist, high_zoneidx,
-+		ALLOC_WMARK_HIGH|ALLOC_CPUSET);
- 	if (page)
--		goto got_pg;
-+		goto out;
-+
-+	/* The OOM killer will not help higher order allocs */
-+	if (order > PAGE_ALLOC_COSTLY_ORDER)
-+		goto out;
-+
-+	/* Exhausted what can be done so it's blamo time */
-+	out_of_memory(zonelist, gfp_mask, order);
-+
-+out:
-+	clear_zonelist_oom(zonelist, gfp_mask);
-+	return page;
-+}
-+
-+/* The really slow allocator path where we enter direct reclaim */
-+static inline struct page *
-+__alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
-+	struct zonelist *zonelist, enum zone_type high_zoneidx,
-+	nodemask_t *nodemask, int alloc_flags, unsigned long *did_some_progress)
-+{
-+	struct page *page = NULL;
-+	struct reclaim_state reclaim_state;
-+	struct task_struct *p = current;
-+
-+	cond_resched();
-+
-+	/* We now go into synchronous reclaim */
-+	cpuset_memory_pressure_bump();
-+
-+	/*
-+	 * The task's cpuset might have expanded its set of allowable nodes
-+	 */
-+	p->flags |= PF_MEMALLOC;
-+	lockdep_set_current_reclaim_state(gfp_mask);
-+	reclaim_state.reclaimed_slab = 0;
-+	p->reclaim_state = &reclaim_state;
-+
-+	*did_some_progress = try_to_free_pages(zonelist, order, gfp_mask, nodemask);
-+
-+	p->reclaim_state = NULL;
-+	lockdep_clear_current_reclaim_state();
-+	p->flags &= ~PF_MEMALLOC;
-+
-+	cond_resched();
-+
-+	if (order != 0)
-+		drain_all_pages();
-+
-+	if (likely(*did_some_progress))
-+		page = get_page_from_freelist(gfp_mask, nodemask, order,
-+					zonelist, high_zoneidx, alloc_flags);
-+	return page;
-+}
-+
-+static inline int
-+is_allocation_high_priority(struct task_struct *p, gfp_t gfp_mask)
-+{
-+	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
-+			&& !in_interrupt())
-+		if (!(gfp_mask & __GFP_NOMEMALLOC))
-+			return 1;
-+	return 0;
-+}
-+
-+/*
-+ * This is called in the allocator slow-path if the allocation request is of
-+ * sufficient urgency to ignore watermarks and take other desperate measures
-+ */
-+static inline struct page *
-+__alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
-+	struct zonelist *zonelist, enum zone_type high_zoneidx,
-+	nodemask_t *nodemask)
-+{
-+	struct page *page;
-+
-+	do {
-+		page = get_page_from_freelist(gfp_mask, nodemask, order,
-+			zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
-+
-+		if (!page && gfp_mask & __GFP_NOFAIL)
-+			congestion_wait(WRITE, HZ/50);
-+	} while (!page && (gfp_mask & __GFP_NOFAIL));
-+
-+	return page;
-+}
-+
-+static inline
-+void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
-+						enum zone_type high_zoneidx)
-+{
-+	struct zoneref *z;
-+	struct zone *zone;
-+
-+	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-+		wakeup_kswapd(zone, order);
-+}
-+
-+static inline struct page *
-+__alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
-+	struct zonelist *zonelist, enum zone_type high_zoneidx,
-+	nodemask_t *nodemask)
-+{
-+	const gfp_t wait = gfp_mask & __GFP_WAIT;
-+	struct page *page = NULL;
-+	int alloc_flags;
-+	unsigned long pages_reclaimed = 0;
-+	unsigned long did_some_progress;
-+	struct task_struct *p = current;
- 
+ zonelist_scan:
  	/*
- 	 * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
-@@ -1513,8 +1638,7 @@ restart:
- 	if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
- 		goto nopage;
+ 	 * Scan zonelist, looking for a zone with enough free.
+@@ -1418,12 +1427,16 @@ zonelist_scan:
+ 	 */
+ 	for_each_zone_zonelist_nodemask(zone, z, zonelist,
+ 						high_zoneidx, nodemask) {
+-		if (NUMA_BUILD && zlc_active &&
+-			!zlc_zone_worth_trying(zonelist, z, allowednodes))
+-				continue;
+-		if ((alloc_flags & ALLOC_CPUSET) &&
+-			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+-				goto try_next_zone;
++
++		/* Ignore the additional zonelist filter checks if possible */
++		if (zonelist_filter) {
++			if (NUMA_BUILD && zlc_active &&
++				!zlc_zone_worth_trying(zonelist, z, allowednodes))
++					continue;
++			if ((alloc_flags & ALLOC_CPUSET) &&
++				!cpuset_zone_allowed_softwall(zone, gfp_mask))
++					goto try_next_zone;
++		}
  
--	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
--		wakeup_kswapd(zone, order);
-+	wake_all_kswapd(order, zonelist, high_zoneidx);
- 
- 	/*
- 	 * OK, we're below the kswapd watermark and have kicked background
-@@ -1534,6 +1658,7 @@ restart:
- 	if (wait)
- 		alloc_flags |= ALLOC_CPUSET;
- 
-+restart:
- 	/*
- 	 * Go through the zonelist again. Let __GFP_HIGH and allocations
- 	 * coming from realtime tasks go deeper into reserves.
-@@ -1547,119 +1672,47 @@ restart:
- 	if (page)
- 		goto got_pg;
- 
--	/* This allocation should allow future memory freeing. */
--
--rebalance:
--	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--			&& !in_interrupt()) {
--		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
--nofail_alloc:
--			/* go through the zonelist yet again, ignoring mins */
--			page = get_page_from_freelist(gfp_mask, nodemask, order,
--				zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
--			if (page)
--				goto got_pg;
--			if (gfp_mask & __GFP_NOFAIL) {
--				congestion_wait(WRITE, HZ/50);
--				goto nofail_alloc;
--			}
--		}
--		goto nopage;
--	}
-+	/* Allocate without watermarks if the context allows */
-+	if (is_allocation_high_priority(p, gfp_mask))
-+		page = __alloc_pages_high_priority(gfp_mask, order,
-+			zonelist, high_zoneidx, nodemask);
-+	if (page)
-+		goto got_pg;
- 
- 	/* Atomic allocations - we can't balance anything */
- 	if (!wait)
- 		goto nopage;
- 
--	cond_resched();
--
--	/* We now go into synchronous reclaim */
--	cpuset_memory_pressure_bump();
--
--	p->flags |= PF_MEMALLOC;
--
--	lockdep_set_current_reclaim_state(gfp_mask);
--	reclaim_state.reclaimed_slab = 0;
--	p->reclaim_state = &reclaim_state;
--
--	did_some_progress = try_to_free_pages(zonelist, order,
--						gfp_mask, nodemask);
--
--	p->reclaim_state = NULL;
--	lockdep_clear_current_reclaim_state();
--	p->flags &= ~PF_MEMALLOC;
--
--	cond_resched();
-+	/* Try direct reclaim and then allocating */
-+	page = __alloc_pages_direct_reclaim(gfp_mask, order,
-+					zonelist, high_zoneidx,
-+					nodemask,
-+					alloc_flags, &did_some_progress);
-+	if (page)
-+		goto got_pg;
- 
--	if (order != 0)
--		drain_all_pages();
-+	/*
-+	 * If we failed to make any progress reclaiming, then we are
-+	 * running out of options and have to consider going OOM
-+	 */
-+	if (!did_some_progress) {
-+		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
-+			page = __alloc_pages_may_oom(gfp_mask, order,
-+					zonelist, high_zoneidx,
-+					nodemask);
-+			if (page)
-+				goto got_pg;
- 
--	if (likely(did_some_progress)) {
--		page = get_page_from_freelist(gfp_mask, nodemask, order,
--					zonelist, high_zoneidx, alloc_flags);
--		if (page)
--			goto got_pg;
--	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
--		if (!try_set_zone_oom(zonelist, gfp_mask)) {
--			schedule_timeout_uninterruptible(1);
- 			goto restart;
+ 		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+ 			unsigned long mark;
+@@ -1445,13 +1458,15 @@ zonelist_scan:
+ 		if (page)
+ 			break;
+ this_zone_full:
+-		if (NUMA_BUILD)
++		if (NUMA_BUILD && zonelist_filter)
+ 			zlc_mark_zone_full(zonelist, z);
+ try_next_zone:
+-		if (NUMA_BUILD && !did_zlc_setup) {
+-			/* we do zlc_setup after the first zone is tried */
+-			allowednodes = zlc_setup(zonelist, alloc_flags);
+-			zlc_active = 1;
++		if (NUMA_BUILD && zonelist_filter) {
++			if (!did_zlc_setup) {
++				/* do zlc_setup after the first zone is tried */
++				allowednodes = zlc_setup(zonelist, alloc_flags);
++				zlc_active = 1;
++			}
+ 			did_zlc_setup = 1;
  		}
--
--		/*
--		 * Go through the zonelist yet one more time, keep
--		 * very high watermark here, this is only to catch
--		 * a parallel oom killing, we must fail if we're still
--		 * under heavy pressure.
--		 */
--		page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
--			order, zonelist, high_zoneidx,
--			ALLOC_WMARK_HIGH|ALLOC_CPUSET);
--		if (page) {
--			clear_zonelist_oom(zonelist, gfp_mask);
--			goto got_pg;
--		}
--
--		/* The OOM killer will not help higher order allocs so fail */
--		if (order > PAGE_ALLOC_COSTLY_ORDER) {
--			clear_zonelist_oom(zonelist, gfp_mask);
--			goto nopage;
--		}
--
--		out_of_memory(zonelist, gfp_mask, order);
--		clear_zonelist_oom(zonelist, gfp_mask);
--		goto restart;
  	}
- 
--	/*
--	 * Don't let big-order allocations loop unless the caller explicitly
--	 * requests that.  Wait for some write requests to complete then retry.
--	 *
--	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
--	 * means __GFP_NOFAIL, but that may not be true in other
--	 * implementations.
--	 *
--	 * For order > PAGE_ALLOC_COSTLY_ORDER, if __GFP_REPEAT is
--	 * specified, then we retry until we no longer reclaim any pages
--	 * (above), or we've reclaimed an order of pages at least as
--	 * large as the allocation's order. In both cases, if the
--	 * allocation still fails, we stop retrying.
--	 */
-+	/* Check if we should retry the allocation */
- 	pages_reclaimed += did_some_progress;
--	do_retry = 0;
--	if (!(gfp_mask & __GFP_NORETRY)) {
--		if (order <= PAGE_ALLOC_COSTLY_ORDER) {
--			do_retry = 1;
--		} else {
--			if (gfp_mask & __GFP_REPEAT &&
--				pages_reclaimed < (1 << order))
--					do_retry = 1;
--		}
--		if (gfp_mask & __GFP_NOFAIL)
--			do_retry = 1;
--	}
--	if (do_retry) {
-+	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
-+		/* Wait for some write requests to complete then retry */
- 		congestion_wait(WRITE, HZ/50);
--		goto rebalance;
-+		goto restart;
- 	}
- 
- nopage:
-@@ -1672,6 +1725,41 @@ nopage:
- 	}
- got_pg:
- 	return page;
-+
-+}
-+
-+/*
-+ * This is the 'heart' of the zoned buddy allocator.
-+ */
-+struct page *
-+__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
-+			struct zonelist *zonelist, nodemask_t *nodemask)
-+{
-+	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
-+	struct page *page;
-+
-+	lockdep_trace_alloc(gfp_mask);
-+
-+	might_sleep_if(gfp_mask & __GFP_WAIT);
-+
-+	if (should_fail_alloc_page(gfp_mask, order))
-+		return NULL;
-+
-+	/*
-+	 * Check the zones suitable for the gfp_mask contain at least one
-+	 * valid zone. It's possible to have an empty zonelist as a result
-+	 * of GFP_THISNODE and a memoryless node
-+	 */
-+	if (unlikely(!zonelist->_zonerefs->zone))
-+		return NULL;
-+
-+	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
-+			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
-+	if (unlikely(!page))
-+		page = __alloc_pages_slowpath(gfp_mask, order,
-+				zonelist, high_zoneidx, nodemask);
-+
-+	return page;
- }
- EXPORT_SYMBOL(__alloc_pages_nodemask);
- 
 -- 
 1.5.6.5
 
