@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZDTJFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZDTJGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbZDTJFs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbZDTJFd
+	id S1754692AbZDTJGH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 05:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDTJFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:05:33 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33630 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbZDTJFc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:05:32 -0400
-Message-ID: <49EC3AC0.8070109@jp.fujitsu.com>
-Date: Mon, 20 Apr 2009 18:05:04 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 20 Apr 2009 05:05:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40160 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754598AbZDTJFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 05:05:38 -0400
+Message-ID: <49EC3AD6.3090905@redhat.com>
+Date: Mon, 20 Apr 2009 12:05:26 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RESEND][PATCH -tip 3/3] x86, mce: Add new option mce=no_cmci
- and mce=ignore_ce
-References: <49EBCDB0.7000505@jp.fujitsu.com>	<49EBCF87.4090608@jp.fujitsu.com> <87myabpyrn.fsf@basil.nowhere.org>
-In-Reply-To: <87myabpyrn.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gerd Hoffmann <kraxel@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Add MCE support to KVM
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com>
+In-Reply-To: <49EC3987.2040001@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
-> 
->> This patch introduces a couple of boot option for x86_64 mce.
+Gerd Hoffmann wrote:
+> On 04/20/09 10:26, Avi Kivity wrote:
+>> Gerd Hoffmann wrote:
+>>> The xen pv-on-hvm drivers use an msr to indicate "please place the
+>>> hypercall page here". Handling that in kernel isn't an option IMHO.
 >>
->> The "mce=no_cmci" boot option disables cmci feature.
->> Since cmci is a new feature so having boot controls to disable
->> it will be a help if the hardware is misbehaving.
-> 
-> Acked-by: Andi Kleen <ak@linux.intel.com>
-> 
-> Although I expect on Nehalem you'll get more problems without CMCI
-> than with due to the shared banks. Perhaps the documentation
-> should make that clearer.
+>> The contents of the hypercall page are vendor specific. This can be
+>> handled from userspace (though ideally we'd abstract the cpu vendor
+>> away).
+>
+> Well, xenner doesn't do vmcalls, so the page isn't vendor specific.  
 
-Good idea.  I'll add it to boot-options.txt
+Well, for true pv (not pv-on-hvm) it wouldn't use the MSR, would it?
 
->> The "mce=ignore_ce" boot option disables features for corrected
->> errors, i.e. polling timer and cmci.  Usually this disablement
->> is not recommended, however it will be a help if there are some
->> conflict with the BIOS or hardware monitoring applications etc.
-> 
-> Same problem as with the earlier patch.  You need a point
-> somewhere where the event is cleared, otherwise all hell
-> breaks loose.
+> It looks different for 32bit / 64bit guests though.  And it actually 
+> can be multiple pages (with one msr write per page).  So the interface 
+> for in-kernel handling would be more complex than "here is a hypercall 
+> page for you".
 
-Adding "dont_log_ce" and its description will be a help.
-It need to describe how it different from ignore_ce and how events
-are cleared.
+To different MSRs, or multiple writes to the same MSR?
 
->>  static int mce_dont_init;
->> +int cmci_disabled;
->> +int ignore_ce;
-> 
-> For global variables you should use a mce_ prefix to not pollute
-> global name space.
+>
+> > The Hyper-V hypercall page is more problematic, as it's specified to 
+> > be an overlay; the page doesn't have to exist in guest RAM.
+>
+> In userspace it should be easy to handle though as qemu can just 
+> create a new memory slot, right?
 
-OK.  I'll fix.
+It depends if the MSR may be considered global, or is required to be 
+per-cpu.  Need to refresh my memory on this, but I remember reading this 
+and saying 'yuck'.
 
->> diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
->> index d6b72df..64c0dd9 100644
->> --- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
->> +++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
->> @@ -109,6 +109,9 @@ static int cmci_supported(int *banks)
->>  {
->>  	u64 cap;
->>  
->> +	if (cmci_disabled | ignore_ce)
-> 
-> I presume you meant || here
-
-Yes, should be fixed.
-
-
-Thanks,
-H.Seto
+-- 
+error compiling committee.c: too many arguments to function
 
