@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZDTX0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbZDTXg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753093AbZDTX0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZDTX0j
+	id S1752380AbZDTXg7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZDTXgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:26:39 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:38781 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbZDTX0i (ORCPT
+	Mon, 20 Apr 2009 19:36:49 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:24485 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbZDTXgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:26:38 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Mon, 20 Apr 2009 19:26:32 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Rabin Vincent <rabin@rab.in>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mvsdio: fix CONFIG_PM=y build
-In-reply-to: <20090420184454.GA8867@debian>
-Message-id: <alpine.LFD.2.00.0904201925580.6741@xanadu.home>
-References: <20090420184454.GA8867@debian>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 20 Apr 2009 19:36:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=weOrfvIZsrYQt1+9oczeF3u3kmmi1V4LqxbbZ73hJBCrePgUspkzJVWsAkMgy0RgPX
+         WzO+L23QdfRxy4Q6J8vDdVRlOH9e1v2NhCWeQmdToICUvrS88BciBGsG4DlUvzq1ksWI
+         d/3pNgn1qNO6j1VFXO5UsZuIuM6+2PnqE/Grk=
+Date: Tue, 21 Apr 2009 08:36:39 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [patch 1/3] mm: fix pageref leak in do_swap_page()
+Message-Id: <20090421083639.97ae549c.minchan.kim@barrios-desktop>
+In-Reply-To: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
+References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009, Rabin Vincent wrote:
+On Mon, 20 Apr 2009 22:24:43 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-> Fix usage of obsolete parameters and functions in the driver's PM
-> callbacks.
+Nice catch!!
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+
+> By the time the memory cgroup code is notified about a swapin we
+> already hold a reference on the fault page.
 > 
-> Signed-off-by: Rabin Vincent <rabin@rab.in>
-
-Acked-by: Nicolas Pitre <nico@marvell.com>
-
-
+> If the cgroup callback fails make sure to unlock AND release the page
+> or we leak the reference.
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
 > ---
->  drivers/mmc/host/mvsdio.c |   11 +++++------
->  1 files changed, 5 insertions(+), 6 deletions(-)
+>  mm/memory.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/mmc/host/mvsdio.c b/drivers/mmc/host/mvsdio.c
-> index b5c375d..c643d0f 100644
-> --- a/drivers/mmc/host/mvsdio.c
-> +++ b/drivers/mmc/host/mvsdio.c
-> @@ -825,24 +825,23 @@ static int __exit mvsd_remove(struct platform_device *pdev)
->  }
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 366dab5..db126b6 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -2536,8 +2536,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 >  
->  #ifdef CONFIG_PM
-> -static int mvsd_suspend(struct platform_device *dev, pm_message_t state,
-> -			   u32 level)
-> +static int mvsd_suspend(struct platform_device *dev, pm_message_t state)
->  {
->  	struct mmc_host *mmc = platform_get_drvdata(dev);
->  	int ret = 0;
+>  	if (mem_cgroup_try_charge_swapin(mm, page, GFP_KERNEL, &ptr)) {
+>  		ret = VM_FAULT_OOM;
+> -		unlock_page(page);
+> -		goto out;
+> +		goto out_page;
+>  	}
 >  
-> -	if (mmc && level == SUSPEND_DISABLE)
-> +	if (mmc)
->  		ret = mmc_suspend_host(mmc, state);
->  
->  	return ret;
->  }
->  
-> -static int mvsd_resume(struct platform_device *dev, u32 level)
-> +static int mvsd_resume(struct platform_device *dev)
->  {
-> -	struct mmc_host *mmc = platform_dev_get_drvdata(dev);
-> +	struct mmc_host *mmc = platform_get_drvdata(dev);
->  	int ret = 0;
->  
-> -	if (mmc && level == RESUME_ENABLE)
-> +	if (mmc)
->  		ret = mmc_resume_host(mmc);
->  
+>  	/*
+> @@ -2599,6 +2598,7 @@ out:
+>  out_nomap:
+>  	mem_cgroup_cancel_charge_swapin(ptr);
+>  	pte_unmap_unlock(page_table, ptl);
+> +out_page:
+>  	unlock_page(page);
+>  	page_cache_release(page);
 >  	return ret;
 > -- 
-> 1.6.2.2
+> 1.6.2.1.135.gde769
 > 
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+
+-- 
+Kinds Regards
+Minchan Kim
