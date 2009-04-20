@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZDTLQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbZDTLXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbZDTLQk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 07:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZDTLQb
+	id S1754903AbZDTLXo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 07:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZDTLXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 07:16:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40432 "EHLO mx3.mail.elte.hu"
+	Mon, 20 Apr 2009 07:23:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40675 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754613AbZDTLQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 07:16:30 -0400
-Date: Mon, 20 Apr 2009 13:16:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [git-pull -tip] x86: cpu_debug patches
-Message-ID: <20090420111619.GE6670@elte.hu>
-References: <1240190145.3106.90.camel@ht.satnam> <1240191359.3106.93.camel@ht.satnam> <1240217428.3083.2.camel@ht.satnam>
+	id S1754312AbZDTLXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 07:23:33 -0400
+Message-ID: <49EC5B2A.9080403@redhat.com>
+Date: Mon, 20 Apr 2009 13:23:22 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240217428.3083.2.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Avi Kivity <avi@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Add MCE support to KVM
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com>
+In-Reply-To: <49EC3AD6.3090905@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 04/20/09 11:05, Avi Kivity wrote:
+> Gerd Hoffmann wrote:
+>> On 04/20/09 10:26, Avi Kivity wrote:
+>>> Gerd Hoffmann wrote:
+>>>> The xen pv-on-hvm drivers use an msr to indicate "please place the
+>>>> hypercall page here". Handling that in kernel isn't an option IMHO.
+>>>
+>>> The contents of the hypercall page are vendor specific. This can be
+>>> handled from userspace (though ideally we'd abstract the cpu vendor
+>>> away).
+>>
+>> Well, xenner doesn't do vmcalls, so the page isn't vendor specific.
+>
+> Well, for true pv (not pv-on-hvm) it wouldn't use the MSR, would it?
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Yes, the MSR is used for pv-on-hvm only.
 
->  static DEFINE_PER_CPU(struct cpu_cpuX_base, cpu_arr[CPU_REG_ALL_BIT]);
->  static DEFINE_PER_CPU(struct cpu_private *, priv_arr[MAX_CPU_FILES]);
->  static DEFINE_PER_CPU(unsigned, cpu_modelflag);
->  static DEFINE_PER_CPU(int, cpu_priv_count);
-> -static DEFINE_PER_CPU(unsigned, cpu_model);
-> +
-> +/* Storing vendor locally because it is used excessive in this code */
-> +static unsigned cpu_vendor;
+>> It looks different for 32bit / 64bit guests though. And it actually
+>> can be multiple pages (with one msr write per page). So the interface
+>> for in-kernel handling would be more complex than "here is a hypercall
+>> page for you".
+>
+> To different MSRs, or multiple writes to the same MSR?
 
-There's still no need to store it locally - what's wrong with 
-cpu_data(cpu) or current_cpu_data?
+Same MSR, multiple writes (page number in the low bits).
 
-Also, do we need the per-cpu cpu_modelflag variable too? I'd suggest 
-to integrate that kind of enumeration into struct cpuinfo_x86 and 
-cpu_info. We often have such kinds of constructs in x86 code:
+cheers,
+   Gerd
 
-	c->x86 <= 0x11
-
-So extending your scheme to other code would benefit all code.
-
-Plus this kind of enumeration:
-
-        switch (model) {
-        case 0x0501:
-        case 0x0502:
-        case 0x0504:
-                flag = CPU_INTEL_PENTIUM;
-                break;
-        case 0x0601:
-        case 0x0603:
-        case 0x0605:
-        case 0x0607:
-        case 0x0608:
-        case 0x060A:
-        case 0x060B:
-                flag = CPU_INTEL_P6;
-
-The 0x05/0x06 there is already available as the family flag in 
-cpuinfo_x86, as cpu_info::x86. The 01,02...0B model portion is also 
-already available as cpu_info::x86_model.
-
-[ there's also cpu_info::x86_mask, which gives the stepping. ]
-
-This is what i meant when i said that you needlessly duplicate 
-already existing information. You encode/decode it in some weird 
-looking way instead of using the already existing, per CPU 
-information of cpu_info.
-
-	Ingo
