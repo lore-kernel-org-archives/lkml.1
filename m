@@ -1,82 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbZDTUeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZDTUg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbZDTUeO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbZDTUd4
+	id S1757235AbZDTUg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZDTUgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:33:56 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:64797 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757409AbZDTUdz (ORCPT
+	Mon, 20 Apr 2009 16:36:10 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46506 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755088AbZDTUgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:33:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fcWhOZwF0NGUoRTHe9zdUNvmQVXOHAM6SHHQR9igqL+ypE/JCY+WxFnde3wrwQPWt0
-         9hx0HoX3L4DzhEFsVZBhH4kQp2OWByQ7tr8CaxuYCuXuq0L7DkfIcBEHSWQPYlS0qFEE
-         Shw4byzOUVNoEQYnj0PPfrNR1I0+jruUZElm0=
-Date: Mon, 20 Apr 2009 22:33:48 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] [GIT PULL] tracing: recursion and compile fixes
-Message-ID: <20090420203347.GD5974@nowhere>
-References: <20090420173819.957332585@goodmis.org> <20090420175533.GA22449@elte.hu> <20090420192803.GA25629@elte.hu> <20090420194542.GB5974@nowhere> <alpine.DEB.2.00.0904201616430.10097@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904201616430.10097@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 20 Apr 2009 16:36:09 -0400
+X-YMail-OSG: 9mT8YMUVM1lnGQqRyJtn.H5rHmfQMsq5zAEvt35u_ByXC8JxNzUoX.jCERNeBXip88_xAFWhfZkuLk1fSRP2y06_I2BWZETnSBdD72LMubGnaTEUCZGEBIclZaPPoktEja92LXeil9k96qhRo683GaJXzctj7ZEws815gc864dJgNGVNvJFJfCMnH6G6od9_BR0VpIZWlfpy92E5IMoHBHq.qqQq.PranET5TAdaApoRgVcIhYZJwObGGSgK3ETOm9Ox0Beg.JgdoadtaGwCKLkKLUeu5TPR0baaYt3BQGCu8FZxv41NiBEID8tmKaes9bhNIrHjIInHxbh2YUP9xcQ-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional
+	legacy	scsi_execute_async() usage for Linux/SCSI passthrough
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
+       Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <49EB036B.8090607@panasas.com>
+References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org>
+	 <49EB036B.8090607@panasas.com>
+Content-Type: text/plain
+Date: Mon, 20 Apr 2009 13:36:05 -0700
+Message-Id: <1240259765.4176.764.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 04:17:32PM -0400, Steven Rostedt wrote:
-> > > [   16.033417] Running tests again, along with the function tracer
-> > > [   16.039141] Running tests on trace events:
-> > > [   16.043063] Testing event kfree_skb: OK
-> > > [   16.052521] Testing event kmalloc: OK
-> > > [   16.061510] Testing event kmem_cache_alloc: OK
-> > > [   16.071902] Testing event kmalloc_node: OK
-> > > [   16.081756] Testing event kmem_cache_alloc_node: OK
-> > > [   16.091759] Testing event kfree: OK
-> > > [   16.100517] Testing event kmem_cache_free: OK
-> > > [   16.110523] Testing event irq_handler_exit: OK
-> > > [   16.120524] Testing event irq_handler_entry: OK
-> > > [   16.130521] Testing event softirq_entry: OK
-> > > [   16.139833] Testing event softirq_exit: OK
-> > > [   16.149597] Testing event lock_acquired: OK
-> > > [   16.160062] Testing event lock_acquire: OK
-> > > [   16.171719] Testing event lock_release: <0>BUG: spinlock lockup on CPU#0, swapper/0, 80cd0240
-> > > [   16.176013] Pid: 0, comm: swapper Not tainted 2.6.30-rc2-tip-01538-ge8201b9-dirty #34096
-> > > [   16.176013] Call Trace:
-> > > [   16.176013]  [<80944340>] ? printk+0x15/0x1d
-> > > [   16.176013]  [<803a410a>] _raw_spin_lock+0x19a/0x1b0
-> > > [   16.176013]  [<80947bb7>] _spin_lock_irqsave+0x57/0x70
-> > > [   16.176013]  [<8012b2ca>] __wake_up+0x1a/0x50
-> > > [   16.176013]  [<8019392f>] trace_wake_up+0x2f/0x40
+On Sun, 2009-04-19 at 13:56 +0300, Boaz Harrosh wrote:
+> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
+> > Greetings all,
 > > 
+> > This patch modifies the Target_Core_Mod/ConfigFS v3.0 PSCSI subsystem plugin for target_core_mod v3.0 to add
+> > a configurable method of choosing legacy scsi_execute_async() usage for underlying SCSI HTCL struct scsi_device.
+> > This method is still the only method of issuing I/O to the Linux SCSI subsystem is used for non TYPE_DISK hardware
+> > SCSI and SATA devices that appear under Linux-SCSI, but have not yet been updated to accept raw struct request
+> > operations directly.  Some of these include TYPE_ROM, TYPE_TYPE and TYPE_MEDIUM_CHANGER hardware.
 > > 
-> > The function tracer, used in the selftest, uses trace_current_buffer_unlock_commit
-> > which in turn calls trace_wake_up.
+> > This method can be used be used via ConfigFS as follows:
 > > 
-> > The function tracer shouldn't call trace_wake_up() (might hold
-> > the rq lock already).
+> > 	export TARGET=/sys/kernel/config/target/core/
+> >         # load target_core_mod
+> > 	modprobe target_core_mod
+> > 	# The Linux/SCSI scsi host id is part of pscsi_$HOST_ID HBA name..
+> > 	mkdir -p $TARGET/pscsi_0/sr0
+> > 	# echo CTL to the control configfs attribute
+> > 	echo scsi_channel_id=0,scsi_target_id=0,scsi_lun_id=0 > $TARGET/pscsi_0/sr0/control
+> >         # Activate the target_core_mod/ConfigFS PSCSI storage object
+> > 	echo 1 > $TARGET/pscsi_0/sr0/enable
 > > 
-> > I'm preparing a fix.
+> > At this point, creating symlinks for SCSI target ports to configfs enabled fabric modules
+> > against PSCSI hardware passthrough using te HCTL reference will work.
+> > 
+> > This patch are made against lio-core-2.6.git/master and tested on
+> > v2.6.29 x86 32-bit HVM with TYPE_DISK and v2.6.29 ppc64 with TYPE_ROM.
+> > The lio-core-2.6.git tree can be found at: 
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+> > 
+> > :-)
 > > 
 > 
-> Hmm, doesn't the trace wakeup test if the runqueue lock is locked or not?
+> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
 > 
-> -- Steve
+> I'm not sure what would be the best alternative for you. I would say
+> a bio, but it is still being debated. Your current options are:
+> 
+> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
+>    (Which block people don't like)
+> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
+>    struct rq_map_data mode. (not possible with all kind of sglists)
+> 2. sglist => iovec translation and blk_rq_map_user_iov()
+>    (Very very ugly mapping of pages to virtual pointers)
+> 
+> I have a similar situation with my OSD code.
 > 
 
+Hey,
 
-Hmm, yes it does but that's not the first time we meet this problem
-(sched switch event tracing recursions by the past). So either the
-test doesn't work well or this is about another lock that
-wake_up_common takes...
+Thanks for the pointers on this..  Yeah, I knew it was going away soon,
+but needed it for some legacy drivers..:-)
+
+Anyways, I will drop this patch for scsi_execute_async() when I branch
+for v2.6.30-rcX and look and updating target_core_mod/pSCSI to one of
+the listed methods to get up and running.  From the looks of it however
+we might want something slightly better than blk_rq_map_user() for the
+kernel space pages attached to struct scatterlist and page_links..
+
+Just FYI, the target_core_mod struct scatterlist memory will be in
+struct list_head with struct page for allocated se_cmd_t (received CDB),
+so it will be pretty easy from the target_core_mod+subsystem plugin side
+side to put something that along the lines of list =>
+page-pointers-array translation and blk_rq_map_user() into a new
+function..
+
+lio-core-2.6.git/drivers/target/target_core_transport.c is using
+include/linux/scatterlist.h macros when interacting with struct
+scatterlist allocated for each subsystem plugin (from the linked list
+struct page memory)  I will have a look and see what would need to be
+down to allow all kinds of sglists with something new..
+
+Thanks for your comments!
+
+--nab
+
 
