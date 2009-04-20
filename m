@@ -1,97 +1,648 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZDTOWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZDTOXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbZDTOWb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 10:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbZDTOWW
+	id S1756137AbZDTOXt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 10:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbZDTOXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 10:22:22 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:39936 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755459AbZDTOWU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 10:22:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Q2LE6RM7x255sdeUlhV6W9q1n3Ltged8SjukEksW8Iurelc5QwRQEDns09IF7nyIQa
-         vujBxVNVGkuRr0icYyjyr1TYsJu5AZ4xnpd8xkA7xDnEgWSyTbUsnSyfKAEKwhb4v3L4
-         SzRl/hXo/kL+yl+1gHuTMDvO4f+PXFjNPC3bs=
-Subject: Re: "RT_PREEMPT for loongson" is updated to patch-2.6.29.1-rt8
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Zhang Le <r0bertz@gentoo.org>, linux-kernel@vger.kernel.org,
-       Nicholas Mc Guire <hofrat@hofr.at>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, zhangfx@lemote.com,
-       loongson-dev@googlegroups.com, yanh@lemote.com,
-       linux-mips@linux-mips.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20090420131022.GA10183@linux-mips.org>
-References: <1240193547.25532.52.camel@falcon>
-	 <20090420050419.GA22520@adriano.hkcable.com.hk>
-	 <1240211926.8884.27.camel@falcon> <20090420080155.GA11621@linux-mips.org>
-	 <20090420131022.GA10183@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 20 Apr 2009 22:22:03 +0800
-Message-Id: <1240237323.8884.42.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	Mon, 20 Apr 2009 10:23:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35299 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755459AbZDTOXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 10:23:36 -0400
+Message-ID: <49EC8556.10105@suse.com>
+Date: Mon, 20 Apr 2009 10:23:18 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] IO-APIC + timer doesn't work!
+References: <49E89D1B.7060800@suse.com> <20090420085854.GB7286@alberich.amd.com>
+In-Reply-To: <20090420085854.GB7286@alberich.amd.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFE36D1B3D0EEC081B4BFFCEC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-20 at 15:10 +0200, Ralf Baechle wrote:
-> On Mon, Apr 20, 2009 at 10:01:55AM +0200, Ralf Baechle wrote:
-> 
-> > > I have divided ftrace to several commits in the above git tree, hope you
-> > > can check it, thx :-) 
-> > > 
-> > > in addition to the static/dynamic/graph function tracer & system call
-> > > tracer implementation, a mips specific ring_buffer_time_stamp
-> > > (kernel/trace/ring_buffer.c) is also implemented to get 1us precision
-> > > time, this is very important to make ftrace available in mips,
-> > > otherwise, we can only get 1ms precision time for the original
-> > > ring_buffer_time_stamp is based on sched_clock(jiffies based). 
-> > > 
-> > > perhaps we can implement a more precise sched_clock directly, just as
-> > > x86 does(native_sched_clock, tsc based), but in mips, there is only a
-> > > 32bit timer count which will quickly overflow, so it will need an extra
-> > > overflow protection, which may influence the other parts of the kernel.
-> > 
-> > My git clone is still running to I'm commenting only on the patches you
-> > posted earlier.  #ifdef-MIPS'ing things into the generic kernel code
-> > definately won't be an acceptable way to get µs resolution.
-> 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFE36D1B3D0EEC081B4BFFCEC
+Content-Type: multipart/mixed;
+ boundary="------------060304010309030606060009"
 
-just fix it via moving mips specific ring_buffer_time_stamp to
-arch/mips/kernel/ftrace.c via defining the original one as
-__attribute__(weak).
+This is a multi-part message in MIME format.
+--------------060304010309030606060009
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-in arch/mips/kernel/ftrace.c: 
+Andreas Herrmann wrote:
+> On Fri, Apr 17, 2009 at 11:15:39AM -0400, Jeff Mahoney wrote:
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> Hi all -
+>>
+>> I saw this while booting 2.6.30-rc1, -rc2, and today's git, on one of
+>> my development nodes. This output is with apic=3Ddebug. With noapic,
+>> it still hung. Both outputs follow.
+>>
+>> git bisect leads to commit 8d6f0c8214928f7c5083dd54ecb69c5d615b516e,
+>> but I'm not seeing anything obvious there. Backing just that change
+>> out doesn't fix it.
+>>
+>> - -Jeff
+>=20
+> This looks similar to http://bugzilla.kernel.org/show_bug.cgi?id=3D1296=
+1
+>=20
+> Can you please provide lspci -nnxxx and dmesg when booting with hpet=3D=
+verbose.
 
-u64 native_ring_buffer_time_stamp(...) {
-...
-}
-u64 ring_buffer_time_stamp(...)
-__attribute__((alias("native_ring_buffer_time_stamp")));
+Sure, attached.
 
-in kernel/trace/ring_buffer.c:
+-Jeff
 
--u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
-+ u64 __attribute__((weak)) ring_buffer_time_stamp(struct ring_buffer
-*buffer, int cpu)
+--=20
+Jeff Mahoney
+SUSE Labs
 
-*** not push to the git tree yet.
+--------------060304010309030606060009
+Content-Type: text/plain;
+ name="hpet-verbose"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline;
+ filename="hpet-verbose"
 
-> In changeset e67f78d663a84ef93aa12c3c8c1adf3033c4f9a1 you introduce
-> <asm/rwsem.h> but because RWSEM_GENERIC_SPINLOCK is always set that file
-> won't ever be included.
-> 
+[    0.004000] hpet: hpet_enable(842):
+[    0.004000] hpet: ID: 0x10228203, PERIOD: 0x429b17f
+[    0.004000] hpet: CFG: 0x0, STATUS: 0x0
+[    0.004000] hpet: COUNTER_l: 0x0, COUNTER_h: 0x0
+[    0.004000] hpet: T0: CFG_l: 0x10, CFG_h: 0xfdefa
+[    0.004000] hpet: T0: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T0 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: T1: CFG_l: 0x0, CFG_h: 0xfdefa
+[    0.004000] hpet: T1: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T1 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: T2: CFG_l: 0x0, CFG_h: 0xfdefa
+[    0.004000] hpet: T2: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T2 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: hpet_set_mode(328):
+[    0.004000] hpet: ID: 0x10228203, PERIOD: 0x429b17f
+[    0.004000] hpet: CFG: 0x3, STATUS: 0x1
+[    0.004000] hpet: COUNTER_l: 0x2b4a5, COUNTER_h: 0x0
+[    0.004000] hpet: T0: CFG_l: 0x261c, CFG_h: 0xfdefa
+[    0.004000] hpet: T0: CMP_l: 0xdfb7, CMP_h: 0x0
+[    0.004000] hpet: T0 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: T1: CFG_l: 0x0, CFG_h: 0xfdefa
+[    0.004000] hpet: T1: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T1 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: T2: CFG_l: 0x0, CFG_h: 0xfdefa
+[    0.004000] hpet: T2: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T2 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: hpet_msi_capability_lookup(574):
+[    0.004000] hpet: ID: 0x10228203, PERIOD: 0x429b17f
+[    0.004000] hpet: CFG: 0x3, STATUS: 0x1
+[    0.004000] hpet: COUNTER_l: 0xfeb0e, COUNTER_h: 0x0
+[    0.004000] hpet: T0: CFG_l: 0x261c, CFG_h: 0xfdefa
+[    0.004000] hpet: T0: CMP_l: 0xdfb7, CMP_h: 0x0
+[    0.004000] hpet: T0 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: T1: CFG_l: 0x0, CFG_h: 0xfdefa
+[    0.004000] hpet: T1: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T1 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] hpet: T2: CFG_l: 0x0, CFG_h: 0xfdefa
+[    0.004000] hpet: T2: CMP_l: 0xffffffff, CMP_h: 0x0
+[    0.004000] hpet: T2 ROUTE_l: 0x0, ROUTE_h: 0x0
+[    0.004000] HPET: 3 timers in total, 0 timers will be used for per-cpu=
+ timer
+[    0.004010] Calibrating delay loop (skipped), value calculated using t=
+imer frequency.. 3983.67 BogoMIPS (lpj=3D7967340)
+[    0.008000] Security Framework initialized
+[    0.008000] SELinux:  Disabled at boot.
+[    0.008000] Dentry cache hash table entries: 1048576 (order: 11, 83886=
+08 bytes)
+[    0.008000] Inode-cache hash table entries: 524288 (order: 10, 4194304=
+ bytes)
+[    0.008000] Mount-cache hash table entries: 256
+[    0.008000] Initializing cgroup subsys ns
+[    0.008000] Initializing cgroup subsys cpuacct
+[    0.008000] Initializing cgroup subsys memory
+[    0.008000] Initializing cgroup subsys devices
+[    0.008000] Initializing cgroup subsys freezer
+[    0.008000] Initializing cgroup subsys net_cls
+[    0.008000] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 byte=
+s/line)
+[    0.008000] CPU: L2 Cache: 1024K (64 bytes/line)
+[    0.008000] CPU 0/0x0 -> Node 0
+[    0.008000] CPU: Physical Processor ID: 0
+[    0.008000] CPU: Processor Core ID: 0
+[    0.008000] ACPI: Core revision 20090320
+[    0.008000] Setting APIC routing to flat
+[    0.008000] ..TIMER: vector=3D0x30 apic1=3D0 pin1=3D2 apic2=3D0 pin2=3D=
+0
+[    0.008000] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+[    0.008000] ...trying to set up timer (IRQ0) through the 8259A ...
+[    0.008000] ..... (found apic 0 pin 0) ...
+[    0.008000] ....... failed.
+[    0.008000] ...trying to set up timer as Virtual Wire IRQ...
+[    0.008000] ..... failed.
+[    0.008000] ...trying to set up timer as ExtINT IRQ...
+[    0.008000] ..... failed :(.
+[    0.008000] Kernel panic - not syncing: IO-APIC + timer doesn't work! =
+ Boot with apic=3Ddebug and send a report.  Then try booting with the 'no=
+apic' option.
+[    0.008000]=20
+[    0.008000] Pid: 1, comm: swapper Not tainted 2.6.30-rc2-vanilla #3
+[    0.008000] Call Trace:
+[    0.008000]  [<ffffffff80539319>] panic+0x84/0x13a
+[    0.008000]  [<ffffffff8074c330>] setup_IO_APIC+0x487/0x8ea
+[    0.008000]  [<ffffffff80747274>] native_smp_prepare_cpus+0x2ff/0x3a1
+[    0.008000]  [<ffffffff8073b809>] kernel_init+0x69/0x1b5
+[    0.008000]  [<ffffffff8020d12a>] child_rip+0xa/0x20
+[    0.008000]  [<ffffffff8073b7a0>] ? kernel_init+0x0/0x1b5
+[    0.008000]  [<ffffffff8020d120>] ? child_rip+0x0/0x20
 
-Yes, currently, I'm trying to fix it.
+--------------060304010309030606060009
+Content-Type: text/plain;
+ name="lspci.out"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline;
+ filename="lspci.out"
 
->   Ralf
+00:06.0 PCI bridge [0604]: Advanced Micro Devices [AMD] AMD-8111 PCI [102=
+2:7460] (rev 07)
+00: 22 10 60 74 17 01 30 02 07 00 04 06 00 40 01 00
+10: 00 00 00 00 00 00 00 00 00 03 03 40 90 b0 00 02
+20: 90 fc a0 fe f0 ff 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 c0 00 00 00 00 00 00 00 ff 00 0a 00
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 04 06 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 08 f0 86 00 20 00 00 00 d0 00 00 00 22 00 01 00
+d0: 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 0d 00 0c 00 0d 00 0d 00 13 00 0c 00 00 00 00 00
+f0: 08 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00
 
+00:07.0 ISA bridge [0601]: Advanced Micro Devices [AMD] AMD-8111 LPC [102=
+2:7468] (rev 05)
+00: 22 10 68 74 0f 00 20 02 05 00 01 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 68 74
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 00 30 07 80 01 00 00 80 0f fd 00 01 00 00 00 c0
+50: 00 00 00 00 8d 71 00 00 48 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 22 10 68 74 00 de 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 01 10 c0 fe 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:07.1 IDE interface [0101]: Advanced Micro Devices [AMD] AMD-8111 IDE [=
+1022:7469] (rev 03)
+00: 22 10 69 74 05 00 00 02 03 8a 01 01 00 20 00 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: a1 ff 00 00 00 00 00 00 00 00 00 00 22 10 69 74
+30: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
+40: 03 f0 00 00 00 00 00 00 a8 a8 a8 20 3f 00 ff 20
+50: 03 03 03 c0 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 22 10 69 74 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:07.2 SMBus [0c05]: Advanced Micro Devices [AMD] AMD-8111 SMBus 2.0 [10=
+22:746a] (rev 02)
+00: 22 10 6a 74 01 00 00 02 02 00 05 0c 00 40 00 00
+10: 01 cc 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 6a 74
+30: 00 00 00 00 00 00 00 00 00 00 00 00 09 04 00 00
+40: 02 00 05 0c 22 10 6a 74 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:07.3 Bridge [0680]: Advanced Micro Devices [AMD] AMD-8111 ACPI [1022:7=
+46b] (rev 05)
+00: 22 10 6b 74 00 00 80 02 05 00 80 06 00 40 00 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 6b 74
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 80 b1 09 04 00 00 00 00 20 04 50 00 00 00 00 03
+50: 01 00 00 00 0f 00 00 00 01 10 00 00 00 00 00 00
+60: 00 00 80 06 13 00 00 00 00 00 00 00 00 00 00 00
+70: 06 29 4b d5 0c 00 00 00 00 00 00 00 22 10 6b 74
+80: 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 4f c1 39 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0a.0 PCI bridge [0604]: Advanced Micro Devices [AMD] AMD-8131 PCI-X Br=
+idge [1022:7450] (rev 12)
+00: 22 10 50 74 16 01 30 02 12 00 04 06 00 40 81 00
+10: 00 00 00 00 00 00 00 00 00 02 02 40 f1 01 20 22
+20: 80 fc 80 fc 51 ff 51 ff 00 00 00 00 00 00 00 00
+30: 00 00 00 00 a0 00 00 00 00 00 00 00 ff 00 05 00
+40: 04 00 1c 00 00 00 00 00 02 0d 00 00 01 2c 00 00
+50: 00 00 03 00 00 00 05 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 07 b8 83 00 50 00 03 00 0e 00 ff ff 02 00 ff ff
+b0: 00 00 00 00 00 00 00 00 08 c0 00 80 00 00 00 05
+c0: 08 00 4a 00 20 00 11 11 20 00 00 00 22 04 35 00
+d0: 02 00 35 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 08 08 0d 00 08 08 0d 00 0f 0f 15 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0a.1 PIC [0800]: Advanced Micro Devices [AMD] AMD-8131 PCI-X IOAPIC [1=
+022:7451] (rev 01)
+00: 22 10 51 74 06 00 00 02 01 10 00 08 00 00 00 00
+10: 04 f0 bf fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 c0 36
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 00 00 00 00 03 00 00 00 04 f0 bf fe 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0b.0 PCI bridge [0604]: Advanced Micro Devices [AMD] AMD-8131 PCI-X Br=
+idge [1022:7450] (rev 12)
+00: 22 10 50 74 17 01 30 02 12 00 04 06 00 40 81 00
+10: 00 00 00 00 00 00 00 00 00 01 01 40 81 81 20 02
+20: 70 fc 70 fc f1 ff 01 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 a0 00 00 00 00 00 00 00 ff 00 05 00
+40: 04 00 1f 00 00 00 00 00 00 00 00 00 01 2c 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 07 b8 03 00 58 00 03 00 0e 00 ff ff 02 00 ff ff
+b0: 00 00 00 00 00 00 00 00 08 00 00 80 00 00 00 06
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0b.1 PIC [0800]: Advanced Micro Devices [AMD] AMD-8131 PCI-X IOAPIC [1=
+022:7451] (rev 01)
+00: 22 10 51 74 06 00 00 02 01 10 00 08 00 00 00 00
+10: 04 e0 bf fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 c0 36
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 00 00 00 00 03 00 00 00 04 e0 bf fe 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.0 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] HyperTransport Technology Configuration [1022:1100]
+00: 22 10 00 11 00 00 10 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00
+40: 01 01 03 00 02 02 01 00 01 01 01 00 01 01 01 00
+50: 01 01 01 00 01 01 01 00 01 01 01 00 01 01 01 00
+60: 10 00 03 00 e4 02 00 00 20 c8 0e 0f 3c 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 08 a0 01 21 20 00 11 11 22 06 75 80 02 00 00 00
+90: 13 56 13 04 00 00 00 00 03 00 00 00 00 00 00 00
+a0: 08 c0 01 21 d0 00 11 77 22 04 75 80 02 00 00 00
+b0: 12 86 42 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 08 00 01 21 20 00 11 11 22 04 75 80 02 00 00 00
+d0: 56 04 51 02 00 00 ff 00 07 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.1 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] Address Map [1022:1101]
+00: 22 10 01 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 03 00 00 00 00 00 ff 00 03 00 00 01 01 00 ff 01
+50: 00 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00
+60: 00 00 00 00 04 00 00 00 00 00 00 00 05 00 00 00
+70: 00 00 00 00 06 00 00 00 00 00 00 00 07 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 03 0a 00 00 20 0b 00 00 03 00 f8 00 20 ff ff 00
+c0: 13 10 00 00 20 f0 ff 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 03 02 00 ff 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.2 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] DRAM Controller [1022:1102]
+00: 22 10 02 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 01 00 00 00 01 20 00 00 01 40 00 00 01 60 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 9e e0 0f 00 9e e0 0f 00 9e e0 0f 00 9e e0 0f
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 77 00 00 00 00 00 00 00 42 35 82 13 31 0b 10 00
+90: 00 8c 03 48 08 0a 7b 0e 00 00 00 00 09 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 16 63 72 8e 35 00 00 00 ba f6 0c 00 03 e4 ac 08
+c0: 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: da c3 49 ad d9 51 8a 18 ba c9 0f 0d 94 70 80 06
+e0: b8 7e 9b 36 d7 4d 5e d9 8b 85 36 0a 5f d7 df 34
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.3 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] Miscellaneous Control [1022:1103]
+00: 22 10 03 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: ff 3b 00 00 40 00 40 08 00 00 00 00 00 00 00 00
+50: 28 fe ff ff 00 00 00 00 00 00 00 00 00 47 6a 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 11 01 02 51 11 80 00 50 00 38 00 08 1a 22 00 00
+80: 00 00 07 23 13 21 13 00 00 00 00 00 00 00 00 00
+90: 03 00 00 00 10 00 00 00 00 d4 f6 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 3e 00 00 20 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 07 a7 e2 04 10 27 60 20 25 00 00 00
+e0: 00 00 00 00 24 11 52 14 1f 11 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:19.0 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] HyperTransport Technology Configuration [1022:1100]
+00: 22 10 00 11 00 00 10 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00
+40: 02 02 01 00 01 01 03 00 01 01 01 00 01 01 01 00
+50: 01 01 01 00 01 01 01 00 01 01 01 00 01 01 01 00
+60: 11 00 03 00 e4 00 00 00 20 c8 0e 0f 10 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 08 a0 01 21 20 00 11 11 22 06 75 80 02 00 00 00
+90: 13 56 13 04 00 00 00 00 03 00 00 00 00 00 00 00
+a0: 08 c0 01 21 d0 00 11 77 22 04 75 80 02 00 00 00
+b0: 91 75 20 02 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 08 00 01 21 d0 00 11 77 22 04 75 80 02 00 00 00
+d0: 56 05 51 02 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:19.1 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] Address Map [1022:1101]
+00: 22 10 01 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 03 00 00 00 00 00 ff 00 03 00 00 01 01 00 ff 01
+50: 00 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00
+60: 00 00 00 00 04 00 00 00 00 00 00 00 05 00 00 00
+70: 00 00 00 00 06 00 00 00 00 00 00 00 07 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 03 0a 00 00 20 0b 00 00 03 00 f8 00 20 ff ff 00
+c0: 13 10 00 00 20 f0 ff 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 03 02 00 ff 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:19.2 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] DRAM Controller [1022:1102]
+00: 22 10 02 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 01 00 00 00 01 20 00 00 01 40 00 00 01 60 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 9e e0 0f 00 9e e0 0f 00 9e e0 0f 00 9e e0 0f
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 77 00 00 00 00 00 00 00 42 35 82 13 31 0b 10 00
+90: 00 8c 03 48 08 0a 7b 0e 00 00 00 00 09 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: c8 f3 cf 8c 35 00 00 00 b6 bd 0a aa e4 3e 28 2f
+c0: 00 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 8d e2 78 da e5 a4 d9 20 62 ee ea 7b a7 eb 6c 8a
+e0: b6 df c3 2a 60 4f 5c 75 5c 3d f7 f5 db cd 34 b8
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:19.3 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opt=
+eron] Miscellaneous Control [1022:1103]
+00: 22 10 03 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: ff 3b 00 00 40 00 40 08 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 40 8d 59 00
+60: 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 11 01 02 51 11 80 00 50 00 38 00 08 1a 22 00 00
+80: 00 00 07 23 13 21 13 00 00 00 00 00 00 00 00 00
+90: 03 00 00 00 10 00 00 00 00 d4 f6 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 3e 00 00 80 ff 8f 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 07 a7 e2 04 10 27 60 20 25 00 00 00
+e0: 00 00 00 00 24 08 50 10 1f 11 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+01:03.0 FireWire (IEEE 1394) [0c00]: VIA Technologies, Inc. VT6306 Fire I=
+I IEEE 1394 OHCI Link Layer Controller [1106:3044] (rev 46)
+00: 06 11 44 30 17 01 10 02 46 10 00 0c 10 40 00 00
+10: 00 f8 7f fc 01 8c 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 06 11 e9 e8
+30: 00 00 00 00 50 00 00 00 00 00 00 00 05 01 00 20
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 01 00 02 e4 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+02:09.0 Ethernet controller [0200]: Broadcom Corporation NetXtreme BCM570=
+4 Gigabit Ethernet [14e4:1648] (rev 03)
+00: e4 14 48 16 46 01 b0 02 03 00 00 02 10 40 80 00
+10: 04 00 80 fc 00 00 00 00 04 00 8f fc 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 e4 14 44 16
+30: 00 00 8e fc 40 00 00 00 00 00 00 00 05 01 40 00
+40: 07 48 08 00 48 02 43 04 01 50 02 c0 00 21 00 00
+50: 03 58 28 00 38 a0 00 88 05 00 86 00 00 00 00 00
+60: 01 00 00 00 65 08 00 00 98 02 03 20 00 40 9f 76
+70: e2 30 00 00 c6 00 00 80 4c 5b 03 00 00 00 00 00
+80: 00 00 00 00 0b 61 8b d9 34 00 13 04 82 90 28 02
+90: 09 97 00 01 67 00 00 00 00 00 00 00 67 00 00 00
+a0: 00 00 00 00 9f 01 00 00 00 00 00 00 b2 01 00 00
+b0: 00 00 00 00 00 00 00 c2 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+02:09.1 Ethernet controller [0200]: Broadcom Corporation NetXtreme BCM570=
+4 Gigabit Ethernet [14e4:1648] (rev 03)
+00: e4 14 48 16 06 01 b0 02 03 00 00 02 10 40 80 00
+10: 04 00 83 fc 00 00 00 00 04 00 82 fc 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 e4 14 44 16
+30: 00 00 81 fc 40 00 00 00 00 00 00 00 0a 02 40 00
+40: 07 48 32 00 49 02 43 04 01 50 02 c0 00 20 00 00
+50: 03 58 00 00 01 04 11 08 05 00 86 00 00 00 20 04
+60: 00 00 40 00 00 00 00 00 9a 02 03 20 00 40 9f 76
+70: a2 32 00 00 c6 00 00 00 10 70 00 00 00 00 00 00
+80: 00 00 00 00 68 a1 1e d3 34 00 00 00 fe 90 60 02
+90: 01 07 00 01 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 04 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+03:00.0 USB Controller [0c03]: Advanced Micro Devices [AMD] AMD-8111 USB =
+[1022:7464] (rev 0b)
+00: 22 10 64 74 17 01 80 02 0b 10 03 0c 00 40 80 00
+10: 00 c0 af fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 64 74
+30: 00 00 00 00 00 00 00 00 00 00 00 00 09 04 00 50
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 22 10 64 74 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+03:00.1 USB Controller [0c03]: Advanced Micro Devices [AMD] AMD-8111 USB =
+[1022:7464] (rev 0b)
+00: 22 10 64 74 17 01 80 02 0b 10 03 0c 00 40 00 00
+10: 00 d0 af fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 22 10 64 74
+30: 00 00 00 00 00 00 00 00 00 00 00 00 09 04 00 50
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 22 10 64 74 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+03:05.0 Mass storage controller [0180]: Silicon Image, Inc. SiI 3114 [SAT=
+ALink/SATARaid] Serial ATA Controller [1095:3114] (rev 02)
+00: 95 10 14 31 07 01 b0 02 02 00 80 01 10 40 00 00
+10: 01 bc 00 00 81 b8 00 00 01 b8 00 00 01 ac 00 00
+20: 81 a8 00 00 00 ec af fe 00 00 00 00 95 10 14 31
+30: 00 00 a0 fe 60 00 00 00 00 00 00 00 0a 01 00 00
+40: 02 00 00 00 00 18 40 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 01 00 22 06 00 40 00 64 00 00 00 00 00 00 00 00
+70: 08 00 60 00 00 10 91 37 00 00 60 00 00 00 00 00
+80: 03 00 00 00 22 00 00 00 00 00 00 00 bf 7e f7 3f
+90: 00 00 00 09 ff ff 00 00 00 00 00 19 00 00 00 00
+a0: 01 21 15 65 dd 62 dd 62 92 43 92 43 09 40 09 40
+b0: 01 21 15 65 dd 62 dd 62 92 43 92 43 09 40 09 40
+c0: 84 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+03:06.0 VGA compatible controller [0300]: ATI Technologies Inc Rage XL [1=
+002:4752] (rev 27)
+00: 02 10 52 47 87 00 90 02 27 00 00 03 10 40 00 00
+10: 00 00 00 fd 01 b0 00 00 00 f0 af fe 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 02 10 08 80
+30: 00 00 ac fe 5c 00 00 00 00 00 00 00 0b 01 08 00
+40: 0c 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 02 5c 10 00 01 00 00 ff 00 00 00 00 01 00 02 06
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+
+--------------060304010309030606060009--
+
+--------------enigFE36D1B3D0EEC081B4BFFCEC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknshVYACgkQLPWxlyuTD7Jr0ACgo3b6PVR3mksa+RFiK401F0iB
+Aq4AoJM0c4v3sdW+ikG37qIsnwFOa0HK
+=Ky0H
+-----END PGP SIGNATURE-----
+
+--------------enigFE36D1B3D0EEC081B4BFFCEC--
