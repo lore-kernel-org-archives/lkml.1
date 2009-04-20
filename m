@@ -1,106 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZDTUtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZDTUyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbZDTUtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZDTUtF
+	id S1757064AbZDTUyu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbZDTUyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:49:05 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:61065 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbZDTUtD (ORCPT
+	Mon, 20 Apr 2009 16:54:41 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:53242 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751644AbZDTUyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:49:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=SveMrc0EijU0bYRoNpgy4gVEWihQocjlCcoXNVh0xycs3Q1qbsb6WyWcK2u4qUXkg2
-         7HWTpfAT5nnv703kii6qtkbSym3oPqwW9RZo/Yl0449dKm/UkPEJJw4wUT1byxqS5jam
-         z+3bDIzwWu1hxrGAiZltXUn3Z1igBeq5b+mAs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jens Axboe <axboe@kernel.dk>
-Subject: Re: [RFC][PATCH] block: enable by default support for large devices and files on 32-bit archs
-Date: Mon, 20 Apr 2009 22:52:08 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-References: <200903281916.06905.bzolnier@gmail.com>
-In-Reply-To: <200903281916.06905.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 20 Apr 2009 16:54:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AukFACd47ElMQW1W/2dsb2JhbACBTtA6g30G
+Date: Mon, 20 Apr 2009 16:54:38 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [RFC] Stupid tracepoint ideas
+Message-ID: <20090420205438.GA11567@Krystal>
+References: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904202252.08619.bzolnier@gmail.com>
+In-Reply-To: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:48:40 up 51 days, 17:14,  1 user,  load average: 0.71, 0.67,
+	0.54
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 March 2009 19:16:06 Bartlomiej Zolnierkiewicz wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> Enable by default support for large devices and files (CONFIG_LBD):
+> Mathieu,
 > 
-> - With 1TB disks being a commodity hardware it is quite easy to hit 2TB
->   limitation while building RAIDs etc. and many distros have been using
->   CONFIG_LBD=y by default already (at least Fedora 10 and openSUSE 11.1).
+> You may have tried this in your creation of tracepoints, but I figured I 
+> would ask before wasting too much time on it.
 > 
-> - This should also prevent a subtle ext4 filesystem compatibility issue:
->   mke2fs.ext4 defaults to creating filesystems with huge_files feature
->   enabled and such filesystems cannot be later mounted read-write on
->   machines with CONFIG_LBD=n (it should be quite easy to hit this issue
->   when trying to use filesystem created using distro kernel on system
->   running the self-build kernel, think about USB disk enclosures & co.).
+> I'm looking at ways to make tracepoints even lighter weight when disabled. 
+> And I thought of doing section code. I'm playing with the following idea 
+> (see below patch) but I'm afraid gcc is allowed to think that the code it 
+> produces will not move to different sections.
 > 
-> While at it:
+> Any thoughts on how we could do something similar to this.
 > 
-> - Clarify config option help text w.r.t. mounting ext4 filesystems
->   (they can be mounted with CONFIG_LBD=n but in the read-only mode).
+> Note, this patch is purely proof-of-concept. I'm fully aware that it is an 
+> x86 solution only.
 > 
-> Cc: "Theodore Ts'o" <tytso@mit.edu>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> Unfortunately to also update the existings [def]configs the config option
-> rename would be needed.  Actually, since the performance impact and kernel
-> size increase seem to be minimal (at least on x86-32) maybe we should just
-> go ahead and remove CONFIG_LBD (== always use 64-bit sector_t/blkcnt_t)?
+> -- Steve
 > 
-> I can make needed changes once there is agreement on preferred approach...
+> [ no Signed-off-by: because this patch is crap ]
+> 
+> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> index 4353f3f..6953f78 100644
+> --- a/include/linux/tracepoint.h
+> +++ b/include/linux/tracepoint.h
+> @@ -65,9 +65,18 @@ struct tracepoint {
+>  	extern struct tracepoint __tracepoint_##name;			\
+>  	static inline void trace_##name(proto)				\
+>  	{								\
+> -		if (unlikely(__tracepoint_##name.state))		\
+> +		if (unlikely(__tracepoint_##name.state)) {		\
+> +			asm volatile ("jmp 43f\n"			\
+> +				      "42:\n"				\
+> +				      ".section .unlikely,\"ax\"\n"	\
+> +				      "43:\n"				\
+> +				      ::: "memory");			\
+>  			__DO_TRACE(&__tracepoint_##name,		\
+> -				TP_PROTO(proto), TP_ARGS(args));	\
+> +				   TP_PROTO(proto), TP_ARGS(args));	\
+> +			asm volatile ("jmp 42b\n"			\
+> +			     ".previous\n"				\
+> +			     ::: "memory");				\
+> +		}							\
 
-Jens, any thoughts on this?
+You are right, I thought of this.
 
-[ Please note that the patch below should be safe for 2.6.30. ]
+gcc forbids jumping outside of inline assembly statements. Optimisations
+done by gcc are not aware of this sort of execution flow modification,
+and gcc has every rights to interleave unrelated code between the two
+inline assembly statements.
 
->  block/Kconfig |   11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> Index: b/block/Kconfig
-> ===================================================================
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -26,6 +26,7 @@ if BLOCK
->  config LBD
->  	bool "Support for large block devices and files"
->  	depends on !64BIT
-> +	default y
->  	help
->  	  Enable block devices or files of size 2TB and larger.
->  
-> @@ -38,11 +39,13 @@ config LBD
->  
->  	  The ext4 filesystem requires that this feature be enabled in
->  	  order to support filesystems that have the huge_file feature
-> -	  enabled.    Otherwise, it will refuse to mount any filesystems
-> -	  that use the huge_file feature, which is enabled by default
-> -	  by mke2fs.ext4.   The GFS2 filesystem also requires this feature.
-> +	  enabled.  Otherwise, it will refuse to mount in the read-write
-> +	  mode any filesystems that use the huge_file feature, which is
-> +	  enabled by default by mke2fs.ext4.
->  
-> -	  If unsure, say N.
-> +	  The GFS2 filesystem also requires this feature.
-> +
-> +	  If unsure, say Y.
->  
->  config BLK_DEV_IO_TRACE
->  	bool "Support for tracing block io actions"
-> 
+And is it me or this sounds like an infinite loop ?
+
+42:
+....
+jmp 42b
+
+Mathieu
+
+>  	}								\
+>  	static inline int register_trace_##name(void (*probe)(proto))	\
+>  	{								\
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
