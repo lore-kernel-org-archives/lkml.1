@@ -1,117 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbZDTVjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbZDTVkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbZDTVjg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZDTVjY
+	id S1757816AbZDTVkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbZDTVju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:39:24 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:34100 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbZDTVjX convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 17:39:50 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:57814 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756992AbZDTVjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:39:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VsU0h+gAVKRkel30loJGX+OVKHyfcI0kk9vR1/u1Jjv6hCwP/dzjWT0bVQwo3kl5hI
-         PpN26PTydl+BTRJkEjhaUpg2NcKq+0g3AVWbuuosgsHCTZZmRLCp/pTW86al08GxIiS+
-         IEQNKvCQ1/iuoKAzl2Ipe4s6wXmzRNFcTeNe8=
-MIME-Version: 1.0
-In-Reply-To: <13606.1240262581@death.nxdomain.ibm.com>
-References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com>
-	 <49ECBBF0.80202@cosmosbay.com>
-	 <30257.1240252651@death.nxdomain.ibm.com>
-	 <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com>
-	 <7609.1240259780@death.nxdomain.ibm.com>
-	 <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com>
-	 <13606.1240262581@death.nxdomain.ibm.com>
-Date: Mon, 20 Apr 2009 23:39:21 +0200
-Message-ID: <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com>
-Subject: Re: bond interface arp, vlan and trunk / network question
-From: stefan novak <lms.brubaker@gmail.com>
-To: Jay Vosburgh <fubar@us.ibm.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 20 Apr 2009 17:39:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AukFAL6F7ElMQW1W/2dsb2JhbACBTtAng30G
+Date: Mon, 20 Apr 2009 17:39:36 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] tracing: move __DO_TRACE out of line
+Message-ID: <20090420213936.GA12986@Krystal>
+References: <1239950139-1119-1-git-send-email-jeremy@goop.org> <1239950139-1119-2-git-send-email-jeremy@goop.org> <20090417154640.GB8253@elte.hu> <20090417161005.GA16361@Krystal> <20090417162326.GG8253@elte.hu> <49E8D91F.1060005@goop.org> <20090418065331.GA1942@Krystal> <alpine.DEB.2.00.0904181013450.1016@gandalf.stny.rr.com> <20090419035938.GA26365@Krystal> <49EBB609.9030407@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <49EBB609.9030407@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:32:14 up 51 days, 17:58,  2 users,  load average: 1.24, 0.68,
+	0.51
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ip route get 172.21.0.254
-172.21.0.254 dev bond0.600  src 172.21.0.1
-    cache  mtu 1500 advmss 1460 hoplimit 64
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
+>> Here is the conclusions I gather from the following tbench tests on the LTTng
+>> tree :
+>>
+>> - Dormant tracepoints, when sprinkled all over the place, have a very small, but
+>>   measurable, footprint on kernel stress-test workloads (3 % for the
+>>   whole 2.6.30-rc1 LTTng tree).
+>>
+>> - "Immediate values" help lessening this impact significantly (3 % -> 2.5 %).
+>>
+>> - Static jump patching would diminish impact even more, but would require gcc
+>>   modifications to be acceptable. I did some prototypes using instruction
+>>   pattern matching in the past which was judged too complex.
+>>
+>> - I strongly recommend adding per-subsystem config-out option for heavy
+>>   users like kmemtrace or pvops. Compiling-out kmemtrace instrumentation
+>>   brings the performance impact from 2.5 % down to 1.9 % slowdown.
+>>
+>> - Putting the tracepoint out-of-line is a no-go, as it slows down *both* the
+>>   dormant (3 % -> 4.7 %) and the active (+20% to tracer overhead) tracepoints
+>>   compared to inline tracepoints.
+>>   
+>
+> That's an interestingly counter-intuitive result.  Do you have any  
+> theories how this might happen?  The only mechanism I can think of is  
+> that, because the inline code sections are smaller, gcc is less inclined  
+> to put the if(unlikely) code out of line, so the amount of hot-patch  
+> code is higher.  But still, 1.7% is a massive increase in overhead,  
+> especially compared to the relative differences of the other changes.
+>
 
-ifconfig -a :
-bond0     Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
-          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
-          RX packets:62221072 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1152153 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:4037489679 (3.7 GiB)  TX bytes:124861822 (119.0 MiB)
+Hrm, there is an approximation I've done in my test code to minimize the
+development time, and it might explain it. I have simplistically changed the
 
-bond0.200 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
-          inet addr:172.22.0.1  Bcast:172.22.0.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
-          RX packets:5 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:250 (250.0 b)  TX bytes:252 (252.0 b)
+static inline
+for
+static noinline
 
-bond0.500 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
-          inet addr:172.20.0.1  Bcast:172.20.0.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
-          RX packets:26448 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:33570 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:6278388 (5.9 MiB)  TX bytes:6429404 (6.1 MiB)
+in DECLARE_TRACE(), and have not modified DEFINE_TRACE. Therefore,
+some duplicated instances of the function are defined. We should clearly
+re-do those tests with your approach of extern prototype in the
+DECLARE_TRACE and add proto and args arguments to DEFINE_TRACE, where
+the callback would be declared. I'd be very interested to see the
+result. For a limited instrumentation modification, one could
+concentrate on kmemtrace instrumentation, given I've shown that cover
+enough sites that its performance impact, under tbench, seems to be
+consistently perceivable.
 
-bond0.600 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
-          inet addr:172.21.0.1  Bcast:172.21.0.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
-          RX packets:1911 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:8665 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:98604 (96.2 KiB)  TX bytes:1208395 (1.1 MiB)
+However I have very limited time on my hands, and I won't be able to do
+the modification required to test this in the LTTng setup applied to all
+the instrumentation. I also don't have the hardware and cpu time to
+perform the 10 runs of each you are talking about, given that the 3 runs
+already monopolized my development machine for way too long.
 
-eth0      Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
-          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
-          RX packets:881723 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1074651 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:108550619 (103.5 MiB)  TX bytes:115574099 (110.2 MiB)
-          Memory:f8220000-f8240000
+Mathieu, who really has to focus back on his ph.d. thesis :/
 
-eth1      Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
-          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
-          RX packets:61339352 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:77510 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:3928939240 (3.6 GiB)  TX bytes:9290795 (8.8 MiB)
-          Memory:f8260000-f8280000
+>> Tracepoints all compiled-out :
+>>
+>> run 1 :                2091.50
+>> run 2 (after reboot) : 2089.50 (baseline)
+>> run 3 (after reboot) : 2083.61
+>>
+>> Dormant tracepoints :
+>>
+>> inline, no immediate value optimization
+>>
+>> run 1 :                1990.63
+>> run 2 (after reboot) : 2025.38 (3 %)
+>> run 3 (after reboot) : 2028.81
+>>
+>> out-of-line, no immediate value optimization
+>>
+>> run 1 :                1990.66
+>> run 2 (after reboot) : 1990.19 (4.7 %)
+>> run 3 (after reboot) : 1977.79
+>>
+>> inline, immediate value optimization
+>>
+>> run 1 :                2035.99 (2.5 %)
+>> run 2 (after reboot) : 2036.11
+>> run 3 (after reboot) : 2035.75
+>>
+>> inline, immediate value optimization, configuring out kmemtrace tracepoints
+>>
+>> run 1 :                2048.08 (1.9 %)
+>> run 2 (after reboot) : 2055.53
+>> run 3 (after reboot) : 2046.49
+>>   
+>
+> So what are you doing here?  Are you doing 3 runs, then comparing he  
+> median measurement in each case?
+>
+> The trouble is that your run to run variations are at least as large as  
+> the difference you're trying to detect.  For example in run 1 of  
+> "inline, no immediate value optimization" you got 1990.6MB/s throughput,  
+> and then runs 2 & 3 both went up to ~2025.  Why?  That's a huge jump.
+>
+> The "out-of-line, no immediate value optimization" runs 1&2 has the same  
+> throughput as run 1 of the previous test, 1990MB/s, while run 3 is a bit  
+> worse.  OK, so perhaps its slower.  But why are runs 1&2 more or less  
+> identical to inline/run1?
+>
+> What would happen if you happened to do 10 iterations of these tests?   
+> There just seems like too much run to run variation to make 3 runs  
+> statistically meaningful.
+>
+> I'm not picking on you personally, because I had exactly the same  
+> problems when trying to benchmark the overhead of pvops.  The  
+> reboot/rerun variations were at least as large as the effects I'm trying  
+> to measure, and I'm just feeling suspicious of all the results.
+>
+> I think there's something fundimentally off about about this kind of  
+> kernel benchmark methodology.  The results are not stable and are not -  
+> I think - reliable.  Unfortunately I don't have enough of a background  
+> in statistics to really analyze what's going on here, or how we should  
+> change the test/measurement methodology to get results that we can  
+> really stand by.
+>
+> I don't even have a good explanation for why there are such large  
+> boot-to-boot variations anyway.  The normal explanation is "cache  
+> effects", but what is actually changing here?  The kernel image is  
+> identical, loaded into the same physical pages each time, and mapped  
+> into the same virtual address.  So the I&D caches and tlb should get  
+> exactly the same access patterns for the kernel code itself.  The  
+> dynamically allocated memory is going to vary, and have different cache  
+> interactions, but is that enough to explain these kinds of variations?   
+> If so, we're going to need to do a lot more iterations to see any signal  
+> from our actual changes over the noise that "cache effects" are throwing  
+> our way...
+>
+>    J
 
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:105468 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:105468 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:7016087 (6.6 MiB)  TX bytes:7016087 (6.6 MiB)
-
-
->        You set arp_interval to 30, so you get one probe every 30
-> milliseconds, 33 per second.
-
-Yes, sure. my mistake....
-
->        There's no "self test" or anything like that, if that's what you
-> mean.  If the ARPs work (make the round trip) the link is up, if they
-> don't, the link is down.  That's subject to some details related to
-> arp_validate, but is basically it.
-
-Ok. my interfaces are now up with arp_validate set to 0/none.
-Everything works as expected, thank you.
-But with arp_validate set to all the interfaces are always down. :(
-I think that i have to use the all option because i have many servers
-in that vlan?
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
