@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZDTGQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZDTGRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbZDTGQS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 02:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZDTGQG
+	id S1754323AbZDTGRN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 02:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbZDTGQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 02:16:06 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36490 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbZDTGQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 02:16:04 -0400
-Date: Mon, 20 Apr 2009 08:16:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Carl Henrik Lunde <chlunde@ping.uio.no>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: CFQ: Preemption/timeout logic reversed?
-Message-ID: <20090420061602.GO4593@kernel.dk>
-References: <ed038eb20904191756y5a5bcf8fn53473405b3929de6@mail.gmail.com>
+	Mon, 20 Apr 2009 02:16:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:24363 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbZDTGQz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 02:16:55 -0400
+Message-ID: <49EC1352.6010900@petalogix.com>
+Date: Mon, 20 Apr 2009 08:16:50 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ed038eb20904191756y5a5bcf8fn53473405b3929de6@mail.gmail.com>
+To: Nate Straz <nate-ltp@refried.org>
+CC: subrata@linux.vnet.ibm.com, ltp-list@lists.sourceforge.net,
+       John Williams <john.williams@petalogix.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [LTP] statvfs -> f_bavail
+References: <49E759FB.70103@petalogix.com> <49E847FB.1030801@petalogix.com> <20090417173107.GA3590@refried.org>
+In-Reply-To: <20090417173107.GA3590@refried.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20 2009, Carl Henrik Lunde wrote:
-> Hi!
-> 
-> It seems the preemption "bonus" logic in CFQ is reversed, a preempted
-> process is given an additional delay in start time instead of a bonus.
->  This seems unfair.  I'm not sure if it's a good idea to let
+Nate Straz wrote:
+> On Apr 17 11:12, Michal Simek wrote:
+>   
+>>> don't you know what is the description of f_bavail in struct statvfs?
+>>> On my system I am getting zero for this entry that's why fsync02 failed.
+>>>   
+>>>       
+>> I track down where the problem comes from.
+>> There is problem for all fs which use simple_statfs function from
+>> fs/libfs.c.
+>> In open.c in vfs_statfs function is whole structure set to zero and then
+>> in simple_statfs not set this value.
+>> I think we should fix it in ltp code.
+>> Here is my proposed change. If is ok - I will generate proper patch.
+>>     
+>
+> If the problem is in the kernel, then it should be fixed in the kernel.
+> That's the whole point of LTP, pointing out problems in the kernel which
+> need to be fixed.  Patching LTP to work around f_bavail not being set
+> correctly is not the right thing to do.
+>   
+:-) And what about if is the kernel code ok? :-)
+Then IMHO is the right time to fix LTP.
 
-Hmm? ->slice_resid is a long, so if we preempt the process 10 jiffies
-before it was supposed to end, the resid will be -10. So it'll not
-increase the rb_key, it'll decrease it.
+The main question is if is or not.
 
-> slice_resid grow without limit as shown below, but isn't this more
-> like the way it was intended to work?  Or did I misunderstand
-> something?
+Hi guys from linux-fsdevel: Can you told us what is the right solution
+for my problem above?
 
-->slice_resid is reset when it gets repositioned in the rb tree. The
-intent was not to increase the slice length, but instead allow it sooner
-service again.
+Thanks,
+Michal
 
-> PS! The comment above cfq_preempt_queue seems outdated too.
+> Nate
+>   
 
-Yep, the slice length comment is out dated indeed.
-
-> Code not tested, just showing what I mean:
-> 
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 664ebfd..ea18d45 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -292,7 +292,8 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct
-> cfq_queue *cfqq)
->  static inline void
->  cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  {
-> -       cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
-> +       cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) +
-> cfqq->slice_resid + jiffies;
-
-So if ->slice_resid is negative because we preempted this queue, it'll
-now get a shorter slice. That's not very nice :-)
 
 -- 
-Jens Axboe
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
 
