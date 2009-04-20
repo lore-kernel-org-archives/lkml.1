@@ -1,111 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZDTOVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZDTOWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZDTOVh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 10:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZDTOVZ
+	id S1756137AbZDTOWb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 10:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbZDTOWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 10:21:25 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:44134 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755358AbZDTOVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 10:21:24 -0400
-Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Suresh Jayaraman <sjayaraman@suse.de>
-Cc: Masahiro Tamori <masahiro.tamori@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <49EC6CB3.8080800@suse.de>
-References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>
-	 <49D45E42.3050502@suse.de>
-	 <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
-	 <49EC0A83.8060802@suse.de> <1240230224.8073.6.camel@heimdal.trondhjem.org>
-	 <49EC6CB3.8080800@suse.de>
-Content-Type: text/plain
-Date: Mon, 20 Apr 2009 10:21:14 -0400
-Message-Id: <1240237274.13636.9.camel@heimdal.trondhjem.org>
+	Mon, 20 Apr 2009 10:22:22 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:39936 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755459AbZDTOWU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 10:22:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=Q2LE6RM7x255sdeUlhV6W9q1n3Ltged8SjukEksW8Iurelc5QwRQEDns09IF7nyIQa
+         vujBxVNVGkuRr0icYyjyr1TYsJu5AZ4xnpd8xkA7xDnEgWSyTbUsnSyfKAEKwhb4v3L4
+         SzRl/hXo/kL+yl+1gHuTMDvO4f+PXFjNPC3bs=
+Subject: Re: "RT_PREEMPT for loongson" is updated to patch-2.6.29.1-rt8
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Zhang Le <r0bertz@gentoo.org>, linux-kernel@vger.kernel.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, zhangfx@lemote.com,
+       loongson-dev@googlegroups.com, yanh@lemote.com,
+       linux-mips@linux-mips.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20090420131022.GA10183@linux-mips.org>
+References: <1240193547.25532.52.camel@falcon>
+	 <20090420050419.GA22520@adriano.hkcable.com.hk>
+	 <1240211926.8884.27.camel@falcon> <20090420080155.GA11621@linux-mips.org>
+	 <20090420131022.GA10183@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 20 Apr 2009 22:22:03 +0800
+Message-Id: <1240237323.8884.42.camel@falcon>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
-X-UiO-Scanned: B11FDBBD0675E210FF29FA49E5A2A6483148D312
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 179 max/h 5 blacklist 0 greylist 0 ratelimit 0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-20 at 18:08 +0530, Suresh Jayaraman wrote:
-> Trond Myklebust wrote:
-> > On Mon, 2009-04-20 at 11:09 +0530, Suresh Jayaraman wrote:
-> >> Hi Trond,
-> >>
-> >> Do you think this patch is OK? Can this be considered for merging?
-> >>
-> >> Thanks,
-> >>
-> >>>>>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> >>>>>> index 90f292b..13d6a00 100644
-> >>>>>> --- a/fs/nfs/file.c
-> >>>>>> +++ b/fs/nfs/file.c
-> >>>>>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
-> >>>>>>                   size_t count, unsigned int flags);
-> >>>>>> static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
-> >>>>>>               unsigned long nr_segs, loff_t pos);
-> >>>>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-> >>>>>> +                  struct file *filp, loff_t *ppos,
-> >>>>>> +                  size_t count, unsigned int flags);
-> >>>>>> static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
-> >>>>>>               unsigned long nr_segs, loff_t pos);
-> >>>>>> static int nfs_file_flush(struct file *, fl_owner_t id);
-> >>>>>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
-> >>>>>>   .lock      = nfs_lock,
-> >>>>>>   .flock     = nfs_flock,
-> >>>>>>   .splice_read  = nfs_file_splice_read,
-> >>>>>> +  .splice_write  = nfs_file_splice_write,
-> >>>>>>   .check_flags  = nfs_check_flags,
-> >>>>>>   .setlease    = nfs_setlease,
-> >>>>>> };
-> >>>>>> @@ -550,6 +554,26 @@ out_swapfile:
-> >>>>>>   goto out;
-> >>>>>> }
-> >>>>>>
-> >>>>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-> >>>>>> +                 struct file *filp, loff_t *ppos,
-> >>>>>> +                 size_t count, unsigned int flags)
-> >>>>>> +{
-> >>>>>> +  struct dentry *dentry = filp->f_path.dentry;
-> >>>>>> +  struct inode *inode = dentry->d_inode;
-> >>>>>> +
-> >>>>>> +  dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
-> >>>>>> +      dentry->d_parent->d_name.name, dentry->d_name.name,
-> >>>>>> +      (unsigned long) count, (unsigned long long) *ppos);
-> >>>>>> +
-> >>>>>> +  if (IS_SWAPFILE(inode)) {
-> >>>>>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
-> >>>>>> +          "file!\n");
-> >>>>>> +      return -EBUSY;
-> >>>>>> +  }
-> > 
-> > I don't know that we really need this. We should sweep through the NFS
-> > code and kill all those IS_SWAPFILE() thingys. Or at least #define
-> > IS_SWAPFILE(a) (0)
-> > ...
+On Mon, 2009-04-20 at 15:10 +0200, Ralf Baechle wrote:
+> On Mon, Apr 20, 2009 at 10:01:55AM +0200, Ralf Baechle wrote:
 > 
-> Hmm.. I'm not sure whether we should kill them now. I think originally,
-> these were added keeping in mind the future NFS swap support. Given that
-> the recent work from Peterz Zilstra on "Swap over NFS" and multiple
-> iterations/review on the same, I think those patches will eventually get
-> merged sooner or later. Perhaps, it's a good idea to #define
-> IS_SWAPFILE(a) 0 than killing them entirely..?
+> > > I have divided ftrace to several commits in the above git tree, hope you
+> > > can check it, thx :-) 
+> > > 
+> > > in addition to the static/dynamic/graph function tracer & system call
+> > > tracer implementation, a mips specific ring_buffer_time_stamp
+> > > (kernel/trace/ring_buffer.c) is also implemented to get 1us precision
+> > > time, this is very important to make ftrace available in mips,
+> > > otherwise, we can only get 1ms precision time for the original
+> > > ring_buffer_time_stamp is based on sched_clock(jiffies based). 
+> > > 
+> > > perhaps we can implement a more precise sched_clock directly, just as
+> > > x86 does(native_sched_clock, tsc based), but in mips, there is only a
+> > > 32bit timer count which will quickly overflow, so it will need an extra
+> > > overflow protection, which may influence the other parts of the kernel.
+> > 
+> > My git clone is still running to I'm commenting only on the patches you
+> > posted earlier.  #ifdef-MIPS'ing things into the generic kernel code
+> > definately won't be an acceptable way to get µs resolution.
+> 
 
-Why are they needed at all? AFAICS, other filesystems check IS_SWAPFILE
-when truncating a file, but don't litter their code with all these weird
-checks for writing, reading, etc.
-It's not as if these checks can stop a determined privileged person from
-writing to the swapfile anyway. All they have to do is go to another
-client or write directly to the file on the server...
+just fix it via moving mips specific ring_buffer_time_stamp to
+arch/mips/kernel/ftrace.c via defining the original one as
+__attribute__(weak).
 
-Trond
+in arch/mips/kernel/ftrace.c: 
+
+u64 native_ring_buffer_time_stamp(...) {
+...
+}
+u64 ring_buffer_time_stamp(...)
+__attribute__((alias("native_ring_buffer_time_stamp")));
+
+in kernel/trace/ring_buffer.c:
+
+-u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
++ u64 __attribute__((weak)) ring_buffer_time_stamp(struct ring_buffer
+*buffer, int cpu)
+
+*** not push to the git tree yet.
+
+> In changeset e67f78d663a84ef93aa12c3c8c1adf3033c4f9a1 you introduce
+> <asm/rwsem.h> but because RWSEM_GENERIC_SPINLOCK is always set that file
+> won't ever be included.
+> 
+
+Yes, currently, I'm trying to fix it.
+
+>   Ralf
 
