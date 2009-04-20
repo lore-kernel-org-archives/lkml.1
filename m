@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbZDTFEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZDTFFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746AbZDTFEq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 01:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZDTFEf
+	id S1754054AbZDTFFH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 01:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZDTFEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 01:04:35 -0400
-Received: from mga14.intel.com ([143.182.124.37]:20703 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbZDTFEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 01:04:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,214,1239001200"; 
-   d="asc'?scan'208";a="133256574"
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-From: Huang Ying <ying.huang@intel.com>
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Anthony Liguori <anthony@codemonkey.ws>, Avi Kivity <avi@redhat.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>
-	 <49E9F7BE.4090904@codemonkey.ws>
-	 <1240190385.6842.45.camel@yhuang-dev.sh.intel.com>
-	 <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-qpEfS5U8554ADCqBAjig"
-Date: Mon, 20 Apr 2009 13:04:31 +0800
-Message-Id: <1240203871.6842.54.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Mon, 20 Apr 2009 01:04:51 -0400
+Received: from apollo.i-cable.com ([203.83.115.103]:35093 "HELO
+	apollo.i-cable.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753188AbZDTFEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 01:04:50 -0400
+Date: Mon, 20 Apr 2009 13:04:20 +0800
+From: Zhang Le <r0bertz@gentoo.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@hofr.at>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       zhangfx@lemote.com, loongson-dev@googlegroups.com, yanh@lemote.com,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: "RT_PREEMPT for loongson" is updated to patch-2.6.29.1-rt8
+Message-ID: <20090420050419.GA22520@adriano.hkcable.com.hk>
+Mail-Followup-To: Wu Zhangjin <wuzhangjin@gmail.com>,
+	linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@hofr.at>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	zhangfx@lemote.com, loongson-dev@googlegroups.com, yanh@lemote.com,
+	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+	linux-rt-users@vger.kernel.org
+References: <1240193547.25532.52.camel@falcon>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
+Content-Disposition: inline
+In-Reply-To: <1240193547.25532.52.camel@falcon>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-qpEfS5U8554ADCqBAjig
-Content-Type: text/plain
+--opJtzjQTFsWo+cga
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2009-04-20 at 11:57 +0800, Kyle Moffett wrote:
-> On Sun, Apr 19, 2009 at 9:19 PM, Huang Ying <ying.huang@intel.com> wrote:
-> > On Sat, 2009-04-18 at 23:54 +0800, Anthony Liguori wrote:
-> >> Huang Ying wrote:
-> >> > The related MSRs are emulated. MCE capability is exported via
-> >> > extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
-> >> > vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
-> >> > such as the mcg_cap. MCE is injected via vcpu ioctl command
-> >> > KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI a=
-re
-> >> > not simulated.
-> >> >
-> >>
-> >> Maybe I'm missing something, but couldn't this be implemented entirely
-> >> within userspace?  There's nothing VT/SVM specific about this.  If the
-> >> issue is setting these MSRs from userspace via KVM_SET_MSRS isn't
-> >> enough, perhaps we should add userspace MSR handling.
-> >>
-> >> Also, if you implement the MSR logic in userspace, it's pretty simple =
-to
-> >> make it work in the non-TCG case which will be a requirement for
-> >> upstream merging.
-> >
-> > There is more logic than just KVM_SET_MSRS, such as BANK reporting
-> > disabling, overwriting rules, triple fault for UC MCE during MCIP.
-> > Although these logic can be implemented in user space, I think put them
-> > in kernel space is easy to be understood. And the code is pretty short.
->=20
-> IMO the main reason to put this in kernel-space would be to make it
-> possible to automatically forward some MCE errors generated by the
-> real hardware (RAM ECC errors for example) down into the VM.  Right
-> now I suppose you could do that with the patches to forward RAM-based
-> hard MCEs to userspace using SIGSEGV and handling the SIGSEGV in
-> userspace, but that seems more fragile to me.
+Hi, Zhangjin,
 
-Yes. Puting this in kernel-space would make it more reliable to forward
-the MCE to KVM guest.
+Ralf told me he has a ftrace implementation too.
 
-Best Regards,
-Huang Ying
+11:47 < Ralf> r0bertz: ftrace looks nice but not yet mergable yet.
+11:47 < Ralf> r0bertz: I also have my own ftrace implementation which in so=
+me
+parts is better, in some is worse.=20
+11:47 < Ralf> r0bertz: So this is going to be quite a job. =20
 
---=-qpEfS5U8554ADCqBAjig
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+So I think you can talk to Ralf about how to get this merged, :)
+
+--=20
+Zhang, Le
+Gentoo/Loongson Developer
+http://zhangle.is-a-geek.org
+0260 C902 B8F8 6506 6586 2B90 BC51 C808 1E4E 2973
+
+--opJtzjQTFsWo+cga
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-iEYEABECAAYFAknsAlsACgkQKhFGF+eHlpiXSACgoqTBnfiWROCMhHva7KCijbSY
-qDYAnRMWITsVcDpB+aVtNPaDaJ/AQhgo
-=PujK
+iEYEARECAAYFAknsAlMACgkQvFHICB5OKXP8FACgjDtvahfiKVOXeBVoi4RDq22y
+TGwAoITlCsglF5WzSujLFiECiM3YVA8V
+=QGmr
 -----END PGP SIGNATURE-----
 
---=-qpEfS5U8554ADCqBAjig--
-
+--opJtzjQTFsWo+cga--
