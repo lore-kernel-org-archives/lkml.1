@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZDTIkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZDTIrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbZDTIkH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 04:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZDTIjz
+	id S1753498AbZDTIrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 04:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZDTIrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 04:39:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53282 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751913AbZDTIjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 04:39:54 -0400
-Message-ID: <49EC34C1.6010709@cn.fujitsu.com>
-Date: Mon, 20 Apr 2009 16:39:29 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Mon, 20 Apr 2009 04:47:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56855 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751785AbZDTIrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 04:47:01 -0400
+Date: Mon, 20 Apr 2009 10:46:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] ftrace, workqueuetrace: Make
+	workqueuetracepoints use TRACE_EVENT macro
+Message-ID: <20090420084631.GA32625@elte.hu>
+References: <20090420103612.4B4E.A69D9226@jp.fujitsu.com> <47EF9F5C609F496FBBD423EA81A00920@zhaoleiwin> <20090420104734.4B51.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] cgroup: io-throttle controller (v14)
-References: <1240090636-898-1-git-send-email-righi.andrea@gmail.com>
-In-Reply-To: <1240090636-898-1-git-send-email-righi.andrea@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420104734.4B51.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-...
+
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> OK.
 > 
-> Implementation
-> ~~~~~~~~~~~~~~
-> Patchset against latest Linus' git:
-> 
->   [PATCH 0/7] cgroup: block device IO controller (v14)
->   [PATCH 1/7] io-throttle documentation
->   [PATCH 2/7] res_counter: introduce ratelimiting attributes
->   [PATCH 3/7] page_cgroup: provide a generic page tracking infrastructure
->   [PATCH 4/7] io-throttle controller infrastructure
->   [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
->   [PATCH 6/7] io-throttle instrumentation
->   [PATCH 7/7] export per-task io-throttle statistics to userspace
+> thus, I recoomend to pending 2 and 3. and change 1 as Ingo 
+> suggested. if not, reviewer might forgot this thread.
 
-  Hi Andrea,
+Ok - but even the original order of patches would be fine - as long 
+as the end result is agreed on and is reached.
 
-  I'd like to have a try this patchset, would you tell what's the kernel version
-  and bio-cgroup version based on?
+I've asked Frederic (the original author of the workqueue tracer 
+plugin) to collect these patches into a topic branch in his tree. 
+Once it's a complete story we can pull it into tip:tracing/core.
 
--- 
-Regards
-Gui Jianfeng
+Oleg seemed not to disagree and Andrew is in hiding.
 
+Andrew, Oleg: if you plan to make unhappy noises about this level of 
+instrumentation in the workqueue code, please do it sooner rather 
+than later, as there's quite some effort injected into this already. 
+A tentative non-NAK now (patches are still being sorted out) and an 
+Ack on the final topic tree from you (once we send it and if it's 
+good) and general happiness would be the ideal outcome :)
+
+Thanks,
+
+	Ingo
