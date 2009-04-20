@@ -1,55 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbZDTXmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZDTXos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753607AbZDTXmq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbZDTXmf
+	id S1753598AbZDTXos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDTXok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:42:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:2649 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbZDTXme (ORCPT
+	Mon, 20 Apr 2009 19:44:40 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:36120 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbZDTXoj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:42:34 -0400
+	Mon, 20 Apr 2009 19:44:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Bm6b0nr8WzMF6YOFI1s8QkfMQnk7NiZM/7V+yrHEywcamWVhJsMaQPPtXNCr9B2rhp
-         9eCo32uNS4HLQ1tPZ20JbZbuvkc7TI76v/G144v2N5hq5sw3BlMNiA/396oqCQOiMliU
-         TFdHKlKBN2VNi8LwLRHSZvHCnaEI16TqFDC6Y=
-Message-ID: <49ED0865.9030603@gmail.com>
-Date: Mon, 20 Apr 2009 17:42:29 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=wD/QpQLbuZfrD3slTT5+48g6xZn7Nphx3IzTiaAxwKqFemS60MFfJ7BgPE1Ofax/ns
+         hGbqogHN5zu6Hl6jyX9cg3fhvAz4b8l/J0WGU+QzZ6SIjXwmwoPlPO1iJBkpzdgs7bFu
+         m/StfZA7na0B903k0b/WgxYE1cr4O2/8wnlhA=
 MIME-Version: 1.0
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-CC: sdhci-devel@lists.ossman.eu, pierre@ossman.eu,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: SDHCI driver runnining in aspire one, allows to write to R/O
- SD   cards
-References: <1240219764.13640.5.camel@maxim-laptop>
-In-Reply-To: <1240219764.13640.5.camel@maxim-laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Date: Tue, 21 Apr 2009 01:44:36 +0200
+Message-ID: <2d05c4580904201644n58160449n2e917cbac096ceeb@mail.gmail.com>
+Subject: Address of .globl _start
+From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky wrote:
-> Hi,
-> 
-> I am an owner of aspire one, and it has a card reader.
-> when I take a sd card, and pull down the protection tab, it still allows
-> to write to the card (I tested with my main notebook that indeed, it did
-> write there).
-> 
-> My main notebook, acer aspire 5720, doesn't have this problem.
-> Kernel version in use is 2.6.28 vanilla, but this did happen in former
-> version as well.
-> 
-> 
-> Attached lspci, on acer one.
+Hello,
 
-Do you know if it worked in any kernel version or OS? It's known that 
-some SD card readers are too cheap to actually implement the 
-write-protect detection.
+I have compiled test.s (bellow) with 'as' compiler:
+
+-------------------------------------------------
+.section .data
+
+.globl var
+var:
+.long 10
+
+.section .text
+
+.globl _start
+_start:
+ movl $_start, %ebx
+ jmp loop_exit
+
+loop_exit:
+  movl $1, %eax             #1 is the exit() syscall
+  int $0x80
+
+-------------------------------------------------
+and got output with echo $? (reads %ebx register)
+116
+
+After that I compiled test.s (bellow) with 'as' compiler:
+
+-------------------------------------------------
+.section .data
+
+.globl var
+var:
+.long 10
+
+.section .text
+
+.globl _start
+_start:
+ movl _start, %ebx
+ jmp loop_exit
+
+loop_exit:
+  movl $1, %eax             #1 is the exit() syscall
+  int $0x80
+
+-------------------------------------------------
+and got output with echo $? (reads %ebx register)
+139
+
+After that I compiled test.s (bellow) with 'as' compiler:
+
+-------------------------------------------------
+.section .data
+
+.globl var
+var:
+.long 10
+
+.section .text
+
+.globl _start
+_start:
+ movl var, %ebx
+ jmp loop_exit
+
+loop_exit:
+  movl $1, %eax             #1 is the exit() syscall
+  int $0x80
+
+-------------------------------------------------
+and got output with echo $? (reads %ebx register)
+10
+
+After that I compiled test.s (bellow) with 'as' compiler:
+
+-------------------------------------------------
+.section .data
+
+.globl var
+var:
+.long 10
+
+.section .text
+
+.globl _start
+_start:
+ movl $var, %ebx
+ jmp loop_exit
+
+loop_exit:
+  movl $1, %eax             #1 is the exit() syscall
+  int $0x80
+
+-------------------------------------------------
+and got output with echo $? (reads %ebx register)
+132
+
+So my question is, what these numbers mean ? From which
+point in memory they are counted from ? From this I can conclude
+that value for "movl _start, %ebx" is always 139 and it can be on
+various addresses. Is this means that beginning of 'as' assembly program is
+signed with value 139 ???
+
+thanks,
+
+Dragoslav Zaric,
+[Programmer; M Sc Astrophysics]
