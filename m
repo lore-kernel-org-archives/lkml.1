@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZDTPqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZDTPsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbZDTPqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbZDTPqW
+	id S1756297AbZDTPsI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 11:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZDTPrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:46:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37151 "EHLO mx1.suse.de"
+	Mon, 20 Apr 2009 11:47:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38234 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755834AbZDTPqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:46:21 -0400
-Date: Mon, 20 Apr 2009 17:46:19 +0200 (CEST)
+	id S1755746AbZDTPry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 11:47:54 -0400
+Date: Mon, 20 Apr 2009 17:47:53 +0200 (CEST)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jkosina@wotan.suse.de
-To: Mateusz Mandera <ormi.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       p_gortmaker@yahoo.com, trivial@kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH]8390p: Get rid of init_module/cleanup_module
-In-Reply-To: <667b0cb60904110555k442f3959k9140d355b00980cd@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.0904201744380.13028@wotan.suse.de>
-References: <667b0cb60904110555k442f3959k9140d355b00980cd@mail.gmail.com>
+To: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [trivial] serial: remove contact data
+In-Reply-To: <49E49E25.6060601@wincor-nixdorf.com>
+Message-ID: <alpine.LNX.2.00.0904201747440.13028@wotan.suse.de>
+References: <49E49E25.6060601@wincor-nixdorf.com>
 User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,41 +25,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Apr 2009, Mateusz Mandera wrote:
+On Tue, 14 Apr 2009, Niels de Vos wrote:
 
-> This trivial patch just "gets rid of" init_module and cleanup_module
-> from drivers/net/8390p.c
+> Remove my name and emailaddress from note in the source. Wincor Nixdorf
+> only has some ITE-chips on their mainboards, other chips are not
+> available for me for testing.
 > 
-> Signed-off-by: Mateusz Mandera <ormi.linux@gmail.com>
+> Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
 > ---
-> diff --git a/drivers/net/8390p.c b/drivers/net/8390p.c
-> index da863c9..ec9e3ca 100644
-> --- a/drivers/net/8390p.c
-> +++ b/drivers/net/8390p.c
-> @@ -97,16 +97,15 @@ void NS8390p_init(struct net_device *dev, int startp)
->  }
->  EXPORT_SYMBOL(NS8390p_init);
+>  drivers/serial/8250_pci.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
 > 
-> -#if defined(MODULE)
-> -
-> -int init_module(void)
-> +static int __init 8390p_init_module(void)
->  {
->  	return 0;
+> diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+> index 533f820..9d646b0 100644
+> --- a/drivers/serial/8250_pci.c
+> +++ b/drivers/serial/8250_pci.c
+> @@ -612,8 +612,6 @@ static int pci_netmos_init(struct pci_dev *dev)
 >  }
-> 
-> -void cleanup_module(void)
-> +static void __exit 8390p_cleanup_module(void)
->  {
->  }
-> 
-> -#endif /* MODULE */
-> +module_init(8390p_init_module);
-> +module_exit(8390p_cleanup_module);
->  MODULE_LICENSE("GPL");
+>  
+>  /*
+> - * ITE support by Niels de Vos <niels.devos@wincor-nixdorf.com>
+> - *
+>   * These chips are available with optionally one parallel port and up to
+>   * two serial ports. Unfortunately they all have the same product id.
+>   *
 
-I'd rather have this merged through subsystem tree than trivial tree, 
-adding netdev to CC.
+Applied to trivial tree, thanks.
 
 -- 
 Jiri Kosina
