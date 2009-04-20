@@ -1,82 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZDTQAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZDTQDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756683AbZDTQAV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 12:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbZDTQAF
+	id S1756647AbZDTQDv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 12:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZDTQDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 12:00:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:30135 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755797AbZDTQAB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 12:00:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=l6QgEUY1LCeSK6I6KAI+xQLoeCFr2btCNksr0R3bySqiZAmGAapHrwp2JKXW9toc/g
-         Nt0X0906v7QGL4y7I8aOJQFxb4bxdJErrid325a2A2klpW6gi5JmAtrxSD0DoGazED0v
-         pFAWfxkj8PP40Ln8u0U7w6tYHxCCoGyNfG79w=
+	Mon, 20 Apr 2009 12:03:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52174 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754890AbZDTQDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 12:03:42 -0400
+Date: Mon, 20 Apr 2009 18:03:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <h.mitake@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+Message-ID: <20090420160332.GB9689@elte.hu>
+References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain> <adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu> <adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com> <20090420105304.GC6670@elte.hu> <a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090415143744.84d6c598.akpm@linux-foundation.org>
-References: <81083a450904110629j93c5c2j2c1250e9822c3888@mail.gmail.com>
-	 <1239472568.3416.11.camel@mulgrave.int.hansenpartnership.com>
-	 <200904120907.08828.ketuzsezr@darnok.org>
-	 <20090415143744.84d6c598.akpm@linux-foundation.org>
-Date: Mon, 20 Apr 2009 21:30:00 +0530
-Message-ID: <81083a450904200900p7f885bf6v1d50a3429293e2f1@mail.gmail.com>
-Subject: Re: [PATCH]ibft: Fix the display of a few fields in the NIC attribute 
-	structure in sysfs
-From: Ashutosh Naik <ashutosh.naik@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ketuzsezr@darnok.org, James.Bottomley@hansenpartnership.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       pjones@redhat.com, konradr@linux.vnet.ibm.com, vishnu@chelsio.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 16, 2009 at 3:07 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Sun, 12 Apr 2009 09:06:59 -0400
-> Konrad Rzeszutek <ketuzsezr@darnok.org> wrote:
->
->> > The second question is who picks this up?  The drivers/firmware
->> > directory doesn't seem to have a dedicated tree, so I can take this
->> > through the SCSI tree if required or Andrew can take it through -mm.
->>
->> Which way works best for everybody? I was thinking SCSI, since the end result
->> of this module is to configure the storage used to bootstrap the box.
->
-> I can merge merge it later this week.
->
-> However...
->
->
-> : From: Ashutosh Naik <ashutosh.naik@gmail.com>
-> :
-> : Fix the display of a few fields in the iBFT NIC attribute structure in
-> : sysfs.
-<snip>
 
-> The changelog is bad.
->
-> What does "fix" mean?  What does the old output look like and how does
-> this patch change it?
->
-> This matters, because this is a userspace interface and who knows, there
-> might be applications out there which somehow depend on the old and
-> broken behaviour.
->
-> Of course, that might be totally silly and unrealistic but because we
-> weren't told what the patch actually does, how can I tell?
->
-> Please send a new and complete description of this change, thanks.
+* Hitoshi Mitake <h.mitake@gmail.com> wrote:
 
-Sorry for the delay.
+> On Mon, Apr 20, 2009 at 19:53, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * H. Peter Anvin <hpa@zytor.com> wrote:
+> >
+> >> Roland Dreier wrote:
+> >> >
+> >> > Notice that it reads from addr+4 *before* it reads from addr, rather
+> >> > than after as in your example (and in fact your example depends on
+> >> > undefined compiler semantics, since there is no sequence point between
+> >> > the two operands of the | operator).  Now, I don't know that hardware,
+> >> > so I don't know if it makes a difference, but the niu example I gave in
+> >> > my original email shows that given hardware with clear-on-read
+> >> > registers, the order does very much matter.
+> >> >
+> >>
+> >> At least for x86, the order should be low-high, because that is the
+> >> order that those two transactions would be seen on a 32-bit bus
+> >> downstream from the CPU if the CPU issued a 64-bit transaction.
+> >>
+> >> The only sane way to handle this as something other than per-driver
+> >> hacks would be something like:
+> >>
+> >> #include <linux/io64.h>               /* Any 64-bit I/O OK */
+> >>
+> >> #include <linux/io64lh.h>     /* Low-high splitting OK */
+> >>
+> >> #include <linux/io64hl.h>     /* High-low splitting OK */
+> >>
+> >> #include <linux/io64atomic.h> /* 64-bit I/O must be atomic */
+> >>
+> >> ... i.e. letting the driver choose what fallback method it will accept.
+> >
+> > Yeah - with the default being the natural low-high order.
+> >
+> > The other argument is that if a driver really wants some rare, oddly
+> > different order it should better define its own method that is not
+> > named in the same (or in a similar) way as an existing generic API.
+> > Otherwise, confusion will ensue.
+> I think this is a good way.
+> readq/writeq are already in Linus's tree, removing these is not a good idea.
+> 
+> And I've sent the patch to fix a little problem of Kconfig about
+> readq/writeq to you.
+> http://marc.info/?l=linux-kernel&m=123521109218008&w=2
+> Did you notice?
+> 
+> Adding cautions about accessing order or non-atomic to Kconfig's help
+> part may be benefit.
 
-Here is an updated Changelog
+It's better to add add such non-interactive help text as Makefile 
+comments:
 
-The patch ensures that on, if the DHCP
+#
+# This option ...
+#
+
+and they should be invisible in make menuconfig. This is a facility 
+provided by architectures.
+
+Note, the whole patchset is still incomplete - readq/writeq wrappers 
+should be provided on all 32-bit architectures. Are those in the 
+works?
+
+	Ingo
