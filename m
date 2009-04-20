@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZDTLpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZDTLrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbZDTLpr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 07:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbZDTLpc
+	id S1755398AbZDTLrZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 07:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZDTLrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 07:45:32 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43036 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755340AbZDTLpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 07:45:31 -0400
-Date: Tue, 7 Apr 2009 09:27:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [Bug #12871] usb bluetooth crashes system
-Message-ID: <20090407072709.GD1408@ucw.cz>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.dO.aGn2JB@chimera> <1239088599.19390.27.camel@violet> <20090407210946.GK3278@elf.ucw.cz>
+	Mon, 20 Apr 2009 07:47:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58429 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754882AbZDTLrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 07:47:15 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Don't attempt to #include <linux/blk.h> as it doesn't
+	exist
+To: torvalds@osdl.org, akpm@linux-foundation.org, rpjday@crashcourse.ca
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Mon, 20 Apr 2009 12:46:24 +0100
+Message-ID: <20090420114624.28368.9627.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407210946.GK3278@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Stop the FRV arch from attempting to #include <linux/blk.h> as it doesn't
+exist.
 
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.28.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12871
-> > > Subject		: usb bluetooth crashes system
-> > > Submitter	: Pavel Machek <pavel@ucw.cz>
-> > > Date		: 2009-03-10 11:23 (28 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=123668450400940&w=4
-> > 
-> > please have this re-tested against 2.6.30-rc1 then we can work on
-> > figuring out which patch might have fixed it. I think it is fixed now,
-> > but I could be also wrong here.
-> 
-> 2.6.30-rc1 does not seem to be out (according to kernel.org); I can
-> test the latest git if that helps?
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Seems to be ok in 2.6.30-rc1 after quick test...
+ arch/frv/kernel/setup.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+diff --git a/arch/frv/kernel/setup.c b/arch/frv/kernel/setup.c
+index 0669e13..55e4fab 100644
+--- a/arch/frv/kernel/setup.c
++++ b/arch/frv/kernel/setup.c
+@@ -46,7 +46,6 @@
+ #include <asm/io.h>
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-#include <linux/blk.h>
+ #include <asm/pgtable.h>
+ #endif
+ 
+
