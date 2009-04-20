@@ -1,119 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZDTEme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbZDTEmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbZDTEme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 00:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZDTEmV
+	id S1754211AbZDTEmr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 00:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZDTEmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 00:42:21 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38338 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbZDTEmT (ORCPT
+	Mon, 20 Apr 2009 00:42:22 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:33841 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbZDTEmT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Apr 2009 00:42:19 -0400
-Message-ID: <49EBFD18.4070607@suse.de>
-Date: Mon, 20 Apr 2009 10:12:00 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.2.4
+Date: Sun, 19 Apr 2009 21:42:10 -0700
+Message-ID: <7v4owklyvx.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: hooanon05@yahoo.co.jp
-CC: Andrew Morton <akpm@linux-foundation.org>, " " <jamagallon@ono.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Trond.Myklebust@netapp.com, lists@fuchsschwanzdomain.de
-Subject: Re: Problems with default ACLs over NFS
-References: <20090323222427.00bb24e7@werewolf.home> <20090326170513.4e7d377a.akpm@linux-foundation.org> <18513.1238194255@jrobl>
-In-Reply-To: <18513.1238194255@jrobl>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: A127A3A8-2D65-11DE-848E-DC76898A30C1-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hooanon05@yahoo.co.jp wrote:
->> On Mon, 23 Mar 2009 22:24:27 +0100 "J.A. Magall__n" <jamagallon@ono.com> wrote:
->>
->>> Hi all...
->>>
->>> I have a strange problem with 2.6.29-rc8-git3.
->>> It looks like a kernel bug... ?
->>>
->>> I have a box with NFS autofs-mounted home directories. Server is a
->>> Solaris 10 system. This worked in previous kernel versions, so I
->>> don't blame Solaris, at this moment.
->>>
->>> With this acls set in my home:
-> 	:::
->>> I get this strange message in the linux client:
->>>
->>> cicely:~> mkdir kk  
->>> mkdir: cannot create directory `kk': Invalid argument
+The latest maintenance release GIT 1.6.2.4 is available at the
+usual places:
 
-The following patch from Trond should fix this issue, I think.
+  http://www.kernel.org/pub/software/scm/git/
 
+  git-1.6.2.4.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.2.4.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.2.4.tar.{gz,bz2}		(preformatted docs)
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Wed, 15 Apr 2009 13:58:45 -0400
-Subject: [PATCH] NFS: Fix the XDR iovec calculation in nfs3_xdr_setaclargs
+The RPM binary packages for a few architectures are found in:
 
-Commit ae46141ff08f1965b17c531b571953c39ce8b9e2 (NFSv3: Fix posix ACL code)
-introduces a bug in the calculation of the XDR header iovec. In the case
-where we are inlining the acls, we need to adjust the length of the iovec
-req->rq_svec, in addition to adjusting the total buffer length.
+  RPMS/$arch/git-*-1.6.2.4-1.fc9.$arch.rpm	(RPM)
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
- fs/nfs/nfs3xdr.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+This contains bunch of fixes that have already been merged to the master
+branch in preparation for 1.6.3.
 
-diff --git a/fs/nfs/nfs3xdr.c b/fs/nfs/nfs3xdr.c
-index e6a1932..35869a4 100644
---- a/fs/nfs/nfs3xdr.c
-+++ b/fs/nfs/nfs3xdr.c
-@@ -713,7 +713,8 @@ nfs3_xdr_setaclargs(struct rpc_rqst *req, __be32 *p,
- 	if (args->npages != 0)
- 		xdr_encode_pages(buf, args->pages, 0, args->len);
- 	else
--		req->rq_slen += args->len;
-+		req->rq_slen = xdr_adjust_iovec(req->rq_svec,
-+				p + XDR_QUADLEN(args->len));
- 
- 	err = nfsacl_encode(buf, base, args->inode,
- 			    (args->mask & NFS_ACL) ?
+----------------------------------------------------------------
 
+GIT v1.6.2.4 Release Notes
+==========================
 
+Fixes since v1.6.2.3
+--------------------
 
-> Tracing some kernel functions, I observed several thigs.
-> - xdr_buf_subsegment() returned -1 due to 'len' is not 0.
-> - xdr_encode_word() call from nfsacl_encode() got this -1, and
->   nfsacl_encode/nfs3_xdr_setaclargs/nfs3_proc_setacls/nfs3_proc_setacl/nfs3_setxattr
->   returned -EINVAL.
-> 
-> 
-> Finally I am afraid this commit might be related to this issue.
-> 
-> commit ae46141ff08f1965b17c531b571953c39ce8b9e2
-> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:   Tue Mar 10 20:33:18 2009 -0400
-> 
->     NFSv3: Fix posix ACL code
->     
->     Fix a memory leak due to allocation in the XDR layer. In cases where the
->     RPC call needs to be retransmitted, we end up allocating new pages without
->     clearing the old ones. Fix this by moving the allocation into
->     nfs3_proc_setacls().
->     
->     Also fix an issue discovered by Kevin Rudd, whereby the amount of memory
->     reserved for the acls in the xdr_buf->head was miscalculated, and causing
->     corruption.
-> 
-> 
-> 
-> J. R. Okajima
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+* The configuration parser had a buffer overflow while parsing an overlong
+  value.
 
+* pruning reflog entries that are unreachable from the tip of the ref
+  during "git reflog prune" (hence "git gc") was very inefficient.
 
--- 
-Suresh Jayaraman
+* "git-add -p" lacked a way to say "q"uit to refuse staging any hunks for
+  the remaining paths.  You had to say "d" and then ^C.
+
+* "git-checkout <tree-ish> <submodule>" did not update the index entry at
+  the named path; it now does.
+
+* "git-fast-export" choked when seeing a tag that does not point at commit.
+
+* "git init" segfaulted when given an overlong template location via
+  the --template= option.
+
+* "git-ls-tree" and "git-diff-tree" used a pathspec correctly when
+  deciding to descend into a subdirectory but they did not match the
+  individual paths correctly.  This caused pathspecs "abc/d ab" to match
+  "abc/0" ("abc/d" made them decide to descend into the directory "abc/",
+  and then "ab" incorrectly matched "abc/0" when it shouldn't).
+
+* "git-merge-recursive" was broken when a submodule entry was involved in
+  a criss-cross merge situation.
+
+Many small documentation updates are included as well.
+
+----------------------------------------------------------------
+
+Changes since v1.6.2.3 are as follows:
+
+Björn Steinbrink (1):
+      tree_entry_interesting: a pathspec only matches at directory boundary
+
+Clemens Buchacher (3):
+      add tests for merging with submodules
+      update cache for conflicting submodule entries
+      simplify output of conflicting merge
+
+Erik Faye-Lund (4):
+      test-suite: adding a test for fast-export with tag variants
+      builtin-fast-export.c: turn error into warning
+      builtin-fast-export.c: fix crash on tagged trees
+      builtin-fast-export.c: handle nested tags
+
+Frank Lichtenheld (1):
+      init: Do not segfault on big GIT_TEMPLATE_DIR environment variable
+
+Jeff King (2):
+      doc/gitattributes: clarify location of config text
+      add-interactive: refactor mode hunk handling
+
+Johan Herland (1):
+      Update docs on behaviour of 'core.sharedRepository' and 'git init --shared'
+
+Johannes Schindelin (1):
+      Fix 'git checkout <submodule>' to update the index
+
+Johannes Sixt (1):
+      t1301-shared-repo: fix forced modes test
+
+Junio C Hamano (3):
+      match_tree_entry(): a pathspec only matches at directory boundaries
+      Describe fixes since 1.6.2.3
+      GIT 1.6.2.4
+
+Junio Hamano (1):
+      Speed up reflog pruning of unreachable commits
+
+Linus Torvalds (1):
+      Clean up reflog unreachability pruning decision
+
+Markus Heidelberg (2):
+      doc/git-daemon: add missing arguments to options
+      doc/git-daemon: add missing arguments to max-connections option
+
+Matthieu Moy (2):
+      git add -p: new "quit" command at the prompt.
+      Update git-add.txt according to the new possibilities of 'git add -p'.
+
+Nguyễn Thái Ngọc Duy (1):
+      Makefile: remove {fetch,send}-pack from PROGRAMS as they are builtins
+
+Paul Bolle (1):
+      imap-send: use correct configuration variable in documentation
+
+Thomas Jarosch (1):
+      Fix buffer overflow in config parser
+
+Ulrich Windl (1):
+      git-apply: fix option description
+
