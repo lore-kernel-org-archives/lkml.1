@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZDTFda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZDTFgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbZDTFda (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 01:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZDTFdV
+	id S1754546AbZDTFgZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 01:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbZDTFgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 01:33:21 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40513 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbZDTFdU (ORCPT
+	Mon, 20 Apr 2009 01:36:15 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46555 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbZDTFgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 01:33:20 -0400
-Date: Mon, 20 Apr 2009 07:36:40 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH] [1/28] x86: Fix panic with interrupts off (needed for MCE)
-Message-ID: <20090420053640.GU14687@one.firstfloor.org>
-References: <20090407507.636692542@firstfloor.org> <20090407150740.D95E51D046D@basil.firstfloor.org> <49EBC150.2020407@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EBC150.2020407@jp.fujitsu.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 20 Apr 2009 01:36:14 -0400
+Message-ID: <49EC09BE.6090508@suse.de>
+Date: Mon, 20 Apr 2009 11:05:58 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: hooanon05@yahoo.co.jp
+CC: Andrew Morton <akpm@linux-foundation.org>, jamagallon@ono.com,
+       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Trond.Myklebust@netapp.com, lists@fuchsschwanzdomain.de
+Subject: Re: Problems with default ACLs over NFS
+References: <20090323222427.00bb24e7@werewolf.home> <20090326170513.4e7d377a.akpm@linux-foundation.org> <18513.1238194255@jrobl> <49EBFD18.4070607@suse.de> <7064.1240204656@jrobl>
+In-Reply-To: <7064.1240204656@jrobl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 09:26:56AM +0900, Hidetoshi Seto wrote:
-> Andi Kleen wrote:
-> > I put the reboot vector into the highest priority bucket
-> > of the APIC vectors and moved the 64bit UV_BAU message
-> > down instead into the next lower priority.
+hooanon05@yahoo.co.jp wrote:
+> Suresh Jayaraman:
+>> The following patch from Trond should fix this issue, I think.
+>>
+>>
+>> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+>> Date: Wed, 15 Apr 2009 13:58:45 -0400
+>> Subject: [PATCH] NFS: Fix the XDR iovec calculation in nfs3_xdr_setaclargs
+>>
+>> Commit ae46141ff08f1965b17c531b571953c39ce8b9e2 (NFSv3: Fix posix ACL code)
+>> introduces a bug in the calculation of the XDR header iovec. In the case
+>> where we are inlining the acls, we need to adjust the length of the iovec
+>> req->rq_svec, in addition to adjusting the total buffer length.
 > 
-> I had forgotten to point this...
+> Thanx.
+> But which tree is this patch applied?
 > 
-> > @@ -88,12 +88,14 @@
-> >  #define THERMAL_APIC_VECTOR		0xfa
-> >  
-> >  #ifdef CONFIG_X86_32
-> > -/* 0xf8 - 0xf9 : free */
-> > +/* 0xf9 : free */
-> >  #else
-> >  # define THRESHOLD_APIC_VECTOR		0xf9
-> > -# define UV_BAU_MESSAGE			0xf8
-> >  #endif
-> >  
-> > +#define REBOOT_VECTOR			0xf8
-> > +
-> > +
-> >  /* f0-f7 used for spreading out TLB flushes: */
-> >  #define INVALIDATE_TLB_VECTOR_END	0xf7
-> >  #define INVALIDATE_TLB_VECTOR_START	0xf0
-> > @@ -116,6 +118,8 @@
-> >   */
-> >  #define GENERIC_INTERRUPT_VECTOR	0xed
-> >  
-> > +#define UV_BAU_MESSAGE			0xec
-> > +
-> >  /*
-> >   * First APIC vector available to drivers: (vectors 0x30-0xee) we
-> >   * start at 0x31(0x41) to spread out vectors evenly between priority
-> 
-> Does this change (=pulling down the priority of UV_BAU_VECTOR) not impact
-> users of the UV_BAU_MESSAGE?
 
-I don't think UV_BAU_MESSAGE is really critical in that the world
-explodes if it gets processed a little later. AFAIK it's just
-used for user space TLB flushes. So putting it in a lower bucket
-is fine.
+Not yet applied. I guess it's queued up in Trond's git.
 
-BTW these priorities don't make too much difference anyways, it only
-helps slightly under livelock situations when a lot of messages
-are pending in the APIC. They're not a full spl like scheme.
-
-> I can see why REBOOT_VECTOR need to be highest priority.
-
-In theory a NMI would be be even better, but that has the usual 
-problems with broken systems that don't handle NMIs properly.
-
-> Maybe you could pull down THERMAL_APIC_VECTOR/THRESHOLD_APIC_VECTOR
-> instead.  Why you choose UV_BAU_MESSAGE?
-
-Thermal should probably stay in the high bucket too, but yes THRESHOLD_APIC
-could be used too.
-
--Andi
-
-P.S.: This patch is imho a 2.6.30 candidate too, without it all panics
-with interrupts off (including all machimne checks) print ugly backtraces.
-This has been a regression since two releases or so.
+Thanks,
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Suresh Jayaraman
