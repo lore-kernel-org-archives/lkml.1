@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbZDTUOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbZDTUPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbZDTUOP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZDTUN6
+	id S1756808AbZDTUPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZDTUP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:13:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47413 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755301AbZDTUN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:13:57 -0400
-Date: Mon, 20 Apr 2009 13:04:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [Bug #13058] First hibernation attempt fails
-Message-Id: <20090420130412.bc337673.akpm@linux-foundation.org>
-In-Reply-To: <20090420195306.GA3299@elf.ucw.cz>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-	<nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<20090417063007.GB4593@kernel.dk>
-	<49E83DC4.8040207@tuffmail.co.uk>
-	<20090417091321.GP4593@kernel.dk>
-	<alpine.LFD.2.00.0904170813550.4042@localhost.localdomain>
-	<20090407080632.GG1408@ucw.cz>
-	<20090420122044.7ea6cc15.akpm@linux-foundation.org>
-	<20090420195306.GA3299@elf.ucw.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 16:15:29 -0400
+Received: from mga01.intel.com ([192.55.52.88]:27031 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755483AbZDTUP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 16:15:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,219,1239001200"; 
+   d="scan'208";a="449626031"
+Message-Id: <20090420200450.425091000@linux-os.sc.intel.com>
+References: <20090420200450.128993000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 20 Apr 2009 13:02:29 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Weidong Han <weidong.han@intel.com>
+Subject: [patch 3/5] x2apic, IR: cleanup panic() with nox2apic boot option
+Content-Disposition: inline; filename=fix_panic_msg.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 21:53:06 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
+Instead of panic() ignore the "nox2apic" boot option when BIOS has
+already enabled x2apic prior to OS handover.
 
-> > Remind me: why can't we just allocate N pages at suspend-time?
-> 
-> We need half of memory free. The reason we can't "just allocate" is
-> probably OOM killer; but my memories are quite weak :-(.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Weidong Han <weidong.han@intel.com>
+---
 
-hm.  You'd think that with out splendid range of __GFP_foo falgs, there
-would be some combo which would suit this requirement but I can't
-immediately spot one.
+Index: tip/arch/x86/kernel/apic/apic.c
+===================================================================
+--- tip.orig/arch/x86/kernel/apic/apic.c
++++ tip/arch/x86/kernel/apic/apic.c
+@@ -142,8 +142,12 @@ static int x2apic_preenabled;
+ static int disable_x2apic;
+ static __init int setup_nox2apic(char *str)
+ {
+-	if (x2apic_enabled())
+-		panic("Bios already enabled x2apic, can't enforce nox2apic");
++	if (x2apic_enabled()) {
++		pr_warning("Bios already enabled x2apic, "
++			   "can't enforce nox2apic");
++		return 0;
++	}
++
+ 	disable_x2apic = 1;
+ 	setup_clear_cpu_cap(X86_FEATURE_X2APIC);
+ 	return 0;
 
-We can always add another I guess.  Something like...
-
-
-diff -puN mm/page_alloc.c~a mm/page_alloc.c
---- a/mm/page_alloc.c~a
-+++ a/mm/page_alloc.c
-@@ -1620,7 +1620,8 @@ nofail_alloc:
- 		}
- 
- 		/* The OOM killer will not help higher order allocs so fail */
--		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-+		if (order > PAGE_ALLOC_COSTLY_ORDER ||
-+				(gfp_mask & __GFP_NO_OOM_KILL)) {
- 			clear_zonelist_oom(zonelist, gfp_mask);
- 			goto nopage;
- 		}
-diff -puN include/linux/gfp.h~a include/linux/gfp.h
---- a/include/linux/gfp.h~a
-+++ a/include/linux/gfp.h
-@@ -51,8 +51,9 @@ struct vm_area_struct;
- #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
- #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
- #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-+#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
- 
--#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-+#define __GFP_BITS_SHIFT 22	/* Number of__GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
- 
- /* This equals 0, but use constants in case they ever change */
-_
+-- 
 
