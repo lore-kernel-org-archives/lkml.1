@@ -1,185 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZDTOTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZDTOVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbZDTOTt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 10:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZDTOTj
+	id S1755857AbZDTOVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 10:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZDTOVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 10:19:39 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:44446 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755683AbZDTOTh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 10:19:37 -0400
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <20090420134423.GE14699@duck.suse.cz>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
-	 <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
-	 <1239910921.21233.98.camel@think.oraclecorp.com>
-	 <20090420134423.GE14699@duck.suse.cz>
+	Mon, 20 Apr 2009 10:21:25 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:44134 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755358AbZDTOVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 10:21:24 -0400
+Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Suresh Jayaraman <sjayaraman@suse.de>
+Cc: Masahiro Tamori <masahiro.tamori@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <49EC6CB3.8080800@suse.de>
+References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>
+	 <49D45E42.3050502@suse.de>
+	 <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
+	 <49EC0A83.8060802@suse.de> <1240230224.8073.6.camel@heimdal.trondhjem.org>
+	 <49EC6CB3.8080800@suse.de>
 Content-Type: text/plain
-Date: Mon, 20 Apr 2009 10:18:25 -0400
-Message-Id: <1240237105.16213.41.camel@think.oraclecorp.com>
+Date: Mon, 20 Apr 2009 10:21:14 -0400
+Message-Id: <1240237274.13636.9.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsinet15.oracle.com [141.146.126.227]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010201.49EC844E.0099:SCFMA922111,ss=1,fgs=0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
+X-UiO-Scanned: B11FDBBD0675E210FF29FA49E5A2A6483148D312
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 179 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-20 at 15:44 +0200, Jan Kara wrote:
-> Hi Chris,
+On Mon, 2009-04-20 at 18:08 +0530, Suresh Jayaraman wrote:
+> Trond Myklebust wrote:
+> > On Mon, 2009-04-20 at 11:09 +0530, Suresh Jayaraman wrote:
+> >> Hi Trond,
+> >>
+> >> Do you think this patch is OK? Can this be considered for merging?
+> >>
+> >> Thanks,
+> >>
+> >>>>>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> >>>>>> index 90f292b..13d6a00 100644
+> >>>>>> --- a/fs/nfs/file.c
+> >>>>>> +++ b/fs/nfs/file.c
+> >>>>>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+> >>>>>>                   size_t count, unsigned int flags);
+> >>>>>> static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+> >>>>>>               unsigned long nr_segs, loff_t pos);
+> >>>>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> >>>>>> +                  struct file *filp, loff_t *ppos,
+> >>>>>> +                  size_t count, unsigned int flags);
+> >>>>>> static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+> >>>>>>               unsigned long nr_segs, loff_t pos);
+> >>>>>> static int nfs_file_flush(struct file *, fl_owner_t id);
+> >>>>>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
+> >>>>>>   .lock      = nfs_lock,
+> >>>>>>   .flock     = nfs_flock,
+> >>>>>>   .splice_read  = nfs_file_splice_read,
+> >>>>>> +  .splice_write  = nfs_file_splice_write,
+> >>>>>>   .check_flags  = nfs_check_flags,
+> >>>>>>   .setlease    = nfs_setlease,
+> >>>>>> };
+> >>>>>> @@ -550,6 +554,26 @@ out_swapfile:
+> >>>>>>   goto out;
+> >>>>>> }
+> >>>>>>
+> >>>>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> >>>>>> +                 struct file *filp, loff_t *ppos,
+> >>>>>> +                 size_t count, unsigned int flags)
+> >>>>>> +{
+> >>>>>> +  struct dentry *dentry = filp->f_path.dentry;
+> >>>>>> +  struct inode *inode = dentry->d_inode;
+> >>>>>> +
+> >>>>>> +  dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+> >>>>>> +      dentry->d_parent->d_name.name, dentry->d_name.name,
+> >>>>>> +      (unsigned long) count, (unsigned long long) *ppos);
+> >>>>>> +
+> >>>>>> +  if (IS_SWAPFILE(inode)) {
+> >>>>>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
+> >>>>>> +          "file!\n");
+> >>>>>> +      return -EBUSY;
+> >>>>>> +  }
+> > 
+> > I don't know that we really need this. We should sweep through the NFS
+> > code and kill all those IS_SWAPFILE() thingys. Or at least #define
+> > IS_SWAPFILE(a) (0)
+> > ...
 > 
-> On Thu 16-04-09 15:42:01, Chris Mason wrote:
-> > 
-> > ext3 data=ordered mode makes sure that data blocks are on disk before
-> > the metadata that references them, which avoids files full of garbage
-> > or previously deleted data after a crash.  It does this by adding every dirty
-> > buffer onto a list of things that must be written before a commit.
-> > 
-> > This makes every fsync write out all the dirty data on the entire FS, which
-> > has high latencies and is generally much more expensive than it needs to be.
-> > 
-> > Another way to avoid exposing stale data after a crash is to wait until
-> > after the data buffers are written before updating the on-disk record
-> > of the file's size.  If we crash before the data IO is done, i_size
-> > doesn't yet include the new blocks and no stale data is exposed.
-> > 
-> > This patch adds the delayed i_size update to ext3, along with a new
-> > mount option (data=guarded) to enable it.  The basic mechanism works like
-> > this:
-> > 
-> > * Change block_write_full_page to take an end_io handler as a parameter.
-> > This allows us to make an end_io handler that queues buffer heads for
-> > a workqueue where the real work of updating the on disk i_size is done.
-> > 
-> > * Add an rbtree to the in-memory ext3 inode for tracking data=guarded
-> > buffer heads that are waiting to be sent to disk.
-> > 
-> > * Add an ext3 guarded write_end call to add buffer heads for newly
-> > allocated blocks into the rbtree.  If we have a newly allocated block that is
-> > filling a hole inside i_size, this is done as an old style data=ordered write
-> > instead.
-> > 
-> > * Add an ext3 guarded writepage call that uses a special buffer head
-> > end_io handler for buffers that are marked as guarded.  Again, if we find
-> > newly allocated blocks filling holes, they are sent through data=ordered
-> > instead of data=guarded.
-> > 
-> > * When a guarded IO finishes, kick a per-FS workqueue to do the
-> > on disk i_size updates.  The workqueue function must be very careful.  We
-> > only update the on disk i_size if all of the IO between the old on
-> > disk i_size and the new on disk i_size is complete.  This is why an
-> > rbtree is used to track the pending buffers, that way we can verify all
-> > of the IO is actually done.  The on disk i_size is incrementally updated to
-> > the largest safe value every time an IO completes.
-> > 
-> > * When we start tracking guarded buffers on a given inode, we put the
-> > inode into ext3's orphan list.  This way if we do crash, the file will
-> > be truncated back down to the on disk i_size and we'll free any blocks that
-> > were not completely written.  The inode is removed from the orphan list
-> > only after all the guarded buffers are done.
-> > 
-> > Signed-off-by: Chris Mason <chris.mason@oracle.com>
->   I've read the patch. I don't think I've got all the subtleties but before
-> diving into it more I'd like to ask why do we do the things in so
-> complicated way? 
+> Hmm.. I'm not sure whether we should kill them now. I think originally,
+> these were added keeping in mind the future NFS swap support. Given that
+> the recent work from Peterz Zilstra on "Swap over NFS" and multiple
+> iterations/review on the same, I think those patches will eventually get
+> merged sooner or later. Perhaps, it's a good idea to #define
+> IS_SWAPFILE(a) 0 than killing them entirely..?
 
-Thanks for reviewing things!
+Why are they needed at all? AFAICS, other filesystems check IS_SWAPFILE
+when truncating a file, but don't litter their code with all these weird
+checks for writing, reading, etc.
+It's not as if these checks can stop a determined privileged person from
+writing to the swapfile anyway. All they have to do is go to another
+client or write directly to the file on the server...
 
-> Maybe I'm missing some issues so let's see:
->   1) If I got it right, hole filling goes through standard ordered mode so
-> we can ignore such writes. So why do we have special writepage? I should
-> look just like writepage for ordered mode and we could just tweak
-> ext3_ordered_writepage() (probably renamed) to do:
-> 	if (ext3_should_order_data(inode))
-> 		err = walk_page_buffers(handle, page_bufs, 0, PAGE_CACHE_SIZE,
->                                         NULL, journal_dirty_data_fn);
-> 	else
-> 		err = walk_page_buffers(handle, page_bufs, 0, PAGE_CACHE_SIZE,
->                                         NULL, journal_dirty_guarded_data_fn);
-
-That would work.  My first writepage was more complex, it shrunk as the
-patch evolved.  Another question is if we want to use exactly the same
-writepage for guarded and ordered.  I've always though data=ordered
-should only order new blocks...
-
->   2) Why is there any RB tree after all? Since guarded are just extending
-> writes, we can have a linked list of guarded buffers. We always append
-> at the end, we update i_size if the current buffer has no predecestor in the
-> list.
-
-A guarded write is anything from write() that is past the disk i_size.
-lseek and friends mean it could happen in any order.
-
->   3) Currently truncate() does filemap_write_and_wait() - is it really
-> needed? Each guarded bh could carry with itself i_disksize it should update
-> to when IO is finished. Extending truncate will just update this i_disksize
-> at the last member of the list (or update i_disksize when the list is
-> empty). 
->
-> Shortening truncate will walk the list of guarded bh's, removing from
-> the list those beyond new i_size, then it will behave like the extending
-> truncate (it works even if current i_disksize is larger than new i_size).
-> Note, that before we get to ext3_truncate() mm walks all the pages beyond
-> i_size and waits for page writeback so by the time ext3_truncate() is
-> called, all the IO is finished and dirty pages are canceled.
-
-The problem here was the disk i_size being updated by ext3_setattr
-before the vmtruncate calls calls ext3_truncate().  So the guarded IO
-might wander in and change the i_disksize update done by setattr.
-
-It all made me a bit dizzy and I just tossed the write_and_wait in
-instead.
-
-At the end of the day, we're waiting for guarded writes only, and we
-probably would have ended up waiting on those exact same pages in
-vmtruncate anyway.  So, I do agree we could avoid the write with more
-code, but is this really a performance critical section?
-
->   IO finished callback will update i_disksize to carried value if the
-> buffer is the first in the list, otherwise it will copy it's value to the
-> previous member of the list.
->   4) Do we have to call end_page_writeback() from the work queue? That
-> could make IO completion times significantly longer on a good disk array,
-> couldn't it? 
-
-My understanding is that XFS is doing something similar with the
-workqueue already, without big performance problems.
-
-> There is a way how to solve this I believe although it might
-> be too hacky / complicated. We have to update i_disksize before calling
-> end_page_writeback() because of truncate races and generally for
-> filemap_fdatawrite() to work. So what we could do is:
->   guarded_end_io():
->     update i_disksize
->     call something like __mark_inode_dirty(inode, I_DIRTY_DATASYNC) but
->       avoid calling ext3_dirty_inode() or somehow make that we immediately
->       return from it.
->     call end_buffer_async_write()
->     queue addition of inode to the transaction / removal from orphan list
-
-It could, but we end up with a list of inodes that must be logged before
-they can be freed.  This was a problem in the past (before the
-dirty_inode operation was added) because logging an inode is relatively
-expensive, and we have no mechanism to throttle them.
-
-In the past it lead to deadlocks because kswapd would try and log all
-the dirty inodes, and someone else had the transaction pinned while
-waiting on kswapd to find free ram.  We might be able to do better
-today, but I didn't want to cram that into this patch series as well.
-
-While I was resisting urges, I also didn't make a writepages op.  But
-with just a little more code....
-
--chris
-
+Trond
 
