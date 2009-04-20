@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZDTJzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZDTKAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbZDTJzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZDTJza
+	id S1754627AbZDTKAX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 06:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZDTKAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:55:30 -0400
-Received: from mailbox2.myri.com ([64.172.73.26]:2006 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751473AbZDTJz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:55:29 -0400
-Message-ID: <49EC4683.3060605@myri.com>
-Date: Mon, 20 Apr 2009 11:55:15 +0200
-From: Brice Goglin <brice@myri.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-CC: David Dillow <dave@thedillows.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux Network Development list <netdev@vger.kernel.org>
-Subject: Re: [PATCH net-next] myri10ge: allow per-board firmware overriding
-References: <49E7239B.4000309@myri.com>	<20090417095038.49b745bf@dhcp-lab-109.englab.brq.redhat.com>	<49EA1DAC.1000602@myri.com>	<1240102617.5342.6.camel@obelisk.thedillows.org>	<1240108599.5342.11.camel@obelisk.thedillows.org> <20090420114041.37c7fa7b@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <20090420114041.37c7fa7b@dhcp-lab-109.englab.brq.redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 06:00:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56452 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbZDTKAI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 06:00:08 -0400
+Date: Mon, 20 Apr 2009 12:03:23 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RESEND][PATCH -tip 2/3] x86, mce: Revert "add mce=nopoll option to disable timer polling"\
+Message-ID: <20090420100323.GW14687@one.firstfloor.org>
+References: <49EBCDB0.7000505@jp.fujitsu.com> <49EBCF67.1060400@jp.fujitsu.com> <87r5znpyze.fsf@basil.nowhere.org> <49EC3AB5.5070902@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EC3AB5.5070902@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislaw Gruszka wrote:
-> Providing module_param_id would address this issues, but I have some concerns
-> before doing it:
->
-> - device have to access ID (like serial no) before initialization (at least
->   before driver will need parameter)
-> - why nobody already done it - perhaps such thing would be totally useless
->   
+> 1) There is a agent checking/clearing corrected errors
+>    (such as BIOS) other than OS.
+> 
+>    In this case, clearing MSRs by OS is not applicable.
+>    So ignore_ce is better option here.
 
-Per-nic module parameters are used in some Intel NIC drivers but it's
-not considered a very good solution in the general case:
-   
-http://kerneltrap.org/index.php?q=mailarchive/linux-netdev/2008/10/24/3801824/thread
+Yes, but how do you make sure the option is set when the agent is active?
+I think relying on a kernel boot option here is quite fragile.
+Also it's something the administrator shouldn't be involved in.
 
-But again, when talking about changing the NIC firmware, ethtool and
-friends are not that easy.
+> 
+> 2) There is no agent checking/clearing corrected errors.
+>    User just want to suppress logs of corrected errors.
+> 
+>    In this case, dont_log_ce would be better option.
+>    (Or adding filter to mcelog would be another solution)
+> 
+> I don't mind adding three options (no_cmci/ignore_ce/dont_log_ce)
+> at once.  I'll rework 3/3 of this series to do so.
+> 
+> > Also for your use case really the better way would be to use
+> > some way to let the firmware communicate that it doesn't want the OS
+> > to log.
+> 
+> Yes.  However AFAIK there is no way to do it yet.
 
-Brice
+We can just define one. We had Linux specific extensions before.
+Just needs a new bit somewhere. I think that would give a better
+experience for your customers.
 
+There might be something forthcomming that could be usable in fact.
+
+> The original of this repost were posted about three weeks ago (Apr.2)...
+> 
+> I think your patches will go smoothly if my revert patches added before
+> them.
+
+The bug fixes should go in 2.6.30. After all that is what the rc stage
+is for -- applying bug fixed.
+
+> BTW, could you give me your Acked-by on this 2/3 too?
+
+Not yet sorry.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
