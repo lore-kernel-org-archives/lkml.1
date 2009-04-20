@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbZDTEn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbZDTFEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbZDTEn4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 00:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZDTEnp
+	id S1753746AbZDTFEq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 01:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZDTFEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 00:43:45 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:46196 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbZDTEno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 00:43:44 -0400
-Date: Mon, 20 Apr 2009 06:45:51 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT] kbuild
-Message-ID: <20090420044551.GB8494@uranus.ravnborg.org>
-References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org> <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain> <20090420014158.GV26366@ZenIV.linux.org.uk> <20090420024954.GW26366@ZenIV.linux.org.uk>
+	Mon, 20 Apr 2009 01:04:35 -0400
+Received: from mga14.intel.com ([143.182.124.37]:20703 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951AbZDTFEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 01:04:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,214,1239001200"; 
+   d="asc'?scan'208";a="133256574"
+Subject: Re: [PATCH -v2] Add MCE support to KVM
+From: Huang Ying <ying.huang@intel.com>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Anthony Liguori <anthony@codemonkey.ws>, Avi Kivity <avi@redhat.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
+References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>
+	 <49E9F7BE.4090904@codemonkey.ws>
+	 <1240190385.6842.45.camel@yhuang-dev.sh.intel.com>
+	 <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-qpEfS5U8554ADCqBAjig"
+Date: Mon, 20 Apr 2009 13:04:31 +0800
+Message-Id: <1240203871.6842.54.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420024954.GW26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 03:49:54AM +0100, Al Viro wrote:
-> On Mon, Apr 20, 2009 at 02:41:58AM +0100, Al Viro wrote:
-> > On Sun, Apr 19, 2009 at 05:52:32PM -0700, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Mon, 20 Apr 2009, Sam Ravnborg wrote:
-> > > > 
-> > > > You will soon see a path from me where I fix sh too.
-> > > 
-> > > Can we do a global 'sed s:asm/asm-offsets.h:generated/asm-offsets.h:g' 
-> > > thing too? And then get rid of the include/asm symlink?
-> > > 
-> > > That asm-offsets.h mess is scary. I don't quite know why kvm on ia64 seems 
-> > > to do it's own asm-offsets.h file, for example. And arch/blackfin/Makefile 
-> > > mentions arch/$(ARCH)/include/asm/asm-offsets.h (but does it actually do 
-> > > one?).
-> > 
-> > We'll need to update uml as well (contents of shared/kern_constants.h)
-> 
-> BTW, while we are at it...  There's a way to deal with arch/um without
-> that kind of contortions, provided that we are willing to use -idirafter.
-For kernel proper the use of -idirafter would be confusing.
-But for um alone we should be safe provided it is properly commented.
 
-I have already fixed um the obvious way for asm-offsets in my local tree.
-But if you prefer I can add a -dirafter based patch before the "move
-asm-offsets.h to incldue/generated" patch.
+--=-qpEfS5U8554ADCqBAjig
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-	Sam
+On Mon, 2009-04-20 at 11:57 +0800, Kyle Moffett wrote:
+> On Sun, Apr 19, 2009 at 9:19 PM, Huang Ying <ying.huang@intel.com> wrote:
+> > On Sat, 2009-04-18 at 23:54 +0800, Anthony Liguori wrote:
+> >> Huang Ying wrote:
+> >> > The related MSRs are emulated. MCE capability is exported via
+> >> > extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
+> >> > vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+> >> > such as the mcg_cap. MCE is injected via vcpu ioctl command
+> >> > KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI a=
+re
+> >> > not simulated.
+> >> >
+> >>
+> >> Maybe I'm missing something, but couldn't this be implemented entirely
+> >> within userspace?  There's nothing VT/SVM specific about this.  If the
+> >> issue is setting these MSRs from userspace via KVM_SET_MSRS isn't
+> >> enough, perhaps we should add userspace MSR handling.
+> >>
+> >> Also, if you implement the MSR logic in userspace, it's pretty simple =
+to
+> >> make it work in the non-TCG case which will be a requirement for
+> >> upstream merging.
+> >
+> > There is more logic than just KVM_SET_MSRS, such as BANK reporting
+> > disabling, overwriting rules, triple fault for UC MCE during MCIP.
+> > Although these logic can be implemented in user space, I think put them
+> > in kernel space is easy to be understood. And the code is pretty short.
+>=20
+> IMO the main reason to put this in kernel-space would be to make it
+> possible to automatically forward some MCE errors generated by the
+> real hardware (RAM ECC errors for example) down into the VM.  Right
+> now I suppose you could do that with the patches to forward RAM-based
+> hard MCEs to userspace using SIGSEGV and handling the SIGSEGV in
+> userspace, but that seems more fragile to me.
+
+Yes. Puting this in kernel-space would make it more reliable to forward
+the MCE to KVM guest.
+
+Best Regards,
+Huang Ying
+
+--=-qpEfS5U8554ADCqBAjig
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknsAlsACgkQKhFGF+eHlpiXSACgoqTBnfiWROCMhHva7KCijbSY
+qDYAnRMWITsVcDpB+aVtNPaDaJ/AQhgo
+=PujK
+-----END PGP SIGNATURE-----
+
+--=-qpEfS5U8554ADCqBAjig--
+
