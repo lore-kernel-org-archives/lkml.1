@@ -1,139 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZDTXos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZDTXpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbZDTXos (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDTXok
+	id S1753316AbZDTXpN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZDTXow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:44:40 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:36120 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbZDTXoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:44:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=wD/QpQLbuZfrD3slTT5+48g6xZn7Nphx3IzTiaAxwKqFemS60MFfJ7BgPE1Ofax/ns
-         hGbqogHN5zu6Hl6jyX9cg3fhvAz4b8l/J0WGU+QzZ6SIjXwmwoPlPO1iJBkpzdgs7bFu
-         m/StfZA7na0B903k0b/WgxYE1cr4O2/8wnlhA=
+	Mon, 20 Apr 2009 19:44:52 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:59311 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753596AbZDTXou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 19:44:50 -0400
+Date: Mon, 20 Apr 2009 16:44:46 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
+Message-ID: <20090420234446.GL6822@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 21 Apr 2009 01:44:36 +0200
-Message-ID: <2d05c4580904201644n58160449n2e917cbac096ceeb@mail.gmail.com>
-Subject: Address of .globl _start
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18924.64032.103954.171918@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Apr 21, 2009 at 08:41:36AM +1000, Paul Mackerras wrote:
+> Paul E. McKenney writes:
+> 
+> > But a single CPU is acquiring one lock per CPU, so all the increments
+> > are to one CPU's preempt_count.  :-(
+> 
+> OK, I see, so a task can't take more than 255 spinlocks without
+> overflowing the preempt count, which seems a bit limiting.
+> 
+> There are 6 free bits in the preempt_count currently, so the preempt
+> count could be expanded to 14 bits, which would be enough for all
+> current systems.  Beyond that I guess we could make preempt_count be a
+> long and allow bigger counts on 64-bit architectures.
 
-I have compiled test.s (bellow) with 'as' compiler:
+Or we use the trick Eric suggested and Steve employed in the most recent
+patch.  ;-)
 
--------------------------------------------------
-.section .data
+An alternative would be for the update code to acquire but one lock at a
+time, but this would likely require another lock to exclude other
+updaters and I believe would also require restructuring the count
+accumulation.
 
-.globl var
-var:
-.long 10
+So Steve's current patch seems a bit less intrusive, overall.
 
-.section .text
-
-.globl _start
-_start:
- movl $_start, %ebx
- jmp loop_exit
-
-loop_exit:
-  movl $1, %eax             #1 is the exit() syscall
-  int $0x80
-
--------------------------------------------------
-and got output with echo $? (reads %ebx register)
-116
-
-After that I compiled test.s (bellow) with 'as' compiler:
-
--------------------------------------------------
-.section .data
-
-.globl var
-var:
-.long 10
-
-.section .text
-
-.globl _start
-_start:
- movl _start, %ebx
- jmp loop_exit
-
-loop_exit:
-  movl $1, %eax             #1 is the exit() syscall
-  int $0x80
-
--------------------------------------------------
-and got output with echo $? (reads %ebx register)
-139
-
-After that I compiled test.s (bellow) with 'as' compiler:
-
--------------------------------------------------
-.section .data
-
-.globl var
-var:
-.long 10
-
-.section .text
-
-.globl _start
-_start:
- movl var, %ebx
- jmp loop_exit
-
-loop_exit:
-  movl $1, %eax             #1 is the exit() syscall
-  int $0x80
-
--------------------------------------------------
-and got output with echo $? (reads %ebx register)
-10
-
-After that I compiled test.s (bellow) with 'as' compiler:
-
--------------------------------------------------
-.section .data
-
-.globl var
-var:
-.long 10
-
-.section .text
-
-.globl _start
-_start:
- movl $var, %ebx
- jmp loop_exit
-
-loop_exit:
-  movl $1, %eax             #1 is the exit() syscall
-  int $0x80
-
--------------------------------------------------
-and got output with echo $? (reads %ebx register)
-132
-
-So my question is, what these numbers mean ? From which
-point in memory they are counted from ? From this I can conclude
-that value for "movl _start, %ebx" is always 139 and it can be on
-various addresses. Is this means that beginning of 'as' assembly program is
-signed with value 139 ???
-
-thanks,
-
-Dragoslav Zaric,
-[Programmer; M Sc Astrophysics]
+							Thanx, Paul
