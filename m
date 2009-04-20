@@ -1,191 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbZDTVds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbZDTViD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbZDTVds (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZDTVdh
+	id S1757176AbZDTViD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:38:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZDTVhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:33:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54894 "EHLO mx2.redhat.com"
+	Mon, 20 Apr 2009 17:37:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36829 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755817AbZDTVdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:33:36 -0400
-Date: Mon, 20 Apr 2009 17:28:27 -0400
+	id S1751212AbZDTVhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 17:37:50 -0400
+Date: Mon, 20 Apr 2009 17:37:38 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <righi.andrea@gmail.com>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090420212827.GA9080@redhat.com>
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux> <20090419134201.GF8493@redhat.com> <20090419154717.GB5514@linux>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: nauman@google.com, fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       jmoyer@redhat.com, dm-devel@redhat.com, jens.axboe@oracle.com,
+       agk@redhat.com, balbir@linux.vnet.ibm.com,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: [dm-devel] Re: dm-ioband: Test results.
+Message-ID: <20090420213738.GB9080@redhat.com>
+References: <20090416.114750.226794985.ryov@valinux.co.jp> <20090416141125.GB8896@redhat.com> <e98e18940904161324p9833457vdf699d66bb323591@mail.gmail.com> <20090420.172959.193682665.ryov@valinux.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090419154717.GB5514@linux>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090420.172959.193682665.ryov@valinux.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 19, 2009 at 05:47:18PM +0200, Andrea Righi wrote:
-> On Sun, Apr 19, 2009 at 09:42:01AM -0400, Vivek Goyal wrote:
-> > > The difference between synchronous IO and writeback IO is that in the
-> > > first case the task itself is throttled via schedule_timeout_killable();
-> > > in the second case pdflush is never throttled, the IO requests instead
-> > > are simply added into a rbtree and dispatched asynchronously by another
-> > > kernel thread (kiothrottled) using a EDF-like scheduling. More exactly,
-> > > a deadline is evaluated for each writeback IO request looking at the
-> > > cgroup BW and iops/sec limits, then kiothrottled periodically selects
-> > > and dispatches the requests with an elapsed deadline.
-> > > 
+On Mon, Apr 20, 2009 at 05:29:59PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek and Nauman,
+> 
+> > On Thu, Apr 16, 2009 at 7:11 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > On Thu, Apr 16, 2009 at 11:47:50AM +0900, Ryo Tsuruta wrote:
+> > >> Hi Vivek,
+> > >>
+> > >> > General thoughts about dm-ioband
+> > >> > ================================
+> > >> > - Implementing control at second level has the advantage tha one does not
+> > >> >   have to muck with IO scheduler code. But then it also has the
+> > >> >   disadvantage that there is no communication with IO scheduler.
+> > >> >
+> > >> > - dm-ioband is buffering bio at higher layer and then doing FIFO release
+> > >> >   of these bios. This FIFO release can lead to priority inversion problems
+> > >> >   in certain cases where RT requests are way behind BE requests or
+> > >> >   reader starvation where reader bios are getting hidden behind writer
+> > >> >   bios etc. These are hard to notice issues in user space. I guess above
+> > >> >   RT results do highlight the RT task problems. I am still working on
+> > >> >   other test cases and see if i can show the probelm.
 > > 
-> > Ok, i will look into the logic of translating cgroup BW limits into
-> > deadline. But as Nauman pointed out that we probably will run into 
-> > issues of tasks with in cgroup as we loose that notion of class and prio.
+> > Ryo, I could not agree more with Vivek here. At Google, we have very
+> > stringent requirement for latency of our RT requests. If RT requests
+> > get queued in any higher layer (behind BE requests), all bets are off.
+> > I don't find doing IO control at two layer for this particular reason.
+> > The upper layer (dm-ioband in this case) would have to make sure that
+> > RT requests are released immediately, irrespective of the state (FIFO
+> > queuing and tokens held). And the lower layer (IO scheduling layer)
+> > has to do the same. This requirement is not specific to us. I have
+> > seen similar comments from filesystem folks here previously, in the
+> > context of metadata updates being submitted as RT. Basically, the
+> > semantics of RT class has to be preserved by any solution that is
+> > build on top of CFQ scheduler.
 > 
-> Correct. I've not addressed the IO class and priority inside cgroup, and
-> there is a lot of space for optimizations and tunings for this in the
-> io-throttle controller. In the current implementation the delay is only
-> imposed to the first task that hits the BW limit. This is not fair at
-> all.
-> 
-> Ideally the throttling should be distributed equally among the tasks
-> within the same cgroup that exhaust the available BW. With equally I
-> mean depending of a function of the previous generated IO, class and IO
-> priority.
-> 
-> The same concept of fairness (for ioprio and class) will be reflected to
-> the underlying IO scheduler (only CFQ at the moment) for the requests
-> that passed the BW limits.
-> 
-> This doesn't seem a bad idea, well.. at least in theory... :) Do you see
-> evident weak points? or motivations to move to another direction?
-> 
-> > 
-> > > > 
-> > > > If that's the case, will a process not see an increased rate of writes
-> > > > till we are not hitting dirty_background_ratio?
-> > > 
-> > > Correct. And this is a good behaviour IMHO. At the same time we have a
-> > > smooth BW usage (according to the cgroup limits I mean) even in presence
-> > > of writeback IO only.
-> > > 
-> > 
-> > Hmm.., I am not able to understand this. The very fact that you will see
-> > a high rate of async writes (more than specified by cgroup max BW), till
-> > you hit dirty_background_ratio, isn't it against the goals of max bw
-> > controller? You wanted to see a consistent view of rate even if spare BW
-> > is available, and this scenario goes against that? 
-> 
-> The goal of the io-throttle controller is to guarantee a constant BW for
-> the IO to the block devices. If you write data in cache, buffers, etc.
-> you shouldn't be affected by any IO limitation, but you will be when the
-> data is be written out to the disk.
-> 
-> OTOH if an application needs a predictable IO BW, we can always set a
-> max limit and use direct IO.
-> 
-> > 
-> > Think of an hypothetical configuration of 10G RAM with dirty ratio say
-> > set to 20%. Assume not much of write out is taking place in the system.
-> > So for first 2G of writes, application will be able to write it at cpu
-> > speed and no throttling will kick in and a cgroup will easily cross it
-> > max BW? 
-> 
-> Yes.
-> 
-> >   
-> > > > 
-> > > > Secondly, if above is giving acceptable performance resutls, then we
-> > > > should be able to provide max bw control at IO scheduler level (along
-> > > > with proportional bw control)?
-> > > > 
-> > > > So instead of doing max bw and proportional bw implementation in two
-> > > > places with the help of different controllers, I think we can do it
-> > > > with the help of one controller at one place. 
-> > > > 
-> > > > Please do have a look at my patches also to figure out if that's possible
-> > > > or not. I think it should be possible.
-> > > > 
-> > > > Keeping both at single place should simplify the things.
-> > > 
-> > > Absolutely agree to do both proportional and max BW limiting in a single
-> > > place. I still need to figure which is the best place, if the IO
-> > > scheduler in the elevator, when the IO requests are submitted. A natural
-> > > way IMHO is to control the submission of requests, also Andrew seemed to
-> > > be convinced about this approach. Anyway, I've already scheduled to test
-> > > your patchset and I'd like to see if it's possible to merge our works,
-> > > or select the best from ours patchsets.
-> > > 
-> > 
-> > Are we not already controlling submission of request (at crude level).
-> > If application is doing writeout at high rate, then it hits vm_dirty_ratio
-> > hits and this application is forced to do write out and hence it is slowed
-> > down and is not allowed to submit writes at high rate.
-> > 
-> > Just that it is not a very fair scheme right now as during right out
-> > a high prio/high weight cgroup application can start writing out some
-> > other cgroups' pages.
-> > 
-> > For this we probably need to have some combination of solutions like
-> > per cgroup upper limit on dirty pages. Secondly probably if an application
-> > is slowed down because of hitting vm_drity_ratio, it should try to
-> > write out the inode it is dirtying first instead of picking any random
-> > inode and associated pages. This will ensure that a high weight
-> > application can quickly get through the write outs and see higher
-> > throughput from the disk.
-> 
-> For the first, I submitted a patchset some months ago to provide this
-> feature in the memory controller:
-> 
-> https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
-> 
-> We focused on the best interface to use for setting the dirty pages
-> limit, but we didn't finalize it. I can rework on that and repost an
-> updated version. Now that we have the dirty_ratio/dirty_bytes to set the
-> global limit I think we can use the same interface and the same semantic
-> within the cgroup fs, something like:
-> 
->   memory.dirty_ratio
->   memory.dirty_bytes
-> 
-> For the second point something like this should be enough to force tasks
-> to write out only the inode they're actually dirtying when they hit the
-> vm_dirty_ratio limit. But it should be tested carefully and may cause
-> heavy performance regressions.
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  mm/page-writeback.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 2630937..1e07c9d 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -543,7 +543,7 @@ static void balance_dirty_pages(struct address_space *mapping)
->  		 * been flushed to permanent storage.
->  		 */
->  		if (bdi_nr_reclaimable) {
-> -			writeback_inodes(&wbc);
-> +			sync_inode(mapping->host, &wbc);
->  			pages_written += write_chunk - wbc.nr_to_write;
->  			get_dirty_limits(&background_thresh, &dirty_thresh,
->  				       &bdi_thresh, bdi);
+> I could see the priority inversion by running Vivek's script and I
+> understand how RT requests has to be handled. I'll create a patch
+> which makes dm-ioband cooperates with CFQ scheduler. However, do you
+> think we need some kind of limitation on processes which belong to the
+> RT class to prevent the processes from depleting bandwidth?
 
-This patch seems to be helping me a bit in getting more service
-differentiation between two writer dd of different weights. But strangely
-it is helping only for ext3 and not ext4. Debugging is on.
+I think to begin with, we can keep the same behavior as CFQ. An RT task
+can starve other tasks.
+
+But we should provide two configurations and user can choose any one.
+If RT task is in root group, it will starve other sibling tasks/groups. If
+it is with-in a cgroup, then it will starve its sibling only with-in that
+cgroup and will not impact other cgroups.
+
+What I mean is following.
+
+			root
+			/  \
+		      RT   group1
+
+In above configuration RT task will starve everybody else.
+
+			root
+		        /   \
+		   group1   group2
+		   /  \
+	         RT   BE
+
+In above configuration  RT task will starve only sibling in group1 but
+will not starve the tasks in group2 or in root.
 
 Thanks
 Vivek
