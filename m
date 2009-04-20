@@ -1,119 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZDTUg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbZDTUgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZDTUg0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZDTUgK
+	id S1757522AbZDTUgm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbZDTUgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:36:10 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46506 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755088AbZDTUgJ (ORCPT
+	Mon, 20 Apr 2009 16:36:19 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52254 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757134AbZDTUgS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:36:09 -0400
-X-YMail-OSG: 9mT8YMUVM1lnGQqRyJtn.H5rHmfQMsq5zAEvt35u_ByXC8JxNzUoX.jCERNeBXip88_xAFWhfZkuLk1fSRP2y06_I2BWZETnSBdD72LMubGnaTEUCZGEBIclZaPPoktEja92LXeil9k96qhRo683GaJXzctj7ZEws815gc864dJgNGVNvJFJfCMnH6G6od9_BR0VpIZWlfpy92E5IMoHBHq.qqQq.PranET5TAdaApoRgVcIhYZJwObGGSgK3ETOm9Ox0Beg.JgdoadtaGwCKLkKLUeu5TPR0baaYt3BQGCu8FZxv41NiBEID8tmKaes9bhNIrHjIInHxbh2YUP9xcQ-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional
-	legacy	scsi_execute_async() usage for Linux/SCSI passthrough
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
-       Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <49EB036B.8090607@panasas.com>
-References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org>
-	 <49EB036B.8090607@panasas.com>
-Content-Type: text/plain
-Date: Mon, 20 Apr 2009 13:36:05 -0700
-Message-Id: <1240259765.4176.764.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 16:36:18 -0400
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: stefan novak <lms.brubaker@gmail.com>
+cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: bond interface arp, vlan and trunk / network question
+In-reply-to: <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com>
+References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com> <49ECBBF0.80202@cosmosbay.com> <30257.1240252651@death.nxdomain.ibm.com> <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com>
+Comments: In-reply-to stefan novak <lms.brubaker@gmail.com>
+   message dated "Mon, 20 Apr 2009 22:00:49 +0200."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 20 Apr 2009 13:36:20 -0700
+Message-ID: <7609.1240259780@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-19 at 13:56 +0300, Boaz Harrosh wrote:
-> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
-> > Greetings all,
-> > 
-> > This patch modifies the Target_Core_Mod/ConfigFS v3.0 PSCSI subsystem plugin for target_core_mod v3.0 to add
-> > a configurable method of choosing legacy scsi_execute_async() usage for underlying SCSI HTCL struct scsi_device.
-> > This method is still the only method of issuing I/O to the Linux SCSI subsystem is used for non TYPE_DISK hardware
-> > SCSI and SATA devices that appear under Linux-SCSI, but have not yet been updated to accept raw struct request
-> > operations directly.  Some of these include TYPE_ROM, TYPE_TYPE and TYPE_MEDIUM_CHANGER hardware.
-> > 
-> > This method can be used be used via ConfigFS as follows:
-> > 
-> > 	export TARGET=/sys/kernel/config/target/core/
-> >         # load target_core_mod
-> > 	modprobe target_core_mod
-> > 	# The Linux/SCSI scsi host id is part of pscsi_$HOST_ID HBA name..
-> > 	mkdir -p $TARGET/pscsi_0/sr0
-> > 	# echo CTL to the control configfs attribute
-> > 	echo scsi_channel_id=0,scsi_target_id=0,scsi_lun_id=0 > $TARGET/pscsi_0/sr0/control
-> >         # Activate the target_core_mod/ConfigFS PSCSI storage object
-> > 	echo 1 > $TARGET/pscsi_0/sr0/enable
-> > 
-> > At this point, creating symlinks for SCSI target ports to configfs enabled fabric modules
-> > against PSCSI hardware passthrough using te HCTL reference will work.
-> > 
-> > This patch are made against lio-core-2.6.git/master and tested on
-> > v2.6.29 x86 32-bit HVM with TYPE_DISK and v2.6.29 ppc64 with TYPE_ROM.
-> > The lio-core-2.6.git tree can be found at: 
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
-> > 
-> > :-)
-> > 
-> 
-> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
-> 
-> I'm not sure what would be the best alternative for you. I would say
-> a bio, but it is still being debated. Your current options are:
-> 
-> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
->    (Which block people don't like)
-> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
->    struct rq_map_data mode. (not possible with all kind of sglists)
-> 2. sglist => iovec translation and blk_rq_map_user_iov()
->    (Very very ugly mapping of pages to virtual pointers)
-> 
-> I have a similar situation with my OSD code.
-> 
+stefan novak <lms.brubaker@gmail.com> wrote:
 
-Hey,
+>>> nic1 --trunk--> bladesw1 --trunk--> backbone switch
+>>> nic2 --trunk--> bladesw2 --trunk--> backbone switch
+>>>
+>>> So far vlan and trunking works as expected. But if one trunk
+>>> connection from a bladeswitch to the backbone switch is down the
+>>> mii-tool cant recognize this.
+>>
+>> What is the exact problem on this one ?
+>
+>The exact problem is that the bonding driver don't switch the
+>interface because the mii-tool don't recognize that the connection
+>between the two switches is now broken.
 
-Thanks for the pointers on this..  Yeah, I knew it was going away soon,
-but needed it for some legacy drivers..:-)
+	No, from your configuration information, you're running the ARP
+monitor, in which case the actual link state ("mii-tool", although that
+isn't really how it works) is not used in the failover decision.
 
-Anyways, I will drop this patch for scsi_execute_async() when I branch
-for v2.6.30-rcX and look and updating target_core_mod/pSCSI to one of
-the listed methods to get up and running.  From the looks of it however
-we might want something slightly better than blk_rq_map_user() for the
-kernel space pages attached to struct scatterlist and page_links..
+	For the ARP monitor, the decision is based on whether or not
+"replies" to the ARP probes come through.  More on that in a bit.
 
-Just FYI, the target_core_mod struct scatterlist memory will be in
-struct list_head with struct page for allocated se_cmd_t (received CDB),
-so it will be pretty easy from the target_core_mod+subsystem plugin side
-side to put something that along the lines of list =>
-page-pointers-array translation and blk_rq_map_user() into a new
-function..
+>nic1 --trunk--> bladesw1 --trunk--> backbone switch (passive if)
+>nic2 --trunk--> bladesw2 --xxx--broken-trunk-xx-> backbone switch (active if)
+>
+>>   Sufficiently recent versions of bonding should VLAN tag the ARP
+>>probes, provided you are using a VLAN device configured above the bond.
+>>My recollection is that VLAN tagging of ARP probes was added about three
+>>years ago.
+>>
+>>       If the switch port is configured as native to a VLAN, then it
+>>should tag everything coming in.
+>>
+>>      As Eric asks, what are you running?
+>
+>I've got a bonding interface over eth0 and eth1 and on that bonding
+>interface several vlans. The arp probe is in vlan 600 and i can ping
+>it from the bash.
+>Also a arpping with -I bond0.600 is working. Arpping with -I bond0 is
+>not working.
+>So the arp check is not working for me :(
 
-lio-core-2.6.git/drivers/target/target_core_transport.c is using
-include/linux/scatterlist.h macros when interacting with struct
-scatterlist allocated for each subsystem plugin (from the linked list
-struct page memory)  I will have a look and see what would need to be
-down to allow all kinds of sglists with something new..
+	I believe you're seeing the expected behavior from arping here,
+and it does not automatically indicate that anything is wrong.
 
-Thanks for your comments!
+	It's very possible that your network topology is such that
+arping -I bond0 won't work while arping -I bond0.600 does.  If the
+target you specify is reachable only on the VLAN, it's expected behavior
+that arping -I bond0 of that target won't work (because the interface
+bond0 is not attached to the VLAN, only bond0.600 is).  That doesn't
+mean that the ARPs generated internally by bonding are untagged /
+failing, as bonding itself adds VLAN tags to its own ARP probes as
+needed.
 
---nab
+	On the other hand, if you specify different targets to the
+arping -I bond0 and arping -I bond0.600 (so that the "bond0" target
+isn't a VLAN destination), then something unusual may be occuring.
+
+	Also, are you running multiple blades with bonding behind the
+same set of switches?  If you are, you probably want to set the
+arp_validate option to either "active" or "all", as the default setting
+(none) relies only on the existance of traffic on the slaves, and
+doesn't check the source of that traffic.  The end result of that is the
+probes from multiple bonding instances fool one another into thinking
+the path is up, when it is not.  With arp_validate enabled, it'll check
+that the slaves are actually receiving their own ARP traffic.
+
+	-J
+
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
 
 
+
+>the nic driver is:
+>alias eth0 igb
+>alias eth1 igb
+>
+>the bond setiings:
+>cat /proc/net/bonding/bond0
+>Ethernet Channel Bonding Driver: v3.2.4 (January 28, 2008)
+>
+>Bonding Mode: fault-tolerance (active-backup)
+>Primary Slave: None
+>Currently Active Slave: eth0
+>MII Status: up
+>MII Polling Interval (ms): 0
+>Up Delay (ms): 0
+>Down Delay (ms): 0
+>ARP Polling Interval (ms): 30
+>ARP IP target/s (n.n.n.n form): 172.21.0.254
+>
+>Slave Interface: eth0
+>MII Status: up
+>Link Failure Count: 0
+>Permanent HW addr: 00:30:48:94:7d:1a
+>
+>Slave Interface: eth1
+>MII Status: up
+>Link Failure Count: 0
+>Permanent HW addr: 00:30:48:94:7d:1b
+>
+>
+>On Mon, Apr 20, 2009 at 8:37 PM, Jay Vosburgh <fubar@us.ibm.com> wrote:
+>> Eric Dumazet <dada1@cosmosbay.com> wrote:
+>>
+>>>stefan novak a écrit :
+>>>> Hello list,
+>>>>
+>>>> I've got a Problem with my bladecenter and bond interfaces.
+>>>> My Server has 2 interface, each on a seperate switch. Each
+>>>> serverinterface is connected via a trunk to one of the switches.
+>>>> Each switch has a trunk to stacked-backbone switch.
+>>>>
+>>>> nic1 --trunk--> bladesw1 --trunk--> backbone switch
+>>>> nic2 --trunk--> bladesw2 --trunk--> backbone switch
+>>>>
+>>>> So far vlan and trunking works as expected. But if one trunk
+>>>> connection from a bladeswitch to the backbone switch is down the
+>>>> mii-tool cant recognize this.
+>>>
+>>>What is the exact problem on this one ?
+>>
+>>        This is the expected behavior, the external switch to
+>> bladecenter switch (ESM) link status does not affect the ESM to blade
+>> link status.
+>>
+>>        Unless... your ESM supports "trunk failover."  I believe the
+>> Cisco ESMs do, I'm not sure about others.  With trunk failover enabled,
+>> loss of link on an external switch port will in turn drop link on the
+>> corresponding internal switch ports.  There is a long-ish delay for
+>> this, on the order of 750 ms, as I recall.
+>>
+>>>> I tried to use an arp target on the backbone switch to check the
+>>>> connection state.
+>>>>
+>>>> Now i'm running into problems. :(
+>>>> My bladesw1 is configured with a trunk and a private vlan id of 600.
+>>>> On the backbone switch is a server in the vlan 600 connected, but i
+>>>> can't get an arp request.
+>>>>
+>>>> What can be the problem, or is it possible to add a vlan tag on the arp check?
+>>>>
+>>>
+>>>What driver is in use on your NIC interface ?
+>>>
+>>>Could you post your bonding settings ?
+>>>
+>>>cat /proc/net/bonding/bond0
+>>
+>>        Sufficiently recent versions of bonding should VLAN tag the ARP
+>> probes, provided you are using a VLAN device configured above the bond.
+>> My recollection is that VLAN tagging of ARP probes was added about three
+>> years ago.
+>>
+>>        If the switch port is configured as native to a VLAN, then it
+>> should tag everything coming in.
+>>
+>>        As Eric asks, what are you running?
+>>
+>>        -J
+>>
+>> ---
+>>        -Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+>>
+>--
+>To unsubscribe from this list: send the line "unsubscribe netdev" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
