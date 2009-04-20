@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbZDTIsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbZDTIsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751785AbZDTIsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 04:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZDTIsJ
+	id S1753611AbZDTIsk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 04:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZDTIsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 04:48:09 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:23789
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752714AbZDTIsI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 04:48:08 -0400
-X-BigFish: VPS-48(zz1432R98dR4015M1805M179dR936fK9371Pzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KIE5RW-02-F1C-01
-Date: Mon, 20 Apr 2009 10:47:47 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: derive nearby CPUs from device's instead of bus'
-	NUMA information
-Message-ID: <20090420084747.GA7286@alberich.amd.com>
-References: <20090417100155.GE16198@alberich.amd.com> <20090417162115.GF8253@elte.hu> <86802c440904171226g520e3b67h7318ff0f80f1e782@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <86802c440904171226g520e3b67h7318ff0f80f1e782@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Apr 2009 08:47:57.0665 (UTC) FILETIME=[B40A1510:01C9C194]
-Content-Transfer-Encoding: 8BIT
+	Mon, 20 Apr 2009 04:48:17 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:48198 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754124AbZDTIsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 04:48:16 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [PATCH] PM/Suspend: Introduce two new platform callbacks to
+ avoid breakage (Re: 900af0d breaks some embedded suspend/resume)
+From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Reply-To: ncunningham-lkml@crca.org.au
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+In-Reply-To: <20090420083523.GB16002@flint.arm.linux.org.uk>
+References: <20090417231009.GB6900@flint.arm.linux.org.uk>
+	 <200904181626.10388.rjw@sisk.pl>
+	 <20090418144132.GC7148@flint.arm.linux.org.uk>
+	 <200904182047.48009.rjw@sisk.pl> <1240183907.8867.22.camel@nigel-laptop>
+	 <20090420083523.GB16002@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Mon, 20 Apr 2009 18:48:27 +1000
+Message-Id: <1240217307.8867.53.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 12:26:54PM -0700, Yinghai Lu wrote:
-> On Fri, Apr 17, 2009 at 9:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > const struct cpumask * cpumask_of_pcidev(struct pci_dev *dev)
-> > {
-> >        if (dev->numa_node == -1)
-> >                return cpumask_of_pcibus(to_pci_dev(dev)->bus);
-> >
-> >        return cpumask_of_node(dev_to_node(dev));
-> > }
-> >
-> > ? This would work fine in all cases.
+Hi.
 
-Yes, I think so. That's the general solution w/o additional
-"ifdefing".
+On Mon, 2009-04-20 at 09:35 +0100, Russell King wrote:
+> On Mon, Apr 20, 2009 at 09:31:47AM +1000, Nigel Cunningham wrote:
+> > >  	}
+> > >  
+> > > -	if (suspend_ops->prepare) {
+> > > -		error = suspend_ops->prepare();
+> > > +	if (suspend_ops->prepare_late) {
+> > > +		error = suspend_ops->prepare_late();
+> > >  		if (error)
+> > >  			goto Power_up_devices;
+> > >  	}
+> > 
+> > Doesn't this invalidate testing that's already been done? Drivers
+> > implementing prepare() (arm omap1, pxa, omap2, s3c and powerpc mpc52xx
+> > and lite5200) are now going to have it called pre device_power_down.
+> 
+> ... which is the way it has always been done prior to the change which
+> broke stuff.  So this patch is putting the ordering back the way it was
+> which has been well proven to work on these platforms.
+> 
+> So we're not invalidating any testing.
 
-> you are right, dev_to_node(dev) could return -1 on 64bit, if there is
-> no memory on that node.
+Ah, okay. I didn't look at anything but current HEAD. :)
 
-Hmm, I thought just in the CONFIG_NUMA=n case -1 is returned.
-
-During initialization the struct device's numa_node is set to -1 and
-later on the information is inherited from the parent numa_node.
-
-So what do I miss?
-
-
-Thanks,
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Nigel
 
