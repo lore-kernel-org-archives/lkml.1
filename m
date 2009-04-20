@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZDTCNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZDTChj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbZDTCNL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 22:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZDTCMz
+	id S1753165AbZDTChj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 22:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZDTChZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 22:12:55 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:34757 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbZDTCMy (ORCPT
+	Sun, 19 Apr 2009 22:37:25 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:33488
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751212AbZDTChY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 22:12:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:organization:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=iedzYVKcY+/TdgEceCfDkCMNCc5iRR6hx9qDlb1+IINmvdyEU4AjCC2kBl7gah8D9i
-         KzvLBoZFhciigjXis0MPMRcdrKwlG2qrjNYcrmMOfe6bBRMVPRcD26LLZy68HbLmJZ0O
-         LoBU97h06t+A400B3K22i7nKDQjPtNA1srZ0k=
-Subject: "RT_PREEMPT for loongson" is updated to patch-2.6.29.1-rt8
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: Nicholas Mc Guire <hofrat@hofr.at>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, zhangfx@lemote.com,
-       loongson-dev@googlegroups.com, yanh@lemote.com,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       Zhang Le <r0bertz@gentoo.org>, linux-rt-users@vger.kernel.org
+	Sun, 19 Apr 2009 22:37:24 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AogBAOd860l8qNY8/2dsb2JhbAAIzA+DfQY
+X-IronPort-AV: E=Sophos;i="4.40,214,1238947200"; 
+   d="scan'208";a="422362264"
+Subject: [PATCH] favr32: improve touchscreen response
+From: Ben Nizette <ben@niasdigital.com>
+To: "haavard.skinnemoen" <haavard.skinnemoen@atmel.com>
+Cc: kernel <kernel@avr32linux.org>,
+       "Egtvedt, Hans-Christian" <Hans-Christian.Egtvedt@atmel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 20 Apr 2009 10:12:27 +0800
-Message-Id: <1240193547.25532.52.camel@falcon>
+Date: Mon, 20 Apr 2009 12:36:53 +1000
+Message-Id: <1240195013.24329.38.camel@linux-51e8.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi, all
+The ezLCD+101 board (to which an favr-32 is fitted) has a long,
+unshielded, nasty lead between the touch panel and the ads7843 touch
+controller.  In order to get satisfactory response then, we need to
+employ every noise-reduction trick in the driver's arsenal.  After
+extensive fiddling I've found some good settings:
 
-I just update "RT_PREEMPT for loongson" to the latest RT_PREEMPT
-(patch-2.6.29.1-rt8), welcome to pull & test it.
+1) We keep vref on all the time to dramatically reduce settling times
+(at the cost of a tiny increase in power consumption).
 
-$ git clone git://dev.lemote.com/rt4ls.git
-or
-http://dev.lemote.com/http_git/rt4ls.git
+2) Despite 1 the settling time is still non-zero.  500uS is plenty of
+time for the signals to settle
 
-this version include basic-RT support for mips, ftrace support for mips
-(static function tracer/dynamic function tracer/function graph
-tracer/system call tracer). 
+3) Despite 1 and 2 there's still a little bit of noise around.  By
+setting a pen recheck delay we make the panel feel less touchy and
+twitchy.
 
-* current status
+Someone with more time and patience myself might be able to tune this
+numbers further but these settings are now perfectly acceptable for
+normal use.
 
-the "system call tracer" need to fix when compiled in 64bit, because
-there are several sys_call_table entries for different mips64
-standards(o32, n32), currently, i only use the one in
-arch/mips/kernel/scall64-o32.S via EXPORT(sys_call_table).
+Tested on ezLCD+101 though should only improve response on other ezLCD+/
+favr-32 boards too.
 
-the "function graph tracer" is not stable under 100% load(lots of
-"find /" background). 
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
 
-best regards,
-Wu Zhangjin
+---
+ arch/avr32/boards/favr-32/setup.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
+diff --git a/arch/avr32/boards/favr-32/setup.c b/arch/avr32/boards/favr-32/setup.c
+index 58203d1..f1152fa 100644
+--- a/arch/avr32/boards/favr-32/setup.c
++++ b/arch/avr32/boards/favr-32/setup.c
+@@ -72,6 +72,10 @@ static struct ads7846_platform_data ads7843_data = {
+ 	.debounce_max		= 20,
+ 	.debounce_rep		= 4,
+ 	.debounce_tol		= 5,
++	
++	.keep_vref_on		= true,
++	.settle_delay_usecs	= 500,
++	.penirq_recheck_delay_usecs = 100,
+ 
+ 	/* The ads7843 pendown irq is just connected to regular
+ 	 * gpio and therefore can only trigger interrupts on
 -- 
-Wu Zhangjin
-DSLab, Lanzhou University, China
-www.lemote.com, Jiangsu Province, China
+1.6.0.2
+
 
