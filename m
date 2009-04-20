@@ -1,53 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZDTL2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbZDTLfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZDTL2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 07:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZDTL2E
+	id S1755073AbZDTLfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 07:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbZDTLfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 07:28:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60326 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754767AbZDTL2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 07:28:01 -0400
-Message-ID: <49EC5C3A.6020108@redhat.com>
-Date: Mon, 20 Apr 2009 14:27:54 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add MCE support to KVM
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com>
-In-Reply-To: <49EC5B2A.9080403@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 20 Apr 2009 07:35:43 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:36590 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754615AbZDTLfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 07:35:42 -0400
+Date: Mon, 20 Apr 2009 20:35:40 +0900 (JST)
+Message-Id: <20090420.203540.104031006.ryov@valinux.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: righi.andrea@gmail.com, randy.dunlap@oracle.com, axboe@kernel.dk,
+       dradford@bluehost.com, akpm@linux-foundation.org, ngupta@google.com,
+       fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, roberto@unbit.it,
+       agk@sourceware.org, matt@bluehost.com,
+       containers@lists.linux-foundation.org, menage@google.com,
+       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090417102214.GC3896@balbir.in.ibm.com>
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com>
+	<1239740480-28125-4-git-send-email-righi.andrea@gmail.com>
+	<20090417102214.GC3896@balbir.in.ibm.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
->>> Well, xenner doesn't do vmcalls, so the page isn't vendor specific.
->>
->> Well, for true pv (not pv-on-hvm) it wouldn't use the MSR, would it?
->
-> Yes, the MSR is used for pv-on-hvm only.
+Hi Balbir,
 
-So it isn't relevant for Xenner?
+> > diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+> > index 012f065..ef8cac0 100644
+> > --- a/block/blk-ioc.c
+> > +++ b/block/blk-ioc.c
+> > @@ -84,24 +84,28 @@ void exit_io_context(void)
+> >  	}
+> >  }
+> > 
+> > +void init_io_context(struct io_context *ioc)
+> > +{
+> > +	atomic_set(&ioc->refcount, 1);
+> > +	atomic_set(&ioc->nr_tasks, 1);
+> > +	spin_lock_init(&ioc->lock);
+> > +  ioc->ioprio_changed = 0;
+> > +	ioc->ioprio = 0;
+> > +	ioc->last_waited = jiffies; /* doesn't matter... */
+> > +	ioc->nr_batch_requests = 0; /* because this is 0 */
+> > +	ioc->aic = NULL;
+> > +	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);
+> > +	INIT_HLIST_HEAD(&ioc->cic_list);
+> > +	ioc->ioc_data = NULL;
+> > +}
+> > +
+> >  struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+> >  {
+> >  	struct io_context *ret;
+> > 
+> >  	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+> > -	if (ret) {
+> > -		atomic_set(&ret->refcount, 1);
+> > -		atomic_set(&ret->nr_tasks, 1);
+> > -		spin_lock_init(&ret->lock);
+> > -		ret->ioprio_changed = 0;
+> > -		ret->ioprio = 0;
+> > -		ret->last_waited = jiffies; /* doesn't matter... */
+> > -		ret->nr_batch_requests = 0; /* because this is 0 */
+> > -		ret->aic = NULL;
+> > -		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
+> > -		INIT_HLIST_HEAD(&ret->cic_list);
+> > -		ret->ioc_data = NULL;
+> > -	}
+> > +	if (ret)
+> > +		init_io_context(ret);
+> >
+> 
+> Can you split this part of the patch out as a refactoring patch?
 
-That said, I'd like to be able to emulate the Xen HVM hypercalls.  But 
-in any case, they hypercall implementation has to be in the kernel, so I 
-don't see why the MSR shouldn't be.  Especially if we need to support 
-tricky bits like continuations.
+Yes, I'll do it.
 
-> Same MSR, multiple writes (page number in the low bits).
+> >  	return ret;
+> >  }
+> > diff --git a/fs/buffer.c b/fs/buffer.c
+> > index 13edf7a..bc72150 100644
+> > --- a/fs/buffer.c
+> > +++ b/fs/buffer.c
+> > @@ -36,6 +36,7 @@
+> >  #include <linux/buffer_head.h>
+> >  #include <linux/task_io_accounting_ops.h>
+> >  #include <linux/bio.h>
+> > +#include <linux/biotrack.h>
+> >  #include <linux/notifier.h>
+> >  #include <linux/cpu.h>
+> >  #include <linux/bitops.h>
+> > @@ -655,6 +656,7 @@ static void __set_page_dirty(struct page *page,
+> >  	if (page->mapping) {	/* Race with truncate? */
+> >  		WARN_ON_ONCE(warn && !PageUptodate(page));
+> >  		account_page_dirtied(page, mapping);
+> > +		bio_cgroup_reset_owner_pagedirty(page, current->mm);
+> >  		radix_tree_tag_set(&mapping->page_tree,
+> >  				page_index(page), PAGECACHE_TAG_DIRTY);
+> >  	}
+> > diff --git a/fs/direct-io.c b/fs/direct-io.c
+> > index da258e7..ec42362 100644
+> > --- a/fs/direct-io.c
+> > +++ b/fs/direct-io.c
+> > @@ -33,6 +33,7 @@
+> >  #include <linux/err.h>
+> >  #include <linux/blkdev.h>
+> >  #include <linux/buffer_head.h>
+> > +#include <linux/biotrack.h>
+> >  #include <linux/rwsem.h>
+> >  #include <linux/uio.h>
+> >  #include <asm/atomic.h>
+> > @@ -799,6 +800,7 @@ static int do_direct_IO(struct dio *dio)
+> >  			ret = PTR_ERR(page);
+> >  			goto out;
+> >  		}
+> > +		bio_cgroup_reset_owner(page, current->mm);
+> > 
+> >  		while (block_in_page < blocks_per_page) {
+> >  			unsigned offset_in_page = block_in_page << blkbits;
+> > diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
+> > new file mode 100644
+> > index 0000000..25b8810
+> > --- /dev/null
+> > +++ b/include/linux/biotrack.h
+> > @@ -0,0 +1,95 @@
+> > +#include <linux/cgroup.h>
+> > +#include <linux/mm.h>
+> > +#include <linux/page_cgroup.h>
+> > +
+> > +#ifndef _LINUX_BIOTRACK_H
+> > +#define _LINUX_BIOTRACK_H
+> > +
+> > +#ifdef	CONFIG_CGROUP_BIO
+> > +
+> > +struct tsk_move_msg {
+> > +	int old_id;
+> > +	int new_id;
+> > +	struct task_struct *tsk;
+> > +};
+> > +
+> > +extern int register_biocgroup_notifier(struct notifier_block *nb);
+> > +extern int unregister_biocgroup_notifier(struct notifier_block *nb);
+> > +
+> > +struct io_context;
+> > +struct block_device;
+> > +
+> > +struct bio_cgroup {
+> > +	struct cgroup_subsys_state css;
+> > +	int id;
+> 
+> Can't css_id be used here?
 
-Nasty.  The hypervisor has to remember all of the pages, so it can 
-update them for live migration.  And it has to forget about them on 
-reset.  And something needs to be done for kexec...
+The latest patch has already done it.
 
--- 
-error compiling committee.c: too many arguments to function
+> > +	struct io_context *io_context;	/* default io_context */
+> > +/*	struct radix_tree_root io_context_root; per device io_context */
+> 
+> Commented out code? Do you want to remove this.
 
+No. This is a sample code to set io_contexts per cgroup.
+
+> Comments? Docbook style would be nice for the functions below.
+
+O.K. I'll do it.
+
+> >  struct page_cgroup {
+> >  	unsigned long flags;
+> > -	struct mem_cgroup *mem_cgroup;
+> >  	struct page *page;
+> > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > +	struct mem_cgroup *mem_cgroup;
+> > +#endif
+> > +#ifdef CONFIG_CGROUP_BIO
+> > +	int bio_cgroup_id;
+> > +#endif
+> > +#if defined(CONFIG_CGROUP_MEM_RES_CTLR) || defined(CONFIG_CGROUP_BIO)
+> >  	struct list_head lru;		/* per cgroup LRU list */
+> 
+> Do we need the #if defined clause? Anyone using page_cgroup, but not
+> list_head LRU needs to be explicitly covered when they come up.
+
+How about to add a option like "CONFIG_CGROUP_PAGE_USE_LRU" ?
+
+> > +/*
+> > + * This function is used to make a given page have the bio-cgroup id of
+> > + * the owner of this page.
+> > + */
+> > +void bio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
+> > +{
+> > +	struct bio_cgroup *biog;
+> > +	struct page_cgroup *pc;
+> > +
+> > +	if (bio_cgroup_disabled())
+> > +		return;
+> > +	pc = lookup_page_cgroup(page);
+> > +	if (unlikely(!pc))
+> > +		return;
+> > +
+> > +	pc->bio_cgroup_id = 0;	/* 0: default bio_cgroup id */
+> > +	if (!mm)
+> > +		return;
+> 
+> 
+> Is this routine called with lock_page_cgroup() taken?  Otherwise
+> what protects pc->bio_cgroup_id?
+
+pc->bio_cgroup_id can be updated without any locks because an integer
+type variable can be set a new value at once on modern CPUs.
+
+> > +	/*
+> > +	 * css_get(&bio->css) isn't called to increment the reference
+> > +	 * count of this bio_cgroup "biog" so pc->bio_cgroup_id might turn
+> > +	 * invalid even if this page is still active.
+> > +	 * This approach is chosen to minimize the overhead.
+> > +	 */
+> > +	pc->bio_cgroup_id = biog->id;
+> 
+> What happens without ref count increase we delete the cgroup or css?
+
+I know that the same ID could be reused, but it is not a big
+problem because it is recovered slowly.
+I think that a mechanism which makes it difficult to reuse the same
+ID should be implemented.
+
+> > +/*
+> > + * Change the owner of a given page. This function is only effective for
+> > + * pages in the pagecache.
+> 
+> Could you clarify pagecache? mapped/unmapped or both?
+
+This function is effective for both mapped and unmapped pages. I'll
+write it in the comment.
+
+> > + */
+> > +void bio_cgroup_reset_owner_pagedirty(struct page *page, struct mm_struct *mm)
+> > +{
+> > +	if (PageSwapCache(page) || PageAnon(page))
+> > +		return;
+> 
+> Look at page_is_file_cache() depending on the answer above
+
+Thank you for this information. I'll use it.
+
+> > +/*
+> > + * Assign "page" the same owner as "opage."
+> > + */
+> > +void bio_cgroup_copy_owner(struct page *npage, struct page *opage)
+> > +{
+> > +	struct page_cgroup *npc, *opc;
+> > +
+> > +	if (bio_cgroup_disabled())
+> > +		return;
+> > +	npc = lookup_page_cgroup(npage);
+> > +	if (unlikely(!npc))
+> > +		return;
+> > +	opc = lookup_page_cgroup(opage);
+> > +	if (unlikely(!opc))
+> > +		return;
+> > +
+> > +	/*
+> > +	 * Do this without any locks. The reason is the same as
+> > +	 * bio_cgroup_reset_owner().
+> > +	 */
+> > +	npc->bio_cgroup_id = opc->bio_cgroup_id;
+> 
+> What protects npc and opc?
+
+As the same reason mentioned above, bio_cgroup_id can be updated
+without any locks, and npc and opc always point to page_cgroups.
+An integer variable can be set a new value at once on a system which
+can use RCU lock.
+
+Thanks,
+Ryo Tsuruta
