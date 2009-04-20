@@ -1,53 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZDTXG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbZDTXMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZDTXG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbZDTXGp
+	id S1757816AbZDTXMZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbZDTXMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:06:45 -0400
-Received: from smtp0.av-mx.com ([137.118.16.56]:38398 "EHLO smtp0.av-mx.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751742AbZDTXGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:06:44 -0400
-X-Greylist: delayed 408 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 19:06:44 EDT
-Date: Mon, 20 Apr 2009 18:59:42 -0400
-From: Nate Straz <nate-ltp@refried.org>
-To: Michal Simek <michal.simek@petalogix.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, subrata@linux.vnet.ibm.com,
-       ltp-list@lists.sourceforge.net,
-       John Williams <john.williams@petalogix.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [LTP] statvfs -> f_bavail
-Message-ID: <20090420225942.GB3590@refried.org>
-References: <49E759FB.70103@petalogix.com> <49E847FB.1030801@petalogix.com> <20090417173107.GA3590@refried.org> <49EC1352.6010900@petalogix.com> <20090420062642.GY26366@ZenIV.linux.org.uk> <49EC1945.1000805@petalogix.com>
+	Mon, 20 Apr 2009 19:12:10 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37012 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755959AbZDTXMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 19:12:08 -0400
+Date: Tue, 21 Apr 2009 00:08:03 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Chris Friesen <cfriesen@nortel.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Trenton Adams <trenton.d.adams@gmail.com>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
+In-Reply-To: <49ECE783.5050704@nortel.com>
+Message-ID: <Pine.LNX.4.64.0904202352520.2924@blonde.anvils>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+ <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+ <200904070035.00784.rjw@sisk.pl> <49E79E58.9000606@nortel.com>
+ <alpine.LFD.2.00.0904161432000.4042@localhost.localdomain> <49ECE783.5050704@nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EC1945.1000805@petalogix.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 20 08:42, Michal Simek wrote:
-> Al Viro wrote:
-> > On Mon, Apr 20, 2009 at 08:16:50AM +0200, Michal Simek wrote:
-> >> Hi guys from linux-fsdevel: Can you told us what is the right solution
-> >> for my problem above?
-> >
-> > "Fields that are undefined for a particular file system are set to 0".
-> > So what kind of fs are you running that on and is that sucker really
-> > defined for it?  Note that if it's ramfs or tmpfs with -o nr_blocks=0,
-> > there is no such thing as "amount of free space", reserved for root
-> > or not.
-> I use ramfs and nfs without any -o nr_block=0 option.
-> That mean that for all other fs is possible to set nr_blocks=0 (f_bavail=0) and for all this cases
-> fsync02 test failed. That mean that make sense to test f_bavail value in LTP and if is zero
-> don't work with it. Am I right?
+On Mon, 20 Apr 2009, Chris Friesen wrote:
+> Linus Torvalds wrote:
+> > On Thu, 16 Apr 2009, Chris Friesen wrote:
+> > > I'm okay with that.  The problem causes some backwards compatibility
+> > > problems
+> > > with existing apps that get confused by the large "offset" number.  The
+> > > fix is
+> > > going to cause problems too, but in a different way.
+> > >
+> > > We'll work around it.
+> > 
+> > If you have actual apps that care, that's a different issue.
 
-Sounds like the patch is the right thing to do based on Al's quote.  I
-would suggest modifying the patch to use fsblkcnt_t as f_bavail is
-defined in statvfs(2).  Other than that, the patch looks good.
+Yes, that's what I told Chris too.
+But asked for more info, suspecting his app was already broken.
 
-Nate
+> > 
+> > We do try to bend over backwards on ABI issues if it really is noticeable
+> > for applications. Now, in this case, if you can just fix your app to not
+> > care (because it really was badly written in the first place to even
+> > notice), then that is the _much_ superior solution.
+> 
+> Yep, we can fix the app to ignore that field for anonymous mappings.
+> 
+> > Although I don't really even see what we can sanely do except for the 0
+> > case. We could put the virtual address in there instead of zero (I forget
+> > what old kernels used to do - whatever magic value the anonymous mappings
+> > got, it wasn't really designed as an important value in its own right, it
+> > was designed to trigger the "we can merge these vma's" logic.
+> 
+> For anonymous mappings, the older kernels put the starting address of the VMA
+> (from the point of view of the app) as the offset.  Until the recent change,
+> new kernels still did this for most VMAs, but the stack offset was a 64-bit
+> value with no obvious relation to the VMA start address.
+
+No, what they put there was something that in most cases matched the
+starting address of the VMA; but try moving that VMA with mremap (and
+an old /proc/<pid>/maps!) and you'll see that the "offset" remained
+unchanged even when the starting address of the VMA was changed.
+
+(The offset remaining constant so that rmap can locate the VMA's pages
+and unmap them, despite their being mapped at different virtual
+addresses in parent and child after a move in one of them.)
+
+... so I think your app was indeed already broken, wasn't it?
+
+It's also unclear why you'd want to use the offset field for the
+starting address of the VMA, when /proc/<pid>/maps already shows
+the starting address of the VMA.  I think you've more to tell us!
+
+Hugh
