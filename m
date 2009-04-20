@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZDTGAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZDTGDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbZDTGAu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 02:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZDTGAl
+	id S1753128AbZDTGDe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 02:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZDTGDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 02:00:41 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:49068 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbZDTGAk (ORCPT
+	Mon, 20 Apr 2009 02:03:24 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:44034 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752575AbZDTGDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 02:00:40 -0400
-Subject: Re: [git pull] Fixes to 2.6.30rc2
-From: Eric Anholt <eric@anholt.net>
-To: Dave Airlie <airlied@gmail.com>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <21d7e9970904182347m1dbb611dp3a71f16b0fd82bb7@mail.gmail.com>
-References: <1240001399.11172.121.camel@gaiman.anholt.net>
-	 <20090418.015905.92829818.davem@davemloft.net>
-	 <1240086216.11172.2954.camel@gaiman.anholt.net>
-	 <21d7e9970904182347m1dbb611dp3a71f16b0fd82bb7@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-OpTqbHBgpm6gO9MTbGui"
-Date: Sun, 19 Apr 2009 23:00:24 -0700
-Message-Id: <1240207224.11949.12.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Mon, 20 Apr 2009 02:03:23 -0400
+Date: Mon, 20 Apr 2009 14:03:13 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in
+	crypto_{,de}compress_{update,final}() (was: Re: [PATCH/RFC] crypto:
+	compress - Add comp_request.total_out (was: Re: [PATCH 6/6]
+	squashfs: Make SquashFS 4 use the new pcomp crypto interface))
+Message-ID: <20090420060313.GA891@gondor.apana.org.au>
+References: <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 24, 2009 at 05:33:01PM +0100, Geert Uytterhoeven wrote:
+> 
+> Here's an alternative patch, which does exactly that.
+> Phillip, what do you think?
+> 
+> Thanks for your comments!
+> 
+> >From be7d630f96a85d3ce48716b8e328563ba217647b Mon Sep 17 00:00:00 2001
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Date: Tue, 24 Mar 2009 17:19:05 +0100
+> Subject: [PATCH] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
+> 
+> If crypto_{,de}compress_{update,final}() succeed, return the actual number of
+> bytes produced instead of zero, so their users don't have to calculate that
+> theirselves.
+> 
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
---=-OpTqbHBgpm6gO9MTbGui
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I certainly prefer this version over the other one? Do you want to
+submit crypto API portion of this?
 
-On Sun, 2009-04-19 at 16:47 +1000, Dave Airlie wrote:
-> On Sun, Apr 19, 2009 at 6:23 AM, Eric Anholt <eric@anholt.net> wrote:
-> > On Sat, 2009-04-18 at 01:59 -0700, David Miller wrote:
-> >> From: Eric Anholt <eric@anholt.net>
-> >> Date: Fri, 17 Apr 2009 13:49:59 -0700
-> >>
-> >> >   git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm=
--intel-next
-> >>
-> >> Eric, any plans to ever push your work through David Airlie's DRM
-> >> tree?  I've been watching this for a few weeks and I'm mystified why
-> >> the Intel DRM drier stuff is so special that is always goes seperate.
-> >>
-> >> It's seems foolish for David to manage the infrastructure and core DRM
-> >> changes, as well as those for radeon and the other drivers other than
-> >> Intel, which could potentially cause merge issues and conflicts with
-> >> your driver changes.
-> >>
-> >> Why not do Intel DRM driver development via his tree?  I just don't
-> >> get it. :-/
-> >
-> > Inside of the merge window, I am going through Dave again because he
-> > requested it (though delays meant that I didn't get a major cleanup in
-> > this merge window).  However, Dave is also quite busy, and not stealing
-> > his time every few days to pull my tree for just forwarding bugfixes on
-> > seems to be a win.
->=20
-> btw which cleanup, I seem to remember it arriving after the merge
-> window had opened.
->=20
-> The theory is the code was in my tree before Linus opened the window
-> or it doesn't
-> get=20
-
-Yeah, it was early merge window iirc, the mechanical
-drm_malloc/drm_calloc/drm_free nuke.  It really needs to die.  In a
-fire.
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-OpTqbHBgpm6gO9MTbGui
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknsD3YACgkQHUdvYGzw6vfujgCfWbW5BlgPfD1FCjAh4MvlsGfo
-3O8An3xfodP3Rsshzytah++emta7HQLw
-=OzcQ
------END PGP SIGNATURE-----
-
---=-OpTqbHBgpm6gO9MTbGui--
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
