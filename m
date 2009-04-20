@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZDTIRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZDTIWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751814AbZDTIRm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 04:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZDTIRc
+	id S1752721AbZDTIWf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 04:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZDTIWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 04:17:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:7902 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZDTIRb (ORCPT
+	Mon, 20 Apr 2009 04:22:24 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42853 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbZDTIWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 04:17:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=A/rahxBjRG6wbCFX20R0+5Cg4QJ89P2ZG7+Z/oKr38bPvb+RI018VqQKgbF8uXUE/2
-         OsjEIyRUvqmD6V2o7XMIQHoOHF8L8Gk7PXicKFuVFiH3KPYerCfYCHzJgChLeR2kRaHC
-         W8Og3Ag203eVmJyHJA2W+9Cbp5S9xbxyHn7Dk=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 2/2] pktcdvd.h should include mempool.h
-Date: Mon, 20 Apr 2009 12:17:24 +0400
-Message-Id: <1240215444-8137-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Mon, 20 Apr 2009 04:22:23 -0400
+Date: Mon, 20 Apr 2009 10:24:29 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, jdike@addtoit.com
+Subject: Re: [GIT] kbuild
+Message-ID: <20090420082429.GA9877@uranus.ravnborg.org>
+References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org> <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain> <20090420014158.GV26366@ZenIV.linux.org.uk> <20090420024954.GW26366@ZenIV.linux.org.uk> <20090420044551.GB8494@uranus.ravnborg.org> <20090420051538.GX26366@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420051538.GX26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com> 
+On Mon, Apr 20, 2009 at 06:15:38AM +0100, Al Viro wrote:
+> On Mon, Apr 20, 2009 at 06:45:51AM +0200, Sam Ravnborg wrote:
+> 
+> > For kernel proper the use of -idirafter would be confusing.
+> > But for um alone we should be safe provided it is properly commented.
+> 
+> Less than for all um - it's only for USER_OBJ there.  It is special,
+> simply because for uml the counterpart of really low-level glue has
+> to talk to libc.  So there we have separation into "normal kernel source"
+> and "userland code that uses userland headers, calls libc functions, etc."
+>  
+> > I have already fixed um the obvious way for asm-offsets in my local tree.
+> > But if you prefer I can add a -dirafter based patch before the "move
+> > asm-offsets.h to incldue/generated" patch.
+> 
+> I've dumped several header cleanup patches for uml into
+> git://git.kernel.org/pub/scm/linux/kernel/git/viro/um-header.git/ 
+> including the -idirafter, move of user_constants.h, etc.
+> Another fun thing: user.h used to be included directly by just about
+> every userland-side file.  Switched it to -include user.h (for USER_CFLAGS,
+> of course - not for normal stuff), killed includes, got rid of shitloads
+> of kern_constants.h includes at the same time.  At which point getting
+> rid of kern_constants.h became trivial.
+> 
+> Up to Jeff's approval, obviously - *including* -idirafter patch.
 
-Fix this build error:
-In file included from fs/compat_ioctl.c:104:
-include/linux/pktcdvd.h:285: error: expected specifier-qualifier-list before 'mempool_t'
+I have skimmed the patches - they all looked good to me.
+Everyting that cleans up arch/um/Makefile is good!
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- include/linux/pktcdvd.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I you respin them you can add my:
 
-diff --git a/include/linux/pktcdvd.h b/include/linux/pktcdvd.h
-index 04b4d73..d745f5b 100644
---- a/include/linux/pktcdvd.h
-+++ b/include/linux/pktcdvd.h
-@@ -113,6 +113,7 @@ struct pkt_ctrl_command {
- #include <linux/cdrom.h>
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
-+#include <linux/mempool.h>
- 
- /* default bio write queue congestion marks */
- #define PKT_WRITE_CONGESTION_ON    10000
--- 
-1.6.2.3
+    Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
+The asm-offsets.h that um picks us is the one generated by um.
+So we still need to add a dummy file in arch/um/include/asm that
+only do:
+    #include <generated/asm-offsets.h>
+
+I will do so in my patch-set.
+
+	Sam
