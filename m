@@ -1,126 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZDTTPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbZDTTS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbZDTTPj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 15:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbZDTTP0
+	id S1756084AbZDTTS3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 15:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZDTTSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 15:15:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37460 "EHLO ogre.sisk.pl"
+	Mon, 20 Apr 2009 15:18:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52585 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754140AbZDTTPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 15:15:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH] e100: do not go D3 in shutdown unless system is powering off
-Date: Mon, 20 Apr 2009 21:13:59 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       auke-jan.h.kok@intel.com, e1000-devel@lists.sourceforge.net
-References: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com>
-In-Reply-To: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com>
+	id S1754140AbZDTTSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 15:18:20 -0400
+Date: Mon, 20 Apr 2009 21:17:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@goodmis.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [RFC] Stupid tracepoint ideas
+Message-ID: <20090420191755.GA15571@elte.hu>
+References: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904202114.01932.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 April 2009, Thadeu Lima de Souza Cascardo wrote:
-> After experimenting with kexec with the last merges after 2.6.29, I've
-> had some problems when probing e100. It would not read the eeprom. After
-> some bisects, I realized this has been like that since forever (at least
-> 2.6.18). The problem is that shutdown is doing the same thing that
-> suspend does and puts the device in D3 state. I couldn't find a way to
-> get the device back to a sane state in the probe function. So, based on
-> some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
-> I wrote this one for e100.
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Mathieu,
 > 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
->  drivers/net/e100.c |   27 +++++++++++++++++++++------
->  1 files changed, 21 insertions(+), 6 deletions(-)
+> You may have tried this in your creation of tracepoints, but I figured I 
+> would ask before wasting too much time on it.
 > 
-> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> index c0f8443..3db7b29 100644
-> --- a/drivers/net/e100.c
-> +++ b/drivers/net/e100.c
-> @@ -2728,7 +2728,7 @@ static void __devexit e100_remove(struct pci_dev *pdev)
->  #define E100_82552_SMARTSPEED   0x14   /* SmartSpeed Ctrl register */
->  #define E100_82552_REV_ANEG     0x0200 /* Reverse auto-negotiation */
->  #define E100_82552_ANEG_NOW     0x0400 /* Auto-negotiate now */
-> -static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
-> +static int __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
->  {
->  	struct net_device *netdev = pci_get_drvdata(pdev);
->  	struct nic *nic = netdev_priv(netdev);
-> @@ -2749,19 +2749,31 @@ static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
->  			           E100_82552_SMARTSPEED, smartspeed |
->  			           E100_82552_REV_ANEG | E100_82552_ANEG_NOW);
->  		}
-> -		if (pci_enable_wake(pdev, PCI_D3cold, true))
-> -			pci_enable_wake(pdev, PCI_D3hot, true);
-> +		*enable_wake = true;
->  	} else {
-> -		pci_enable_wake(pdev, PCI_D3hot, false);
-> +		*enable_wake = false;
->  	}
->  
->  	pci_disable_device(pdev);
-> -	pci_set_power_state(pdev, PCI_D3hot);
->  
->  	return 0;
->  }
->  
-> +static void __e100_power_off(struct pci_dev *pdev, bool wake)
-> +{
-> +	pci_enable_wake(pdev, PCI_D3hot, wake);
-> +	pci_set_power_state(pdev, PCI_D3hot);
-> +}
-> +
->  #ifdef CONFIG_PM
-> +static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
-> +{
-> +	bool wake;
-> +	int retval = __e100_shutdown(pdev, &wake);
+> I'm looking at ways to make tracepoints even lighter weight when disabled. 
+> And I thought of doing section code. I'm playing with the following idea 
+> (see below patch) but I'm afraid gcc is allowed to think that the code it 
+> produces will not move to different sections.
+> 
+> Any thoughts on how we could do something similar to this.
+> 
+> Note, this patch is purely proof-of-concept. I'm fully aware that it is an 
+> x86 solution only.
+> 
+> -- Steve
+> 
+> [ no Signed-off-by: because this patch is crap ]
+> 
+> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> index 4353f3f..6953f78 100644
+> --- a/include/linux/tracepoint.h
+> +++ b/include/linux/tracepoint.h
+> @@ -65,9 +65,18 @@ struct tracepoint {
+>  	extern struct tracepoint __tracepoint_##name;			\
+>  	static inline void trace_##name(proto)				\
+>  	{								\
+> -		if (unlikely(__tracepoint_##name.state))		\
+> +		if (unlikely(__tracepoint_##name.state)) {		\
+> +			asm volatile ("jmp 43f\n"			\
+> +				      "42:\n"				\
+> +				      ".section .unlikely,\"ax\"\n"	\
+> +				      "43:\n"				\
+> +				      ::: "memory");			\
+>  			__DO_TRACE(&__tracepoint_##name,		\
+> -				TP_PROTO(proto), TP_ARGS(args));	\
+> +				   TP_PROTO(proto), TP_ARGS(args));	\
+> +			asm volatile ("jmp 42b\n"			\
+> +			     ".previous\n"				\
+> +			     ::: "memory");				\
+> +		}							\
+>  	}								\
+>  	static inline int register_trace_##name(void (*probe)(proto))	\
 
-I'd call pci_prepare_to_sleep() here if wake is 'true' instead of the
-__e100_power_off(), because there is a chance the platform will prefer some
-other power state to put the device into.
+does this boot fine? If yes then it would be nice to have a 
+measurement.
 
-In fact, looking at the entire driver's code, I think you could just call
-pci_prepare_to_sleep(pdev) here instead of __e100_power_off(pdev, wake)
-and discard the value of wake.
-
-> +	__e100_power_off(pdev, wake);
-
-Also, retval will always be 0 as far as I can see and if it could be different
-from 0, it would be a good idea to return the error code before putting the
-device into a low power state (.resume() won't be called for this device if
-.suspend() fails).
-
-Apart from this, the patch looks fine to me.
-
-> +	return retval;
-> +}
-> +
->  static int e100_resume(struct pci_dev *pdev)
->  {
->  	struct net_device *netdev = pci_get_drvdata(pdev);
-> @@ -2792,7 +2804,10 @@ static int e100_resume(struct pci_dev *pdev)
->  
->  static void e100_shutdown(struct pci_dev *pdev)
->  {
-> -	e100_suspend(pdev, PMSG_SUSPEND);
-> +	bool wake;
-> +	__e100_shutdown(pdev, &wake);
-> +	if (system_state == SYSTEM_POWER_OFF)
-> +		__e100_power_off(pdev, wake);
->  }
->  
->  /* ------------------ PCI Error Recovery infrastructure  -------------- */
-
-Best,
-Rafael
+	Ingo
