@@ -1,73 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZDTUDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbZDTUGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbZDTUDy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZDTUDp
+	id S1756452AbZDTUGQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbZDTUGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:03:45 -0400
-Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:50218 "HELO
-	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752219AbZDTUDp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:03:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=DiSBIPzIW++fw6S0fUcnduukQ/xxiEuDQvVEVKG/DZHccnChvHR5YgXHtEyri3lv2w9LzltzP6iHBDqBEiBqCNZUVMh0wFrbnuiVPlcO/1Rn+soK59P9FMSjirvnmxUd;
-Date: Mon, 20 Apr 2009 13:03:41 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: derive nearby CPUs from device's instead of bus'
- NUMA information
-Message-ID: <20090420130341.098c8ebe@hobbes>
-In-Reply-To: <20090420084747.GA7286@alberich.amd.com>
-References: <20090417100155.GE16198@alberich.amd.com>
-	<20090417162115.GF8253@elte.hu>
-	<86802c440904171226g520e3b67h7318ff0f80f1e782@mail.gmail.com>
-	<20090420084747.GA7286@alberich.amd.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 20 Apr 2009 16:06:00 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:54384 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424AbZDTUF7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 16:05:59 -0400
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: leiming <tom.leiming@gmail.com>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Mon, 20 Apr 2009 22:08:22 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28; KDE/4.2.2; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       video4linux-list@redhat.com, mchehab@infradead.org
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <alpine.LFD.2.00.0904171952260.4042@localhost.localdomain> <20090418125111.6646e997@linux-lm>
+In-Reply-To: <20090418125111.6646e997@linux-lm>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904202208.23899.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 10:47:47 +0200
-Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+On Saturday 18 April 2009 06:51:11 leiming wrote:
+> On Fri, 17 Apr 2009 19:55:29 -0700 (PDT)
+>
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > @@ -742,7 +742,7 @@ static int uvc_alloc_urb_buffers(struct
+> > > uvc_video_device *video,
+> > >  	/* Buffers are already allocated, bail out. */
+> > >  	if (video->urb_size)
+> > > -		return 0;
+> > > +		return DIV_ROUND_UP(video->urb_size, psize);
+> >
+> > I don't think this is right. It should round _down_.
+> >
+> > It's supposed to return 'npackets', but if you pass it a different
+> > packet size than it was passed originally, it can now return a
+> > potentially bigger number than the already allocated buffer, no?
+> >
+> > So I think it should round down (ie use a regular divide). No?
+>
+> Yes,you are correct, please ignore my last reply, and following is
+> the fixed patch.
 
-> On Fri, Apr 17, 2009 at 12:26:54PM -0700, Yinghai Lu wrote:
-> > On Fri, Apr 17, 2009 at 9:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > > const struct cpumask * cpumask_of_pcidev(struct pci_dev *dev)
-> > > {
-> > >        if (dev->numa_node == -1)
-> > >                return cpumask_of_pcibus(to_pci_dev(dev)->bus);
-> > >
-> > >        return cpumask_of_node(dev_to_node(dev));
-> > > }
-> > >
-> > > ? This would work fine in all cases.
-> 
-> Yes, I think so. That's the general solution w/o additional
-> "ifdefing".
-> 
-> > you are right, dev_to_node(dev) could return -1 on 64bit, if there
-> > is no memory on that node.
-> 
-> Hmm, I thought just in the CONFIG_NUMA=n case -1 is returned.
-> 
-> During initialization the struct device's numa_node is set to -1 and
-> later on the information is inherited from the parent numa_node.
-> 
-> So what do I miss?
+psize and video->urb_size shouldn't have changed before and after resume, 
+otherwise we'll get into trouble anyway. A regular divide and a round-up 
+divide should then return the same result. I'll take the regular divide, as it 
+will be more efficient.
 
-I like the idea of cpumask_of_pcidev(), but it seems like
-cpumask_of_pcibus should return the same value.  So if the node is
-unassigned or "equadistant" (there's code that treats -1 as both I
-think), cpumask_of_pcibus should figure out what the nearest CPUs are
-and return that, right?
+> Thanks.
+>
+> From a3b3d72cdd57a0699fb643b41b78eb7beb211ff5 Mon Sep 17 00:00:00 2001
+> From: Ming Lei <tom.leiming@gmail.com>
+> Date: Wed, 15 Apr 2009 22:32:51 +0800
+> Subject: [PATCH] V4L/DVB:usbvideo:fix uvc resume failed(v2)
+>
+> Now urb buffers is not freed before suspend, so uvc_alloc_urb_buffers
+> should return packet counts allocated originally during uvc resume
+> , instead of zero.
+>
+> This version uses round down to return packet counts on Linus's
+> suggestions, or else may lead to buffer destructed if packet size
+> is changed before calling uvc_alloc_urb_buffers() in this kind of
+> case.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+The comment is misleading. If the packet size changes we need to reallocate 
+the buffers anyway. Have you checked if the packet size (which depends on the 
+endpoint being selected) can be changed between suspend and resume, either by 
+the uvcvideo driver (I don't think it can) or the USB core ?
+
+Best regards,
+
+Laurent Pinchart
+
