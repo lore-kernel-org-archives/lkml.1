@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZDTXpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZDTXpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZDTXpN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZDTXow
+	id S1755243AbZDTXpi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZDTXpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:44:52 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:59311 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753596AbZDTXou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:44:50 -0400
-Date: Mon, 20 Apr 2009 16:44:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
-Message-ID: <20090420234446.GL6822@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com>
+	Mon, 20 Apr 2009 19:45:16 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:34145 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753822AbZDTXpO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 19:45:14 -0400
+Message-ID: <49ED090F.4050503@lougher.demon.co.uk>
+Date: Tue, 21 Apr 2009 00:45:19 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18924.64032.103954.171918@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
+ (was: Re: [PATCH/RFC] crypto: compress - Add comp_request.total_out
+References: <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au> <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 08:41:36AM +1000, Paul Mackerras wrote:
-> Paul E. McKenney writes:
+Geert Uytterhoeven wrote:
+> On Mon, 20 Apr 2009, Herbert Xu wrote:
+>> On Tue, Mar 24, 2009 at 05:33:01PM +0100, Geert Uytterhoeven wrote:
+>>> Here's an alternative patch, which does exactly that.
+>>> Phillip, what do you think?
+>>>
+>>> Thanks for your comments!
+>>>
+>>> >From be7d630f96a85d3ce48716b8e328563ba217647b Mon Sep 17 00:00:00 2001
+>>> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>>> Date: Tue, 24 Mar 2009 17:19:05 +0100
+>>> Subject: [PATCH] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
+>>>
+>>> If crypto_{,de}compress_{update,final}() succeed, return the actual number of
+>>> bytes produced instead of zero, so their users don't have to calculate that
+>>> theirselves.
+>>>
+>>> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>> I certainly prefer this version over the other one? Do you want to
+>> submit crypto API portion of this?
 > 
-> > But a single CPU is acquiring one lock per CPU, so all the increments
-> > are to one CPU's preempt_count.  :-(
+> If you think I should submit it now, I can do it. But I'm still waiting for
+> Phillip's comments.
 > 
-> OK, I see, so a task can't take more than 255 spinlocks without
-> overflowing the preempt count, which seems a bit limiting.
-> 
-> There are 6 free bits in the preempt_count currently, so the preempt
-> count could be expanded to 14 bits, which would be enough for all
-> current systems.  Beyond that I guess we could make preempt_count be a
-> long and allow bigger counts on 64-bit architectures.
 
-Or we use the trick Eric suggested and Steve employed in the most recent
-patch.  ;-)
+I think I said they looked OK to me.  But, I want to do performance tests
+to see if there's any performance degradation over vanilla zlib, and see
+if they cope gracefully with corrupted filesystems.
 
-An alternative would be for the update code to acquire but one lock at a
-time, but this would likely require another lock to exclude other
-updaters and I believe would also require restructuring the count
-accumulation.
+Herbert, are the other cryto API patches in linux-next (or any other
+git repository)?
 
-So Steve's current patch seems a bit less intrusive, overall.
+Thanks
 
-							Thanx, Paul
+Phillip
+
