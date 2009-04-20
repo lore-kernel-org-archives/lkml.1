@@ -1,126 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbZDTNGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZDTNIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbZDTNGj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 09:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZDTNG3
+	id S1755661AbZDTNIh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 09:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZDTNI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 09:06:29 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55721 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752552AbZDTNG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 09:06:28 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/rasQD2ejr3qM/z5bVTSqsSwlTZxLod8UwmEIkHa
-	o7buIJnr7zQPeB
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-From: Mike Galbraith <efault@gmx.de>
-To: Amit Shah <amit.shah@redhat.com>
-Cc: Jan Kara <jack@suse.cz>, Theodore Tso <tytso@mit.edu>,
-       Chris Mason <chris.mason@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <20090420125653.GA28858@amit-x200.pnq.redhat.com>
-References: <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
-	 <1239910921.21233.98.camel@think.oraclecorp.com>
-	 <20090417180906.GA8363@amit-x200.pnq.redhat.com>
-	 <20090417201342.GF26479@mit.edu>
-	 <20090418060312.GA10943@amit-x200.pnq.redhat.com>
-	 <1240039701.6298.12.camel@marge.simson.net>
-	 <20090419062448.GA13272@amit-x200.pnq.redhat.com>
-	 <1240218437.7005.27.camel@marge.simson.net>
-	 <20090420092604.GB14699@duck.suse.cz>
-	 <1240229714.6469.33.camel@marge.simson.net>
-	 <20090420125653.GA28858@amit-x200.pnq.redhat.com>
-Content-Type: text/plain
-Date: Mon, 20 Apr 2009 15:06:23 +0200
-Message-Id: <1240232783.6154.5.camel@marge.simson.net>
+	Mon, 20 Apr 2009 09:08:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37502 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754778AbZDTNI2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 09:08:28 -0400
+Date: Mon, 20 Apr 2009 15:11:48 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: John Hughes <john@Calva.COM>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Am I allowed to call request_firmware_nowait from an interrupt handler?
+Message-ID: <20090420131148.GY14687@one.firstfloor.org>
+References: <49EC60BC.1070501@Calva.COM> <87ab6bpmc8.fsf@basil.nowhere.org> <49EC7200.9080308@Calva.COM>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EC7200.9080308@Calva.COM>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-20 at 18:26 +0530, Amit Shah wrote:
+On Mon, Apr 20, 2009 at 03:00:48PM +0200, John Hughes wrote:
+> Andi Kleen wrote:
+> >John Hughes <john@Calva.COM> writes:
+> >  
+> >>Am I being a naughty boy?
+> >>    
+> >
+> >Yes.
+> >
+> >  
+> Buggeration.  What an irritating restriction.
+> 
+> So I'll have to make a thread to do the firmware download, in which case 
+> I can just use request_firmware instead of request_firmware_nowait.
+> 
+> Or can I use schedule_work?
 
-> I'll re-run the tests later tonight..
+That's what it is for yes.
 
-I ran ext3 in all journaling modes (one run), and there was spit
-difference.
-
-(the mmap test is a bit slow and unfriendly)
-
-marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=ordered,acl,user_xattr
-posix-fallocate run time:
-        seconds:microseconds: 1240230249:280060
-        seconds:microseconds: 1240230303:989879
-        (approx 54s)
-mmap run time:
-        seconds:microseconds: 1240230304:67286
-        seconds:microseconds: 1240230363:882957
-        (approx 59s)
-4096-sized chunk run time:
-        seconds:microseconds: 1240230363:989225
-        seconds:microseconds: 1240230419:242924
-        (approx 56s)
-8192-sized chunk run time:
-        seconds:microseconds: 1240230419:365540
-        seconds:microseconds: 1240230473:307148
-        (approx 54s)
-marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=writeback,acl,user_xattr
-posix-fallocate run time:
-        seconds:microseconds: 1240230511:276152
-        seconds:microseconds: 1240230565:40419
-        (approx 54s)
-mmap run time:
-        seconds:microseconds: 1240230571:139959
-        seconds:microseconds: 1240230633:254590
-        (approx 62s)
-4096-sized chunk run time:
-        seconds:microseconds: 1240230639:300132
-        seconds:microseconds: 1240230693:95665
-        (approx 54s)
-8192-sized chunk run time:
-        seconds:microseconds: 1240230698:655975
-        seconds:microseconds: 1240230753:902749
-        (approx 55s)
-marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=guarded,acl,user_xattr
-posix-fallocate run time:
-        seconds:microseconds: 1240230802:594939
-        seconds:microseconds: 1240230856:602117
-        (approx 54s)
-mmap run time:
-        seconds:microseconds: 1240230862:792587
-        seconds:microseconds: 1240230924:985089
-        (approx 62s)
-4096-sized chunk run time:
-        seconds:microseconds: 1240230930:827949
-        seconds:microseconds: 1240230985:663422
-        (approx 55s)
-8192-sized chunk run time:
-        seconds:microseconds: 1240230991:483085
-        seconds:microseconds: 1240231046:601340
-        (approx 55s)
-marge:..tmp/tmp # ./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=journal,acl,user_xattr
-posix-fallocate run time:
-        seconds:microseconds: 1240231074:745621
-        seconds:microseconds: 1240231128:740106
-        (approx 54s)
-mmap run time:
-        seconds:microseconds: 1240231134:830362
-        seconds:microseconds: 1240231193:939029
-        (approx 59s)
-4096-sized chunk run time:
-        seconds:microseconds: 1240231199:800554
-        seconds:microseconds: 1240231254:600778
-        (approx 55s)
-8192-sized chunk run time:
-        seconds:microseconds: 1240231260:386834
-        seconds:microseconds: 1240231315:121745
-        (approx 55s)
-
-
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
