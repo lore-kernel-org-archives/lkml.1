@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZDTIWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZDTIXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbZDTIWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 04:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZDTIWY
+	id S1752522AbZDTIXZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 04:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZDTIXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 04:22:24 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42853 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbZDTIWX (ORCPT
+	Mon, 20 Apr 2009 04:23:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:8377 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751690AbZDTIXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 04:22:23 -0400
-Date: Mon, 20 Apr 2009 10:24:29 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, jdike@addtoit.com
-Subject: Re: [GIT] kbuild
-Message-ID: <20090420082429.GA9877@uranus.ravnborg.org>
-References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org> <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain> <20090420014158.GV26366@ZenIV.linux.org.uk> <20090420024954.GW26366@ZenIV.linux.org.uk> <20090420044551.GB8494@uranus.ravnborg.org> <20090420051538.GX26366@ZenIV.linux.org.uk>
-Mime-Version: 1.0
+	Mon, 20 Apr 2009 04:23:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uU87svhTstIiYP7/0eY7T1IUClhkGGJlCWDchw5gb0Px76zzOTm6MQXnA04NbEuq/G
+         RoP9KUuuEj695xDZDFfwvaIfvYcdoiuww3QSHzWQBBNYZ16hXZsGYmy4f1LOyn3guC5k
+         ZD16qebXF4lQQwhSgaxGaXJwHb1AzqCapOKqY=
+Date: Mon, 20 Apr 2009 12:23:02 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, axboe@kernel.dk
+Subject: Re: [PATCH 1/2] fs/compat_ioctl: fix build when !BLOCK
+Message-ID: <20090420082302.GA8175@orion>
+References: <1240215264-8096-1-git-send-email-a.beregalov@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090420051538.GX26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1240215264-8096-1-git-send-email-a.beregalov@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 06:15:38AM +0100, Al Viro wrote:
-> On Mon, Apr 20, 2009 at 06:45:51AM +0200, Sam Ravnborg wrote:
-> 
-> > For kernel proper the use of -idirafter would be confusing.
-> > But for um alone we should be safe provided it is properly commented.
-> 
-> Less than for all um - it's only for USER_OBJ there.  It is special,
-> simply because for uml the counterpart of really low-level glue has
-> to talk to libc.  So there we have separation into "normal kernel source"
-> and "userland code that uses userland headers, calls libc functions, etc."
->  
-> > I have already fixed um the obvious way for asm-offsets in my local tree.
-> > But if you prefer I can add a -dirafter based patch before the "move
-> > asm-offsets.h to incldue/generated" patch.
-> 
-> I've dumped several header cleanup patches for uml into
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/um-header.git/ 
-> including the -idirafter, move of user_constants.h, etc.
-> Another fun thing: user.h used to be included directly by just about
-> every userland-side file.  Switched it to -include user.h (for USER_CFLAGS,
-> of course - not for normal stuff), killed includes, got rid of shitloads
-> of kern_constants.h includes at the same time.  At which point getting
-> rid of kern_constants.h became trivial.
-> 
-> Up to Jeff's approval, obviously - *including* -idirafter patch.
+Fixed "From:" 
 
-I have skimmed the patches - they all looked good to me.
-Everyting that cleans up arch/um/Makefile is good!
 
-I you respin them you can add my:
+>From d16c036bfb869bf8b1d59f52fbaba868483915d1 Mon Sep 17 00:00:00 2001
+From: Alexander Beregalov <a.beregalov@gmail.com> 
+Date: Mon, 20 Apr 2009 12:06:40 +0400
+Subject: [PATCH 1/2] fs/compat_ioctl: fix build when !BLOCK
 
-    Acked-by: Sam Ravnborg <sam@ravnborg.org>
+In file included from fs/compat_ioctl.c:61:
+include/linux/loop.h:59: error: field 'lo_bio_list' has incomplete type
 
-The asm-offsets.h that um picks us is the one generated by um.
-So we still need to add a dummy file in arch/um/include/asm that
-only do:
-    #include <generated/asm-offsets.h>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ fs/compat_ioctl.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-I will do so in my patch-set.
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index 3e87ce4..b83f6bc 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -58,7 +58,6 @@
+ #include <linux/i2c.h>
+ #include <linux/i2c-dev.h>
+ #include <linux/atalk.h>
+-#include <linux/loop.h>
+ 
+ #include <net/bluetooth/bluetooth.h>
+ #include <net/bluetooth/hci.h>
+@@ -68,6 +67,7 @@
+ #include <linux/gigaset_dev.h>
+ 
+ #ifdef CONFIG_BLOCK
++#include <linux/loop.h>
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_ioctl.h>
+ #include <scsi/sg.h>
+@@ -2660,6 +2660,8 @@ HANDLE_IOCTL(SONET_GETFRAMING, do_atm_ioctl)
+ HANDLE_IOCTL(SONET_GETFRSENSE, do_atm_ioctl)
+ /* block stuff */
+ #ifdef CONFIG_BLOCK
++/* loop */
++IGNORE_IOCTL(LOOP_CLR_FD)
+ /* Raw devices */
+ HANDLE_IOCTL(RAW_SETBIND, raw_ioctl)
+ HANDLE_IOCTL(RAW_GETBIND, raw_ioctl)
+@@ -2728,9 +2730,6 @@ HANDLE_IOCTL(LPSETTIMEOUT, lp_timeout_trans)
+ IGNORE_IOCTL(VFAT_IOCTL_READDIR_BOTH32)
+ IGNORE_IOCTL(VFAT_IOCTL_READDIR_SHORT32)
+ 
+-/* loop */
+-IGNORE_IOCTL(LOOP_CLR_FD)
+-
+ #ifdef CONFIG_SPARC
+ /* Sparc framebuffers, handled in sbusfb_compat_ioctl() */
+ IGNORE_IOCTL(FBIOGTYPE)
+-- 
+1.6.2.3
 
-	Sam
