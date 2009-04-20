@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZDTXpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZDTXsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZDTXpi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZDTXpQ
+	id S1755214AbZDTXsw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZDTXsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:45:16 -0400
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:34145 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753822AbZDTXpO (ORCPT
+	Mon, 20 Apr 2009 19:48:42 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:12889 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbZDTXsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:45:14 -0400
-Message-ID: <49ED090F.4050503@lougher.demon.co.uk>
-Date: Tue, 21 Apr 2009 00:45:19 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 20 Apr 2009 19:48:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fJHC8gQi/EBLCt5TYfOhIR5PKuSgF4UKYJOfVLXEZ1gN5fj2R2VKR8NeH0LXkoox7w
+         QY3jMdqVKNGtx0/O2CmhnuS2wxocVeTk7YL18tB+n1vprrFFgfOerMYST8k4g9a/Jpjy
+         TgFw9z1imbp5pl78pLw2OYUGsxjf4e2YgCgbE=
+Date: Tue, 21 Apr 2009 01:48:36 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] ftrace, workqueuetrace: Make
+	workqueuetracepoints use TRACE_EVENT macro
+Message-ID: <20090420234835.GC5997@nowhere>
+References: <20090420103612.4B4E.A69D9226@jp.fujitsu.com> <47EF9F5C609F496FBBD423EA81A00920@zhaoleiwin> <20090420104734.4B51.A69D9226@jp.fujitsu.com> <20090420084631.GA32625@elte.hu> <20090420222514.GA15680@redhat.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
- (was: Re: [PATCH/RFC] crypto: compress - Add comp_request.total_out
-References: <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au> <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420222514.GA15680@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Mon, 20 Apr 2009, Herbert Xu wrote:
->> On Tue, Mar 24, 2009 at 05:33:01PM +0100, Geert Uytterhoeven wrote:
->>> Here's an alternative patch, which does exactly that.
->>> Phillip, what do you think?
->>>
->>> Thanks for your comments!
->>>
->>> >From be7d630f96a85d3ce48716b8e328563ba217647b Mon Sep 17 00:00:00 2001
->>> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
->>> Date: Tue, 24 Mar 2009 17:19:05 +0100
->>> Subject: [PATCH] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
->>>
->>> If crypto_{,de}compress_{update,final}() succeed, return the actual number of
->>> bytes produced instead of zero, so their users don't have to calculate that
->>> theirselves.
->>>
->>> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
->> I certainly prefer this version over the other one? Do you want to
->> submit crypto API portion of this?
+On Tue, Apr 21, 2009 at 12:25:14AM +0200, Oleg Nesterov wrote:
+> On 04/20, Ingo Molnar wrote:
+> >
+> > Andrew, Oleg: if you plan to make unhappy noises about this level of
+> > instrumentation in the workqueue code, please do it sooner rather
+> > than later, as there's quite some effort injected into this already.
+> > A tentative non-NAK now (patches are still being sorted out) and an
+> > Ack on the final topic tree from you (once we send it and if it's
+> > good) and general happiness would be the ideal outcome :)
 > 
-> If you think I should submit it now, I can do it. But I'm still waiting for
-> Phillip's comments.
+> Imho, this info is useful, and the changes are fine.
 > 
+> But I didn't study kernel/trace/trace_workqueue.c yet... Sorry, I was
+> going to do this, but I didn't.
+> 
+> At first glance, with or without these new changes some parts of
+> trace_workqueue.c looks suspicious.
+> 
+> For example, I don't understand cpu_workqueue_stats->pid. Why it is
+> needed? Why can't we just record wq_thread itself? And if we copy
+> wq_thread->comm to cpu_workqueue_stats, we don't even need get/put
+> task_struct, afaics.
 
-I think I said they looked OK to me.  But, I want to do performance tests
-to see if there's any performance degradation over vanilla zlib, and see
-if they cope gracefully with corrupted filesystems.
 
-Herbert, are the other cryto API patches in linux-next (or any other
-git repository)?
+We record the pid because of a race condition that can happen
+against the stat tracing framework.
 
-Thanks
+For example,
 
-Phillip
+- the user opens the stat file
+- then the entries are loaded and sorted into memory
+- one of the workqueues is destroyed
+- the user reads the file. We try to get the task struct
+  of each workqueues that were recorded using their pid.
+  If the task is destroyed then this is fine, we don't get
+  any struct. If we were using the task_struct as an identifier,
+  me would have derefenced a freed pointer.
+
+ 
+> probe_workqueue_destruction() does cpumask_first(cwq->cpus_allowed),
+> this doesn't look right. When workqueue_cpu_callback() calls
+> cleanup_workqueue_thread(), wq_thread is no longer affine to CPU it
+> was created on. This means probe_workqueue_destruction() can't always
+> find the correct cpu_workqueue_stats in workqueue_cpu_stat(cpu), no?
+
+
+Ah, at this stage of cpu_down() the cpu is cleared on
+tsk->cpu_allowed ?
+
+Thanks for looking at this.
+
+Frederic.
+
+
+> Oleg.
+> 
 
