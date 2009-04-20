@@ -1,166 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZDTJ3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZDTJf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZDTJ3r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZDTJ3i
+	id S1754304AbZDTJf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 05:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZDTJfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:29:38 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:56730 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753357AbZDTJ3h (ORCPT
+	Mon, 20 Apr 2009 05:35:16 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:51067 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525AbZDTJfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:29:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer;
-        b=IOUMtX/UT0rfhOUal7inmvnP1VYHceHBGYr7WQEHaZ45enCX32EHbfNHiSEZ44PeAF
-         1BuGoh3VDLILQLPKUaydxUzQRng7RUUFwLl8whO/McrQdVYt96e9XvhyN/iH7xFTIirK
-         fOIiQQO326iWGAGp314eAumroEm3LrwcIOx9s=
-Subject: SDHCI driver runnining in aspire one, allows to write to R/O SD
- cards
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: sdhci-devel@lists.ossman.eu
-Cc: pierre@ossman.eu, linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary="=-qrwdei6XITsSeokX7rtv"
-Date: Mon, 20 Apr 2009 12:29:24 +0300
-Message-Id: <1240219764.13640.5.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 20 Apr 2009 05:35:15 -0400
+Date: Mon, 20 Apr 2009 10:01:55 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Zhang Le <r0bertz@gentoo.org>, linux-kernel@vger.kernel.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, zhangfx@lemote.com,
+       loongson-dev@googlegroups.com, yanh@lemote.com,
+       linux-mips@linux-mips.org, linux-rt-users@vger.kernel.org
+Subject: Re: "RT_PREEMPT for loongson" is updated to patch-2.6.29.1-rt8
+Message-ID: <20090420080155.GA11621@linux-mips.org>
+References: <1240193547.25532.52.camel@falcon> <20090420050419.GA22520@adriano.hkcable.com.hk> <1240211926.8884.27.camel@falcon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1240211926.8884.27.camel@falcon>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 20, 2009 at 03:18:46PM +0800, Wu Zhangjin wrote:
 
---=-qrwdei6XITsSeokX7rtv
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> On Mon, 2009-04-20 at 13:04 +0800, Zhang Le wrote:
 
-Hi,
+> to Ralf, 
+> 
+> I have divided ftrace to several commits in the above git tree, hope you
+> can check it, thx :-) 
+> 
+> in addition to the static/dynamic/graph function tracer & system call
+> tracer implementation, a mips specific ring_buffer_time_stamp
+> (kernel/trace/ring_buffer.c) is also implemented to get 1us precision
+> time, this is very important to make ftrace available in mips,
+> otherwise, we can only get 1ms precision time for the original
+> ring_buffer_time_stamp is based on sched_clock(jiffies based). 
+> 
+> perhaps we can implement a more precise sched_clock directly, just as
+> x86 does(native_sched_clock, tsc based), but in mips, there is only a
+> 32bit timer count which will quickly overflow, so it will need an extra
+> overflow protection, which may influence the other parts of the kernel.
 
-I am an owner of aspire one, and it has a card reader.
-when I take a sd card, and pull down the protection tab, it still allows
-to write to the card (I tested with my main notebook that indeed, it did
-write there).
+My git clone is still running to I'm commenting only on the patches you
+posted earlier.  #ifdef-MIPS'ing things into the generic kernel code
+definately won't be an acceptable way to get µs resolution.
 
-My main notebook, acer aspire 5720, doesn't have this problem.
-Kernel version in use is 2.6.28 vanilla, but this did happen in former
-version as well.
-
-
-Attached lspci, on acer one.
-
-
-
---=-qrwdei6XITsSeokX7rtv
-Content-Disposition: attachment; filename="tmpfile.txt"
-Content-Type: text/plain; name="tmpfile.txt"; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-
-04:00.0 System peripheral [0880]: JMicron Technologies, Inc. SD/MMC Host Controller [197b:2382]
-	Subsystem: Acer Incorporated [ALI] Device [1025:015b]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 19
-	Region 0: Memory at 54100300 (32-bit, non-prefetchable) [size=256]
-	[virtual] Expansion ROM at 53100000 [disabled] [size=32K]
-	Capabilities: [a4] Power Management version 3
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [80] Express (v1) Endpoint, MSI 00
-		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-			MaxPayload 128 bytes, MaxReadReq 512 bytes
-		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 unlimited, L1 unlimited
-			ClockPM- Suprise- LLActRep- BwNot-
-		LnkCtl:	ASPM L0s L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-	Capabilities: [94] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: fffffffc  Data: 0000
-	Kernel driver in use: sdhci-pci
-
-04:00.2 SD Host controller [0805]: JMicron Technologies, Inc. Standard SD Host Controller [197b:2381] (prog-if 01)
-	Subsystem: Acer Incorporated [ALI] Device [1025:015b]
-	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Interrupt: pin A routed to IRQ 19
-	Region 0: Memory at 54100200 (32-bit, non-prefetchable) [size=256]
-	Capabilities: [a4] Power Management version 3
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [80] Express (v1) Endpoint, MSI 00
-		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-			MaxPayload 128 bytes, MaxReadReq 128 bytes
-		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 unlimited, L1 unlimited
-			ClockPM- Suprise- LLActRep- BwNot-
-		LnkCtl:	ASPM L0s L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-	Capabilities: [94] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: fffffffc  Data: 0000
-
-04:00.3 System peripheral [0880]: JMicron Technologies, Inc. MS Host Controller [197b:2383]
-	Subsystem: Acer Incorporated [ALI] Device [1025:015b]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 19
-	Region 0: Memory at 54100100 (32-bit, non-prefetchable) [size=256]
-	Capabilities: [a4] Power Management version 3
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [80] Express (v1) Endpoint, MSI 00
-		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-			MaxPayload 128 bytes, MaxReadReq 128 bytes
-		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 unlimited, L1 unlimited
-			ClockPM- Suprise- LLActRep- BwNot-
-		LnkCtl:	ASPM L0s L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-	Capabilities: [94] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: fffffffc  Data: 0000
-	Kernel driver in use: jmb38x_ms
-	Kernel modules: jmb38x_ms
-
-04:00.4 System peripheral [0880]: JMicron Technologies, Inc. xD Host Controller [197b:2384]
-	Subsystem: Acer Incorporated [ALI] Device [1025:015b]
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 11
-	Region 0: Memory at 54100000 (32-bit, non-prefetchable) [size=256]
-	Capabilities: [a4] Power Management version 3
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [80] Express (v1) Endpoint, MSI 00
-		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-			MaxPayload 128 bytes, MaxReadReq 128 bytes
-		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 unlimited, L1 unlimited
-			ClockPM- Suprise- LLActRep- BwNot-
-		LnkCtl:	ASPM L0s L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-	Capabilities: [94] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: fffffffc  Data: 0000
-
-
-
---=-qrwdei6XITsSeokX7rtv--
-
+  Ralf
