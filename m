@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZDTWIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbZDTWLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbZDTWIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZDTWIb
+	id S1757782AbZDTWLi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZDTWL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:08:31 -0400
-Received: from mga11.intel.com ([192.55.52.93]:41597 "EHLO mga11.intel.com"
+	Mon, 20 Apr 2009 18:11:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52728 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756364AbZDTWIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:08:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,219,1239001200"; 
-   d="scan'208";a="683253165"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: linux-next ia64 build problems in slqb
-Date: Mon, 20 Apr 2009 15:08:30 -0700
-Message-Id: <49ecf25e2378234eed@agluck-desktop.sc.intel.com>
+	id S1753518AbZDTWL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:11:26 -0400
+Date: Mon, 20 Apr 2009 18:09:31 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       Ingo Molnar <mingo@elte.hu>, linux-crypto@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mail@tobiasvolk.de
+Subject: Re: enable padlock on x86_64
+Message-ID: <20090420180931.7bd7ff02@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20090314132420.GB6080@gondor.apana.org.au>
+References: <49B83002.9040705@tobiasvolk.de>
+	<1237029843-28076-1-git-send-email-sebastian@breakpoint.cc>
+	<20090314114732.GB3805@elte.hu>
+	<20090314115307.GA28235@Chamillionaire.breakpoint.cc>
+	<20090314132420.GB6080@gondor.apana.org.au>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ia64 "allnoconfig" build ends up with the (possibly dubious) combination
-of .config options:
+On Sat, 14 Mar 2009 21:24:20 +0800
+Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-	CONFIG_SMP=n
-	CONFIG_NUMA=y
+> On Sat, Mar 14, 2009 at 12:53:07PM +0100, Sebastian Andrzej Siewior wrote:
+> > 
+> > Yep, it is fine.
+> > #1 in, #2 not will not result in any difference to what we have now.
+> > #2 in, #1 not will result in "padlock not detected" while loading the
+> > module and -ENODEV.
+> 
+> Let's merge #1 right now and I'll pick up #2 once #1 shows up
+> in linux-net.
+> 
 
-which leads to the following build problems with mm/slqb.c
-
-  CC      mm/slqb.o
-mm/slqb.c: In function ‘__slab_free’:
-mm/slqb.c:1735: error: implicit declaration of function ‘slab_free_to_remote’
-mm/slqb.c: In function ‘kmem_cache_open’:
-mm/slqb.c:2274: error: implicit declaration of function ‘kmem_cache_dyn_array_free’
-mm/slqb.c:2275: warning: label ‘error_cpu_array’ defined but not used
-mm/slqb.c: In function ‘kmem_cache_destroy’:
-mm/slqb.c:2395: error: implicit declaration of function ‘claim_remote_free_list’
-mm/slqb.c: In function ‘kmem_cache_init’:
-mm/slqb.c:2885: error: ‘per_cpu__kmem_cpu_nodes’ undeclared (first use in this function)
-mm/slqb.c:2885: error: (Each undeclared identifier is reported only once
-mm/slqb.c:2885: error: for each function it appears in.)
-mm/slqb.c:2886: error: ‘kmem_cpu_cache’ undeclared (first use in this function)
-
--Tony
+#1 is in 2.6.30-rc now but I don't see #2 pending anywhere.
