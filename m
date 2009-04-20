@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbZD3Psd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933030AbZD3Pte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932975AbZD3Psd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Apr 2009 11:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932413AbZD3Pmd
+	id S933030AbZD3Pte (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932449AbZD3Pmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Apr 2009 11:42:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:51594 "EHLO
+	Thu, 30 Apr 2009 11:42:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:52493 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932411AbZD3PmI (ORCPT
+	with ESMTP id S932261AbZD3PmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Apr 2009 11:42:08 -0400
-Message-Id: <4fbdd954c63426e1fae6d26108ef744cc10d842a.1241105648.git.arnd@arndb.de>
+	Thu, 30 Apr 2009 11:42:07 -0400
+Message-Id: <00ef5e70ad64d2fcf5fab256fa6af87c4d3366ff.1241105648.git.arnd@arndb.de>
 In-Reply-To: <cover.1241105648.git.arnd@arndb.de>
 References: <cover.1241105648.git.arnd@arndb.de>
 From: Remis Lima Baima <remis.developer@googlemail.com>
-Date: Mon, 27 Apr 2009 14:42:48 +0200
-Subject: [PATCH 27/27] microblaze: use generic system.h
+Date: Mon, 20 Apr 2009 13:53:24 +0200
+Subject: [PATCH 25/27] microblaze: use generic uaccess.h
 Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
        Remis Lima Baima <remis.developer@googlemail.com>,
        linux-kernel@vger.kernel.org
-X-Provags-ID: V01U2FsdGVkX19ck02OXGBdV1m2kMHgH7GLjpBSQe9YkMIylsd
- /4836/WvdZ2aemFW+qKlPKrBmHR+Dy47cjNbJrijE3/VdGBdY0
- Y5VrskaPWTQ7JhzhHRbKA==
+X-Provags-ID: V01U2FsdGVkX1+oDtTCIRpM6Fw/F4M37lxFEZZXdg/zwfFjbso
+ 21DwYk78q2OAcUhkHhPWtyYeDkGVpKoXW04DEJ78i30lwy1iWb
+ qn9VThyNtDODCOIGYkMVw==
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parts of the microblaze system.h can be removed by
-falling back to the asm-generic version.
+Adapt microblaze uaccess code to use the uaccess.h generic implementation.
 
 Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/microblaze/include/asm/cmpxchg-local.h |    1 +
- arch/microblaze/include/asm/irqflags.h      |    2 +-
- arch/microblaze/include/asm/system.h        |  124 +++++++--------------------
- 3 files changed, 32 insertions(+), 95 deletions(-)
- create mode 100644 arch/microblaze/include/asm/cmpxchg-local.h
- rewrite arch/microblaze/include/asm/system.h (67%)
+ arch/microblaze/include/asm/uaccess.h |  164 ++++++---------------------------
+ arch/microblaze/lib/uaccess.c         |   42 +--------
+ 2 files changed, 31 insertions(+), 175 deletions(-)
+ rewrite arch/microblaze/include/asm/uaccess.h (86%)
+ rewrite arch/microblaze/lib/uaccess.c (97%)
 
-diff --git a/arch/microblaze/include/asm/cmpxchg-local.h b/arch/microblaze/include/asm/cmpxchg-local.h
-new file mode 100644
-index 0000000..d3358a3
---- /dev/null
-+++ b/arch/microblaze/include/asm/cmpxchg-local.h
-@@ -0,0 +1 @@
-+#include <asm-generic/cmpxchg-local.h>
-diff --git a/arch/microblaze/include/asm/irqflags.h b/arch/microblaze/include/asm/irqflags.h
-index dea6564..a6dbdee 100644
---- a/arch/microblaze/include/asm/irqflags.h
-+++ b/arch/microblaze/include/asm/irqflags.h
-@@ -9,7 +9,7 @@
- #ifndef _ASM_MICROBLAZE_IRQFLAGS_H
- #define _ASM_MICROBLAZE_IRQFLAGS_H
- 
--#include <linux/irqflags.h>
-+#include <asm/registers.h>
- 
- # if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
- 
-diff --git a/arch/microblaze/include/asm/system.h b/arch/microblaze/include/asm/system.h
-dissimilarity index 67%
-index b1ed615..a26ef8e 100644
---- a/arch/microblaze/include/asm/system.h
-+++ b/arch/microblaze/include/asm/system.h
-@@ -1,94 +1,30 @@
+diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
+dissimilarity index 86%
+index 5a3ffc3..cc0120d 100644
+--- a/arch/microblaze/include/asm/uaccess.h
++++ b/arch/microblaze/include/asm/uaccess.h
+@@ -1,134 +1,30 @@
 -/*
 - * Copyright (C) 2006 Atmark Techno, Inc.
 - *
@@ -74,92 +52,134 @@ index b1ed615..a26ef8e 100644
 - * for more details.
 - */
 -
--#ifndef _ASM_MICROBLAZE_SYSTEM_H
--#define _ASM_MICROBLAZE_SYSTEM_H
+-#ifndef _ASM_MICROBLAZE_UACCESS_H
+-#define _ASM_MICROBLAZE_UACCESS_H
 -
--#include <asm/registers.h>
--#include <asm/setup.h>
--#include <asm/irqflags.h>
+-#ifdef __KERNEL__
+-#ifndef __ASSEMBLY__
 -
--#include <asm-generic/cmpxchg.h>
--#include <asm-generic/cmpxchg-local.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/sched.h> /* RLIMIT_FSIZE */
+-#include <linux/mm.h>
 -
--struct task_struct;
--struct thread_info;
+-#include <asm/mmu.h>
+-#include <asm/page.h>
+-#include <asm/pgtable.h>
+-#include <asm/segment.h>
+-#include <linux/string.h>
 -
--extern struct task_struct *_switch_to(struct thread_info *prev,
--					struct thread_info *next);
+-#define VERIFY_READ	0
+-#define VERIFY_WRITE	1
 -
--#define switch_to(prev, next, last)					\
--	do {								\
--		(last) = _switch_to(task_thread_info(prev),		\
--					task_thread_info(next));	\
--	} while (0)
+-extern int ___range_ok(unsigned long addr, unsigned long size);
 -
--#define smp_read_barrier_depends()	do {} while (0)
--#define read_barrier_depends()		do {} while (0)
+-#define __range_ok(addr, size) \
+-		___range_ok((unsigned long)(addr), (unsigned long)(size))
 -
--#define nop()			asm volatile ("nop")
--#define mb()			barrier()
--#define rmb()			mb()
--#define wmb()			mb()
--#define set_mb(var, value)	do { var = value; mb(); } while (0)
--#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
+-#define access_ok(type, addr, size) (__range_ok((addr), (size)) == 0)
+-#define __access_ok(add, size) (__range_ok((addr), (size)) == 0)
 -
--#define smp_mb()		mb()
--#define smp_rmb()		rmb()
--#define smp_wmb()		wmb()
--
--void show_trace(struct task_struct *task, unsigned long *stack);
--void __bad_xchg(volatile void *ptr, int size);
--
--static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
--								int size)
+-extern inline int bad_user_access_length(void)
 -{
--	unsigned long ret;
--	unsigned long flags;
+-	return 0;
+-}
+-/* FIXME this is function for optimalization -> memcpy */
+-#define __get_user(var, ptr)					\
+-	({							\
+-		int __gu_err = 0;				\
+-		switch (sizeof(*(ptr))) {			\
+-		case 1:						\
+-		case 2:						\
+-		case 4:						\
+-			(var) = *(ptr);				\
+-			break;					\
+-		case 8:						\
+-			memcpy((void *) &(var), (ptr), 8);	\
+-			break;					\
+-		default:					\
+-			(var) = 0;				\
+-			__gu_err = __get_user_bad();		\
+-			break;					\
+-		}						\
+-		__gu_err;					\
+-	})
 -
--	switch (size) {
--	case 1:
--		local_irq_save(flags);
--		ret = *(volatile unsigned char *)ptr;
--		*(volatile unsigned char *)ptr = x;
--		local_irq_restore(flags);
--		break;
+-#define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
 -
--	case 4:
--		local_irq_save(flags);
--		ret = *(volatile unsigned long *)ptr;
--		*(volatile unsigned long *)ptr = x;
--		local_irq_restore(flags);
--		break;
--	default:
--		__bad_xchg(ptr, size), ret = 0;
--		break;
--	}
+-#define __put_user(var, ptr)					\
+-	({							\
+-		int __pu_err = 0;				\
+-		switch (sizeof(*(ptr))) {			\
+-		case 1:						\
+-		case 2:						\
+-		case 4:						\
+-			*(ptr) = (var);				\
+-			break;					\
+-		case 8: {					\
+-			typeof(*(ptr)) __pu_val = var;		\
+-			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
+-			}					\
+-			break;					\
+-		default:					\
+-			__pu_err = __put_user_bad();		\
+-			break;					\
+-		}							\
+-		__pu_err;						\
+-	})
 -
--	return ret;
+-#define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
+-
+-#define put_user(x, ptr)	__put_user(x, ptr)
+-#define get_user(x, ptr)	__get_user(x, ptr)
+-
+-#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
+-#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
+-
+-#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
+-#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
+-#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
+-#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
+-
+-#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
+-
+-static inline unsigned long clear_user(void *addr, unsigned long size)
+-{
+-	if (access_ok(VERIFY_WRITE, addr, size))
+-		size = __clear_user(addr, size);
+-	return size;
 -}
 -
--void disable_hlt(void);
--void enable_hlt(void);
--void default_idle(void);
+-/* Returns 0 if exception not found and fixup otherwise. */
+-extern unsigned long search_exception_table(unsigned long);
 -
--#define xchg(ptr, x) \
--	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
 -
--void free_init_pages(char *what, unsigned long begin, unsigned long end);
--void free_initmem(void);
--extern char *klimit;
--extern void ret_from_fork(void);
+-extern long strncpy_from_user(char *dst, const char __user *src, long count);
+-extern long strnlen_user(const char __user *src, long count);
+-extern long __strncpy_from_user(char *dst, const char __user *src, long count);
 -
--#ifdef CONFIG_DEBUG_FS
--extern struct dentry *of_debugfs_root;
--#endif
+-/*
+- * The exception table consists of pairs of addresses: the first is the
+- * address of an instruction that is allowed to fault, and the second is
+- * the address at which the program should continue. No registers are
+- * modified, so it is entirely up to the continuation code to figure out
+- * what to do.
+- *
+- * All the routines below use bits of fixup code that are out of line
+- * with the main instruction path. This means when everything is well,
+- * we don't even have to jump over them. Further, they do not intrude
+- * on our cache or tlb entries.
+- */
+-struct exception_table_entry {
+-	unsigned long insn, fixup;
+-};
 -
--#define arch_align_stack(x) (x)
+-#endif  /* __ASSEMBLY__ */
+-#endif /* __KERNEL__ */
 -
--#endif /* _ASM_MICROBLAZE_SYSTEM_H */
+-#endif /* _ASM_MICROBLAZE_UACCESS_H */
++#ifndef _ASM_MICROBLAZE_UACCESS_H
++#define _ASM_MICROBLAZE_UACCESS_H
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -167,29 +187,76 @@ index b1ed615..a26ef8e 100644
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + */
-+#ifndef _ASM_MICROBLAZE_SYSTEM_H
-+#define _ASM_MICROBLAZE_SYSTEM_H
 +
-+#define __switch_to	_switch_to
++#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
 +
-+#include <asm/irqflags.h>
-+#include <asm-generic/system.h>
++#define __access_ok(addr, size) \
++	(___range_ok((unsigned long)(addr), (unsigned long)(size)) == 0)
++extern int ___range_ok(unsigned long addr, unsigned long size);
 +
-+#ifdef CONFIG_DEBUG_FS
-+extern struct dentry *of_debugfs_root;
-+#endif
++#define __put_user_bad		bad_user_access_length
++#define __get_user_bad		bad_user_access_length
++extern inline int bad_user_access_length(void)
++{
++	return 0;
++}
 +
-+void show_trace(struct task_struct *task, unsigned long *stack);
-+void disable_hlt(void);
-+void enable_hlt(void);
-+void default_idle(void);
-+void free_init_pages(char *what, unsigned long begin, unsigned long end);
-+void free_initmem(void);
++#include <asm-generic/uaccess.h>
 +
-+extern char *klimit;
-+extern void ret_from_fork(void);
++#endif /* __ASSEMBLY__ */
++#endif /* __KERNEL__ */
 +
-+#endif /* _ASM_MICROBLAZE_SYSTEM_H */
++#endif /* _ASM_MICROBLAZE_UACCESS_H */
+diff --git a/arch/microblaze/lib/uaccess.c b/arch/microblaze/lib/uaccess.c
+dissimilarity index 97%
+index 8eb9df5..0f2f742 100644
+--- a/arch/microblaze/lib/uaccess.c
++++ b/arch/microblaze/lib/uaccess.c
+@@ -1,41 +1 @@
+-/*
+- * Copyright (C) 2006 Atmark Techno, Inc.
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file "COPYING" in the main directory of this archive
+- * for more details.
+- */
+-
+-#include <linux/string.h>
+-#include <asm/uaccess.h>
+-
+-#include <asm/bug.h>
+-
+-long strnlen_user(const char __user *src, long count)
+-{
+-	return strlen(src) + 1;
+-}
+-
+-#define __do_strncpy_from_user(dst, src, count, res)			\
+-	do {								\
+-		char *tmp;						\
+-		strncpy(dst, src, count);				\
+-		for (tmp = dst; *tmp && count > 0; tmp++, count--)	\
+-			;						\
+-		res = (tmp - dst);					\
+-	} while (0)
+-
+-long __strncpy_from_user(char *dst, const char __user *src, long count)
+-{
+-	long res;
+-	__do_strncpy_from_user(dst, src, count, res);
+-	return res;
+-}
+-
+-long strncpy_from_user(char *dst, const char __user *src, long count)
+-{
+-	long res = -EFAULT;
+-	if (access_ok(VERIFY_READ, src, 1))
+-		__do_strncpy_from_user(dst, src, count, res);
+-	return res;
+-}
++#include <asm/uaccess.h>
 -- 
 1.5.6.3
+
 
