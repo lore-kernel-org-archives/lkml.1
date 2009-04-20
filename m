@@ -1,73 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZDTMVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZDTMYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358AbZDTMVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 08:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZDTMVL
+	id S1755482AbZDTMYJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 08:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZDTMXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 08:21:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39521 "EHLO mx2.redhat.com"
+	Mon, 20 Apr 2009 08:23:54 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:50702 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754973AbZDTMVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 08:21:09 -0400
-Message-ID: <49EC68A7.8080403@redhat.com>
-Date: Mon, 20 Apr 2009 14:20:55 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add MCE support to KVM
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com>
-In-Reply-To: <49EC5C3A.6020108@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754849AbZDTMXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 08:23:52 -0400
+Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Suresh Jayaraman <sjayaraman@suse.de>
+Cc: Masahiro Tamori <masahiro.tamori@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org
+In-Reply-To: <49EC0A83.8060802@suse.de>
+References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>
+	 <49D45E42.3050502@suse.de>
+	 <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
+	 <49EC0A83.8060802@suse.de>
+Content-Type: text/plain
+Date: Mon, 20 Apr 2009 08:23:44 -0400
+Message-Id: <1240230224.8073.6.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
+X-UiO-Scanned: 2FC1A77D04B58F1267E6CC170C99227357898975
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 2 total 178 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/20/09 13:27, Avi Kivity wrote:
-> Gerd Hoffmann wrote:
->>>> Well, xenner doesn't do vmcalls, so the page isn't vendor specific.
->>>
->>> Well, for true pv (not pv-on-hvm) it wouldn't use the MSR, would it?
->>
->> Yes, the MSR is used for pv-on-hvm only.
->
-> So it isn't relevant for Xenner?
+On Mon, 2009-04-20 at 11:09 +0530, Suresh Jayaraman wrote:
+> Hi Trond,
+> 
+> Do you think this patch is OK? Can this be considered for merging?
+> 
+> Thanks,
+> 
+> Masahiro Tamori wrote:
+> > Hello Suresh and Mathieu,
+> > 
+> > 2009/4/2 Suresh Jayaraman <sjayaraman@suse.de>:
+> >> Mathieu Desnoyers wrote:
+> >>> * Suresh Jayaraman (sjayaraman@suse.de) wrote:
+> >>>> This patch attempts to add splice writes support. In essence, it just
+> >>>> calls generic_file_splice_write() after doing a little sanity check.
+> >>>> This would allow LTTng users that are using NFS to store trace data.
+> >>>> There could be more applications that could be benefitted too.
+> >>>>
+> >>>> I have tested this using the Jens' test program and have found no
+> >>>> real issues. The test program is inlined below:
+> >>>>
+> >>> There is just a small checkpatch nit that I'll fix directly in place in
+> >>> the LTTng tree.
+> >>>
+> >>> WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
+> >>> #93: FILE: fs/nfs/file.c:564:
+> >>> +   dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+> >>>
+> >>> total: 0 errors, 1 warnings, 42 lines checked
+> >>>
+> >> Yes, I noticed it. There are quite a few places in nfs code where we
+> >> happened to use that (that doesn't imply that it shouldn't be fixed), so
+> >> I thought it's OK.
+> >>
+> >>> That's great ! I'll pull it in the LTTng tree so my users can try it.
+> >>> They currently cannot write LTTng traces to NFS mounts anyway.
+> >> Yes, please report the test results. Would appreciate it very much.
+> >>
+> >>
+> >> Thanks,
+> > 
+> > Thank you for creating a patch !!
+> > 
+> > I tested it, and it works fine.
+> > 
+> > My environment is following,
+> > LTTV 0.12.10
+> > LTTng 0.100
+> > LTT Control 0.65
+> > Kernles 2.6.29
+> > 
+> > LTTng version is old now, but the test is passed on ARM11 target.
+> > 
+> > Furthermore, I run the splice test and the test is passed too.
+> > The test code is copied from
+> > http://kzk9.net/blog/2007/05/splice2.html
+> > (Japanese page)
+> > 
+> > Thanks all people who commented this issue.
+> > 
+> > Best regards,
+> > Masahiro Tamori
+> > 
+> >>>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> >>>> index 90f292b..13d6a00 100644
+> >>>> --- a/fs/nfs/file.c
+> >>>> +++ b/fs/nfs/file.c
+> >>>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+> >>>>                   size_t count, unsigned int flags);
+> >>>> static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+> >>>>               unsigned long nr_segs, loff_t pos);
+> >>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> >>>> +                  struct file *filp, loff_t *ppos,
+> >>>> +                  size_t count, unsigned int flags);
+> >>>> static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+> >>>>               unsigned long nr_segs, loff_t pos);
+> >>>> static int nfs_file_flush(struct file *, fl_owner_t id);
+> >>>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
+> >>>>   .lock      = nfs_lock,
+> >>>>   .flock     = nfs_flock,
+> >>>>   .splice_read  = nfs_file_splice_read,
+> >>>> +  .splice_write  = nfs_file_splice_write,
+> >>>>   .check_flags  = nfs_check_flags,
+> >>>>   .setlease    = nfs_setlease,
+> >>>> };
+> >>>> @@ -550,6 +554,26 @@ out_swapfile:
+> >>>>   goto out;
+> >>>> }
+> >>>>
+> >>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> >>>> +                 struct file *filp, loff_t *ppos,
+> >>>> +                 size_t count, unsigned int flags)
+> >>>> +{
+> >>>> +  struct dentry *dentry = filp->f_path.dentry;
+> >>>> +  struct inode *inode = dentry->d_inode;
+> >>>> +
+> >>>> +  dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+> >>>> +      dentry->d_parent->d_name.name, dentry->d_name.name,
+> >>>> +      (unsigned long) count, (unsigned long long) *ppos);
+> >>>> +
+> >>>> +  if (IS_SWAPFILE(inode)) {
+> >>>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
+> >>>> +          "file!\n");
+> >>>> +      return -EBUSY;
+> >>>> +  }
 
-It is.  I still plan to merge xenner into qemu, and also support 
-xenstyle pv-on-hvm drivers.
+I don't know that we really need this. We should sweep through the NFS
+code and kill all those IS_SWAPFILE() thingys. Or at least #define
+IS_SWAPFILE(a) (0)
+...
 
-> That said, I'd like to be able to emulate the Xen HVM hypercalls. But in
-> any case, they hypercall implementation has to be in the kernel,
+> >>>> +
+> >>>> +  return generic_file_splice_write(pipe, filp, ppos, count, flags);
+> >>>> +}
+> >>>> +
+> >>>> static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
+> >>>> {
+> >>>>   struct inode *inode = filp->f_mapping->host;
+> >>>>
 
-No.  With Xenner the xen hypercall emulation code lives in guest address 
-space.
+Otherwise it looks fine...
 
-> so I
-> don't see why the MSR shouldn't be.
 
-I don't care that much, but /me thinks it would be easier to handle in 
-userspace ...
 
-> Especially if we need to support
-> tricky bits like continuations.
-
-Is there any reason to?  I *think* xen does it for better scheduling 
-latency.  But with xen emulation sitting in guest address space we can 
-schedule the guest at will anyway.
-
->> Same MSR, multiple writes (page number in the low bits).
->
-> Nasty. The hypervisor has to remember all of the pages, so it can update
-> them for live migration.
-
-Xenner doesn't need update-on-migration, so there is no need at all to 
-remember this.  At the end of the day it is just memcpy(guest, data, 
-PAGESIZE) triggered by wrmsr.
-
-cheers,
-   Gerd
