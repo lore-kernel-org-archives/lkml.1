@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbZDTPBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZDTPG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756677AbZDTPBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZDTPA6
+	id S1755461AbZDTPG2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 11:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZDTPGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:00:58 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:60986 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755663AbZDTPA5 (ORCPT
+	Mon, 20 Apr 2009 11:06:17 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:51948 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991AbZDTPGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=MGx0aRnxPDHzdt5XlKxzOWhp8JKvYtmQtb+DsHggN3/X2j3KL4PdE0Lm03vHetw6rn
-         DZqcLGHTuRoI2GBpjx4t35Pdkzs9MxtyVoUsyJk2g9llXlaN6bfvGlLovft59AvbBca1
-         y7pNUU+kOYi/nUPA6YKgVqAAyJrx9XDmtcKuE=
-Date: Mon, 20 Apr 2009 17:00:53 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: lizf@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090420150052.GC13307@linux>
-Mail-Followup-To: Ryo Tsuruta <ryov@valinux.co.jp>, lizf@cn.fujitsu.com,
-	kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
-	balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-	agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-	baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-	dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-	taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
-	ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-	s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-	yoshikawa.takuya@oss.ntt.co.jp,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com> <49E7E1CF.6060209@cn.fujitsu.com> <20090417102539.GA16838@linux> <20090420.183815.226804723.ryov@valinux.co.jp>
+	Mon, 20 Apr 2009 11:06:16 -0400
+Date: Mon, 20 Apr 2009 15:10:22 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Zhang Le <r0bertz@gentoo.org>, linux-kernel@vger.kernel.org,
+       Nicholas Mc Guire <hofrat@hofr.at>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, zhangfx@lemote.com,
+       loongson-dev@googlegroups.com, yanh@lemote.com,
+       linux-mips@linux-mips.org, linux-rt-users@vger.kernel.org
+Subject: Re: "RT_PREEMPT for loongson" is updated to patch-2.6.29.1-rt8
+Message-ID: <20090420131022.GA10183@linux-mips.org>
+References: <1240193547.25532.52.camel@falcon> <20090420050419.GA22520@adriano.hkcable.com.hk> <1240211926.8884.27.camel@falcon> <20090420080155.GA11621@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090420.183815.226804723.ryov@valinux.co.jp>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090420080155.GA11621@linux-mips.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 06:38:15PM +0900, Ryo Tsuruta wrote:
-> Hi Andrea, 
-> 
-> > Implementing bio-cgroup functionality as pure infrastructure framework
-> > instead of a cgroup subsystem would remove all this oddity and
-> > complexity.
-> > 
-> > For example, the actual functionality that I need for the io-throttle
-> > controller is just an interface to set and get the cgroup owner of a
-> > page. I think it should be the same also for other potential users of
-> > bio-cgroup.
-> > 
-> > So, what about implementing the bio-cgroup functionality as cgroup "page
-> > tracking" infrastructure and provide the following interfaces:
-> > 
-> > /*
-> >  * Encode the cgrp->css.id in page_group->flags
-> >  */
-> > void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
-> > 
-> > /*
-> >  * Returns the cgroup owner of a page, decoding the cgroup id from
-> >  * page_cgroup->flags.
-> >  */
-> > struct cgroup *get_cgroup_page_owner(struct page *page);
-> > 
-> > This also wouldn't increase the size of page_cgroup because we can
-> > encode the cgroup id in the unused bits of page_cgroup->flags, as
-> > originally suggested by Kame.
-> > 
-> > And I think it could be used also by dm-ioband, even if it's not a
-> > cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
-> 
-> I looked your page_cgroup patch in io-throttle v14, It can also be used
-> by dm-ioband. But I'd like to eliminate lock_page_cgroup() to minimize
-> overhead. I'll rearrange the bio-cgroup patch according to the functions.
+On Mon, Apr 20, 2009 at 10:01:55AM +0200, Ralf Baechle wrote:
 
-It would be great! Anyway, I don't think it's a trivial task to
-completely remove lock_page_cgroup(), especially if we decide to encode
-the ID in page_cgroup->flags.
+> > I have divided ftrace to several commits in the above git tree, hope you
+> > can check it, thx :-) 
+> > 
+> > in addition to the static/dynamic/graph function tracer & system call
+> > tracer implementation, a mips specific ring_buffer_time_stamp
+> > (kernel/trace/ring_buffer.c) is also implemented to get 1us precision
+> > time, this is very important to make ftrace available in mips,
+> > otherwise, we can only get 1ms precision time for the original
+> > ring_buffer_time_stamp is based on sched_clock(jiffies based). 
+> > 
+> > perhaps we can implement a more precise sched_clock directly, just as
+> > x86 does(native_sched_clock, tsc based), but in mips, there is only a
+> > 32bit timer count which will quickly overflow, so it will need an extra
+> > overflow protection, which may influence the other parts of the kernel.
+> 
+> My git clone is still running to I'm commenting only on the patches you
+> posted earlier.  #ifdef-MIPS'ing things into the generic kernel code
+> definately won't be an acceptable way to get µs resolution.
 
-Thanks,
--Andrea
+In changeset e67f78d663a84ef93aa12c3c8c1adf3033c4f9a1 you introduce
+<asm/rwsem.h> but because RWSEM_GENERIC_SPINLOCK is always set that file
+won't ever be included.
+
+  Ralf
