@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZDTUyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZDTVCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbZDTUyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbZDTUyl
+	id S1755301AbZDTVCP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZDTVB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:54:41 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:53242 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751644AbZDTUyk (ORCPT
+	Mon, 20 Apr 2009 17:01:58 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:39898 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbZDTVB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:54:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AukFACd47ElMQW1W/2dsb2JhbACBTtA6g30G
-Date: Mon, 20 Apr 2009 16:54:38 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Mon, 20 Apr 2009 17:01:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FQ26DVnhkb4VVuE/yR3hfke+fFhwuZJ830i7jhlMd5h5NYUe4X97yrFf+y95yEaj6H
+         gj29TiZ9ybnHm+PliJLzEOfRMLWMYWYxSIKTq++oDLVAiUqW0vWlilgqbnYh6S0i9NSW
+         CkhAIdmnNNMmugorYW4M1DzzbQTUjKlmXfdG8=
+Date: Mon, 20 Apr 2009 23:01:53 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, mingo@goodmis.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC] Stupid tracepoint ideas
-Message-ID: <20090420205438.GA11567@Krystal>
-References: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com>
-Mime-Version: 1.0
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] [GIT PULL] tracing: recursion and compile fixes
+Message-ID: <20090420210152.GF5974@nowhere>
+References: <20090420173819.957332585@goodmis.org> <20090420175533.GA22449@elte.hu> <20090420192803.GA25629@elte.hu> <20090420194542.GB5974@nowhere> <alpine.DEB.2.00.0904201616430.10097@gandalf.stny.rr.com> <20090420203347.GD5974@nowhere> <alpine.DEB.2.00.0904201641570.10097@gandalf.stny.rr.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:48:40 up 51 days, 17:14,  1 user,  load average: 0.71, 0.67,
-	0.54
+In-Reply-To: <alpine.DEB.2.00.0904201641570.10097@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
+On Mon, Apr 20, 2009 at 04:44:46PM -0400, Steven Rostedt wrote:
 > 
-> Mathieu,
+> On Mon, 20 Apr 2009, Frederic Weisbecker wrote:
+> > > > 
+> > > 
+> > > Hmm, doesn't the trace wakeup test if the runqueue lock is locked or not?
+> > > 
+> > > -- Steve
+> > > 
+> > 
+> > 
+> > Hmm, yes it does but that's not the first time we meet this problem
+> > (sched switch event tracing recursions by the past). So either the
+> > test doesn't work well or this is about another lock that
+> > wake_up_common takes...
 > 
-> You may have tried this in your creation of tracepoints, but I figured I 
-> would ask before wasting too much time on it.
+> Ug, it is the task's rq lock. Not the current rq lock. wakeup takes the 
+> runqueue lock of the task. The "runqueue_is_locked" only tests the lock of 
+> current CPU, which is not what we can have.
+
+
+You mean the lock held on the wait_queue for wake_up_trace() ?
+
+void __wake_up(wait_queue_head_t *q, unsigned int mode,
+			int nr_exclusive, void *key)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&q->lock, flags);
+	__wake_up_common(q, mode, nr_exclusive, 0, key);
+	spin_unlock_irqrestore(&q->lock, flags);
+}
+
+
 > 
-> I'm looking at ways to make tracepoints even lighter weight when disabled. 
-> And I thought of doing section code. I'm playing with the following idea 
-> (see below patch) but I'm afraid gcc is allowed to think that the code it 
-> produces will not move to different sections.
-> 
-> Any thoughts on how we could do something similar to this.
-> 
-> Note, this patch is purely proof-of-concept. I'm fully aware that it is an 
-> x86 solution only.
-> 
+> Thus, the function tracer (gag, and probably the event tracing!) should 
+> not call wakeups.
+
+
+No problem for the events, I made them using the nowake commit because
+of sched switch recursions :-)
+That's why the nop tracer is now a "polling on traces" tracer.
+
+
 > -- Steve
 > 
-> [ no Signed-off-by: because this patch is crap ]
-> 
-> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> index 4353f3f..6953f78 100644
-> --- a/include/linux/tracepoint.h
-> +++ b/include/linux/tracepoint.h
-> @@ -65,9 +65,18 @@ struct tracepoint {
->  	extern struct tracepoint __tracepoint_##name;			\
->  	static inline void trace_##name(proto)				\
->  	{								\
-> -		if (unlikely(__tracepoint_##name.state))		\
-> +		if (unlikely(__tracepoint_##name.state)) {		\
-> +			asm volatile ("jmp 43f\n"			\
-> +				      "42:\n"				\
-> +				      ".section .unlikely,\"ax\"\n"	\
-> +				      "43:\n"				\
-> +				      ::: "memory");			\
->  			__DO_TRACE(&__tracepoint_##name,		\
-> -				TP_PROTO(proto), TP_ARGS(args));	\
-> +				   TP_PROTO(proto), TP_ARGS(args));	\
-> +			asm volatile ("jmp 42b\n"			\
-> +			     ".previous\n"				\
-> +			     ::: "memory");				\
-> +		}							\
 
-You are right, I thought of this.
-
-gcc forbids jumping outside of inline assembly statements. Optimisations
-done by gcc are not aware of this sort of execution flow modification,
-and gcc has every rights to interleave unrelated code between the two
-inline assembly statements.
-
-And is it me or this sounds like an infinite loop ?
-
-42:
-....
-jmp 42b
-
-Mathieu
-
->  	}								\
->  	static inline int register_trace_##name(void (*probe)(proto))	\
->  	{								\
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
