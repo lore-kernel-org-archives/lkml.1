@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZDTJi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZDTJrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbZDTJi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbZDTJiR
+	id S1754562AbZDTJrW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 05:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZDTJrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:38:17 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:33365 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753555AbZDTJiQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:38:16 -0400
-Date: Mon, 20 Apr 2009 18:38:15 +0900 (JST)
-Message-Id: <20090420.183815.226804723.ryov@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: lizf@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
-       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090417102539.GA16838@linux>
-References: <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com>
-	<49E7E1CF.6060209@cn.fujitsu.com>
-	<20090417102539.GA16838@linux>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 20 Apr 2009 05:47:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58607 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753292AbZDTJrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 05:47:04 -0400
+Date: Mon, 20 Apr 2009 11:40:41 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: David Dillow <dave@thedillows.org>
+Cc: Brice Goglin <brice@myri.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux Network Development list <netdev@vger.kernel.org>
+Subject: Re: [PATCH net-next] myri10ge: allow per-board firmware overriding
+Message-ID: <20090420114041.37c7fa7b@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <1240108599.5342.11.camel@obelisk.thedillows.org>
+References: <49E7239B.4000309@myri.com>
+	<20090417095038.49b745bf@dhcp-lab-109.englab.brq.redhat.com>
+	<49EA1DAC.1000602@myri.com>
+	<1240102617.5342.6.camel@obelisk.thedillows.org>
+	<1240108599.5342.11.camel@obelisk.thedillows.org>
+Organization: RedHat
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea, 
+On Sat, 18 Apr 2009 22:36:39 -0400
+David Dillow <dave@thedillows.org> wrote:
 
-> Implementing bio-cgroup functionality as pure infrastructure framework
-> instead of a cgroup subsystem would remove all this oddity and
-> complexity.
-> 
-> For example, the actual functionality that I need for the io-throttle
-> controller is just an interface to set and get the cgroup owner of a
-> page. I think it should be the same also for other potential users of
-> bio-cgroup.
-> 
-> So, what about implementing the bio-cgroup functionality as cgroup "page
-> tracking" infrastructure and provide the following interfaces:
-> 
-> /*
->  * Encode the cgrp->css.id in page_group->flags
->  */
-> void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
-> 
-> /*
->  * Returns the cgroup owner of a page, decoding the cgroup id from
->  * page_cgroup->flags.
->  */
-> struct cgroup *get_cgroup_page_owner(struct page *page);
-> 
-> This also wouldn't increase the size of page_cgroup because we can
-> encode the cgroup id in the unused bits of page_cgroup->flags, as
-> originally suggested by Kame.
-> 
-> And I think it could be used also by dm-ioband, even if it's not a
-> cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
+> > > We actually thought about supporting "eth2:fwname1,eth0:fwname2". But it
+> > > might be hard to implement in this case due to udev possible renaming
+> > > interfaces and this firmware names being needed *before* the renaming.
 
-I looked your page_cgroup patch in io-throttle v14, It can also be used
-by dm-ioband. But I'd like to eliminate lock_page_cgroup() to minimize
-overhead. I'll rearrange the bio-cgroup patch according to the functions.
+I was thinking about ID as serial number or MAC address - rather than device
+name - something that driver specific and uniquely identify device. 
 
-Thanks,
-Ryo Tsuruta
+> > It seems like this could be done in user space, using the PCI bus ID as
+> > a key to select the firmware. The uevent identifies which device is
+> > requesting the firmware, so some modification to /lib/udev/firmware.sh
+> > should do it.
+> 
+> On further inspection, that should work on Fedora 10, and it looks like
+> other distros that use the upstream udev rules. RHEL5 uses a binary
+> helper, so changing 05-early-rules.sh to use a script similar to udev's
+> firmware.sh would work. YMMV elsewhere, those are the ones I had handy
+> and happened to be working on some udev rules.
+
+Module parameters I'm thinking about are not intended only for firmware names,
+it could replace any device parameter which is needed during initialization.
+Currently devices use module_param_array and code like this:
+
+	dev->my_param = default;
+	if (board_no < MAX_BOARDS)
+		dev->my_param = my_param[board_no++];
+
+This solution have drawbacks:
+
+- it limits number of device instances which can get parameter
+- assume initialization ordering is constant.
+- assume initialization is not done in parallel 
+
+Providing module_param_id would address this issues, but I have some concerns
+before doing it:
+
+- device have to access ID (like serial no) before initialization (at least
+  before driver will need parameter)
+- why nobody already done it - perhaps such thing would be totally useless
+
+
+Cheers
+Stanislaw
