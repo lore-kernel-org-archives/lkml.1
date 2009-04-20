@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZDTSVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZDTSWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZDTSVp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 14:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZDTSVR
+	id S1755524AbZDTSWB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 14:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZDTSVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 14:21:17 -0400
-Received: from ausxipps301.us.dell.com ([143.166.148.223]:57325 "EHLO
-	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbZDTSVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 14:21:15 -0400
-X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 14:21:14 EDT
-Message-ID: <49ECBAE2.2080308@dell.com>
-Date: Mon, 20 Apr 2009 13:11:46 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Mon, 20 Apr 2009 14:21:39 -0400
+Received: from mga01.intel.com ([192.55.52.88]:61242 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754818AbZDTSVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 14:21:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,218,1239001200"; 
+   d="scan'208";a="449596617"
+Message-ID: <49ECBD31.9010607@intel.com>
+Date: Mon, 20 Apr 2009 11:21:37 -0700
+From: "H. Peter Anvin" <h.peter.anvin@intel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: mjg59@srcf.ucam.org
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Add support for Eject hotkey in dell-wmi
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC03E03A2E1CC52A978F4E278"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Brian Maly <bmaly@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dannf@hp.com" <dannf@hp.com>, "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH] rtc: add x86 support for rtc-efi
+References: <49DA40B9.2060804@redhat.com> <49DA817E.8040705@intel.com> <49DA8875.5050009@redhat.com> <20090409161803.f79c0b64.akpm@linux-foundation.org> <20090410135102.GB24809@elte.hu> <49ECADAB.4020609@redhat.com> <20090420172045.GA17887@elte.hu>
+In-Reply-To: <20090420172045.GA17887@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC03E03A2E1CC52A978F4E278
-Content-Type: multipart/mixed;
- boundary="------------090107030500060303050807"
+Ingo Molnar wrote:
+> * Brian Maly <bmaly@redhat.com> wrote:
+> 
+>>> Hm, it would be nice to first unify the relevant bits of 
+>>> arch/x86/kernel/time_{32|64}.c into arch/x86/kernel/time.c, and 
+>>> then we can apply such patches without duplicative effects.
+>> Ingo,
+>>
+>> Are you OK with consolidating this into arch/x86/kernel/rtc.c as 
+>> Huang Ying had suggested? This seems like the most logical place 
+>> for the rtc-efi init to happen, but your suggestion to consolidate 
+>> this into arch/x86/kernel.time.c may have advantages that I am not 
+>> aware of.  Anyway, I would appreciate any insight/opinions on this 
+>> if you have any.  Thanks.
+> 
+> Yes, that indeed sounds like an even better place for it.
+> 
 
-This is a multi-part message in MIME format.
---------------090107030500060303050807
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Furthermore, the EFI RTC code probably should be in its own file.
 
-Hi:
+In fact, arch/x86/kernel really could use more subdirectories; at least 
+the EFI and UV-specific code should be be moved out.
 
-I've gotten word that future Dell consumer laptops are transitioning
-several hotkeys to WMI instead.  Here's a patch to enable the first to
-enable the Eject hotkey.  I'm attaching it since my mail server
-(exchange) would mangle it otherwise.
+	-hpa
 
-Thanks,
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
-
---------------090107030500060303050807
-Content-Type: text/x-patch;
- name="dell-wmi-eject.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
- filename="dell-wmi-eject.patch"
-
---- a/drivers/platform/x86/dell-wmi.c~	2009-04-20 07:41:12.000000000 -050=
-0
-+++ b/drivers/platform/x86/dell-wmi.c	2009-04-20 07:42:04.000000000 -0500=
-
-@@ -50,6 +50,7 @@
-=20
- static struct key_entry dell_wmi_keymap[] =3D {
- 	{KE_KEY, 0xe045, KEY_PROG1},
-+	{KE_KEY, 0xe009, KEY_EJECTCD},
- 	{KE_END, 0}
- };
-=20
-
---------------090107030500060303050807--
-
---------------enigC03E03A2E1CC52A978F4E278
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknsuuIACgkQ2CrZjkA73Ys68wCgkfPAGhrzgnC46qSIZdfMtnzS
-r18AniwOe4LrV1Bt4/W4jMe37nn5iXm6
-=zAnW
------END PGP SIGNATURE-----
-
---------------enigC03E03A2E1CC52A978F4E278--
