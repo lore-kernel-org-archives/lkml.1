@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZDTKxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbZDTLDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbZDTKxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 06:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZDTKxO
+	id S1755066AbZDTLDU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 07:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbZDTLDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 06:53:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47231 "EHLO mx3.mail.elte.hu"
+	Mon, 20 Apr 2009 07:03:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50514 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbZDTKxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 06:53:14 -0400
-Date: Mon, 20 Apr 2009 12:53:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Hitoshi Mitake <h.mitake@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
-Message-ID: <20090420105304.GC6670@elte.hu>
-References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain> <adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu> <adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com>
+	id S1753157AbZDTLDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 07:03:01 -0400
+Message-ID: <49EC565B.2090806@redhat.com>
+Date: Mon, 20 Apr 2009 14:02:51 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EBCDC0.1020001@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Gerd Hoffmann <kraxel@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
+       Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add MCE support to KVM
+References: <1239332455.6384.108.camel@yhuang-dev.sh.intel.com> <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <20090420100421.GX14687@one.firstfloor.org>
+In-Reply-To: <20090420100421.GX14687@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+>> It depends if the MSR may be considered global, or is required to be 
+>> per-cpu.  Need to refresh my memory on this, but I remember reading this 
+>>     
+>
+> Machine Check MSRs need to be per CPU. The latest kernels have some support
+> for "shared banks" (between CPUs) but it's better to not have it and
+> older OS don't like it.
+>   
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+In the case of the hypercall page MSR, it is global and shared among all 
+processors.
 
-> Roland Dreier wrote:
-> > 
-> > Notice that it reads from addr+4 *before* it reads from addr, rather
-> > than after as in your example (and in fact your example depends on
-> > undefined compiler semantics, since there is no sequence point between
-> > the two operands of the | operator).  Now, I don't know that hardware,
-> > so I don't know if it makes a difference, but the niu example I gave in
-> > my original email shows that given hardware with clear-on-read
-> > registers, the order does very much matter.
-> > 
-> 
-> At least for x86, the order should be low-high, because that is the
-> order that those two transactions would be seen on a 32-bit bus
-> downstream from the CPU if the CPU issued a 64-bit transaction.
-> 
-> The only sane way to handle this as something other than per-driver
-> hacks would be something like:
-> 
-> #include <linux/io64.h>		/* Any 64-bit I/O OK */
-> 
-> #include <linux/io64lh.h>	/* Low-high splitting OK */
-> 
-> #include <linux/io64hl.h>	/* High-low splitting OK */
-> 
-> #include <linux/io64atomic.h>	/* 64-bit I/O must be atomic */
-> 
-> ... i.e. letting the driver choose what fallback method it will accept.
+-- 
+error compiling committee.c: too many arguments to function
 
-Yeah - with the default being the natural low-high order.
-
-The other argument is that if a driver really wants some rare, oddly 
-different order it should better define its own method that is not 
-named in the same (or in a similar) way as an existing generic API. 
-Otherwise, confusion will ensue.
-
-	Ingo
