@@ -1,70 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZDTT4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbZDTUBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbZDTT4L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 15:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZDTTz5
+	id S1756364AbZDTUBI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZDTUAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 15:55:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49240 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbZDTTz4 (ORCPT
+	Mon, 20 Apr 2009 16:00:52 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:46786 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbZDTUAv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 15:55:56 -0400
-Date: Mon, 20 Apr 2009 15:55:55 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] [GIT PULL] tracing: recursion and compile fixes
-In-Reply-To: <alpine.DEB.2.00.0904201540400.26147@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0904201554420.26147@gandalf.stny.rr.com>
-References: <20090420173819.957332585@goodmis.org> <20090420175533.GA22449@elte.hu> <20090420192917.GB25629@elte.hu> <alpine.DEB.2.00.0904201540400.26147@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 20 Apr 2009 16:00:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=t20r/5kGsAZSuFJ+89+OczTMykAkb90azLCn7lgHHax3rMDfQt1ZYUm71WHCr4po9z
+         ay6UR0w99qrWijxeEr4B7Ko6XykP/BXzg/s1lkgY0J3KdlkEUTggUUb1zXS+ZWr7gZxY
+         ZJENtq9X5YPOYuhsHTmzfG5pVLT8eTudP6Kj4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <30257.1240252651@death.nxdomain.ibm.com>
+References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com>
+	 <49ECBBF0.80202@cosmosbay.com>
+	 <30257.1240252651@death.nxdomain.ibm.com>
+Date: Mon, 20 Apr 2009 22:00:49 +0200
+Message-ID: <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com>
+Subject: Re: bond interface arp, vlan and trunk / network question
+From: stefan novak <lms.brubaker@gmail.com>
+To: Jay Vosburgh <fubar@us.ibm.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> nic1 --trunk--> bladesw1 --trunk--> backbone switch
+>> nic2 --trunk--> bladesw2 --trunk--> backbone switch
+>>
+>> So far vlan and trunking works as expected. But if one trunk
+>> connection from a bladeswitch to the backbone switch is down the
+>> mii-tool cant recognize this.
+>
+> What is the exact problem on this one ?
 
-On Mon, 20 Apr 2009, Steven Rostedt wrote:
+The exact problem is that the bonding driver don't switch the
+interface because the mii-tool don't recognize that the connection
+between the two switches is now broken.
 
-> 
-> On Mon, 20 Apr 2009, Ingo Molnar wrote:
-> > Running tests on all trace events:
-> > Testing all events: <4>Tracing recursion: HC[0]:SC[0]:NMI[0]
-> 
-> Recursion is wrong :-/
-> 
-> > ------------[ cut here ]------------
-> > WARNING: at kernel/trace/ring_buffer.c:1510 ring_buffer_lock_reserve+0xf7/0x1ce()
-> > Hardware name: To Be Filled By O.E.M.
-> > Pid: 1, comm: swapper Not tainted 2.6.30-rc2-tip-01538-ge8201b9-dirty #37740
-> > Call Trace:
-> >  <IRQ>  [<ffffffff80268a01>] warn_slowpath+0xcc/0x114
-> >  [<ffffffff80299ed3>] ? trace_hardirqs_on_caller+0x11d/0x179
-> >  [<ffffffff80299ba6>] ? mark_held_locks+0x60/0x95
-> >  [<ffffffff802ca335>] ring_buffer_lock_reserve+0xf7/0x1ce
-> >  [<ffffffff802ceb60>] trace_buffer_lock_reserve+0x34/0x7e
-> >  [<ffffffff810c8f97>] ? do_IRQ+0xf/0xe8
-> >  [<ffffffff802cf949>] trace_current_buffer_lock_reserve+0x36/0x4c
-> >  [<ffffffff802d9da4>] function_test_events_call+0x7e/0xe2
-> >  [<ffffffff80216313>] ? ret_from_intr+0x0/0x16
-> >  [<ffffffff80215616>] ftrace_call+0x5/0x2b
-> >  [<ffffffff8021630e>] ? common_interrupt+0xe/0x13
-> >  [<ffffffff810c8f9c>] ? do_IRQ+0x14/0xe8
-> 
-> The function tracer was called before we updated the hardirq_count :-/
-> 
-> I liked the fact that we can detect same level recursion. Perhaps I'll 
-> just make a depth test instead. Have a max of 16? times we can recurse 
-> (should be plenty) and then bug if we hit it?
-> 
+nic1 --trunk--> bladesw1 --trunk--> backbone switch (passive if)
+nic2 --trunk--> bladesw2 --xxx--broken-trunk-xx-> backbone switch (active if)
 
-The other option is not to trace any interrupt function that is called 
-before "irq_enter". That would mean we would need to add notrace to do_IRQ 
-and friends.
+>   Sufficiently recent versions of bonding should VLAN tag the ARP
+>probes, provided you are using a VLAN device configured above the bond.
+>My recollection is that VLAN tagging of ARP probes was added about three
+>years ago.
+>
+>       If the switch port is configured as native to a VLAN, then it
+>should tag everything coming in.
+>
+>      As Eric asks, what are you running?
 
--- Steve
+I've got a bonding interface over eth0 and eth1 and on that bonding
+interface several vlans. The arp probe is in vlan 600 and i can ping
+it from the bash.
+Also a arpping with -I bond0.600 is working. Arpping with -I bond0 is
+not working.
+So the arp check is not working for me :(
 
+the nic driver is:
+alias eth0 igb
+alias eth1 igb
+
+the bond setiings:
+cat /proc/net/bonding/bond0
+Ethernet Channel Bonding Driver: v3.2.4 (January 28, 2008)
+
+Bonding Mode: fault-tolerance (active-backup)
+Primary Slave: None
+Currently Active Slave: eth0
+MII Status: up
+MII Polling Interval (ms): 0
+Up Delay (ms): 0
+Down Delay (ms): 0
+ARP Polling Interval (ms): 30
+ARP IP target/s (n.n.n.n form): 172.21.0.254
+
+Slave Interface: eth0
+MII Status: up
+Link Failure Count: 0
+Permanent HW addr: 00:30:48:94:7d:1a
+
+Slave Interface: eth1
+MII Status: up
+Link Failure Count: 0
+Permanent HW addr: 00:30:48:94:7d:1b
+
+
+On Mon, Apr 20, 2009 at 8:37 PM, Jay Vosburgh <fubar@us.ibm.com> wrote:
+> Eric Dumazet <dada1@cosmosbay.com> wrote:
+>
+>>stefan novak a écrit :
+>>> Hello list,
+>>>
+>>> I've got a Problem with my bladecenter and bond interfaces.
+>>> My Server has 2 interface, each on a seperate switch. Each
+>>> serverinterface is connected via a trunk to one of the switches.
+>>> Each switch has a trunk to stacked-backbone switch.
+>>>
+>>> nic1 --trunk--> bladesw1 --trunk--> backbone switch
+>>> nic2 --trunk--> bladesw2 --trunk--> backbone switch
+>>>
+>>> So far vlan and trunking works as expected. But if one trunk
+>>> connection from a bladeswitch to the backbone switch is down the
+>>> mii-tool cant recognize this.
+>>
+>>What is the exact problem on this one ?
+>
+>        This is the expected behavior, the external switch to
+> bladecenter switch (ESM) link status does not affect the ESM to blade
+> link status.
+>
+>        Unless... your ESM supports "trunk failover."  I believe the
+> Cisco ESMs do, I'm not sure about others.  With trunk failover enabled,
+> loss of link on an external switch port will in turn drop link on the
+> corresponding internal switch ports.  There is a long-ish delay for
+> this, on the order of 750 ms, as I recall.
+>
+>>> I tried to use an arp target on the backbone switch to check the
+>>> connection state.
+>>>
+>>> Now i'm running into problems. :(
+>>> My bladesw1 is configured with a trunk and a private vlan id of 600.
+>>> On the backbone switch is a server in the vlan 600 connected, but i
+>>> can't get an arp request.
+>>>
+>>> What can be the problem, or is it possible to add a vlan tag on the arp check?
+>>>
+>>
+>>What driver is in use on your NIC interface ?
+>>
+>>Could you post your bonding settings ?
+>>
+>>cat /proc/net/bonding/bond0
+>
+>        Sufficiently recent versions of bonding should VLAN tag the ARP
+> probes, provided you are using a VLAN device configured above the bond.
+> My recollection is that VLAN tagging of ARP probes was added about three
+> years ago.
+>
+>        If the switch port is configured as native to a VLAN, then it
+> should tag everything coming in.
+>
+>        As Eric asks, what are you running?
+>
+>        -J
+>
+> ---
+>        -Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+>
