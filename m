@@ -1,181 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZDTBXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZDTB10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZDTBXU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 21:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZDTBXG
+	id S1753312AbZDTB10 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 21:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZDTB1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 21:23:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:60450 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbZDTBXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 21:23:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,214,1239001200"; 
-   d="asc'?scan'208";a="133211195"
-Subject: Re: [PATCH -v2 2/2] kvm userspace: Add MCE simulation to kvm
-From: Huang Ying <ying.huang@intel.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20090417144908.GA24261@amt.cnet>
-References: <1239953925.6842.21.camel@yhuang-dev.sh.intel.com>
-	 <20090417144908.GA24261@amt.cnet>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tK/eZYIJmbR44ltXggXB"
-Date: Mon, 20 Apr 2009 09:22:59 +0800
-Message-Id: <1240190579.6842.48.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Sun, 19 Apr 2009 21:27:17 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52441 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbZDTB1Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 21:27:16 -0400
+Message-ID: <49EBCF58.3030602@jp.fujitsu.com>
+Date: Mon, 20 Apr 2009 10:26:48 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [RESEND][PATCH -tip 1/3] x86, mce: Revert "add mce_threshold option
+ for intel cmci"
+References: <49EBCDB0.7000505@jp.fujitsu.com>
+In-Reply-To: <49EBCDB0.7000505@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After having some discussion with Andi Kleen, we have concluded
+that setting threshold >1 will not work properly.  This patch
+reverts the previous patch that introduces mce_threshold option.
 
---=-tK/eZYIJmbR44ltXggXB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+However as Ingo pointed out, cmci is a new feature so having boot
+controls to disable it is generally a good idea, and it might be
+handy if the hw is misbehaving.
 
-On Fri, 2009-04-17 at 22:49 +0800, Marcelo Tosatti wrote:
-> Hi Huang,
->=20
-> On Fri, Apr 17, 2009 at 03:38:45PM +0800, Huang Ying wrote:
-> > - MCE features are initialized when VCPU is initialized according to CP=
-UID.
-> > - A monitor command "mce" is added to inject a MCE.
-> >=20
-> >=20
-> > ChangeLog:
-> >=20
-> > v2:
-> >=20
-> > - Use new kernel MCE capability exportion interface.
-> >=20
-> >=20
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> >=20
-> > ---
-> >  libkvm/libkvm-x86.c    |   33 +++++++++++++++++++++++++++++++++
-> >  libkvm/libkvm.h        |    4 ++++
-> >  qemu/monitor.c         |   26 ++++++++++++++++++++++++++
-> >  qemu/qemu-kvm-x86.c    |   33 +++++++++++++++++++++++++++++++++
-> >  qemu/qemu-kvm.c        |   26 ++++++++++++++++++++++++++
-> >  qemu/qemu-kvm.h        |    4 ++++
-> >  qemu/target-i386/cpu.h |    3 +++
-> >  7 files changed, 129 insertions(+)
-> >=20
-> > --- a/qemu/monitor.c
-> > +++ b/qemu/monitor.c
-> > @@ -1557,6 +1557,31 @@ static void do_info_status(Monitor *mon)
-> >  }
-> > =20
-> > =20
-> > +#if defined(TARGET_I386) || defined(TARGET_X86_64)
-> > +static void do_inject_mce(Monitor *mon,
-> > +			  int cpu_index, int bank,
-> > +			  unsigned status_hi, unsigned status_lo,
-> > +			  unsigned mcg_status_hi, unsigned mcg_status_lo,
-> > +			  unsigned addr_hi, unsigned addr_lo,
-> > +			  unsigned misc_hi, unsigned misc_lo)
-> > +{
-> > +    CPUState *env;
-> > +    struct kvm_x86_mce mce =3D {
-> > +	.bank =3D bank,
-> > +	.status =3D ((uint64_t)status_hi << 32) | status_lo,
-> > +	.mcg_status =3D ((uint64_t)mcg_status_hi << 32) | mcg_status_lo,
-> > +	.addr =3D ((uint64_t)addr_hi << 32) | addr_lo,
-> > +	.misc =3D ((uint64_t)misc_hi << 32) | misc_lo,
-> > +    };
-> > +
-> > +    for (env =3D first_cpu; env !=3D NULL; env =3D env->next_cpu)
-> > +	if (env->cpu_index =3D=3D cpu_index && env->mcg_cap) {
-> > +	    kvm_inject_x86_mce(env, &mce);
-> > +	    break;
-> > +	}
-> > +}
-> > +#endif
->=20
-> This will break compilation on hosts with older kernel headers. To ease
-> the merge with QEMU, do_inject_mce should call qemu_inject_x86_mce,
-> which does nothing for the case where KVM is disabled, or call KVM
-> specific function otherwise (knowledge about struct kvm_x86_mce should
-> be contained within KVM code).
+So instead of mce_threshold, I will introduce "mce=no_cmci" option
+to support cmci disablement in later patch.
+Compare with mce_threshold, it lacks threshold >1 support but it
+does not matter because it will not work.
 
-Yes. I will fix this.
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
+ Documentation/kernel-parameters.txt       |    5 ---
+ arch/x86/include/asm/msr-index.h          |    1 -
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |   56 ++---------------------------
+ 3 files changed, 3 insertions(+), 59 deletions(-)
 
-> > +
-> >  static void do_balloon(Monitor *mon, int value)
-> >  {
-> >      ram_addr_t target =3D value;
-> > @@ -1758,6 +1783,7 @@ static const mon_cmd_t mon_cmds[] =3D {
-> >        "[tap,user,socket,vde] options", "add host VLAN client" },
-> >      { "host_net_remove", "is", net_host_device_remove,
-> >        "vlan_id name", "remove host VLAN client" },
-> > +    { "mce", "iillll", do_inject_mce, "cpu bank status mcgstatus addr =
-misc", "inject a MCE on the given CPU"},
-> >  #endif
-> >      { "balloon", "i", do_balloon,
-> >        "target", "request VM to change it's memory allocation (in MB)" =
-},
-> > --- a/libkvm/libkvm-x86.c
-> > +++ b/libkvm/libkvm-x86.c
-> > @@ -379,6 +379,39 @@ int kvm_set_msrs(kvm_context_t kvm, int=20
-> >      return r;
-> >  }
-> > =20
-> >
-> > +int kvm_get_mce_cap_supported(kvm_context_t kvm, uint64_t *mce_cap,
-> > +			      int *max_banks)
-> > +{
-> > +    int r;
-> > +
-> > +    r =3D ioctl(kvm->fd, KVM_CHECK_EXTENSION, KVM_CAP_MCE);
-> > +    if (r > 0) {
-> > +	*max_banks =3D r;
-> > +	return ioctl(kvm->fd, KVM_X86_GET_MCE_CAP_SUPPORTED, mce_cap);
-> > +    }
-> > +    return -ENOSYS;
-> > +}
-> > +
-> > +int kvm_setup_mce(kvm_context_t kvm, int vcpu, uint64_t *mcg_cap)
-> > +{
-> > +    int r;
-> > +
-> > +    r =3D ioctl(kvm->fd, KVM_CHECK_EXTENSION, KVM_CAP_MCE);
-> > +    if (r > 0)
-> > +	return ioctl(kvm->vcpu_fd[vcpu], KVM_X86_SETUP_MCE, mcg_cap);
-> > +    return -ENOSYS;
-> > +}
-> > +
-> > +int kvm_set_mce(kvm_context_t kvm, int vcpu, struct kvm_x86_mce *m)
-> > +{
-> > +    int r;
-> > +
-> > +    r =3D ioctl(kvm->fd, KVM_CHECK_EXTENSION, KVM_CAP_MCE);
-> > +    if (r > 0)
-> > +	return ioctl(kvm->vcpu_fd[vcpu], KVM_X86_SET_MCE, m);
-> > +    return -ENOSYS;
-> > +}
->=20
-> Have to #ifdef KVM_CAP_MCE where appropriate, otherwise compilation=20
-> on hosts with older kernel headers fail.
-
-Yes. I will fix this.
-
-Best Regards,
-Huang Ying
-
-
---=-tK/eZYIJmbR44ltXggXB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknrznAACgkQKhFGF+eHlpjn+QCfVUSjyyT4dyg5PCcxO5vREr26
-BHIAoJoOJyKbrK8D632xdXok6iAHQ7nd
-=N2SY
------END PGP SIGNATURE-----
-
---=-tK/eZYIJmbR44ltXggXB--
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 5e966a9..6172e43 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1208,11 +1208,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	mce=option	[X86-64] See Documentation/x86/x86_64/boot-options.txt
+ 
+-	mce_threshold=	[X86-64,intel] Default CMCI threshold
+-			Should be unsigned integer. Setting 0 disables cmci.
+-			Format: <integer>
+-			Default: 1
+-
+ 	md=		[HW] RAID subsystems devices and level
+ 			See Documentation/md.txt.
+ 
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index bb144e4..ec41fc1 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -85,7 +85,6 @@
+ #define MSR_IA32_MC0_CTL2		0x00000280
+ #define CMCI_EN			(1ULL << 30)
+ #define CMCI_THRESHOLD_MASK		0xffffULL
+-#define CMCI_THRESHOLD_VAL_MASK		0x7fffULL
+ 
+ #define MSR_P6_PERFCTR0			0x000000c1
+ #define MSR_P6_PERFCTR1			0x000000c2
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+index 8bd5d0c..d6b72df 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+@@ -103,6 +103,8 @@ static DEFINE_PER_CPU(mce_banks_t, mce_banks_owned);
+  */
+ static DEFINE_SPINLOCK(cmci_discover_lock);
+ 
++#define CMCI_THRESHOLD 1
++
+ static int cmci_supported(int *banks)
+ {
+ 	u64 cap;
+@@ -133,51 +135,6 @@ static void intel_threshold_interrupt(void)
+ 	mce_notify_user();
+ }
+ 
+-/*
+- * Default threshold, setting 0 disables cmci
+- */
+-static unsigned long threshold_limit = 1;
+-
+-static int __init mcheck_threshold(char *str)
+-{
+-	int val;
+-
+-	get_option(&str, &val);
+-	if (val < 0) {
+-		printk(KERN_INFO "mce_threshold argument ignored.\n");
+-		return 0;
+-	}
+-	threshold_limit = val;
+-
+-	return 1;
+-}
+-__setup("mce_threshold=", mcheck_threshold);
+-
+-void static cmci_set_threshold(int bank)
+-{
+-	u64 val, limit, max, new;
+-
+-	rdmsrl(MSR_IA32_MC0_CTL2 + bank, val);
+-	limit = val & CMCI_THRESHOLD_VAL_MASK;
+-
+-	/* Thresholding available? */
+-	if (!limit)
+-		return;
+-	/* Return if no need to change */
+-	if (limit == threshold_limit)
+-		return;
+-
+-	/* Find the maximum threshold value */
+-	max = (val & ~CMCI_THRESHOLD_MASK) | CMCI_THRESHOLD_VAL_MASK;
+-	wrmsrl(MSR_IA32_MC0_CTL2 + bank, max);
+-	rdmsrl(MSR_IA32_MC0_CTL2 + bank, max);
+-	max &= CMCI_THRESHOLD_VAL_MASK;
+-	max = (threshold_limit > max ? max : threshold_limit);
+-
+-	new = (val & ~CMCI_THRESHOLD_MASK) | max;
+-	wrmsrl(MSR_IA32_MC0_CTL2 + bank, new);
+-}
+-
+ static void print_update(char *type, int *hdr, int num)
+ {
+ 	if (*hdr == 0)
+@@ -186,9 +143,6 @@ static void print_update(char *type, int *hdr, int num)
+ 	printk(KERN_CONT " %s:%d", type, num);
+ }
+ 
+-/* Used to determine whether thresholding is available or not */
+-#define CMCI_THRESHOLD_FIRST 1
+-
+ /*
+  * Enable CMCI (Corrected Machine Check Interrupt) for available MCE banks
+  * on this CPU. Use the algorithm recommended in the SDM to discover shared
+@@ -200,9 +154,6 @@ static void cmci_discover(int banks, int boot)
+ 	int hdr = 0;
+ 	int i;
+ 
+-	if (!threshold_limit)
+-		return;
+-
+ 	spin_lock(&cmci_discover_lock);
+ 	for (i = 0; i < banks; i++) {
+ 		u64 val;
+@@ -220,7 +171,7 @@ static void cmci_discover(int banks, int boot)
+ 			continue;
+ 		}
+ 
+-		val |= CMCI_EN | CMCI_THRESHOLD_FIRST;
++		val |= CMCI_EN | CMCI_THRESHOLD;
+ 		wrmsrl(MSR_IA32_MC0_CTL2 + i, val);
+ 		rdmsrl(MSR_IA32_MC0_CTL2 + i, val);
+ 
+@@ -229,7 +180,6 @@ static void cmci_discover(int banks, int boot)
+ 			if (!test_and_set_bit(i, owned) || boot)
+ 				print_update("CMCI", &hdr, i);
+ 			__clear_bit(i, __get_cpu_var(mce_poll_banks));
+-			cmci_set_threshold(i);
+ 		} else {
+ 			WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
+ 		}
+-- 
+1.6.2.2
 
