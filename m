@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbZDTUld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZDTUmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756644AbZDTUld (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZDTUlY
+	id S1757238AbZDTUmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZDTUmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:41:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56458 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753809AbZDTUlX (ORCPT
+	Mon, 20 Apr 2009 16:42:23 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:35475 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753924AbZDTUmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:41:23 -0400
-Date: Mon, 20 Apr 2009 13:31:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: monstr@monstr.eu
-Cc: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: Microblaze fixes for revision
-Message-Id: <20090420133125.3615a80d.akpm@linux-foundation.org>
-In-Reply-To: <1239875798-10523-1-git-send-email-monstr@monstr.eu>
-References: <1239875798-10523-1-git-send-email-monstr@monstr.eu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 16:42:22 -0400
+Date: Mon, 20 Apr 2009 17:41:39 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, Michael Tokarev <mjt@tls.msk.ru>,
+       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Quick question about libata and hdparm
+Message-ID: <20090420204139.GA15230@ime.usp.br>
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <49EB1A33.7050808@rtr.ca> <49EB1C9C.3000105@msgid.tls.msk.ru> <49EB1FB3.5000609@garzik.org> <20090419201132.GB2891@ime.usp.br> <49EB9758.3020506@garzik.org> <20090420173526.GA7935@ime.usp.br> <20090420194017.4edd5674@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090420194017.4edd5674@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Apr 2009 11:56:27 +0200
-monstr@monstr.eu wrote:
+Hi, Alan. Thanks for your mail.
 
-> here are some patches which fixed some minor things.
+On Apr 20 2009, Alan Cox wrote:
+> > Can you comment on the dmesg log attached? I'd like to, at least,
+> > understand what is happening, since I'm starting to consider using
+> > libata with all my computers.
+> 
+> Its logging a couple of transmission errors. The CRC is computed by
+> hardware each end and compared (by hardware).
 
-How are microblaze patches getting into Linus's tree?
+Right. I don't remember the kernel logging out errors when I was using a
+custom kernel and pure Debian userland with the promise IDE controller
+on this ASUS K7V motherboard (which has a VIA KT-133 chipset, not a
+KT-133A).
 
-An appropriate route would be for you to ask him to pull the git tree. 
-I could send them (as I do with alpha, uml and maybe others), but
-that's more a last-resort way of maintaining an architecture.
+I can try to test that again, but now I have installed Ubuntu for my
+girlfriend. I have two spare IDE HDs here that I can use for testing
+purposes and trash everything. If more testing is desired, please let me
+know.
 
-The microblaze git tree should be included in linux-next.  Please
-prepare a branch and send the info over to Stephen Rothwell
-<sfr@canb.auug.org.au> and linux-next@vger.kernel.org to get that all
-set up.
+> > This computer, in particular, uses an IDE drive with a 40 ribbon
+> > cable (and, thus, no UDMA/66). The cable is well put (checked two
+> > times already) and I believe that everything is OK with this cable,
+> > since I substituted it was already substituting one that gave me the
+> > same results.
+> 
+> It's tuned down to UDMA33 which looks correct.
 
-For these particular patches: officially, 2.6.30-rcN is in bugfix-only
-mode.  But as microblaze is newly-added in 2.6.30 I think it's OK to
-put non-bugfixes into 2.6.30 as well - we might as well get the
-architecture as up-to-date as possible for the 2.6.30 release.
+Yes, that looks fine, as I only have the 40 ribbon cable.
 
+> If I saw a lot of these I'd suspect something like a controller timing
+> setup error, but you seem to just have occasional ones in the log which
+> really does look like genuine CRC errors from electrical noise or
+> similar.
+
+Hummm, now that you mention it, I will see if the loudspeakers installed
+may have any impact on it.
+
+> You don't happen to have any amateur radio transmitters or telsa coils in
+> the room with it ;) ?
+
+No, I don't. :-) But I do have an open embedded computer (with its own
+IDE HD) at less than 10cm of this desktop and said speakers. I will try
+to find any other source of electromagnetic noise.
+
+I can try many things here to try to fix that. I want libata to not have
+that experimental warning for IDE devices.
+
+
+Thanks, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
