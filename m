@@ -1,160 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZDTFju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbZDTFyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbZDTFju (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 01:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZDTFjj
+	id S1752989AbZDTFyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 01:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZDTFye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 01:39:39 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:56051 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbZDTFji (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 01:39:38 -0400
-Message-ID: <49EC0A83.8060802@suse.de>
-Date: Mon, 20 Apr 2009 11:09:15 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Masahiro Tamori <masahiro.tamori@gmail.com>
-CC: Mathieu Desnoyers <compudj@krystal.dyndns.org>, linux-nfs@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, Trond.Myklebust@netapp.com,
-       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org
-Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
-References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>	 <49D45E42.3050502@suse.de> <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
-In-Reply-To: <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Mon, 20 Apr 2009 01:54:34 -0400
+Received: from relay.atmel.no ([80.232.32.139]:53521 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752574AbZDTFyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 01:54:33 -0400
+Date: Mon, 20 Apr 2009 07:54:01 +0200
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+To: Ben Nizette <ben@niasdigital.com>
+Cc: "haavard.skinnemoen" <haavard.skinnemoen@atmel.com>,
+       kernel <kernel@avr32linux.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] favr32: improve touchscreen response
+Message-ID: <20090420075401.62d6d782@hcegtvedt>
+In-Reply-To: <1240195013.24329.38.camel@linux-51e8.site>
+References: <1240195013.24329.38.camel@linux-51e8.site>
+Organization: Atmel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Trond,
+On Mon, 20 Apr 2009 12:36:53 +1000
+Ben Nizette <ben@niasdigital.com> wrote:
 
-Do you think this patch is OK? Can this be considered for merging?
+> The ezLCD+101 board (to which an favr-32 is fitted) has a long,
+> unshielded, nasty lead between the touch panel and the ads7843 touch
+> controller.  In order to get satisfactory response then, we need to
+> employ every noise-reduction trick in the driver's arsenal.  After
+> extensive fiddling I've found some good settings:
+> 
+> 1) We keep vref on all the time to dramatically reduce settling times
+> (at the cost of a tiny increase in power consumption).
+> 
+> 2) Despite 1 the settling time is still non-zero.  500uS is plenty of
+> time for the signals to settle
+> 
+> 3) Despite 1 and 2 there's still a little bit of noise around.  By
+> setting a pen recheck delay we make the panel feel less touchy and
+> twitchy.
+> 
+> Someone with more time and patience myself might be able to tune this
+> numbers further but these settings are now perfectly acceptable for
+> normal use.
+> 
+> Tested on ezLCD+101 though should only improve response on other
+> ezLCD+/ favr-32 boards too.
+> 
+> Signed-off-by: Ben Nizette <bn@niasdigital.com>
+> 
 
-Thanks,
+Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
 
-Masahiro Tamori wrote:
-> Hello Suresh and Mathieu,
+> ---
+>  arch/avr32/boards/favr-32/setup.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> 2009/4/2 Suresh Jayaraman <sjayaraman@suse.de>:
->> Mathieu Desnoyers wrote:
->>> * Suresh Jayaraman (sjayaraman@suse.de) wrote:
->>>> This patch attempts to add splice writes support. In essence, it just
->>>> calls generic_file_splice_write() after doing a little sanity check.
->>>> This would allow LTTng users that are using NFS to store trace data.
->>>> There could be more applications that could be benefitted too.
->>>>
->>>> I have tested this using the Jens' test program and have found no
->>>> real issues. The test program is inlined below:
->>>>
->>> There is just a small checkpatch nit that I'll fix directly in place in
->>> the LTTng tree.
->>>
->>> WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
->>> #93: FILE: fs/nfs/file.c:564:
->>> +   dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
->>>
->>> total: 0 errors, 1 warnings, 42 lines checked
->>>
->> Yes, I noticed it. There are quite a few places in nfs code where we
->> happened to use that (that doesn't imply that it shouldn't be fixed), so
->> I thought it's OK.
->>
->>> That's great ! I'll pull it in the LTTng tree so my users can try it.
->>> They currently cannot write LTTng traces to NFS mounts anyway.
->> Yes, please report the test results. Would appreciate it very much.
->>
->>
->> Thanks,
-> 
-> Thank you for creating a patch !!
-> 
-> I tested it, and it works fine.
-> 
-> My environment is following,
-> LTTV 0.12.10
-> LTTng 0.100
-> LTT Control 0.65
-> Kernles 2.6.29
-> 
-> LTTng version is old now, but the test is passed on ARM11 target.
-> 
-> Furthermore, I run the splice test and the test is passed too.
-> The test code is copied from
-> http://kzk9.net/blog/2007/05/splice2.html
-> (Japanese page)
-> 
-> Thanks all people who commented this issue.
-> 
-> Best regards,
-> Masahiro Tamori
-> 
->>>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
->>>> index 90f292b..13d6a00 100644
->>>> --- a/fs/nfs/file.c
->>>> +++ b/fs/nfs/file.c
->>>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
->>>>                   size_t count, unsigned int flags);
->>>> static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
->>>>               unsigned long nr_segs, loff_t pos);
->>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
->>>> +                  struct file *filp, loff_t *ppos,
->>>> +                  size_t count, unsigned int flags);
->>>> static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
->>>>               unsigned long nr_segs, loff_t pos);
->>>> static int nfs_file_flush(struct file *, fl_owner_t id);
->>>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
->>>>   .lock      = nfs_lock,
->>>>   .flock     = nfs_flock,
->>>>   .splice_read  = nfs_file_splice_read,
->>>> +  .splice_write  = nfs_file_splice_write,
->>>>   .check_flags  = nfs_check_flags,
->>>>   .setlease    = nfs_setlease,
->>>> };
->>>> @@ -550,6 +554,26 @@ out_swapfile:
->>>>   goto out;
->>>> }
->>>>
->>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
->>>> +                 struct file *filp, loff_t *ppos,
->>>> +                 size_t count, unsigned int flags)
->>>> +{
->>>> +  struct dentry *dentry = filp->f_path.dentry;
->>>> +  struct inode *inode = dentry->d_inode;
->>>> +
->>>> +  dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
->>>> +      dentry->d_parent->d_name.name, dentry->d_name.name,
->>>> +      (unsigned long) count, (unsigned long long) *ppos);
->>>> +
->>>> +  if (IS_SWAPFILE(inode)) {
->>>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
->>>> +          "file!\n");
->>>> +      return -EBUSY;
->>>> +  }
->>>> +
->>>> +  return generic_file_splice_write(pipe, filp, ppos, count, flags);
->>>> +}
->>>> +
->>>> static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
->>>> {
->>>>   struct inode *inode = filp->f_mapping->host;
->>>>
->>
->> --
->> Suresh Jayaraman
->>
->> _______________________________________________
->> ltt-dev mailing list
->> ltt-dev@lists.casi.polymtl.ca
->> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+> diff --git a/arch/avr32/boards/favr-32/setup.c
+> b/arch/avr32/boards/favr-32/setup.c index 58203d1..f1152fa 100644
+> --- a/arch/avr32/boards/favr-32/setup.c
+> +++ b/arch/avr32/boards/favr-32/setup.c
+> @@ -72,6 +72,10 @@ static struct ads7846_platform_data ads7843_data =
+> { .debounce_max		= 20,
+>  	.debounce_rep		= 4,
+>  	.debounce_tol		= 5,
+> +	
+> +	.keep_vref_on		= true,
+> +	.settle_delay_usecs	= 500,
+> +	.penirq_recheck_delay_usecs = 100,
+>  
+>  	/* The ads7843 pendown irq is just connected to regular
+>  	 * gpio and therefore can only trigger interrupts on
 
 -- 
-Suresh Jayaraman
+Best regards,
+Hans-Christian Egtvedt
