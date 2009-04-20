@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZDTJJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbZDTJL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZDTJJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZDTJIi
+	id S1755035AbZDTJL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 05:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbZDTJLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:08:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59074
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754860AbZDTJIh (ORCPT
+	Mon, 20 Apr 2009 05:11:17 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58174 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbZDTJLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:08:37 -0400
-Date: Mon, 20 Apr 2009 02:08:25 -0700 (PDT)
-Message-Id: <20090420.020825.244829541.davem@davemloft.net>
-To: divy@chelsio.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 2.6.30 3/4] cxgb3: Fix potential msi-x vector leak
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090417222122.8537.43636.stgit@speedy5>
-References: <20090417222122.8537.43636.stgit@speedy5>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 05:11:17 -0400
+Date: Mon, 20 Apr 2009 11:14:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH] MAINTAINERS - Remove include/asm-*/suspend* file
+	patterns
+Message-ID: <20090420091416.GA8873@elf.ucw.cz>
+References: <1239733187.7994.5.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239733187.7994.5.camel@localhost>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
-Date: Fri, 17 Apr 2009 15:21:22 -0700
+On Tue 2009-04-14 11:19:47, Joe Perches wrote:
+> There are no more arches with suspend support using these directories.
+>     
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-> Release vectors when a MSI-X allocation fails.
-> 
-> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Applied.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
