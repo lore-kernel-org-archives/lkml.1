@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbZDTSke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZDTSkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbZDTSke (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 14:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZDTSkZ
+	id S1756175AbZDTSkz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 14:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZDTSkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 14:40:25 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:57027 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753301AbZDTSkZ (ORCPT
+	Mon, 20 Apr 2009 14:40:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35866 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752757AbZDTSkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 14:40:25 -0400
-Date: Mon, 20 Apr 2009 20:40:24 +0200
-From: Tino Keitel <tino.keitel@tikei.de>
-To: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, tiwai@suse.de
-Subject: 2.6.29 regression: left audio channel broken after resume from
-	suspend with Intel HDA
-Message-ID: <20090420184024.GA10155@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-	tiwai@suse.de
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 20 Apr 2009 14:40:42 -0400
+Date: Mon, 20 Apr 2009 19:40:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: =?ISO-8859-14?B?Um9n6XJpbw==?= Brito <rbrito@ime.usp.br>
+Cc: Jeff Garzik <jeff@garzik.org>, Michael Tokarev <mjt@tls.msk.ru>,
+       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Quick question about libata and hdparm
+Message-ID: <20090420194017.4edd5674@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090420173526.GA7935@ime.usp.br>
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br>
+	<49EB1A33.7050808@rtr.ca>
+	<49EB1C9C.3000105@msgid.tls.msk.ru>
+	<49EB1FB3.5000609@garzik.org>
+	<20090419201132.GB2891@ime.usp.br>
+	<49EB9758.3020506@garzik.org>
+	<20090420173526.GA7935@ime.usp.br>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Can you comment on the dmesg log attached? I'd like to, at least,
+> understand what is happening, since I'm starting to consider using
+> libata with all my computers.
 
-since 2.6.29 and also with 2.6.29.1 the left audio channel of the
-digital output of my Mac mini Core 2 Duo is noisy.  This didn't happen
-with 2.6.28.  Unloading snd-hda-intel and reloading it does fix the
-noisy sound.
+Its logging a couple of transmission errors. The CRC is computed by
+hardware each end and compared (by hardware).
 
-This happened with some older versions of the Linux kernel (with an
-older Mac mini Core Duo, I don't remeber which kernel version), but got
-fixed at some point.  Now it happens again with 2.6.29.
+> This computer, in particular, uses an IDE drive with a 40 ribbon cable
+> (and, thus, no UDMA/66). The cable is well put (checked two times
+> already) and I believe that everything is OK with this cable, since I
+> substituted it was already substituting one that gave me the same
+> results.
 
-Here is the dmesg output for the sound hardware:
+It's tuned down to UDMA33 which looks correct.
 
-HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-HDA Intel 0000:00:1b.0: setting latency timer to 64
-hda_codec: STAC922x, Apple subsys_id=100
-input: HDA Intel Line In at Ext Left Jack as /class/input/input18
-input: HDA Intel Mic at Ext Left Jack as /class/input/input19
-input: HDA Intel HP Out at Ext Left Jack as /class/input/input20
+If I saw a lot of these I'd suspect something like a controller timing
+setup error, but you seem to just have occasional ones in the log which
+really does look like genuine CRC errors from electrical noise or similar.
 
-Any hints what I could try to fix this, maybe some commit that I should
-try to revert?
-
-Regards,
-Tino
+You don't happen to have any amateur radio transmitters or telsa coils in
+the room with it ;) ?
