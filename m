@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZDTWSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbZDTWUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbZDTWSw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbZDTWSl
+	id S1757872AbZDTWUe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756951AbZDTWUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:18:41 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51005 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756075AbZDTWSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:18:40 -0400
-X-Sasl-enc: zFDAaurr1K6I5m+S4njS2c46TV8qwYJrVRT4ubzDxmpZ 1240265919
-Date: Mon, 20 Apr 2009 19:18:36 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
-	even when ignore_ppc=0
-Message-ID: <20090420221836.GF25823@khazad-dum.debian.net>
-References: <20090415225348.GW8311@plum> <20090416224507.GA31984@srcf.ucam.org> <alpine.LFD.2.00.0904200112290.10996@localhost.localdomain> <200904201113.31371.trenn@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904201113.31371.trenn@suse.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 20 Apr 2009 18:20:18 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37253 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756831AbZDTWUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:20:16 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 02/25] Do not sanity check order in the fast path
+Date: Mon, 20 Apr 2009 23:19:48 +0100
+Message-Id: <1240266011-11140-3-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009, Thomas Renninger wrote:
-> On Monday 20 April 2009 07:13:51 Len Brown wrote:
-> > FYI,
-> > Thanks to Ebay, I now have a T60:-)
-> Hmm, Lenovo sold a lot different machines as T60.
+No user of the allocator API should be passing in an order >= MAX_ORDER
+but we check for it on each and every allocation. Delete this check and
+make it a VM_BUG_ON check further down the call path.
 
-There are only two types as far as the firmware is concerned: widescreen and
-non-widescreen.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+---
+ include/linux/gfp.h |    6 ------
+ mm/page_alloc.c     |    2 ++
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-However, the older BIOS (non-widescreen) had a major version bump, so
-machines with outdated firmware can have quite a different BIOS.
-
-> I found an acpidump of a T60 here without any _PPC function
-> at all.
-> 
-> > and so i put the DSDT here:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=13139
-> > 
-> > I'll poke at this in more detail soon...
-> Ingo, can you place yours somewhere too, please.
-> This one should be taken into account for _PPC code changes
-> as it seem to implement some corner case.
-
-It is probably worth upgrading the T60 after you got all the relevant
-information (dmidecode, full acpidump), and check again with the latest
-firmware.
-
-Here are the links with instructions:
-http://www.thinkwiki.org/wiki/BIOS_Upgrade
-
-and a table of links for the firmware itself (get the CD versions to flash
-without Windows):
-http://www.thinkwiki.org/wiki/BIOS_Upgrade_Downloads#T_Series
-
-Also, if you guys do collect that info (dmidecode, full acpidump), I'd
-appreciate if you could send them my way in private.  They often prove
-useful for thinkpad-acpi work...
-
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 556c840..760f6c0 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -182,9 +182,6 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+ 						unsigned int order)
+ {
+-	if (unlikely(order >= MAX_ORDER))
+-		return NULL;
+-
+ 	/* Unknown node is current node */
+ 	if (nid < 0)
+ 		nid = numa_node_id();
+@@ -198,9 +195,6 @@ extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
+ static inline struct page *
+ alloc_pages(gfp_t gfp_mask, unsigned int order)
+ {
+-	if (unlikely(order >= MAX_ORDER))
+-		return NULL;
+-
+ 	return alloc_pages_current(gfp_mask, order);
+ }
+ extern struct page *alloc_page_vma(gfp_t gfp_mask,
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index dcc4f05..5028f40 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1405,6 +1405,8 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 
+ 	classzone_idx = zone_idx(preferred_zone);
+ 
++	VM_BUG_ON(order >= MAX_ORDER);
++
+ zonelist_scan:
+ 	/*
+ 	 * Scan zonelist, looking for a zone with enough free.
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+1.5.6.5
+
