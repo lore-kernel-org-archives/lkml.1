@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZDTD3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZDTD5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbZDTD3o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 23:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZDTD3d
+	id S1753459AbZDTD5b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 23:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZDTD5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 23:29:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49030 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752260AbZDTD3c (ORCPT
+	Sun, 19 Apr 2009 23:57:21 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:28148 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbZDTD5U convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 23:29:32 -0400
-Date: Sun, 19 Apr 2009 20:20:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, davej@redhat.com,
-       efault@gmx.de, len.brown@intel.com, mingo@elte.hu,
-       rusty@rustcorp.com.au, tglx@linutronix.de,
-       venkatesh.pallipadi@intel.com, yakui.zhao@intel.com,
-       yanmin_zhang@linux.intel.com
-Subject: Re: [patch for 2.6.30 2/2]
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c: avoid cross-CPU interrupts
-Message-Id: <20090419202014.9a511aa9.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0904192252550.10996@localhost.localdomain>
-References: <200904110617.n3B6HJ7W026502@imap1.linux-foundation.org>
-	<alpine.LFD.2.00.0904192252550.10996@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Apr 2009 23:57:20 -0400
+MIME-Version: 1.0
+In-Reply-To: <1240190385.6842.45.camel@yhuang-dev.sh.intel.com>
+References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>
+	 <49E9F7BE.4090904@codemonkey.ws>
+	 <1240190385.6842.45.camel@yhuang-dev.sh.intel.com>
+Date: Sun, 19 Apr 2009 23:57:18 -0400
+Message-ID: <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
+Subject: Re: [PATCH -v2] Add MCE support to KVM
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>, Avi Kivity <avi@redhat.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Apr 2009 22:57:24 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+On Sun, Apr 19, 2009 at 9:19 PM, Huang Ying <ying.huang@intel.com> wrote:
+> On Sat, 2009-04-18 at 23:54 +0800, Anthony Liguori wrote:
+>> Huang Ying wrote:
+>> > The related MSRs are emulated. MCE capability is exported via
+>> > extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
+>> > vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+>> > such as the mcg_cap. MCE is injected via vcpu ioctl command
+>> > KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
+>> > not simulated.
+>> >
+>>
+>> Maybe I'm missing something, but couldn't this be implemented entirely
+>> within userspace?  There's nothing VT/SVM specific about this.  If the
+>> issue is setting these MSRs from userspace via KVM_SET_MSRS isn't
+>> enough, perhaps we should add userspace MSR handling.
+>>
+>> Also, if you implement the MSR logic in userspace, it's pretty simple to
+>> make it work in the non-TCG case which will be a requirement for
+>> upstream merging.
+>
+> There is more logic than just KVM_SET_MSRS, such as BANK reporting
+> disabling, overwriting rules, triple fault for UC MCE during MCIP.
+> Although these logic can be implemented in user space, I think put them
+> in kernel space is easy to be understood. And the code is pretty short.
 
-> 
-> 
-> > +++ a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> > @@ -197,9 +197,22 @@ static void do_drv_write(void *_cmd)
-> >  
-> >  static void drv_read(struct drv_cmd *cmd)
-> >  {
-> > -	cmd->val = 0;
-> > +	int target_cpu;		/* The CPU on which to perform thr rdmsr() */
-> > +	int this_cpu;
-> > +
-> > +	/*
-> > +	 * If the current CPU is in cmd->mask then run the rdmsr() on this
-> > +	 * CPU to avoid the cross-cpu interrupt.
-> > +	 */
-> > +	this_cpu = get_cpu();
-> > +	if (cpu_isset(this_cpu, *(cmd->mask)))
-> > +		target_cpu = this_cpu;
-> > +	else
-> > +		target_cpu = cpumask_any(cmd->mask);
-> >  
-> > -	smp_call_function_single(cpumask_any(cmd->mask), do_drv_read, cmd, 1);
-> > +	cmd->val = 0;
-> > +	smp_call_function_single(target_cpu, do_drv_read, cmd, 1);
-> > +	put_cpu();
-> >  }
-> >  
-> >  static void drv_write(struct drv_cmd *cmd)
-> > _
-> 
-> Rather than this patch I would expect we would want to either:
-> 
-> A. as we went to the trouble to detect the local case
->    in drv_read, why call smp_call_function at all for that case?
+IMO the main reason to put this in kernel-space would be to make it
+possible to automatically forward some MCE errors generated by the
+real hardware (RAM ECC errors for example) down into the VM.  Right
+now I suppose you could do that with the patches to forward RAM-based
+hard MCEs to userspace using SIGSEGV and handling the SIGSEGV in
+userspace, but that seems more fragile to me.
 
-Sure, that would work.
-
-I felt it was a little cleaner to always delegate the call to
-smp_call_function() rather than open-coding smp_call_function()'s
-internal implementation details at this site.  We'd need to do:
-
-	local_irq_disable();		/* Because this is what smp_call_function_single() does */
-	do_drv_read(...);
-	local_irq_enable();
-
-> or
-> 
-> B. optimize smp_call_function_single to beneift all users
->    instead of just this customer.
-
-Yep.  That would be a new smp_call_function_any() which takes a cpumask
-rather than a single CPU number.  I think Rusty was cooking something
-up..
-
+Cheers,
+Kyle Moffett
