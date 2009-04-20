@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbZDTHlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZDTHoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752270AbZDTHlX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZDTHlO
+	id S1753506AbZDTHoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZDTHoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:41:14 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:44592 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbZDTHlN convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 03:44:12 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:38073 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbZDTHoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:41:13 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 20 Apr 2009 03:44:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=djtzVVqXeGWrAEwYQPaRaCSVhcUqFjOfg7+hsXYNOOnnybObSoOF1foUb+eAtDeJ6g
+         kkHrRCje6EMMDXXEIzt16kYnhfOoNlxVcYY085KzYVBNuAN+PLqE0o43MFMI20DfsPq3
+         jkVss2nfmRnAJsJlPYmk81RYwYeI8ApVokQD8=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: who know's what is "TestFloat cases" and how to test this feature onthe Freescale MPC8536DS board
-Date: Mon, 20 Apr 2009 15:41:02 +0800
-Message-ID: <0A1FE637C2C7E148B9573BB60CC630E520FC0A@zch01exm26.fsl.freescale.net>
-In-Reply-To: <003001c9c0d0$c6919510$53b4bf30$@com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: who know's what is "TestFloat cases" and how to test this feature onthe Freescale MPC8536DS board
-Thread-Index: Acm/6Z7XMofHg6L2RD2WTrMRLYv+lAA1VE+wADLzD8A=
-References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com><fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com> <003001c9c0d0$c6919510$53b4bf30$@com>
-From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
-To: "derekzheng" <zhengxiang9@163.com>,
-       "linuxppc-dev" <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-Tracker: AAAAAA==
+Date: Mon, 20 Apr 2009 01:44:08 -0600
+Message-ID: <e743c9de0904200044j1f71310ar122c8ea1fdcd2649@mail.gmail.com>
+Subject: Kernel Panic: Early exception with 2.6.29.1-rt8 on x86_64
+From: tom smith <tsmithtree@gmail.com>
+To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b13201=freescale.com@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+b13201=freescale.com@ozlabs.org] 
-> On Behalf Of derekzheng
-> Sent: Sunday, April 19, 2009 5:25 PM
-> To: 'linuxppc-dev'; microblaze-uclinux@itee.uq.edu.au; 
-> linux-kernel@vger.kernel.org
-> Subject: who know's what is "TestFloat cases" and how to test 
-> this feature onthe Freescale MPC8536DS board
-> 
-> Hi all guys:
-> 
-> The Freescale MPC8536DS board Integrated TestFloat cases, and 
-> I do not know how to test this feature on this board.
-> Please tell me how to test it if you known
-> 
-
-You can find the user manual "E500v2 SPE Floating Point" in BSP iso.
+Hi, I'm using kernel 2.6.29.1 without the rt patch and it works fine,
+but with the rt8 patch I recieve a kernel panic immediately after the
+bootloader. Both were using the same configuration with the exception
+of the realtime preemption options. I previously used 2.6.26.8-rt16
+iirc and it worked fine, with the same configuration as well. early
+printk is enabled. I have uploaded my .config, lspci, dmesg from a
+working kernel, and the crash output from the kernel.
+http://www.persuasiveigloo.com/linux/ Thanks for reading, if you think
+any other outputs/configs would be helpful to debug this issue I will
+gladly upload them. please cc me as I am off list for linux-kernel
