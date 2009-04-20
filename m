@@ -1,143 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbZDTEmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbZDTEn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbZDTEmr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 00:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZDTEmW
+	id S1753656AbZDTEn4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 00:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZDTEnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 00:42:22 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:33841 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbZDTEmT convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 00:43:45 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:46196 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZDTEno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 00:42:19 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.2.4
-Date: Sun, 19 Apr 2009 21:42:10 -0700
-Message-ID: <7v4owklyvx.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Pobox-Relay-ID: A127A3A8-2D65-11DE-848E-DC76898A30C1-77302942!a-sasl-quonix.pobox.com
+	Mon, 20 Apr 2009 00:43:44 -0400
+Date: Mon, 20 Apr 2009 06:45:51 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT] kbuild
+Message-ID: <20090420044551.GB8494@uranus.ravnborg.org>
+References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org> <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain> <20090420014158.GV26366@ZenIV.linux.org.uk> <20090420024954.GW26366@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420024954.GW26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.6.2.4 is available at the
-usual places:
+On Mon, Apr 20, 2009 at 03:49:54AM +0100, Al Viro wrote:
+> On Mon, Apr 20, 2009 at 02:41:58AM +0100, Al Viro wrote:
+> > On Sun, Apr 19, 2009 at 05:52:32PM -0700, Linus Torvalds wrote:
+> > > 
+> > > 
+> > > On Mon, 20 Apr 2009, Sam Ravnborg wrote:
+> > > > 
+> > > > You will soon see a path from me where I fix sh too.
+> > > 
+> > > Can we do a global 'sed s:asm/asm-offsets.h:generated/asm-offsets.h:g' 
+> > > thing too? And then get rid of the include/asm symlink?
+> > > 
+> > > That asm-offsets.h mess is scary. I don't quite know why kvm on ia64 seems 
+> > > to do it's own asm-offsets.h file, for example. And arch/blackfin/Makefile 
+> > > mentions arch/$(ARCH)/include/asm/asm-offsets.h (but does it actually do 
+> > > one?).
+> > 
+> > We'll need to update uml as well (contents of shared/kern_constants.h)
+> 
+> BTW, while we are at it...  There's a way to deal with arch/um without
+> that kind of contortions, provided that we are willing to use -idirafter.
+For kernel proper the use of -idirafter would be confusing.
+But for um alone we should be safe provided it is properly commented.
 
-  http://www.kernel.org/pub/software/scm/git/
+I have already fixed um the obvious way for asm-offsets in my local tree.
+But if you prefer I can add a -dirafter based patch before the "move
+asm-offsets.h to incldue/generated" patch.
 
-  git-1.6.2.4.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.2.4.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.2.4.tar.{gz,bz2}		(preformatted docs)
-
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.2.4-1.fc9.$arch.rpm	(RPM)
-
-This contains bunch of fixes that have already been merged to the master
-branch in preparation for 1.6.3.
-
-----------------------------------------------------------------
-
-GIT v1.6.2.4 Release Notes
-==========================
-
-Fixes since v1.6.2.3
---------------------
-
-* The configuration parser had a buffer overflow while parsing an overlong
-  value.
-
-* pruning reflog entries that are unreachable from the tip of the ref
-  during "git reflog prune" (hence "git gc") was very inefficient.
-
-* "git-add -p" lacked a way to say "q"uit to refuse staging any hunks for
-  the remaining paths.  You had to say "d" and then ^C.
-
-* "git-checkout <tree-ish> <submodule>" did not update the index entry at
-  the named path; it now does.
-
-* "git-fast-export" choked when seeing a tag that does not point at commit.
-
-* "git init" segfaulted when given an overlong template location via
-  the --template= option.
-
-* "git-ls-tree" and "git-diff-tree" used a pathspec correctly when
-  deciding to descend into a subdirectory but they did not match the
-  individual paths correctly.  This caused pathspecs "abc/d ab" to match
-  "abc/0" ("abc/d" made them decide to descend into the directory "abc/",
-  and then "ab" incorrectly matched "abc/0" when it shouldn't).
-
-* "git-merge-recursive" was broken when a submodule entry was involved in
-  a criss-cross merge situation.
-
-Many small documentation updates are included as well.
-
-----------------------------------------------------------------
-
-Changes since v1.6.2.3 are as follows:
-
-Björn Steinbrink (1):
-      tree_entry_interesting: a pathspec only matches at directory boundary
-
-Clemens Buchacher (3):
-      add tests for merging with submodules
-      update cache for conflicting submodule entries
-      simplify output of conflicting merge
-
-Erik Faye-Lund (4):
-      test-suite: adding a test for fast-export with tag variants
-      builtin-fast-export.c: turn error into warning
-      builtin-fast-export.c: fix crash on tagged trees
-      builtin-fast-export.c: handle nested tags
-
-Frank Lichtenheld (1):
-      init: Do not segfault on big GIT_TEMPLATE_DIR environment variable
-
-Jeff King (2):
-      doc/gitattributes: clarify location of config text
-      add-interactive: refactor mode hunk handling
-
-Johan Herland (1):
-      Update docs on behaviour of 'core.sharedRepository' and 'git init --shared'
-
-Johannes Schindelin (1):
-      Fix 'git checkout <submodule>' to update the index
-
-Johannes Sixt (1):
-      t1301-shared-repo: fix forced modes test
-
-Junio C Hamano (3):
-      match_tree_entry(): a pathspec only matches at directory boundaries
-      Describe fixes since 1.6.2.3
-      GIT 1.6.2.4
-
-Junio Hamano (1):
-      Speed up reflog pruning of unreachable commits
-
-Linus Torvalds (1):
-      Clean up reflog unreachability pruning decision
-
-Markus Heidelberg (2):
-      doc/git-daemon: add missing arguments to options
-      doc/git-daemon: add missing arguments to max-connections option
-
-Matthieu Moy (2):
-      git add -p: new "quit" command at the prompt.
-      Update git-add.txt according to the new possibilities of 'git add -p'.
-
-Nguyễn Thái Ngọc Duy (1):
-      Makefile: remove {fetch,send}-pack from PROGRAMS as they are builtins
-
-Paul Bolle (1):
-      imap-send: use correct configuration variable in documentation
-
-Thomas Jarosch (1):
-      Fix buffer overflow in config parser
-
-Ulrich Windl (1):
-      git-apply: fix option description
-
+	Sam
