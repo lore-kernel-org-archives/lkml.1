@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZDTA5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZDTBA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbZDTA5S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 20:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZDTA5B
+	id S1753357AbZDTBA7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 21:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZDTBAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 20:57:01 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:27724 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788AbZDTA5A (ORCPT
+	Sun, 19 Apr 2009 21:00:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51539 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751211AbZDTBAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 20:57:00 -0400
-X-IronPort-AV: E=Sophos;i="4.40,214,1238976000"; 
-   d="scan'208";a="156387355"
-From: Roland Dreier <rdreier@cisco.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Hitoshi Mitake <h.mitake@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
-References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>
-	<adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu>
-	<49EB9F59.4080904@zytor.com> <20090419223519.GA27706@elte.hu>
-X-Message-Flag: Warning: May contain useful information
-Date: Sun, 19 Apr 2009 17:56:58 -0700
-In-Reply-To: <20090419223519.GA27706@elte.hu> (Ingo Molnar's message of "Mon,
-	20 Apr 2009 00:35:19 +0200")
-Message-ID: <adaskk4ywf9.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 19 Apr 2009 21:00:48 -0400
+Date: Sun, 19 Apr 2009 17:52:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Paul Mundt <lethal@linux-sh.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [GIT] kbuild
+In-Reply-To: <20090419234501.GA6475@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain>
+References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Apr 2009 00:56:59.0262 (UTC) FILETIME=[E8B7F9E0:01C9C152]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Also, atomicity might not be possible to guarantee on the bus level: 
- > say the device sits on a 32-bit PCI bus. (No matter what instruction 
- > the CPU gets, a readq/writeq there has to be done as two 32-bit bus 
- > accesses.)
 
-Well, the conventional PCI devices I know of with 64-bit registers were
-PCI-X cards, keyed so they would only fit into a 64-bit slot.  And of
-course there is no such thing as 32-bit PCI Express.
 
- > (Also, even a genuine 64-bit device might be bridged over 32-bit 
- > pathways so a driver cannot really assume atomicity on that level.)
+On Mon, 20 Apr 2009, Sam Ravnborg wrote:
+> 
+> You will soon see a path from me where I fix sh too.
 
-I have never even heard of a system with a 64-bit PCI slot that went
-through a 32-bit pathway -- in fact I'm not sure how one could build
-that.
+Can we do a global 'sed s:asm/asm-offsets.h:generated/asm-offsets.h:g' 
+thing too? And then get rid of the include/asm symlink?
 
-But yes, for example on 32-bit PowerPC I don't think it's possible to
-generate a 64-bit bus transaction in general.  So if a device requires
-such a cycle then it simply can't work on such a system.  But there is
-also the case where racing accesses to other registers must be avoided
-(the mthca example I gave in my previous example) where the current
-32-bit x86 definition is broken, but it could be fixed in a
-driver-specific version that used a spinlock.
+That asm-offsets.h mess is scary. I don't quite know why kvm on ia64 seems 
+to do it's own asm-offsets.h file, for example. And arch/blackfin/Makefile 
+mentions arch/$(ARCH)/include/asm/asm-offsets.h (but does it actually do 
+one?).
 
- - R.
+		Linus
