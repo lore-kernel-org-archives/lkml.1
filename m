@@ -1,86 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZDTCuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZDTC5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZDTCuN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 22:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZDTCt6
+	id S1753498AbZDTC5p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 22:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZDTC5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 22:49:58 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54433 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbZDTCt5 (ORCPT
+	Sun, 19 Apr 2009 22:57:35 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:61012 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZDTC5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 22:49:57 -0400
-Date: Mon, 20 Apr 2009 03:49:54 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Paul Mundt <lethal@linux-sh.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT] kbuild
-Message-ID: <20090420024954.GW26366@ZenIV.linux.org.uk>
-References: <20090419092555.GA19213@uranus.ravnborg.org> <20090419223959.GB12054@linux-sh.org> <20090419234501.GA6475@uranus.ravnborg.org> <alpine.LFD.2.00.0904191745390.2199@localhost.localdomain> <20090420014158.GV26366@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420014158.GV26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 19 Apr 2009 22:57:34 -0400
+Date: Sun, 19 Apr 2009 22:57:24 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: akpm@linux-foundation.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, davej@redhat.com,
+       efault@gmx.de, len.brown@intel.com, mingo@elte.hu,
+       rusty@rustcorp.com.au, tglx@linutronix.de,
+       venkatesh.pallipadi@intel.com, yakui.zhao@intel.com,
+       yanmin_zhang@linux.intel.com
+Subject: Re: [patch for 2.6.30 2/2] arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c:
+ avoid cross-CPU interrupts
+In-reply-to: <200904110617.n3B6HJ7W026502@imap1.linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0904192252550.10996@localhost.localdomain>
+References: <200904110617.n3B6HJ7W026502@imap1.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 02:41:58AM +0100, Al Viro wrote:
-> On Sun, Apr 19, 2009 at 05:52:32PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Mon, 20 Apr 2009, Sam Ravnborg wrote:
-> > > 
-> > > You will soon see a path from me where I fix sh too.
-> > 
-> > Can we do a global 'sed s:asm/asm-offsets.h:generated/asm-offsets.h:g' 
-> > thing too? And then get rid of the include/asm symlink?
-> > 
-> > That asm-offsets.h mess is scary. I don't quite know why kvm on ia64 seems 
-> > to do it's own asm-offsets.h file, for example. And arch/blackfin/Makefile 
-> > mentions arch/$(ARCH)/include/asm/asm-offsets.h (but does it actually do 
-> > one?).
+
+
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> We'll need to update uml as well (contents of shared/kern_constants.h)
+> In drv_read(), check to see whether we can run the rdmsr() on the current
+> CPU.  If so, do that.  So smp_call_function_single() can avoid the IPI.
+> 
+> Arguably, cpumask_any() should do this.
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Zhao Yakui <yakui.zhao@intel.com>
+> Cc: Dave Jones <davej@redhat.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Tested-by: Mike Galbraith <efault@gmx.de>
+> Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 
+> ---
+> 
+>  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   17 +++++++++++++++--
+>  1 file changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff -puN arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c~arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c~arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts
+> +++ a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> @@ -197,9 +197,22 @@ static void do_drv_write(void *_cmd)
+>  
+>  static void drv_read(struct drv_cmd *cmd)
+>  {
+> -	cmd->val = 0;
+> +	int target_cpu;		/* The CPU on which to perform thr rdmsr() */
+> +	int this_cpu;
+> +
+> +	/*
+> +	 * If the current CPU is in cmd->mask then run the rdmsr() on this
+> +	 * CPU to avoid the cross-cpu interrupt.
+> +	 */
+> +	this_cpu = get_cpu();
+> +	if (cpu_isset(this_cpu, *(cmd->mask)))
+> +		target_cpu = this_cpu;
+> +	else
+> +		target_cpu = cpumask_any(cmd->mask);
+>  
+> -	smp_call_function_single(cpumask_any(cmd->mask), do_drv_read, cmd, 1);
+> +	cmd->val = 0;
+> +	smp_call_function_single(target_cpu, do_drv_read, cmd, 1);
+> +	put_cpu();
+>  }
+>  
+>  static void drv_write(struct drv_cmd *cmd)
+> _
 
-BTW, while we are at it...  There's a way to deal with arch/um without
-that kind of contortions, provided that we are willing to use -idirafter.
+Rather than this patch I would expect we would want to either:
 
-For the current tree the minimal patch would be just this, and after that
-we can simply replace all kern_constants.h includes with asm/asm-offsets.h
-or generated/asm-offsets.h.  And remove kern_constants.h completely once
-that is done.
+A. as we went to the trouble to detect the local case
+   in drv_read, why call smp_call_function at all for that case?
 
-Moreover, once include/generated gets in, we can move user_constants.h
-over there and lose the "add -I$(SHARED_HEADERS) to ARCH_INCLUDE for
-O=... builds bit" in arch/um/Makefile as well.
+or
 
+B. optimize smp_call_function_single to beneift all users
+   instead of just this customer.
 
-diff --git a/arch/um/Makefile b/arch/um/Makefile
-index 0728def..dce2d7f 100644
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -47,7 +47,7 @@ KBUILD_AFLAGS += $(ARCH_INCLUDE)
- 
- USER_CFLAGS = $(patsubst $(KERNEL_DEFINES),,$(patsubst -D__KERNEL__,,\
- 	$(patsubst -I%,,$(KBUILD_CFLAGS)))) $(ARCH_INCLUDE) $(MODE_INCLUDE) \
--	$(filter -I%,$(CFLAGS)) -D_FILE_OFFSET_BITS=64
-+	$(filter -I%,$(CFLAGS)) -D_FILE_OFFSET_BITS=64 -idirafter include
- 
- include $(srctree)/$(ARCH_DIR)/Makefile-$(SUBARCH)
- 
-@@ -150,6 +150,6 @@ $(SHARED_HEADERS)/user_constants.h: $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s
- 
- $(SHARED_HEADERS)/kern_constants.h:
- 	$(Q)mkdir -p $(dir $@)
--	$(Q)echo '#include "../../../../include/asm/asm-offsets.h"' >$@
-+	$(Q)echo '#include <asm/asm-offsets.h>' >$@
- 
- export SUBARCH USER_CFLAGS CFLAGS_NO_HARDENING OS HEADER_ARCH DEV_NULL_PATH
+thanks,
+-Len Brown, Intel Open Source Technology Center
+
