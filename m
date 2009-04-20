@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbZDTXMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbZDTXT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757816AbZDTXMZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 19:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbZDTXMK
+	id S1752419AbZDTXT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 19:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZDTXTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 19:12:10 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37012 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755959AbZDTXMI (ORCPT
+	Mon, 20 Apr 2009 19:19:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33834 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750922AbZDTXTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 19:12:08 -0400
-Date: Tue, 21 Apr 2009 00:08:03 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Trenton Adams <trenton.d.adams@gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-In-Reply-To: <49ECE783.5050704@nortel.com>
-Message-ID: <Pine.LNX.4.64.0904202352520.2924@blonde.anvils>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
- <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
- <200904070035.00784.rjw@sisk.pl> <49E79E58.9000606@nortel.com>
- <alpine.LFD.2.00.0904161432000.4042@localhost.localdomain> <49ECE783.5050704@nortel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 20 Apr 2009 19:19:46 -0400
+Date: Mon, 20 Apr 2009 16:07:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: spock@gentoo.org
+Cc: krzysztof.h1@poczta.fm, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] fbdev: fix fillrect for 24bpp modes
+Message-Id: <20090420160733.07e27238.akpm@linux-foundation.org>
+In-Reply-To: <20090418185234.GA17853@tria>
+References: <20090413170954.GA8403@tria>
+	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
+	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
+	<20090418185234.GA17853@tria>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009, Chris Friesen wrote:
-> Linus Torvalds wrote:
-> > On Thu, 16 Apr 2009, Chris Friesen wrote:
-> > > I'm okay with that.  The problem causes some backwards compatibility
-> > > problems
-> > > with existing apps that get confused by the large "offset" number.  The
-> > > fix is
-> > > going to cause problems too, but in a different way.
-> > >
-> > > We'll work around it.
-> > 
-> > If you have actual apps that care, that's a different issue.
+On Sat, 18 Apr 2009 20:52:34 +0200
+Michal Januszewski <spock@gentoo.org> wrote:
 
-Yes, that's what I told Chris too.
-But asked for more info, suspecting his app was already broken.
+>  		while (height--) {
+> -			dst += dst_idx >> (ffs(bits) - 1);
+> +			dst += dst_idx / bits;
+>  			dst_idx &= (bits - 1);
+> -			fill_op(p, dst, dst_idx, pat, left, right,
+> +			r = dst_idx % bpp;
+> +			/* rotate pattern to the correct start position */
+> +#ifdef __LITTLE_ENDIAN
+> +			pat2 = pat << r | pat >> (bpp-r);
+> +#else
+> +			pat2 = pat << (bpp-r) | pat >> r;
+> +#endif
+> +			fill_op(p, dst, dst_idx, pat2, left, right,
+>  				width*bpp, bits);
+> -			r = (p->fix.line_length*8) % bpp;
+> -			pat = pat << (bpp-r) | pat >> r;
+>  			dst_idx += p->fix.line_length*8;
 
-> > 
-> > We do try to bend over backwards on ABI issues if it really is noticeable
-> > for applications. Now, in this case, if you can just fix your app to not
-> > care (because it really was badly written in the first place to even
-> > notice), then that is the _much_ superior solution.
-> 
-> Yep, we can fix the app to ignore that field for anonymous mappings.
-> 
-> > Although I don't really even see what we can sanely do except for the 0
-> > case. We could put the virtual address in there instead of zero (I forget
-> > what old kernels used to do - whatever magic value the anonymous mappings
-> > got, it wasn't really designed as an important value in its own right, it
-> > was designed to trigger the "we can merge these vma's" logic.
-> 
-> For anonymous mappings, the older kernels put the starting address of the VMA
-> (from the point of view of the app) as the offset.  Until the recent change,
-> new kernels still did this for most VMAs, but the stack offset was a 64-bit
-> value with no obvious relation to the VMA start address.
+hm, that's fairly eye-popping.
 
-No, what they put there was something that in most cases matched the
-starting address of the VMA; but try moving that VMA with mremap (and
-an old /proc/<pid>/maps!) and you'll see that the "offset" remained
-unchanged even when the starting address of the VMA was changed.
+Could we do something like
 
-(The offset remaining constant so that rmap can locate the VMA's pages
-and unmap them, despite their being mapped at different virtual
-addresses in parent and child after a move in one of them.)
+	pat2 = le32_to_cpu(rol32(cpu_to_le32(pat), r));
 
-... so I think your app was indeed already broken, wasn't it?
-
-It's also unclear why you'd want to use the offset field for the
-starting address of the VMA, when /proc/<pid>/maps already shows
-the starting address of the VMA.  I think you've more to tell us!
-
-Hugh
+(might be wrong, but you see what I mean...)
