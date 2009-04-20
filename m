@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbZDTM7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZDTNBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516AbZDTM7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 08:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbZDTM7E
+	id S1755500AbZDTNBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 09:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbZDTNA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 08:59:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35141 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755140AbZDTM7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 08:59:02 -0400
-Date: Mon, 20 Apr 2009 18:26:53 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Jan Kara <jack@suse.cz>, Theodore Tso <tytso@mit.edu>,
-       Chris Mason <chris.mason@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-Message-ID: <20090420125653.GA28858@amit-x200.pnq.redhat.com>
-References: <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com> <1239910921.21233.98.camel@think.oraclecorp.com> <20090417180906.GA8363@amit-x200.pnq.redhat.com> <20090417201342.GF26479@mit.edu> <20090418060312.GA10943@amit-x200.pnq.redhat.com> <1240039701.6298.12.camel@marge.simson.net> <20090419062448.GA13272@amit-x200.pnq.redhat.com> <1240218437.7005.27.camel@marge.simson.net> <20090420092604.GB14699@duck.suse.cz> <1240229714.6469.33.camel@marge.simson.net>
+	Mon, 20 Apr 2009 09:00:56 -0400
+Received: from oceanic.CalvaEDI.COM ([81.252.197.184]:38029 "EHLO
+	oceanic.CalvaEDI.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbZDTNA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 09:00:56 -0400
+Message-ID: <49EC7200.9080308@Calva.COM>
+Date: Mon, 20 Apr 2009 15:00:48 +0200
+From: John Hughes <john@Calva.COM>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240229714.6469.33.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Am I allowed to call request_firmware_nowait from an interrupt
+ handler?
+References: <49EC60BC.1070501@Calva.COM> <87ab6bpmc8.fsf@basil.nowhere.org>
+In-Reply-To: <87ab6bpmc8.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Mon) Apr 20 2009 [14:15:14], Mike Galbraith wrote:
-> On Mon, 2009-04-20 at 11:26 +0200, Jan Kara wrote:
-> > On Mon 20-04-09 11:07:17, Mike Galbraith wrote:
-> > > All journal modes seem subject to bad throughput under heavy pressure,
-> > > though data=ordered seems much less likely to suffer for some reason.
-> > > Major difference _seems_ to be that write()+largefile induces very much
-> > > swap activity.
-> 
-> >   My rough guess is that this depends on the VM writeout behavior. In
-> > ordered mode, we forcibly writeout all the dirty data on a transaction
-> > commit which happens every 5 seconds so they don't accumulate that much.
-> 
-> Aha.
-> 
-> > In other journaling modes we don't do that and decisions about writeout
-> > (probably how much pdflush manages to write in background vs. how much
-> > VM throttles the process to do the writeback itself) cause variances in
-> > the run time. But this is just a guess. You could gather blktraces of
-> > slow and fast runs and then look if the amount of IO done by different
-> > processes significantly differs. If Chris has merged by improvements to
-> > Seekwatcher, then you could nicely visualize this (hmm, that doesn't seem
-> > to be the case so I'm attaching the diff and a helper script - see comments
-> > in the beginning of the script and command helps for usage).
-> 
-> Not necessary methinks.  Actually _reading_ the proggy instead of just
-> glancing at it...
-> 
-> @@ -178,7 +178,7 @@ int do_write_chunks(char *target, int *f
->         unsigned long long remain = len;
->         char *zeros;
-> 
-> -       zeros = calloc(1, len);
-> +       zeros = calloc(1, data);
-> 
-> I assume that was a booboo. 
+Andi Kleen wrote:
+> John Hughes <john@Calva.COM> writes:
+>   
+>> Am I being a naughty boy?
+>>     
+>
+> Yes.
+>
+>   
+Buggeration.  What an irritating restriction.
 
-Ouch! thanks for spotting that!
+So I'll have to make a thread to do the firmware download, in which case 
+I can just use request_firmware instead of request_firmware_nowait.
 
-I'll re-run the tests later tonight..
+Or can I use schedule_work?
 
-		Amit
