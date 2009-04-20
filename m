@@ -1,29 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbZDTWLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbZDTWOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757782AbZDTWLi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZDTWL1
+	id S1757759AbZDTWOw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZDTWOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:11:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52728 "EHLO mx2.redhat.com"
+	Mon, 20 Apr 2009 18:14:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53181 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753518AbZDTWL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:11:26 -0400
-Date: Mon, 20 Apr 2009 18:09:31 -0400
+	id S1754628AbZDTWOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:14:42 -0400
+Date: Mon, 20 Apr 2009 18:14:02 -0400
 From: Chuck Ebbert <cebbert@redhat.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-       Ingo Molnar <mingo@elte.hu>, linux-crypto@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mail@tobiasvolk.de
-Subject: Re: enable padlock on x86_64
-Message-ID: <20090420180931.7bd7ff02@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090314132420.GB6080@gondor.apana.org.au>
-References: <49B83002.9040705@tobiasvolk.de>
-	<1237029843-28076-1-git-send-email-sebastian@breakpoint.cc>
-	<20090314114732.GB3805@elte.hu>
-	<20090314115307.GA28235@Chamillionaire.breakpoint.cc>
-	<20090314132420.GB6080@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: VIA Padlock driver no longer loads automatically
+Message-ID: <20090420181402.2b0424f4@dhcp-100-2-144.bos.redhat.com>
 Organization: Red Hat, Inc.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,18 +23,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Mar 2009 21:24:20 +0800
-Herbert Xu <herbert@gondor.apana.org.au> wrote:
+On x86 machines only aes_generic and aes_i586 get loaded automatically as of
+kernel 2.6.29. Looks like this was caused by:
 
-> On Sat, Mar 14, 2009 at 12:53:07PM +0100, Sebastian Andrzej Siewior wrote:
-> > 
-> > Yep, it is fine.
-> > #1 in, #2 not will not result in any difference to what we have now.
-> > #2 in, #1 not will result in "padlock not detected" while loading the
-> > module and -ENODEV.
-> 
-> Let's merge #1 right now and I'll pick up #2 once #1 shows up
-> in linux-net.
-> 
+  commit a760a6656e6f00bb0144a42a048cf0266646e22c
+  crypto: api - Fix module load deadlock with fallback algorithms
 
-#1 is in 2.6.30-rc now but I don't see #2 pending anywhere.
+diff --git a/arch/s390/crypto/aes_s390.c b/arch/s390/crypto/aes_s390.c
+index c42cd89..6118890 100644
+--- a/arch/s390/crypto/aes_s390.c
++++ b/arch/s390/crypto/aes_s390.c
+@@ -556,7 +556,7 @@ static void __exit aes_s390_fini(void)
+ module_init(aes_s390_init);
+ module_exit(aes_s390_fini);
+ 
+-MODULE_ALIAS("aes");
++MODULE_ALIAS("aes-all");
+ 
+ MODULE_DESCRIPTION("Rijndael (AES) Cipher Algorithm");
+ MODULE_LICENSE("GPL");
+diff --git a/crypto/api.c b/crypto/api.c
+index efe77df..38a2bc0 100644
+--- a/crypto/api.c
++++ b/crypto/api.c
+@@ -215,8 +215,19 @@ struct crypto_alg *crypto_larval_lookup(const char *name, u32 type, u32 mask)
+ 	mask &= ~(CRYPTO_ALG_LARVAL | CRYPTO_ALG_DEAD);
+ 	type &= mask;
+ 
+-	alg = try_then_request_module(crypto_alg_lookup(name, type, mask),
+-				      name);
++	alg = crypto_alg_lookup(name, type, mask);
++	if (!alg) {
++		char tmp[CRYPTO_MAX_ALG_NAME];
++
++		request_module(name);
++
++		if (!((type ^ CRYPTO_ALG_NEED_FALLBACK) & mask) &&
++		    snprintf(tmp, sizeof(tmp), "%s-all", name) < sizeof(tmp))
++			request_module(tmp);
++
++		alg = crypto_alg_lookup(name, type, mask);
++	}
++
+ 	if (alg)
+ 		return crypto_is_larval(alg) ? crypto_larval_wait(alg) : alg;
+ 
+diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
+index 856b3cc..3f0fdd1 100644
+--- a/drivers/crypto/padlock-aes.c
++++ b/drivers/crypto/padlock-aes.c
+@@ -489,4 +489,4 @@ MODULE_DESCRIPTION("VIA PadLock AES algorithm support");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Michal Ludvig");
+ 
+-MODULE_ALIAS("aes");
++MODULE_ALIAS("aes-all");
+diff --git a/drivers/crypto/padlock-sha.c b/drivers/crypto/padlock-sha.c
+index a7fbade..a2c8e85 100644
+--- a/drivers/crypto/padlock-sha.c
++++ b/drivers/crypto/padlock-sha.c
+@@ -304,7 +304,7 @@ MODULE_DESCRIPTION("VIA PadLock SHA1/SHA256 algorithms support.");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Michal Ludvig");
+ 
+-MODULE_ALIAS("sha1");
+-MODULE_ALIAS("sha256");
++MODULE_ALIAS("sha1-all");
++MODULE_ALIAS("sha256-all");
+ MODULE_ALIAS("sha1-padlock");
+ MODULE_ALIAS("sha256-padlock");
