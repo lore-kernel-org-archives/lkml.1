@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZDTGDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZDTGFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbZDTGDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 02:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZDTGDY
+	id S1753984AbZDTGFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 02:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZDTGFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 02:03:24 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:44034 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752575AbZDTGDX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 02:03:23 -0400
-Date: Mon, 20 Apr 2009 14:03:13 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in
-	crypto_{,de}compress_{update,final}() (was: Re: [PATCH/RFC] crypto:
-	compress - Add comp_request.total_out (was: Re: [PATCH 6/6]
-	squashfs: Make SquashFS 4 use the new pcomp crypto interface))
-Message-ID: <20090420060313.GA891@gondor.apana.org.au>
-References: <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be>
+	Mon, 20 Apr 2009 02:05:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34703 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752712AbZDTGFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 02:05:01 -0400
+Message-ID: <49EC1001.50905@redhat.com>
+Date: Mon, 20 Apr 2009 09:02:41 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Allow preemption during lazy mmu updates
+References: <1238176963-21093-1-git-send-email-jeremy@goop.org>	 <20090408145440.GN12931@elte.hu> <1239203512.4557.2575.camel@laptop> <49EAF9D6.1010600@redhat.com> <49EBB96F.60300@goop.org>
+In-Reply-To: <49EBB96F.60300@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 05:33:01PM +0100, Geert Uytterhoeven wrote:
-> 
-> Here's an alternative patch, which does exactly that.
-> Phillip, what do you think?
-> 
-> Thanks for your comments!
-> 
-> >From be7d630f96a85d3ce48716b8e328563ba217647b Mon Sep 17 00:00:00 2001
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Date: Tue, 24 Mar 2009 17:19:05 +0100
-> Subject: [PATCH] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
-> 
-> If crypto_{,de}compress_{update,final}() succeed, return the actual number of
-> bytes produced instead of zero, so their users don't have to calculate that
-> theirselves.
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Jeremy Fitzhardinge wrote:
+> Avi Kivity wrote:
+>> What are the slight differences in requirements?
+>>
+>> KVM wants to run in non-preemptible, interrupts-enabled context.
+>
+> There are two hooks: arch_start_context_switch() in 
+> kernel/sched:context_switch(), and arch_end_context_switch() in 
+> arch/x86/kernel/process_(32|64).c.  They bound the heart of the 
+> context switch in which various bits of core state is changes, like 
+> the cr3 reload, fpu TS flag, iopl, tls slots, etc.  All things which 
+> require a hypercall in a paravirtualized environment, and so can be 
+> batched together into a multicall (or whatever) to minimize the number 
+> of context-switch time hypercalls.  The placement of 
+> end_context_switch is particularly sensitive because it needs to be in 
+> the right place relative to fpu context reload and segment register 
+> reloading.
+>
+> Preemption is definitely disabled, and interrupts as well, I think.  
+> So perhaps these won't work for you.
+>
+> However, looking at the fire_sched_out_preempt_notifiers() is almost 
+> in the same position as arch_start_context_switch(), so I think they 
+> could be unified one way or the other.  The sched_in notifier happens 
+> way too late though.  Does KVM just use both in and out, or just one?
 
-I certainly prefer this version over the other one? Do you want to
-submit crypto API portion of this?
+Both.  sched_out loads the host MSR_STAR and friends, sched_in loads the 
+guest values.
 
-Thanks,
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
