@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZDTP71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZDTQAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbZDTP71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbZDTP7H
+	id S1756683AbZDTQAV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 12:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbZDTQAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:59:07 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:60495 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755793AbZDTP7F convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 12:00:05 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:30135 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755797AbZDTQAB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:59:05 -0400
+	Mon, 20 Apr 2009 12:00:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=skbf6GJ9/R8fcDNsYtxyE91nJxaXN+jzTxHVuokv6nRQhQKmtUrXN0ZddgpnKFewgG
-         uhTONeSWXuiF4cfBEqN9ewda7YPl8BQdoht/BZFqiBk0quH2kOJughA3TaVLZutAywcn
-         75j2KVxBM7jcNwGE6yOl0un5XlgIW7cJfhcaA=
+        b=l6QgEUY1LCeSK6I6KAI+xQLoeCFr2btCNksr0R3bySqiZAmGAapHrwp2JKXW9toc/g
+         Nt0X0906v7QGL4y7I8aOJQFxb4bxdJErrid325a2A2klpW6gi5JmAtrxSD0DoGazED0v
+         pFAWfxkj8PP40Ln8u0U7w6tYHxCCoGyNfG79w=
 MIME-Version: 1.0
 In-Reply-To: <20090415143744.84d6c598.akpm@linux-foundation.org>
 References: <81083a450904110629j93c5c2j2c1250e9822c3888@mail.gmail.com>
 	 <1239472568.3416.11.camel@mulgrave.int.hansenpartnership.com>
 	 <200904120907.08828.ketuzsezr@darnok.org>
 	 <20090415143744.84d6c598.akpm@linux-foundation.org>
-Date: Mon, 20 Apr 2009 21:29:00 +0530
-Message-ID: <81083a450904200859k40fcf14bvf780e6501fbcfebc@mail.gmail.com>
+Date: Mon, 20 Apr 2009 21:30:00 +0530
+Message-ID: <81083a450904200900p7f885bf6v1d50a3429293e2f1@mail.gmail.com>
 Subject: Re: [PATCH]ibft: Fix the display of a few fields in the NIC attribute 
 	structure in sysfs
 From: Ashutosh Naik <ashutosh.naik@gmail.com>
@@ -79,10 +79,4 @@ Sorry for the delay.
 
 Here is an updated Changelog
 
-The patch ensures that, if the DHCP IP address and the subnet mask for
-the interface is present in the iBFT NIC structure, the corresponding
-entries are created in sysfs tree for the device. This would hence
-create the additional entries in the tree based on the iBFT table and
-would not delete any existing entries.
-
-Thanks.
+The patch ensures that on, if the DHCP
