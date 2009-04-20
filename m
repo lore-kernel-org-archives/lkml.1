@@ -1,48 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbZDTV6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbZDTV7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756974AbZDTV6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbZDTV6d
+	id S1757669AbZDTV7y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZDTV7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:58:33 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48637 "EHLO e3.ny.us.ibm.com"
+	Mon, 20 Apr 2009 17:59:45 -0400
+Received: from mga01.intel.com ([192.55.52.88]:47445 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755548AbZDTV6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:58:32 -0400
-Date: Mon, 20 Apr 2009 14:58:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
-Message-ID: <20090420215827.GK6822@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com>
+	id S1756118AbZDTV7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 17:59:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,219,1239001200"; 
+   d="scan'208";a="449656482"
+Message-ID: <49ECF040.2000508@intel.com>
+Date: Mon, 20 Apr 2009 14:59:28 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18924.59347.375292.102385@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+       "ralf@linux-mips.org" <ralf@linux-mips.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] DMA: TXx9 Soc DMA Controller driver (v2)
+References: <1239033288-3086-1-git-send-email-anemo@mba.ocn.ne.jp>	<e9c3a7c20904181305l5a7ea5dcy881b7faec8e447bf@mail.gmail.com> <20090420.033446.65190767.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20090420.033446.65190767.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 07:23:31AM +1000, Paul Mackerras wrote:
-> Eric Dumazet writes:
+Atsushi Nemoto wrote:
+> On Sat, 18 Apr 2009 13:05:15 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
+>> Not quite "ackable" yet...
 > 
-> > OK, but we still have a problem on machines with >= 250 cpus,
-> > because calling 250 times spin_lock() is going to overflow preempt_count,
-> > as each spin_lock() increases preempt_count by one.
+> Thank you for review!
 > 
-> Huh?  Each cpu has its own separate preempt_count.
+>>> +#ifdef CONFIG_MACH_TX49XX
+>>> +#define TXX9_DMA_MAY_HAVE_64BIT_REGS
+>>> +#define TXX9_DMA_HAVE_CCR_LE
+>>> +#define TXX9_DMA_HAVE_SMPCHN
+>>> +#define TXX9_DMA_HAVE_IRQ_PER_CHAN
+>>> +#endif
+>>> +
+>>> +#ifdef TXX9_DMA_HAVE_SMPCHN
+>>> +#define TXX9_DMA_USE_SIMPLE_CHAIN
+>>> +#endif
+>>> +
+>> There seems to be a lot of ifdef magic in the code based on these
+>> defines.  Can we move this magic and some of the pure definitions to
+>> drivers/dma/txx9dmac.h?  (See the "#ifdefs are ugly" section of
+>> Documentation/SubmittingPatches)
+> 
+> OK, I will try to clean them up.  But since I don't want to export
+> internal implementation details, some of the magics will be left in
+> txx9dmac.c, perhaps.
 
-But a single CPU is acquiring one lock per CPU, so all the increments
-are to one CPU's preempt_count.  :-(
+You only need to hide txx9dmac magic if the header was in 
+include/linux/, but since it will be in drivers/dma/ you can assume it 
+is private.
+                }
+>> Is there a reason to keep f'irst' off of the tx_list?  It seems like
+>> you could simplify this logic and get rid of the scary looking
+>> list_splice followed by list_add in txx9dmac_desc_put.  It also seems
+>> odd that the descriptors on tx_list are not reachable from the
+>> dc->queue list after a submit... but maybe I am missing a subtle
+>> detail?
+> 
+> Well, I'm not sure what do you mean...
+> 
+> The completion callback handler of the first descriptor should be
+> called _after_ the completion of the _last_ child of the descriptor.
+> Also I use desc_node for both dc->queue, dc->active_list and
+> txd.tx_list.  So if I putted all children to dc->queue or
+> dc->active_list, txx9dmac_descriptor_complete() (or its caller) will
+> be more complex.
+> 
+> Or do you mean adding another list_head to maintain txd.tx_list?  Or
+> something another at all?
 
-							Thanx, Paul
+The piece I was missing was that it would make 
+txx9dmac_descriptor_complete() more complex.  So, I am fine with the 
+leaving the current implementation.
+
+Regards,
+Dan
