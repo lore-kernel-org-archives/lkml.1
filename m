@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZDTH0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZDTH05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbZDTH0n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZDTH0V
+	id S1754321AbZDTH05 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZDTH0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:26:21 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:38317 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753444AbZDTH0T (ORCPT
+	Mon, 20 Apr 2009 03:26:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58816 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753994AbZDTH0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:26:19 -0400
-Date: Mon, 20 Apr 2009 09:26:16 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in
- crypto_{,de}compress_{update,final}() (was: Re: [PATCH/RFC] crypto: compress
- - Add comp_request.total_out (was: Re: [PATCH 6/6] squashfs: Make SquashFS
- 4 use the new pcomp crypto interface))
-In-Reply-To: <20090420060313.GA891@gondor.apana.org.au>
-Message-ID: <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be>
-References: <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be>
- <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Mon, 20 Apr 2009 03:26:33 -0400
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RESEND][PATCH -tip 2/3] x86, mce: Revert "add mce=nopoll option to disable timer polling"
+From: Andi Kleen <andi@firstfloor.org>
+References: <49EBCDB0.7000505@jp.fujitsu.com>
+	<49EBCF67.1060400@jp.fujitsu.com>
+Date: Mon, 20 Apr 2009 09:26:29 +0200
+In-Reply-To: <49EBCF67.1060400@jp.fujitsu.com> (Hidetoshi Seto's message of "Mon, 20 Apr 2009 10:27:03 +0900")
+Message-ID: <87r5znpyze.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009, Herbert Xu wrote:
-> On Tue, Mar 24, 2009 at 05:33:01PM +0100, Geert Uytterhoeven wrote:
-> > Here's an alternative patch, which does exactly that.
-> > Phillip, what do you think?
-> > 
-> > Thanks for your comments!
-> > 
-> > >From be7d630f96a85d3ce48716b8e328563ba217647b Mon Sep 17 00:00:00 2001
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > Date: Tue, 24 Mar 2009 17:19:05 +0100
-> > Subject: [PATCH] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
-> > 
-> > If crypto_{,de}compress_{update,final}() succeed, return the actual number of
-> > bytes produced instead of zero, so their users don't have to calculate that
-> > theirselves.
-> > 
-> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> 
-> I certainly prefer this version over the other one? Do you want to
-> submit crypto API portion of this?
+Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
 
-If you think I should submit it now, I can do it. But I'm still waiting for
-Phillip's comments.
+> Disabling only polling but not cmci is pointless setting.
+> Instead of "mce=nopoll" which tend to be paired with cmci disablement,
+> it rather make sense to have a "mce=ignore_ce" option that disable
+> both of polling and cmci at once.  A patch for this new implementation
+> will follow this reverting patch.
+>
+> OTOH, once booted, we can disable polling by setting check_interval
+> to 0, but there are no mention about the fact.  Later Andi will post
+> updated documents that can respond this issue.
 
-With kind regards,
+I still think that patch has bad semantics because you leave around
+the events in the machine check registers and never clear
+them. Especially with MCA recovery that has very unfortunate side
+effects -- it means the OVER bit will be set and a in principle
+recoverable MCA will require a panic. Even without MCA recovery it has
+similar problems and will lead to confusing log output for non CE
+MCAs.
 
-Geert Uytterhoeven
-Software Architect
+I think a patch to not log corrected errors would be reasonable,
+but you still need to clear the events from the machine check
+banks at least.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+So I would recommend you add a mce=dont_log_ce or somesuch
+that just guards the mce_log() call in machine_check_poll()
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+Also for your use case really the better way would be to use
+some way to let the firmware communicate that it doesn't want the OS
+to log.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Also BTW before adding new features like this it would be a good
+idea to first add the bug fixes I posted two weeks ago.
+
+-Andi
+
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
