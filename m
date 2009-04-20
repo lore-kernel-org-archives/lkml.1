@@ -1,147 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZDTUcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbZDTUdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756938AbZDTUcw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZDTUcn
+	id S1757110AbZDTUdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZDTUdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:32:43 -0400
-Received: from cmpxchg.org ([85.214.51.133]:58007 "EHLO cmpxchg.org"
+	Mon, 20 Apr 2009 16:33:03 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:33542 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753450AbZDTUcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:32:43 -0400
-Date: Mon, 20 Apr 2009 22:31:19 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Rik van Riel <riel@redhat.com>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
-Message-ID: <20090420203119.GA26066@cmpxchg.org>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <1240259085-25872-3-git-send-email-hannes@cmpxchg.org>
+	id S1756108AbZDTUdA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 16:33:00 -0400
+Date: Mon, 20 Apr 2009 13:32:53 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com,
+       paulus@samba.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
+Message-ID: <20090420133253.422747b4@nehalam>
+In-Reply-To: <49ECBE0A.7010303@cosmosbay.com>
+References: <20090415170111.6e1ca264@nehalam>
+	<alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	<49E72E83.50702@trash.net>
+	<20090416.153354.170676392.davem@davemloft.net>
+	<20090416234955.GL6924@linux.vnet.ibm.com>
+	<20090417012812.GA25534@linux.vnet.ibm.com>
+	<20090418094001.GA2369@ioremap.net>
+	<20090418141455.GA7082@linux.vnet.ibm.com>
+	<20090420103414.1b4c490f@nehalam>
+	<49ECBE0A.7010303@cosmosbay.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
-Content-Disposition: inline
-In-Reply-To: <1240259085-25872-3-git-send-email-hannes@cmpxchg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 20 Apr 2009 20:25:14 +0200
+Eric Dumazet <dada1@cosmosbay.com> wrote:
 
---liOOAslEiF7prFVr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Stephen Hemminger a écrit :
+> > This version of x_tables (ip/ip6/arp) locking uses a per-cpu
+> > recursive lock that can be nested. It is sort of like existing kernel_lock,
+> > rwlock_t and even old 2.4 brlock.
+> > 
+> > "Reader" is ip/arp/ip6 tables rule processing which runs per-cpu.
+> > It needs to ensure that the rules are not being changed while packet
+> > is being processed.
+> > 
+> > "Writer" is used in two cases: first is replacing rules in which case
+> > all packets in flight have to be processed before rules are swapped,
+> > then counters are read from the old (stale) info. Second case is where
+> > counters need to be read on the fly, in this case all CPU's are blocked
+> > from further rule processing until values are aggregated.
+> > 
+> > The idea for this came from an earlier version done by Eric Dumazet.
+> > Locking is done per-cpu, the fast path locks on the current cpu
+> > and updates counters.  This reduces the contention of a
+> > single reader lock (in 2.6.29) without the delay of synchronize_net()
+> > (in 2.6.30-rc2). 
+> > 
+> > The mutex that was added for 2.6.30 in xt_table is unnecessary since
+> > there already is a mutex for xt[af].mutex that is held.
+> > 
+> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com
+> > 
+> > ---
+> > Changes from earlier patches.
+> >   - function name changes
+> >   - disable bottom half in info_rdlock
+> 
+> OK, but we still have a problem on machines with >= 250 cpus,
+> because calling 250 times spin_lock() is going to overflow preempt_count,
+> as each spin_lock() increases preempt_count by one.
 
-A test program creates an anonymous memory mapping the size of the
-system's RAM (2G).  It faults all pages of it linearly, then kicks off
-128 reclaimers (on 4 cores) that map, fault and unmap 2G in sum and
-parallel, thereby evicting the first mapping onto swap.
+Ok, not that I have one of those.
 
-The time is then taken for the initial mapping to get faulted in from
-swap linearly again, thus measuring how bad the 128 reclaimers
-distributed the pages on the swap space.
-
-  Average over 5 runs, standard deviation in parens:
-
-      swap-in          user            system            total
-
-old:  74.97s (0.38s)   0.52s (0.02s)   291.07s (3.28s)   2m52.66s (0m1.32s)
-new:  45.26s (0.68s)   0.53s (0.01s)   250.47s (5.17s)   2m45.93s (0m2.63s)
-
-where old is current mmotm snapshot 2009-04-17-15-19 and new is these
-three patches applied to it.
-
-Test program attached.  Kernbench didn't show any differences on my
-single core x86 laptop with 256mb ram (poor thing).
-
---liOOAslEiF7prFVr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="contswap2.c"
-
-/*
- * contswap benchmark
- */
-
-#include <sys/mman.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-
-#define MEMORY		(1650 << 20)
-#define RECLAIMERS	128
-
-#define PAGE_SIZE	4096
-
-#define PART		(MEMORY / RECLAIMERS)
-
-static void *anonmap(unsigned long size)
-{
-	void *map = mmap(NULL, size, PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
-	assert(map != MAP_FAILED);
-	return map;
-}
-
-static void touch_linear(char *map, unsigned long size)
-{
-	unsigned long off;
-
-	for (off = 0; off < size; off += PAGE_SIZE)
-		if (map[off])
-			puts("huh?");
-}
-
-static void __claim(unsigned long size)
-{
-	char *map = anonmap(size);
-	touch_linear(map, size);
-	sleep(5);
-	munmap(map, size);
-}
-
-static pid_t claim(unsigned long size)
-{
-	pid_t pid;
-
-	switch (pid = fork()) {
-	case -1:
-		puts("fork failed");
-		exit(1);
-	case 0:
-		kill(getpid(), SIGSTOP);
-		__claim(size);
-		exit(0);
-	default:
-		return pid;
-	}
-}
-
-int main(void)
-{
-	struct timeval start, stop, diff;
-	pid_t pids[RECLAIMERS];
-	int nr, crap;
-	char *one;
-
-	one = anonmap(MEMORY);
-	touch_linear(one, MEMORY);
-
-	for (nr = 0; nr < RECLAIMERS; nr++)
-		pids[nr] = claim(PART);
-	for (nr = 0; nr < RECLAIMERS; nr++)
-		kill(pids[nr], SIGCONT);
-	for (nr = 0; nr < RECLAIMERS; nr++)
-		waitpid(pids[nr], &crap, 0);
-
-	gettimeofday(&start, NULL);
-	touch_linear(one, MEMORY);
-	gettimeofday(&stop, NULL);
-	munmap(one, MEMORY);
-
-	timersub(&stop, &start, &diff);
-	printf("%lu.%lu\n", diff.tv_sec, diff.tv_usec);
-
-	return 0;
-}
-
---liOOAslEiF7prFVr--
+The problem which lockdep has is that it seems to associate all the
+locks with same name.
