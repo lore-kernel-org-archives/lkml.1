@@ -1,59 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZDTGro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZDTGs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbZDTGro (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 02:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZDTGre
+	id S1753991AbZDTGs0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 02:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZDTGsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 02:47:34 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:41530 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbZDTGre (ORCPT
+	Mon, 20 Apr 2009 02:48:16 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:59972 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZDTGsQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 02:47:34 -0400
-Subject: Re: [PATCH 2/4] [MTD] Add MEMERASE64 ioctl for >4GiB devices
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Kevin Cernekee <kpc.mtd@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux MTD <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <a95a62fe0904180921w3ac0128et7a543742f5734d64@mail.gmail.com>
-References: <a95a62fe0904082252h41afa872j2ef6fb9d1d76dc27@mail.gmail.com>
-	 <1239953416.3390.243.camel@localhost.localdomain>
-	 <a95a62fe0904180921w3ac0128et7a543742f5734d64@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 20 Apr 2009 09:47:11 +0300
-Message-Id: <1240210031.14298.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 20 Apr 2009 06:47:13.0396 (UTC) FILETIME=[D61E5B40:01C9C183]
-X-Nokia-AV: Clean
+	Mon, 20 Apr 2009 02:48:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wprv8FZ8C5pw0BrB6oQLTX6BMmUnE679GeKFFI+RHCxgwiGJQd9KGNvROC3E9agnmy
+         ax2naHsfs0aqmrjdKL8x3jQK2SOjjVFrFutbzoBCknb1vAKCi/j5yCSv4ZpBC6EF10BL
+         wevWywcPidq7tIYweTYzy24D1b/+DXVUcXeps=
+MIME-Version: 1.0
+In-Reply-To: <20090420061602.GO4593@kernel.dk>
+References: <ed038eb20904191756y5a5bcf8fn53473405b3929de6@mail.gmail.com>
+	 <20090420061602.GO4593@kernel.dk>
+Date: Mon, 20 Apr 2009 08:48:14 +0200
+X-Google-Sender-Auth: 246e913c7459c5c4
+Message-ID: <ed038eb20904192348m7f9f630q395baf123c3fd2ba@mail.gmail.com>
+Subject: Re: CFQ: Preemption/timeout logic reversed?
+From: Carl Henrik Lunde <chlunde@ping.uio.no>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-18 at 09:21 -0700, Kevin Cernekee wrote:
-> On Fri, Apr 17, 2009 at 12:30 AM, Artem Bityutskiy
-> <dedekind@infradead.org> wrote:
-> > Kevin, are you going to re-send patches 2-4, taking into account
-> > Arnd's and Andrew's suggestions?
-> 
-> For Arnd's suggestion, I posted a followup patch here:
-> 
-> http://lists.infradead.org/pipermail/linux-mtd/2009-April/025269.html
-> 
-> Andrew brought up two issues: [MTD] in the subject line, and
-> linewrapping.  I am assuming that he fixed these himself since he
-> pulled all five patches (originals + followup) into the -mm tree.
-> 
-> Should I fix and repost the set anyway?
+On Mon, Apr 20, 2009 at 08:16, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Apr 20 2009, Carl Henrik Lunde wrote:
+>> Hi!
+>>
+>> It seems the preemption "bonus" logic in CFQ is reversed, a preempted
+>> process is given an additional delay in start time instead of a bonus.
+>> †This seems unfair. †I'm not sure if it's a good idea to let
+>
+> Hmm? ->slice_resid is a long, so if we preempt the process 10 jiffies
+> before it was supposed to end, the resid will be -10. So it'll not
+> increase the rb_key, it'll decrease it.
 
-No, I just missed that patch. Pushed your patches to l2-mtd-2.6.git.
-Will ping dwmw2 about this. I also checked that your patches at
-least do not break MTD for UBI/UBIFS. Thanks.
+OK, so maybe I'm tired (I am!), but I don't get it. :)
+
+{
+        if (... busy_rt_queues)
+               cfq_slice_expire(timed_out=1)
+}
+
+cfq_slice_expire() {
+{
+        if (timed_out)
+                slice_resid = slice_end - jiffies;
+}
+
+if preempted it would be 100 - 90 = +10?
+
+>
+>> slice_resid grow without limit as shown below, but isn't this more
+>> like the way it was intended to work? †Or did I misunderstand
+>> something?
+>
+> ->slice_resid is reset when it gets repositioned in the rb tree. The
+> intent was not to increase the slice length, but instead allow it sooner
+> service again.
+
+Fair enough
+
+>> PS! The comment above cfq_preempt_queue seems outdated too.
+>
+> Yep, the slice length comment is out dated indeed.
+>
+>> Code not tested, just showing what I mean:
+>>
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index 664ebfd..ea18d45 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -292,7 +292,8 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct
+>> cfq_queue *cfqq)
+>> †static inline void
+>> †cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>> †{
+>> - † † † cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
+>> + † † † cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) +
+>> cfqq->slice_resid + jiffies;
+>
+> So if ->slice_resid is negative because we preempted this queue, it'll
+> now get a shorter slice. That's not very nice :-)
+>
+> --
+> Jens Axboe
+>
+>
+
+
 
 -- 
-Best regards,
-Artem Bityutskiy (–ë–∏—Ç—é—Ü–∫–∏–π –ê—Ä—Ç—ë–º)
-
+mvh
+Carl Henrik
