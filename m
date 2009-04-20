@@ -1,161 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZDTB2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZDTBal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbZDTB2S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 21:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZDTB2A
+	id S1753544AbZDTBal (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 21:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZDTBac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 21:28:00 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42089 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbZDTB17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 21:27:59 -0400
-Message-ID: <49EBCF87.4090608@jp.fujitsu.com>
-Date: Mon, 20 Apr 2009 10:27:35 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sun, 19 Apr 2009 21:30:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52586 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751212AbZDTBab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Apr 2009 21:30:31 -0400
+Message-ID: <8B355A33A87242028FF3EF61F39BDFB8@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Frederic Weisbecker" <fweisbec@gmail.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Tom Zanussi" <tzanussi@gmail.com>, <linux-kernel@vger.kernel.org>,
+       "Oleg Nesterov" <oleg@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <20090415085310.AC0D.A69D9226@jp.fujitsu.com> <20090415011533.GI5968@nowhere> <20090415141250.AC46.A69D9226@jp.fujitsu.com> <49E8282A.6010004@cn.fujitsu.com> <49E82CA7.2040606@cn.fujitsu.com> <20090417134557.GA23493@elte.hu>
+Subject: Re: [PATCH v3 1/1] ftrace, workqueuetrace: Make workqueuetracepoints use TRACE_EVENT macro
+Date: Mon, 20 Apr 2009 09:30:03 +0800
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [RESEND][PATCH -tip 3/3] x86, mce: Add new option mce=no_cmci and
- mce=ignore_ce
-References: <49EBCDB0.7000505@jp.fujitsu.com>
-In-Reply-To: <49EBCDB0.7000505@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3K1Ujqu011102
 
-This patch introduces a couple of boot option for x86_64 mce.
+* From: "Ingo Molnar" <mingo@elte.hu>
+> 
+> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> 
+>> +TRACE_EVENT(workqueue_insertion,
+>> +TRACE_EVENT(workqueue_execution,
+>> +TRACE_EVENT(workqueue_creation,
+>> +TRACE_EVENT(workqueue_destruction,
+> 
+> I'm missing all the worklet tracepoints i suggested. (and i think 
+> which you had in earlier versions)
+> 
+> Basically, i'd suggest the following complete set of events instead:
+> 
+> TRACE_EVENT(workqueue_create
+> TRACE_EVENT(workqueue_flush              /* NEW */
+> TRACE_EVENT(workqueue_destroy
+> 
+> TRACE_EVENT(worklet_enqueue              /* NEW */
+> TRACE_EVENT(worklet_enqueue_delayed      /* NEW */
+> 
+> TRACE_EVENT(worklet_execute              /* instead of workqueue_execution */
+> TRACE_EVENT(worklet_complete             /* NEW */
+> 
+> TRACE_EVENT(worklet_cancel               /* NEW */
+> 
+> This allows the understanding of the life cycle of a workqueue and 
+> of worklets that enter that workqueue. Note the distinction between 
+> workqueue and worklet (work) - that is essential.
+Hello, Ingo
 
-The "mce=no_cmci" boot option disables cmci feature.
-Since cmci is a new feature so having boot controls to disable
-it will be a help if the hardware is misbehaving.
+Thanks for your suggest.
+I read distinction between workqueue and worklet.
+In my schedule, this patch is first step of our target, my image of steps is:
+  1: Move current workqueuetracepoints into TRACEEVENT (this patch)
+  2: Make workqueuetrace support per-worklet output (doing)
+  3: Add time information to workqueuetrace's worklet stat (need above new TRACEPOINT)
 
-The "mce=ignore_ce" boot option disables features for corrected
-errors, i.e. polling timer and cmci.  Usually this disablement
-is not recommended, however it will be a help if there are some
-conflict with the BIOS or hardware monitoring applications etc.
+So, i prepared to add new worklet tracepoints in step3.
+What's your opinion?
 
-And trivial cleanup (space -> tab) for doc is included.
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- Documentation/x86/x86_64/boot-options.txt |   22 ++++++++++++++++------
- arch/x86/include/asm/mce.h                |    2 ++
- arch/x86/kernel/cpu/mcheck/mce_64.c       |   11 +++++++++++
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    3 +++
- 4 files changed, 32 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index 34c1304..730b09b 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -5,12 +5,22 @@ only the AMD64 specific ones are listed here.
- 
- Machine check
- 
--   mce=off disable machine check
--   mce=bootlog Enable logging of machine checks left over from booting.
--               Disabled by default on AMD because some BIOS leave bogus ones.
--               If your BIOS doesn't do that it's a good idea to enable though
--               to make sure you log even machine check events that result
--               in a reboot. On Intel systems it is enabled by default.
-+   mce=off
-+		Disable machine check
-+   mce=no_cmci
-+		Disable CMCI(Corrected Machine Check Interrupt) that
-+		Intel processor supports.
-+   mce=ignore_ce
-+		Disable features for corrected errors, e.g. polling timer
-+		and CMCI.  Usually this disablement is not recommended,
-+		however it will be a help if there are some conflict with
-+		BIOS or hardware monitoring applications etc.
-+   mce=bootlog
-+		Enable logging of machine checks left over from booting.
-+		Disabled by default on AMD because some BIOS leave bogus ones.
-+		If your BIOS doesn't do that it's a good idea to enable though
-+		to make sure you log even machine check events that result
-+		in a reboot. On Intel systems it is enabled by default.
-    mce=nobootlog
- 		Disable boot machine check logging.
-    mce=tolerancelevel (number)
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index 563933e..065858c 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -104,6 +104,8 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
- #define MAX_NR_BANKS (MCE_EXTENDED_BANK - 1)
- 
- #ifdef CONFIG_X86_MCE_INTEL
-+extern int cmci_disabled;
-+extern int ignore_ce;
- void mce_intel_feature_init(struct cpuinfo_x86 *c);
- void cmci_clear(void);
- void cmci_reenable(void);
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index 33d612e..bd0fce3 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -41,6 +41,8 @@
- atomic_t mce_entry;
- 
- static int mce_dont_init;
-+int cmci_disabled;
-+int ignore_ce;
- 
- /*
-  * Tolerant levels:
-@@ -633,6 +635,9 @@ static void mce_init_timer(void)
- {
- 	struct timer_list *t = &__get_cpu_var(mce_timer);
- 
-+	if (ignore_ce)
-+		return;
-+
- 	/* data race harmless because everyone sets to the same value */
- 	if (!next_interval)
- 		next_interval = check_interval * HZ;
-@@ -842,6 +847,8 @@ __setup("nomce", mcheck_disable);
- 
- /*
-  * mce=off disables machine check
-+ * mce=no_cmci disables CMCI
-+ * mce=ignore_ce disables polling for corrected errors and also CMCI
-  * mce=TOLERANCELEVEL (number, see above)
-  * mce=bootlog Log MCEs from before booting. Disabled by default on AMD.
-  * mce=nobootlog Don't log MCEs from before booting.
-@@ -850,6 +857,10 @@ static int __init mcheck_enable(char *str)
- {
- 	if (!strcmp(str, "off"))
- 		mce_dont_init = 1;
-+	else if (!strcmp(str, "no_cmci"))
-+		cmci_disabled = 1;
-+	else if (!strcmp(str, "ignore_ce"))
-+		ignore_ce = 1;
- 	else if (!strcmp(str, "bootlog") || !strcmp(str, "nobootlog"))
- 		mce_bootlog = (str[0] == 'b');
- 	else if (isdigit(str[0]))
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-index d6b72df..64c0dd9 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-@@ -109,6 +109,9 @@ static int cmci_supported(int *banks)
- {
- 	u64 cap;
- 
-+	if (cmci_disabled | ignore_ce)
-+		return 0;
-+
- 	/*
- 	 * Vendor check is not strictly needed, but the initial
- 	 * initialization is vendor keyed and this
--- 
-1.6.2.2
-
+Thanks
+Zhaolei
+> 
+> The parameters of the events are obvious, with one detail: i'd 
+> suggest a 'cpu' parameter to the enqueue events, to allow the 
+> mapping of the _on(..cpu) variants too.
+> 
+> I would not bother with schedule_on_each_cpu() instrumentation - 
+> it's rarely used.
+> 
+> Ingo
+> 
+>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
