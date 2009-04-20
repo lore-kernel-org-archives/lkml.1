@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbZDTW5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbZDTW6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758281AbZDTW5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757111AbZDTW51
+	id S1758713AbZDTW6v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbZDTW6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:57:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59904 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756697AbZDTW50 (ORCPT
+	Mon, 20 Apr 2009 18:58:42 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:37062 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753450AbZDTW6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:57:26 -0400
-Date: Mon, 20 Apr 2009 18:57:24 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] tracing: use nowakeup version of commit for function
- event trace tests
-In-Reply-To: <20090420224129.GB5997@nowhere>
-Message-ID: <alpine.DEB.2.00.0904201855140.10097@gandalf.stny.rr.com>
-References: <20090420222257.267399830@goodmis.org> <20090420222325.267573793@goodmis.org> <20090420224129.GB5997@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 20 Apr 2009 18:58:42 -0400
+Date: Mon, 20 Apr 2009 19:57:58 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Michael Tokarev <mjt@tls.msk.ru>,
+       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Quick question about libata and hdparm
+Message-ID: <20090420225758.GA15776@ime.usp.br>
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <49EB9758.3020506@garzik.org> <20090420173526.GA7935@ime.usp.br> <200904202231.25670.bzolnier@gmail.com> <20090420221955.2c71bd26@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090420221955.2c71bd26@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 21 Apr 2009, Frederic Weisbecker wrote:
-
-> On Mon, Apr 20, 2009 at 06:22:59PM -0400, Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > The startup tests for the event tracer also runs with the function
-> > tracer enabled. The "wakeup" version of the trace commit was used
-> > which can grab spinlocks. If a task was preempted by an NMI
-> > that called a function being traced, it could deadlock due to the
-> > function tracer trying to grab the same lock.
-> > 
-> > Thanks to Frederic Weisbecker for pointing out where the bug was.
-> > 
-> > Reported-by: Ingo Molnar <mingo@elte.hu>
-> > Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > ---
+On Apr 20 2009, Alan Cox wrote:
+> > DISCLAIMER: I'm not handling this bugreport, this is best
+> > done by pata_pdc202xx_old Maintainer or libata Maintainer.
 > 
-> 
-> Aah, I was about to push my version, which was the same but with
-> a more weird changelog :-)
-> 
+> Be that as it may thanks - thats well spotted and definitely a bug.
 
-I was going to let you post it, but since I was the one to write the bug, 
-and it was a one-liner, and I was hitting it myself, I decided to push it. 
-Otherwise I might have seen your patch's signature section:
+Ok, I patched the 30-rc2 tarball. It is taking a looong time to compile
+(even with very few components selected).
 
-fixed-code-f*cked-up-by: Steven Rostedt
+But I will report how things go "in a few moments" (for some values of
+"few moments"). :-)
 
-/me was reading the conversation on IRC ;-)
+Thanks for all the attention. You guys rock.
 
--- Steve
-
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
