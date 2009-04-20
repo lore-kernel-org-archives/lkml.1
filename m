@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZDTVX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZDTVY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbZDTVX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbZDTVXk
+	id S1757849AbZDTVY1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbZDTVXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:23:40 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:55226 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756571AbZDTVXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:23:38 -0400
-Message-ID: <49ECE783.5050704@nortel.com>
-Date: Mon, 20 Apr 2009 15:22:11 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Mon, 20 Apr 2009 17:23:48 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:56867 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757737AbZDTVXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 17:23:46 -0400
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Trenton Adams <trenton.d.adams@gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain> <200904070035.00784.rjw@sisk.pl> <49E79E58.9000606@nortel.com> <alpine.LFD.2.00.0904161432000.4042@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904161432000.4042@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Apr 2009 21:22:13.0741 (UTC) FILETIME=[12C341D0:01C9C1FE]
+Message-ID: <18924.59347.375292.102385@cargo.ozlabs.ibm.com>
+Date: Tue, 21 Apr 2009 07:23:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
+In-Reply-To: <49ECBE0A.7010303@cosmosbay.com>
+References: <20090415170111.6e1ca264@nehalam>
+	<alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	<49E72E83.50702@trash.net>
+	<20090416.153354.170676392.davem@davemloft.net>
+	<20090416234955.GL6924@linux.vnet.ibm.com>
+	<20090417012812.GA25534@linux.vnet.ibm.com>
+	<20090418094001.GA2369@ioremap.net>
+	<20090418141455.GA7082@linux.vnet.ibm.com>
+	<20090420103414.1b4c490f@nehalam>
+	<49ECBE0A.7010303@cosmosbay.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 16 Apr 2009, Chris Friesen wrote:
->> I'm okay with that.  The problem causes some backwards compatibility problems
->> with existing apps that get confused by the large "offset" number.  The fix is
->> going to cause problems too, but in a different way.
->>
->> We'll work around it.
-> 
-> If you have actual apps that care, that's a different issue.
-> 
-> We do try to bend over backwards on ABI issues if it really is noticeable 
-> for applications. Now, in this case, if you can just fix your app to not 
-> care (because it really was badly written in the first place to even 
-> notice), then that is the _much_ superior solution.
+Eric Dumazet writes:
 
-Yep, we can fix the app to ignore that field for anonymous mappings.
+> OK, but we still have a problem on machines with >= 250 cpus,
+> because calling 250 times spin_lock() is going to overflow preempt_count,
+> as each spin_lock() increases preempt_count by one.
 
-> Although I don't really even see what we can sanely do except for the 0 
-> case. We could put the virtual address in there instead of zero (I forget 
-> what old kernels used to do - whatever magic value the anonymous mappings 
-> got, it wasn't really designed as an important value in its own right, it 
-> was designed to trigger the "we can merge these vma's" logic.
+Huh?  Each cpu has its own separate preempt_count.
 
-For anonymous mappings, the older kernels put the starting address of 
-the VMA (from the point of view of the app) as the offset.  Until the 
-recent change, new kernels still did this for most VMAs, but the stack 
-offset was a 64-bit value with no obvious relation to the VMA start address.
-
-Chris
+Paul.
