@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZDTH05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZDTHbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZDTH05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZDTH0e
+	id S1753093AbZDTHbV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZDTHbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:26:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58816 "EHLO
+	Mon, 20 Apr 2009 03:31:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47292 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753994AbZDTH0d (ORCPT
+	with ESMTP id S1752270AbZDTHbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:26:33 -0400
+	Mon, 20 Apr 2009 03:31:10 -0400
 To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RESEND][PATCH -tip 2/3] x86, mce: Revert "add mce=nopoll option to disable timer polling"
+Subject: Re: [RESEND][PATCH -tip 3/3] x86, mce: Add new option mce=no_cmci and mce=ignore_ce
 From: Andi Kleen <andi@firstfloor.org>
 References: <49EBCDB0.7000505@jp.fujitsu.com>
-	<49EBCF67.1060400@jp.fujitsu.com>
-Date: Mon, 20 Apr 2009 09:26:29 +0200
-In-Reply-To: <49EBCF67.1060400@jp.fujitsu.com> (Hidetoshi Seto's message of "Mon, 20 Apr 2009 10:27:03 +0900")
-Message-ID: <87r5znpyze.fsf@basil.nowhere.org>
+	<49EBCF87.4090608@jp.fujitsu.com>
+Date: Mon, 20 Apr 2009 09:31:08 +0200
+In-Reply-To: <49EBCF87.4090608@jp.fujitsu.com> (Hidetoshi Seto's message of "Mon, 20 Apr 2009 10:27:35 +0900")
+Message-ID: <87myabpyrn.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,40 +30,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
 
-> Disabling only polling but not cmci is pointless setting.
-> Instead of "mce=nopoll" which tend to be paired with cmci disablement,
-> it rather make sense to have a "mce=ignore_ce" option that disable
-> both of polling and cmci at once.  A patch for this new implementation
-> will follow this reverting patch.
+> This patch introduces a couple of boot option for x86_64 mce.
 >
-> OTOH, once booted, we can disable polling by setting check_interval
-> to 0, but there are no mention about the fact.  Later Andi will post
-> updated documents that can respond this issue.
+> The "mce=no_cmci" boot option disables cmci feature.
+> Since cmci is a new feature so having boot controls to disable
+> it will be a help if the hardware is misbehaving.
 
-I still think that patch has bad semantics because you leave around
-the events in the machine check registers and never clear
-them. Especially with MCA recovery that has very unfortunate side
-effects -- it means the OVER bit will be set and a in principle
-recoverable MCA will require a panic. Even without MCA recovery it has
-similar problems and will lead to confusing log output for non CE
-MCAs.
+Acked-by: Andi Kleen <ak@linux.intel.com>
 
-I think a patch to not log corrected errors would be reasonable,
-but you still need to clear the events from the machine check
-banks at least.
+Although I expect on Nehalem you'll get more problems without CMCI
+than with due to the shared banks. Perhaps the documentation
+should make that clearer.
 
-So I would recommend you add a mce=dont_log_ce or somesuch
-that just guards the mce_log() call in machine_check_poll()
+>
+> The "mce=ignore_ce" boot option disables features for corrected
+> errors, i.e. polling timer and cmci.  Usually this disablement
+> is not recommended, however it will be a help if there are some
+> conflict with the BIOS or hardware monitoring applications etc.
 
-Also for your use case really the better way would be to use
-some way to let the firmware communicate that it doesn't want the OS
-to log.
+Same problem as with the earlier patch.  You need a point
+somewhere where the event is cleared, otherwise all hell
+breaks loose.
 
-Also BTW before adding new features like this it would be a good
-idea to first add the bug fixes I posted two weeks ago.
+>  static int mce_dont_init;
+> +int cmci_disabled;
+> +int ignore_ce;
 
--Andi
+For global variables you should use a mce_ prefix to not pollute
+global name space.
 
+> diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+> index d6b72df..64c0dd9 100644
+> --- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+> +++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+> @@ -109,6 +109,9 @@ static int cmci_supported(int *banks)
+>  {
+>  	u64 cap;
+>  
+> +	if (cmci_disabled | ignore_ce)
+
+I presume you meant || here
+
+-Amndi
 
 -- 
 ak@linux.intel.com -- Speaking for myself only.
