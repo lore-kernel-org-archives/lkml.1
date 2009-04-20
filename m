@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbZDTVYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbZDTVZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752219AbZDTVYl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 17:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbZDTVXz
+	id S1757993AbZDTVZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 17:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbZDTVZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 17:23:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:57579 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757716AbZDTVXs convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 17:25:30 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:52260 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756865AbZDTVZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 17:23:48 -0400
+	Mon, 20 Apr 2009 17:25:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f47e5EH9ocCxgyaWNi3C+HdP/F68EJgV0trQFP1/mZQRvvbf0wlISxyIpnL9zGOdYt
-         FEjFarijYu1kWqvcAWG/fIlPhpddlNnQObH6wX8/eJhc7tBh4wSNNMuDC4ZpC6q/Yiwz
-         Sx5SbXtwWZdiaOMUvNTjtYnCrK3HTrwutCV4k=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vIZPqJCS2driqkChSZdPxYcqBtQlBKgq2upArwsFliavgdwaltA0O3GPMcr1xvaEW4
+         X0ctxSTOkQTVQI+/CsT0h6uIj3xNG4V0dCqpr4HukgxGHeArpZr027tgl2iK97HGqmYk
+         quMLg3KlCYk1+LBuY7vM0DF6R99orVDNCVCSs=
+Date: Mon, 20 Apr 2009 23:25:25 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] [GIT PULL] tracing: recursion and compile fixes
+Message-ID: <20090420212523.GA5997@nowhere>
+References: <20090420173819.957332585@goodmis.org> <20090420175533.GA22449@elte.hu> <20090420192803.GA25629@elte.hu> <20090420194542.GB5974@nowhere> <alpine.DEB.2.00.0904201616430.10097@gandalf.stny.rr.com> <20090420203347.GD5974@nowhere> <alpine.DEB.2.00.0904201641570.10097@gandalf.stny.rr.com> <20090420210152.GF5974@nowhere> <alpine.DEB.2.00.0904201711150.10097@gandalf.stny.rr.com>
 MIME-Version: 1.0
-In-Reply-To: <20090420084747.GA7286@alberich.amd.com>
-References: <20090417100155.GE16198@alberich.amd.com>
-	 <20090417162115.GF8253@elte.hu>
-	 <86802c440904171226g520e3b67h7318ff0f80f1e782@mail.gmail.com>
-	 <20090420084747.GA7286@alberich.amd.com>
-Date: Mon, 20 Apr 2009 14:23:47 -0700
-Message-ID: <86802c440904201423y7d1290e5m5b0e2529f3a81fc3@mail.gmail.com>
-Subject: Re: [PATCH] pci: derive nearby CPUs from device's instead of bus' 
-	NUMA information
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0904201711150.10097@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 1:47 AM, Andreas Herrmann
-<andreas.herrmann3@amd.com> wrote:
-> On Fri, Apr 17, 2009 at 12:26:54PM -0700, Yinghai Lu wrote:
->> On Fri, Apr 17, 2009 at 9:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> > const struct cpumask * cpumask_of_pcidev(struct pci_dev *dev)
->> > {
->> >        if (dev->numa_node == -1)
->> >                return cpumask_of_pcibus(to_pci_dev(dev)->bus);
->> >
->> >        return cpumask_of_node(dev_to_node(dev));
->> > }
->> >
->> > ? This would work fine in all cases.
->
-> Yes, I think so. That's the general solution w/o additional
-> "ifdefing".
->
->> you are right, dev_to_node(dev) could return -1 on 64bit, if there is
->> no memory on that node.
->
-> Hmm, I thought just in the CONFIG_NUMA=n case -1 is returned.
->
-> During initialization the struct device's numa_node is set to -1 and
-> later on the information is inherited from the parent numa_node.
->
-parent numa_node could be -1 too.
+On Mon, Apr 20, 2009 at 05:14:14PM -0400, Steven Rostedt wrote:
+> 
+> 
+> On Mon, 20 Apr 2009, Frederic Weisbecker wrote:
+> 
+> > On Mon, Apr 20, 2009 at 04:44:46PM -0400, Steven Rostedt wrote:
+> > > 
+> > > On Mon, 20 Apr 2009, Frederic Weisbecker wrote:
+> > > > > > 
+> > > > > 
+> > > > > Hmm, doesn't the trace wakeup test if the runqueue lock is locked or not?
+> > > > > 
+> > > > > -- Steve
+> > > > > 
+> > > > 
+> > > > 
+> > > > Hmm, yes it does but that's not the first time we meet this problem
+> > > > (sched switch event tracing recursions by the past). So either the
+> > > > test doesn't work well or this is about another lock that
+> > > > wake_up_common takes...
+> > > 
+> > > Ug, it is the task's rq lock. Not the current rq lock. wakeup takes the 
+> > > runqueue lock of the task. The "runqueue_is_locked" only tests the lock of 
+> > > current CPU, which is not what we can have.
+> > 
+> > 
+> > You mean the lock held on the wait_queue for wake_up_trace() ?
+> > 
+> > void __wake_up(wait_queue_head_t *q, unsigned int mode,
+> > 			int nr_exclusive, void *key)
+> > {
+> > 	unsigned long flags;
+> > 
+> > 	spin_lock_irqsave(&q->lock, flags);
+> > 	__wake_up_common(q, mode, nr_exclusive, 0, key);
+> > 	spin_unlock_irqrestore(&q->lock, flags);
+> > }
+> > 
+> 
+> No, I mean that we check the runqueue lock on the current CPU (there's a 
+> runqueue for each CPU). The runqueue_is_locked tests only the lock for the 
+> current cpu. But the wake up of a task grabs the runqueue of the lock the 
+> task is on.
+> 
+> If we are on CPU0 and hold the runqueue lock of CPU1, and we wake up a 
+> task on CPU1, we will deadlock. Even thought runqueue_is_locked passed. 
+> Because the current runqueue lock is not part of this equation.
 
-in amd_bus.c
-int get_mp_bus_to_node(int busnum)
-{
-        int node = -1;
 
-        if (busnum < 0 || busnum > (BUS_NR - 1))
-                return node;
+Oh I see :-/
+And of course the check of every rq lock is not conceivable wrt the hot path
+and in term of scalability.
 
-        node = mp_bus_to_node[busnum];
+ 
+> -- Steve
+> 
 
-        /*
-         * let numa_node_id to decide it later in dma_alloc_pages
-         * if there is no ram on that node
-         */
-        if (node != -1 && !node_online(node))
-                node = -1;
-
-        return node;
-}
-
-
-YH
