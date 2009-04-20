@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZDTW1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbZDTW2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759077AbZDTW1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbZDTWUf
+	id S1758915AbZDTW2X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbZDTWUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:20:35 -0400
+	Mon, 20 Apr 2009 18:20:37 -0400
 Received: from gir.skynet.ie ([193.1.99.77]:37344 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757908AbZDTWU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:20:28 -0400
+	id S1757923AbZDTWUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:20:30 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 20/25] Do not check for compound pages during the page allocator sanity checks
-Date: Mon, 20 Apr 2009 23:20:06 +0100
-Message-Id: <1240266011-11140-21-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 23/25] Get the pageblock migratetype without disabling interrupts
+Date: Mon, 20 Apr 2009 23:20:09 +0100
+Message-Id: <1240266011-11140-24-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
 References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
@@ -31,55 +31,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A number of sanity checks are made on each page allocation and free
-including that the page count is zero. page_count() checks for
-compound pages and checks the count of the head page if true. However,
-in these paths, we do not care if the page is compound or not as the
-count of each tail page should also be zero.
+Local interrupts are disabled when freeing pages to the PCP list. Part
+of that free checks what the migratetype of the pageblock the page is in
+but it checks this with interrupts disabled. This patch checks the
+pagetype with interrupts enabled. The impact is that it is possible a
+page is freed to the wrong list when a pageblock changes type but as
+that block is now already considered mixed from an anti-fragmentation
+perspective, it's not of vital importance.
 
-This patch makes two changes to the use of page_count() in the free path. It
-converts one check of page_count() to a VM_BUG_ON() as the count should
-have been unconditionally checked earlier in the free path. It also avoids
-checking for compound pages.
-
-[mel@csn.ul.ie: Wrote changelog]
-Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- mm/page_alloc.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ec01d8f..376d848 100644
+index 6bcaf08..acb0fac 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -425,7 +425,7 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
- 		return 0;
+@@ -1035,6 +1035,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 	kernel_map_pages(page, 1, 0);
  
- 	if (PageBuddy(buddy) && page_order(buddy) == order) {
--		BUG_ON(page_count(buddy) != 0);
-+		VM_BUG_ON(page_count(buddy) != 0);
- 		return 1;
- 	}
- 	return 0;
-@@ -501,7 +501,7 @@ static inline int free_pages_check(struct page *page)
- {
- 	if (unlikely(page_mapcount(page) |
- 		(page->mapping != NULL)  |
--		(page_count(page) != 0)  |
-+		(atomic_read(&page->_count) != 0) |
- 		(page->flags & PAGE_FLAGS_CHECK_AT_FREE))) {
- 		bad_page(page);
- 		return 1;
-@@ -646,7 +646,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
- {
- 	if (unlikely(page_mapcount(page) |
- 		(page->mapping != NULL)  |
--		(page_count(page) != 0)  |
-+		(atomic_read(&page->_count) != 0)  |
- 		(page->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
- 		bad_page(page);
- 		return 1;
+ 	pcp = &zone_pcp(zone, get_cpu())->pcp;
++	set_page_private(page, get_pageblock_migratetype(page));
+ 	local_irq_save(flags);
+ 	if (unlikely(clearMlocked))
+ 		free_page_mlock(page);
+@@ -1044,7 +1045,6 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 		list_add_tail(&page->lru, &pcp->list);
+ 	else
+ 		list_add(&page->lru, &pcp->list);
+-	set_page_private(page, get_pageblock_migratetype(page));
+ 	pcp->count++;
+ 	if (pcp->count >= pcp->high) {
+ 		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
 -- 
 1.5.6.5
 
