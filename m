@@ -1,168 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZDTU0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbZDTU0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756938AbZDTU0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZDTU0J
+	id S1756686AbZDTU0f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbZDTU0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:26:09 -0400
-Received: from cmpxchg.org ([85.214.51.133]:47560 "EHLO cmpxchg.org"
+	Mon, 20 Apr 2009 16:26:10 -0400
+Received: from cmpxchg.org ([85.214.51.133]:47559 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753924AbZDTU0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752831AbZDTU0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Apr 2009 16:26:08 -0400
 From: Johannes Weiner <hannes@cmpxchg.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Rik van Riel <riel@redhat.com>, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 3/3][rfc] vmscan: batched swap slot allocation
-Date: Mon, 20 Apr 2009 22:24:45 +0200
-Message-Id: <1240259085-25872-3-git-send-email-hannes@cmpxchg.org>
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [patch 1/3] mm: fix pageref leak in do_swap_page()
+Date: Mon, 20 Apr 2009 22:24:43 +0200
+Message-Id: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
 X-Mailer: git-send-email 1.6.2.1.135.gde769
-In-Reply-To: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every swap slot allocation tries to be subsequent to the previous one
-to help keeping the LRU order of anon pages intact when they are
-swapped out.
+By the time the memory cgroup code is notified about a swapin we
+already hold a reference on the fault page.
 
-With an increasing number of concurrent reclaimers, the average
-distance between two subsequent slot allocations of one reclaimer
-increases as well.  The contiguous LRU list chunks each reclaimer
-swaps out get 'multiplexed' on the swap space as they allocate the
-slots concurrently.
-
-	2 processes isolating 15 pages each and allocating swap slots
-	concurrently:
-
-	#0			#1
-
-	page 0 slot 0		page 15 slot 1
-	page 1 slot 2		page 16 slot 3
-	page 2 slot 4		page 17 slot 5
-	...
-
-	-> average slot distance of 2
-
-All reclaimers being equally fast, this becomes a problem when the
-total number of concurrent reclaimers gets so high that even equal
-distribution makes the average distance between the slots of one
-reclaimer too wide for optimistic swap-in to compensate.
-
-But right now, one reclaimer can take much longer than another one
-because its pages are mapped into more page tables and it has thus
-more work to do and the faster reclaimer will allocate multiple swap
-slots between two slot allocations of the slower one.
-
-This patch makes shrink_page_list() allocate swap slots in batches,
-collecting all the anonymous memory pages in a list without
-rescheduling and actual reclaim in between.  And only after all anon
-pages are swap cached, unmap and write-out starts for them.
-
-While this does not fix the fundamental issue of slot distribution
-increasing with reclaimers, it mitigates the problem by balancing the
-resulting fragmentation equally between the allocators.
+If the cgroup callback fails make sure to unlock AND release the page
+or we leak the reference.
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
- mm/vmscan.c |   49 +++++++++++++++++++++++++++++++++++++++++--------
- 1 files changed, 41 insertions(+), 8 deletions(-)
+ mm/memory.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 70092fa..b3823fe 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -592,24 +592,42 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 					enum pageout_io sync_writeback)
- {
- 	LIST_HEAD(ret_pages);
-+	LIST_HEAD(swap_pages);
- 	struct pagevec freed_pvec;
--	int pgactivate = 0;
-+	int pgactivate = 0, restart = 0;
- 	unsigned long nr_reclaimed = 0;
+diff --git a/mm/memory.c b/mm/memory.c
+index 366dab5..db126b6 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2536,8 +2536,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
  
- 	cond_resched();
- 
- 	pagevec_init(&freed_pvec, 1);
-+restart:
- 	while (!list_empty(page_list)) {
- 		struct address_space *mapping;
- 		struct page *page;
- 		int may_enter_fs;
- 		int referenced;
- 
--		cond_resched();
-+		if (list_empty(&swap_pages))
-+			cond_resched();
- 
- 		page = lru_to_page(page_list);
- 		list_del(&page->lru);
- 
-+		if (restart) {
-+			/*
-+			 * We are allowed to do IO when we restart for
-+			 * swap pages.
-+			 */
-+			may_enter_fs = 1;
-+			/*
-+			 * Referenced pages will be sorted out by
-+			 * try_to_unmap() and unmapped (anon!) pages
-+			 * are not to be referenced anymore.
-+			 */
-+			referenced = 0;
-+			goto reclaim;
-+		}
-+
- 		if (!trylock_page(page))
- 			goto keep;
- 
-@@ -655,14 +673,24 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		 * Anonymous process memory has backing store?
- 		 * Try to allocate it some swap space here.
- 		 */
--		if (PageAnon(page) && !PageSwapCache(page)) {
--			if (!(sc->gfp_mask & __GFP_IO))
--				goto keep_locked;
--			if (!add_to_swap(page))
--				goto activate_locked;
--			may_enter_fs = 1;
-+		if (PageAnon(page)) {
-+			if (!PageSwapCache(page)) {
-+				if (!(sc->gfp_mask & __GFP_IO))
-+					goto keep_locked;
-+				if (!add_to_swap(page))
-+					goto activate_locked;
-+			} else if (!may_enter_fs)
-+				/*
-+				 * It's no use to batch when we are
-+				 * not allocating swap for this GFP
-+				 * mask.
-+				 */
-+				goto reclaim;
-+			list_add(&page->lru, &swap_pages);
-+			continue;
- 		}
- 
-+	reclaim:
- 		mapping = page_mapping(page);
- 
- 		/*
-@@ -794,6 +822,11 @@ keep:
- 		list_add(&page->lru, &ret_pages);
- 		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
+ 	if (mem_cgroup_try_charge_swapin(mm, page, GFP_KERNEL, &ptr)) {
+ 		ret = VM_FAULT_OOM;
+-		unlock_page(page);
+-		goto out;
++		goto out_page;
  	}
-+	if (!list_empty(&swap_pages)) {
-+		list_splice_init(&swap_pages, page_list);
-+		restart = 1;
-+		goto restart;
-+	}
- 	list_splice(&ret_pages, page_list);
- 	if (pagevec_count(&freed_pvec))
- 		__pagevec_free(&freed_pvec);
+ 
+ 	/*
+@@ -2599,6 +2598,7 @@ out:
+ out_nomap:
+ 	mem_cgroup_cancel_charge_swapin(ptr);
+ 	pte_unmap_unlock(page_table, ptl);
++out_page:
+ 	unlock_page(page);
+ 	page_cache_release(page);
+ 	return ret;
 -- 
 1.6.2.1.135.gde769
 
