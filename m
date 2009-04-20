@@ -1,65 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZDTGFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZDTGMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbZDTGFT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 02:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZDTGFD
+	id S1754180AbZDTGMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 02:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZDTGMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 02:05:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34703 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbZDTGFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 02:05:01 -0400
-Message-ID: <49EC1001.50905@redhat.com>
-Date: Mon, 20 Apr 2009 09:02:41 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Allow preemption during lazy mmu updates
-References: <1238176963-21093-1-git-send-email-jeremy@goop.org>	 <20090408145440.GN12931@elte.hu> <1239203512.4557.2575.camel@laptop> <49EAF9D6.1010600@redhat.com> <49EBB96F.60300@goop.org>
-In-Reply-To: <49EBB96F.60300@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 02:12:08 -0400
+Received: from mail.renesas.com ([202.234.163.13]:35927 "EHLO
+	mail02.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751526AbZDTGMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 02:12:07 -0400
+X-AuditID: ac140385-0000000b000002de-df-49ec11fb3093
+Date: Mon, 20 Apr 2009 15:11:12 +0900
+From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: [PATCH] RFC: mm: Fix build error SLBQ when CONFIG_SMP is not enable
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Paul Mundt <lethal@linux-sh.org>,
+       Nick Piggin <npiggin@suse.de>
+Message-id: <49EC1200.6020707@renesas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-2022-JP
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Avi Kivity wrote:
->> What are the slight differences in requirements?
->>
->> KVM wants to run in non-preemptible, interrupts-enabled context.
->
-> There are two hooks: arch_start_context_switch() in 
-> kernel/sched:context_switch(), and arch_end_context_switch() in 
-> arch/x86/kernel/process_(32|64).c.  They bound the heart of the 
-> context switch in which various bits of core state is changes, like 
-> the cr3 reload, fpu TS flag, iopl, tls slots, etc.  All things which 
-> require a hypercall in a paravirtualized environment, and so can be 
-> batched together into a multicall (or whatever) to minimize the number 
-> of context-switch time hypercalls.  The placement of 
-> end_context_switch is particularly sensitive because it needs to be in 
-> the right place relative to fpu context reload and segment register 
-> reloading.
->
-> Preemption is definitely disabled, and interrupts as well, I think.  
-> So perhaps these won't work for you.
->
-> However, looking at the fire_sched_out_preempt_notifiers() is almost 
-> in the same position as arch_start_context_switch(), so I think they 
-> could be unified one way or the other.  The sched_in notifier happens 
-> way too late though.  Does KVM just use both in and out, or just one?
+Hi,
 
-Both.  sched_out loads the host MSR_STAR and friends, sched_in loads the 
-guest values.
+I fixed build error and tested source code base only,
+because I don't know test method of SLAB.
+Please give me an opinion about this revision.
 
+Thanks,
+ Nobuhiro
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+---
 
+Kernel become build error, because functions depending on COMFIG_SMP enabled.
+
+----
+  CC      mm/slqb.o
+mm/slqb.c: In function '__slab_free':
+mm/slqb.c:1735: error: implicit declaration of function 'slab_free_to_remote'
+mm/slqb.c: In function 'kmem_cache_open':
+mm/slqb.c:2274: error: implicit declaration of function 'kmem_cache_dyn_array_free'
+mm/slqb.c:2275: warning: label 'error_cpu_array' defined but not used
+mm/slqb.c: In function 'kmem_cache_destroy':
+mm/slqb.c:2395: error: implicit declaration of function 'claim_remote_free_list'
+mm/slqb.c: In function 'kmem_cache_init':
+mm/slqb.c:2885: error: 'per_cpu__kmem_cpu_nodes' undeclared (first use in this function)
+mm/slqb.c:2885: error: (Each undeclared identifier is reported only once
+mm/slqb.c:2885: error: for each function it appears in.)
+mm/slqb.c:2886: error: 'kmem_cpu_cache' undeclared (first use in this function)
+make[1]: *** [mm/slqb.o] Error 1
+make: *** [mm] Error 2
+----
+
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Nick Piggin <npiggin@suse.de>
+CC: Paul Mundt <lethal@linux-sh.org>
+---
+ mm/slqb.c |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/mm/slqb.c b/mm/slqb.c
+index 37949f5..1858b3d 100644
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -1728,7 +1728,7 @@ static __always_inline void __slab_free(struct kmem_cache *s,
+ 			flush_free_list(s, l);
+
+ 	} else {
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SMP
+ 		/*
+ 		 * Freeing an object that was allocated on a remote node.
+ 		 */
+@@ -1937,7 +1937,9 @@ static DEFINE_PER_CPU(struct kmem_cache_node, kmem_cpu_nodes); /* XXX per-nid */
+
+ #ifdef CONFIG_NUMA
+ static struct kmem_cache kmem_node_cache;
++# ifdef CONFIG_SMP
+ static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_node_cpus);
++# endif
+ static DEFINE_PER_CPU(struct kmem_cache_node, kmem_node_nodes); /*XXX per-nid */
+ #endif
+
+@@ -2270,7 +2272,7 @@ static int kmem_cache_open(struct kmem_cache *s,
+ error_nodes:
+ 	free_kmem_cache_nodes(s);
+ error_node_array:
+-#ifdef CONFIG_NUMA
++#if defined(CONFIG_NUMA) && defined(CONFIG_SMP)
+ 	kmem_cache_dyn_array_free(s->node_slab);
+ error_cpu_array:
+ #endif
+@@ -2392,7 +2394,9 @@ void kmem_cache_destroy(struct kmem_cache *s)
+ 			continue;
+ 		l = &n->list;
+
++#ifdef CONFIG_SMP
+ 		claim_remote_free_list(s, l);
++#endif
+ 		flush_free_list_all(s, l);
+
+ 		WARN_ON(l->freelist.nr);
+@@ -2623,7 +2627,9 @@ int kmem_cache_shrink(struct kmem_cache *s)
+ 		l = &n->list;
+
+ 		spin_lock_irq(&n->list_lock);
++#ifdef CONFIG_SMP
+ 		claim_remote_free_list(s, l);
++#endif
+ 		flush_free_list(s, l);
+ 		spin_unlock_irq(&n->list_lock);
+ 	}
+@@ -2650,7 +2656,9 @@ static void kmem_cache_reap_percpu(void *arg)
+ 		}
+
+ 		if (phase == 1) {
++#ifdef CONFIG_SMP
+ 			claim_remote_free_list(s, l);
++#endif
+ 			flush_free_list_all(s, l);
+ 		}
+ 	}
+@@ -2676,7 +2684,9 @@ static void kmem_cache_reap(void)
+ 			l = &n->list;
+
+ 			spin_lock_irq(&n->list_lock);
++#ifdef CONFIG_SMP
+ 			claim_remote_free_list(s, l);
++#endif
+ 			flush_free_list_all(s, l);
+ 			spin_unlock_irq(&n->list_lock);
+ 		}
+@@ -2703,7 +2713,9 @@ static void cache_trim_worker(struct work_struct *w)
+ 			struct kmem_cache_list *l = &n->list;
+
+ 			spin_lock_irq(&n->list_lock);
++#ifdef CONFIG_SMP
+ 			claim_remote_free_list(s, l);
++#endif
+ 			flush_free_list(s, l);
+ 			spin_unlock_irq(&n->list_lock);
+ 		}
+@@ -2881,11 +2893,11 @@ void __init kmem_cache_init(void)
+ 		n = &per_cpu(kmem_cache_nodes, i);
+ 		init_kmem_cache_node(&kmem_cache_cache, n);
+ 		kmem_cache_cache.node_slab[i] = n;
+-
++#ifdef CONFIG_SMP
+ 		n = &per_cpu(kmem_cpu_nodes, i);
+ 		init_kmem_cache_node(&kmem_cpu_cache, n);
+ 		kmem_cpu_cache.node_slab[i] = n;
+-
++#endif
+ 		n = &per_cpu(kmem_node_nodes, i);
+ 		init_kmem_cache_node(&kmem_node_cache, n);
+ 		kmem_node_cache.node_slab[i] = n;
+-- 1.6.2.2
