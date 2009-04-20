@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZDTHwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZDTHxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbZDTHwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZDTHwR
+	id S1754467AbZDTHxd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZDTHxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:52:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50329 "EHLO mx1.suse.de"
+	Mon, 20 Apr 2009 03:53:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34778 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753714AbZDTHwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:52:16 -0400
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 20 Apr 2009 17:52:25 +1000
+	id S1752824AbZDTHxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 03:53:20 -0400
+Message-ID: <49EC29D1.8040407@redhat.com>
+Date: Mon, 20 Apr 2009 09:52:49 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Avi Kivity <avi@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Add MCE support to KVM
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com>
+In-Reply-To: <49EAE1F6.9050205@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18924.10681.98103.247886@notabene.brown>
-Subject: [PULL REQUEST] a few more md patches for 2.6.30
-X-Mailer: VM 7.19 under Emacs 21.4.1
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Mario 'BitKoenig' Holbe" <Mario.Holbe@TU-Ilmenau.DE>
-Cc: Christoph Hellwig <hch@lst.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 04/19/09 10:33, Avi Kivity wrote:
+> Anthony Liguori wrote:
+>> Why not introduce a new exit type for MSR reads/writes that aren't
+>> handled by the kernel? You just need a bit on the return that
+>> indicates whether to GPF because of an invalid MSR access.
 
-Hi Linus, 
- a few more md fixes / enhancements.
- The enhancements are fairly minor and essentially finish off various
- threads begun in previous pull.
+Yes, please.
 
-Thanks,
-NeilBrown
+> Right now everything in the vcpu is emulated in the kernel. Everything
+> else is emulated either in the kernel (irqchip) or in userspace. This
+> makes things easier to understand, and is more future friendly if more
+> cpu features become virtualized by hardware.
+>
+> While these are not compelling reasons, they at least lean the balance
+> in favour of a kernel implementation.
 
+The xen pv-on-hvm drivers use an msr to indicate "please place the 
+hypercall page here".  Handling that in kernel isn't an option IMHO.
 
-The following changes since commit 0882e8dd3aad33eca41696d463bb896e6c8817eb:
-  Linus Torvalds (1):
-        Linux 2.6.30-rc2
-
-are available in the git repository at:
-
-  git://neil.brown.name/md for-linus
-
-Christoph Hellwig (1):
-      md: tiny md.h cleanups
-
-NeilBrown (4):
-      md: allow setting newly added device to 'in_sync' via sysfs.
-      md: improve usefulness and accuracy of sysfs file md/sync_completed.
-      md: update sync_completed and reshape_position even more often.
-      md: support bitmaps on RAID10 arrays larger then 2 terabytes
-
- drivers/md/bitmap.c |    7 ++++---
- drivers/md/md.c     |   41 ++++++++++++++++++++++++++++-------------
- drivers/md/md.h     |   21 +++++++++++++--------
- drivers/md/raid5.c  |    7 ++++++-
- 4 files changed, 51 insertions(+), 25 deletions(-)
+cheers,
+   Gerd
