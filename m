@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZDTPIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZDTPR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZDTPIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZDTPIb
+	id S1756242AbZDTPR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 11:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZDTPRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:08:31 -0400
-Received: from cathcart.site5.com ([74.54.107.137]:54542 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754927AbZDTPIb (ORCPT
+	Mon, 20 Apr 2009 11:17:21 -0400
+Received: from bay0-omc2-s21.bay0.hotmail.com ([65.54.246.157]:58982 "EHLO
+	bay0-omc2-s21.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755398AbZDTPRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:08:31 -0400
-X-Greylist: delayed 2159 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 11:08:31 EDT
-Message-ID: <49EC8775.8060609@compulab.co.il>
-Date: Mon, 20 Apr 2009 17:32:21 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+	Mon, 20 Apr 2009 11:17:20 -0400
+X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 11:17:20 EDT
+Message-ID: <BAY116-DAV13797E9A8B8D61B9322909B0760@phx.gbl>
+X-Originating-IP: [82.23.42.123]
+X-Originating-Email: [nodenet@hotmail.com]
+From: "Wil" <nodenet@hotmail.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <nodenet@hotmail.com>
+Subject: swap hint
+Date: Mon, 20 Apr 2009 16:11:14 +0100
+Message-ID: <91F5F240641E4FCBA9470D0CF1BCB7CC@fdidev001>
 MIME-Version: 1.0
-To: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFD] voltage/current regulator consumer interface
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcnByj7IqpLcewRpQxGAn5A6or0k0A==
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+X-OriginalArrivalTime: 20 Apr 2009 15:11:11.0021 (UTC) FILETIME=[3D25C5D0:01C9C1CA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I've noticed that when running a VM such as qemu/vbox with approx 75% of
+physical memory allocated with the default swappiness the swap file usage
+will rise to approximately the same amount. Although setting swappiness to 0
+seems to prevent this, running with this setting seems counter intuitive.
+I'm wondering if the following is or would be possible
 
-Recently there was a brief discussion on linux-arm-kernel list [1] about
-controlling voltage regulator state in cases when there is no consumer device
-for a particular regulator.
+1. Provide page hint to prevent swapping of certain pages. This would
+presumably allow applications running in the remaining host memory to use
+the swap file efficiently.
+2. Provide user space controls to prevent a certain process (or the memory
+it allocates) being swapped. 
 
-I have some thoughts but I'd like to know people opinion before I start
-implementation.
+I'm not sure if memory ballooning will cover the above as I couldn't find
+details of anything similar but would think that having some tunability for
+special cases such as VMs would be useful especially if you could pick guest
+performance / host memory usage on a per VM basis. I note that xen does seem
+to do something along these lines as standard.
 
-Problem
--------
-The regulator framework API provides ability to control the state of
-voltage/current regulators from within the kernel. Usually the regulator
-supplies power to a device and device driver or some hooks to the platform code
-from the device driver manipulate the regulator state. However, the regulator
-framework does not have userspace ABI that allows regulator state modifications.
-Lack of this ABI prevents fine-grained control for power consumption of devices
-such as GPS trancievers and GSM modems. Moreover, in SoC based systems it is
-possible to switch on/off power to entire subsystem when it is not used.
-
-Possible solutions
-------------------
-- Add a platform_driver similar to drivers/regulator/virtual.c that will expose
-writable attributes to sysfs thus allowing userspace to control regulator state.
-It is the most simple and straight forward solution. However, I have several
-questions and I cannot answer them myself:
-  Should the driver handle single or several supplies at once?
-  If the driver handles single supply isn't it a waste of memory to have a
-platform_device per supply?
-  If the driver handles several supplies how to define attributes per-supply?
-  What attributes will be exposed? Would it be simple 'state' that can be
-enabled or disabled? Or the entire set of micorvolts/microamps etc?
-
-- Extend regulator framework so that regulator_consumer_supply entities will
-gain their own representation in sysfs. Depending on machine constraints the
-supply attributes can be either read-only or writable. I haven't dedicated much
-thought to it, so a cannot state any pros and cons.
-
-Any feedback is appreciated.
-
---
-[1] http://lists.arm.linux.org.uk/lurker/message/20090413.125359.613f85ad.en.html
-
--- 
-Sincerely yours,
-Mike.
-
+Will Wiseman
 
 
 
