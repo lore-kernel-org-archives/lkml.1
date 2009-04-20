@@ -1,95 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZDTNpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbZDTNyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbZDTNpa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 09:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZDTNpQ
+	id S1755699AbZDTNyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 09:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZDTNye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 09:45:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34701 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755223AbZDTNpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 09:45:15 -0400
-Message-ID: <49EC7C5F.2000006@redhat.com>
-Date: Mon, 20 Apr 2009 16:45:03 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add MCE support to KVM
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com>
-In-Reply-To: <49EC7797.7060004@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 09:54:34 -0400
+Received: from lutt.itea.ntnu.no ([129.241.18.234]:59263 "EHLO
+	lutt.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755353AbZDTNyd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 09:54:33 -0400
+From: Henrik Austad <henrik@austad.us>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: --compose@medea.austad.us, --dry-run@medea.austad.us
+Message-Id: <20090420135554.0FE7B2141A4@medea.austad.us>
+Date: Mon, 20 Apr 2009 15:55:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
-> On 04/20/09 14:43, Avi Kivity wrote:
->> Gerd Hoffmann wrote:
->>>> That said, I'd like to be able to emulate the Xen HVM hypercalls. 
->>>> But in
->>>> any case, they hypercall implementation has to be in the kernel,
->>>
->>> No. With Xenner the xen hypercall emulation code lives in guest
->>> address space.
->>
->> In this case the guest ring-0 code should trap the #GP, and install the
->> hypercall page (which uses sysenter/syscall?). No kvm or qemu changes
->> needed.
->
-> Doesn't fly.
->
-> Reason #1: In the pv-on-hvm case the guest runs on ring0.
+LKML <linux-kernel@vger.kernel.org>, Peter Ziljstra <peterz@infradead.org>, Henrik Austad <henrik@austad.us>
+Subject: [PATCH 1/2] sched: Move priority calculation into sched_class.
+Date: Mon, 20 Apr 2009 15:55:52 +0200
+Message-Id: <1240235753-1180-1-git-send-email-henrik@austad.us>
+X-Mailer: git-send-email 1.6.1.2
 
-Sure, in this case you need to trap the MSR in the kernel (or qemu).  
-But the handler is no longer in the guest address space, and you do need 
-to update the opcode.
+When calculating the normal priority of a task, sched.c tested to see if the
+task was an RT-task, or other. By moving this into sched_class, the calculation
+becomes more modular, and the core scheduler becomes less aware of sched-class'
+internals.
 
-Let's not confuse the two cases.
+Signed-off-by: Henrik Austad <henrik@austad.us>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+---
+ include/linux/sched.h   |    1 +
+ kernel/sched.c          |   16 +---------------
+ kernel/sched_fair.c     |    7 +++++++
+ kernel/sched_idletask.c |    6 ++++++
+ kernel/sched_rt.c       |    6 ++++++
+ 5 files changed, 21 insertions(+), 15 deletions(-)
 
-> Reason #2: Chicken-egg issue:  For the pv-on-hvm case only few,
->            simple hypercalls are needed.  The code to handle them
->            is small enougth that it can be loaded directly into the
->            hypercall page(s).
-
-Please elaborate.  What hypercalls are so simple that an exit into the 
-hypervisor is not necessary?
-
->>> Is there any reason to? I *think* xen does it for better scheduling
->>> latency. But with xen emulation sitting in guest address space we can
->>> schedule the guest at will anyway.
->>
->> It also improves latency within the guest itself. At least I think that
->> what was the Hyper-V spec is saying. You can interrupt the execution of
->> a long hypercall, inject and interrupt, and resume. Sort of like a
->> rep/movs instruction, which the cpu can and will interrupt.
->
-> Hmm.  Needs investigation..  I'd expect the main source of latencies 
-> is page table walking.  Xen works very different from kvm+xenner here ...
-
-kvm is mostly O(1).  We need to limit rmap chains, but we're fairly 
-close.  The kvm paravirt mmu calls are not O(1), but we can easily use 
-continuations there (and they're disabled on newer processors anyway).
-
-Another area that worries me is virtio notification, which can take a 
-long time.  It won't be trivial, but we can make work:
-
-- for the existing pio-to-userspace notification, add a bit that tells 
-the kernel to repeat the instruction instead of continuing.  the 'outl' 
-instruction is idempotent, so we can do partial work, and return to the 
-kernel.
-- if using hypercallfd/piofd to a pipe, we're offloading everything to 
-another thread anyway, so we can return immediately
-- if using hypercallfd/piofd to a kernel virtio server, it can return 0 
-bytes written, indicating it needs a retry.  kvm can try to inject an 
-interrupt if it sees this.
-
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4c38bc..f16db27 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1018,6 +1018,7 @@ struct sched_class {
+ 			     int running);
+ 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
+ 			     int oldprio, int running);
++	int (*normal_prio) (struct task_struct *task);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	void (*moved_group) (struct task_struct *p);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b902e58..d78c84e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1806,14 +1806,6 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+ }
+ 
+ /*
+- * __normal_prio - return the priority that is based on the static prio
+- */
+-static inline int __normal_prio(struct task_struct *p)
+-{
+-	return p->static_prio;
+-}
+-
+-/*
+  * Calculate the expected normal priority: i.e. priority
+  * without taking RT-inheritance into account. Might be
+  * boosted by interactivity modifiers. Changes upon fork,
+@@ -1822,13 +1814,7 @@ static inline int __normal_prio(struct task_struct *p)
+  */
+ static inline int normal_prio(struct task_struct *p)
+ {
+-	int prio;
+-
+-	if (task_has_rt_policy(p))
+-		prio = MAX_RT_PRIO-1 - p->rt_priority;
+-	else
+-		prio = __normal_prio(p);
+-	return prio;
++	return p->sched_class->normal_prio(p);
+ }
+ 
+ /*
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 3816f21..c94519a 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1749,6 +1749,12 @@ static void prio_changed_fair(struct rq *rq, struct task_struct *p,
+ 		check_preempt_curr(rq, p, 0);
+ }
+ 
++/* Return the expected, normal priority */
++static int normal_prio_fair(struct task_struct *p)
++{
++	return p->static_prio;
++}
++
+ /*
+  * We switched to the sched_fair class.
+  */
+@@ -1815,6 +1821,7 @@ static const struct sched_class fair_sched_class = {
+ 	.task_new		= task_new_fair,
+ 
+ 	.prio_changed		= prio_changed_fair,
++	.normal_prio		= normal_prio_fair,
+ 	.switched_to		= switched_to_fair,
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
+index 8a21a2e..e52ae7c 100644
+--- a/kernel/sched_idletask.c
++++ b/kernel/sched_idletask.c
+@@ -96,6 +96,11 @@ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
+ 		check_preempt_curr(rq, p, 0);
+ }
+ 
++static int normal_prio_idle(struct task_struct *p)
++{
++	return p->static_prio;
++}
++
+ /*
+  * Simple, special scheduling class for the per-CPU idle tasks:
+  */
+@@ -122,6 +127,7 @@ static const struct sched_class idle_sched_class = {
+ 	.task_tick		= task_tick_idle,
+ 
+ 	.prio_changed		= prio_changed_idle,
++	.normal_prio		= normal_prio_idle,
+ 	.switched_to		= switched_to_idle,
+ 
+ 	/* no .task_new for idle tasks */
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index f2c66f8..5c9a8f1 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1664,6 +1664,11 @@ static void prio_changed_rt(struct rq *rq, struct task_struct *p,
+ 	}
+ }
+ 
++static int normal_prio_rt(struct task_struct *p)
++{
++	return MAX_RT_PRIO-1 - p->rt_priority;
++}
++
+ static void watchdog(struct rq *rq, struct task_struct *p)
+ {
+ 	unsigned long soft, hard;
+@@ -1752,6 +1757,7 @@ static const struct sched_class rt_sched_class = {
+ 	.task_tick		= task_tick_rt,
+ 
+ 	.prio_changed		= prio_changed_rt,
++	.normal_prio		= normal_prio_rt,
+ 	.switched_to		= switched_to_rt,
+ };
+ 
 -- 
-error compiling committee.c: too many arguments to function
+1.6.1.2
 
