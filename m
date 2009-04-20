@@ -1,121 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbZDTPsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZDTPua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbZDTPsi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZDTPs0
+	id S1756454AbZDTPua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 11:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbZDTPuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:48:26 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:45560 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755665AbZDTPsY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:48:24 -0400
-Message-ID: <49EC990B.1030007@suse.de>
-Date: Mon, 20 Apr 2009 21:17:23 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 20 Apr 2009 11:50:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37317 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755620AbZDTPuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 11:50:13 -0400
+Date: Mon, 20 Apr 2009 17:50:11 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Add ext3 data=guarded mode
+Message-ID: <20090420155010.GG14699@duck.suse.cz>
+References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com> <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com> <1239910921.21233.98.camel@think.oraclecorp.com> <20090420134423.GE14699@duck.suse.cz> <1240237105.16213.41.camel@think.oraclecorp.com> <20090420144241.GF14699@duck.suse.cz> <1240239490.16213.57.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Masahiro Tamori <masahiro.tamori@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
-References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>	 <49D45E42.3050502@suse.de>	 <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>	 <49EC0A83.8060802@suse.de> <1240230224.8073.6.camel@heimdal.trondhjem.org>	 <49EC6CB3.8080800@suse.de> <1240237274.13636.9.camel@heimdal.trondhjem.org>
-In-Reply-To: <1240237274.13636.9.camel@heimdal.trondhjem.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240239490.16213.57.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Mon, 2009-04-20 at 18:08 +0530, Suresh Jayaraman wrote:
->> Trond Myklebust wrote:
->>> On Mon, 2009-04-20 at 11:09 +0530, Suresh Jayaraman wrote:
->>>> Hi Trond,
->>>>
->>>> Do you think this patch is OK? Can this be considered for merging?
->>>>>>>> +
->>>>>>>> +  if (IS_SWAPFILE(inode)) {
->>>>>>>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
->>>>>>>> +          "file!\n");
->>>>>>>> +      return -EBUSY;
->>>>>>>> +  }
->>> I don't know that we really need this. We should sweep through the NFS
->>> code and kill all those IS_SWAPFILE() thingys. Or at least #define
->>> IS_SWAPFILE(a) (0)
->>> ...
->> Hmm.. I'm not sure whether we should kill them now. I think originally,
->> these were added keeping in mind the future NFS swap support. Given that
->> the recent work from Peterz Zilstra on "Swap over NFS" and multiple
->> iterations/review on the same, I think those patches will eventually get
->> merged sooner or later. Perhaps, it's a good idea to #define
->> IS_SWAPFILE(a) 0 than killing them entirely..?
+On Mon 20-04-09 10:58:10, Chris Mason wrote:
+> > > >   3) Currently truncate() does filemap_write_and_wait() - is it really
+> > > > needed? Each guarded bh could carry with itself i_disksize it should update
+> > > > to when IO is finished. Extending truncate will just update this i_disksize
+> > > > at the last member of the list (or update i_disksize when the list is
+> > > > empty). 
+> > > >
+> > > > Shortening truncate will walk the list of guarded bh's, removing from
+> > > > the list those beyond new i_size, then it will behave like the extending
+> > > > truncate (it works even if current i_disksize is larger than new i_size).
+> > > > Note, that before we get to ext3_truncate() mm walks all the pages beyond
+> > > > i_size and waits for page writeback so by the time ext3_truncate() is
+> > > > called, all the IO is finished and dirty pages are canceled.
+> > > 
+> > > The problem here was the disk i_size being updated by ext3_setattr
+> > > before the vmtruncate calls calls ext3_truncate().  So the guarded IO
+> > > might wander in and change the i_disksize update done by setattr.
+> > > 
+> > > It all made me a bit dizzy and I just tossed the write_and_wait in
+> > > instead.
+> > > 
+> > > At the end of the day, we're waiting for guarded writes only, and we
+> > > probably would have ended up waiting on those exact same pages in
+> > > vmtruncate anyway.  So, I do agree we could avoid the write with more
+> > > code, but is this really a performance critical section?
+> >   Well, not really critical but also not negligible - mainly because with
+> > your approach we end up *submitting* new writes we could just be canceled
+> > otherwise. Without fdatawrite(), data of short-lived files need not ever
+> > reach the disk similarly as in writeback mode (OK, this is connected with
+> > the fact that you actually don't have fdatawrite() before ext3_truncate()
+> > in ext3_delete_inode() and that's what initially puzzled me).
 > 
-> Why are they needed at all? AFAICS, other filesystems check IS_SWAPFILE
-> when truncating a file, but don't litter their code with all these weird
-> checks for writing, reading, etc.
+> When we're going down to zero, we don't need it.  The i_disksize gets
+> updated again by ext3_truncate.  I'll toss in a special case for that
+> before the write_and_wait.
+  I'm sorry but why truncate to zero does not need it? If we assume that
+IO completion can still happen while ext3_truncate() is running which is
+what you're afraid of, then I don't see a big difference between truncate
+to zero, truncate to i_disksize (which is from where you do fdatawrite) or
+truncate to anything else.
+  Also two other comments:
+...
+@@ -915,14 +1042,19 @@ int ext3_get_blocks_handle(handle_t *handle, struct
+inode *inode,
+         * i_disksize growing is protected by truncate_mutex.  Don't forget
+         * to
+         * protect it if you're about to implement concurrent
+         * ext3_get_block() -bzzz
++        *
++        * FIXME, I think this only needs to extend the disk i_size when
++        * we're filling holes that came from using ftruncate to increase
++        * i_size.  Need to verify.
+        */
+-       if (!err && extend_disksize && inode->i_size > ei->i_disksize)
+-               ei->i_disksize = inode->i_size;
++       if (!ext3_should_guard_data(inode) && !err && extend_disksize)
++               maybe_update_disk_isize(inode, inode->i_size);
+This is kind of confusing. extend_disksize is used only from ext3_getblk()
+which is called only for directories so the first condition is always true
+- and if it wasn't sometime in future, you'd have a hard time tracking why
+i_disksize is not updated.  So I'd rather add something like
+  WARN_ON(extend_disksize && ext3_should_guard_data(inode));
+if you wish to keep the check.
 
-Yes, except for afs other filesystems seem to check only during
-truncation.
+  Also I think you can have races between direct IO writing to the file
+(updating i_disksize) and your completion handler updating i_disksize -
+direct IO plays tricks with i_disksize to truncate allocated blocks in case
+of failed write... It's all nasty ;( Probably we should somehow set clear
+rules about i_disksize updates and clean up the code to obey them.
+Otherwise we'll be hunting nasty races another two years...
 
-> It's not as if these checks can stop a determined privileged person from
-> writing to the swapfile anyway. All they have to do is go to another
-> client or write directly to the file on the server...
-> 
+									Honza
 
-Make sense.
-
-Here is the trimmed version. I think the dprink could be retained
-for debugging issues, if any.
-
-Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
----
- fs/nfs/file.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 5a97bcf..6dfe7df 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -48,6 +48,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
- 					size_t count, unsigned int flags);
- static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
- 				unsigned long nr_segs, loff_t pos);
-+static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-+					struct file *filp, loff_t *ppos,
-+					size_t count, unsigned int flags);
- static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
- 				unsigned long nr_segs, loff_t pos);
- static int  nfs_file_flush(struct file *, fl_owner_t id);
-@@ -73,6 +76,7 @@ const struct file_operations nfs_file_operations = {
- 	.lock		= nfs_lock,
- 	.flock		= nfs_flock,
- 	.splice_read	= nfs_file_splice_read,
-+	.splice_write	= nfs_file_splice_write,
- 	.check_flags	= nfs_check_flags,
- 	.setlease	= nfs_setlease,
- };
-@@ -587,6 +591,19 @@ out_swapfile:
- 	goto out;
- }
- 
-+static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-+				     struct file *filp, loff_t *ppos,
-+				     size_t count, unsigned int flags)
-+{
-+	struct dentry *dentry = filp->f_path.dentry;
-+
-+	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
-+		dentry->d_parent->d_name.name, dentry->d_name.name,
-+		(unsigned long) count, (unsigned long long) *ppos);
-+
-+	return generic_file_splice_write(pipe, filp, ppos, count, flags);
-+}
-+
- static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
- {
- 	struct inode *inode = filp->f_mapping->host;
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
