@@ -1,74 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbZDTOZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZDTO1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbZDTOZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 10:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZDTOZI
+	id S1756216AbZDTO1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 10:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZDTO1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 10:25:08 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:35673 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755768AbZDTOZH convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 10:27:11 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:47214 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755693AbZDTO1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 10:25:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oq4ZCwAsmV4ZGX9VhSCMAj89O+Zxg8UM4msQycoluACDlBK8nDNYL7FYAfMmZpUf8c
-         tYfuxp7hIrBazIm1/jEi9XDFmr/EX7ZYE81u+uKGGPMm8wyA8SwyfOg9REOoIKIzDvRh
-         KKBLBWyGsTrfWnMo42+11uVde7X4PbVWEVyMo=
-MIME-Version: 1.0
-In-Reply-To: <49EC8317.9080300@suse.com>
-References: <a4423d670904161223r2e026b6u903137c709318551@mail.gmail.com>
-	 <49EC8317.9080300@suse.com>
-Date: Mon, 20 Apr 2009 18:25:05 +0400
-Message-ID: <a4423d670904200725x69d28139h812524390c6de8e5@mail.gmail.com>
-Subject: Re: 2.6.30-rc2: reiserfs_delete_xattrs: Couldn't delete all xattrs 
-	(-13)
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 20 Apr 2009 10:27:09 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: netdev@vger.kernel.org
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, auke-jan.h.kok@intel.com,
+       e1000-devel@lists.sourceforge.net,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] e100: do not go D3 in shutdown unless system is powering off
+Date: Mon, 20 Apr 2009 11:27:01 -0300
+Message-Id: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/20 Jeff Mahoney <jeffm@suse.com>:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Alexander Beregalov wrote:
->> Hi Jeff
->>
->> The kernel prints this message every 20seconds
->> [  836.973100]
->> [  836.983494] REISERFS warning (device sda2): jdm-20004
->> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
->> [  836.983496]
->> [  894.203634] REISERFS warning (device sda2): jdm-20004
->> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
->> [  894.203636]
->> [  894.205784] REISERFS warning (device sda2): jdm-20004
->> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
->>
->> commit a41f1a4715
->>
->> CONFIG_REISERFS_FS=y
->> # CONFIG_REISERFS_CHECK is not set
->> # CONFIG_REISERFS_PROC_INFO is not set
->> # CONFIG_REISERFS_FS_XATTR is not set
->>
->> I did not enable XATTR before,
->> should I enable it now ?
->
-> You shouldn't need to, and you shouldn't be seeing those messages.
->
-> What are you doing to reproduce it? I disabled the xattr config option,
-> copied a directory tree over and removed it. I didn't see anything.
-Just regular work. For example kernel compiling.
-I see that messages on 2 of 3 systems (x86 and parisc). The third
-system is x86 also,
-no messages at all. I do not know how to "switch" messages on.
-Let me know if I can help, perhaps dump superblock or something.
+After experimenting with kexec with the last merges after 2.6.29, I've
+had some problems when probing e100. It would not read the eeprom. After
+some bisects, I realized this has been like that since forever (at least
+2.6.18). The problem is that shutdown is doing the same thing that
+suspend does and puts the device in D3 state. I couldn't find a way to
+get the device back to a sane state in the probe function. So, based on
+some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
+I wrote this one for e100.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/net/e100.c |   27 +++++++++++++++++++++------
+ 1 files changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index c0f8443..3db7b29 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -2728,7 +2728,7 @@ static void __devexit e100_remove(struct pci_dev *pdev)
+ #define E100_82552_SMARTSPEED   0x14   /* SmartSpeed Ctrl register */
+ #define E100_82552_REV_ANEG     0x0200 /* Reverse auto-negotiation */
+ #define E100_82552_ANEG_NOW     0x0400 /* Auto-negotiate now */
+-static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
++static int __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct nic *nic = netdev_priv(netdev);
+@@ -2749,19 +2749,31 @@ static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
+ 			           E100_82552_SMARTSPEED, smartspeed |
+ 			           E100_82552_REV_ANEG | E100_82552_ANEG_NOW);
+ 		}
+-		if (pci_enable_wake(pdev, PCI_D3cold, true))
+-			pci_enable_wake(pdev, PCI_D3hot, true);
++		*enable_wake = true;
+ 	} else {
+-		pci_enable_wake(pdev, PCI_D3hot, false);
++		*enable_wake = false;
+ 	}
+ 
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
+ 
+ 	return 0;
+ }
+ 
++static void __e100_power_off(struct pci_dev *pdev, bool wake)
++{
++	pci_enable_wake(pdev, PCI_D3hot, wake);
++	pci_set_power_state(pdev, PCI_D3hot);
++}
++
+ #ifdef CONFIG_PM
++static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	bool wake;
++	int retval = __e100_shutdown(pdev, &wake);
++	__e100_power_off(pdev, wake);
++	return retval;
++}
++
+ static int e100_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -2792,7 +2804,10 @@ static int e100_resume(struct pci_dev *pdev)
+ 
+ static void e100_shutdown(struct pci_dev *pdev)
+ {
+-	e100_suspend(pdev, PMSG_SUSPEND);
++	bool wake;
++	__e100_shutdown(pdev, &wake);
++	if (system_state == SYSTEM_POWER_OFF)
++		__e100_power_off(pdev, wake);
+ }
+ 
+ /* ------------------ PCI Error Recovery infrastructure  -------------- */
+-- 
+1.6.2.2
+
