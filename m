@@ -1,93 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbZDTJHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbZDTJIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754427AbZDTJHd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 05:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZDTJHX
+	id S1754394AbZDTJIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 05:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZDTJHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 05:07:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43766 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751285AbZDTJHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 05:07:22 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+65FNVx/G6WLV6i+T2YCNh3pI4cDiQxDze3v7huO
-	4MLsTsu03xmqwO
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-From: Mike Galbraith <efault@gmx.de>
-To: Amit Shah <amit.shah@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
-       Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <20090419062448.GA13272@amit-x200.pnq.redhat.com>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
-	 <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
-	 <1239910921.21233.98.camel@think.oraclecorp.com>
-	 <20090417180906.GA8363@amit-x200.pnq.redhat.com>
-	 <20090417201342.GF26479@mit.edu>
-	 <20090418060312.GA10943@amit-x200.pnq.redhat.com>
-	 <1240039701.6298.12.camel@marge.simson.net>
-	 <20090419062448.GA13272@amit-x200.pnq.redhat.com>
-Content-Type: text/plain
-Date: Mon, 20 Apr 2009 11:07:17 +0200
-Message-Id: <1240218437.7005.27.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+	Mon, 20 Apr 2009 05:07:52 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:17647 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753775AbZDTJHv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 05:07:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=UHCH/I2w26TIPAMewbX2HxTuYUuik4WazZh5tl+h6CdmUfzzxYcbyJ8HH0yY3fnNg
+	qPphIbL3GdjNv0teQ/Zbg==
+MIME-Version: 1.0
+In-Reply-To: <20090420.172959.193682665.ryov@valinux.co.jp>
+References: <20090416.114750.226794985.ryov@valinux.co.jp>
+	 <20090416141125.GB8896@redhat.com>
+	 <e98e18940904161324p9833457vdf699d66bb323591@mail.gmail.com>
+	 <20090420.172959.193682665.ryov@valinux.co.jp>
+Date: Mon, 20 Apr 2009 02:07:44 -0700
+Message-ID: <e98e18940904200207y62eca680t7cf938049375f4b3@mail.gmail.com>
+Subject: Re: [dm-devel] Re: dm-ioband: Test results.
+From: Nauman Rafique <nauman@google.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: vgoyal@redhat.com, fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       jmoyer@redhat.com, dm-devel@redhat.com, jens.axboe@oracle.com,
+       agk@redhat.com, balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-19 at 11:54 +0530, Amit Shah wrote:
-> On (Sat) Apr 18 2009 [09:28:21], Mike Galbraith wrote:
+On Mon, Apr 20, 2009 at 1:29 AM, Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+> Hi Vivek and Nauman,
+>
+>> On Thu, Apr 16, 2009 at 7:11 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>> > On Thu, Apr 16, 2009 at 11:47:50AM +0900, Ryo Tsuruta wrote:
+>> >> Hi Vivek,
+>> >>
+>> >> > General thoughts about dm-ioband
+>> >> > ================================
+>> >> > - Implementing control at second level has the advantage tha one does not
+>> >> >   have to muck with IO scheduler code. But then it also has the
+>> >> >   disadvantage that there is no communication with IO scheduler.
+>> >> >
+>> >> > - dm-ioband is buffering bio at higher layer and then doing FIFO release
+>> >> >   of these bios. This FIFO release can lead to priority inversion problems
+>> >> >   in certain cases where RT requests are way behind BE requests or
+>> >> >   reader starvation where reader bios are getting hidden behind writer
+>> >> >   bios etc. These are hard to notice issues in user space. I guess above
+>> >> >   RT results do highlight the RT task problems. I am still working on
+>> >> >   other test cases and see if i can show the probelm.
+>>
+>> Ryo, I could not agree more with Vivek here. At Google, we have very
+>> stringent requirement for latency of our RT requests. If RT requests
+>> get queued in any higher layer (behind BE requests), all bets are off.
+>> I don't find doing IO control at two layer for this particular reason.
+>> The upper layer (dm-ioband in this case) would have to make sure that
+>> RT requests are released immediately, irrespective of the state (FIFO
+>> queuing and tokens held). And the lower layer (IO scheduling layer)
+>> has to do the same. This requirement is not specific to us. I have
+>> seen similar comments from filesystem folks here previously, in the
+>> context of metadata updates being submitted as RT. Basically, the
+>> semantics of RT class has to be preserved by any solution that is
+>> build on top of CFQ scheduler.
+>
+> I could see the priority inversion by running Vivek's script and I
+> understand how RT requests has to be handled. I'll create a patch
+> which makes dm-ioband cooperates with CFQ scheduler. However, do you
+> think we need some kind of limitation on processes which belong to the
+> RT class to prevent the processes from depleting bandwidth?
 
-> > Probably because you're swapping heavily, and that is perturbing your
-> 
-> The variance only affects the 4k test; the other times more or less
-> remain the same.
+If you are talking about starvation that could be caused by RT tasks,
+you are right. We need some mechanism to introduce starvation
+prevention, but I think that is an issue that can be tackled once we
+decide where to do bandwidth control.
 
-My box disagrees.
+The real question is, once you create a version of dm-ioband that
+co-operates with CFQ scheduler, how that solution would compare with
+the patch set Vivek has posted? In my opinion, we need to converge to
+one solution as soon as possible, so that we can work on it together
+to refine and test it.
 
-(bumps ulimits to test 4BG... OS+swap live on sdb btw)
-
-./test-file-zero-alloc-speed 4 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=foo,acl,user_xattr
-
-foo=guarded
-4k   225  141   80  142  361
-8k    74   96  362   78   84
-mm    55   57   57   57   57
-
-foo=writeback
-4k   179  264  187  125   93
-8k    94  161   73  334   84
-mm    57   58   57   56   57
-
-foo=ordered
-4k    81   74   76   80   75
-8k    77   76  224   79   79 
-mm    59   56   60   58   59
-
-foo=journal
-4k    95  297   69   83  420
-8k    73  139  158   80   78
-mm    57   58   56   59   56
-
-./test-file-zero-alloc-speed 2 /dev/sdf3 /media/root ext3 rw,_netdev,noatime,data=foo,acl,user_xattr
-
-foo=guarded
-4k    28   27   27   28   28
-8k    28   27   27   28   27
-
-foo=writeback
-4k    27   27   27   27   27
-8k    28   28   27   27   28
-
-All journal modes seem subject to bad throughput under heavy pressure,
-though data=ordered seems much less likely to suffer for some reason.
-Major difference _seems_ to be that write()+largefile induces very much
-swap activity.
-
-	-Mike
-
+>
+> Thanks,
+> Ryo Tsuruta
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
