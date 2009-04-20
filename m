@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZDTUmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZDTUmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757238AbZDTUmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 16:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZDTUmX
+	id S1757449AbZDTUmr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 16:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbZDTUm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 16:42:23 -0400
-Received: from smtp.flash.net.br ([201.46.240.48]:35475 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753924AbZDTUmW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 16:42:22 -0400
-Date: Mon, 20 Apr 2009 17:41:39 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, Michael Tokarev <mjt@tls.msk.ru>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Quick question about libata and hdparm
-Message-ID: <20090420204139.GA15230@ime.usp.br>
-References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <49EB1A33.7050808@rtr.ca> <49EB1C9C.3000105@msgid.tls.msk.ru> <49EB1FB3.5000609@garzik.org> <20090419201132.GB2891@ime.usp.br> <49EB9758.3020506@garzik.org> <20090420173526.GA7935@ime.usp.br> <20090420194017.4edd5674@lxorguk.ukuu.org.uk>
+	Mon, 20 Apr 2009 16:42:29 -0400
+Received: from sycorax.lbl.gov ([128.3.11.121]:33283 "EHLO sycorax.lbl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756915AbZDTUm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 16:42:28 -0400
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc2: reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
+References: <a4423d670904161223r2e026b6u903137c709318551@mail.gmail.com>
+	<49EC8317.9080300@suse.com>
+Date: Mon, 20 Apr 2009 13:42:19 -0700
+In-Reply-To: <49EC8317.9080300@suse.com> (message from Jeff Mahoney on Mon, 20
+	Apr 2009 10:13:43 -0400)
+Message-ID: <87vdozcb10.fsf@sycorax.lbl.gov>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090420194017.4edd5674@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Alan. Thanks for your mail.
+Jeff Mahoney <jeffm@suse.com> writes:
 
-On Apr 20 2009, Alan Cox wrote:
-> > Can you comment on the dmesg log attached? I'd like to, at least,
-> > understand what is happening, since I'm starting to consider using
-> > libata with all my computers.
-> 
-> Its logging a couple of transmission errors. The CRC is computed by
-> hardware each end and compared (by hardware).
+> Alexander Beregalov wrote:
+>> Hi Jeff
+>> 
+>> The kernel prints this message every 20seconds
+>> [  836.973100]
+>> [  836.983494] REISERFS warning (device sda2): jdm-20004
+>> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
+>> [  836.983496]
+>> [  894.203634] REISERFS warning (device sda2): jdm-20004
+>> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
+>> [  894.203636]
+>> [  894.205784] REISERFS warning (device sda2): jdm-20004
+>> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
+>> 
+>> commit a41f1a4715
+>> 
+>> CONFIG_REISERFS_FS=y
+>> # CONFIG_REISERFS_CHECK is not set
+>> # CONFIG_REISERFS_PROC_INFO is not set
+>> # CONFIG_REISERFS_FS_XATTR is not set
+>> 
+>> I did not enable XATTR before,
+>> should I enable it now ?
+>
+> You shouldn't need to, and you shouldn't be seeing those messages.
+>
+> What are you doing to reproduce it? I disabled the xattr config option,
+> copied a directory tree over and removed it. I didn't see anything.
 
-Right. I don't remember the kernel logging out errors when I was using a
-custom kernel and pure Debian userland with the promise IDE controller
-on this ASUS K7V motherboard (which has a VIA KT-133 chipset, not a
-KT-133A).
+i see the same thing all the time. maybe not as often, but i get
+plenty of these warnings. i have the same configuration as the above.
+it started with 2.6.30-rc1 for me.
 
-I can try to test that again, but now I have installed Ubuntu for my
-girlfriend. I have two spare IDE HDs here that I can use for testing
-purposes and trash everything. If more testing is desired, please let me
-know.
-
-> > This computer, in particular, uses an IDE drive with a 40 ribbon
-> > cable (and, thus, no UDMA/66). The cable is well put (checked two
-> > times already) and I believe that everything is OK with this cable,
-> > since I substituted it was already substituting one that gave me the
-> > same results.
-> 
-> It's tuned down to UDMA33 which looks correct.
-
-Yes, that looks fine, as I only have the 40 ribbon cable.
-
-> If I saw a lot of these I'd suspect something like a controller timing
-> setup error, but you seem to just have occasional ones in the log which
-> really does look like genuine CRC errors from electrical noise or
-> similar.
-
-Hummm, now that you mention it, I will see if the loudspeakers installed
-may have any impact on it.
-
-> You don't happen to have any amateur radio transmitters or telsa coils in
-> the room with it ;) ?
-
-No, I don't. :-) But I do have an open embedded computer (with its own
-IDE HD) at less than 10cm of this desktop and said speakers. I will try
-to find any other source of electromagnetic noise.
-
-I can try many things here to try to fix that. I want libata to not have
-that experimental warning for IDE devices.
-
-
-Thanks, Rogério Brito.
+--alex--
 
 -- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |
