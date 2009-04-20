@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZDTBza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZDTBzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZDTBza (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Apr 2009 21:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZDTBzS
+	id S1753711AbZDTBzo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Apr 2009 21:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZDTBzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Apr 2009 21:55:18 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60088 "EHLO
+	Sun, 19 Apr 2009 21:55:25 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60097 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZDTBzR (ORCPT
+	with ESMTP id S1753343AbZDTBzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Apr 2009 21:55:17 -0400
-Message-ID: <49EBD5EC.4040905@jp.fujitsu.com>
-Date: Mon, 20 Apr 2009 10:54:52 +0900
+	Sun, 19 Apr 2009 21:55:23 -0400
+Message-ID: <49EBD5F3.9090107@jp.fujitsu.com>
+Date: Mon, 20 Apr 2009 10:54:59 +0900
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
 CC: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 1/2] pci, msi: Remove unused/obsolete macros and definitions
+Subject: [PATCH 2/2] pci, msi: Define PCI_MSI_MASK_32/64
 Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, spec compliance
+Impact: cleanup, improve readability
 
-This patch does:
-
- - Remove unused msi/msix_enable/disable macros.
-   User should use msi/msix_set_enable() functions instead.
-
- - Remove unused msix_mask/unmask/pending macros.
-   These macros are useless because they are not based on any of
-   the PCI Local Bus Specifications properly.
-   It seems that they were written based on a draft of PCI spec,
-   and that the draft was the MSI-X ECN that underwent membership
-   review in September 2002.
-   (* In the draft, the size of a entry in MSI-X table was 64bit,
-      containing 32bit message data and DWORD aligned lower address
-      plus a pending bit and a mask bit.(30+1+1bit)  The higher
-      address was placed in MSI-X capability structure and shared
-      by all entries.)
-
- - Remove PCI_MSIX_FLAGS_BITMASK.
-   This definition also come from the draft ECN.
+Define PCI_MSI_MASK_32/64 for 32/64bit devices, instead of using
+implicit offset (-4), "PCI_MSI_MASK_BIT - 4" and "PCI_MSI_MASK_BIT".
 
 Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- drivers/pci/msi.h        |    8 +-------
- include/linux/pci_regs.h |    1 -
- 2 files changed, 1 insertions(+), 8 deletions(-)
+ drivers/pci/msi.c        |    2 +-
+ drivers/pci/msi.h        |    6 +++---
+ include/linux/pci_regs.h |    3 ++-
+ 3 files changed, 6 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 6f2e629..0f4d51b 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -381,7 +381,7 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
+ 	entry->msi_attrib.default_irq = dev->irq;	/* Save IOAPIC IRQ */
+ 	entry->msi_attrib.pos = pos;
+ 
+-	entry->mask_pos = msi_mask_bits_reg(pos, entry->msi_attrib.is_64);
++	entry->mask_pos = msi_mask_reg(pos, entry->msi_attrib.is_64);
+ 	/* All MSIs are unmasked by default, Mask them all */
+ 	if (entry->msi_attrib.maskbit)
+ 		pci_read_config_dword(dev, entry->mask_pos, &entry->masked);
 diff --git a/drivers/pci/msi.h b/drivers/pci/msi.h
-index 71f4df2..4fed592 100644
+index 4fed592..a066284 100644
 --- a/drivers/pci/msi.h
 +++ b/drivers/pci/msi.h
-@@ -19,18 +19,12 @@
- 	( (is64bit == 1) ? base+PCI_MSI_DATA_64 : base+PCI_MSI_DATA_32 )
- #define msi_mask_bits_reg(base, is64bit) \
- 	( (is64bit == 1) ? base+PCI_MSI_MASK_BIT : base+PCI_MSI_MASK_BIT-4)
--#define msi_disable(control)		control &= ~PCI_MSI_FLAGS_ENABLE
+@@ -16,9 +16,9 @@
+ #define msi_lower_address_reg(base)	(base + PCI_MSI_ADDRESS_LO)
+ #define msi_upper_address_reg(base)	(base + PCI_MSI_ADDRESS_HI)
+ #define msi_data_reg(base, is64bit)	\
+-	( (is64bit == 1) ? base+PCI_MSI_DATA_64 : base+PCI_MSI_DATA_32 )
+-#define msi_mask_bits_reg(base, is64bit) \
+-	( (is64bit == 1) ? base+PCI_MSI_MASK_BIT : base+PCI_MSI_MASK_BIT-4)
++	(base + ((is64bit == 1) ? PCI_MSI_DATA_64 : PCI_MSI_DATA_32))
++#define msi_mask_reg(base, is64bit)	\
++	(base + ((is64bit == 1) ? PCI_MSI_MASK_64 : PCI_MSI_MASK_32))
  #define is_64bit_address(control)	(!!(control & PCI_MSI_FLAGS_64BIT))
  #define is_mask_bit_support(control)	(!!(control & PCI_MSI_FLAGS_MASKBIT))
  
- #define msix_table_offset_reg(base)	(base + 0x04)
- #define msix_pba_offset_reg(base)	(base + 0x08)
--#define msix_enable(control)	 	control |= PCI_MSIX_FLAGS_ENABLE
--#define msix_disable(control)	 	control &= ~PCI_MSIX_FLAGS_ENABLE
- #define msix_table_size(control) 	((control & PCI_MSIX_FLAGS_QSIZE)+1)
--#define multi_msix_capable		msix_table_size
--#define msix_unmask(address)	 	(address & ~PCI_MSIX_FLAGS_BITMASK)
--#define msix_mask(address)		(address | PCI_MSIX_FLAGS_BITMASK)
--#define msix_is_pending(address) 	(address & PCI_MSIX_FLAGS_PENDMASK)
-+#define multi_msix_capable(control)	msix_table_size((control))
- 
- #endif /* MSI_H */
 diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index e4d08c1..ad57aa8 100644
+index ad57aa8..a81890a 100644
 --- a/include/linux/pci_regs.h
 +++ b/include/linux/pci_regs.h
-@@ -304,7 +304,6 @@
- #define  PCI_MSIX_FLAGS_ENABLE	(1 << 15)
- #define  PCI_MSIX_FLAGS_MASKALL	(1 << 14)
- #define PCI_MSIX_FLAGS_BIRMASK	(7 << 0)
--#define PCI_MSIX_FLAGS_BITMASK	(1 << 0)
+@@ -295,8 +295,9 @@
+ #define PCI_MSI_ADDRESS_LO	4	/* Lower 32 bits */
+ #define PCI_MSI_ADDRESS_HI	8	/* Upper 32 bits (if PCI_MSI_FLAGS_64BIT set) */
+ #define PCI_MSI_DATA_32		8	/* 16 bits of data for 32-bit devices */
++#define PCI_MSI_MASK_32		12	/* Mask bits register for 32-bit devices */
+ #define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
+-#define PCI_MSI_MASK_BIT	16	/* Mask bits register */
++#define PCI_MSI_MASK_64		16	/* Mask bits register for 64-bit devices */
  
- /* CompactPCI Hotswap Register */
- 
+ /* MSI-X registers (these are at offset PCI_MSIX_FLAGS) */
+ #define PCI_MSIX_FLAGS		2
 -- 
 1.6.2.2
 
