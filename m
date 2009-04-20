@@ -1,82 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbZDTN6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZDTN5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbZDTN6J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 09:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZDTN5j
+	id S1756062AbZDTN5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 09:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbZDTN52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 09:57:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34829 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756027AbZDTN5i (ORCPT
+	Mon, 20 Apr 2009 09:57:28 -0400
+Received: from lutt.itea.ntnu.no ([129.241.18.234]:58849 "EHLO
+	lutt.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756005AbZDTN51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 09:57:38 -0400
-Date: Mon, 20 Apr 2009 09:57:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Tim Abbott <tabbott@mit.edu>
-Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
-In-Reply-To: <200904192055.04213.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.2.00.0904200942350.15439@gandalf.stny.rr.com>
-References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 20 Apr 2009 09:57:27 -0400
+From: Henrik Austad <henrik@austad.us>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Ziljstra <peterz@infradead.org>,
+       Henrik Austad <henrik@austad.us>
+Subject: [PATCH 1/2] sched: Move priority calculation into sched_class.
+Date: Mon, 20 Apr 2009 15:59:00 +0200
+Message-Id: <1240235941-1273-2-git-send-email-henrik@austad.us>
+X-Mailer: git-send-email 1.6.1.2
+In-Reply-To: <1240235941-1273-1-git-send-email-henrik@austad.us>
+References: <1240235941-1273-1-git-send-email-henrik@austad.us>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When calculating the normal priority of a task, sched.c tested to see if the
+task was an RT-task, or other. By moving this into sched_class, the calculation
+becomes more modular, and the core scheduler becomes less aware of sched-class'
+internals.
 
+Signed-off-by: Henrik Austad <henrik@austad.us>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+---
+ include/linux/sched.h   |    1 +
+ kernel/sched.c          |   16 +---------------
+ kernel/sched_fair.c     |    7 +++++++
+ kernel/sched_idletask.c |    6 ++++++
+ kernel/sched_rt.c       |    6 ++++++
+ 5 files changed, 21 insertions(+), 15 deletions(-)
 
-On Sun, 19 Apr 2009, Rusty Russell wrote:
-
-> On Thu, 16 Apr 2009 11:48:31 am Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Impact: fix and clean up
-> > 
-> > The hooks in the module code for the function tracer must be called
-> > before any of that module code runs. The function tracer hooks
-> > modify the module (replacing calls to mcount to nops). If the code
-> > is executed while the change occurs, then the CPU can take a GPF.
-> > 
-> > To handle the above with a bit of paranoia, I originally implemented
-> > the hooks as calls directly from the module code.
-> > 
-> > After examining the notifier calls, it looks as though the start up
-> > notify is called before any of the module's code is executed. This makes
-> > the use of the notify safe with ftrace.
-> 
-> Hi Steven,
-> 
->    Unfortunately not: we do parse_args, which can call into the module code.
-> (Though it shouldn't do anything "significant", as it won't get a chance to
-> clean up if module load fails later).
-> 
-> I think you need to do something else in general.  Share the module_mutex for
-> the ftrace code?  The ksplice guys have a similar issue, so maybe we should
-> generalize this into a "kernel_text" mutex?
-
-Hi Rusty,
-
-Thanks, for the update. I think we may still be OK.
-
-The thing that dynamic ftrace must watch out for is not running of code 
-per say, but the executing of code on one cpu that is being modified on 
-another.
-
-Can those parse_args kick off threads? Hmm, probably. Sounds nasty to 
-me.
-
-The other thing is, if the parse_args code is only in "__init" then they 
-also will not be touched.
-
-I guess we can keep the code as notify if we never expect to run kthreads 
-from parse_args. Or is it possible to move parse_args after notify?
-
--- Steve
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4c38bc..f16db27 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1018,6 +1018,7 @@ struct sched_class {
+ 			     int running);
+ 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
+ 			     int oldprio, int running);
++	int (*normal_prio) (struct task_struct *task);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	void (*moved_group) (struct task_struct *p);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b902e58..d78c84e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1806,14 +1806,6 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+ }
+ 
+ /*
+- * __normal_prio - return the priority that is based on the static prio
+- */
+-static inline int __normal_prio(struct task_struct *p)
+-{
+-	return p->static_prio;
+-}
+-
+-/*
+  * Calculate the expected normal priority: i.e. priority
+  * without taking RT-inheritance into account. Might be
+  * boosted by interactivity modifiers. Changes upon fork,
+@@ -1822,13 +1814,7 @@ static inline int __normal_prio(struct task_struct *p)
+  */
+ static inline int normal_prio(struct task_struct *p)
+ {
+-	int prio;
+-
+-	if (task_has_rt_policy(p))
+-		prio = MAX_RT_PRIO-1 - p->rt_priority;
+-	else
+-		prio = __normal_prio(p);
+-	return prio;
++	return p->sched_class->normal_prio(p);
+ }
+ 
+ /*
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 3816f21..c94519a 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1749,6 +1749,12 @@ static void prio_changed_fair(struct rq *rq, struct task_struct *p,
+ 		check_preempt_curr(rq, p, 0);
+ }
+ 
++/* Return the expected, normal priority */
++static int normal_prio_fair(struct task_struct *p)
++{
++	return p->static_prio;
++}
++
+ /*
+  * We switched to the sched_fair class.
+  */
+@@ -1815,6 +1821,7 @@ static const struct sched_class fair_sched_class = {
+ 	.task_new		= task_new_fair,
+ 
+ 	.prio_changed		= prio_changed_fair,
++	.normal_prio		= normal_prio_fair,
+ 	.switched_to		= switched_to_fair,
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
+index 8a21a2e..e52ae7c 100644
+--- a/kernel/sched_idletask.c
++++ b/kernel/sched_idletask.c
+@@ -96,6 +96,11 @@ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
+ 		check_preempt_curr(rq, p, 0);
+ }
+ 
++static int normal_prio_idle(struct task_struct *p)
++{
++	return p->static_prio;
++}
++
+ /*
+  * Simple, special scheduling class for the per-CPU idle tasks:
+  */
+@@ -122,6 +127,7 @@ static const struct sched_class idle_sched_class = {
+ 	.task_tick		= task_tick_idle,
+ 
+ 	.prio_changed		= prio_changed_idle,
++	.normal_prio		= normal_prio_idle,
+ 	.switched_to		= switched_to_idle,
+ 
+ 	/* no .task_new for idle tasks */
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index f2c66f8..5c9a8f1 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1664,6 +1664,11 @@ static void prio_changed_rt(struct rq *rq, struct task_struct *p,
+ 	}
+ }
+ 
++static int normal_prio_rt(struct task_struct *p)
++{
++	return MAX_RT_PRIO-1 - p->rt_priority;
++}
++
+ static void watchdog(struct rq *rq, struct task_struct *p)
+ {
+ 	unsigned long soft, hard;
+@@ -1752,6 +1757,7 @@ static const struct sched_class rt_sched_class = {
+ 	.task_tick		= task_tick_rt,
+ 
+ 	.prio_changed		= prio_changed_rt,
++	.normal_prio		= normal_prio_rt,
+ 	.switched_to		= switched_to_rt,
+ };
+ 
+-- 
+1.6.1.2
 
