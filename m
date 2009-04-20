@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbZDTO42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbZDTO4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbZDTO42 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 10:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbZDTO4R
+	id S1756369AbZDTO4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 10:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbZDTO4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 10:56:17 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:53916 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755595AbZDTO4R convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 10:56:30 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37825 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756292AbZDTO43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 10:56:17 -0400
+	Mon, 20 Apr 2009 10:56:29 -0400
+Date: Mon, 20 Apr 2009 15:56:27 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFD] voltage/current regulator consumer interface
+Message-ID: <20090420145627.GA5281@rakim.wolfsonmicro.main>
+References: <49EC8775.8060609@compulab.co.il>
 MIME-Version: 1.0
-In-Reply-To: <20090420143606.4309C74804E@mail192-wa4.bigfish.com>
-References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu> 
-	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu> 
-	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com> <fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com> 
-	<495563870904181941o5a66126dgb59d8cad2b7a66f2@mail.gmail.com> 
-	<1d3f23370904191603s37a6a34clccc397707394650b@mail.gmail.com> 
-	<977C41F842E66D4CB2E41332313B6150069D3D27@XSJ-EXCHVS1.xlnx.xilinx.com> 
-	<20090420143606.4309C74804E@mail192-wa4.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 20 Apr 2009 08:48:06 -0600
-Message-ID: <fa686aa40904200748t4fc0b623naf7fd8c34a743733@mail.gmail.com>
-Subject: Re: [microblaze-uclinux] [PATCH 11/11] microblaze: Kconfig: Enable 
-	drivers for Microblaze
-To: John Linn <John.Linn@xilinx.com>
-Cc: Stephen Neuendorffer <stephenn@xilinx.com>,
-       John Williams <john.williams@petalogix.com>,
-       microblaze-uclinux@itee.uq.edu.au,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EC8775.8060609@compulab.co.il>
+X-Cookie: Enjoy yourself while you're still old.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 8:36 AM, John Linn <John.Linn@xilinx.com> wrote:
->> -----Original Message-----
->> From: Stephen Neuendorffer
->> Sent: Sunday, April 19, 2009 11:52 PM
->> To: John Williams; microblaze-uclinux@itee.uq.edu.au
->> Cc: grant.likely@secretlab.ca; linuxppc-dev; linux-kernel@vger.kernel.org; John Linn
->> Subject: RE: [microblaze-uclinux] [PATCH 11/11] microblaze: Kconfig: Enable drivers for Microblaze
->>
->>
->> My thinking is that these drivers are likely to be used as a group,
->> hence it would be nice to make it easy to get them all visible/enabled somehow.
->>
->> Steve
->
->
-> It seems like John's suggestion of no arch filters would satisfy that also. Since FPGAs are used in so many different applications this would seem to open the drivers up to everyone regardless of what processor they're using. It's certainly less complex so I like it in that way.
->
-> But maybe I'm missing something here and there's a downside?
+On Mon, Apr 20, 2009 at 05:32:21PM +0300, Mike Rapoport wrote:
 
-No, I don't think there is.
+> It is the most simple and straight forward solution. However, I have several
+> questions and I cannot answer them myself:
 
-I think CONFIG_OF is the right thing to do.
+Some initial thoughts:
 
-g.
+>   Should the driver handle single or several supplies at once?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+I'd expect that it should be able to cope with that - a lot of hardware
+takes multiple supplies.
+
+>   If the driver handles several supplies how to define attributes per-supply?
+>   What attributes will be exposed? Would it be simple 'state' that can be
+> enabled or disabled? Or the entire set of micorvolts/microamps etc?
+
+I'd expect that if you're getting into much more than a simple enable
+for the entire device it'd be getting to the point where it's worth
+considering writing an actual driver for the device.  That said, it's a
+fairly natural extension to support more fine grained stuff if someone
+does actually end up wanting it.
+
+> - Extend regulator framework so that regulator_consumer_supply entities will
+> gain their own representation in sysfs. Depending on machine constraints the
+> supply attributes can be either read-only or writable. I haven't dedicated much
+> thought to it, so a cannot state any pros and cons.
+
+I'd expect making them writable to be very fragile if there is an active
+consumer driver - I'd expect reference counts to get lost with enable
+and disable and I'd expect drivers managing voltages and currents to get
+confused if their own configuration gets changed under them.  The core
+already needs to arbitrate between multiple users so it seems to make
+sense to have userspace represented as other users are to the core.
+
+Being able to read back the consumer status doesn't seem unreasonable,
+though.
