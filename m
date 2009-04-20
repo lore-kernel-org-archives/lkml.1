@@ -1,197 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZDTPAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbZDTPBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756562AbZDTPAG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 11:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZDTO7w
+	id S1756677AbZDTPBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 11:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZDTPA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 10:59:52 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:32779 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755617AbZDTO7v (ORCPT
+	Mon, 20 Apr 2009 11:00:58 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:60986 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755663AbZDTPA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 10:59:51 -0400
-Subject: Re: [PATCH] Add ext3 data=guarded mode
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <20090420144241.GF14699@duck.suse.cz>
-References: <1239816159-6868-1-git-send-email-chris.mason@oracle.com>
-	 <a22f99ce2199ebebe63228edd8afa4809511ab1e.1239815649.git.chris.mason@oracle.com>
-	 <1239910921.21233.98.camel@think.oraclecorp.com>
-	 <20090420134423.GE14699@duck.suse.cz>
-	 <1240237105.16213.41.camel@think.oraclecorp.com>
-	 <20090420144241.GF14699@duck.suse.cz>
-Content-Type: text/plain
-Date: Mon, 20 Apr 2009 10:58:10 -0400
-Message-Id: <1240239490.16213.57.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010208.49EC8D8F.007C:SCFMA4539814,ss=1,fgs=0
+	Mon, 20 Apr 2009 11:00:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=MGx0aRnxPDHzdt5XlKxzOWhp8JKvYtmQtb+DsHggN3/X2j3KL4PdE0Lm03vHetw6rn
+         DZqcLGHTuRoI2GBpjx4t35Pdkzs9MxtyVoUsyJk2g9llXlaN6bfvGlLovft59AvbBca1
+         y7pNUU+kOYi/nUPA6YKgVqAAyJrx9XDmtcKuE=
+Date: Mon, 20 Apr 2009 17:00:53 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: lizf@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Message-ID: <20090420150052.GC13307@linux>
+Mail-Followup-To: Ryo Tsuruta <ryov@valinux.co.jp>, lizf@cn.fujitsu.com,
+	kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+	balbir@linux.vnet.ibm.com, guijianfeng@cn.fujitsu.com,
+	agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+	baramsori72@gmail.com, chlunde@ping.uio.no, dave@linux.vnet.ibm.com,
+	dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+	taka@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
+	ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+	s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+	yoshikawa.takuya@oss.ntt.co.jp,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20090417102417.88a0ef93.kamezawa.hiroyu@jp.fujitsu.com> <49E7E1CF.6060209@cn.fujitsu.com> <20090417102539.GA16838@linux> <20090420.183815.226804723.ryov@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420.183815.226804723.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-20 at 16:42 +0200, Jan Kara wrote:
-> On Mon 20-04-09 10:18:25, Chris Mason wrote:
-> > On Mon, 2009-04-20 at 15:44 +0200, Jan Kara wrote:
-> > > Hi Chris,
-> > > 
-> > > On Thu 16-04-09 15:42:01, Chris Mason wrote:
-> > > > 
-> > > > ext3 data=ordered mode makes sure that data blocks are on disk before
-> > > > the metadata that references them, which avoids files full of garbage
-> > > > or previously deleted data after a crash.  It does this by adding every dirty
-> > > > buffer onto a list of things that must be written before a commit.
-> > > > 
-> > > > This makes every fsync write out all the dirty data on the entire FS, which
-> > > > has high latencies and is generally much more expensive than it needs to be.
-> > > > 
-> > > > Another way to avoid exposing stale data after a crash is to wait until
-> > > > after the data buffers are written before updating the on-disk record
-> > > > of the file's size.  If we crash before the data IO is done, i_size
-> > > > doesn't yet include the new blocks and no stale data is exposed.
-> > > > 
-> > > > This patch adds the delayed i_size update to ext3, along with a new
-> > > > mount option (data=guarded) to enable it.  The basic mechanism works like
-> > > > this:
-> > > > 
-> > > > * Change block_write_full_page to take an end_io handler as a parameter.
-> > > > This allows us to make an end_io handler that queues buffer heads for
-> > > > a workqueue where the real work of updating the on disk i_size is done.
-> > > > 
-> > > > * Add an rbtree to the in-memory ext3 inode for tracking data=guarded
-> > > > buffer heads that are waiting to be sent to disk.
-> > > > 
-> > > > * Add an ext3 guarded write_end call to add buffer heads for newly
-> > > > allocated blocks into the rbtree.  If we have a newly allocated block that is
-> > > > filling a hole inside i_size, this is done as an old style data=ordered write
-> > > > instead.
-> > > > 
-> > > > * Add an ext3 guarded writepage call that uses a special buffer head
-> > > > end_io handler for buffers that are marked as guarded.  Again, if we find
-> > > > newly allocated blocks filling holes, they are sent through data=ordered
-> > > > instead of data=guarded.
-> > > > 
-> > > > * When a guarded IO finishes, kick a per-FS workqueue to do the
-> > > > on disk i_size updates.  The workqueue function must be very careful.  We
-> > > > only update the on disk i_size if all of the IO between the old on
-> > > > disk i_size and the new on disk i_size is complete.  This is why an
-> > > > rbtree is used to track the pending buffers, that way we can verify all
-> > > > of the IO is actually done.  The on disk i_size is incrementally updated to
-> > > > the largest safe value every time an IO completes.
-> > > > 
-> > > > * When we start tracking guarded buffers on a given inode, we put the
-> > > > inode into ext3's orphan list.  This way if we do crash, the file will
-> > > > be truncated back down to the on disk i_size and we'll free any blocks that
-> > > > were not completely written.  The inode is removed from the orphan list
-> > > > only after all the guarded buffers are done.
-> > > > 
-> > > > Signed-off-by: Chris Mason <chris.mason@oracle.com>
-> > >   I've read the patch. I don't think I've got all the subtleties but before
-> > > diving into it more I'd like to ask why do we do the things in so
-> > > complicated way? 
-> > 
-> > Thanks for reviewing things!
-> > 
-> > > Maybe I'm missing some issues so let's see:
-> > >   1) If I got it right, hole filling goes through standard ordered mode so
-> > > we can ignore such writes. So why do we have special writepage? I should
-> > > look just like writepage for ordered mode and we could just tweak
-> > > ext3_ordered_writepage() (probably renamed) to do:
-> > > 	if (ext3_should_order_data(inode))
-> > > 		err = walk_page_buffers(handle, page_bufs, 0, PAGE_CACHE_SIZE,
-> > >                                         NULL, journal_dirty_data_fn);
-> > > 	else
-> > > 		err = walk_page_buffers(handle, page_bufs, 0, PAGE_CACHE_SIZE,
-> > >                                         NULL, journal_dirty_guarded_data_fn);
-> > 
-> > That would work.  My first writepage was more complex, it shrunk as the
-> > patch evolved.  Another question is if we want to use exactly the same
-> > writepage for guarded and ordered.  I've always though data=ordered
-> > should only order new blocks...
->   Hmm, true. After my last change we already don't file data buffers in
-> ordered_writepage() if the page is fully mapped to disk so doing this in
-> all the cases is fine. Actually, I'll soon write ext3_page_mkwrite() to do
-> the block allocation on page fault time so after that we can get rid of most
-> of the code in ext3_ordered_writepage().
-
-Even better.
-
+On Mon, Apr 20, 2009 at 06:38:15PM +0900, Ryo Tsuruta wrote:
+> Hi Andrea, 
 > 
-> > >   2) Why is there any RB tree after all? Since guarded are just extending
-> > > writes, we can have a linked list of guarded buffers. We always append
-> > > at the end, we update i_size if the current buffer has no predecestor in the
-> > > list.
+> > Implementing bio-cgroup functionality as pure infrastructure framework
+> > instead of a cgroup subsystem would remove all this oddity and
+> > complexity.
 > > 
-> > A guarded write is anything from write() that is past the disk i_size.
-> > lseek and friends mean it could happen in any order.
->   Are you sure? Looking and ext3_guarded_write_end():
-> ...
-> +       if (test_clear_buffer_datanew(bh)) {
-> +               /*
-> +                * if we're filling a hole inside i_size, we need to
-> +                * fall back to the old style data=ordered
-> +                */
-> +               if (offset < inode->i_size) {
-> +                       ret = ext3_journal_dirty_data(handle, bh);
-> +                       goto out;
-> +               }
-> ...
->   So it seems we always to ordered write unless we are appending / have
-> blocks allocated. You could have i_disksize in the check but is it really
-> worth it? IMO getting rid of the RB tree might be better ;)
+> > For example, the actual functionality that I need for the io-throttle
+> > controller is just an interface to set and get the cgroup owner of a
+> > page. I think it should be the same also for other potential users of
+> > bio-cgroup.
+> > 
+> > So, what about implementing the bio-cgroup functionality as cgroup "page
+> > tracking" infrastructure and provide the following interfaces:
+> > 
+> > /*
+> >  * Encode the cgrp->css.id in page_group->flags
+> >  */
+> > void set_cgroup_page_owner(struct page *page, struct cgroup *cgrp);
+> > 
+> > /*
+> >  * Returns the cgroup owner of a page, decoding the cgroup id from
+> >  * page_cgroup->flags.
+> >  */
+> > struct cgroup *get_cgroup_page_owner(struct page *page);
+> > 
+> > This also wouldn't increase the size of page_cgroup because we can
+> > encode the cgroup id in the unused bits of page_cgroup->flags, as
+> > originally suggested by Kame.
+> > 
+> > And I think it could be used also by dm-ioband, even if it's not a
+> > cgroup-based subsystem... but I may be wrong. Ryo what's your opinion?
 > 
+> I looked your page_cgroup patch in io-throttle v14, It can also be used
+> by dm-ioband. But I'd like to eliminate lock_page_cgroup() to minimize
+> overhead. I'll rearrange the bio-cgroup patch according to the functions.
 
-I had this little todo on my list to change that to i_datasize and
-retest.  But I think you're right, the rbtree isn't worth it at all.
-Btrfs needs it for different reasons, and I just had it stuck in my head
-when I copied the code over.
+It would be great! Anyway, I don't think it's a trivial task to
+completely remove lock_page_cgroup(), especially if we decide to encode
+the ID in page_cgroup->flags.
 
-I'll redo the patch without the rbtree.  It won't change most of the
-things that make the patch complex (the orphan handling and these
-truncate interactions), but it'll definitely be nicer.
-
-> > >   3) Currently truncate() does filemap_write_and_wait() - is it really
-> > > needed? Each guarded bh could carry with itself i_disksize it should update
-> > > to when IO is finished. Extending truncate will just update this i_disksize
-> > > at the last member of the list (or update i_disksize when the list is
-> > > empty). 
-> > >
-> > > Shortening truncate will walk the list of guarded bh's, removing from
-> > > the list those beyond new i_size, then it will behave like the extending
-> > > truncate (it works even if current i_disksize is larger than new i_size).
-> > > Note, that before we get to ext3_truncate() mm walks all the pages beyond
-> > > i_size and waits for page writeback so by the time ext3_truncate() is
-> > > called, all the IO is finished and dirty pages are canceled.
-> > 
-> > The problem here was the disk i_size being updated by ext3_setattr
-> > before the vmtruncate calls calls ext3_truncate().  So the guarded IO
-> > might wander in and change the i_disksize update done by setattr.
-> > 
-> > It all made me a bit dizzy and I just tossed the write_and_wait in
-> > instead.
-> > 
-> > At the end of the day, we're waiting for guarded writes only, and we
-> > probably would have ended up waiting on those exact same pages in
-> > vmtruncate anyway.  So, I do agree we could avoid the write with more
-> > code, but is this really a performance critical section?
->   Well, not really critical but also not negligible - mainly because with
-> your approach we end up *submitting* new writes we could just be canceled
-> otherwise. Without fdatawrite(), data of short-lived files need not ever
-> reach the disk similarly as in writeback mode (OK, this is connected with
-> the fact that you actually don't have fdatawrite() before ext3_truncate()
-> in ext3_delete_inode() and that's what initially puzzled me).
-
-When we're going down to zero, we don't need it.  The i_disksize gets
-updated again by ext3_truncate.  I'll toss in a special case for that
-before the write_and_wait.
-
--chris
-
-
+Thanks,
+-Andrea
