@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbZDTWlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbZDTWmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757846AbZDTWlo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbZDTWlf
+	id S1757566AbZDTWmI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZDTWlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:41:35 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:52429 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756354AbZDTWle (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:41:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZEKQREc/v8Zs9v7FzJQ6lCy6prF12zS6gsC5GrtXx0ZiNdB16jTMg99EKXueZ4Z5MT
-         WYqA8KrutU5/OKxqfcw/gRMah1gWtl03zsv4le9nvWDFKbivekbWXnTrMoWpRU7kdH0R
-         ZK5yr0fTk4snWdPyn4dnEybeeHtXpQG/h7IBU=
-Date: Tue, 21 Apr 2009 00:41:30 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] tracing: use nowakeup version of commit for
-	function event trace tests
-Message-ID: <20090420224129.GB5997@nowhere>
-References: <20090420222257.267399830@goodmis.org> <20090420222325.267573793@goodmis.org>
+	Mon, 20 Apr 2009 18:41:49 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:60546 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757499AbZDTWls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:41:48 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420222325.267573793@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18924.64032.103954.171918@cargo.ozlabs.ibm.com>
+Date: Tue, 21 Apr 2009 08:41:36 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v10)
+In-Reply-To: <20090420215827.GK6822@linux.vnet.ibm.com>
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	<49E72E83.50702@trash.net>
+	<20090416.153354.170676392.davem@davemloft.net>
+	<20090416234955.GL6924@linux.vnet.ibm.com>
+	<20090417012812.GA25534@linux.vnet.ibm.com>
+	<20090418094001.GA2369@ioremap.net>
+	<20090418141455.GA7082@linux.vnet.ibm.com>
+	<20090420103414.1b4c490f@nehalam>
+	<49ECBE0A.7010303@cosmosbay.com>
+	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>
+	<20090420215827.GK6822@linux.vnet.ibm.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 06:22:59PM -0400, Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> The startup tests for the event tracer also runs with the function
-> tracer enabled. The "wakeup" version of the trace commit was used
-> which can grab spinlocks. If a task was preempted by an NMI
-> that called a function being traced, it could deadlock due to the
-> function tracer trying to grab the same lock.
-> 
-> Thanks to Frederic Weisbecker for pointing out where the bug was.
-> 
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
+Paul E. McKenney writes:
 
+> But a single CPU is acquiring one lock per CPU, so all the increments
+> are to one CPU's preempt_count.  :-(
 
-Aah, I was about to push my version, which was the same but with
-a more weird changelog :-)
+OK, I see, so a task can't take more than 255 spinlocks without
+overflowing the preempt count, which seems a bit limiting.
 
-Frederic.
+There are 6 free bits in the preempt_count currently, so the preempt
+count could be expanded to 14 bits, which would be enough for all
+current systems.  Beyond that I guess we could make preempt_count be a
+long and allow bigger counts on 64-bit architectures.
 
-
-
->  kernel/trace/trace_events.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 98daf5d..672b195 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -1164,7 +1164,7 @@ function_test_events_call(unsigned long ip, unsigned long parent_ip)
->  	entry->ip			= ip;
->  	entry->parent_ip		= parent_ip;
->  
-> -	trace_current_buffer_unlock_commit(event, flags, pc);
-> +	trace_nowake_buffer_unlock_commit(event, flags, pc);
->  
->   out:
->  	atomic_dec(&per_cpu(test_event_disable, cpu));
-> -- 
-> 1.6.2.1
-> 
-> -- 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Paul.
