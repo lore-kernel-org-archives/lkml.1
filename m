@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbZDTWaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbZDTWbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759477AbZDTWaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758936AbZDTW0h
+	id S1759675AbZDTWbI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbZDTWaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:26:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40895 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758949AbZDTW0f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:26:35 -0400
-Date: Mon, 20 Apr 2009 15:14:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: dvomlehn@cisco.com, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [Patch] Wait for console to become available, ver 3
-Message-Id: <20090420151400.11afd62a.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0904201744410.6832-100000@iolanthe.rowland.org>
-References: <20090420143010.697c7380.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0904201744410.6832-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 18:30:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38024 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759545AbZDTWaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:30:16 -0400
+Date: Tue, 21 Apr 2009 00:25:14 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] ftrace, workqueuetrace: Make
+	workqueuetracepoints use TRACE_EVENT macro
+Message-ID: <20090420222514.GA15680@redhat.com>
+References: <20090420103612.4B4E.A69D9226@jp.fujitsu.com> <47EF9F5C609F496FBBD423EA81A00920@zhaoleiwin> <20090420104734.4B51.A69D9226@jp.fujitsu.com> <20090420084631.GA32625@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420084631.GA32625@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 17:51:16 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On 04/20, Ingo Molnar wrote:
+>
+> Andrew, Oleg: if you plan to make unhappy noises about this level of
+> instrumentation in the workqueue code, please do it sooner rather
+> than later, as there's quite some effort injected into this already.
+> A tentative non-NAK now (patches are still being sorted out) and an
+> Ack on the final topic tree from you (once we send it and if it's
+> good) and general happiness would be the ideal outcome :)
 
-> On Mon, 20 Apr 2009, Andrew Morton wrote:
-> 
-> > If we want b) then how to do it?
-> > 
-> > One possibility: the initcalls have been completed when init_post() is
-> > called.  How about: if one of those initcalls will be asynchronously
-> > registering a console, it should inform the console layer about this. 
-> > It should call the new i_will_be_adding_a_console_soon() function
-> > within its initcall.  The console subsystem will remember this, and we
-> > can cause init_post() to block until that registration has occurred.
-> > 
-> > We'll need to be able to handle errors, and we'll need to be able to
-> > handle the case where the initcall function isn't sure whether or not
-> > it will be registering a console.  So there will also need to be an
-> > oops_im_not_adding_a_console_after_all() function, which will withdraw
-> > the effects of i_will_be_adding_a_console_soon().
-> > 
-> > Which means that i_will_be_adding_a_console_soon() will need to return
-> > a handle for the oops_im_not_adding_a_console_after_all() caller to
-> > pass.
-> > 
-> > If init_post() is currently blocked awaiting the arrival of the
-> > console, oops_im_not_adding_a_console_after_all() will unblock
-> > init_post() if there are no more potential console registrations
-> > pending, and inti_post()'s attempt to open a console will fail.
-> > 
-> > 
-> > Or something like that?
-> 
-> What if a subsystem simply doesn't know in advance whether or not it's 
-> going to register a console?  Or doesn't know when it has finished 
-> probing all devices (since a new device could be plugged in at any 
-> time)?
+Imho, this info is useful, and the changes are fine.
 
-Fix it.  It's trivial to make a sub-driver call back into a higher
-layer to tell it that it registered a console.  Or just do the
-i_will_be_adding_a_console_soon()/oops_im_not_adding_a_console_after_all()
-calls from the layer which _does_ know.
+But I didn't study kernel/trace/trace_workqueue.c yet... Sorry, I was
+going to do this, but I didn't.
 
-> Not to mention that this scheme appears more complicated than the one 
-> it's intended to replace... although it doesn't have any boot-line 
-> parameters.
+At first glance, with or without these new changes some parts of
+trace_workqueue.c looks suspicious.
 
-It isn't very complicated.
+For example, I don't understand cpu_workqueue_stats->pid. Why it is
+needed? Why can't we just record wq_thread itself? And if we copy
+wq_thread->comm to cpu_workqueue_stats, we don't even need get/put
+task_struct, afaics.
 
-Yes, a boot parameter is "simple" to inplement.  But it's ghastly from
-a usability POV.  Especially if you care about boot times.  For how
-long do you delay?  The user has to experiment with different delays
-until he finds the magic number.  Then he adds 10% and waits for the
-inevitable failure reports to come in.
+probe_workqueue_destruction() does cpumask_first(cwq->cpus_allowed),
+this doesn't look right. When workqueue_cpu_callback() calls
+cleanup_workqueue_thread(), wq_thread is no longer affine to CPU it
+was created on. This means probe_workqueue_destruction() can't always
+find the correct cpu_workqueue_stats in workqueue_cpu_stat(cpu), no?
 
-It's much better to just get it right, even if that makes it more
-"complex".
-
+Oleg.
 
