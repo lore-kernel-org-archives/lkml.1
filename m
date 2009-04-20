@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZDTKBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZDTKC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbZDTKBT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 06:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZDTKBE
+	id S1754835AbZDTKC5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 06:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZDTKCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 06:01:04 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56458 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384AbZDTKBB (ORCPT
+	Mon, 20 Apr 2009 06:02:45 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35808 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754621AbZDTKCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 06:01:01 -0400
-Date: Mon, 20 Apr 2009 12:04:21 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
-       Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add MCE support to KVM
-Message-ID: <20090420100421.GX14687@one.firstfloor.org>
-References: <1239332455.6384.108.camel@yhuang-dev.sh.intel.com> <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com>
+	Mon, 20 Apr 2009 06:02:44 -0400
+Date: Mon, 20 Apr 2009 11:02:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, avi@redhat.com,
+       aarcange@redhat.com, chrisw@redhat.com, mtosatti@redhat.com,
+       hugh@veritas.com, Izik Eidus <ieidus@redhat.com>
+Subject: Re: [PATCH 5/5] add ksm kernel shared memory driver.
+Message-ID: <20090420110223.76ba4593@lxorguk.ukuu.org.uk>
+In-Reply-To: <1240191366-10029-6-git-send-email-ieidus@redhat.com>
+References: <1240191366-10029-1-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-2-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-3-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-4-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-5-git-send-email-ieidus@redhat.com>
+	<1240191366-10029-6-git-send-email-ieidus@redhat.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EC3AD6.3090905@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It depends if the MSR may be considered global, or is required to be 
-> per-cpu.  Need to refresh my memory on this, but I remember reading this 
+The minor number you are using already belongs to another project.
 
-Machine Check MSRs need to be per CPU. The latest kernels have some support
-for "shared banks" (between CPUs) but it's better to not have it and
-older OS don't like it.
+10,234 is free but it would be good to know what device naming is
+proposed. I imagine other folks would like to know why you aren't using
+sysfs or similar or extending /dev/kvm ?
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Alan
