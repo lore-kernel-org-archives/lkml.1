@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZDTHwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZDTHwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbZDTHwZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 03:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZDTHwH
+	id S1754353AbZDTHwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 03:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZDTHwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 03:52:07 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:57991 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752287AbZDTHwG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 03:52:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=tw1QD/ZCnv71yKba8h3cIRr9bXhRKofexiz7ic1OD0/sZVeqhAye2nUDXoHmeNtqCk
-         As1soW38eE47kZsX+SHKt+9dXnloWQLWr2qwXDZZrtScwu2YZVXWeWbF3YSqKVHGc+uU
-         S7BcjFMXO+r28wf8gje8GGx0ux22IkpXCszy8=
-Message-ID: <49EC299D.5020102@gmail.com>
-Date: Mon, 20 Apr 2009 16:51:57 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 20 Apr 2009 03:52:17 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50329 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753714AbZDTHwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 03:52:16 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 20 Apr 2009 17:52:25 +1000
 MIME-Version: 1.0
-To: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-CC: Linux IDE <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux SCSI <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH 1/2] ide: Stop disks on reboot for laptop which cuts power
-References: <20090418124415.1dc82273@neptune.home> <20090418124558.0426f74c@neptune.home>
-In-Reply-To: <20090418124558.0426f74c@neptune.home>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18924.10681.98103.247886@notabene.brown>
+Subject: [PULL REQUEST] a few more md patches for 2.6.30
+X-Mailer: VM 7.19 under Emacs 21.4.1
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Mario 'BitKoenig' Holbe" <Mario.Holbe@TU-Ilmenau.DE>
+Cc: Christoph Hellwig <hch@lst.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bruno Prémont wrote:
-> My laptop (Acer Travelmate 660) always cuts the power when rebooting
-> which causes the disk to emergency-park it's head.
-> 
-> Add a dmi check to stop disk as for shutdown on this laptop.
 
-Hmm... yeah, I also noticed this behavior on several machines I have
-here.  Most were beta BIOSen.
+Hi Linus, 
+ a few more md fixes / enhancements.
+ The enhancements are fairly minor and essentially finish off various
+ threads begun in previous pull.
 
-Maybe it's worth to shutdown drives on reboot on all machines?
+Thanks,
+NeilBrown
 
-Thanks.
 
--- 
-tejun
+The following changes since commit 0882e8dd3aad33eca41696d463bb896e6c8817eb:
+  Linus Torvalds (1):
+        Linux 2.6.30-rc2
+
+are available in the git repository at:
+
+  git://neil.brown.name/md for-linus
+
+Christoph Hellwig (1):
+      md: tiny md.h cleanups
+
+NeilBrown (4):
+      md: allow setting newly added device to 'in_sync' via sysfs.
+      md: improve usefulness and accuracy of sysfs file md/sync_completed.
+      md: update sync_completed and reshape_position even more often.
+      md: support bitmaps on RAID10 arrays larger then 2 terabytes
+
+ drivers/md/bitmap.c |    7 ++++---
+ drivers/md/md.c     |   41 ++++++++++++++++++++++++++++-------------
+ drivers/md/md.h     |   21 +++++++++++++--------
+ drivers/md/raid5.c  |    7 ++++++-
+ 4 files changed, 51 insertions(+), 25 deletions(-)
