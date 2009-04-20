@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbZDTWOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZDTWSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbZDTWOw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 18:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZDTWOn
+	id S1757631AbZDTWSw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 18:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbZDTWSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 18:14:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53181 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754628AbZDTWOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 18:14:42 -0400
-Date: Mon, 20 Apr 2009 18:14:02 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: VIA Padlock driver no longer loads automatically
-Message-ID: <20090420181402.2b0424f4@dhcp-100-2-144.bos.redhat.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 18:18:41 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51005 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756075AbZDTWSk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 18:18:40 -0400
+X-Sasl-enc: zFDAaurr1K6I5m+S4njS2c46TV8qwYJrVRT4ubzDxmpZ 1240265919
+Date: Mon, 20 Apr 2009 19:18:36 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, cpufreq@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
+	even when ignore_ppc=0
+Message-ID: <20090420221836.GF25823@khazad-dum.debian.net>
+References: <20090415225348.GW8311@plum> <20090416224507.GA31984@srcf.ucam.org> <alpine.LFD.2.00.0904200112290.10996@localhost.localdomain> <200904201113.31371.trenn@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904201113.31371.trenn@suse.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86 machines only aes_generic and aes_i586 get loaded automatically as of
-kernel 2.6.29. Looks like this was caused by:
+On Mon, 20 Apr 2009, Thomas Renninger wrote:
+> On Monday 20 April 2009 07:13:51 Len Brown wrote:
+> > FYI,
+> > Thanks to Ebay, I now have a T60:-)
+> Hmm, Lenovo sold a lot different machines as T60.
 
-  commit a760a6656e6f00bb0144a42a048cf0266646e22c
-  crypto: api - Fix module load deadlock with fallback algorithms
+There are only two types as far as the firmware is concerned: widescreen and
+non-widescreen.
 
-diff --git a/arch/s390/crypto/aes_s390.c b/arch/s390/crypto/aes_s390.c
-index c42cd89..6118890 100644
---- a/arch/s390/crypto/aes_s390.c
-+++ b/arch/s390/crypto/aes_s390.c
-@@ -556,7 +556,7 @@ static void __exit aes_s390_fini(void)
- module_init(aes_s390_init);
- module_exit(aes_s390_fini);
- 
--MODULE_ALIAS("aes");
-+MODULE_ALIAS("aes-all");
- 
- MODULE_DESCRIPTION("Rijndael (AES) Cipher Algorithm");
- MODULE_LICENSE("GPL");
-diff --git a/crypto/api.c b/crypto/api.c
-index efe77df..38a2bc0 100644
---- a/crypto/api.c
-+++ b/crypto/api.c
-@@ -215,8 +215,19 @@ struct crypto_alg *crypto_larval_lookup(const char *name, u32 type, u32 mask)
- 	mask &= ~(CRYPTO_ALG_LARVAL | CRYPTO_ALG_DEAD);
- 	type &= mask;
- 
--	alg = try_then_request_module(crypto_alg_lookup(name, type, mask),
--				      name);
-+	alg = crypto_alg_lookup(name, type, mask);
-+	if (!alg) {
-+		char tmp[CRYPTO_MAX_ALG_NAME];
-+
-+		request_module(name);
-+
-+		if (!((type ^ CRYPTO_ALG_NEED_FALLBACK) & mask) &&
-+		    snprintf(tmp, sizeof(tmp), "%s-all", name) < sizeof(tmp))
-+			request_module(tmp);
-+
-+		alg = crypto_alg_lookup(name, type, mask);
-+	}
-+
- 	if (alg)
- 		return crypto_is_larval(alg) ? crypto_larval_wait(alg) : alg;
- 
-diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
-index 856b3cc..3f0fdd1 100644
---- a/drivers/crypto/padlock-aes.c
-+++ b/drivers/crypto/padlock-aes.c
-@@ -489,4 +489,4 @@ MODULE_DESCRIPTION("VIA PadLock AES algorithm support");
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Michal Ludvig");
- 
--MODULE_ALIAS("aes");
-+MODULE_ALIAS("aes-all");
-diff --git a/drivers/crypto/padlock-sha.c b/drivers/crypto/padlock-sha.c
-index a7fbade..a2c8e85 100644
---- a/drivers/crypto/padlock-sha.c
-+++ b/drivers/crypto/padlock-sha.c
-@@ -304,7 +304,7 @@ MODULE_DESCRIPTION("VIA PadLock SHA1/SHA256 algorithms support.");
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Michal Ludvig");
- 
--MODULE_ALIAS("sha1");
--MODULE_ALIAS("sha256");
-+MODULE_ALIAS("sha1-all");
-+MODULE_ALIAS("sha256-all");
- MODULE_ALIAS("sha1-padlock");
- MODULE_ALIAS("sha256-padlock");
+However, the older BIOS (non-widescreen) had a major version bump, so
+machines with outdated firmware can have quite a different BIOS.
+
+> I found an acpidump of a T60 here without any _PPC function
+> at all.
+> 
+> > and so i put the DSDT here:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13139
+> > 
+> > I'll poke at this in more detail soon...
+> Ingo, can you place yours somewhere too, please.
+> This one should be taken into account for _PPC code changes
+> as it seem to implement some corner case.
+
+It is probably worth upgrading the T60 after you got all the relevant
+information (dmidecode, full acpidump), and check again with the latest
+firmware.
+
+Here are the links with instructions:
+http://www.thinkwiki.org/wiki/BIOS_Upgrade
+
+and a table of links for the firmware itself (get the CD versions to flash
+without Windows):
+http://www.thinkwiki.org/wiki/BIOS_Upgrade_Downloads#T_Series
+
+Also, if you guys do collect that info (dmidecode, full acpidump), I'd
+appreciate if you could send them my way in private.  They often prove
+useful for thinkpad-acpi work...
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
