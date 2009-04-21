@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbZDUK0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZDUK2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbZDUK0E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZDUKZw
+	id S1756045AbZDUK2V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZDUK2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:25:52 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:10546 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbZDUKZv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:25:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=V/U70C3EUvBCzbmYZy+3Wpe47//8S178yV3NIf79uV/EWuYJfc+MMpAJx93Zie8s4k
-         vQXzYSc2twWxrDpqiXdWxog7gURcRuuWCox81r6KC/kijJqplAoVjt4iqMIjAimqi9u/
-         Ifw1vr/Ii1RzhjkCnniFRJf4IwwXtWSs4AO/E=
+	Tue, 21 Apr 2009 06:28:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34849 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbZDUK2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:28:05 -0400
+Message-ID: <49ED9FAC.1080303@garzik.org>
+Date: Tue, 21 Apr 2009 06:27:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090421084519.GE12713@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
-	 <1240266011-11140-13-git-send-email-mel@csn.ul.ie>
-	 <1240299982.771.48.camel@penberg-laptop>
-	 <20090421084519.GE12713@csn.ul.ie>
-Date: Tue, 21 Apr 2009 13:25:50 +0300
-X-Google-Sender-Auth: bc1ec8914d63ab4a
-Message-ID: <84144f020904210325v49b0321sfea6b7d9fc426237@mail.gmail.com>
-Subject: Re: [PATCH 12/25] Remove a branch by assuming __GFP_HIGH == 
-	ALLOC_HIGH
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Benny Halevy <bhalevy@panasas.com>
+CC: Jeff Garzik <jgarzik@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Is sata_nv compatible with async scsi scan?
+References: <49ED6FD7.3070307@panasas.com>
+In-Reply-To: <49ED6FD7.3070307@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+Benny Halevy wrote:
+> Hi Jeff,
+> 
+> Since 2.6.29 I'm having intermittent problems with booting kernels.
+> After supposedly waiting for scsi async scan to complete,
+> quite frequently I see errors from the init resume process
+> when it fails to find the swap partition and later the root
+> file system fails to load.
+> 
+> A workaround that I found to be helpful is booting the kernel
+> with scsi_mod.scan=sync so I suspect sata_nv has a problem
+> with asynchronous scanning.
 
-On Tue, Apr 21, 2009 at 11:45 AM, Mel Gorman <mel@csn.ul.ie> wrote:
->> > @@ -1639,8 +1639,8 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
->> >      * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
->> >      * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
->> >      */
->> > -   if (gfp_mask & __GFP_HIGH)
->> > -           alloc_flags |= ALLOC_HIGH;
->> > +   VM_BUG_ON(__GFP_HIGH != ALLOC_HIGH);
->> > +   alloc_flags |= (gfp_mask & __GFP_HIGH);
->>
->> Shouldn't you then also change ALLOC_HIGH to use __GFP_HIGH or at least
->> add a comment somewhere?
->
-> That might break in weird ways if __GFP_HIGH changes in value then. I
-> can add a comment though
->
-> /*
->  * __GFP_HIGH is assumed to be the same as ALLOC_HIGH to save a branch.
->  * Check for DEBUG_VM that the assumption is still correct. It cannot be
->  * checked at compile-time due to casting
->  */
->
-> ?
+Personally, I think the whole system is broken, so continue to use this 
+workaround until it gets fixed upstream.  This sounds like some timing 
+issues related to waiting for the device probe to finish, something that 
+people keep breaking (witness my USB flash drive boot breakage).
 
-I'm perfectly fine with something like that.
+	Jeff
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-                                      Pekka
+
