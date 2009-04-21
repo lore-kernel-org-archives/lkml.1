@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZDUHWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZDUHWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbZDUHWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 03:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZDUHWH
+	id S1754612AbZDUHWu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 03:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZDUHWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 03:22:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37176 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZDUHWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 03:22:05 -0400
-Date: Tue, 21 Apr 2009 09:21:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       mingo@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC] Stupid tracepoint ideas
-Message-ID: <20090421072147.GD22937@elte.hu>
-References: <alpine.DEB.2.00.0904201456470.26147@gandalf.stny.rr.com> <20090420205438.GA11567@Krystal> <alpine.DEB.2.00.0904201702430.10097@gandalf.stny.rr.com> <20090420211249.GA12445@Krystal>
+	Tue, 21 Apr 2009 03:22:37 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60536 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752334AbZDUHWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 03:22:36 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+TfQsm4eyTDW6PdQO8ZO9ipIXjVU/ntUNEmBKTSK
+	MyQJtUdTNcqXPp
+Date: Tue, 21 Apr 2009 09:22:38 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Linux Media Mailing List <linux-media@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>, Greg KH <greg@kroah.com>,
+       khali@linux-fr.org, Hans Verkuil <hverkuil@xs4all.nl>
+Subject: [PATCH] drivers: move media after i2c
+Message-ID: <Pine.LNX.4.64.0904210908360.6551@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420211249.GA12445@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently drivers/media drivers are linked very early - directly after 
+base, block, misc, and mfd and before ata, scsi, ide, input, firewire, 
+usb, and i2c. This breaks static build of video4linux drivers, that use 
+generic CPU i2c adapter drivers and the v4l2-subdev subsystem, because 
+during video4linux probing the v4l2-subdev core requires a struct 
+i2c_adapter context, which cannot be satisfied before the i2c subsystem is 
+initialised. Moving drivers/media after drivers/i2c fixes this problem.
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > On Mon, 20 Apr 2009, Mathieu Desnoyers wrote:
-> > 
-> > > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > > 
-> > > > Mathieu,
-> > > > 
-> > > > You may have tried this in your creation of tracepoints, but I figured I 
-> > > > would ask before wasting too much time on it.
-> > > > 
-> > > > I'm looking at ways to make tracepoints even lighter weight when disabled. 
-> > > > And I thought of doing section code. I'm playing with the following idea 
-> > > > (see below patch) but I'm afraid gcc is allowed to think that the code it 
-> > > > produces will not move to different sections.
-> > > > 
-> > > > Any thoughts on how we could do something similar to this.
-> > > > 
-> > > > Note, this patch is purely proof-of-concept. I'm fully aware that it is an 
-> > > > x86 solution only.
-> > > > 
-> > > > -- Steve
-> > > > 
-> > > > [ no Signed-off-by: because this patch is crap ]
-> > > > 
-> > > > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> > > > index 4353f3f..6953f78 100644
-> > > > --- a/include/linux/tracepoint.h
-> > > > +++ b/include/linux/tracepoint.h
-> > > > @@ -65,9 +65,18 @@ struct tracepoint {
-> > > >  	extern struct tracepoint __tracepoint_##name;			\
-> > > >  	static inline void trace_##name(proto)				\
-> > > >  	{								\
-> > > > -		if (unlikely(__tracepoint_##name.state))		\
-> > > > +		if (unlikely(__tracepoint_##name.state)) {		\
-> > > > +			asm volatile ("jmp 43f\n"			\
-> > > > +				      "42:\n"				\
-> > > > +				      ".section .unlikely,\"ax\"\n"	\
-> > > > +				      "43:\n"				\
-> > > > +				      ::: "memory");			\
-> > > >  			__DO_TRACE(&__tracepoint_##name,		\
-> > > > -				TP_PROTO(proto), TP_ARGS(args));	\
-> > > > +				   TP_PROTO(proto), TP_ARGS(args));	\
-> > > > +			asm volatile ("jmp 42b\n"			\
-> > > > +			     ".previous\n"				\
-> > > > +			     ::: "memory");				\
-> > > > +		}							\
-> > > 
-> > > You are right, I thought of this.
-> > > 
-> > > gcc forbids jumping outside of inline assembly statements. Optimisations
-> > > done by gcc are not aware of this sort of execution flow modification,
-> > > and gcc has every rights to interleave unrelated code between the two
-> > > inline assembly statements.
-> > 
-> > Yeah, I was afraid of that :-/
-> > 
-> > Would be nice to apply sections to code:
-> > 
-> > 	__attribute__((section ".unlikely")) {
-> > 		/* code for .unlikely section */
-> > 	}
-> > 
-> > And have gcc do the jmps to and from the section.
-> > 
-> > This should not be too hard to implement.
-> > 
-> 
-> Yes, but for some reason no kernel developer I know seems to be 
-> very keen of digging into gcc's internals. :-)
+The best way to trigger action is by submitting a patch:-) So, let's see 
+what comes out of it - on the one hand I don't see any reason why media 
+has to be linked this early, and nobody was able to give me one yesterday 
+as this problem has been discussed on linux-media, OTOH, maybe indeed it 
+would be better to move i2c the whole way up above media, but that'd be 
+much bigger of a change, I think.
 
-There are some kernel developers who are also GCC developers - but i 
-have to say the choice for a good developer is rather obvious: in 
-the Linux kernel project the maximum latency until an obviously good 
-patch hits upstream is around 3 months. In the GCC space the 
-_minimum_ latency until an obviously good feature hits the compiler 
-tends to be more like 2-3 years in the typical case.
-
-I think the solution is obvious: the kernel needs its own compiler.
-
-	Ingo
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 2618a61..1266ead 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -36,7 +36,7 @@ obj-$(CONFIG_FB_INTEL)          += video/intelfb/
+ 
+ obj-y				+= serial/
+ obj-$(CONFIG_PARPORT)		+= parport/
+-obj-y				+= base/ block/ misc/ mfd/ media/
++obj-y				+= base/ block/ misc/ mfd/
+ obj-$(CONFIG_NUBUS)		+= nubus/
+ obj-y				+= macintosh/
+ obj-$(CONFIG_IDE)		+= ide/
+@@ -71,7 +71,7 @@ obj-$(CONFIG_GAMEPORT)		+= input/gameport/
+ obj-$(CONFIG_INPUT)		+= input/
+ obj-$(CONFIG_I2O)		+= message/
+ obj-$(CONFIG_RTC_LIB)		+= rtc/
+-obj-y				+= i2c/
++obj-y				+= i2c/ media/
+ obj-$(CONFIG_W1)		+= w1/
+ obj-$(CONFIG_POWER_SUPPLY)	+= power/
+ obj-$(CONFIG_HWMON)		+= hwmon/
