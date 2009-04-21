@@ -1,158 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218AbZDUGxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbZDUGz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752218AbZDUGxM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 02:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZDUGw4
+	id S1752511AbZDUGz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 02:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZDUGzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 02:52:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52912 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZDUGw4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 02:52:56 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 07/25] Check in advance if the zonelist needs additional filtering
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090421155038.F130.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 02:55:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61488 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751088AbZDUGzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 02:55:07 -0400
+Message-ID: <49ED6D2E.5060808@cn.fujitsu.com>
+Date: Tue, 21 Apr 2009 14:52:30 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Paul Mackerras <paulus@samba.org>,
+       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com, mingo@elte.hu,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com>	<20090417012812.GA25534@linux.vnet.ibm.com>	<20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<49ED406F.2040401@cn.fujitsu.com>	<49ED4407.8010200@cosmosbay.com>	<49ED5813.1000803@cn.fujitsu.com> <20090420224540.30d7b0ed@nehalam>
+In-Reply-To: <20090420224540.30d7b0ed@nehalam>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 15:52:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Zonelist are filtered based on nodemasks for memory policies normally.
-> It can be additionally filters on cpusets if they exist as well as
-> noting when zones are full. These simple checks are expensive enough to
-> be noticed in profiles. This patch checks in advance if zonelist
-> filtering will ever be needed. If not, then the bulk of the checks are
-> skipped.
+Stephen Hemminger wrote:
+>> xt_info_rdlock_bh() called recursively here will enter the
+>> critical region without &__get_cpu_var(xt_info_locks)->lock.
 > 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> NO spin_lock_bh always does a preempt_disable
+> 
+>   xt_info_rdlock_bh            (depth = -1)
+> +1         preempt_disable
+>            spin_lock_bh
+> +1             preempt_disable
+> -1         preempt_enable_no_resched
 > ---
->  include/linux/cpuset.h |    2 ++
->  mm/page_alloc.c        |   37 ++++++++++++++++++++++++++-----------
->  2 files changed, 28 insertions(+), 11 deletions(-)
+> +1
 > 
-> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-> index a5740fc..978e2f1 100644
-> --- a/include/linux/cpuset.h
-> +++ b/include/linux/cpuset.h
-> @@ -97,6 +97,8 @@ static inline void set_mems_allowed(nodemask_t nodemask)
->  
->  #else /* !CONFIG_CPUSETS */
->  
-> +#define number_of_cpusets (0)
-> +
->  static inline int cpuset_init(void) { return 0; }
->  static inline void cpuset_init_smp(void) {}
->  
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index c8465d0..3613ba4 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1137,7 +1137,11 @@ failed:
->  #define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
->  #define ALLOC_HARDER		0x10 /* try to alloc harder */
->  #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
-> +#ifdef CONFIG_CPUSETS
->  #define ALLOC_CPUSET		0x40 /* check for correct cpuset */
-> +#else
-> +#define ALLOC_CPUSET		0x00
-> +#endif /* CONFIG_CPUSETS */
->  
->  #ifdef CONFIG_FAIL_PAGE_ALLOC
->  
-> @@ -1401,6 +1405,7 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
->  	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
->  	int zlc_active = 0;		/* set if using zonelist_cache */
->  	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
-> +	int zonelist_filter = 0;
->  
->  	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
->  							&preferred_zone);
-> @@ -1411,6 +1416,10 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
->  
->  	VM_BUG_ON(order >= MAX_ORDER);
->  
-> +	/* Determine in advance if the zonelist needs filtering */
-> +	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
-> +		zonelist_filter = 1;
-> +
->  zonelist_scan:
->  	/*
->  	 * Scan zonelist, looking for a zone with enough free.
-> @@ -1418,12 +1427,16 @@ zonelist_scan:
->  	 */
->  	for_each_zone_zonelist_nodemask(zone, z, zonelist,
->  						high_zoneidx, nodemask) {
-> -		if (NUMA_BUILD && zlc_active &&
-> -			!zlc_zone_worth_trying(zonelist, z, allowednodes))
-> -				continue;
-> -		if ((alloc_flags & ALLOC_CPUSET) &&
-> -			!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> -				goto try_next_zone;
-> +
-> +		/* Ignore the additional zonelist filter checks if possible */
-> +		if (zonelist_filter) {
-> +			if (NUMA_BUILD && zlc_active &&
-> +				!zlc_zone_worth_trying(zonelist, z, allowednodes))
-> +					continue;
-> +			if ((alloc_flags & ALLOC_CPUSET) &&
-> +				!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> +					goto try_next_zone;
-> +		}
-
-if number_of_cpusets==1, old code call zlc_zone_worth_trying(). but your one never call.
-it seems regression.
-
-
->  
->  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
->  			unsigned long mark;
-> @@ -1445,13 +1458,15 @@ zonelist_scan:
->  		if (page)
->  			break;
->  this_zone_full:
-> -		if (NUMA_BUILD)
-> +		if (NUMA_BUILD && zonelist_filter)
->  			zlc_mark_zone_full(zonelist, z);
->  try_next_zone:
-> -		if (NUMA_BUILD && !did_zlc_setup) {
-> -			/* we do zlc_setup after the first zone is tried */
-> -			allowednodes = zlc_setup(zonelist, alloc_flags);
-> -			zlc_active = 1;
-> +		if (NUMA_BUILD && zonelist_filter) {
-> +			if (!did_zlc_setup) {
-> +				/* do zlc_setup after the first zone is tried */
-> +				allowednodes = zlc_setup(zonelist, alloc_flags);
-> +				zlc_active = 1;
-> +			}
->  			did_zlc_setup = 1;
->  		}
->  	}
-> -- 
-> 1.5.6.5
+> Second call preempt_count=1   (depth = 0)
+>        xt_info_rdlock_bh
+> +1         preempt_disable
+> -1         preempt_enable_no_resched
+> ---
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
+I think I had made you mistook my email.
 
+The preempt_count is correct, but I thought about lock-save:
+we must hold &__get_cpu_var(xt_info_locks)->lock
+when we enter the read-side critical region.
+
+--------------------
+xt_info_rdlock_bh() (depth = -1)
+  preempt_disable()
+  depth++
+  ==========>interrupt here
+  ==========>
+  ==========>xt_info_rdlock_bh() (depth = 0)
+  ==========>  preempt_disable()
+  ==========>  depth++
+  ==========>  preempt_enable_no_resched()
+  ==========>
+  ==========>enter the read-side critical region *without* lock.
+  ==========>  it may get trashy data.
+  ==========>
+  ==========>xt_info_rdunlock_bh()
+  ==========>
+  ==========>interrupt return.
+  spin_lock_bh()
+  preempt_enable_no_resched()
+
+enter the read-side critical region *with* lock.
+
+xt_info_rdunlock_bh().
+----------------------
+
+So I asked:
+> +void xt_info_rdlock_bh(void)
+> > +{
+> > +	struct xt_info_lock *lock;
+> > +
+> > +	preempt_disable();
+> > +	lock = &__get_cpu_var(xt_info_locks);
+> > +	if (likely(++lock->depth == 0))
+
+So what happen when xt_info_rdlock_bh() called recursively here?
+
+> > +		spin_lock_bh(&lock->lock);
+> > +	preempt_enable_no_resched();
+> > +}
+> > +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+> > +
+
+----------
+Is this OK? (Now I suppose we can enter the read-side critical region
+in irq context)
+
+void xt_info_rdlock_bh(void)
+{
+	unsigned long flags;
+	struct xt_info_lock *lock;
+
+	local_irq_save(flags);
+	lock = &__get_cpu_var(xt_info_locks);
+	if (likely(++lock->depth == 0))
+		spin_lock_bh(&lock->lock);
+	local_irq_restore(flags);
+}
+
+Lai
 
