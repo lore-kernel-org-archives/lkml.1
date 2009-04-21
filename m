@@ -1,106 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbZDUOyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZDUPG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbZDUOyZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZDUOyQ
+	id S1752660AbZDUPG3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 11:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZDUPGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:54:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35049 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750975AbZDUOyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:54:15 -0400
-Date: Tue, 21 Apr 2009 10:54:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] ring-buffer: only warn on wrap if buffer is
- bigger than two pages
-In-Reply-To: <20090421143509.GA5243@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904211051590.10097@gandalf.stny.rr.com>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904210954090.10097@gandalf.stny.rr.com> <20090421143509.GA5243@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 21 Apr 2009 11:06:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41316 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750975AbZDUPGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 11:06:20 -0400
+Date: Tue, 21 Apr 2009 07:44:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: rtl8187se: Use to_delayed_work
+Message-ID: <20090421144442.GA27580@suse.de>
+References: <20090403174649.42626ae6@hyperion.delvare> <20090421110752.160ddfb0@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421110752.160ddfb0@hyperion.delvare>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-On Tue, 21 Apr 2009, Ingo Molnar wrote:
-
+On Tue, Apr 21, 2009 at 11:07:52AM +0200, Jean Delvare wrote:
+> On Fri, 3 Apr 2009 17:46:49 +0200, Jean Delvare wrote:
+> > Use the recently added to_delayed_work() helper function.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > ---
+> >  drivers/staging/rtl8187se/r8180_dm.c |    6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
-> here's a new one:
-> 
->  Testing event sched_kthread_stop: <4>------------[ cut here ]------------
->  WARNING: at kernel/fork.c:988 copy_process+0x147/0xf7d()
->  Modules linked in:
-> 
-> config attached, bootlog below. This warning has the signs of some 
-> sort of lockdep interaction. (this too is a new one - it never 
-> triggered before)
-> 
-> 	Ingo
-> 
-> Running tests again, along with the function tracer
-> Running tests on trace events:
-> Testing event kfree_skb: OK
-> Testing event kmalloc: OK
-> Testing event kmem_cache_alloc: OK
-> Testing event kmalloc_node: OK
-> Testing event kmem_cache_alloc_node: OK
-> Testing event kfree: OK
-> Testing event kmem_cache_free: OK
-> Testing event irq_handler_exit: OK
-> Testing event irq_handler_entry: OK
-> Testing event softirq_entry: OK
-> Testing event softirq_exit: OK
-> Testing event lock_acquired: OK
-> Testing event lock_acquire: OK
-> Testing event lock_release: OK
-> Testing event lock_contended: OK
-> Testing event sched_kthread_stop: <4>------------[ cut here ]------------
-> WARNING: at kernel/fork.c:988 copy_process+0x147/0xf7d()
-> Modules linked in:
-> Pid: 2, comm: kthreadd Not tainted 2.6.30-rc2-tip-01581-gf4879a9-dirty #34509
-> Call Trace:
->  [<ffffffff80249801>] warn_slowpath+0x96/0xca
->  [<ffffffff8026f200>] ? trace_hardirqs_on_caller+0xff/0x14c
->  [<ffffffff8026f25a>] ? trace_hardirqs_on+0xd/0xf
->  [<ffffffff80261cb6>] ? __mutex_init+0x5a/0x64
->  [<ffffffff802accdf>] ? perf_counter_init_task+0x65/0x17b
->  [<ffffffff80247ca6>] copy_process+0x147/0xf7d
->  [<ffffffff80211d57>] ? trace+0x3a/0x73
->  [<ffffffff80248c7b>] do_fork+0x19f/0x478
->  [<ffffffff8025f03c>] ? kthreadd+0xb8/0x11c
->  [<ffffffff80212f12>] kernel_thread+0x82/0xe0
->  [<ffffffff808cbad4>] ? schedule+0x11f/0x5e1
->  [<ffffffff8025f0a0>] ? kthread+0x0/0x80
->  [<ffffffff80212f70>] ? child_rip+0x0/0x20
->  [<ffffffff8025f050>] ? kthreadd+0xcc/0x11c
->  [<ffffffff80fde140>] ? early_idt_handler+0x0/0x71
->  [<ffffffff80212f7a>] child_rip+0xa/0x20
->  [<ffffffff80212a52>] ? restore_args+0x0/0x30
->  [<ffffffff8025ef84>] ? kthreadd+0x0/0x11c
->  [<ffffffff80212f70>] ? child_rip+0x0/0x20
-> ---[ end trace 0843ba422c5d704e ]---
-> OK
-> Testing event sched_kthread_stop_ret: OK
+> Greg, can you please add this patch to your staging tree? Thanks.
 
-The above looks like the tracer slowed things down enough to trigger a 
-race elsewhere.
+Yes, sorry, too much "real work" these days, my patch queue is needing a
+lot of work...
 
-We have function tracing happening, and here we enabled the 
-sched_kthread_stop tracepoint. Each test starts and stops a kernel thread. 
-
-I'm not sure how this could have triggered.
-
-I'll investigate a little more.
-
--- Steve
-
+greg k-h
