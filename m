@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751742AbZDURnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZDURo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751742AbZDURnq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 13:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbZDURnX
+	id S1755176AbZDURo0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 13:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZDURoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 13:43:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:56569 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757195AbZDURnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 13:43:22 -0400
-Message-ID: <49EE05AC.1070704@goop.org>
-Date: Tue, 21 Apr 2009 10:43:08 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 21 Apr 2009 13:44:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53933 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754152AbZDURoM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 13:44:12 -0400
+Date: Tue, 21 Apr 2009 10:35:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Hugh Dickins <hugh@veritas.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
+ sometimes doesn't)
+In-Reply-To: <20090421171530.GA12014@redhat.com>
+Message-ID: <alpine.LFD.2.00.0904211032191.2199@localhost.localdomain>
+References: <20090330123101.GQ28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0903301506310.11454@blonde.anvils> <20090331061615.GS28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0904010106310.16500@blonde.anvils> <20090401023849.GW28946@ZenIV.linux.org.uk>
+ <20090401030339.GX28946@ZenIV.linux.org.uk> <20090406153127.GA21220@redhat.com> <Pine.LNX.4.64.0904191710320.9099@blonde.anvils> <20090421161006.GC5402@redhat.com> <alpine.LFD.2.00.0904210924270.2199@localhost.localdomain>
+ <20090421171530.GA12014@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka@firstfloor.org
-Subject: Re: [PATCH 2/8] tracing: create automated trace defines
-References: <20090414172337.280621613@goodmis.org> <20090414172640.796858018@goodmis.org> <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal> <87zlebpzmk.fsf@basil.nowhere.org> <20090421155106.GE3792@Krystal> <49EDFFE6.1080401@goop.org> <alpine.DEB.2.00.0904211320440.10097@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0904211320440.10097@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
->
->> I tried disabling frame pointers, but it looked to me like tracing selects
->> them.  Did I misread, or perhaps it was some other config option doing it...
->>     
->
-> It is needed for the function tracer (gcc -pg wont work without it). It is 
-> the only tracer that selects it.
->   
 
-Ah, right.  I'm never sure what all the trace options actually control, 
-so I tend to enable them a bit indescriminately.
 
-    J
+On Tue, 21 Apr 2009, Oleg Nesterov wrote:
+> 
+> OK, I agree, it doesn't really matter from latency/etc pov.
+> 
+> But still I can't understand why it is better to take fs->lock under
+> RCU lock. I mean, "fs->lock is the innermost lock" should not apply
+> to rcu_read_lock(). Because the latter is a bit special, no?
 
+Oh, I don't think it matters. If you want to put the RCU read-lock 
+innermost, that's fine by me. I just reacted to your latency argument as 
+not being very strong :)
+
+All I personally want is a patch that everybody can agree on, and that 
+has sane semantics. 
+
+		Linus
