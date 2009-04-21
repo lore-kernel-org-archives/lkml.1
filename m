@@ -1,48 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZDUKFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbZDUKFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbZDUKFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZDUKF0
+	id S1755582AbZDUKFv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbZDUKFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:05:26 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:48747 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbZDUKFZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:05:25 -0400
-Date: Tue, 21 Apr 2009 11:05:24 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: James Kosin <jkosin@beta.intcomgrp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFD] voltage/current regulator consumer interface
-Message-ID: <20090421100524.GC25828@sirena.org.uk>
-References: <ct38K-3Fq-11@gated-at.bofh.it> <49EC9709.8070002@support.intcomgrp.com>
+	Tue, 21 Apr 2009 06:05:35 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45677 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755925AbZDUKFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:05:34 -0400
+Date: Tue, 21 Apr 2009 11:05:30 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 10/25] Calculate the alloc_flags for allocation only
+	once
+Message-ID: <20090421100530.GN12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-11-git-send-email-mel@csn.ul.ie> <20090421165022.F13F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <49EC9709.8070002@support.intcomgrp.com>
-X-Cookie: Rubber bands have snappy endings!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090421165022.F13F.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 11:38:49AM -0400, James Kosin wrote:
+On Tue, Apr 21, 2009 at 06:03:25PM +0900, KOSAKI Motohiro wrote:
+> > Factor out the mapping between GFP and alloc_flags only once. Once factored
+> > out, it only needs to be calculated once but some care must be taken.
+> > 
+> > [neilb@suse.de says]
+> > As the test:
+> > 
+> > -       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+> > -                       && !in_interrupt()) {
+> > -               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+> > 
+> > has been replaced with a slightly weaker one:
+> > 
+> > +       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+> > 
+> > we need to ensure we don't recurse when PF_MEMALLOC is set.
+> 
+> It seems good idea.
+> 
+> > +static inline int
+> > +gfp_to_alloc_flags(gfp_t gfp_mask)
+> > +{
+> > +	struct task_struct *p = current;
+> > +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+> > +	const gfp_t wait = gfp_mask & __GFP_WAIT;
+> > +
+> > +	/*
+> > +	 * The caller may dip into page reserves a bit more if the caller
+> > +	 * cannot run direct reclaim, or if the caller has realtime scheduling
+> > +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> > +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+> > +	 */
+> > +	if (gfp_mask & __GFP_HIGH)
+> > +		alloc_flags |= ALLOC_HIGH;
+> > +
+> > +	if (!wait) {
+> > +		alloc_flags |= ALLOC_HARDER;
+> > +		/*
+> > +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+> > +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> > +		 */
+> > +		alloc_flags &= ~ALLOC_CPUSET;
+> > +	} else if (unlikely(rt_task(p)) && !in_interrupt())
+> 
+> wait==1 and in_interrupt==1 is never occur.
+> I think in_interrupt check can be removed.
+> 
 
-> > such as GPS trancievers and GSM modems. Moreover, in SoC based systems it is
-> > possible to switch on/off power to entire subsystem when it is not used.
+Looks like it. I removed it now.
 
-> I'd also ask the question, Why?
-> If exposing to user space it leaves the possibility of damaging hardware
-> or completely frying a board.
+> >  	/* Atomic allocations - we can't balance anything */
+> >  	if (!wait)
+> >  		goto nopage;
+> >  
+> > +	/* Avoid recursion of direct reclaim */
+> > +	if (p->flags & PF_MEMALLOC)
+> > +		goto nopage;
+> > +
+> 
+> Again. old code doesn't only check PF_MEMALLOC, but also check TIF_MEMDIE.
+> 
 
-There are some classes of device found in embedded systems which do
-things like provide an essentially separate system which interacts with
-the host system via something like a serial port.  These devices are
-normally controlled entirely from user space which is fine with static
-power configuration but if you want to provide regulator control for
-these devices you need to either move the control of the device into the
-kernel or expose the regulators the device uses to userspace.
+But a direct reclaim will have PF_MEMALLOC set and doesn't care about
+the value of TIF_MEMDIE with respect to recursion.
+
+There is still a check made for TIF_MEMDIE for setting ALLOC_NO_WATERMARKS
+in gfp_to_alloc_flags() so that flag is still being taken care of.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
