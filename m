@@ -1,111 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZDUXTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZDUXVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbZDUXTI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 19:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZDUXSu
+	id S1753367AbZDUXVN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 19:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZDUXU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 19:18:50 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:41066 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbZDUXSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 19:18:48 -0400
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Ming Lei <tom.leiming@gmail.com>
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-Date: Wed, 22 Apr 2009 01:21:10 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28; KDE/4.2.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       video4linux-list@redhat.com, mchehab@infradead.org
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <200904202208.23899.laurent.pinchart@skynet.be> <d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
-In-Reply-To: <d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
+	Tue, 21 Apr 2009 19:20:58 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:46381 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbZDUXU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 19:20:57 -0400
+Message-ID: <49EE54B4.9020700@ti.com>
+Date: Tue, 21 Apr 2009 18:20:20 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: john stultz <johnstul@us.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep for
+ more than 2.15 seconds
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu> <1240345936.6080.6.camel@localhost>
+In-Reply-To: <1240345936.6080.6.camel@localhost>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904220121.12002.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tuesday 21 April 2009 03:47:34 Ming Lei wrote:
-> 2009/4/21 Laurent Pinchart <laurent.pinchart@skynet.be>:
-> > On Saturday 18 April 2009 06:51:11 leiming wrote:
-> >> On Fri, 17 Apr 2009 19:55:29 -0700 (PDT)
-> >>
-> >> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >> > > @@ -742,7 +742,7 @@ static int uvc_alloc_urb_buffers(struct
-> >> > > uvc_video_device *video,
-> >> > >   /* Buffers are already allocated, bail out. */
-> >> > >   if (video->urb_size)
-> >> > > -         return 0;
-> >> > > +         return DIV_ROUND_UP(video->urb_size, psize);
-> >> >
-> >> > I don't think this is right. It should round _down_.
-> >> >
-> >> > It's supposed to return 'npackets', but if you pass it a different
-> >> > packet size than it was passed originally, it can now return a
-> >> > potentially bigger number than the already allocated buffer, no?
-> >> >
-> >> > So I think it should round down (ie use a regular divide). No?
-> >>
-> >> Yes,you are correct, please ignore my last reply, and following is
-> >> the fixed patch.
-> >
-> > psize and video->urb_size shouldn't have changed before and after resume,
-> > otherwise we'll get into trouble anyway. A regular divide and a round-up
-> > divide should then return the same result. I'll take the regular divide,
-> > as it will be more efficient.
->
-> Yes.
->
-> >> Thanks.
-> >>
-> >> From a3b3d72cdd57a0699fb643b41b78eb7beb211ff5 Mon Sep 17 00:00:00 2001
-> >> From: Ming Lei <tom.leiming@gmail.com>
-> >> Date: Wed, 15 Apr 2009 22:32:51 +0800
-> >> Subject: [PATCH] V4L/DVB:usbvideo:fix uvc resume failed(v2)
-> >>
-> >> Now urb buffers is not freed before suspend, so uvc_alloc_urb_buffers
-> >> should return packet counts allocated originally during uvc resume
-> >> , instead of zero.
-> >>
-> >> This version uses round down to return packet counts on Linus's
-> >> suggestions, or else may lead to buffer destructed if packet size
-> >> is changed before calling uvc_alloc_urb_buffers() in this kind of
-> >> case.
-> >
-> > The comment is misleading. If the packet size changes we need to
-> > reallocate the buffers anyway. Have you checked if the packet size (which
-> > depends on the endpoint being selected) can be changed between suspend
-> > and resume, either by the uvcvideo driver (I don't think it can) or the
-> > USB core ?
->
-> The packet size does not change between suspend and resume.  I mean
-> uvc_alloc_urb_buffers() still can be used in other cases if buffers was not
-> freed and is reuesed in future. It seems there is no such cases in uvcvideo
-> now, but uvc_alloc_urb_buffers() really __can__ work in such case, isn't it?
->
-> IMHO It is only used to allocate or reserve UVC_URBS usb buffers, which size
-> is video->urb_size, and npackets can be shortened or enlarged if psize is
-> changed, after all.
+john stultz wrote:
+> The concern is many clocksources wrap after a handful of seconds. The
+> acpi_pm is the best example (its only 24 bits wide). 
+> 
+> I brought this issue up earlier, and provided some example code that
+> could be used to limit the idle time appropriately for the current
+> clocksource here:
+> 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0901.3/02693.html
+> 
+> Jon: Did you see that mail, or is there a reason you didn't adapt this
+> code into your patch? 
 
-You're right. Patch applied, thanks.
+Hi John, yes I did read this email and thanks for bringing this up.
 
-Best regards,
+As I looked at this more I noticed that for 64-bit machines that the 
+max_delta_ns would be a 64-bit integer already and so this change would 
+only have an impact for 32-bit machines. I understand that there are 
+more 32-bit machines that 64-bit. However, I was trying to understand 
+how the wrapping of clocksources, such as the one you mention above, is 
+handled today for 64-bit machines that could theoretically sleep for 
+longer periods.
 
-Laurent Pinchart
+In addition to this as I was reviewing the "tick_nohz_stop_sched_tick()" 
+function that is configuring the dynamic tick and I noticed that this 
+code would actually stop the timer altogether if the time for the next 
+timer event is greater than NEXT_TIMER_MAX_DELTA jiffies. See code 
+snippet below. This is very unlikely, however, if this scenario was to 
+occur what would be the impact on the clocksource?
 
+           /*
+           * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+           * there is no timer pending or at least extremly far 
+
+           * into the future (12 days for HZ=1000). In this case
+           * we simply stop the tick timer:
+           */
+           if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
+                   ts->idle_expires.tv64 = KTIME_MAX;
+                   if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+                           hrtimer_cancel(&ts->sched_timer);
+                   goto out;
+           }
+
+I understand that clocksources need to be handled correctly, but as I 
+looked into this more I wanted to clarify how this is handled today for 
+64-bit machines. I appreciate your comments and feedback.
+
+Cheers
+Jon
