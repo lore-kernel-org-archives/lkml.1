@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZDUFHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbZDUFMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbZDUFHU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 01:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbZDUFHH
+	id S1752110AbZDUFMG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 01:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZDUFLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 01:07:07 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:15746 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbZDUFHF convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 01:11:52 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48761 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbZDUFLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 01:07:05 -0400
-Date: Tue, 21 Apr 2009 07:10:03 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: spock@gentoo.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fbdev: fix fillrect for 24bpp modes
-Message-Id: <20090421071003.ded2ae3f.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090418185234.GA17853@tria>
-References: <20090413170954.GA8403@tria>
-	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
-	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
-	<20090418185234.GA17853@tria>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
-X-EMID: ece2b138
+	Tue, 21 Apr 2009 01:11:51 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Subject: Re: [PATCH, RFC] check for frozen filesystems in the mmap path
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <49E7C323.9040805@redhat.com>
+References: <49E7C323.9040805@redhat.com>
+Message-Id: <20090421140045.F125.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 14:11:45 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Apr 2009 20:52:34 +0200
-Michal Januszewski <spock@gentoo.org> wrote:
 
-> The software fillrect routines do not work properly when the number of
-> pixels per machine word is not an integer.  To see that, run the following
-> command on a fbdev console with a 24bpp video mode, using a non-accelerated
-> driver such as (u)vesafb:
-> 
->   reset ; echo -e '\e[41mtest\e[K'
-> 
-> The expected result is 'test' displayed on a line with red background.
-> Instead of that, 'test' has a red background, but the rest of the line
-> (rendered using fillrect()) contains a distored colorful pattern.
-> 
-> This patch fixes the problem by correctly computing rotation shifts.
-> It has been tested in a 24bpp mode on 32- and 64-bit little-endian
-> machines.
-> 
-> Signed-off-by: Micha³ Januszewski <spock@gentoo.org>
-> ---
 
-I have tested the patch and it has worked with padded lines.
+> Index: linux-2.6/mm/memory.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory.c
+> +++ linux-2.6/mm/memory.c
+> @@ -1944,6 +1944,7 @@ static int do_wp_page(struct mm_struct *
+>  		 * read-only shared pages can get COWed by
+>  		 * get_user_pages(.write=1, .force=1).
+>  		 */
+> +		vfs_check_frozen(old_page->mapping->host->i_sb, SB_FREEZE_WRITE);
+>  		if (vma->vm_ops && vma->vm_ops->page_mkwrite) {
+>  			struct vm_fault vmf;
+>  			int tmp;
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+it seems strage.
 
-However, there is  a comment from Andrew Morton.
+1. it seems to have a race
 
-Regards,
-Krzysztof
+	CPU0				CPU1
+	----------------------------------------------------
+	do_wp_page
+	 vfs_check_frozen
+					ioctl_fsfreeze
+					  freeze_bdev
+					    __fsync_super
+        process touch mem
 
-----------------------------------------------------------------------
-Gotowka na koncie. Otworz konto direct i wez podwojny limit.
-http://link.interia.pl/f2115
+vfs_check_frozen only wait to unfreeze, but not prevent new
+new freeze request starting.
+
+
+2. this logic kill multi thread application.
+
+this logic mean mmap_sem grabbing until unfreeze.
+it mean othrer thread in the same process can't page-fault although
+it don't touch frozen-sb.
+it seems strange.
+
+
 
 
