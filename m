@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZDURaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZDURal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbZDURaV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 13:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZDURaD
+	id S1756198AbZDURal (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 13:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbZDURaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 21 Apr 2009 13:30:07 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:56352 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753393AbZDURaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Apr 2009 13:30:03 -0400
-Received: from lixom.net ([66.141.50.11]:39153 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752511AbZDURaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 13:30:00 -0400
-X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Apr 2009 13:30:00 EDT
-Date: Tue, 21 Apr 2009 12:25:02 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Paul Mackerras <paulus@samba.org>, subrata@linux.vnet.ibm.com,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       sachinp <sachinp@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] powerpc/pasemi: Fix no SMP build error
-Message-ID: <20090421172502.GA20237@lixom.net>
-References: <1239285094.5188.65.camel@subratamodak.linux.ibm.com> <49E8B015.7060808@am.sony.com>
+X-IronPort-AV: E=Sophos;i="4.40,225,1238976000"; 
+   d="scan'208";a="155393979"
+Date: Tue, 21 Apr 2009 10:29:29 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Brownell <david-b@pacbell.net>, alan@lxorguk.ukuu.org.uk,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090421172929.GC8251@cuplxvomd02.corp.sa.net>
+References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net> <20090421064346.GB8020@elte.hu> <200904210013.48551.david-b@pacbell.net> <1240333871.3632.70.camel@macbook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49E8B015.7060808@am.sony.com>
+In-Reply-To: <1240333871.3632.70.camel@macbook.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-5; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim5002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 09:36:37AM -0700, Geoff Levand wrote:
-> A non-SMP version of smp_send_stop() is now included in smp.h.
-> Remove the unneeded def in the pasemi setup.c.
-> 
-> Fixes build errors like these when CONFIG_SMP=n:
-> 
->   arch/powerpc/platforms/pasemi/setup.c:48: error: redefinition of ???smp_send_stop???
->   include/linux/smp.h:125: error: previous definition of 'smp_send_stop' was here
+On Tue, Apr 21, 2009 at 06:11:11PM +0100, David Woodhouse wrote:
+...
+> The kernel output is going to be spewed when a console registers with
+> CON_PRINTBUFFER anyway, and if we printk a warning about userspace
+> console output being lost, that ought to be good enough to notify the
+> user that something may have been lost. For bonus points, we could even
+> make that 'dummy' tty driver buffer a limited amount of userspace
+> output, maybe.
 
-Thanks for taking care of this.
+What in the world are users going to do when they see a message about
+output being lost? There is no way to recover the data and no way to
+prevent it in the future. I don't think this is a good approach.
 
-> Reported-by: subrata@linux.vnet.ibm.com
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Remember, even though the previous functionality of USB consoles was, in
+theory, less reliable than it appeared, it actually has been working well
+for years. Thus, tossing output will count as a regression for most of the
+world.
 
+> If userspace cares, let _it_ wait, by using an ioctl to see what tty
+> device it's _really_ attached to.
 
-Acked-by: Olof Johansson <olof@lixom.net>
+I have a notion, perhaps misguided, that userspace *always* cares about
+seeing all the output they have generated.
 
+I have no objection to a userspace solution, in the long run, but such an
+approach represents a significantly different approach to constructing boot
+filesystems and we need a transitional period. In the interim, let's get
+things working as they were.
 
--Olof
+> David Woodhouse                            Open Source Technology Centre
+
+David VomLehn
