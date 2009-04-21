@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZDUNdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZDUNfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZDUNdw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 09:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbZDUNdZ
+	id S1756040AbZDUNfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 09:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZDUNfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 09:33:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53167 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755594AbZDUNdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 09:33:24 -0400
-Message-ID: <49EDCB1D.1010301@redhat.com>
-Date: Tue, 21 Apr 2009 16:33:17 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: Xenner design and kvm msr handling
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com> <49EDB0E0.5060101@redhat.com> <49EDBBBF.90509@redhat.com> <49EDC050.1040700@redhat.com>
-In-Reply-To: <49EDC050.1040700@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 21 Apr 2009 09:35:12 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44113 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZDUNfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 09:35:11 -0400
+Date: Tue, 21 Apr 2009 06:35:49 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David VomLehn <dvomlehn@cisco.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090421063549.3b71881d@infradead.org>
+In-Reply-To: <20090421064346.GB8020@elte.hu>
+References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>
+	<20090421064346.GB8020@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
-> Not sure, have to dig into the xen code to figure.
->
-> Could be xen doesn't remember the page in the first place.  They might 
-> let the illegal instruction fault handler patch the opcode.  At least 
-> I vaguely remember some discussions about that.
->
-> Could be there isn't a interface to forgot the page.  "reboot" in xen 
-> land is "destroy guest, restart it".
+On Tue, 21 Apr 2009 08:43:46 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-How do you unload a driver then?
+> The proper approach would be to use one of the async_synchronize*() 
+> facilities in kernel/async.c to properly order the opening of the 
+> console with device init.
 
-What about kexec?
+Unfortunately this is not the answer.
 
-I'm glad we didn't do a hypercall page in kvm.
-
->> Sure, but later on, we may want to take advantage of kernel netback.
->
-> Agree.  But right now I have more important stuff to worry about ;)
-
-Still good to know what to expect later on.
+First of all, USB does not use the async_* infrastructure, so it does
+not do anything.
+But more importantly... USB *CANNOT* do this fundamental operation.
+USB does not have the capability to know when you have seen all devices
+that are connected. Devices just show up a random amount of time after
+you turn the power on for the bus.... there's no "and now we've seen
+all" operation.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
