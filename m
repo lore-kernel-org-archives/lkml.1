@@ -1,77 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZDUVUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZDUV2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZDUVUG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 17:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZDUVTx
+	id S1756907AbZDUV2e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 17:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZDUV2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 17:19:53 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59360 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753065AbZDUVTw (ORCPT
+	Tue, 21 Apr 2009 17:28:24 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51325 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbZDUV2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 17:19:52 -0400
-Date: Tue, 21 Apr 2009 22:10:40 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       torvalds@linux-foundation.org, greg@kroah.com
-Subject: Re: driver synchronization: make scsi_wait_scan more advanced
-Message-ID: <20090421211040.GA27557@flint.arm.linux.org.uk>
-References: <20090421134206.07b8ee7e@infradead.org>
+	Tue, 21 Apr 2009 17:28:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PWKku2EDkSLXKg/gQNOBWyLC2n4bkMWmnAokPXnUN65Nu0JI491imKtU4jGA3S9nY/
+         T3sJ6IqtKTyiUFJvFrK0y0zPmh70LCeGDpAjuxiaqn/1DC9lyLE+/rieYLLobv3VW4lq
+         w34XqZpITgnQ1K4WXUphh2q5qfSMZcL+okGec=
+Date: Tue, 21 Apr 2009 23:28:17 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Theodore Tso <tytso@mit.edu>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Message-ID: <20090421212816.GC5573@linux>
+References: <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux> <20090419134201.GF8493@redhat.com> <20090419154717.GB5514@linux> <20090420212827.GA9080@redhat.com> <20090420220511.GA8740@linux> <20090421010846.GA15850@redhat.com> <20090421083702.GC8441@linux> <20090421142305.GB22619@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421134206.07b8ee7e@infradead.org>
+In-Reply-To: <20090421142305.GB22619@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 01:42:06PM -0700, Arjan van de Ven wrote:
-> (CC'ing linux-scsi as well since this touches a file in drivers/scsi)
+On Tue, Apr 21, 2009 at 10:23:05AM -0400, Vivek Goyal wrote:
+> On Tue, Apr 21, 2009 at 10:37:03AM +0200, Andrea Righi wrote:
+> > On Mon, Apr 20, 2009 at 09:08:46PM -0400, Vivek Goyal wrote:
+> > > On Tue, Apr 21, 2009 at 12:05:12AM +0200, Andrea Righi wrote:
+> > > 
+> > > [..]
+> > > > > > > Are we not already controlling submission of request (at crude level).
+> > > > > > > If application is doing writeout at high rate, then it hits vm_dirty_ratio
+> > > > > > > hits and this application is forced to do write out and hence it is slowed
+> > > > > > > down and is not allowed to submit writes at high rate.
+> > > > > > > 
+> > > > > > > Just that it is not a very fair scheme right now as during right out
+> > > > > > > a high prio/high weight cgroup application can start writing out some
+> > > > > > > other cgroups' pages.
+> > > > > > > 
+> > > > > > > For this we probably need to have some combination of solutions like
+> > > > > > > per cgroup upper limit on dirty pages. Secondly probably if an application
+> > > > > > > is slowed down because of hitting vm_drity_ratio, it should try to
+> > > > > > > write out the inode it is dirtying first instead of picking any random
+> > > > > > > inode and associated pages. This will ensure that a high weight
+> > > > > > > application can quickly get through the write outs and see higher
+> > > > > > > throughput from the disk.
+> > > > > > 
+> > > > > > For the first, I submitted a patchset some months ago to provide this
+> > > > > > feature in the memory controller:
+> > > > > > 
+> > > > > > https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+> > > > > > 
+> > > > > > We focused on the best interface to use for setting the dirty pages
+> > > > > > limit, but we didn't finalize it. I can rework on that and repost an
+> > > > > > updated version. Now that we have the dirty_ratio/dirty_bytes to set the
+> > > > > > global limit I think we can use the same interface and the same semantic
+> > > > > > within the cgroup fs, something like:
+> > > > > > 
+> > > > > >   memory.dirty_ratio
+> > > > > >   memory.dirty_bytes
+> > > > > > 
+> > > > > > For the second point something like this should be enough to force tasks
+> > > > > > to write out only the inode they're actually dirtying when they hit the
+> > > > > > vm_dirty_ratio limit. But it should be tested carefully and may cause
+> > > > > > heavy performance regressions.
+> > > > > > 
+> > > > > > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> > > > > > ---
+> > > > > >  mm/page-writeback.c |    2 +-
+> > > > > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > > > > 
+> > > > > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > > > > > index 2630937..1e07c9d 100644
+> > > > > > --- a/mm/page-writeback.c
+> > > > > > +++ b/mm/page-writeback.c
+> > > > > > @@ -543,7 +543,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+> > > > > >  		 * been flushed to permanent storage.
+> > > > > >  		 */
+> > > > > >  		if (bdi_nr_reclaimable) {
+> > > > > > -			writeback_inodes(&wbc);
+> > > > > > +			sync_inode(mapping->host, &wbc);
+> > > > > >  			pages_written += write_chunk - wbc.nr_to_write;
+> > > > > >  			get_dirty_limits(&background_thresh, &dirty_thresh,
+> > > > > >  				       &bdi_thresh, bdi);
+> > > > > 
+> > > > > This patch seems to be helping me a bit in getting more service
+> > > > > differentiation between two writer dd of different weights. But strangely
+> > > > > it is helping only for ext3 and not ext4. Debugging is on.
+> > > > 
+> > > > Are you explicitly mounting ext3 with data=ordered?
+> > > 
+> > > Yes. Still using 29-rc8 and data=ordered was the default then.
+> > > 
+> > > I got two partitions on same disk and created one ext3 filesystem on each
+> > > partition (just to take journaling intereference out of two dd threads 
+> > > for the time being).
+> > > 
+> > > Two dd threads doing writes to each partition. 
+> > 
+> > ...and if you're using data=writeback with ext4 sync_inode() should sync
+> > the metadata only. If this is the case, could you check data=ordered
+> > also for ext4?
 > 
+> No, even data=ordered mode with ext4 is also not helping. It has to be
+> something else.
+
+mmmh.. maybe you could try to also add a wbc.sync_mode=WB_SYNC_ALL in
+the if below.
+
 > 
-> From 546fdda8b4124a7473f32decf4a2981984f287db Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Tue, 21 Apr 2009 13:32:54 -0700
-> Subject: [PATCH] driver synchronization: make scsi_wait_scan more advanced
-> 
-> 
-> There is currently only one way for userspace to say "wait for my storage
-> device to get ready for the modules I just loaded": to load the
-> scsi_wait_scan module. Expectations of userspace are that once this
-> module is loaded, all the (storage) devices for which the drivers
-> were loaded before the module load are present.
-> 
-> Now, there are some issues with the implementation, and the async
-> stuff got caught in the middle of this: The existing code only
-> waits for the scsy async probing to finish, but it did not take
-> into account at all that probing might not have begun yet.
-> (Russell ran into this problem on his computer and the fix works for him)
+> BTW, with the above patch, what happens if the address space being dirtied
+> does not have sufficient dirty pages to write back (more than write_chunk).
+> Will the process not be in loop until the number of dirty pages come down
+> (hopefully due to writeout by pdflush or by other processes?)
 
-Indeed yes.  With CONFIG_SCSI_SCAN_ASYNC unset, but with the scsi host
-driver built as a module, the behaviour without this patch causes
-problems.  The machine would load the pata_pcmcia driver, which would
-then detect and register the interface:
+Right! we could try something like this at the very least, stopping the
+loop if the address space we've dirtied doesn't have enough dirty pages.
 
-  ata1: PATA max PIO0 cmd 0xd0880000 ctl 0xd088000e irq 135
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ mm/page-writeback.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-At this point, the insmod process returns, and the init script continued,
-loading scsi_wait_scan which did nothing, and we'd continue the init
-script, which would try to detect and mount the storage attached to this
-interface - and fail because the device probes haven't completed.  The
-only workaround I found was to add a 'sleep 1' to the script to give the
-various layers in the kernel time to sort themselves out.
-
-With this patch, the loading of scsi_wait_scan waits for the device to
-finish probing, and we can properly detect and mount the attached storage
-(which in this case is the rootfs) and the 'sleep 1' hack isn't required.
-
-So, for everything but the scsi_scan.c hunk:
-
-Tested-by: Russell King <rmk+kernel@arm.linux.org.uk>
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 30351f0..e71a164 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -542,7 +542,17 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		 * been flushed to permanent storage.
+ 		 */
+ 		if (bdi_nr_reclaimable) {
+-			writeback_inodes(&wbc);
++			wbc.more_io = 0;
++			wbc.encountered_congestion = 0;
++			sync_inode(mapping->host, &wbc);
++			if (wbc.nr_to_write <= 0)
++				break;
++			/*
++			 * Wrote less than expected, check if the inode has
++			 * enough dirty pages to write back
++			 */
++			if (!wbc.encountered_congestion && !wbc.more_io)
++					break;
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			get_dirty_limits(&background_thresh, &dirty_thresh,
+ 				       &bdi_thresh, bdi);
