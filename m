@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZDUKNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbZDUKNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbZDUKNT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDUKND
+	id S1757352AbZDUKNz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbZDUKNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:13:03 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34738 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbZDUKNB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:13:01 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 10/25] Calculate the alloc_flags for allocation only once
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090421100530.GN12713@csn.ul.ie>
-References: <20090421165022.F13F.A69D9226@jp.fujitsu.com> <20090421100530.GN12713@csn.ul.ie>
-Message-Id: <20090421190921.F15F.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 06:13:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52541 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752852AbZDUKNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:13:45 -0400
+Message-ID: <49ED9C91.4070201@cn.fujitsu.com>
+Date: Tue, 21 Apr 2009 18:14:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/filters: disallow newline as delimeter
+References: <49ED8DD2.2070700@cn.fujitsu.com> <49ED8DFD.9070909@cn.fujitsu.com> <20090421095705.GA15448@elte.hu> <49ED9AC2.9000507@cn.fujitsu.com> <20090421100722.GA18486@elte.hu>
+In-Reply-To: <20090421100722.GA18486@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 19:12:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > +	/* Avoid recursion of direct reclaim */
-> > > +	if (p->flags & PF_MEMALLOC)
-> > > +		goto nopage;
-> > > +
-> > 
-> > Again. old code doesn't only check PF_MEMALLOC, but also check TIF_MEMDIE.
-> > 
+Ingo Molnar wrote:
+> * Li Zefan <lizf@cn.fujitsu.com> wrote:
 > 
-> But a direct reclaim will have PF_MEMALLOC set and doesn't care about
-> the value of TIF_MEMDIE with respect to recursion.
+>> Ingo Molnar wrote:
+>>> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+>>>
+>>>> I guess because user input is often ended with '\n' (like "echo 
+>>>> xxx"), thus '\n' is used as a delimeter besides ' ', but we can 
+>>>> just strip tailing spaces.
+>>> Hm, how about:
+>>>
+>>> ( echo 'x'
+>>>   echo '|| y' ) > filter
+>>>
+>>> type of scripts? Shouldnt the parser be permissive in general?
+>>>
+>> This patch doesn't forbid this usage: ;)
+>>
+>> ( echo 'parent_comm == a'
+>>   echo '|| parent_comm == b' ) > filter
+>>
+>> This patch does forbid this usage:
+>>
+>> ( echo 'parent_comm'
+>>   echo '=='
+>>   echo 'a' ) > filter
 > 
-> There is still a check made for TIF_MEMDIE for setting ALLOC_NO_WATERMARKS
-> in gfp_to_alloc_flags() so that flag is still being taken care of.
+> Same argument though, no?
+> 
 
-Do you mean this is intentional change?
-I only said there is changelog-less behavior change.
-
-old code is here.
-PF_MEMALLOC and TIF_MEMDIE makes goto nopage. it avoid reclaim.
--------------------------------------------------------------------------
-rebalance:
-        if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
-                        && !in_interrupt()) {
-                if (!(gfp_mask & __GFP_NOMEMALLOC)) {
-nofail_alloc:
-                        /* go through the zonelist yet again, ignoring mins */
-                        page = get_page_from_freelist(gfp_mask, nodemask, order,
-                                zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
-                        if (page)
-                                goto got_pg;
-                        if (gfp_mask & __GFP_NOFAIL) {
-                                congestion_wait(WRITE, HZ/50);
-                                goto nofail_alloc;
-                        }
-                }
-                goto nopage;
-        }
--------------------------------------------------------------------------
-
-
-but I don't oppose this change if it is your intentional.
-
-
+Then I have no strong opinion on this. I'm fine to drop this patch.
 
 
