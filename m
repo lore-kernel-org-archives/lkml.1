@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbZDUCig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZDUCo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbZDUCig (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 22:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZDUCi1
+	id S1755392AbZDUCo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 22:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDUCor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 22:38:27 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:8080 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZDUCi0 (ORCPT
+	Mon, 20 Apr 2009 22:44:47 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43444 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752490AbZDUCoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 22:38:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mKNAKAySn7Lal1xh9sEbnzLRpqAGU79w9QelwXcXN19F5wRljCCuKZp8bVNEhOXwRo
-         E7JULYgt6+gJmNFH/963grvQ+O08njUqkZiMr9F4ZoRM12McFRYaC9dVWSEgsd+pzn7X
-         yyIb7CrihBZl3EyHzZeW3aXJAHQJtlpoQynwk=
-Subject: Re: [patch 08/14] input: PCAP2 based touchscreen driver
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Stefan Schmidt <stefan@datenfreihafen.org>, eric.y.miao@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ao2@openezx.org
-In-Reply-To: <20090421021811.GD13617@dtor-d630.eng.vmware.com>
-References: <20081121160403.073751031@dodger.lab.datenfreihafen.org>
-	 <20081121170518.GA4416@USFSHXP-002051>
-	 <20081122000047.GB28067@dodger.lab.datenfreihafen.org>
-	 <20090421021811.GD13617@dtor-d630.eng.vmware.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 20 Apr 2009 23:38:41 -0300
-Message-Id: <1240281521.25090.6.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	Mon, 20 Apr 2009 22:44:46 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 03/25] Do not check NUMA node ID when the caller knows the node is valid
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421114121.F11F.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 11:44:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Seg, 2009-04-20 às 19:18 -0700, Dmitry Torokhov escreveu:
-> What is the status of PCAP support? Is it going to be merged in
-> mainline? I am holding the touchscreen driver in my queue because
-> it requires linux/mfd/ezx-pcap.h which is not in mainline yet...
+> Callers of alloc_pages_node() can optionally specify -1 as a node to mean
+> "allocate from the current node". However, a number of the callers in fast
+> paths know for a fact their node is valid. To avoid a comparison and branch,
+> this patch adds alloc_pages_exact_node() that only checks the nid with
+> VM_BUG_ON(). Callers that know their node is valid are then converted.
 > 
-> Should I drop the driver? Is it going to be merged through some
-> other tree?
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 
-Hi Dmitry,
+I think there still are convertable caller. (recently, caller increased a bit)
+but it isn't important. anyway,
 
-Please drop it. There is still a lot of work needed to get our core PCAP
-driver in shape for mainline.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Thanks!
 
--- 
-Daniel Ribeiro
 
