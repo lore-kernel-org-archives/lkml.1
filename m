@@ -1,111 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZDUIqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZDUIqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbZDUIqK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbZDUIps
+	id S1755736AbZDUIqa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZDUIp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:45:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37016 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755912AbZDUIpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:45:47 -0400
-Date: Tue, 21 Apr 2009 10:45:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <h.mitake@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
-Message-ID: <20090421084521.GA20459@elte.hu>
-References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain> <adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu> <adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com> <20090420105304.GC6670@elte.hu> <a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com> <20090420160332.GB9689@elte.hu> <a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>
+	Tue, 21 Apr 2009 04:45:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:16073 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755928AbZDUIpz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:45:55 -0400
+Message-ID: <49ED87BF.7040007@petalogix.com>
+Date: Tue, 21 Apr 2009 10:45:51 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Nate Straz <nate-ltp@refried.org>, subrata@linux.vnet.ibm.com,
+       ltp-list@lists.sourceforge.net,
+       John Williams <john.williams@petalogix.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, adilger@sun.com
+Subject: Re: [LTP] statvfs -> f_bavail
+References: <49E759FB.70103@petalogix.com> <49E847FB.1030801@petalogix.com> <20090417173107.GA3590@refried.org> <49EC1352.6010900@petalogix.com> <20090420062642.GY26366@ZenIV.linux.org.uk> <49EC1945.1000805@petalogix.com> <20090421002503.GA8633@ZenIV.linux.org.uk>
+In-Reply-To: <20090421002503.GA8633@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Al Viro wrote:
+> On Mon, Apr 20, 2009 at 08:42:13AM +0200, Michal Simek wrote:
+>
+>   
+>> That mean that for all other fs is possible to set nr_blocks=0 (f_bavail=0) and for all this cases
+>> fsync02 test failed. That mean that make sense to test f_bavail value in LTP and if is zero
+>> don't work with it. Am I right?
+>>     
+>
+> Huh?
+> 	a) ramfs has no such thing as "amount of available space", simply
+> because it has no limit on total size occupied.
+>   
+As wrote Andreas - for ramfs case make sense to use size of memory.
 
-* Hitoshi Mitake <h.mitake@gmail.com> wrote:
+> 	b) tmpfs *does* have a limit and will report f_bavail, unless you
+> tell it not to limit (that's what nr_blocks=... is; it sets the fs size limit
+> for tmpfs and 0 means "no limit, act as ramfs").
+>   
+that mean that if is not limit make no sense to work with it in fsync02
+test and use or default test value
+or find out your fs size limit? Where is it written?
 
-> On Tue, Apr 21, 2009 at 01:03, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Hitoshi Mitake <h.mitake@gmail.com> wrote:
-> >
-> >> On Mon, Apr 20, 2009 at 19:53, Ingo Molnar <mingo@elte.hu> wrote:
-> >> >
-> >> > * H. Peter Anvin <hpa@zytor.com> wrote:
-> >> >
-> >> >> Roland Dreier wrote:
-> >> >> >
-> >> >> > Notice that it reads from addr+4 *before* it reads from addr, rather
-> >> >> > than after as in your example (and in fact your example depends on
-> >> >> > undefined compiler semantics, since there is no sequence point between
-> >> >> > the two operands of the | operator).  Now, I don't know that hardware,
-> >> >> > so I don't know if it makes a difference, but the niu example I gave in
-> >> >> > my original email shows that given hardware with clear-on-read
-> >> >> > registers, the order does very much matter.
-> >> >> >
-> >> >>
-> >> >> At least for x86, the order should be low-high, because that is the
-> >> >> order that those two transactions would be seen on a 32-bit bus
-> >> >> downstream from the CPU if the CPU issued a 64-bit transaction.
-> >> >>
-> >> >> The only sane way to handle this as something other than per-driver
-> >> >> hacks would be something like:
-> >> >>
-> >> >> #include <linux/io64.h>               /* Any 64-bit I/O OK */
-> >> >>
-> >> >> #include <linux/io64lh.h>     /* Low-high splitting OK */
-> >> >>
-> >> >> #include <linux/io64hl.h>     /* High-low splitting OK */
-> >> >>
-> >> >> #include <linux/io64atomic.h> /* 64-bit I/O must be atomic */
-> >> >>
-> >> >> ... i.e. letting the driver choose what fallback method it will accept.
-> >> >
-> >> > Yeah - with the default being the natural low-high order.
-> >> >
-> >> > The other argument is that if a driver really wants some rare, oddly
-> >> > different order it should better define its own method that is not
-> >> > named in the same (or in a similar) way as an existing generic API.
-> >> > Otherwise, confusion will ensue.
-> >> I think this is a good way.
-> >> readq/writeq are already in Linus's tree, removing these is not a good idea.
-> >>
-> >> And I've sent the patch to fix a little problem of Kconfig about
-> >> readq/writeq to you.
-> >> http://marc.info/?l=linux-kernel&m=123521109218008&w=2
-> >> Did you notice?
-> >>
-> >> Adding cautions about accessing order or non-atomic to Kconfig's help
-> >> part may be benefit.
-> >
-> > It's better to add add such non-interactive help text as Makefile
-> > comments:
-> >
-> > #
-> > # This option ...
-> > #
-> >
-> > and they should be invisible in make menuconfig. This is a facility
-> > provided by architectures.
-> I'll move the help text from Kconfig to Makefile.
-> (My original patch also doesn't make help text visible in make menuconfig.)
+> 	c) nfs client has no fscking clue how much space is left on server
+> for non-root; moreover, in case of nfs root on client might very well be
+> mapped to something else on server.
+>   
+that mean that no make sense to work with f_bavail and return zero value
+right?
 
-sorry i meant the Kconfig file - you can put comments in there too. 
-help text is really meant for things that are interactive.
+> 	d) something local on-disk (ext2, ext3, etc., etc.) can and will fill
+> ->f_bavail with non-zero data
+>   
+this is used.
+> 	e) procfs has nothing to put there, period.  You can't create
+> files there, it doesn't have anything like fixed-sized something that might
+> be partially empty.
+>   
+snip
+> The bottom line: some filesystems have reasonable answer to "how much space
+> is left on that fs for non-root user".  Those fill the field in question.
+> And for some filesystems the question makes no sense whatsoever.
+>
+> So statfs(2) has every right to leave the damn thing zero.  Whether it
+> will do that or not depends on the fs type.  Userland code must be able
+> to cope with that, unless it *knows* which filesystem type will it be
+> dealing with.
+>   
+ok. Current LTP fsync02 failed in forever loop and my LTP patch just
+solve problem if the f_bavail
+is zero - if yes, just use default value which is in test.
+Of course I would like to use sensible value(amount of mem or whatever)
+for all fs and if is the way, I'll do it. That's question for you
+if is possible to do it -> that's why I cc: fsdevel mailing list.
+If is not a way to do it in generic way make sense to me use at least my
+patch.
 
-	Ingo
+Michal
+> Incidentally, nr_blocks=... will be cheerfully shat upon by just about every
+> fs out there.  It's tmpfs-specific.
+>   
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+
