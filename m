@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZDUJTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZDUJVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbZDUJTq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZDUJTg
+	id S1756649AbZDUJVo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZDUJVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:19:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32788 "EHLO mx2.redhat.com"
+	Tue, 21 Apr 2009 05:21:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:44631 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753755AbZDUJTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:19:35 -0400
-Subject: GFS2: Pull request (small fixes)
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Tue, 21 Apr 2009 10:19:47 +0100
-Message-Id: <1240305587.3080.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1753802AbZDUJVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 05:21:35 -0400
+Date: Tue, 21 Apr 2009 11:21:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 1/2] fs/compat_ioctl: fix build when !BLOCK
+Message-ID: <20090421092133.GG4593@kernel.dk>
+References: <1240215264-8096-1-git-send-email-a.beregalov@gmail.com> <20090421073234.GB4593@kernel.dk> <a4423d670904210134i2aa1b6b9xf9d38792b7302044@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670904210134i2aa1b6b9xf9d38792b7302044@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Apr 21 2009, Alexander Beregalov wrote:
+> 2009/4/21 Jens Axboe <jens.axboe@oracle.com>:
+> > On Mon, Apr 20 2009, Alexander Beregalov wrote:
+> >> From: alexb <alexb@localhost.(none)>
+> >>
+> >> In file included from fs/compat_ioctl.c:61:
+> >> include/linux/loop.h:59: error: field 'lo_bio_list' has incomplete type
+> >>
+> >> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> >
+> > Thanks, applied.
+> 
+> Hi Jens
+> 
+> Al has already sent it to Linus.
 
-Please consider pulling the following two small fixes,
+Oh, it's not in current -git. But it's not a problem, I notice those
+kind of things when preparing the push.
 
-Steve.
-
--------------------------------------------------------------------------------
-The following changes since commit 3ee8da87ba6151ec91b2b8bbd27633bb248ea0d5:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../tiwai/sound-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git master
-
-Steven Whitehouse (2):
-      GFS2: Clear dirty bit at end of inode glock sync
-      GFS2: Fix page_mkwrite() return code
-
- fs/gfs2/glops.c    |    6 ++++++
- fs/gfs2/ops_file.c |    4 +++-
- 2 files changed, 9 insertions(+), 1 deletions(-)
-
+-- 
+Jens Axboe
 
