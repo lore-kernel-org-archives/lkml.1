@@ -1,129 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbZDUKTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZDUKTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbZDUKTU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbZDUKTG
+	id S1757551AbZDUKTz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbZDUKTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:19:06 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34900 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbZDUKTE (ORCPT
+	Tue, 21 Apr 2009 06:19:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33457 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755565AbZDUKTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:19:04 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 09/25] Calculate the migratetype for allocation only once
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090421083513.GC12713@csn.ul.ie>
-References: <20090421160729.F136.A69D9226@jp.fujitsu.com> <20090421083513.GC12713@csn.ul.ie>
-Message-Id: <20090421191344.F162.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 06:19:44 -0400
+Message-ID: <2fdd7e9df2c0b9380a0b1fcdedafecf7.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090421095525.GA13699@linux>
+References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com>
+    <1240090712-1058-3-git-send-email-righi.andrea@gmail.com>
+    <20090421091534.971f676f.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090421095525.GA13699@linux>
+Date: Tue, 21 Apr 2009 19:19:39 +0900 (JST)
+Subject: Re: [PATCH 2/7] res_counter: introduce ratelimiting attributes
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Andrea Righi" <righi.andrea@gmail.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Paul Menage" <menage@google.com>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Gui Jianfeng" <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       "Carl Henrik Lunde" <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       "Divyesh Shah" <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, "Hirokazu Takahashi" <taka@valinux.co.jp>,
+       "Li Zefan" <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, "Ryo Tsuruta" <ryov@valinux.co.jp>,
+       "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, "Nauman Rafique" <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 19:19:00 +0900 (JST)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Apr 21, 2009 at 04:37:28PM +0900, KOSAKI Motohiro wrote:
-> > > GFP mask is converted into a migratetype when deciding which pagelist to
-> > > take a page from. However, it is happening multiple times per
-> > > allocation, at least once per zone traversed. Calculate it once.
-> > > 
-> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > ---
-> > >  mm/page_alloc.c |   43 ++++++++++++++++++++++++++-----------------
-> > >  1 files changed, 26 insertions(+), 17 deletions(-)
-> > > 
-> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > index b27bcde..f960cf5 100644
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -1065,13 +1065,13 @@ void split_page(struct page *page, unsigned int order)
-> > >   * or two.
-> > >   */
-> > >  static struct page *buffered_rmqueue(struct zone *preferred_zone,
-> > > -			struct zone *zone, int order, gfp_t gfp_flags)
-> > > +			struct zone *zone, int order, gfp_t gfp_flags,
-> > > +			int migratetype)
-> > >  {
-> > >  	unsigned long flags;
-> > >  	struct page *page;
-> > >  	int cold = !!(gfp_flags & __GFP_COLD);
-> > >  	int cpu;
-> > > -	int migratetype = allocflags_to_migratetype(gfp_flags);
-> > 
-> > hmmm....
-> > 
-> > allocflags_to_migratetype() is very cheap function and buffered_rmqueue()
-> > and other non-inline static function isn't guranteed inlined.
-> > 
-> 
-> A later patch makes them inlined due to the fact there is only one call
-> site.
+Andrea Righi wrote:
+> On Tue, Apr 21, 2009 at 09:15:34AM +0900, KAMEZAWA Hiroyuki wrote:
 
-Oh, I see.
-I drop my claim. thanks.
+>> It's very bad if cacheline of spinlock is different from data field, in
+>> future.
+>
+> Regarding the new attributes, policy can be surely an unsigned int or
+> even less (now only 1 bit is used!), maybe we can just add an unsigned
+> int flags, and encode also potential future informations there.
+agreed.
 
+>
+> Moreover, are we sure we really need an unsigned long long for failcnt?
+>
+I think "int" is enough for failcnt.
 
-
-> > -------------------------------------------------------------------
-> > /* Convert GFP flags to their corresponding migrate type */
-> > static inline int allocflags_to_migratetype(gfp_t gfp_flags)
-> > {
-> >         WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
-> > 
-> >         if (unlikely(page_group_by_mobility_disabled))
-> >                 return MIGRATE_UNMOVABLE;
-> > 
-> >         /* Group based on mobility */
-> >         return (((gfp_flags & __GFP_MOVABLE) != 0) << 1) |
-> >                 ((gfp_flags & __GFP_RECLAIMABLE) != 0);
-> > }
-> > -------------------------------------------------------------------
-> > 
-> > s/WARN_ON/VM_BUG_ON/ is better?
-> > 
-> 
-> I wanted to catch out-of-tree drivers but it's been a while so maybe VM_BUG_ON
-> wouldn't hurt. I can add a patch that does that a pass 2 of improving the
-> allocator or would you prefer to see it now?
-
-no. another patch is better :)
-
-
-> > GFP_MOVABLE_MASK makes 3. 3 mean MIGRATE_RESERVE. it seems obviously bug.
-> > 
-> 
-> Short answer;
-> No, GFP flags that result in MIGRATE_RESERVE is a bug. The caller should
-> never want to be allocating from there.
-> 
-> Longer answer;
-> The size of the MIGRATE_RESERVE depends on the number of free pages that
-> must be kept in the zone. Because GFP flags never result in here, the
-> area is only used when the alternative is to fail the allocation and the
-> watermarks are still met. The intention is that high-order atomic
-> allocations that were short lived may be allocated from here. This was
-> to preserve a behaviour in the allocator before MIGRATE_RESERVE was
-> introduced. It makes no sense for a caller to allocate directly out of
-> here and in fact the fallback list for MIGRATE_RESERVE are useless
-
-Yeah.
-My past mail is too poor. I agree it is caller's bug.
-I mean VM_BUG_ON is better because
-  - obviously caller bug 
-  - VM_BUG_ON is no runtime impact when VM_DEBUG is off.
-
-
+Thanks,
+-Kame
 
