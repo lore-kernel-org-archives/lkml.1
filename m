@@ -1,138 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZDUUk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZDUUos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007AbZDUUk0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZDUUkK
+	id S1756990AbZDUUos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZDUUoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:40:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56170 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752660AbZDUUkJ convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 16:44:37 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:32742 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753368AbZDUUog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:40:09 -0400
-Date: Tue, 21 Apr 2009 13:42:06 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk,
-       torvalds@linux-foundation.org, greg@kroah.com
-Subject: driver synchronization: make scsi_wait_scan more advanced
-Message-ID: <20090421134206.07b8ee7e@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 21 Apr 2009 16:44:36 -0400
+Message-ID: <49EE3025.7050603@panasas.com>
+Date: Tue, 21 Apr 2009 23:44:21 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Rusty Russell <rusty@rustcorp.com.au>
+CC: subrata@linux.vnet.ibm.com, NFS list <linux-nfs@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Fredric Isaman <iisaman@citi.umich.edu>
+Subject: Re: [BUILD FAILURE 03/04] Next April 21 : x86_64 randconfig [fs/nfs/nfs.ko]
+References: <1240332715.9110.39.camel@subratamodak.linux.ibm.com>	 <49EE056C.1060605@panasas.com> <1240336172.20441.0.camel@heimdal.trondhjem.org>
+In-Reply-To: <1240336172.20441.0.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Apr 2009 20:44:34.0252 (UTC) FILETIME=[FA6A58C0:01C9C2C1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CC'ing linux-scsi as well since this touches a file in drivers/scsi)
+On Apr. 21, 2009, 20:49 +0300, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> On Tue, 2009-04-21 at 20:42 +0300, Benny Halevy wrote:
+>> On Apr. 21, 2009, 19:51 +0300, Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+>>> I think i am observing this for the first time in any randconfig builds:
+>>>
+>>> BUILD   arch/x86/boot/bzImage
+>>> Root device is (8, 3)
+>>> Setup is 13020 bytes (padded to 13312 bytes).
+>>> System is 5625 kB
+>>> CRC a80d60ee
+>>> Kernel: arch/x86/boot/bzImage is ready  (#1)
+>>>   Building modules, stage 2.
+>>>   MODPOST 514 modules
+>>> ERROR: "find_last_bit" [fs/nfs/nfs.ko] undefined!
+>>> make[1]: *** [__modpost] Error 1
+>>> make: *** [modules] Error 2
+>>> ---
+>>>
+>>> Regards--
+>>> Subrata
+>>>
+>> Trond, can you please merge
+>> http://git.linux-nfs.org/?p=bhalevy/linux-pnfs.git;a=commitdiff;h=9f32944d1bca79038ef3e9c9a27f11803d093d8e
+>> into your nfsv41 and linux-next branches?
+>>
+>> I've placed it right before "nfs41: free slot"
+>> in git://git.linux-nfs.org/projects/bhalevy/linux-pnfs.git nfs41-for-2.6.31
+>>
+>> (see also this thread:
+>> http://article.gmane.org/gmane.linux.kernel.next/6951)
+> 
+> Could we just push that straight into the kernel? It seems like a
+> no-brainer...
 
+Absolutely.  Fred already sent it to the linux-kbuild mailing list
+and got no response, maybe we'll get lucky this time :-)
+Though I'm not sure who should shepherd it in.
 
->From 546fdda8b4124a7473f32decf4a2981984f287db Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Tue, 21 Apr 2009 13:32:54 -0700
-Subject: [PATCH] driver synchronization: make scsi_wait_scan more advanced
+Rusty, since this changes your code in lib/Makefile
+can you please ack this patch?
 
+Benny
 
-There is currently only one way for userspace to say "wait for my storage
-device to get ready for the modules I just loaded": to load the
-scsi_wait_scan module. Expectations of userspace are that once this
-module is loaded, all the (storage) devices for which the drivers
-were loaded before the module load are present.
+> 
+> Cheers
+>   Trond
+> 
 
-Now, there are some issues with the implementation, and the async
-stuff got caught in the middle of this: The existing code only
-waits for the scsy async probing to finish, but it did not take
-into account at all that probing might not have begun yet.
-(Russell ran into this problem on his computer and the fix works for him)
+>From 9f32944d1bca79038ef3e9c9a27f11803d093d8e Mon Sep 17 00:00:00 2001
+From: Fred Isaman <iisaman@citi.umich.edu>
+Date: Thu, 26 Mar 2009 11:22:16 -0400
+Subject: [PATCH] lib: find_last_bit.o needed by a module only, move it from lib to obj
 
-This patch fixes this more thoroughly than the previous "fix", which
-had some bad side effects (namely, for kernel code that wanted to wait for
-the scsi scan it would also do an async sync, which would deadlock if you did
-it from async context already.. there's a report about that on lkml):
-The patch makes the module first wait for all device driver probes, and then it
-will wait for the scsi parallel scan to finish.
+It is possible to configure the kernel such that find_last_bit is
+referenced only by modules, causing linking to fail with
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+ERROR: "find_last_bit" [fs/nfs/nfs.ko] undefined!
+
+Signed-off-by: Fred Isaman <iisaman@citi.umich.edu>
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
 ---
- drivers/base/dd.c             |    1 +
- drivers/scsi/scsi_scan.c      |    2 --
- drivers/scsi/scsi_wait_scan.c |   11 +++++++++++
- include/linux/device.h        |    1 +
- 4 files changed, 13 insertions(+), 2 deletions(-)
+ lib/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index f17c326..742cbe6 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -179,6 +179,7 @@ void wait_for_device_probe(void)
- 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
- 	async_synchronize_full();
- }
-+EXPORT_SYMBOL_GPL(wait_for_device_probe);
- 
- /**
-  * driver_probe_device - attempt to bind device & driver together
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index a14d245..6f51ca4 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -180,8 +180,6 @@ int scsi_complete_async_scans(void)
- 	spin_unlock(&async_scan_lock);
- 
- 	kfree(data);
--	/* Synchronize async operations globally */
--	async_synchronize_full();
- 	return 0;
- }
- 
-diff --git a/drivers/scsi/scsi_wait_scan.c b/drivers/scsi/scsi_wait_scan.c
-index 2f21af2..74708fc 100644
---- a/drivers/scsi/scsi_wait_scan.c
-+++ b/drivers/scsi/scsi_wait_scan.c
-@@ -11,10 +11,21 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/device.h>
- #include <scsi/scsi_scan.h>
- 
- static int __init wait_scan_init(void)
- {
-+	/*
-+	 * First we need to wait for device probing to finish;
-+	 * the drivers we just loaded might just still be probing
-+	 * and might not yet have reached the scsi async scanning
-+	 */
-+	wait_for_device_probe();
-+	/*
-+	 * and then we wait for the actual asynchronous scsi scan
-+	 * to finish.
-+	 */
- 	scsi_complete_async_scans();
- 	return 0;
- }
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 2918c0e..6a69caa 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -551,6 +551,7 @@ extern int (*platform_notify_remove)(struct device *dev);
- extern struct device *get_device(struct device *dev);
- extern void put_device(struct device *dev);
- 
-+extern void wait_for_device_probe(void);
- 
- /* drivers/base/power/shutdown.c */
- extern void device_shutdown(void);
+diff --git a/lib/Makefile b/lib/Makefile
+index d6edd67..33a40e4 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -38,7 +38,7 @@ lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
+ lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
+ lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
+ lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+-lib-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
++obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
+ obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
+ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
 -- 
-1.6.0.6
+1.6.2.1
 
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
