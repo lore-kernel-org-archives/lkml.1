@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbZDUQBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbZDUQHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753045AbZDUQBf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZDUQBK
+	id S1754532AbZDUQHJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZDUQGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:01:10 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:41774 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753642AbZDUQBI (ORCPT
+	Tue, 21 Apr 2009 12:06:54 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:15808 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbZDUQGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:01:08 -0400
-Date: Tue, 21 Apr 2009 11:09:59 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 25/25] Use a pre-calculated value instead of num_online_nodes()
- in fast paths
-In-Reply-To: <20090421090102.GI12713@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0904211109450.19969@qirst.com>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-26-git-send-email-mel@csn.ul.ie> <1240301300.771.58.camel@penberg-laptop> <20090421090102.GI12713@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 21 Apr 2009 12:06:53 -0400
+Message-ID: <49EDEF18.20107@codemonkey.ws>
+Date: Tue, 21 Apr 2009 11:06:48 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Avi Kivity <avi@redhat.com>
+CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -v2] Add MCE support to KVM
+References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com>
+In-Reply-To: <49EAE334.9020803@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009, Mel Gorman wrote:
-
-> On Tue, Apr 21, 2009 at 11:08:20AM +0300, Pekka Enberg wrote:
-> > On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
-> > > diff --git a/mm/slab.c b/mm/slab.c
-> > > index 1c680e8..41d1343 100644
-> > > --- a/mm/slab.c
-> > > +++ b/mm/slab.c
-> > > @@ -3579,7 +3579,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
-> > >  	 * variable to skip the call, which is mostly likely to be present in
-> > >  	 * the cache.
-> > >  	 */
-> > > -	if (numa_platform && cache_free_alien(cachep, objp))
-> > > +	if (numa_platform > 1 && cache_free_alien(cachep, objp))
-> > >  		return;
-> >
-> > This doesn't look right. I assume you meant "nr_online_nodes > 1" here?
-> > If so, please go ahead and remove "numa_platform" completely.
-> >
+Avi Kivity wrote:
+> Anthony Liguori wrote:
+>> Huang Ying wrote:
+>>> The related MSRs are emulated. MCE capability is exported via
+>>> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
+>>> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+>>> such as the mcg_cap. MCE is injected via vcpu ioctl command
+>>> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
+>>> not simulated.
+>>>   
+>>
+>> Maybe I'm missing something, but couldn't this be implemented 
+>> entirely within userspace?  There's nothing VT/SVM specific about 
+>> this.  If the issue is setting these MSRs from userspace via 
+>> KVM_SET_MSRS isn't enough, perhaps we should add userspace MSR handling.
+>>
 >
-> It would need to be nr_possible_nodes which would be a separate patch to add
-> the definition and then drop numa_platform. This change is wrong as part of
-> this patch. I'll drop it. Thanks
+> You also need to inject the MCE.
 
-nr_online_nodes would be okay as Pekka suggested.
+KVM_SET_EXCEPTION, instead of adding something MCE specific?
+
+Regards,
+
+Anthony Liguori
+
 
