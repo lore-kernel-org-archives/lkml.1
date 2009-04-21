@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZDUHES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZDUHEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753485AbZDUHES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 03:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZDUHD7
+	id S1753930AbZDUHEd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 03:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZDUHEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 03:03:59 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:32329 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbZDUHD6 (ORCPT
+	Tue, 21 Apr 2009 03:04:04 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53962 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbZDUHED (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 03:03:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=AWfVqR3lOVwVFMfxULUu5v/833JuiDuPYXOkxEg6neoISX8RBQNgSzFq5VFq0mMDi2
-         C2zWObEtutI85GpKAdOIItOdP+APxSRR16vvtC6JfEWqHS4jVR/9vSWqt6GCvN6RYHRo
-         be7cxJpN+V9KjfKef3f+6ME1MrvThUxkEa1EI=
-Message-ID: <49ED6FD7.3070307@panasas.com>
-Date: Tue, 21 Apr 2009 10:03:51 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Tue, 21 Apr 2009 03:04:03 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 08/25] Calculate the preferred zone for allocation only once
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-9-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-9-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421155256.F133.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@redhat.com>
-CC: lkml <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Is sata_nv compatible with async scsi scan?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 16:03:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+> get_page_from_freelist() can be called multiple times for an allocation.
+> Part of this calculates the preferred_zone which is the first usable
+> zone in the zonelist. This patch calculates preferred_zone once.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Since 2.6.29 I'm having intermittent problems with booting kernels.
-After supposedly waiting for scsi async scan to complete,
-quite frequently I see errors from the init resume process
-when it fails to find the swap partition and later the root
-file system fails to load.
+I'm not sure this patch improve performance largely or not.
+but I don't find the bug.
 
-A workaround that I found to be helpful is booting the kernel
-with scsi_mod.scan=sync so I suspect sata_nv has a problem
-with asynchronous scanning.
 
-The two machines this happens on have:
-IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-and
 
-IDE interface: nVidia Corporation CK804 Serial ATA Controller (rev f3)
 
-This one: IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-seems to be less prone to the problem, though I tend to reboot it
-much less frequently, so it's possible I just happened to be lucky with it.
 
-Benny
