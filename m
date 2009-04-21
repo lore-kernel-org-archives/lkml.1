@@ -1,34 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbZDTPwL (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 20 Apr 2009 11:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZDTPvy
+	id S1755444AbZDULqZ (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 21 Apr 2009 07:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZDULqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 11:51:54 -0400
-Received: from tomts35.bellnexxia.net ([209.226.175.109]:54334 "EHLO
-	tomts35-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755917AbZDTPvx convert rfc822-to-8bit
+	Tue, 21 Apr 2009 07:46:09 -0400
+Received: from simmts6.bellnexxia.net ([206.47.199.164]:44271 "EHLO
+	simmts6-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754187AbZDULqI convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 11:51:53 -0400
+	Tue, 21 Apr 2009 07:46:08 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAMM27EnR4q+G/2dsb2JhbACBLs9pg2oG
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [200.65.129.2]
-From: =?ISO-8859-1?B?qU9ubGluZQ==?= Notification <primecare@bellnet.ca>
-Reply-To: uk_office01@btinternet.com
-To: <info@winner.org>
-Subject: Prize Claims
-Date: Mon, 20 Apr 2009 11:51:40 -0400
+X-IronPort-Anti-Spam-Result: AooIANtK7UnOL8eh/2dsb2JhbACBLyCLVyWHf78mg2sG
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [65.120.56.2]
+From: <primecare@bellnet.ca>
+Reply-To: jerry.smith33@onlineprocessingdept.co.uk
+To: <info@lotto.org>
+Subject: Winner
+Date: Tue, 21 Apr 2009 7:46:06 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <20090420155151.FHYM13270.tomts35-srv.bellnexxia.net@toip35-bus.srvr.bell.ca>
+Message-Id: <20090421114606.XLAW1652.simmts6-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Confirm this receipt by contacting the due process unit officer Mr.Nelson White
-for the sum of £1,000,000 GBP E-mail:(uk_office01@btinternet.com)Fill the
-details: FullName,Address,Tel,Occupation:
-Regards
-Mrs.Caroline Jude
+The Global Award Programme.Therefore you have been approve for a lump sum payout of (£950.000.00  GBP) by your E-ID send your details 
+
+Name:.......................
+Address:....................
+Country:....................
+Occupation:................
+Phone Number:...............
+
+Yours faithfully,
+Mrs Joan Thomas
 
