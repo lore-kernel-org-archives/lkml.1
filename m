@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbZDUJIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZDUJIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329AbZDUJIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZDUJIB
+	id S1756603AbZDUJIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbZDUJIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:08:01 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:26889 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbZDUJH7 (ORCPT
+	Tue, 21 Apr 2009 05:08:31 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59115 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbZDUJIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:07:59 -0400
-Date: Tue, 21 Apr 2009 11:07:52 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: rtl8187se: Use to_delayed_work
-Message-ID: <20090421110752.160ddfb0@hyperion.delvare>
-In-Reply-To: <20090403174649.42626ae6@hyperion.delvare>
-References: <20090403174649.42626ae6@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Apr 2009 05:08:30 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 12/25] Remove a branch by assuming __GFP_HIGH == ALLOC_HIGH
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-13-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-13-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421180757.F145.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 18:08:23 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009 17:46:49 +0200, Jean Delvare wrote:
-> Use the recently added to_delayed_work() helper function.
+> Allocations that specify __GFP_HIGH get the ALLOC_HIGH flag. If these
+> flags are equal to each other, we can eliminate a branch.
 > 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> [akpm@linux-foundation.org: Suggested the hack]
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 > ---
->  drivers/staging/rtl8187se/r8180_dm.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-
-Greg, can you please add this patch to your staging tree? Thanks.
-
+>  mm/page_alloc.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> --- linux-2.6.30-rc0.orig/drivers/staging/rtl8187se/r8180_dm.c	2009-04-03 17:19:23.000000000 +0200
-> +++ linux-2.6.30-rc0/drivers/staging/rtl8187se/r8180_dm.c	2009-04-03 17:40:32.000000000 +0200
-> @@ -132,7 +132,7 @@ void rtl8180_tx_pw_wq (struct work_struc
->  //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
->  //      struct ieee80211_device * ieee = (struct ieee80211_device*)
->  //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
-> -        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
-> +	struct delayed_work *dwork = to_delayed_work(work);
->          struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,tx_pw_wq);
->          struct net_device *dev = ieee->dev;
->  #else
-> @@ -314,7 +314,7 @@ void rtl8180_hw_dig_wq (struct work_stru
->  //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
->  //      struct ieee80211_device * ieee = (struct ieee80211_device*)
->  //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
-> -        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
-> +	struct delayed_work *dwork = to_delayed_work(work);
->          struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_dig_wq);
->          struct net_device *dev = ieee->dev;
->  #else
-> @@ -1250,7 +1250,7 @@ SetInitialGain:
->  #if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
->  void rtl8180_rate_adapter(struct work_struct * work)
->  {
-> -	struct delayed_work *dwork = container_of(work,struct delayed_work,work);
-> +	struct delayed_work *dwork = to_delayed_work(work);
->          struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,rate_adapter_wq);
->          struct net_device *dev = ieee->dev;
->  #else
-> 
-> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 51e1ded..b13fc29 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1639,8 +1639,8 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+>  	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+>  	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+>  	 */
+> -	if (gfp_mask & __GFP_HIGH)
+> -		alloc_flags |= ALLOC_HIGH;
+> +	VM_BUG_ON(__GFP_HIGH != ALLOC_HIGH);
+> +	alloc_flags |= (gfp_mask & __GFP_HIGH);
+>  
+>  	if (!wait) {
+>  		alloc_flags |= ALLOC_HARDER;
+
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
 
--- 
-Jean Delvare
+
