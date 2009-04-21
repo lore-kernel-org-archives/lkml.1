@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZDUKUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZDUKXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbZDUKUy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZDUKUm
+	id S1754883AbZDUKXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZDUKXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:20:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37351 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753193AbZDUKUl (ORCPT
+	Tue, 21 Apr 2009 06:23:04 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35046 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbZDUKXC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:20:41 -0400
-Date: Tue, 21 Apr 2009 12:24:02 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tim Abbott <tabbott@MIT.EDU>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH v2 0/4] Add support for compiling with -ffunction-sections -fdata-sections
-Message-ID: <20090421102402.GZ14687@one.firstfloor.org>
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain> <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 21 Apr 2009 06:23:02 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 13/25] Inline __rmqueue_smallest()
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090421101115.GP12713@csn.ul.ie>
+References: <20090421185025.F156.A69D9226@jp.fujitsu.com> <20090421101115.GP12713@csn.ul.ie>
+Message-Id: <20090421192141.F168.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 19:22:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Are there any advantages outside of the size things?
+> Is this better?
+> 
+> Inline __rmqueue_smallest by altering flow very slightly so that there
+> is only one call site. Because there is only one call-site, this
+> function can then be inlined without causing text bloat.
 
-Yes ksplice needs it too.
+very nice.
 
-> Do we end up packing data better? 
 
-There used to be tools to do that (use profile feedback to pack
-code), but I'm not sure they would help the kernel too much
-because they were mostly aimed at demand paging. But such tools
-definitely would need this infrastructure. Iirc there are some architectures
-othat benefit from hold/cold partioning during execution.
+> I don't see a need to add a comment into the function itself as I don't
+> think it would help any.
 
-> I'd like to have some more champions of this code, in other words.
+ok. I drop my claim.
 
-I definitely like the size angle -- letting the linker eliminate
-code without ifdef jungles certainly sounds attractive to me.
 
-Also if we find broken toolchains I suppose it wouldn't be too
-difficult to black list them.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
