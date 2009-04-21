@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbZDUVQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbZDUVQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbZDUVQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 17:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZDUVQL
+	id S1758427AbZDUVQj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 17:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZDUVQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 17:16:11 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:25052 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752160AbZDUVQK (ORCPT
+	Tue, 21 Apr 2009 17:16:12 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:46833 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752486AbZDUVQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 17:16:10 -0400
-Message-ID: <49EE3794.1070904@codemonkey.ws>
-Date: Tue, 21 Apr 2009 16:16:04 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 21 Apr 2009 17:16:11 -0400
+Date: Tue, 21 Apr 2009 17:15:59 -0400
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>, hooanon05@yahoo.co.jp,
+       hch@infradead.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH v2] Fix i_mutex handling in nfsd readdir
+Message-ID: <20090421211559.GA27411@fieldses.org>
+References: <1239960739.3428.33.camel@macbook.infradead.org> <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk> <20090417225306.GO26366@ZenIV.linux.org.uk> <1240013753.21423.86.camel@macbook.infradead.org> <1240144069.3589.156.camel@macbook.infradead.org> <20090419205154.GA18110@fieldses.org> <20090420195008.GE1823@fieldses.org> <20090421002934.GB8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com> <49EDF057.9060501@codemonkey.ws> <49EDF287.9020908@redhat.com> <49EE2497.3060009@codemonkey.ws> <49EE25CB.6070709@redhat.com> <49EE27C2.3060505@codemonkey.ws> <49EE304D.5060108@redhat.com>
-In-Reply-To: <49EE304D.5060108@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421002934.GB8633@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
->
-> Example: SMP.
+On Tue, Apr 21, 2009 at 01:29:34AM +0100, Al Viro wrote:
+> > Sorry for the delay.  Simpler might be just to drop and reacquire the
+> > mutex each time through nfsd4_list_rec_dir()'s loop, but I'd just as
+> > soon rework the called functions to expect the mutex be held (and get
+> > rid of the unused, probably fragile, clear_clid_dir() in the process).
+> > 
+> > So the following could be folded in to your patch.
+> > 
+> > I tested the combined patch over 2.6.30-rc2.  I also tested 2.6.29 +
+> > 05f4f678 + the combined patch.  Both look  OK.  Feel free to add a
+> > tested-by or acked-by for "J. Bruce Fields" <bfields@citi.umich.edu> as
+> > appropriate.  Or happy to add a s-o-b and shepherd it along myself if
+> > it's easier....
+> 
+> I can take both, but if you prefer to have that one go through nfs tree -
+> fine by me.
+> 
+> I'm going to push a queue into for-next in a couple of hours; running build
+> tests right now.  Patch from dwmw2 is in there...
 
-There was no KVM support in QEMU at the time when SMP was introduced.  
-Had there been, I see no reason not to do it in upstream QEMU.
+However it makes it there is fine by me; I'll wait for one of you to
+take care of it.
 
-> Example: vlan API.
-
-You'll have to be more specific.  Do you mean the up coming vlan API 
-refactoring?  That absolutely should be happening in upstream QEMU.
-
->>> For this kind of work, we can provide kvm-userspace.git as a kind of 
->>> playground where these experiments may be made.  kvm-userspace.git 
->>> exists to support kvm.git; while qemu.git has a life of its own and 
->>> more stringent barriers to acceptance.
->>
->> As long as people are using kvm-userspace.git instead of qemu.git, 
->> we're failing IMHO.  If kvm-userspace.git is basically the equivalent 
->> of the x86 git kernel tree, linux-next, or something like that, then 
->> that's a good thing.
->
-> That's definitely a long term goal, but qemu is not yet at a point 
-> where it is easy to implement new features efficiently.  Once it 
-> reaches that state, kvm-userspace will become a simple staging ground 
-> (or even disappear entirely).
-
-The simple fact is that right now, Fedora ships kvm-userspace and calls 
-it QEMU.  It builds packages for non-KVM enabled boards.  There is a 
-very large userspace that consumes packages derived from kvm-userspace.  
-Like it or not, kvm-userspace is not an experimental staging ground for 
-QEMU.
-
-The only reasonable things to do IMHO is for as much as humanly possible 
-to be deferred to QEMU or for you to comes to terms with your role as a 
-defacto QEMU maintainer and start pushing back more on patch sets that 
-don't take into consideration TCG/non-KVM environments :-)
-
-MCE is a perfect example of something that really has no reason to go in 
-via kvm-userspace since we have enough KVM support in upstream QEMU.
-
-Regards,
-
-Anthony Liguori
+--b.
