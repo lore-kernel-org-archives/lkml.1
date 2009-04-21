@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbZDUACD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZDUAC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755062AbZDUACD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 20:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZDUABt
+	id S1755361AbZDUAC4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 20:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZDUACs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 20:01:49 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:42626 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbZDUABs convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 20:02:48 -0400
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:41515 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751703AbZDUACr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 20:01:48 -0400
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: stefan novak <lms.brubaker@gmail.com>
-cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: bond interface arp, vlan and trunk / network question
-In-reply-to: <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com>
-References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com> <49ECBBF0.80202@cosmosbay.com> <30257.1240252651@death.nxdomain.ibm.com> <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com> <7609.1240259780@death.nxdomain.ibm.com> <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com> <13606.1240262581@death.nxdomain.ibm.com> <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com>
-Comments: In-reply-to stefan novak <lms.brubaker@gmail.com>
-   message dated "Mon, 20 Apr 2009 23:39:21 +0200."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+	Mon, 20 Apr 2009 20:02:47 -0400
+Message-ID: <49ED0D2C.40306@lougher.demon.co.uk>
+Date: Tue, 21 Apr 2009 01:02:52 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 20 Apr 2009 17:01:52 -0700
-Message-ID: <22462.1240272112@death.nxdomain.ibm.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: squashfs-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Doug Chapman <doug.chapman@hp.com>
+Subject: Re: [Squashfs-devel] [PATCH] squashfs broken when pageszie >	blocksize
+References: <1239652637.1127.10.camel@oberon>	<49E3C209.5030705@lougher.demon.co.uk> <alpine.LRH.2.00.0904171518040.28718@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0904171518040.28718@vixen.sonytel.be>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stefan novak <lms.brubaker@gmail.com> wrote:
+Geert Uytterhoeven wrote:
 
->ip route get 172.21.0.254
->172.21.0.254 dev bond0.600  src 172.21.0.1
->    cache  mtu 1500 advmss 1460 hoplimit 64
->
->ifconfig -a :
->bond0     Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
->          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
->          RX packets:62221072 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:1152153 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:0
->          RX bytes:4037489679 (3.7 GiB)  TX bytes:124861822 (119.0 MiB)
->
->bond0.200 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
->          inet addr:172.22.0.1  Bcast:172.22.0.255  Mask:255.255.255.0
->          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
->          RX packets:5 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:0
->          RX bytes:250 (250.0 b)  TX bytes:252 (252.0 b)
->
->bond0.500 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
->          inet addr:172.20.0.1  Bcast:172.20.0.255  Mask:255.255.255.0
->          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
->          RX packets:26448 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:33570 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:0
->          RX bytes:6278388 (5.9 MiB)  TX bytes:6429404 (6.1 MiB)
->
->bond0.600 Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
->          inet addr:172.21.0.1  Bcast:172.21.0.255  Mask:255.255.255.0
->          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
->          RX packets:1911 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:8665 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:0
->          RX bytes:98604 (96.2 KiB)  TX bytes:1208395 (1.1 MiB)
->
->eth0      Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
->          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
->          RX packets:881723 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:1074651 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:1000
->          RX bytes:108550619 (103.5 MiB)  TX bytes:115574099 (110.2 MiB)
->          Memory:f8220000-f8240000
->
->eth1      Link encap:Ethernet  HWaddr 00:30:48:94:7D:1A
->          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
->          RX packets:61339352 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:77510 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:1000
->          RX bytes:3928939240 (3.6 GiB)  TX bytes:9290795 (8.8 MiB)
->          Memory:f8260000-f8280000
->
->lo        Link encap:Local Loopback
->          inet addr:127.0.0.1  Mask:255.0.0.0
->          UP LOOPBACK RUNNING  MTU:16436  Metric:1
->          RX packets:105468 errors:0 dropped:0 overruns:0 frame:0
->          TX packets:105468 errors:0 dropped:0 overruns:0 carrier:0
->          collisions:0 txqueuelen:0
->          RX bytes:7016087 (6.6 MiB)  TX bytes:7016087 (6.6 MiB)
+> A quick grep on PAGE_{SIZE,SHIFT} in asm/page.h shows:
+> 
+> ia64, mips, sh: 4/8/16/64 KiB
+> parisc: 4/16/64 KiB
+> alpha, cris: 8 KiB
+> powerpc: 4/16/64/256 KiB
+> 
+>> For completeness there should also be a mount time check that
+>> the block size used in the Squashfs filesystem is at least as
+>> large as the pagesize.  This doesn't matter for metadata
+>> (size 8192), but does matter for data blocks, because Squashfs
+>> read_page doesn't handle block_size < pagesize.
+>>
+>> Squashfs read_page used to handle block_size < pagesize but I
+>> removed that code when I removed filesystem support for block_sizes
+>> < 4K.  If ia64 users (or any other architecture with larger than
+>> 4K pagesizes) want to use Squashfs filesystems with blocksizes less
+>> than their pagesize, then I can put that code back in.
+> 
+> So I think it's a good idea to resurrect that code...
+> 
 
-	This looks pretty much as expected.
+Yes, something else to add to my ASAP TODO list.
 
-[...]
->>        There's no "self test" or anything like that, if that's what you
->> mean.  If the ARPs work (make the round trip) the link is up, if they
->> don't, the link is down.  That's subject to some details related to
->> arp_validate, but is basically it.
->
->Ok. my interfaces are now up with arp_validate set to 0/none.
->Everything works as expected, thank you.
->But with arp_validate set to all the interfaces are always down. :(
->I think that i have to use the all option because i have many servers
->in that vlan?
-
-	Well, you'll probably want to run with arp_validate, otherwise
-the probe traffic can fool the arp monitor into thinking the path is up
-when it isn't.
-
-	But...
-
-	I know what your problem with arp_validate is, though, and it's
-something I've been working on as time permits (and forgot to mention
-previously).  Basically, the VLAN receive path assigns the VLAN device
-to the received packet before doing receive processing on it, so the
-"slave" identity is lost before the bonding ARP receive function looks
-at it, so it never counts the ARP (for validate purposes).
-
-	I've been chewing on the least bad way to fix this, mostly
-trying to figure out if its possible to resolve without adding a hook
-into bonding that basically replaces and extends skb_bond_should_drop
-(which does work, it's just not very elegant).
-
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
-
+Phillip
