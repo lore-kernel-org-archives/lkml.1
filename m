@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbZDUTkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZDUTmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbZDUTkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 15:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbZDUTkM
+	id S1758054AbZDUTmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 15:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbZDUTl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 15:40:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42175 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbZDUTkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 15:40:11 -0400
-Date: Tue, 21 Apr 2009 21:39:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090421193924.GA24404@elte.hu>
-References: <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam>
+	Tue, 21 Apr 2009 15:41:59 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:53040 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755615AbZDUTl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 15:41:58 -0400
+Date: Tue, 21 Apr 2009 20:39:06 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Oleg Nesterov <oleg@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
+ sometimes doesn't)
+In-Reply-To: <alpine.LFD.2.00.0904211032191.2199@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0904212031120.10256@blonde.anvils>
+References: <20090330123101.GQ28946@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0903301506310.11454@blonde.anvils> <20090331061615.GS28946@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0904010106310.16500@blonde.anvils> <20090401023849.GW28946@ZenIV.linux.org.uk>
+ <20090401030339.GX28946@ZenIV.linux.org.uk> <20090406153127.GA21220@redhat.com>
+ <Pine.LNX.4.64.0904191710320.9099@blonde.anvils> <20090421161006.GC5402@redhat.com>
+ <alpine.LFD.2.00.0904210924270.2199@localhost.localdomain>
+ <20090421171530.GA12014@redhat.com> <alpine.LFD.2.00.0904211032191.2199@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421111541.228e977a@nehalam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 21 Apr 2009, Linus Torvalds wrote:
+> On Tue, 21 Apr 2009, Oleg Nesterov wrote:
+> > 
+> > OK, I agree, it doesn't really matter from latency/etc pov.
+> > 
+> > But still I can't understand why it is better to take fs->lock under
+> > RCU lock. I mean, "fs->lock is the innermost lock" should not apply
+> > to rcu_read_lock(). Because the latter is a bit special, no?
+> 
+> Oh, I don't think it matters. If you want to put the RCU read-lock 
+> innermost, that's fine by me. I just reacted to your latency argument as 
+> not being very strong :)
+> 
+> All I personally want is a patch that everybody can agree on, and that 
+> has sane semantics. 
 
-* Stephen Hemminger <shemminger@vyatta.com> wrote:
+Right, that ordering scarcely matters, and can probably be argued
+either way.  I should have been clearer when I suggested inverting
+them to Oleg: I meant it merely as a suggestion, that we go back
+to the ordering which came more naturally to Al in the first place.
+And since Al hasn't spoken up (probably has more important things
+to care about), please do go ahead with your two patches, Oleg,
+with the rcu_read_lock() on whichever side takes your fancy!
 
-> +void xt_info_wrunlock_bh(void)
-> +	__releases(xt_info_lock)
-> +{
-> +	unsigned int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +#if NR_CPUS > (PREEMPT_MASK - 1)
-> +		/*
-> +		 * Spin_unlock calls preempt_enable, but since we had
-> +		 * to adjust the count in xt_info_wrlock_bh, do it again
-> +		 */
-> +		preempt_disable();
-> +#endif
-> +		write_unlock(&per_cpu(xt_info_locks, i));
-> +	}
-> +	local_bh_enable();
-> +}
-
-In the global/local lock scheme i proposed this would become:
-
-	global_write_unlock(void)
-	{
-		write_unlock(&global_lock);
-	}
-
-As we dont hold the local locks during the write-locked critical 
-section. No loop needed over CPUs, no preempt nesting complications, 
-no lockdep complications, etc.
-
-	Ingo
+Thanks,
+Hugh
