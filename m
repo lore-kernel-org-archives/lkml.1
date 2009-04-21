@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZDUOCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZDUOCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbZDUOCP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZDUOB6
+	id S1756349AbZDUOCa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756457AbZDUOCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:01:58 -0400
-Received: from cathcart.site5.com ([74.54.107.137]:44738 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754643AbZDUOB6 (ORCPT
+	Tue, 21 Apr 2009 10:02:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:47688 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbZDUOCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:01:58 -0400
-Message-ID: <49EDD1C9.2060408@compulab.co.il>
-Date: Tue, 21 Apr 2009 17:01:45 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+	Tue, 21 Apr 2009 10:02:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YWBYMiz5iwDP2NFg4gn6cnlE8DY216wsRX4vc5D4Qzxs0Ii8vj/9WavGZqk1EIPM3S
+         GEahSypa1q8hxkiKj7NqwT63NZ6BtHT0gvLoFidhGJyWgiNsXrAuhrN71EJAbrKJmLHb
+         m7Q61OP5Or8tYjhHzPV6cP2D1Ef4Dexi/QIaw=
+Date: Tue, 21 Apr 2009 22:02:28 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>
+Subject: Re: [PATCH v2 0/4] Add support for compiling with
+	-ffunction-sections -fdata-sections
+Message-ID: <20090421140228.GC3303@hack>
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu>
 MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>
-CC: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFD] voltage/current regulator consumer interface
-References: <49EC8775.8060609@compulab.co.il> <20090420145627.GA5281@rakim.wolfsonmicro.main> <49EDB569.2060701@compulab.co.il> <20090421125528.GD25828@sirena.org.uk> <49EDD02B.5020407@compulab.co.il> <20090421135640.GE25828@sirena.org.uk>
-In-Reply-To: <20090421135640.GE25828@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238973278-31735-1-git-send-email-tabbott@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 05, 2009 at 07:14:34PM -0400, Tim Abbott wrote:
+>Hi Linus,
+>
+>Here is a new version of the -ffunction-sections -fdata-sections patch
+>series based on your current master.  Please apply.
+>
+>When I sent a version of this patch series at the start of the merge
+>window, Stephen Rothwell pointed out that the first patch conflicted
+>with several changes in linux-next, and it should be resent near the
+>end of the merge window once those changes were merged.  There are
+>now no conflicting changes staged in linux-next[0], so now is probably
+>the optimal time to merge this patch series.
+>
+>[0] There is one trivial merge conflict with next-20090403 because
+>e5083a63b6a8546c5fe1e571fe529e3939787ec2 was merged into master since
+>then, but this will presumably disappear when next catches up tomorrow.
+>
+>	-Tim Abbott
+>
+>--
+>
+>The purpose of this patch series is to make it possible to build the
+>kernel with "gcc -ffunction-sections -fdata-sections".  There are two
+>major applications for this functionality: decreasing vmlinux image
+>size with --gc-sections, and Ksplice.
 
+Hello, Tim!
 
-Mark Brown wrote:
-> On Tue, Apr 21, 2009 at 04:54:51PM +0300, Mike Rapoport wrote:
->> Mark Brown wrote:
->>> On Tue, Apr 21, 2009 at 03:00:41PM +0300, Mike Rapoport wrote:
-> 
->>>> I've managed to create some preliminary "line-consumer" driver. I don't really
->>>> like the name, but I couldn't think of something better and "virtual" is
->>>> already taken :)
-> 
->>> "userspace" or "user"?  The goal here is to let userspace applications
->>> be consumers.
-> 
->> I don't quite understand your intention here. Do you mean that it would bebetter
->> to use a character device rather than sysfs?
-> 
-> I'm talking about the name.
+Nice work! But, don't -ffunction-sections and -fdata-sections have
+collisions with '-g' and 'gprof'? Just like what gcc(1) describes.
 
-As I said, I could not invent something better. Any idea?
+CONFIG_DEBUG_INFO relies on '-g', and IIRIC, another project of
+linux kernel is trying to 'gprof' the kernel too.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+So, CONFIG_FUNCTION_DATA_SECTIONS probably needs to depend on
+!CONFIG_DEBUG_INFO etc.
+
+Am I missing something?
+
+Thanks.
 
 -- 
-Sincerely yours,
-Mike.
-
+Live like a child, think like the god.
+ 
