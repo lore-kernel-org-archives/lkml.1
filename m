@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZDUGiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbZDUGiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZDUGiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 02:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZDUGiD
+	id S1753785AbZDUGiz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 02:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbZDUGip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 02:38:03 -0400
-Received: from mga09.intel.com ([134.134.136.24]:32212 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751473AbZDUGiB convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 02:38:45 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33491 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbZDUGio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 02:38:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,222,1239001200"; 
-   d="scan'208";a="508343507"
-From: "Han, Weidong" <weidong.han@intel.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>
-Date: Tue, 21 Apr 2009 14:37:21 +0800
-Subject: RE: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
-Thread-Topic: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
-Thread-Index: AcnB9MOdc7tQKGreRViG3dvnCeLzrgAU2DfA
-Message-ID: <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com>
-References: <20090420200450.128993000@linux-os.sc.intel.com>
- <20090420200450.552359000@linux-os.sc.intel.com>
-In-Reply-To: <20090420200450.552359000@linux-os.sc.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 21 Apr 2009 02:38:44 -0400
+Date: Tue, 21 Apr 2009 15:33:37 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 03/25] Do not check NUMA node ID when the caller knows the node is valid
+Message-ID: <20090421063337.GB15167@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Linux Memory Management List <linux-mm@kvack.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Lin Ming <ming.m.lin@intel.com>,
+	Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Siddha, Suresh B wrote:
-> When interrupt-remapping is enabled, We are relying on
-> setup_IO_APIC_irqs() 
-> to configure remapped entries in the IO-APIC, which comes little bit
-> later after enabling interrupt-remapping.
+On Mon, Apr 20, 2009 at 11:19:49PM +0100, Mel Gorman wrote:
+> Callers of alloc_pages_node() can optionally specify -1 as a node to mean
+> "allocate from the current node". However, a number of the callers in fast
+> paths know for a fact their node is valid. To avoid a comparison and branch,
+> this patch adds alloc_pages_exact_node() that only checks the nid with
+> VM_BUG_ON(). Callers that know their node is valid are then converted.
 > 
-> Meanwhile, Restore of old io-apic entries after enabling
-> interrupt-remapping will not make the interrupts through io-apic
-> functional anyway. 
-> 
-> So remove unnecessary reinit_intr_remapped_IO_APIC().
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: Weidong Han <weidong.han@intel.com>
-> ---
-> 
-> Index: tip/arch/x86/include/asm/io_apic.h
-> ===================================================================
-> --- tip.orig/arch/x86/include/asm/io_apic.h
-> +++ tip/arch/x86/include/asm/io_apic.h
-> @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
->  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
->  **ioapic_entries); extern void mask_IO_APIC_setup(struct
->  IO_APIC_route_entry **ioapic_entries); extern int
-> restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries); 
-> -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
-> -	struct IO_APIC_route_entry **ioapic_entries);
-> 
->  extern void probe_nr_irqs_gsi(void);
-> 
-> Index: tip/arch/x86/kernel/apic/apic.c
-> ===================================================================
-> --- tip.orig/arch/x86/kernel/apic/apic.c
-> +++ tip/arch/x86/kernel/apic/apic.c
-> @@ -1416,8 +1416,6 @@ end_restore:
->  		 * IR enabling failed
->  		 */
->  		restore_IO_APIC_setup(ioapic_entries);
-> -	else
-> -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 
-Whether IR enabling succeeds or fails, it always needs to restore old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC here, it needs to also remove the "if (ret)" before restore_IO_APIC_setup(ioapic_entries);
+For the SLOB NUMA bits:
 
-Regards,
-Weidong
-
-
+Acked-by: Paul Mundt <lethal@linux-sh.org>
