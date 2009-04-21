@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbZDUGhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZDUGiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbZDUGhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 02:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZDUGhb
+	id S1753988AbZDUGiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 02:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZDUGiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 02:37:31 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52669 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbZDUGha (ORCPT
+	Tue, 21 Apr 2009 02:38:03 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32212 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751473AbZDUGiB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 02:37:30 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 06/25] Move check for disabled anti-fragmentation out of fastpath
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1240266011-11140-7-git-send-email-mel@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-7-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090421153702.F12D.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 02:38:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,222,1239001200"; 
+   d="scan'208";a="508343507"
+From: "Han, Weidong" <weidong.han@intel.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>
+Date: Tue, 21 Apr 2009 14:37:21 +0800
+Subject: RE: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
+Thread-Topic: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
+Thread-Index: AcnB9MOdc7tQKGreRViG3dvnCeLzrgAU2DfA
+Message-ID: <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com>
+References: <20090420200450.128993000@linux-os.sc.intel.com>
+ <20090420200450.552359000@linux-os.sc.intel.com>
+In-Reply-To: <20090420200450.552359000@linux-os.sc.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 15:37:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -50,9 +50,6 @@ extern int page_group_by_mobility_disabled;
->  
->  static inline int get_pageblock_migratetype(struct page *page)
->  {
-> -	if (unlikely(page_group_by_mobility_disabled))
-> -		return MIGRATE_UNMOVABLE;
-> -
->  	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
->  }
->  
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 13b4d11..c8465d0 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -172,6 +172,10 @@ int page_group_by_mobility_disabled __read_mostly;
->  
->  static void set_pageblock_migratetype(struct page *page, int migratetype)
->  {
-> +
-> +	if (unlikely(page_group_by_mobility_disabled))
-> +		migratetype = MIGRATE_UNMOVABLE;
-> +
->  	set_pageblock_flags_group(page, (unsigned long)migratetype,
->  					PB_migrate, PB_migrate_end);
+Siddha, Suresh B wrote:
+> When interrupt-remapping is enabled, We are relying on
+> setup_IO_APIC_irqs() 
+> to configure remapped entries in the IO-APIC, which comes little bit
+> later after enabling interrupt-remapping.
+> 
+> Meanwhile, Restore of old io-apic entries after enabling
+> interrupt-remapping will not make the interrupts through io-apic
+> functional anyway. 
+> 
+> So remove unnecessary reinit_intr_remapped_IO_APIC().
+> 
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Cc: Weidong Han <weidong.han@intel.com>
+> ---
+> 
+> Index: tip/arch/x86/include/asm/io_apic.h
+> ===================================================================
+> --- tip.orig/arch/x86/include/asm/io_apic.h
+> +++ tip/arch/x86/include/asm/io_apic.h
+> @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
+>  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
+>  **ioapic_entries); extern void mask_IO_APIC_setup(struct
+>  IO_APIC_route_entry **ioapic_entries); extern int
+> restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries); 
+> -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
+> -	struct IO_APIC_route_entry **ioapic_entries);
+> 
+>  extern void probe_nr_irqs_gsi(void);
+> 
+> Index: tip/arch/x86/kernel/apic/apic.c
+> ===================================================================
+> --- tip.orig/arch/x86/kernel/apic/apic.c
+> +++ tip/arch/x86/kernel/apic/apic.c
+> @@ -1416,8 +1416,6 @@ end_restore:
+>  		 * IR enabling failed
+>  		 */
+>  		restore_IO_APIC_setup(ioapic_entries);
+> -	else
+> -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
 
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Whether IR enabling succeeds or fails, it always needs to restore old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC here, it needs to also remove the "if (ret)" before restore_IO_APIC_setup(ioapic_entries);
 
-
+Regards,
+Weidong
 
 
