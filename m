@@ -1,94 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbZDUVRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbZDUVTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758446AbZDUVRi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 17:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758208AbZDUVRW
+	id S1758597AbZDUVTU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 17:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZDUVTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 17:17:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46166 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758451AbZDUVRV (ORCPT
+	Tue, 21 Apr 2009 17:19:00 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:41044 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbZDUVS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 17:17:21 -0400
-Date: Tue, 21 Apr 2009 17:17:17 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka@firstfloor.org
-Subject: Re: [PATCH 2/8] tracing: create automated trace defines
-In-Reply-To: <20090421202828.GB32179@basil>
-Message-ID: <alpine.DEB.2.00.0904211711260.10097@gandalf.stny.rr.com>
-References: <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal> <87zlebpzmk.fsf@basil.nowhere.org> <20090421155106.GE3792@Krystal>
- <49EDFFE6.1080401@goop.org> <alpine.DEB.2.00.0904211320440.10097@gandalf.stny.rr.com> <20090421202828.GB32179@basil>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 21 Apr 2009 17:18:59 -0400
+Date: Tue, 21 Apr 2009 15:18:58 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, mdharm-usb@one-eyed-alien.net,
+       linux-usb <linux-usb@vger.kernel.org>,
+       usb-storage@lists.one-eyed-alien.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [RFC][PATCH] fix sign extension with 1.5TB usb-storage LBD=y
+Message-ID: <20090421211858.GA1926@parisc-linux.org>
+References: <1240347174.10627.20.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240347174.10627.20.camel@nimitz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 21 Apr 2009, Andi Kleen wrote:
-
-> > It is needed for the function tracer (gcc -pg wont work without it). It is 
-> > the only tracer that selects it.
+On Tue, Apr 21, 2009 at 01:52:54PM -0700, Dave Hansen wrote:
+> This is with current git as of this morning, which is at v2.6.30-rc2.
 > 
-> FWIW i still have gcc patches to fix that. They were first stalled
-> on copyright assignment and then on gcc's merge window being closed,
-> but now with 4.5 open for game I hope to resubmit them soon
-> again.
+> I have a 1.5TB USB device which gets a bit angry when I plug it in.  It
+> ends up with a scsi_disk->capacity of ffffffffaea87b30.  I tracked it
+> down to the lba calculation in read_capacity_10():
 > 
-> With that you can use -pg without frame pointer, but you have
-> to supply a special mcount function that expects the different
-> stack layout.
+> 	lba =	(buffer[0] << 24) | (buffer[1] << 16) |
+>  		(buffer[2] << 8) | buffer[3];
+> 
+> lba is getting all 0xf's in its high 32 bits.  It seems odd that this
+> would happen since 'buffer' is an 'unsigned char', but that is
+> apparently what is going on.  Note that this isn't an issue 32-bit
+> kernels compiled with CONFIG_LBD=n since there's no more bits into which
+> the sign could be extended.
 
-I think it was Ingo that let out the idea, and I'm starting to like it.
+I think I know ... unsigned char gets promoted to signed int since it will
+fit.  then signed int gets cast to unsigned long long, sign-extending.  C's
+promotion rules have always felt a bit wacky to me.
 
-Perhaps we should fork off gcc and ship Linux with its own compiler. This 
-way we can optimize it for the kernel and not worry about any userland 
-optimizations.
+> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+> index 3fcb64b..db60e96 100644
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -1402,7 +1402,7 @@ static int read_capacity_10(struct scsi_disk *sdkp, struct scsi_device *sdp,
+>  
+>  	sector_size =	(buffer[4] << 24) | (buffer[5] << 16) |
+>  			(buffer[6] << 8) | buffer[7];
+> -	lba =	(buffer[0] << 24) | (buffer[1] << 16) |
+> +	lba =	((sector_t)buffer[0] << 24) | (buffer[1] << 16) |
+>  		(buffer[2] << 8) | buffer[3];
 
-I would like to do something like:
+this certainly fixes your problem.  I'd prefer this patch instead, just
+because I find the cast unaesthetic ...
 
-	if (unlikely(err)) {
-		__section__(".error_sect") {
-			/* put error code here */
-		}
-	}
+----
 
-And have gcc in the error section (if it is big enough perhaps) do:
+Fix READ CAPACITY 10 with drives over 1TB
 
-	jmp .L123
-.L124   [...]
+Shifting an unsigned char implicitly casts it to a signed int.  This
+caused 'lba' to sign-extend and Linux would then try READ CAPACITY 16
+which was not supported by at least one drive.  Making 'lba' an unsigned
+int ensures that sign extension will not occur.
 
-and in the section ".error_sect" we would have:
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-.L123
-	/* error code here */
-	jmp .L124
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 3fcb64b..c856b1b 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1373,7 +1373,7 @@ static int read_capacity_10(struct scsi_disk *sdkp, struct scsi_device *sdp,
+ 	int sense_valid = 0;
+ 	int the_result;
+ 	int retries = 3;
+-	sector_t lba;
++	unsigned lba;
+ 	unsigned sector_size;
+ 
+ 	do {
+@@ -1413,7 +1413,7 @@ static int read_capacity_10(struct scsi_disk *sdkp, struct scsi_device *sdp,
+ 		return -EOVERFLOW;
+ 	}
+ 
+-	sdkp->capacity = lba + 1;
++	sdkp->capacity = (sector_t)lba + 1;
+ 	return sector_size;
+ }
+ 
 
-We could do the same for trace points. That is, any part of code that 
-really would happen once in a while (error handling for one) we can move 
-off to its own section and keep hot paths hot.
-
--- Steve
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
