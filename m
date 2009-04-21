@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZDUIKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbZDUINV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbZDUIKF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZDUII0
+	id S1754470AbZDUINV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZDUINH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:08:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51948 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754724AbZDUIIY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:08:24 -0400
-Subject: Re: [PATCH 25/25] Use a pre-calculated value instead of
- num_online_nodes() in fast paths
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1240266011-11140-26-git-send-email-mel@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
-	 <1240266011-11140-26-git-send-email-mel@csn.ul.ie>
-Date: Tue, 21 Apr 2009 11:08:20 +0300
-Message-Id: <1240301300.771.58.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Tue, 21 Apr 2009 04:13:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33808 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751425AbZDUINF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:13:05 -0400
+Date: Tue, 21 Apr 2009 08:12:31 GMT
+From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, rusty@rustcorp.com.au, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
+Subject: [tip:x86/urgent] x86: fix boot crash in NMI watchdog with CONFIG_CPUMASK_OFFSTACK=y and flat APIC
+Message-ID: <tip-2f537a9f8e82f55c241b002c8cfbf34303b45ada@git.kernel.org>
+Git-Commit-ID: 2f537a9f8e82f55c241b002c8cfbf34303b45ada
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 08:12:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 1c680e8..41d1343 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -3579,7 +3579,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
->  	 * variable to skip the call, which is mostly likely to be present in
->  	 * the cache.
->  	 */
-> -	if (numa_platform && cache_free_alien(cachep, objp))
-> +	if (numa_platform > 1 && cache_free_alien(cachep, objp))
->  		return;
+Commit-ID:  2f537a9f8e82f55c241b002c8cfbf34303b45ada
+Gitweb:     http://git.kernel.org/tip/2f537a9f8e82f55c241b002c8cfbf34303b45ada
+Author:     Rusty Russell <rusty@rustcorp.com.au>
+AuthorDate: Tue, 21 Apr 2009 16:00:15 +0930
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 21 Apr 2009 10:09:49 +0200
 
-This doesn't look right. I assume you meant "nr_online_nodes > 1" here?
-If so, please go ahead and remove "numa_platform" completely.
+x86: fix boot crash in NMI watchdog with CONFIG_CPUMASK_OFFSTACK=y and flat APIC
+
+fcef8576d8a64fc603e719c97d423f9f6d4e0e8b converted backtrace_mask to a
+cpumask_var_t, and assumed check_nmi_watchdog was called before
+nmi_watchdog_tick was ever called.  Steven's oops shows I was wrong.
+
+This is something of a bandaid: I'm not sure we *should* be calling
+nmi_watchdog_tick before check_nmi_watchdog.  Note that gcc eliminates
+this test for the CONFIG_CPUMASK_OFFSTACK=n case.
+
+[ Impact: fix boot crash in rare configs ]
+
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+LKML-Reference: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ arch/x86/kernel/apic/nmi.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+index d6bd624..2ba52f3 100644
+--- a/arch/x86/kernel/apic/nmi.c
++++ b/arch/x86/kernel/apic/nmi.c
+@@ -414,7 +414,8 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ 		touched = 1;
+ 	}
+ 
+-	if (cpumask_test_cpu(cpu, backtrace_mask)) {
++	/* We can be called before check_nmi_watchdog, hence NULL check. */
++	if (backtrace_mask != NULL && cpumask_test_cpu(cpu, backtrace_mask)) {
+ 		static DEFINE_SPINLOCK(lock);	/* Serialise the printks */
+ 
+ 		spin_lock(&lock);
