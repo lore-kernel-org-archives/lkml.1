@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbZDUUJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZDUUOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbZDUUJx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZDUUJo
+	id S1754351AbZDUUOc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZDUUOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:09:44 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:34354 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZDUUJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:09:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SRNqF/NQ7ZNQ6IsKWePRFmG+1wtUUWZakS+jhGM7V5STDG+0kNhncOkab10fjSYGSC
-         KdM8//V0TS40vV82tRSdrIVBFCL3k4Cc/0qF6qMHrdmPvIgmoxB7CLWKZXRIElj8LAow
-         AvRzo4UYLA3LwjpUMKS4rlu9zv/RNC87gAh0M=
-MIME-Version: 1.0
-In-Reply-To: <1240344440.5861.10.camel@earth>
-References: <1240258569.6195.8.camel@earth> <1240344440.5861.10.camel@earth>
-Date: Tue, 21 Apr 2009 22:09:41 +0200
-Message-ID: <b647ffbd0904211309n2a1295b1jb5d2174fa3e7a5f7@mail.gmail.com>
-Subject: Re: [PATCH] x86 microcode: work_on_cpu and cleanup of the 
-	synchronization logic
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Peter Oruba <peter.oruba@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Apr 2009 16:14:23 -0400
+Received: from nn7.de ([85.214.94.156]:37541 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbZDUUOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 16:14:22 -0400
+Subject: Re: git-current build failure: In function `intel_opregion_init':
+ undefined reference to `acpi_video_register'
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1240082271.5816.3.camel@localhost>
+References: <1240082271.5816.3.camel@localhost>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 21 Apr 2009 22:14:15 +0200
+Message-Id: <1240344856.5114.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/21 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
->
-> The version below is based on the latest -git.
+This build failure is still there in
+a939b96cccdb65df80a52447ec8e4a6d79c56dbb
 
-Sorry, forgot to add a diif-stat.
+Soeren
 
- arch/x86/include/asm/microcode.h  |   10 ++-
- arch/x86/kernel/microcode_amd.c   |   10 --
- arch/x86/kernel/microcode_core.c  |  223 ++++++++++++++++++++++---------------
- arch/x86/kernel/microcode_intel.c |   19 ---
- 4 files changed, 141 insertions(+), 121 deletions(-)
-
-There are about 20 new comment lines.
-
-
+On Sat, 2009-04-18 at 21:17 +0200, Soeren Sonnenburg wrote:
+> Dear all,
+> 
+> I am seeing this with 2.6.30+ 
+> git aefe6475720bd5eb8aacbc881488f3aa65618562
+> 
+> $ make ARCH=i386 -j 4
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   SYMLINK include/asm -> include/asm-x86
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `intel_opregion_init':
+> (.text+0xcf058): undefined reference to `acpi_video_register'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> config is attached.
+> 
+> Soeren
 -- 
-Best regards,
-Dmitry Adamushko
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
