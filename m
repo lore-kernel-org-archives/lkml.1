@@ -1,97 +1,1078 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZDUQo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbZDUQnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbZDUQo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757685AbZDUQo3
+	id S1757680AbZDUQnn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbZDUQkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:44:29 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:45377 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757650AbZDUQo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:44:27 -0400
-X-IronPort-AV: E=Sophos;i="4.40,225,1238976000"; 
-   d="scan'208";a="174698545"
-Date: Tue, 21 Apr 2009 09:42:23 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jamie Lokier <jamie@shareable.org>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421164223.GA8251@cuplxvomd02.corp.sa.net>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net> <20090421064346.GB8020@elte.hu> <20090421063549.3b71881d@infradead.org> <20090421135034.GA30114@elte.hu> <20090421140533.GA6375@shareable.org> <20090421142627.GA18129@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421142627.GA18129@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Tue, 21 Apr 2009 12:40:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38887 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757210AbZDUQku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 12:40:50 -0400
+From: Tejun Heo <tj@kernel.org>
+To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
+Cc: Tejun Heo <tj@kernel.org>, Joerg Dorchain <joerg@dorchain.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, Tim Waugh <tim@cyberelk.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Markus Lidel <Markus.Lidel@shadowconnect.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Pete Zaitcev <zaitcev@redhat.com>,
+       Laurent Vivier <Laurent@lvivier.info>, unsik Kim <donari75@gmail.com>
+Subject: [PATCH 12/14] block: replace end_request() with [__]blk_end_request_cur()
+Date: Wed, 22 Apr 2009 01:37:59 +0900
+Message-Id: <1240331881-28218-13-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1240331881-28218-1-git-send-email-tj@kernel.org>
+References: <1240331881-28218-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 16:38:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 04:26:27PM +0200, Ingo Molnar wrote:
-> 
-> * Jamie Lokier <jamie@shareable.org> wrote:
-> 
-> > Ingo Molnar wrote:
-...
-> > > What i'm saying is: instead of "wait 2000 msecs, maybe it works 
-> > > out" hack, there should be a proper sleep+event based approach 
-> > > to the same. With perhaps a _timeout_ for the "no console 
-> > > arrived" negative case as well. (which timeout can be set to 
-> > > zero in the "I _know_ there's no console around".)
-> > 
-> > Isn't the proposed code doing exactly that?  It sleeps waiting for 
-> > a console, with a timeout of X msecs.  If a console arrives before 
-> > that, doesn't it wake immediately?
-> 
-> Yes - except that the timeout is aspecific. I.e. we'll time out even 
-> if the delay happens not due to a device arriving too late (or not 
-> arriving at all), but due to some earlier init step taking an 
-> unexpectedly long time.
+end_request() has been kept around for backward compatibility;
+however, it's about time for it to go away.
 
-I agree, but this is also a pretty good description of why things actually
-worked before--it just so happened that work intervening between starting
-USB enumeration and the opening of /dev/console was long enough that
-USB serial devices were initialized. So, no, it's not good. But it's a
-pretty close equivalent to previous behavior.
+* There aren't too many users left.
 
-That being said, I'm also thinking that the timeout interval should start when
-bus initialization is started. The point between the start of USB
-initialization and when a particular device is initialized should be, as
-a practical matter and for a particular hardware configuration, more or
-less constant, and so more predictable for users.
+* Its use of @updtodate is pretty confusing.
 
-Basing the wait interval from the start of bus initialization has the
-additional advantage that we can also implement similar timers, such as one
-for network devices, off the same base time. Since the ip= kernel parameter
-is similarly broken, I've been looking at what it would take to get it
-working again, too. Or at least, with deference to the constraints of USB and
-acknowledging the importance of luck, working as well as it used to.
+* In some cases, newer code ends up using mixture of end_request() and
+  [__]blk_end_request[_all](), which is way too confusing.
 
-> Also, if we end up doing this - the patch, as proposed right now, 
-> appears to add a default 1000 msecs sleep to every __tty_open() 
-> call:
-> 
-> +config PRINTK_CONSOLE_WAIT
-> +       int "Default number of milliseconds to wait for console device"
-> +       default 1000
-> 
-> Does this only delay init during a console-less bootup - or are 
-> there other later apps that might trigger the delay?
+So, add [__]blk_end_request_cur() and replace end_request() with it.
+Most conversions are straightforward.  Noteworthy ones are...
 
-Sleeping and polling for an event, rather than using a suitable notification
-primitive, causes me existential anguish. Seriously, I *hate* code like that
-and systems that make you do such brutish things. Linux is not one of those
-throwbacks, so as soon as a console shows up, we continue. Thus, we only wait
-the whole interval if the console device is very slow to initialize or if
-there is no console device, at all.
---
-David VomLehn
+* paride/pcd: next_request() updated to take 0/-errno instead of 1/0.
+
+* paride/pf: pf_end_request() and next_request() updated to take
+  0/-errno instead of 1/0.
+
+* xd: xd_readwrite() updated to return 0/-errno instead of 1/0.
+
+* mtd/mtd_blkdevs: blktrans_discard_request() updated to return
+  0/-errno instead of 1/0.  Unnecessary local variable res
+  initialization removed from mtd_blktrans_thread().
+
+[ Impact: cleanup ]
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Joerg Dorchain <joerg@dorchain.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tim Waugh <tim@cyberelk.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Markus Lidel <Markus.Lidel@shadowconnect.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Laurent Vivier <Laurent@lvivier.info>
+Cc: unsik Kim <donari75@gmail.com>
+---
+ drivers/block/amiflop.c         |   10 +++---
+ drivers/block/ataflop.c         |   14 +++++-----
+ drivers/block/hd.c              |   14 +++++-----
+ drivers/block/mg_disk.c         |   16 +++++-----
+ drivers/block/paride/pcd.c      |   12 ++++----
+ drivers/block/paride/pd.c       |    5 ++-
+ drivers/block/paride/pf.c       |   28 +++++++++---------
+ drivers/block/ps3disk.c         |    6 ++--
+ drivers/block/swim.c            |   14 +++++-----
+ drivers/block/swim3.c           |   26 +++++++++---------
+ drivers/block/xd.c              |   15 +++++-----
+ drivers/block/xen-blkfront.c    |    2 +-
+ drivers/block/xsysace.c         |    4 +-
+ drivers/block/z2ram.c           |    4 +-
+ drivers/cdrom/gdrom.c           |    6 ++--
+ drivers/message/i2o/i2o_block.c |    2 +-
+ drivers/mtd/mtd_blkdevs.c       |   22 +++++++-------
+ drivers/sbus/char/jsflash.c     |    8 +++---
+ include/linux/blkdev.h          |   57 +++++++++++++++++++--------------------
+ 19 files changed, 133 insertions(+), 132 deletions(-)
+
+diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
+index 8df436f..b99a2a6 100644
+--- a/drivers/block/amiflop.c
++++ b/drivers/block/amiflop.c
+@@ -1359,7 +1359,7 @@ static void redo_fd_request(void)
+ #endif
+ 		block = CURRENT->sector + cnt;
+ 		if ((int)block > floppy->blocks) {
+-			end_request(CURRENT, 0);
++			__blk_end_request_cur(CURRENT, -EIO);
+ 			goto repeat;
+ 		}
+ 
+@@ -1373,11 +1373,11 @@ static void redo_fd_request(void)
+ 
+ 		if ((rq_data_dir(CURRENT) != READ) && (rq_data_dir(CURRENT) != WRITE)) {
+ 			printk(KERN_WARNING "do_fd_request: unknown command\n");
+-			end_request(CURRENT, 0);
++			__blk_end_request_cur(CURRENT, -EIO);
+ 			goto repeat;
+ 		}
+ 		if (get_track(drive, track) == -1) {
+-			end_request(CURRENT, 0);
++			__blk_end_request_cur(CURRENT, -EIO);
+ 			goto repeat;
+ 		}
+ 
+@@ -1391,7 +1391,7 @@ static void redo_fd_request(void)
+ 
+ 			/* keep the drive spinning while writes are scheduled */
+ 			if (!fd_motor_on(drive)) {
+-				end_request(CURRENT, 0);
++				__blk_end_request_cur(CURRENT, -EIO);
+ 				goto repeat;
+ 			}
+ 			/*
+@@ -1410,7 +1410,7 @@ static void redo_fd_request(void)
+ 	CURRENT->nr_sectors -= CURRENT->current_nr_sectors;
+ 	CURRENT->sector += CURRENT->current_nr_sectors;
+ 
+-	end_request(CURRENT, 1);
++	__blk_end_request_cur(CURRENT, 0);
+ 	goto repeat;
+ }
+ 
+diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
+index 4234c11..44a8702 100644
+--- a/drivers/block/ataflop.c
++++ b/drivers/block/ataflop.c
+@@ -612,7 +612,7 @@ static void fd_error( void )
+ 	CURRENT->errors++;
+ 	if (CURRENT->errors >= MAX_ERRORS) {
+ 		printk(KERN_ERR "fd%d: too many errors.\n", SelectedDrive );
+-		end_request(CURRENT, 0);
++		__blk_end_request_cur(CURRENT, -EIO);
+ 	}
+ 	else if (CURRENT->errors == RECALIBRATE_ERRORS) {
+ 		printk(KERN_WARNING "fd%d: recalibrating\n", SelectedDrive );
+@@ -734,7 +734,7 @@ static void do_fd_action( int drive )
+ 			/* all sectors finished */
+ 			CURRENT->nr_sectors -= CURRENT->current_nr_sectors;
+ 			CURRENT->sector += CURRENT->current_nr_sectors;
+-			end_request(CURRENT, 1);
++			__blk_end_request_cur(CURRENT, 0);
+ 			redo_fd_request();
+ 			return;
+ 		    }
+@@ -1141,7 +1141,7 @@ static void fd_rwsec_done1(int status)
+ 		/* all sectors finished */
+ 		CURRENT->nr_sectors -= CURRENT->current_nr_sectors;
+ 		CURRENT->sector += CURRENT->current_nr_sectors;
+-		end_request(CURRENT, 1);
++		__blk_end_request_cur(CURRENT, 0);
+ 		redo_fd_request();
+ 	}
+ 	return;
+@@ -1414,7 +1414,7 @@ repeat:
+ 	if (!UD.connected) {
+ 		/* drive not connected */
+ 		printk(KERN_ERR "Unknown Device: fd%d\n", drive );
+-		end_request(CURRENT, 0);
++		__blk_end_request_cur(CURRENT, -EIO);
+ 		goto repeat;
+ 	}
+ 		
+@@ -1430,12 +1430,12 @@ repeat:
+ 		/* user supplied disk type */
+ 		if (--type >= NUM_DISK_MINORS) {
+ 			printk(KERN_WARNING "fd%d: invalid disk format", drive );
+-			end_request(CURRENT, 0);
++			__blk_end_request_cur(CURRENT, -EIO);
+ 			goto repeat;
+ 		}
+ 		if (minor2disktype[type].drive_types > DriveType)  {
+ 			printk(KERN_WARNING "fd%d: unsupported disk format", drive );
+-			end_request(CURRENT, 0);
++			__blk_end_request_cur(CURRENT, -EIO);
+ 			goto repeat;
+ 		}
+ 		type = minor2disktype[type].index;
+@@ -1445,7 +1445,7 @@ repeat:
+ 	}
+ 	
+ 	if (CURRENT->sector + 1 > UDT->blocks) {
+-		end_request(CURRENT, 0);
++		__blk_end_request_cur(CURRENT, -EIO);
+ 		goto repeat;
+ 	}
+ 
+diff --git a/drivers/block/hd.c b/drivers/block/hd.c
+index 3c11f06..f3dbc96 100644
+--- a/drivers/block/hd.c
++++ b/drivers/block/hd.c
+@@ -410,7 +410,7 @@ static void bad_rw_intr(void)
+ 	if (req != NULL) {
+ 		struct hd_i_struct *disk = req->rq_disk->private_data;
+ 		if (++req->errors >= MAX_ERRORS || (hd_error & BBD_ERR)) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			disk->special_op = disk->recalibrate = 1;
+ 		} else if (req->errors % RESET_FREQ == 0)
+ 			reset = 1;
+@@ -466,7 +466,7 @@ ok_to_read:
+ 		req->buffer+512);
+ #endif
+ 	if (req->current_nr_sectors <= 0)
+-		end_request(req, 1);
++		__blk_end_request_cur(req, 0);
+ 	if (i > 0) {
+ 		SET_HANDLER(&read_intr);
+ 		return;
+@@ -505,7 +505,7 @@ ok_to_write:
+ 	--req->current_nr_sectors;
+ 	req->buffer += 512;
+ 	if (!i || (req->bio && req->current_nr_sectors <= 0))
+-		end_request(req, 1);
++		__blk_end_request_cur(req, 0);
+ 	if (i > 0) {
+ 		SET_HANDLER(&write_intr);
+ 		outsw(HD_DATA, req->buffer, 256);
+@@ -550,7 +550,7 @@ static void hd_times_out(unsigned long dummy)
+ #ifdef DEBUG
+ 		printk("%s: too many errors\n", name);
+ #endif
+-		end_request(CURRENT, 0);
++		__blk_end_request_cur(CURRENT, -EIO);
+ 	}
+ 	local_irq_disable();
+ 	hd_request();
+@@ -566,7 +566,7 @@ static int do_special_op(struct hd_i_struct *disk, struct request *req)
+ 	}
+ 	if (disk->head > 16) {
+ 		printk("%s: cannot handle device with more than 16 heads - giving up\n", req->rq_disk->disk_name);
+-		end_request(req, 0);
++		__blk_end_request_cur(req, -EIO);
+ 	}
+ 	disk->special_op = 0;
+ 	return 1;
+@@ -612,7 +612,7 @@ repeat:
+ 	    ((block+nsect) > get_capacity(req->rq_disk))) {
+ 		printk("%s: bad access: block=%d, count=%d\n",
+ 			req->rq_disk->disk_name, block, nsect);
+-		end_request(req, 0);
++		__blk_end_request_cur(req, -EIO);
+ 		goto repeat;
+ 	}
+ 
+@@ -652,7 +652,7 @@ repeat:
+ 			break;
+ 		default:
+ 			printk("unknown hd-command\n");
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			break;
+ 		}
+ 	}
+diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+index fb39d9a..f2a9692 100644
+--- a/drivers/block/mg_disk.c
++++ b/drivers/block/mg_disk.c
+@@ -280,7 +280,7 @@ static void mg_bad_rw_intr(struct mg_host *host)
+ 	if (req != NULL)
+ 		if (++req->errors >= MG_MAX_ERRORS ||
+ 				host->error == MG_ERR_TIMEOUT)
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ }
+ 
+ static unsigned int mg_out(struct mg_host *host,
+@@ -346,7 +346,7 @@ static void mg_read(struct request *req)
+ 
+ 		if (req->current_nr_sectors <= 0) {
+ 			MG_DBG("remain : %d sects\n", remains);
+-			end_request(req, 1);
++			__blk_end_request_cur(req, 0);
+ 			if (remains > 0)
+ 				req = elv_next_request(host->breq);
+ 		}
+@@ -390,7 +390,7 @@ static void mg_write(struct request *req)
+ 
+ 		if (req->current_nr_sectors <= 0) {
+ 			MG_DBG("remain : %d sects\n", remains);
+-			end_request(req, 1);
++			__blk_end_request_cur(req, 0);
+ 			if (remains > 0)
+ 				req = elv_next_request(host->breq);
+ 		}
+@@ -443,7 +443,7 @@ ok_to_read:
+ 
+ 	/* let know if current segment done */
+ 	if (req->current_nr_sectors <= 0)
+-		end_request(req, 1);
++		__blk_end_request_cur(req, 0);
+ 
+ 	/* set handler if read remains */
+ 	if (i > 0) {
+@@ -492,7 +492,7 @@ ok_to_write:
+ 
+ 	/* let know if current segment or all done */
+ 	if (!i || (req->bio && req->current_nr_sectors <= 0))
+-		end_request(req, 1);
++		__blk_end_request_cur(req, 0);
+ 
+ 	/* write 1 sector and set handler if remains */
+ 	if (i > 0) {
+@@ -554,7 +554,7 @@ static void mg_request_poll(struct request_queue *q)
+ 			default:
+ 				printk(KERN_WARNING "%s:%d unknown command\n",
+ 						__func__, __LINE__);
+-				end_request(req, 0);
++				__blk_end_request_cur(req, -EIO);
+ 				break;
+ 			}
+ 		}
+@@ -608,7 +608,7 @@ static unsigned int mg_issue_req(struct request *req,
+ 	default:
+ 		printk(KERN_WARNING "%s:%d unknown command\n",
+ 				__func__, __LINE__);
+-		end_request(req, 0);
++		__blk_end_request_cur(req, -EIO);
+ 		break;
+ 	}
+ 	return MG_ERR_NONE;
+@@ -646,7 +646,7 @@ static void mg_request(struct request_queue *q)
+ 					"%s: bad access: sector=%d, count=%d\n",
+ 					req->rq_disk->disk_name,
+ 					sect_num, sect_cnt);
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 
+diff --git a/drivers/block/paride/pcd.c b/drivers/block/paride/pcd.c
+index e91d4b4..9fd57c2 100644
+--- a/drivers/block/paride/pcd.c
++++ b/drivers/block/paride/pcd.c
+@@ -735,16 +735,16 @@ static void do_pcd_request(struct request_queue * q)
+ 			ps_set_intr(do_pcd_read, NULL, 0, nice);
+ 			return;
+ 		} else
+-			end_request(pcd_req, 0);
++			__blk_end_request_cur(pcd_req, -EIO);
+ 	}
+ }
+ 
+-static inline void next_request(int success)
++static inline void next_request(int err)
+ {
+ 	unsigned long saved_flags;
+ 
+ 	spin_lock_irqsave(&pcd_lock, saved_flags);
+-	end_request(pcd_req, success);
++	__blk_end_request_cur(pcd_req, err);
+ 	pcd_busy = 0;
+ 	do_pcd_request(pcd_queue);
+ 	spin_unlock_irqrestore(&pcd_lock, saved_flags);
+@@ -781,7 +781,7 @@ static void pcd_start(void)
+ 
+ 	if (pcd_command(pcd_current, rd_cmd, 2048, "read block")) {
+ 		pcd_bufblk = -1;
+-		next_request(0);
++		next_request(-EIO);
+ 		return;
+ 	}
+ 
+@@ -796,7 +796,7 @@ static void do_pcd_read(void)
+ 	pcd_retries = 0;
+ 	pcd_transfer();
+ 	if (!pcd_count) {
+-		next_request(1);
++		next_request(0);
+ 		return;
+ 	}
+ 
+@@ -815,7 +815,7 @@ static void do_pcd_read_drq(void)
+ 			return;
+ 		}
+ 		pcd_bufblk = -1;
+-		next_request(0);
++		next_request(-EIO);
+ 		return;
+ 	}
+ 
+diff --git a/drivers/block/paride/pd.c b/drivers/block/paride/pd.c
+index 9299455..0732df4 100644
+--- a/drivers/block/paride/pd.c
++++ b/drivers/block/paride/pd.c
+@@ -410,7 +410,8 @@ static void run_fsm(void)
+ 				pd_claimed = 0;
+ 				phase = NULL;
+ 				spin_lock_irqsave(&pd_lock, saved_flags);
+-				end_request(pd_req, res);
++				__blk_end_request_cur(pd_req,
++						      res == Ok ? 0 : -EIO);
+ 				pd_req = elv_next_request(pd_queue);
+ 				if (!pd_req)
+ 					stop = 1;
+@@ -477,7 +478,7 @@ static int pd_next_buf(void)
+ 	if (pd_count)
+ 		return 0;
+ 	spin_lock_irqsave(&pd_lock, saved_flags);
+-	end_request(pd_req, 1);
++	__blk_end_request_cur(pd_req, 0);
+ 	pd_count = pd_req->current_nr_sectors;
+ 	pd_buf = pd_req->buffer;
+ 	spin_unlock_irqrestore(&pd_lock, saved_flags);
+diff --git a/drivers/block/paride/pf.c b/drivers/block/paride/pf.c
+index bef3b99..3871e35 100644
+--- a/drivers/block/paride/pf.c
++++ b/drivers/block/paride/pf.c
+@@ -750,10 +750,10 @@ static int pf_ready(void)
+ 
+ static struct request_queue *pf_queue;
+ 
+-static void pf_end_request(int uptodate)
++static void pf_end_request(int err)
+ {
+ 	if (pf_req) {
+-		end_request(pf_req, uptodate);
++		__blk_end_request_cur(pf_req, err);
+ 		pf_req = NULL;
+ 	}
+ }
+@@ -773,7 +773,7 @@ repeat:
+ 	pf_count = pf_req->current_nr_sectors;
+ 
+ 	if (pf_block + pf_count > get_capacity(pf_req->rq_disk)) {
+-		pf_end_request(0);
++		pf_end_request(-EIO);
+ 		goto repeat;
+ 	}
+ 
+@@ -788,7 +788,7 @@ repeat:
+ 		pi_do_claimed(pf_current->pi, do_pf_write);
+ 	else {
+ 		pf_busy = 0;
+-		pf_end_request(0);
++		pf_end_request(-EIO);
+ 		goto repeat;
+ 	}
+ }
+@@ -805,7 +805,7 @@ static int pf_next_buf(void)
+ 		return 1;
+ 	if (!pf_count) {
+ 		spin_lock_irqsave(&pf_spin_lock, saved_flags);
+-		pf_end_request(1);
++		pf_end_request(0);
+ 		pf_req = elv_next_request(pf_queue);
+ 		spin_unlock_irqrestore(&pf_spin_lock, saved_flags);
+ 		if (!pf_req)
+@@ -816,12 +816,12 @@ static int pf_next_buf(void)
+ 	return 0;
+ }
+ 
+-static inline void next_request(int success)
++static inline void next_request(int err)
+ {
+ 	unsigned long saved_flags;
+ 
+ 	spin_lock_irqsave(&pf_spin_lock, saved_flags);
+-	pf_end_request(success);
++	pf_end_request(err);
+ 	pf_busy = 0;
+ 	do_pf_request(pf_queue);
+ 	spin_unlock_irqrestore(&pf_spin_lock, saved_flags);
+@@ -844,7 +844,7 @@ static void do_pf_read_start(void)
+ 			pi_do_claimed(pf_current->pi, do_pf_read_start);
+ 			return;
+ 		}
+-		next_request(0);
++		next_request(-EIO);
+ 		return;
+ 	}
+ 	pf_mask = STAT_DRQ;
+@@ -863,7 +863,7 @@ static void do_pf_read_drq(void)
+ 				pi_do_claimed(pf_current->pi, do_pf_read_start);
+ 				return;
+ 			}
+-			next_request(0);
++			next_request(-EIO);
+ 			return;
+ 		}
+ 		pi_read_block(pf_current->pi, pf_buf, 512);
+@@ -871,7 +871,7 @@ static void do_pf_read_drq(void)
+ 			break;
+ 	}
+ 	pi_disconnect(pf_current->pi);
+-	next_request(1);
++	next_request(0);
+ }
+ 
+ static void do_pf_write(void)
+@@ -890,7 +890,7 @@ static void do_pf_write_start(void)
+ 			pi_do_claimed(pf_current->pi, do_pf_write_start);
+ 			return;
+ 		}
+-		next_request(0);
++		next_request(-EIO);
+ 		return;
+ 	}
+ 
+@@ -903,7 +903,7 @@ static void do_pf_write_start(void)
+ 				pi_do_claimed(pf_current->pi, do_pf_write_start);
+ 				return;
+ 			}
+-			next_request(0);
++			next_request(-EIO);
+ 			return;
+ 		}
+ 		pi_write_block(pf_current->pi, pf_buf, 512);
+@@ -923,11 +923,11 @@ static void do_pf_write_done(void)
+ 			pi_do_claimed(pf_current->pi, do_pf_write_start);
+ 			return;
+ 		}
+-		next_request(0);
++		next_request(-EIO);
+ 		return;
+ 	}
+ 	pi_disconnect(pf_current->pi);
+-	next_request(1);
++	next_request(0);
+ }
+ 
+ static int __init pf_init(void)
+diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+index bccc42b..d23b54b 100644
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -158,7 +158,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
+ 	if (res) {
+ 		dev_err(&dev->sbd.core, "%s:%u: %s failed %d\n", __func__,
+ 			__LINE__, op, res);
+-		end_request(req, 0);
++		__blk_end_request_cur(req, -EIO);
+ 		return 0;
+ 	}
+ 
+@@ -180,7 +180,7 @@ static int ps3disk_submit_flush_request(struct ps3_storage_device *dev,
+ 	if (res) {
+ 		dev_err(&dev->sbd.core, "%s:%u: sync cache failed 0x%llx\n",
+ 			__func__, __LINE__, res);
+-		end_request(req, 0);
++		__blk_end_request_cur(req, -EIO);
+ 		return 0;
+ 	}
+ 
+@@ -205,7 +205,7 @@ static void ps3disk_do_request(struct ps3_storage_device *dev,
+ 				break;
+ 		} else {
+ 			blk_dump_rq_flags(req, DEVICE_NAME " bad request");
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 	}
+diff --git a/drivers/block/swim.c b/drivers/block/swim.c
+index d22cc38..6544a7b 100644
+--- a/drivers/block/swim.c
++++ b/drivers/block/swim.c
+@@ -532,39 +532,39 @@ static void redo_fd_request(struct request_queue *q)
+ 
+ 		fs = req->rq_disk->private_data;
+ 		if (req->sector < 0 || req->sector >= fs->total_secs) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		if (req->current_nr_sectors == 0) {
+-			end_request(req, 1);
++			__blk_end_request_cur(req, 0);
+ 			continue;
+ 		}
+ 		if (!fs->disk_in) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		if (rq_data_dir(req) == WRITE) {
+ 			if (fs->write_protected) {
+-				end_request(req, 0);
++				__blk_end_request_cur(req, -EIO);
+ 				continue;
+ 			}
+ 		}
+ 		switch (rq_data_dir(req)) {
+ 		case WRITE:
+ 			/* NOT IMPLEMENTED */
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			break;
+ 		case READ:
+ 			if (floppy_read_sectors(fs, req->sector,
+ 						req->current_nr_sectors,
+ 						req->buffer)) {
+-				end_request(req, 0);
++				__blk_end_request_cur(req, -EIO);
+ 				continue;
+ 			}
+ 			req->nr_sectors -= req->current_nr_sectors;
+ 			req->sector += req->current_nr_sectors;
+ 			req->buffer += req->current_nr_sectors * 512;
+-			end_request(req, 1);
++			__blk_end_request_cur(req, 0);
+ 			break;
+ 		}
+ 	}
+diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+index 6129653..5904f7b 100644
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -320,15 +320,15 @@ static void start_request(struct floppy_state *fs)
+ #endif
+ 
+ 		if (req->sector < 0 || req->sector >= fs->total_secs) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		if (req->current_nr_sectors == 0) {
+-			end_request(req, 1);
++			__blk_end_request_cur(req, 0);
+ 			continue;
+ 		}
+ 		if (fs->ejected) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 
+@@ -336,7 +336,7 @@ static void start_request(struct floppy_state *fs)
+ 			if (fs->write_prot < 0)
+ 				fs->write_prot = swim3_readbit(fs, WRITE_PROT);
+ 			if (fs->write_prot) {
+-				end_request(req, 0);
++				__blk_end_request_cur(req, -EIO);
+ 				continue;
+ 			}
+ 		}
+@@ -508,7 +508,7 @@ static void act(struct floppy_state *fs)
+ 		case do_transfer:
+ 			if (fs->cur_cyl != fs->req_cyl) {
+ 				if (fs->retries > 5) {
+-					end_request(fd_req, 0);
++					__blk_end_request_cur(fd_req, -EIO);
+ 					fs->state = idle;
+ 					return;
+ 				}
+@@ -540,7 +540,7 @@ static void scan_timeout(unsigned long data)
+ 	out_8(&sw->intr_enable, 0);
+ 	fs->cur_cyl = -1;
+ 	if (fs->retries > 5) {
+-		end_request(fd_req, 0);
++		__blk_end_request_cur(fd_req, -EIO);
+ 		fs->state = idle;
+ 		start_request(fs);
+ 	} else {
+@@ -559,7 +559,7 @@ static void seek_timeout(unsigned long data)
+ 	out_8(&sw->select, RELAX);
+ 	out_8(&sw->intr_enable, 0);
+ 	printk(KERN_ERR "swim3: seek timeout\n");
+-	end_request(fd_req, 0);
++	__blk_end_request_cur(fd_req, -EIO);
+ 	fs->state = idle;
+ 	start_request(fs);
+ }
+@@ -583,7 +583,7 @@ static void settle_timeout(unsigned long data)
+ 		return;
+ 	}
+ 	printk(KERN_ERR "swim3: seek settle timeout\n");
+-	end_request(fd_req, 0);
++	__blk_end_request_cur(fd_req, -EIO);
+ 	fs->state = idle;
+ 	start_request(fs);
+ }
+@@ -615,7 +615,7 @@ static void xfer_timeout(unsigned long data)
+ 	fd_req->current_nr_sectors -= s;
+ 	printk(KERN_ERR "swim3: timeout %sing sector %ld\n",
+ 	       (rq_data_dir(fd_req)==WRITE? "writ": "read"), (long)fd_req->sector);
+-	end_request(fd_req, 0);
++	__blk_end_request_cur(fd_req, -EIO);
+ 	fs->state = idle;
+ 	start_request(fs);
+ }
+@@ -646,7 +646,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+ 				printk(KERN_ERR "swim3: seen sector but cyl=ff?\n");
+ 				fs->cur_cyl = -1;
+ 				if (fs->retries > 5) {
+-					end_request(fd_req, 0);
++					__blk_end_request_cur(fd_req, -EIO);
+ 					fs->state = idle;
+ 					start_request(fs);
+ 				} else {
+@@ -731,7 +731,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+ 				printk("swim3: error %sing block %ld (err=%x)\n",
+ 				       rq_data_dir(fd_req) == WRITE? "writ": "read",
+ 				       (long)fd_req->sector, err);
+-				end_request(fd_req, 0);
++				__blk_end_request_cur(fd_req, -EIO);
+ 				fs->state = idle;
+ 			}
+ 		} else {
+@@ -740,7 +740,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+ 				printk(KERN_ERR "swim3: fd dma: stat=%x resid=%d\n", stat, resid);
+ 				printk(KERN_ERR "  state=%d, dir=%x, intr=%x, err=%x\n",
+ 				       fs->state, rq_data_dir(fd_req), intr, err);
+-				end_request(fd_req, 0);
++				__blk_end_request_cur(fd_req, -EIO);
+ 				fs->state = idle;
+ 				start_request(fs);
+ 				break;
+@@ -749,7 +749,7 @@ static irqreturn_t swim3_interrupt(int irq, void *dev_id)
+ 			fd_req->current_nr_sectors -= fs->scount;
+ 			fd_req->buffer += fs->scount * 512;
+ 			if (fd_req->current_nr_sectors <= 0) {
+-				end_request(fd_req, 1);
++				__blk_end_request_cur(fd_req, 0);
+ 				fs->state = idle;
+ 			} else {
+ 				fs->req_sector += fs->scount;
+diff --git a/drivers/block/xd.c b/drivers/block/xd.c
+index 64b496f..6f6ad82 100644
+--- a/drivers/block/xd.c
++++ b/drivers/block/xd.c
+@@ -314,21 +314,22 @@ static void do_xd_request (struct request_queue * q)
+ 		int retry;
+ 
+ 		if (!blk_fs_request(req)) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		if (block + count > get_capacity(req->rq_disk)) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		if (rw != READ && rw != WRITE) {
+ 			printk("do_xd_request: unknown request\n");
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		for (retry = 0; (retry < XD_RETRIES) && !res; retry++)
+ 			res = xd_readwrite(rw, disk, req->buffer, block, count);
+-		end_request(req, res);	/* wrap up, 0 = fail, 1 = success */
++		/* wrap up, 0 = success, -errno = fail */
++		__blk_end_request_cur(req, res);
+ 	}
+ }
+ 
+@@ -418,7 +419,7 @@ static int xd_readwrite (u_char operation,XD_INFO *p,char *buffer,u_int block,u_
+ 				printk("xd%c: %s timeout, recalibrating drive\n",'a'+drive,(operation == READ ? "read" : "write"));
+ 				xd_recalibrate(drive);
+ 				spin_lock_irq(&xd_lock);
+-				return (0);
++				return -EIO;
+ 			case 2:
+ 				if (sense[0] & 0x30) {
+ 					printk("xd%c: %s - ",'a'+drive,(operation == READ ? "reading" : "writing"));
+@@ -439,7 +440,7 @@ static int xd_readwrite (u_char operation,XD_INFO *p,char *buffer,u_int block,u_
+ 				else
+ 					printk(" - no valid disk address\n");
+ 				spin_lock_irq(&xd_lock);
+-				return (0);
++				return -EIO;
+ 		}
+ 		if (xd_dma_buffer)
+ 			for (i=0; i < (temp * 0x200); i++)
+@@ -448,7 +449,7 @@ static int xd_readwrite (u_char operation,XD_INFO *p,char *buffer,u_int block,u_
+ 		count -= temp, buffer += temp * 0x200, block += temp;
+ 	}
+ 	spin_lock_irq(&xd_lock);
+-	return (1);
++	return 0;
+ }
+ 
+ /* xd_recalibrate: recalibrate a given drive and reset controller if necessary */
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index cd6cfe3..b456447 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -302,7 +302,7 @@ static void do_blkif_request(struct request_queue *rq)
+ 	while ((req = elv_next_request(rq)) != NULL) {
+ 		info = req->rq_disk->private_data;
+ 		if (!blk_fs_request(req)) {
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index 4aecf5d..b1e1d7e 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -466,7 +466,7 @@ struct request *ace_get_next_request(struct request_queue * q)
+ 	while ((req = elv_next_request(q)) != NULL) {
+ 		if (blk_fs_request(req))
+ 			break;
+-		end_request(req, 0);
++		__blk_end_request_cur(req, -EIO);
+ 	}
+ 	return req;
+ }
+@@ -494,7 +494,7 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 
+ 		/* Drop all pending requests */
+ 		while ((req = elv_next_request(ace->queue)) != NULL)
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 
+ 		/* Drop back to IDLE state and notify waiters */
+ 		ace->fsm_state = ACE_FSM_STATE_IDLE;
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index 80754cd..b66ad58 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -77,7 +77,7 @@ static void do_z2_request(struct request_queue *q)
+ 		if (start + len > z2ram_size) {
+ 			printk( KERN_ERR DEVICE_NAME ": bad access: block=%lu, count=%u\n",
+ 				req->sector, req->current_nr_sectors);
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 		while (len) {
+@@ -93,7 +93,7 @@ static void do_z2_request(struct request_queue *q)
+ 			start += size;
+ 			len -= size;
+ 		}
+-		end_request(req, 1);
++		__blk_end_request_cur(req, 0);
+ 	}
+ }
+ 
+diff --git a/drivers/cdrom/gdrom.c b/drivers/cdrom/gdrom.c
+index fee9a9e..cab2b1f 100644
+--- a/drivers/cdrom/gdrom.c
++++ b/drivers/cdrom/gdrom.c
+@@ -654,17 +654,17 @@ static void gdrom_request(struct request_queue *rq)
+ 	while ((req = elv_next_request(rq)) != NULL) {
+ 		if (!blk_fs_request(req)) {
+ 			printk(KERN_DEBUG "GDROM: Non-fs request ignored\n");
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 		}
+ 		if (rq_data_dir(req) != READ) {
+ 			printk(KERN_NOTICE "GDROM: Read only device -");
+ 			printk(" write request ignored\n");
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 		}
+ 		if (req->nr_sectors)
+ 			gdrom_request_handler_dma(req);
+ 		else
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 	}
+ }
+ 
+diff --git a/drivers/message/i2o/i2o_block.c b/drivers/message/i2o/i2o_block.c
+index a443e13..221317e 100644
+--- a/drivers/message/i2o/i2o_block.c
++++ b/drivers/message/i2o/i2o_block.c
+@@ -923,7 +923,7 @@ static void i2o_block_request_fn(struct request_queue *q)
+ 				break;
+ 			}
+ 		} else
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 	}
+ };
+ 
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index a49a9c8..76c4c8d 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -54,33 +54,33 @@ static int do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 
+ 	if (req->cmd_type == REQ_TYPE_LINUX_BLOCK &&
+ 	    req->cmd[0] == REQ_LB_OP_DISCARD)
+-		return !tr->discard(dev, block, nsect);
++		return tr->discard(dev, block, nsect);
+ 
+ 	if (!blk_fs_request(req))
+-		return 0;
++		return -EIO;
+ 
+ 	if (req->sector + req->current_nr_sectors > get_capacity(req->rq_disk))
+-		return 0;
++		return -EIO;
+ 
+ 	switch(rq_data_dir(req)) {
+ 	case READ:
+ 		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
+ 			if (tr->readsect(dev, block, buf))
+-				return 0;
+-		return 1;
++				return -EIO;
++		return 0;
+ 
+ 	case WRITE:
+ 		if (!tr->writesect)
+-			return 0;
++			return -EIO;
+ 
+ 		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
+ 			if (tr->writesect(dev, block, buf))
+-				return 0;
+-		return 1;
++				return -EIO;
++		return 0;
+ 
+ 	default:
+ 		printk(KERN_NOTICE "Unknown request %u\n", rq_data_dir(req));
+-		return 0;
++		return -EIO;
+ 	}
+ }
+ 
+@@ -96,7 +96,7 @@ static int mtd_blktrans_thread(void *arg)
+ 	while (!kthread_should_stop()) {
+ 		struct request *req;
+ 		struct mtd_blktrans_dev *dev;
+-		int res = 0;
++		int res;
+ 
+ 		req = elv_next_request(rq);
+ 
+@@ -119,7 +119,7 @@ static int mtd_blktrans_thread(void *arg)
+ 
+ 		spin_lock_irq(rq->queue_lock);
+ 
+-		end_request(req, res);
++		__blk_end_request_cur(req, res);
+ 	}
+ 	spin_unlock_irq(rq->queue_lock);
+ 
+diff --git a/drivers/sbus/char/jsflash.c b/drivers/sbus/char/jsflash.c
+index a85ad05..0961788 100644
+--- a/drivers/sbus/char/jsflash.c
++++ b/drivers/sbus/char/jsflash.c
+@@ -192,25 +192,25 @@ static void jsfd_do_request(struct request_queue *q)
+ 		size_t len = req->current_nr_sectors << 9;
+ 
+ 		if ((offset + len) > jdp->dsize) {
+-               		end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 
+ 		if (rq_data_dir(req) != READ) {
+ 			printk(KERN_ERR "jsfd: write\n");
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 
+ 		if ((jdp->dbase & 0xff000000) != 0x20000000) {
+ 			printk(KERN_ERR "jsfd: bad base %x\n", (int)jdp->dbase);
+-			end_request(req, 0);
++			__blk_end_request_cur(req, -EIO);
+ 			continue;
+ 		}
+ 
+ 		jsfd_read(req->buffer, jdp->dbase + offset, len);
+ 
+-		end_request(req, 1);
++		__blk_end_request_cur(req, 0);
+ 	}
+ }
+ 
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 0a5f383..0bb3ed4 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -842,9 +842,8 @@ extern unsigned int blk_rq_cur_bytes(struct request *rq);
+  * blk_update_request() completes given number of bytes and updates
+  * the request without completing it.
+  *
+- * blk_end_request() and friends.  __blk_end_request() and
+- * end_request() must be called with the request queue spinlock
+- * acquired.
++ * blk_end_request() and friends.  __blk_end_request() must be called
++ * with the request queue spinlock acquired.
+  *
+  * Several drivers define their own end_request and call
+  * blk_end_request() for parts of the original function.
+@@ -895,6 +894,19 @@ static inline void blk_end_request_all(struct request *rq, int error)
+ }
+ 
+ /**
++ * blk_end_request_cur - Helper function to finish the current request chunk.
++ * @rq: the request to finish the current chunk for
++ * @err: %0 for success, < %0 for error
++ *
++ * Description:
++ *     Complete the current consecutively mapped chunk from @rq.
++ */
++static inline void blk_end_request_cur(struct request *rq, int error)
++{
++	blk_end_request(rq, error, rq->hard_cur_sectors << 9);
++}
++
++/**
+  * __blk_end_request - Helper function for drivers to complete the request.
+  * @rq:       the request being processed
+  * @error:    %0 for success, < %0 for error
+@@ -930,6 +942,19 @@ static inline void __blk_end_request_all(struct request *rq, int error)
+ }
+ 
+ /**
++ * __blk_end_request_cur - Helper function to finish the current request chunk.
++ * @rq: the request to finish the current chunk for
++ * @err: %0 for success, < %0 for error
++ *
++ * Description:
++ *     Complete the current consecutively mapped chunk from @rq.  Must
++ *     be called with queue lock held.
++ */
++static inline void __blk_end_request_cur(struct request *rq, int error)
++{
++	__blk_end_request(rq, error, rq->hard_cur_sectors << 9);
++}
++/**
+  * blk_end_bidi_request - Helper function for drivers to complete bidi request.
+  * @rq:         the bidi request being processed
+  * @error:      %0 for success, < %0 for error
+@@ -953,32 +978,6 @@ static inline bool blk_end_bidi_request(struct request *rq, int error,
+ 	return __blk_end_io(rq, error, nr_bytes, bidi_bytes, false);
+ }
+ 
+-/**
+- * end_request - end I/O on the current segment of the request
+- * @rq:		the request being processed
+- * @uptodate:	error value or %0/%1 uptodate flag
+- *
+- * Description:
+- *     Ends I/O on the current segment of a request. If that is the only
+- *     remaining segment, the request is also completed and freed.
+- *
+- *     This is a remnant of how older block drivers handled I/O completions.
+- *     Modern drivers typically end I/O on the full request in one go, unless
+- *     they have a residual value to account for. For that case this function
+- *     isn't really useful, unless the residual just happens to be the
+- *     full current segment. In other words, don't use this function in new
+- *     code. Use blk_end_request() or __blk_end_request() to end a request.
+- **/
+-static inline void end_request(struct request *rq, int uptodate)
+-{
+-	int error = 0;
+-
+-	if (uptodate <= 0)
+-		error = uptodate ? uptodate : -EIO;
+-
+-	__blk_end_io(rq, error, rq->hard_cur_sectors << 9, 0, true);
+-}
+-
+ extern void blk_complete_request(struct request *);
+ extern void __blk_complete_request(struct request *);
+ extern void blk_abort_request(struct request *);
+-- 
+1.6.0.2
+
