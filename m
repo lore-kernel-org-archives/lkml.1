@@ -1,129 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbZDUTLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbZDUTMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbZDUTLH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 15:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758174AbZDUTKt
+	id S1758539AbZDUTMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 15:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZDUTML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 15:10:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37948 "EHLO mx2.mail.elte.hu"
+	Tue, 21 Apr 2009 15:12:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37762 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757306AbZDUTKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 15:10:47 -0400
-Date: Tue, 21 Apr 2009 21:10:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Hemminger <shemminger@vyatta.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090421191007.GA15485@elte.hu>
-References: <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam>
+	id S1754197AbZDUTMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 15:12:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Paul Rolland <rol@as2917.net>
+Subject: Re: linux-2.6.30-rc2 - No sound (HDA Intel) avec resume
+Date: Tue, 21 Apr 2009 21:11:19 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20090421182448.270f0e10@tux.DEF.witbe.net>
+In-Reply-To: <20090421182448.270f0e10@tux.DEF.witbe.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090421111541.228e977a@nehalam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904212111.19527.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 21 April 2009, Paul Rolland wrote:
+> Hello,
 
-* Stephen Hemminger <shemminger@vyatta.com> wrote:
+Hi,
 
-> +void xt_info_wrlock_bh(void)
-> +{
-> +	unsigned int i;
-> +
-> +	local_bh_disable();
-> +	for_each_possible_cpu(i) {
-> +		write_lock(&per_cpu(xt_info_locks, i));
-> +#if NR_CPUS > (PREEMPT_MASK - 1)
-> +		/*
-> +		 * Since spin_lock disables preempt, the following is
-> +		 * required to avoid overflowing the preempt counter
-> +		 */
-> +		preempt_enable_no_resched();
-> +#endif
-> +	}
-> +}
+> For the first time, I can successfully suspend/resume my Dell laptop using
+> linux 2.6.30-rc2.
 
-hm, this is rather ugly and it will make a lot of instrumentation 
-code explode.
+That's great to know. :-)
 
-Why not use the obvious solution: a _single_ wrlock for global 
-access and read_can_lock() plus per cpu locks in the fastpath?
+> Unfortunately, after resume, xmms stays silent. I've tried to change the
+> master channel, and everything I can access in the configuration, but no
+> luck.
+> All other devices are resuming correctly, including the video while running
+> X and compiz, so this is quite good.
+> 
+> Is there anything I can do to help on this issue ?
+> 
+> At boot time, I have :
+> Advanced Linux Sound Architecture Driver Version 1.0.19.
+> HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+> HDA Intel 0000:00:1b.0: setting latency timer to 64
+> ALSA device list:
+>   #0: Dummy 1
+>   #1: Virtual MIDI Card 1
+>   #2: HDA Intel at 0xefebc000 irq 21
+> 
+> When suspending :
+> Apr 20 21:26:21 tux kernel: HDA Intel 0000:00:1b.0: PCI INT A disabled
+> 
+> When resuming :
+> Apr 20 21:26:21 tux kernel: HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
 
-That way there's no global cacheline bouncing (just the _reading_ of 
-a global cacheline - which will be nicely localized - on NUMA too) - 
-and we will hold at most 1-2 locks at once!
+That looks pretty usual.
 
-Something like:
+Please attach dmesg output including a suspend-resume cycle and /proc/iomem.
 
-	__cacheline_aligned DEFINE_RWLOCK(global_wrlock);
-
-	DEFINE_PER_CPU(rwlock_t local_lock);
-
-
-	void local_read_lock(void)
-	{
-	again:
-		read_lock(&per_cpu(local_lock, this_cpu));
-
-		if (unlikely(!read_can_lock(&global_wrlock))) {
-			read_unlock(&per_cpu(local_lock, this_cpu));
-			/*
-			 * Just wait for any global write activity:
-			 */
-			read_unlock_wait(&global_wrlock);
-			goto again;
-		}
-	}
-
-	void global_write_lock(void)
-	{
-		write_lock(&global_wrlock);
-
-		for_each_possible_cpu(i)
-			write_unlock_wait(&per_cpu(local_lock, i));
-	}
-
-Note how nesting friendly this construct is: we dont actually _hold_ 
-NR_CPUS locks all at once, we simply cycle through all CPUs and make 
-sure they have our attention.
-
-No preempt overflow. No lockdep explosion. A very fast and scalable 
-read path.
-
-Okay - we need to implement read_unlock_wait() and 
-write_unlock_wait() which is similar to spin_unlock_wait(). The 
-trivial first-approximation is:
-
-	read_unlock_wait(x)
-	{
-		read_lock(x);
-		read_unlock(x);
-	}
-
-	write_unlock_wait(x)
-	{
-		write_lock(x);
-		write_unlock(x);
-	}
-
-Hm?
-
-	Ingo
+Best,
+Rafael
