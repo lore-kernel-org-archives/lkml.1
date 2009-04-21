@@ -1,97 +1,469 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbZDUSfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbZDUSgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbZDUSfr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZDUSel
+	id S1758022AbZDUSgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757700AbZDUSeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:34:41 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:46362 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755109AbZDUSeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:34:36 -0400
-Date: Tue, 21 Apr 2009 11:34:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       Paul Mackerras <paulus@samba.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090421183429.GL6642@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>
+	Tue, 21 Apr 2009 14:34:44 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:37675 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755588AbZDUSeh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 14:34:37 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH v3 01/17] shm-signal: shared-memory signals
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
+       rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
+       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
+       chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
+Date: Tue, 21 Apr 2009 14:34:22 -0400
+Message-ID: <20090421183422.12548.58427.stgit@dev.haskins.net>
+In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
+References: <20090421183341.12548.33393.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 09:13:52AM -0700, Linus Torvalds wrote:
-> 
-> Ok, so others already pointed out how dangerous/buggy this looks, but I'd 
-> like to strengthen that a bit more:
+This interface provides a bidirectional shared-memory based signaling
+mechanism.  It can be used by any entities which desire efficient
+communication via shared memory.  The implementation details of the
+signaling are abstracted so that they may transcend a wide variety
+of locale boundaries (e.g. userspace/kernel, guest/host, etc).
 
-I believe that at least some of this is naming...
+The shm_signal mechanism supports event masking as well as spurious
+event delivery mitigation.
 
-> On Mon, 20 Apr 2009, Stephen Hemminger wrote:
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-[ . . . ]
+ include/linux/shm_signal.h |  188 ++++++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig                |    9 ++
+ lib/Makefile               |    1 
+ lib/shm_signal.c           |  186 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 384 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/shm_signal.h
+ create mode 100644 lib/shm_signal.c
 
-> If you want a counting read-lock (in _order_ to allow recursion, but not 
-> because the lock itself is somehow recursive!), then that function should 
-> look like this:
-> 
-> 	void xt_info_rdlock_bh(void)
-> 	{
-> 		struct xt_info_lock *lock
-> 
-> 		local_bh_disable();
-> 		lock = &__get_cpu_var(xt_info_locks);
-> 		read_lock(&lock->lock);
-> 	}
-> 
-> And then the "unlock" should be the reverse. No games, no crap, and 
-> hopefully then no bugs. And if you do it that way, you don't even need the 
-> comments, although quite frankly, it probably makes a lot of sense to talk 
-> about the interaction between "local_bh_disable()" and the preempt count, 
-> and why you're not using "read_lock_bh()".
-> 
-> And if you don't want a read-lock, then fine - don't use a read-lock, do 
-> something else. But then don't just re-implement it (badly) either and 
-> call it something else!
+diff --git a/include/linux/shm_signal.h b/include/linux/shm_signal.h
+new file mode 100644
+index 0000000..a65e54e
+--- /dev/null
++++ b/include/linux/shm_signal.h
+@@ -0,0 +1,188 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#ifndef _LINUX_SHM_SIGNAL_H
++#define _LINUX_SHM_SIGNAL_H
++
++#include <asm/types.h>
++
++/*
++ *---------
++ * The following structures represent data that is shared across boundaries
++ * which may be quite disparate from one another (e.g. Windows vs Linux,
++ * 32 vs 64 bit, etc).  Therefore, care has been taken to make sure they
++ * present data in a manner that is independent of the environment.
++ *-----------
++ */
++
++#define SHM_SIGNAL_MAGIC 0x58fa39df
++#define SHM_SIGNAL_VER   1
++
++struct shm_signal_irq {
++	__u8                  enabled;
++	__u8                  pending;
++	__u8                  dirty;
++};
++
++enum shm_signal_locality {
++	shm_locality_north,
++	shm_locality_south,
++};
++
++struct shm_signal_desc {
++	__u32                 magic;
++	__u32                 ver;
++	struct shm_signal_irq irq[2];
++};
++
++/* --- END SHARED STRUCTURES --- */
++
++#ifdef __KERNEL__
++
++#include <linux/interrupt.h>
++
++struct shm_signal_notifier {
++	void (*signal)(struct shm_signal_notifier *);
++};
++
++struct shm_signal;
++
++struct shm_signal_ops {
++	int      (*inject)(struct shm_signal *s);
++	void     (*fault)(struct shm_signal *s, const char *fmt, ...);
++	void     (*release)(struct shm_signal *s);
++};
++
++enum {
++	shm_signal_in_wakeup,
++};
++
++struct shm_signal {
++	atomic_t                    refs;
++	spinlock_t                  lock;
++	enum shm_signal_locality    locale;
++	unsigned long               flags;
++	struct shm_signal_ops      *ops;
++	struct shm_signal_desc     *desc;
++	struct shm_signal_notifier *notifier;
++	struct tasklet_struct       deferred_notify;
++};
++
++#define SHM_SIGNAL_FAULT(s, fmt, args...)  \
++  ((s)->ops->fault ? (s)->ops->fault((s), fmt, ## args) : panic(fmt, ## args))
++
++ /*
++  * These functions should only be used internally
++  */
++void _shm_signal_release(struct shm_signal *s);
++void _shm_signal_wakeup(struct shm_signal *s);
++
++/**
++ * shm_signal_init() - initialize an SHM_SIGNAL
++ * @s:        SHM_SIGNAL context
++ *
++ * Initializes SHM_SIGNAL context before first use
++ *
++ **/
++void shm_signal_init(struct shm_signal *s);
++
++/**
++ * shm_signal_get() - acquire an SHM_SIGNAL context reference
++ * @s:        SHM_SIGNAL context
++ *
++ **/
++static inline struct shm_signal *shm_signal_get(struct shm_signal *s)
++{
++	atomic_inc(&s->refs);
++
++	return s;
++}
++
++/**
++ * shm_signal_put() - release an SHM_SIGNAL context reference
++ * @s:        SHM_SIGNAL context
++ *
++ **/
++static inline void shm_signal_put(struct shm_signal *s)
++{
++	if (atomic_dec_and_test(&s->refs))
++		_shm_signal_release(s);
++}
++
++/**
++ * shm_signal_enable() - enables local notifications on an SHM_SIGNAL
++ * @s:        SHM_SIGNAL context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Enables/unmasks the registered notifier (if applicable) to receive wakeups
++ * whenever the remote side performs an shm_signal() operation. A notification
++ * will be dispatched immediately if any pending signals have already been
++ * issued prior to invoking this call.
++ *
++ * This is synonymous with unmasking an interrupt.
++ *
++ * Returns: success = 0, <0 = ERRNO
++ *
++ **/
++int shm_signal_enable(struct shm_signal *s, int flags);
++
++/**
++ * shm_signal_disable() - disable local notifications on an SHM_SIGNAL
++ * @s:        SHM_SIGNAL context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Disables/masks the registered shm_signal_notifier (if applicable) from
++ * receiving any further notifications.  Any subsequent calls to shm_signal()
++ * by the remote side will update the shm as dirty, but will not traverse the
++ * locale boundary and will not invoke the notifier callback.  Signals
++ * delivered while masked will be deferred until shm_signal_enable() is
++ * invoked.
++ *
++ * This is synonymous with masking an interrupt
++ *
++ * Returns: success = 0, <0 = ERRNO
++ *
++ **/
++int shm_signal_disable(struct shm_signal *s, int flags);
++
++/**
++ * shm_signal_inject() - notify the remote side about shm changes
++ * @s:        SHM_SIGNAL context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Marks the shm state as "dirty" and, if enabled, will traverse
++ * a locale boundary to inject a remote notification.  The remote
++ * side controls whether the notification should be delivered via
++ * the shm_signal_enable/disable() interface.
++ *
++ * The specifics of how to traverse a locale boundary are abstracted
++ * by the shm_signal_ops->signal() interface and provided by a particular
++ * implementation.  However, typically going north to south would be
++ * something like a syscall/hypercall, and going south to north would be
++ * something like a posix-signal/guest-interrupt.
++ *
++ * Returns: success = 0, <0 = ERRNO
++ *
++ **/
++int shm_signal_inject(struct shm_signal *s, int flags);
++
++#endif /* __KERNEL__ */
++
++#endif /* _LINUX_SHM_SIGNAL_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 8ade0a7..1b249a3 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -191,4 +191,13 @@ config DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
+ config NLATTR
+ 	bool
+ 
++config SHM_SIGNAL
++	boolean "SHM Signal - Generic shared-memory signaling mechanism"
++	default n
++	help
++	 Provides a shared-memory based signaling mechansim to indicate
++         memory-dirty notifications between two end-points.
++
++	 If unsure, say N
++
+ endmenu
+diff --git a/lib/Makefile b/lib/Makefile
+index d6edd67..1ef4156 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -75,6 +75,7 @@ obj-$(CONFIG_TEXTSEARCH_BM) += ts_bm.o
+ obj-$(CONFIG_TEXTSEARCH_FSM) += ts_fsm.o
+ obj-$(CONFIG_SMP) += percpu_counter.o
+ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
++obj-$(CONFIG_SHM_SIGNAL) += shm_signal.o
+ 
+ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
+diff --git a/lib/shm_signal.c b/lib/shm_signal.c
+new file mode 100644
+index 0000000..fa1770c
+--- /dev/null
++++ b/lib/shm_signal.c
+@@ -0,0 +1,186 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * See include/linux/shm_signal.h for documentation
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/shm_signal.h>
++
++int shm_signal_enable(struct shm_signal *s, int flags)
++{
++	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
++	unsigned long iflags;
++
++	spin_lock_irqsave(&s->lock, iflags);
++
++	irq->enabled = 1;
++	wmb();
++
++	if ((irq->dirty || irq->pending)
++	    && !test_bit(shm_signal_in_wakeup, &s->flags)) {
++		rmb();
++		tasklet_schedule(&s->deferred_notify);
++	}
++
++	spin_unlock_irqrestore(&s->lock, iflags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(shm_signal_enable);
++
++int shm_signal_disable(struct shm_signal *s, int flags)
++{
++	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
++
++	irq->enabled = 0;
++	wmb();
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(shm_signal_disable);
++
++/*
++ * signaling protocol:
++ *
++ * each side of the shm_signal has an "irq" structure with the following
++ * fields:
++ *
++ *    - enabled: controlled by shm_signal_enable/disable() to mask/unmask
++ *               the notification locally
++ *    - dirty:   indicates if the shared-memory is dirty or clean.  This
++ *               is updated regardless of the enabled/pending state so that
++ *               the state is always accurately tracked.
++ *    - pending: indicates if a signal is pending to the remote locale.
++ *               This allows us to determine if a remote-notification is
++ *               already in flight to optimize spurious notifications away.
++ */
++int shm_signal_inject(struct shm_signal *s, int flags)
++{
++	/* Load the irq structure from the other locale */
++	struct shm_signal_irq *irq = &s->desc->irq[!s->locale];
++
++	/*
++	 * We always mark the remote side as dirty regardless of whether
++	 * they need to be notified.
++	 */
++	irq->dirty = 1;
++	wmb();   /* dirty must be visible before we test the pending state */
++
++	if (irq->enabled && !irq->pending) {
++		rmb();
++
++		/*
++		 * If the remote side has enabled notifications, and we do
++		 * not see a notification pending, we must inject a new one.
++		 */
++		irq->pending = 1;
++		wmb(); /* make it visible before we do the injection */
++
++		s->ops->inject(s);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(shm_signal_inject);
++
++void _shm_signal_wakeup(struct shm_signal *s)
++{
++	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
++	int dirty;
++	unsigned long flags;
++
++	spin_lock_irqsave(&s->lock, flags);
++
++	__set_bit(shm_signal_in_wakeup, &s->flags);
++
++	/*
++	 * The outer loop protects against race conditions between
++	 * irq->dirty and irq->pending updates
++	 */
++	while (irq->enabled && (irq->dirty || irq->pending)) {
++
++		/*
++		 * Run until we completely exhaust irq->dirty (it may
++		 * be re-dirtied by the remote side while we are in the
++		 * callback).  We let "pending" remain untouched until we have
++		 * processed them all so that the remote side knows we do not
++		 * need a new notification (yet).
++		 */
++		do {
++			irq->dirty = 0;
++			/* the unlock is an implicit wmb() for dirty = 0 */
++			spin_unlock_irqrestore(&s->lock, flags);
++
++			if (s->notifier)
++				s->notifier->signal(s->notifier);
++
++			spin_lock_irqsave(&s->lock, flags);
++			dirty = irq->dirty;
++			rmb();
++
++		} while (irq->enabled && dirty);
++
++		barrier();
++
++		/*
++		 * We can finally acknowledge the notification by clearing
++		 * "pending" after all of the dirty memory has been processed
++		 * Races against this clearing are handled by the outer loop.
++		 * Subsequent iterations of this loop will execute with
++		 * pending=0 potentially leading to future spurious
++		 * notifications, but this is an acceptable tradeoff as this
++		 * will be rare and harmless.
++		 */
++		irq->pending = 0;
++		wmb();
++
++	}
++
++	__clear_bit(shm_signal_in_wakeup, &s->flags);
++	spin_unlock_irqrestore(&s->lock, flags);
++
++}
++EXPORT_SYMBOL_GPL(_shm_signal_wakeup);
++
++void _shm_signal_release(struct shm_signal *s)
++{
++	s->ops->release(s);
++}
++EXPORT_SYMBOL_GPL(_shm_signal_release);
++
++static void
++deferred_notify(unsigned long data)
++{
++	struct shm_signal *s = (struct shm_signal *)data;
++
++	_shm_signal_wakeup(s);
++}
++
++void shm_signal_init(struct shm_signal *s)
++{
++	memset(s, 0, sizeof(*s));
++	atomic_set(&s->refs, 1);
++	spin_lock_init(&s->lock);
++	tasklet_init(&s->deferred_notify,
++		     deferred_notify,
++		     (unsigned long)s);
++}
++EXPORT_SYMBOL_GPL(shm_signal_init);
 
-Sigh!!!
-
-Part of the problem is that back in 1971, Courtois, Heymans, and Parnas
-foolishly named their article "Concurrent Control with 'Readers' and
-'Writers'", which lead to the name "reader-writer lock".  This started
-really biting around 1991, when Hsieh and Weihl created a reader-optimized
-lock similar to brlock, but with each of the per-CPU locks being
-exclusive rather than each being an rwlock.
-
-The problem was that Hsieh's and Weihl's lock was more than just
-a reader-writer lock.  It could also be used (and -was- used) as a
-local/global lock, where for example you acquire your own lock to make
-local changes, and acquire all of the locks to obtain a consistent view
-of global state.  In which case, you would read-acquire the lock in
-order to write, and write-acquire the lock in order to read.  Blech.
-
-So, would it help if the function names names in this patch said something
-about "local" and "global" rather than "read" and "write"?
-
-							Thanx, Paul
-
-
-> 			Linus
-> 
-> PS: Ingo, why do the *_bh() functions in kernel/spinlock.c do _both_ a 
-> "local_bh_disable()" and a "preempt_disable()"? BH disable should disable 
-> preemption too, no? Or am I confused? In which case we need that in 
-> the above rdlock_bh too.
