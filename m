@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZDUOoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZDUOsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbZDUOoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZDUOoA
+	id S1753215AbZDUOsb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZDUOsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:44:00 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:33673 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbZDUOn6 (ORCPT
+	Tue, 21 Apr 2009 10:48:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35664 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbZDUOsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:43:58 -0400
-Date: Tue, 21 Apr 2009 10:35:57 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: "Luck, Tony" <tony.luck@intel.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, randy.dunlap_ocs10g@oracle.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next ia64 build problems in slqb
-In-Reply-To: <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0904211034550.19969@qirst.com>
-References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com> <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 21 Apr 2009 10:48:18 -0400
+Date: Tue, 21 Apr 2009 10:48:10 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Suresh Jayaraman <sjayaraman@suse.de>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Masahiro Tamori <masahiro.tamori@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
+Message-ID: <20090421144810.GA7036@infradead.org>
+References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal> <49D45E42.3050502@suse.de> <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com> <49EC0A83.8060802@suse.de> <1240230224.8073.6.camel@heimdal.trondhjem.org> <49EC6CB3.8080800@suse.de> <1240237274.13636.9.camel@heimdal.trondhjem.org> <49EC990B.1030007@suse.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-716562517-337908754-1240324557=:19969"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EC990B.1030007@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, Apr 20, 2009 at 09:17:23PM +0530, Suresh Jayaraman wrote:
+> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> +				     struct file *filp, loff_t *ppos,
+> +				     size_t count, unsigned int flags)
+> +{
+> +	struct dentry *dentry = filp->f_path.dentry;
+> +
+> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+> +		dentry->d_parent->d_name.name, dentry->d_name.name,
+> +		(unsigned long) count, (unsigned long long) *ppos);
+> +
+> +	return generic_file_splice_write(pipe, filp, ppos, count, flags);
+> +}
+> +
 
----716562517-337908754-1240324557=:19969
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+You need all calls from nfs_file_write, too:
 
-On Tue, 21 Apr 2009, Pekka Enberg wrote:
-
-> On Tue, Apr 21, 2009 at 1:08 AM, Luck, Tony <tony.luck@intel.com> wrote:
-> > The ia64 "allnoconfig" build ends up with the (possibly dubious) combin=
-ation
-> > of .config options:
-> >
-> > =A0 =A0 =A0 =A0CONFIG_SMP=3Dn
-> > =A0 =A0 =A0 =A0CONFIG_NUMA=3Dy
->
-> Yeah, I don't think the combination makes much sense and x86 doesn't
-> allow it. Can we fix that in ia64 Kconfig? That said, this seems to
-> come up with every architecture except x86, so if someone is kind
-> enough to send me a tested fix for slqb, I'll just go ahead and apply
-> it.
-
-Tony runs tests with this configuration. This is an established
-configuration and has been historically supported.
-
-
----716562517-337908754-1240324557=:19969--
+ - most importantly the nfs_revalidate_file_size for O_APPEND
+ - the nfs_do_fsync for sync writes
+ - probably the stats increment
