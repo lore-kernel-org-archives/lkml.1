@@ -1,147 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZDUJzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZDUJ4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZDUJzp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZDUJzf
+	id S1756559AbZDUJ4Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZDUJzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:55:35 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:54463 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZDUJze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:55:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p0eRB76XFiR/Fy6Fxa3ZOlpb5zkftfo9JRrdIYcMB0OIlGoX0cdCRY5gJhSmFm1NPZ
-         H6sKe/0uI4OnPt/C2dFcfkRLiSE1GOEXeyVl5AhvScG5IFoigteqzByUcWPpv7oARQez
-         bKwPo4jb2l2zvEP67587qZCcduxywDOtEiIDs=
-Date: Tue, 21 Apr 2009 11:55:26 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
+	Tue, 21 Apr 2009 05:55:55 -0400
+Received: from cmpxchg.org ([85.214.51.133]:49189 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753831AbZDUJzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 05:55:54 -0400
+Date: Tue, 21 Apr 2009 11:54:29 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] res_counter: introduce ratelimiting attributes
-Message-ID: <20090421095525.GA13699@linux>
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-3-git-send-email-righi.andrea@gmail.com> <20090421091534.971f676f.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
+Message-ID: <20090421095429.GB3639@cmpxchg.org>
+References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <1240259085-25872-3-git-send-email-hannes@cmpxchg.org> <20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com> <20090421085231.GB2527@cmpxchg.org> <20090421182331.5c96615e.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421091534.971f676f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090421182331.5c96615e.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 09:15:34AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Sat, 18 Apr 2009 23:38:27 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
+On Tue, Apr 21, 2009 at 06:23:31PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Tue, 21 Apr 2009 10:52:31 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> > Introduce attributes and functions in res_counter to implement throttling-based
-> > cgroup subsystems.
+> > > Keeping multiple pages locked while they stay on private list ? 
 > > 
-> > The following attributes have been added to struct res_counter:
-> >  * @policy:     the limiting policy / algorithm
-> >  * @capacity:   the maximum capacity of the resource
-> >  * @timestamp:  timestamp of the last accounted resource request
+> > Yeah, it's a bit suboptimal but I don't see a way around it.
 > > 
-> > Currently the available policies are: token-bucket and leaky-bucket and the
-> > attribute @capacity is only used by token-bucket policy (to represent the
-> > bucket size).
+> Hmm, seems to increase stale swap cache dramatically under memcg ;)
+
+Hmpf, not good.
+
+> > > BTW, isn't it better to add "allocate multiple swap space at once" function
+> > > like
+> > >  - void get_swap_pages(nr, swp_entry_array[])
+> > > ? "nr" will not be bigger than SWAP_CLUSTER_MAX.
 > > 
-> > The following function has been implemented to return the amount of time a
-> > cgroup should sleep to remain within the defined resource limits.
+> > It will sometimes be, see __zone_reclaim().
 > > 
-> >   unsigned long long
-> >   res_counter_ratelimit_sleep(struct res_counter *res, ssize_t val);
+> Hm ? If I read the code correctly, __zone_reclaim() just call shrink_zone() and
+> "nr" to shrink_page_list() is SWAP_CLUSTER_MAX, at most.
+
+shrink_zone() and shrink_inactive_list() use whatever is set in
+sc->swap_cluster_max and for __zone_reclaim() this is:
+
+	.swap_cluster_max = max_t(unsigned long, nr_pages, SWAP_CLUSTER_MAX)
+
+SWAP_CLUSTER_MAX is 32 (2^5), so if you have an order 6 allocation
+doing reclaim, you end up with sc->swap_cluster_max == 64 already.
+Not common, but it happens.
+
+> > I had such a function once.  The interesting part is: how and when do
+> > you call it?  If you drop the page lock in between, you need to redo
+> > the checks for unevictability and whether the page has become mapped
+> > etc.
 > > 
-> > [ Note: only the interfaces needed by the cgroup IO controller are implemented
-> > right now ]
+> > You also need to have the pages in swap cache as soon as possible or
+> > optimistic swap-in will 'steal' your swap slots.  See add_to_swap()
+> > when the cache radix tree says -EEXIST.
 > > 
-> > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> > ---
-> >  include/linux/res_counter.h |   69 +++++++++++++++++++++++++++++++----------
-> >  kernel/res_counter.c        |   72 +++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 124 insertions(+), 17 deletions(-)
-> > 
-> > diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> > index 4c5bcf6..9bed6af 100644
-> > --- a/include/linux/res_counter.h
-> > +++ b/include/linux/res_counter.h
-> > @@ -14,30 +14,36 @@
-> >   */
-> >  
-> >  #include <linux/cgroup.h>
-> > +#include <linux/jiffies.h>
-> >  
-> > -/*
-> > - * The core object. the cgroup that wishes to account for some
-> > - * resource may include this counter into its structures and use
-> > - * the helpers described beyond
-> > - */
-> > +/* The various policies that can be used for ratelimiting resources */
-> > +#define	RATELIMIT_LEAKY_BUCKET	0
-> > +#define	RATELIMIT_TOKEN_BUCKET	1
-> >  
-> > +/**
-> > + * struct res_counter - the core object to account cgroup resources
-> > + *
-> > + * @usage:	the current resource consumption level
-> > + * @max_usage:	the maximal value of the usage from the counter creation
-> > + * @limit:	the limit that usage cannot be exceeded
-> > + * @failcnt:	the number of unsuccessful attempts to consume the resource
-> > + * @policy:	the limiting policy / algorithm
-> > + * @capacity:	the maximum capacity of the resource
-> > + * @timestamp:	timestamp of the last accounted resource request
-> > + * @lock:	the lock to protect all of the above.
-> > + *		The routines below consider this to be IRQ-safe
-> > + *
-> > + * The cgroup that wishes to account for some resource may include this counter
-> > + * into its structures and use the helpers described beyond.
-> > + */
-> >  struct res_counter {
-> > -	/*
-> > -	 * the current resource consumption level
-> > -	 */
-> >  	unsigned long long usage;
-> > -	/*
-> > -	 * the maximal value of the usage from the counter creation
-> > -	 */
-> >  	unsigned long long max_usage;
-> > -	/*
-> > -	 * the limit that usage cannot exceed
-> > -	 */
-> >  	unsigned long long limit;
-> > -	/*
-> > -	 * the number of unsuccessful attempts to consume the resource
-> > -	 */
-> >  	unsigned long long failcnt;
-> > +	unsigned long long policy;
-> > +	unsigned long long capacity;
-> > +	unsigned long long timestamp;
-> >  
-> Andrea, sizeof(struct res_counter) is getting close to 128bytes. (maybe someone adds more)
-> Then, could you check "unsigned long or unsigned int" is allowed or not, again ?
 > 
-> It's very bad if cacheline of spinlock is different from data field, in future.
+> If I was you, modify "offset" calculation of
+>   get_swap_pages()
+>      -> scan_swap_map()
+> to allow that a cpu  tends to find countinous swap page cluster.
+> Too difficult ?
 
-Regarding the new attributes, policy can be surely an unsigned int or
-even less (now only 1 bit is used!), maybe we can just add an unsigned
-int flags, and encode also potential future informations there.
+This goes in the direction of extent-based allocations.  I tried that
+once by providing every reclaimer with a cookie that is passed in for
+swap allocations and used to find per-reclaimer offsets.
 
-Moreover, are we sure we really need an unsigned long long for failcnt?
-
-Thanks,
--Andrea
+Something went wrong, I can not quite remember.  Will have another
+look at this.
