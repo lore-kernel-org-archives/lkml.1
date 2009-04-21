@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZDUUOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZDUURG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZDUUOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZDUUOX
+	id S1754867AbZDUURG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZDUUQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:14:23 -0400
-Received: from nn7.de ([85.214.94.156]:37541 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751161AbZDUUOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:14:22 -0400
-Subject: Re: git-current build failure: In function `intel_opregion_init':
- undefined reference to `acpi_video_register'
-From: Soeren Sonnenburg <sonne@debian.org>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1240082271.5816.3.camel@localhost>
-References: <1240082271.5816.3.camel@localhost>
+	Tue, 21 Apr 2009 16:16:53 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:41201 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbZDUUQx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 16:16:53 -0400
+Subject: [GIT PULL] Btrfs changes for 2.6.30-rc
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 21 Apr 2009 22:14:15 +0200
-Message-Id: <1240344856.5114.14.camel@localhost>
+Date: Tue, 21 Apr 2009 09:29:05 -0400
+Message-Id: <1240320545.4869.22.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49EDDAEC.017C:SCFMA4539814,ss=1,fgs=0
+X-QuarantineReason: Unscannable attachment
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This build failure is still there in
-a939b96cccdb65df80a52447ec8e4a6d79c56dbb
+Hello everyone,
 
-Soeren
+The master branch of:
 
-On Sat, 2009-04-18 at 21:17 +0200, Soeren Sonnenburg wrote:
-> Dear all,
-> 
-> I am seeing this with 2.6.30+ 
-> git aefe6475720bd5eb8aacbc881488f3aa65618562
-> 
-> $ make ARCH=i386 -j 4
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86
->   CALL    scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `intel_opregion_init':
-> (.text+0xcf058): undefined reference to `acpi_video_register'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> config is attached.
-> 
-> Soeren
--- 
-For the one fact about the future of which we can be certain is that it
-will be utterly fantastic. -- Arthur C. Clarke, 1962
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+
+Has some fixes for oopsen and a cluster of bugs inside of one of the
+btree readahead functions.
+
+I also jumped on the fsync latency train for btrfs and switched over to
+WRITE_SYNC for the writes I was going to wait on.
+
+This is a bigger change in btrfs because I had to add a high priority
+list to the async helper threads, but it had a big impact on performance
+overall.  Before, the writes we were waiting on would get stuck behind
+the less critical writes in the async helper threads, and now they pop
+out much faster.
+
+Average fsync latencies concurrent with a streaming writer went down
+from ~5 seconds (with longer peaks) to < 1 second.
+
+Chris Mason (4):
+      Btrfs: use WRITE_SYNC for synchronous writes
+      Btrfs: add a priority queue to the async thread helpers
+      Btrfs: fix oops on page->mapping->host during writepage
+      Btrfs: use the right node in reada_for_balance
+
+ fs/btrfs/async-thread.c |   60 ++++++++++++++++++-----
+ fs/btrfs/async-thread.h |    2
+ fs/btrfs/ctree.c        |   17 ++++--
+ fs/btrfs/disk-io.c      |    9 ++-
+ fs/btrfs/extent_io.c    |   86 ++++++++++++++++++++++++---------
+ fs/btrfs/file.c         |    2
+ fs/btrfs/ordered-data.c |    2
+ fs/btrfs/volumes.c      |  124 +++++++++++++++++++++++++++++++++++++-----------
+ fs/btrfs/volumes.h      |   13 ++++-
+
+-chris
+
+
