@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZDUBlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZDUBmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZDUBlh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 21:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZDUBl1
+	id S1755299AbZDUBmR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 21:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZDUBmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 21:41:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40579 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbZDUBl1 (ORCPT
+	Mon, 20 Apr 2009 21:42:00 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:43213 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbZDUBl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 21:41:27 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3] Fix Committed_AS underflow
-Cc: kosaki.motohiro@jp.fujitsu.com, Eric B Munson <ebmunson@us.ibm.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       mel@linux.vnet.ibm.com, cl@linux-foundation.org
-In-Reply-To: <1240256999.32604.330.camel@nimitz>
-References: <1240244120.32604.278.camel@nimitz> <1240256999.32604.330.camel@nimitz>
-Message-Id: <20090421102317.F113.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 20 Apr 2009 21:41:59 -0400
+Date: Mon, 20 Apr 2009 18:42:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: gregkh@suse.de, Henrik Austad <henrik@austad.us>
+Subject: [PATCH] Doc/sysfs-rules: Swap the order of the words so the
+ sentence makes more sense
+Message-Id: <20090420184238.51cd7092.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 10:41:20 +0900 (JST)
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.49ED2458.0124:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> void vm_acct_memory(long pages)
-> {
->         long *local;
-> 	long local_min = -ACCT_THRESHOLD;
-> 	long local_max = ACCT_THRESHOLD;
-> 	long local_goal = 0;
-> 
->         preempt_disable();
->         local = &__get_cpu_var(committed_space);
->         *local += pages;
->         if (*local > local_max || *local < local_min) {
->                 atomic_long_add(*local - local_goal, &vm_committed_space);
->                 *local = local_goal;
->         }
->         preempt_enable();
-> }
-> 
-> But now consider if we changed the local_* variables a bit:
-> 
-> 	long local_min = -(ACCT_THRESHOLD*2);
-> 	long local_max = 0
-> 	long local_goal = -ACCT_THRESHOLD;
-> 
-> We'll get some possibly *large* numbers in meminfo, but it will at least
-> never underflow.
+From: Henrik Austad <henrik@austad.us>
+Subject: Swap the order of the words so the sentence makes more sense
 
-if *local == -(ACCT_THRESHOLD*2), 
-  *local - local_goal = -(ACCT_THRESHOLD*2) + ACCT_THRESHOLD = -ACCT_THRESHOLD
+Signed-off-by: Henrik Austad <henrik@austad.us>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ Documentation/sysfs-rules.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Then, we still pass negative value to atomic_long_add().
-IOW, vm_committed_space still can be negative value.
-
-Am I missing anything?
-
-
-
+diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
+index 6049a2a..5d8bc2c 100644
+--- a/Documentation/sysfs-rules.txt
++++ b/Documentation/sysfs-rules.txt
+@@ -113,7 +113,7 @@ versions of the sysfs interface.
+   "devices" directory at /sys/subsystem/<name>/devices.
+ 
+   If /sys/subsystem exists, /sys/bus, /sys/class and /sys/block can be
+-  ignored. If it does not exist, you have always to scan all three
++  ignored. If it does not exist, you always have to scan all three
+   places, as the kernel is free to move a subsystem from one place to
+   the other, as long as the devices are still reachable by the same
+   subsystem name.
+-- 
