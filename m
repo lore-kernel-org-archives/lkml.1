@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbZDUSo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbZDUSoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbZDUSo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbZDUSmA
+	id S1758988AbZDUSoB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbZDUSmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:42:00 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:47114 "EHLO
+	Tue, 21 Apr 2009 14:42:21 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:47884 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756738AbZDUSlp (ORCPT
+	with ESMTP id S1758719AbZDUSl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:41:45 -0400
+	Tue, 21 Apr 2009 14:41:59 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 10/17] venet-tap: Adds a "venet" compatible "tap"
-	device to VBUS
+Subject: [RFC PATCH v3 14/17] kvm: Add VBUS support to the host
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
        rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
        bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
        chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:35:10 -0400
-Message-ID: <20090421183510.12548.55292.stgit@dev.haskins.net>
+Date: Tue, 21 Apr 2009 14:35:32 -0400
+Message-ID: <20090421183531.12548.360.stgit@dev.haskins.net>
 In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
 References: <20090421183341.12548.33393.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -31,83 +30,304 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This module is similar in concept to a "tuntap".  A tuntap module provides
-a netif() interface on one side, and a char-dev interface on the other.
-Packets that ingress on one interface, egress on the other (and vice versa).
+This patch adds support for guest access to a VBUS assigned to the same
+context as the VM.  It utilizes a IOQ+IRQ to move events from host->guest,
+and provides a hypercall interface to move events guest->host.
 
-This module offers a similar concept, except that it substitues the
-char-dev for a VBUS/IOQ interface.  This allows a VBUS compatible entity
-(e.g. userspace or a guest) to directly inject and receive packets
-from the host/kernel stack.
-
-Thanks to Pat Mullaney for contributing the maxcount modification
+Special thanks to Alex Tsariounov for submitting patches for cleaning
+up some sloppy warnings I had left in the code.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/Makefile                 |    1 
- drivers/vbus/devices/Kconfig     |   17 
- drivers/vbus/devices/Makefile    |    1 
- drivers/vbus/devices/venet-tap.c | 1387 ++++++++++++++++++++++++++++++++++++++
- kernel/vbus/Kconfig              |   13 
- 5 files changed, 1419 insertions(+), 0 deletions(-)
- create mode 100644 drivers/vbus/devices/Kconfig
- create mode 100644 drivers/vbus/devices/Makefile
- create mode 100644 drivers/vbus/devices/venet-tap.c
+ arch/x86/include/asm/kvm_para.h |    1 
+ arch/x86/kvm/Kconfig            |    9 
+ arch/x86/kvm/Makefile           |    3 
+ arch/x86/kvm/x86.c              |    6 
+ arch/x86/kvm/x86.h              |   12 
+ include/linux/kvm.h             |    7 
+ include/linux/kvm_host.h        |   26 +
+ include/linux/kvm_para.h        |   58 ++
+ virt/kvm/kvm_main.c             |   10 
+ virt/kvm/vbus.c                 | 1392 +++++++++++++++++++++++++++++++++++++++
+ 10 files changed, 1524 insertions(+), 0 deletions(-)
+ create mode 100644 virt/kvm/vbus.c
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 2618a61..4c66912 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -107,3 +107,4 @@ obj-$(CONFIG_SSB)		+= ssb/
- obj-$(CONFIG_VIRTIO)		+= virtio/
- obj-$(CONFIG_STAGING)		+= staging/
- obj-y				+= platform/
-+obj-$(CONFIG_VBUS_DEVICES)	+= vbus/devices/
-diff --git a/drivers/vbus/devices/Kconfig b/drivers/vbus/devices/Kconfig
-new file mode 100644
-index 0000000..64e4731
---- /dev/null
-+++ b/drivers/vbus/devices/Kconfig
-@@ -0,0 +1,17 @@
-+#
-+# Virtual-Bus (VBus) configuration
-+#
-+
-+config VBUS_VENETTAP
-+       tristate "Virtual-Bus Ethernet Tap Device"
-+       depends on VBUS_DEVICES
+diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
+index b8a3305..0a209b4 100644
+--- a/arch/x86/include/asm/kvm_para.h
++++ b/arch/x86/include/asm/kvm_para.h
+@@ -13,6 +13,7 @@
+ #define KVM_FEATURE_CLOCKSOURCE		0
+ #define KVM_FEATURE_NOP_IO_DELAY	1
+ #define KVM_FEATURE_MMU_OP		2
++#define KVM_FEATURE_VBUS                3
+ 
+ #define MSR_KVM_WALL_CLOCK  0x11
+ #define MSR_KVM_SYSTEM_TIME 0x12
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index a58504e..f2bcb4f 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -69,6 +69,15 @@ config KVM_TRACE
+ 	  relayfs.  Note the ABI is not considered stable and will be
+ 	  modified in future updates.
+ 
++config KVM_HOST_VBUS
++       bool "KVM virtual-bus (VBUS) host-side support"
++       depends on KVM
++       select VBUS
 +       default n
-+       help
-+        Provides a virtual ethernet adapter to a vbus, which in turn
-+        manifests itself as a standard netif based adapter to the
-+	kernel.  It can be used similarly to a "tuntap" device,
-+        except that the char-dev transport is replaced with a vbus/ioq
-+        interface.
++       ---help---
++          This option enables host-side support for accessing virtual-bus
++	  devices.
 +
-+	If unsure, say N
+ # OK, it's a little counter-intuitive to do this, but it puts it neatly under
+ # the virtualization menu.
+ source drivers/lguest/Kconfig
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index d3ec292..32ffe5b 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -15,6 +15,9 @@ EXTRA_CFLAGS += -Ivirt/kvm -Iarch/x86/kvm
+ 
+ kvm-objs := $(common-objs) x86.o mmu.o x86_emulate.o i8259.o irq.o lapic.o \
+ 	i8254.o
++ifeq ($(CONFIG_KVM_HOST_VBUS),y)
++kvm-objs += $(addprefix ../../../virt/kvm/, vbus.o)
++endif
+ obj-$(CONFIG_KVM) += kvm.o
+ kvm-intel-objs = vmx.o
+ obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 8ca100a..9f4895e 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1040,6 +1040,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_IOMMU:
+ 		r = iommu_found();
+ 		break;
++	case KVM_CAP_VBUS:
++		r = kvm_vbus_support();
++		break;
+ 	default:
+ 		r = 0;
+ 		break;
+@@ -2830,6 +2833,9 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
+ 	case KVM_HC_MMU_OP:
+ 		r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2), &ret);
+ 		break;
++	case KVM_HC_VBUS:
++		ret = kvm_vbus_hc(vcpu, a0, a1, a2);
++		break;
+ 	default:
+ 		ret = -KVM_ENOSYS;
+ 		break;
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+index 6a4be78..b6c682b 100644
+--- a/arch/x86/kvm/x86.h
++++ b/arch/x86/kvm/x86.h
+@@ -3,6 +3,18 @@
+ 
+ #include <linux/kvm_host.h>
+ 
++#ifdef CONFIG_KVM_HOST_VBUS
++static inline int kvm_vbus_support(void)
++{
++    return 1;
++}
++#else
++static inline int kvm_vbus_support(void)
++{
++    return 0;
++}
++#endif
 +
-diff --git a/drivers/vbus/devices/Makefile b/drivers/vbus/devices/Makefile
+ static inline void kvm_clear_exception_queue(struct kvm_vcpu *vcpu)
+ {
+ 	vcpu->arch.exception.pending = false;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 311a073..9b83bbc 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -409,6 +409,7 @@ struct kvm_trace_rec {
+ #ifdef __KVM_HAVE_DEVICE_ASSIGNMENT
+ #define KVM_CAP_DEVICE_DEASSIGNMENT 27
+ #endif
++#define KVM_CAP_VBUS 28
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -448,6 +449,11 @@ struct kvm_irq_routing {
+ 
+ #endif
+ 
++struct kvm_vbus_gsi {
++	__u32 queue;
++	__u32 gsi;
++};
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -485,6 +491,7 @@ struct kvm_irq_routing {
+ #define KVM_REINJECT_CONTROL      _IO(KVMIO, 0x71)
+ #define KVM_DEASSIGN_PCI_DEVICE _IOW(KVMIO, 0x72, \
+ 				     struct kvm_assigned_pci_dev)
++#define KVM_VBUS_ASSIGN_GSI       _IOW(KVMIO, 0x73, struct kvm_vbus_gsi)
+ 
+ /*
+  * ioctls for vcpu fds
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 894a56e..43c310c 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -134,6 +134,9 @@ struct kvm {
+ 	struct list_head vm_list;
+ 	struct kvm_io_bus mmio_bus;
+ 	struct kvm_io_bus pio_bus;
++#ifdef CONFIG_KVM_HOST_VBUS
++	struct kvm_vbus *kvbus;
++#endif
+ 	struct kvm_vm_stat stat;
+ 	struct kvm_arch arch;
+ 	atomic_t users_count;
+@@ -512,4 +515,27 @@ static inline void kvm_free_irq_routing(struct kvm *kvm) {}
+ 
+ #endif
+ 
++#ifdef CONFIG_KVM_HOST_VBUS
++
++int kvm_vbus_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len);
++void kvm_vbus_release(struct kvm_vbus *kvbus);
++int kvm_vbus_assign_gsi(struct kvm *kvm, int queue, int gsi);
++
++#else /* CONFIG_KVM_HOST_VBUS */
++
++static inline int
++kvm_vbus_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len)
++{
++	return -EINVAL;
++}
++
++#define kvm_vbus_release(kvbus) do {} while (0)
++
++static inline int kvm_vbus_assign_gsi(struct kvm *kvm, int queue, int gsi)
++{
++	return -EINVAL;
++}
++
++#endif /* CONFIG_KVM_HOST_VBUS */
++
+ #endif
+diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
+index 3ddce03..7932aa3 100644
+--- a/include/linux/kvm_para.h
++++ b/include/linux/kvm_para.h
+@@ -16,6 +16,64 @@
+ 
+ #define KVM_HC_VAPIC_POLL_IRQ		1
+ #define KVM_HC_MMU_OP			2
++#define KVM_HC_VBUS			3
++
++/* Payload of KVM_HC_VBUS */
++#define KVM_VBUS_MAGIC   0x27fdab45
++#define KVM_VBUS_VERSION 1
++
++enum kvm_vbus_op{
++	KVM_VBUS_OP_BUSOPEN,
++	KVM_VBUS_OP_BUSREG,
++	KVM_VBUS_OP_DEVOPEN,
++	KVM_VBUS_OP_DEVCLOSE,
++	KVM_VBUS_OP_DEVCALL,
++	KVM_VBUS_OP_DEVSHM,
++	KVM_VBUS_OP_SHMSIGNAL,
++};
++
++struct kvm_vbus_busopen {
++	__u32 magic;
++	__u32 version;
++	__u64 capabilities;
++};
++
++struct kvm_vbus_eventqreg {
++	__u32 count;
++	__u64 ring;
++	__u64 data;
++};
++
++struct kvm_vbus_busreg {
++	__u32 count;  /* supporting multiple queues allows for prio, etc */
++	struct kvm_vbus_eventqreg eventq[1];
++};
++
++enum kvm_vbus_eventid {
++	KVM_VBUS_EVENT_DEVADD,
++	KVM_VBUS_EVENT_DEVDROP,
++	KVM_VBUS_EVENT_SHMSIGNAL,
++	KVM_VBUS_EVENT_SHMCLOSE,
++};
++
++#define VBUS_MAX_DEVTYPE_LEN 128
++
++struct kvm_vbus_add_event {
++	__u64  id;
++	char type[VBUS_MAX_DEVTYPE_LEN];
++};
++
++struct kvm_vbus_handle_event {
++	__u64 handle;
++};
++
++struct kvm_vbus_event {
++	__u32 eventid;
++	union {
++		struct kvm_vbus_add_event    add;
++		struct kvm_vbus_handle_event handle;
++	} data;
++};
+ 
+ /*
+  * hypercalls use architecture specific
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 605697e..5373402 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -901,6 +901,7 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
+ {
+ 	struct kvm *kvm = filp->private_data;
+ 
++	kvm_vbus_release(kvm->kvbus);
+ 	kvm_put_kvm(kvm);
+ 	return 0;
+ }
+@@ -1920,6 +1921,15 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		break;
+ 	}
+ #endif
++	case KVM_VBUS_ASSIGN_GSI: {
++		struct kvm_vbus_gsi data;
++
++		r = -EFAULT;
++		if (copy_from_user(&data, argp, sizeof data))
++			goto out;
++		r = kvm_vbus_assign_gsi(kvm, data.queue, data.gsi);
++		break;
++	}
+ 	default:
+ 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
+ 	}
+diff --git a/virt/kvm/vbus.c b/virt/kvm/vbus.c
 new file mode 100644
-index 0000000..2ea7d2a
+index 0000000..cf0d167
 --- /dev/null
-+++ b/drivers/vbus/devices/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_VBUS_VENETTAP) += venet-tap.o
-diff --git a/drivers/vbus/devices/venet-tap.c b/drivers/vbus/devices/venet-tap.c
-new file mode 100644
-index 0000000..5e093a0
---- /dev/null
-+++ b/drivers/vbus/devices/venet-tap.c
-@@ -0,0 +1,1387 @@
++++ b/virt/kvm/vbus.c
+@@ -0,0 +1,1392 @@
 +/*
-+ * venettap - A 802.x virtual network device based on the VBUS/IOQ interface
++ * Copyright 2009 Novell.  All Rights Reserved.
 + *
-+ * Copyright (C) 2009 Novell, Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * Derived from the SNULL example from the book "Linux Device Drivers" by
-+ * Alessandro Rubini, Jonathan Corbet, and Greg Kroah-Hartman, published
-+ * by O'Reilly & Associates.
++ * Author:
++ *	Gregory Haskins <ghaskins@novell.com>
 + *
 + * This file is free software; you can redistribute it and/or modify
 + * it under the terms of version 2 of the GNU General Public License
@@ -115,7 +335,7 @@ index 0000000..5e093a0
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
 + * GNU General Public License for more details.
 + *
 + * You should have received a copy of the GNU General Public License
@@ -124,1395 +344,1375 @@ index 0000000..5e093a0
 + */
 +
 +#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
-+
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/errno.h>
-+#include <linux/types.h>
-+#include <linux/interrupt.h>
-+#include <linux/wait.h>
-+
-+#include <linux/in.h>
-+#include <linux/netdevice.h>
-+#include <linux/etherdevice.h>
-+#include <linux/ip.h>
-+#include <linux/tcp.h>
-+#include <linux/skbuff.h>
++#include <linux/rbtree.h>
++#include <linux/spinlock.h>
++#include <linux/highmem.h>
++#include <linux/workqueue.h>
++#include <linux/completion.h>
++#include <linux/mm.h>
++#include <linux/vmalloc.h>
 +#include <linux/ioq.h>
++
++#include <linux/kvm.h>
++#include <linux/kvm_host.h>
++#include <linux/kvm_para.h>
 +#include <linux/vbus.h>
-+#include <linux/freezer.h>
-+#include <linux/kthread.h>
++#include <linux/vbus_client.h>
 +
-+#include <linux/venet.h>
-+
-+#include <linux/in6.h>
-+#include <asm/checksum.h>
-+
-+MODULE_AUTHOR("Gregory Haskins");
-+MODULE_LICENSE("GPL");
-+
-+#undef PDEBUG             /* undef it, just in case */
-+#ifdef VENETTAP_DEBUG
-+#  define PDEBUG(fmt, args...) printk(KERN_DEBUG "venet-tap: " fmt, ## args)
++#undef PDEBUG
++#ifdef KVMVBUS_DEBUG
++#include <linux/ftrace.h>
++#  define PDEBUG(fmt, args...) ftrace_printk(fmt, ## args)
 +#else
-+#  define PDEBUG(fmt, args...) /* not debugging: nothing */
++#  define PDEBUG(fmt, args...)
 +#endif
 +
-+static int maxcount = 2048;
-+module_param(maxcount, int, 0600);
-+MODULE_PARM_DESC(maxcount, "maximum size for rx/tx ioq ring");
++#define EVENTQ_COUNT 8
 +
-+static void venettap_tx_isr(struct ioq_notifier *notifier);
-+static int venettap_rx_thread(void *__priv);
-+static int venettap_tx_thread(void *__priv);
-+
-+struct venettap_queue {
-+	struct ioq              *queue;
-+	struct ioq_notifier      notifier;
-+};
-+
-+struct venettap;
-+
-+enum {
-+	RX_SCHED,
-+	TX_SCHED,
-+	TX_NETIF_CONGESTED,
-+	TX_IOQ_CONGESTED,
-+};
-+
-+struct venettap {
-+	spinlock_t                   lock;
-+	unsigned char                hmac[ETH_ALEN]; /* host-mac */
-+	unsigned char                cmac[ETH_ALEN]; /* client-mac */
-+	struct task_struct          *rxthread;
-+	struct task_struct          *txthread;
-+	unsigned long                flags;
-+
++struct kvm_vbus_eventq {
++	spinlock_t          lock;
++	int                 prio;
++	struct ioq         *ioq;
++	struct ioq_notifier notifier;
++	struct vbus_shm    *shm;
++	struct shm_signal   signal;
++	int                 gsi;
++	struct list_head    backlog;
 +	struct {
-+		struct net_device           *dev;
-+		struct net_device_stats      stats;
-+		struct {
-+			struct sk_buff_head  list;
-+			size_t               len;
-+			int                  irqdepth;
-+		} txq;
-+		int                          enabled:1;
-+		int                          link:1;
-+	} netif;
-+
-+	struct {
-+		struct vbus_device           dev;
-+		struct vbus_device_interface intf;
-+		struct vbus_connection       conn;
-+		struct vbus_memctx          *ctx;
-+		struct venettap_queue        rxq;
-+		struct venettap_queue        txq;
-+		wait_queue_head_t            rx_empty;
-+		int                          connected:1;
-+		int                          opened:1;
-+		int                          link:1;
-+	} vbus;
++		u64         gpa;
++		size_t      len;
++		void       *ptr;
++	} ringdata;
++	struct work_struct  wakeup;
++	struct work_struct  inject;
++	int                 backpressure:1;
++	int                 active:1;
 +};
 +
-+static int
-+venettap_queue_init(struct venettap_queue *q,
-+		    struct vbus_shm *shm,
-+		    struct shm_signal *signal,
-+		    void (*func)(struct ioq_notifier *))
++enum kvm_vbus_state {
++	kvm_vbus_state_init,
++	kvm_vbus_state_registration,
++	kvm_vbus_state_running,
++};
++
++struct kvm_vbus {
++	atomic_t                refs;
++	struct completion       free;
++	struct mutex	        lock;
++	enum kvm_vbus_state     state;
++	struct kvm             *kvm;
++	struct vbus            *vbus;
++	struct vbus_client     *client;
++	struct {
++		int                     count;
++		struct kvm_vbus_eventq  queues[EVENTQ_COUNT];
++	} eventq;
++	struct vbus_memctx     *ctx;
++	int                     irqsrc;
++	struct notifier_block   vbusnotify;
++};
++
++static inline struct kvm_vbus *
++kvm_vbus_get(struct kvm_vbus *kvbus)
 +{
-+	struct ioq *ioq;
++	atomic_inc(&kvbus->refs);
++
++	return kvbus;
++}
++
++static inline void
++kvm_vbus_put(struct kvm_vbus *kvbus)
++{
++	if (atomic_dec_and_test(&kvbus->refs))
++		complete(&kvbus->free);
++}
++
++struct vbus_client *to_client(struct kvm_vcpu *vcpu)
++{
++	return vcpu ? vcpu->kvm->kvbus->client : NULL;
++}
++
++static void*
++kvm_vmap(struct kvm *kvm, gpa_t gpa, size_t len)
++{
++	struct page **page_list;
++	void *ptr = NULL;
++	unsigned long addr;
++	off_t offset;
++	size_t npages;
 +	int ret;
 +
-+	if (q->queue)
-+		return -EEXIST;
++	addr = gfn_to_hva(kvm, gpa >> PAGE_SHIFT);
 +
-+	/* FIXME: make maxcount a tunable */
-+	ret = vbus_shm_ioq_attach(shm, signal, maxcount, &ioq);
++	offset = offset_in_page(gpa);
++	npages = PAGE_ALIGN(len + offset) >> PAGE_SHIFT;
++
++	if (npages > (PAGE_SIZE / sizeof(struct page *)))
++		return NULL;
++
++	page_list = (struct page **) __get_free_page(GFP_KERNEL);
++	if (!page_list)
++		return NULL;
++
++	ret = get_user_pages_fast(addr, npages, 1, page_list);
 +	if (ret < 0)
-+		return ret;
++		goto out;
 +
-+	q->queue = ioq;
++	down_write(&current->mm->mmap_sem);
 +
-+	if (func) {
-+		q->notifier.signal = func;
-+		q->queue->notifier = &q->notifier;
++	ptr = vmap(page_list, npages, VM_MAP, PAGE_KERNEL);
++	if (ptr)
++		current->mm->locked_vm += npages;
++
++	up_write(&current->mm->mmap_sem);
++
++	ptr = ptr+offset;
++
++out:
++	free_page((unsigned long)page_list);
++
++	return ptr;
++}
++
++static void
++kvm_vunmap(void *ptr)
++{
++	/* FIXME: do we need to adjust current->mm->locked_vm? */
++	vunmap((void *)((unsigned long)ptr & PAGE_MASK));
++}
++
++/*
++ * -----------------
++ * kvm_shm routines
++ * -----------------
++ */
++
++struct kvm_shm {
++	struct kvm_vbus   *kvbus;
++	struct vbus_shm    shm;
++};
++
++static void
++kvm_shm_release(struct vbus_shm *shm)
++{
++	struct kvm_shm *_shm = container_of(shm, struct kvm_shm, shm);
++
++	kvm_vunmap(_shm->shm.ptr);
++	kfree(_shm);
++}
++
++static struct vbus_shm_ops kvm_shm_ops = {
++	.release = kvm_shm_release,
++};
++
++static int
++kvm_shm_map(struct kvm_vbus *kvbus, __u64 ptr, __u32 len, struct kvm_shm **kshm)
++{
++	struct kvm_shm *_shm;
++	void *vmap;
++
++	if (!can_do_mlock())
++		return -EPERM;
++
++	_shm = kzalloc(sizeof(*_shm), GFP_KERNEL);
++	if (!_shm)
++		return -ENOMEM;
++
++	_shm->kvbus = kvbus;
++
++	vmap = kvm_vmap(kvbus->kvm, ptr, len);
++	if (!vmap) {
++		kfree(_shm);
++		return -EFAULT;
 +	}
++
++	vbus_shm_init(&_shm->shm, &kvm_shm_ops, vmap, len);
++
++	*kshm = _shm;
 +
 +	return 0;
 +}
 +
-+static void
-+venettap_queue_release(struct venettap_queue *q)
++/*
++ * -----------------
++ * vbus_memctx routines
++ * -----------------
++ */
++
++struct kvm_memctx {
++	struct kvm *kvm;
++	struct vbus_memctx *taskmem;
++	struct vbus_memctx ctx;
++};
++
++static struct kvm_memctx *to_kvm_memctx(struct vbus_memctx *ctx)
 +{
-+	if (!q->queue)
++	return container_of(ctx, struct kvm_memctx, ctx);
++}
++
++
++static unsigned long
++kvm_memctx_copy_to(struct vbus_memctx *ctx, void *dst, const void *src,
++	       unsigned long n)
++{
++	struct kvm_memctx *kvm_memctx = to_kvm_memctx(ctx);
++	struct vbus_memctx *tm = kvm_memctx->taskmem;
++	gpa_t gpa = (gpa_t)dst;
++	unsigned long addr;
++	int offset;
++
++	addr = gfn_to_hva(kvm_memctx->kvm, gpa >> PAGE_SHIFT);
++	offset = offset_in_page(gpa);
++
++	return tm->ops->copy_to(tm, (void *)(addr + offset), src, n);
++}
++
++static unsigned long
++kvm_memctx_copy_from(struct vbus_memctx *ctx, void *dst, const void *src,
++		  unsigned long n)
++{
++	struct kvm_memctx *kvm_memctx = to_kvm_memctx(ctx);
++	struct vbus_memctx *tm = kvm_memctx->taskmem;
++	gpa_t gpa = (gpa_t)src;
++	unsigned long addr;
++	int offset;
++
++	addr = gfn_to_hva(kvm_memctx->kvm, gpa >> PAGE_SHIFT);
++	offset = offset_in_page(gpa);
++
++	return tm->ops->copy_from(tm, dst, (void *)(addr + offset), n);
++}
++
++static void
++kvm_memctx_release(struct vbus_memctx *ctx)
++{
++	struct kvm_memctx *kvm_memctx = to_kvm_memctx(ctx);
++
++	vbus_memctx_put(kvm_memctx->taskmem);
++	kvm_put_kvm(kvm_memctx->kvm);
++
++	kfree(kvm_memctx);
++}
++
++static struct vbus_memctx_ops kvm_memctx_ops = {
++	.copy_to   = &kvm_memctx_copy_to,
++	.copy_from = &kvm_memctx_copy_from,
++	.release   = &kvm_memctx_release,
++};
++
++struct vbus_memctx *kvm_memctx_alloc(struct kvm *kvm)
++{
++	struct kvm_memctx *kvm_memctx;
++
++	kvm_memctx = kzalloc(sizeof(*kvm_memctx), GFP_KERNEL);
++	if (!kvm_memctx)
++		return NULL;
++
++	kvm_get_kvm(kvm);
++	kvm_memctx->kvm = kvm;
++
++	kvm_memctx->taskmem = task_memctx_alloc(current);
++	vbus_memctx_init(&kvm_memctx->ctx, &kvm_memctx_ops);
++
++	return &kvm_memctx->ctx;
++}
++
++/*
++ * -----------------
++ * general routines
++ * -----------------
++ */
++
++static int
++_signal_init(struct kvm *kvm, struct shm_signal_desc *desc,
++	     struct shm_signal *signal, struct shm_signal_ops *ops)
++{
++	if (desc->magic != SHM_SIGNAL_MAGIC)
++		return -EINVAL;
++
++	if (desc->ver != SHM_SIGNAL_VER)
++		return -EINVAL;
++
++	shm_signal_init(signal);
++
++	signal->locale    = shm_locality_south;
++	signal->ops       = ops;
++	signal->desc      = desc;
++
++	return 0;
++}
++
++static struct kvm_vbus_event *
++event_ptr_translate(struct kvm_vbus_eventq *eventq, u64 ptr)
++{
++	u64 off = ptr - eventq->ringdata.gpa;
++
++	if ((ptr < eventq->ringdata.gpa)
++	    || (off > (eventq->ringdata.len - sizeof(struct kvm_vbus_event))))
++		return NULL;
++
++	return eventq->ringdata.ptr + off;
++}
++
++/*
++ * ------------------
++ * event-object code
++ * ------------------
++ */
++
++struct _event {
++	atomic_t              refs;
++	struct list_head      list;
++	struct kvm_vbus_event data;
++};
++
++static void
++_event_init(struct _event *event)
++{
++	memset(event, 0, sizeof(*event));
++	atomic_set(&event->refs, 1);
++	INIT_LIST_HEAD(&event->list);
++}
++
++static void
++_event_get(struct _event *event)
++{
++	atomic_inc(&event->refs);
++}
++
++static inline void
++_event_put(struct _event *event)
++{
++	if (atomic_dec_and_test(&event->refs))
++		kfree(event);
++}
++
++/*
++ * ------------------
++ * event-inject code
++ * ------------------
++ */
++
++static struct kvm_vbus_eventq *notify_to_eventq(struct ioq_notifier *notifier)
++{
++	return container_of(notifier, struct kvm_vbus_eventq, notifier);
++}
++
++static struct kvm_vbus_eventq *signal_to_eventq(struct shm_signal *signal)
++{
++	return container_of(signal, struct kvm_vbus_eventq, signal);
++}
++
++static struct kvm_vbus *eventq_to_bus(struct kvm_vbus_eventq *eventq)
++{
++	return container_of(eventq, struct kvm_vbus,
++			    eventq.queues[eventq->prio]);
++}
++
++
++/*
++ * This is invoked by the guest whenever they signal our eventq when
++ * we have notifications enabled
++ */
++static void
++eventq_notify(struct ioq_notifier *notifier)
++{
++	struct kvm_vbus_eventq *eventq = notify_to_eventq(notifier);
++	unsigned long           flags;
++
++	spin_lock_irqsave(&eventq->lock, flags);
++
++	if (eventq->ioq && !ioq_full(eventq->ioq, ioq_idxtype_inuse)) {
++		eventq->backpressure = false;
++		ioq_notify_disable(eventq->ioq, 0);
++		schedule_work(&eventq->wakeup);
++	}
++
++	spin_unlock_irqrestore(&eventq->lock, flags);
++}
++
++static void
++events_flush(struct kvm_vbus_eventq *eventq)
++{
++	struct ioq_iterator     iter;
++	int                     ret;
++	unsigned long           flags;
++	struct _event          *_event, *tmp;
++	int                     dirty = 0;
++	struct ioq             *ioq = NULL;
++
++	spin_lock_irqsave(&eventq->lock, flags);
++
++	if (!eventq->ioq) {
++		spin_unlock_irqrestore(&eventq->lock, flags);
 +		return;
-+
-+	ioq_put(q->queue);
-+	q->queue = NULL;
-+}
-+
-+/* Assumes priv->lock is held */
-+static void
-+venettap_txq_notify_inc(struct venettap *priv)
-+{
-+	priv->netif.txq.irqdepth++;
-+	if (priv->netif.txq.irqdepth == 1 && priv->vbus.link)
-+		ioq_notify_enable(priv->vbus.txq.queue, 0);
-+}
-+
-+/* Assumes priv->lock is held */
-+static void
-+venettap_txq_notify_dec(struct venettap *priv)
-+{
-+	BUG_ON(!priv->netif.txq.irqdepth);
-+	priv->netif.txq.irqdepth--;
-+	if (!priv->netif.txq.irqdepth && priv->vbus.link)
-+		ioq_notify_disable(priv->vbus.txq.queue, 0);
-+}
-+
-+/*
-+ *----------------------------------------------------------------------
-+ * netif link
-+ *----------------------------------------------------------------------
-+ */
-+
-+static struct venettap *conn_to_priv(struct vbus_connection *conn)
-+{
-+	return container_of(conn, struct venettap, vbus.conn);
-+}
-+
-+static struct venettap *intf_to_priv(struct vbus_device_interface *intf)
-+{
-+	return container_of(intf, struct venettap, vbus.intf);
-+}
-+
-+static struct venettap *vdev_to_priv(struct vbus_device *vdev)
-+{
-+	return container_of(vdev, struct venettap, vbus.dev);
-+}
-+
-+static int
-+venettap_netdev_open(struct net_device *dev)
-+{
-+	struct venettap *priv = netdev_priv(dev);
-+	unsigned long flags;
-+
-+	BUG_ON(priv->netif.link);
-+
-+	/*
-+	 * We need rx-polling to be done in process context, and we want
-+	 * ingress processing to occur independent of the producer thread
-+	 * to maximize multi-core distribution.  Since the built in NAPI uses a
-+	 * softirq, we cannot guarantee this wont call us back in interrupt
-+	 * context, so we cant use it.  And both a work-queue or softirq
-+	 * solution would tend to process requests on the same CPU as the
-+	 * producer.  Therefore, we create a special thread to handle ingress.
-+	 *
-+	 * The downside to this type of approach is that we may still need to
-+	 * ctx-switch to the NAPI polling thread (presumably running on the same
-+	 * core as the rx-thread) by virtue of the netif_rx() backlog mechanism.
-+	 * However, this can be mitigated by the use of netif_rx_ni().
-+	 */
-+	priv->rxthread = kthread_create(venettap_rx_thread, priv,
-+					"%s-rx", priv->netif.dev->name);
-+
-+	priv->txthread = kthread_create(venettap_tx_thread, priv,
-+					"%s-tx", priv->netif.dev->name);
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	priv->netif.link = true;
-+
-+	if (!priv->vbus.link)
-+		netif_carrier_off(dev);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int
-+venettap_netdev_stop(struct net_device *dev)
-+{
-+	struct venettap *priv = netdev_priv(dev);
-+	unsigned long flags;
-+	int needs_stop = false;
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	if (priv->netif.link) {
-+		needs_stop = true;
-+		priv->netif.link = false;
 +	}
 +
-+	/* FIXME: free priv->netif.txq */
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	if (needs_stop) {
-+		kthread_stop(priv->rxthread);
-+		priv->rxthread = NULL;
-+
-+		kthread_stop(priv->txthread);
-+		priv->txthread = NULL;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * Configuration changes (passed on by ifconfig)
-+ */
-+static int
-+venettap_netdev_config(struct net_device *dev, struct ifmap *map)
-+{
-+	if (dev->flags & IFF_UP) /* can't act on a running interface */
-+		return -EBUSY;
-+
-+	/* Don't allow changing the I/O address */
-+	if (map->base_addr != dev->base_addr) {
-+		printk(KERN_WARNING "venettap: Can't change I/O address\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* ignore other fields */
-+	return 0;
-+}
-+
-+static int
-+venettap_change_mtu(struct net_device *dev, int new_mtu)
-+{
-+	dev->mtu = new_mtu;
-+
-+	return 0;
-+}
-+
-+/*
-+ * The poll implementation.
-+ */
-+static int
-+venettap_rx(struct venettap *priv)
-+{
-+	struct ioq                 *ioq;
-+	struct vbus_memctx         *ctx;
-+	int                         npackets = 0;
-+	int                         dirty = 0;
-+	struct ioq_iterator         iter;
-+	int                         ret;
-+	unsigned long               flags;
-+	struct vbus_connection     *conn;
-+
-+	PDEBUG("polling...\n");
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	if (!priv->vbus.link) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return 0;
-+	}
-+
-+	/*
-+	 * We take a reference to the connection object to ensure that the
-+	 * ioq/ctx references do not disappear out from under us.  We could
-+	 * acommplish the same thing more directly by acquiring a reference
-+	 * to the ioq and ctx explictly, but this would require an extra
-+	 * atomic_inc+dec pair, for no additional benefit
-+	 */
-+	conn = &priv->vbus.conn;
-+	vbus_connection_get(conn);
-+
-+	ioq = priv->vbus.rxq.queue;
-+	ctx = priv->vbus.ctx;
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	/* We want to iterate on the head of the in-use index */
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_inuse, 0);
-+	BUG_ON(ret < 0);
-+
-+	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * The EOM is indicated by finding a packet that is still owned by
-+	 * the north side
-+	 */
-+	while (iter.desc->sown) {
-+		size_t len = iter.desc->len;
-+		size_t maxlen = priv->netif.dev->mtu + ETH_HLEN;
-+		struct sk_buff *skb = NULL;
-+
-+		if (unlikely(len > maxlen)) {
-+			priv->netif.stats.rx_errors++;
-+			priv->netif.stats.rx_length_errors++;
-+			goto next;
-+		}
-+
-+		skb = dev_alloc_skb(len+2);
-+		if (unlikely(!skb)) {
-+			printk(KERN_INFO "VENETTAP: skb alloc failed:"	\
-+			       " memory squeeze.\n");
-+			priv->netif.stats.rx_errors++;
-+			priv->netif.stats.rx_dropped++;
-+			goto next;
-+		}
-+
-+		/* align IP on 16B boundary */
-+		skb_reserve(skb, 2);
-+
-+		ret = ctx->ops->copy_from(ctx, skb->data,
-+					 (void *)iter.desc->ptr,
-+					 len);
-+		if (unlikely(ret)) {
-+			priv->netif.stats.rx_errors++;
-+			goto next;
-+		}
-+
-+		/* Maintain stats */
-+		npackets++;
-+		priv->netif.stats.rx_packets++;
-+		priv->netif.stats.rx_bytes += len;
-+
-+		/* Pass the buffer up to the stack */
-+		skb->dev      = priv->netif.dev;
-+		skb->protocol = eth_type_trans(skb, priv->netif.dev);
-+
-+		netif_rx_ni(skb);
-+next:
-+		dirty = 1;
-+
-+		/* Advance the in-use head */
-+		ret = ioq_iter_pop(&iter, 0);
-+		BUG_ON(ret < 0);
-+
-+		/* send up to N packets before sending tx-complete */
-+		if (!(npackets % 10)) {
-+			ioq_signal(ioq, 0);
-+			dirty = 0;
-+		}
-+
-+	}
-+
-+	PDEBUG("poll: %d packets received\n", npackets);
-+
-+	if (dirty)
-+		ioq_signal(ioq, 0);
-+
-+	/*
-+	 * If we processed all packets we're done, so reenable ints
-+	 */
-+	if (ioq_empty(ioq, ioq_idxtype_inuse)) {
-+		clear_bit(RX_SCHED, &priv->flags);
-+		ioq_notify_enable(ioq, 0);
-+		wake_up(&priv->vbus.rx_empty);
-+	}
-+
-+	vbus_connection_put(conn);
-+
-+	return 0;
-+}
-+
-+static int venettap_rx_thread(void *__priv)
-+{
-+	struct venettap *priv = __priv;
-+
-+	for (;;) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (!freezing(current) &&
-+		    !kthread_should_stop() &&
-+		    !test_bit(RX_SCHED, &priv->flags))
-+			schedule();
-+		set_current_state(TASK_RUNNING);
-+
-+		try_to_freeze();
-+
-+		if (kthread_should_stop())
-+			break;
-+
-+		venettap_rx(priv);
-+	}
-+
-+	return 0;
-+}
-+
-+/* assumes priv->lock is held */
-+static void
-+venettap_check_netif_congestion(struct venettap *priv)
-+{
-+	struct ioq *ioq = priv->vbus.txq.queue;
-+
-+	if (priv->vbus.link
-+	    && priv->netif.txq.len < ioq_remain(ioq, ioq_idxtype_inuse)
-+	    && test_and_clear_bit(TX_NETIF_CONGESTED, &priv->flags)) {
-+		PDEBUG("NETIF congestion cleared\n");
-+		venettap_txq_notify_dec(priv);
-+
-+		if (priv->netif.link)
-+			netif_wake_queue(priv->netif.dev);
-+	}
-+}
-+
-+static int
-+venettap_tx(struct venettap *priv)
-+{
-+	struct sk_buff             *skb;
-+	struct ioq_iterator         iter;
-+	struct ioq                 *ioq = NULL;
-+	struct vbus_memctx         *ctx;
-+	int                         ret;
-+	int                         npackets = 0;
-+	unsigned long               flags;
-+	struct vbus_connection     *conn;
-+
-+	PDEBUG("tx-thread\n");
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	if (unlikely(!priv->vbus.link)) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return 0;
-+	}
-+
-+	/*
-+	 * We take a reference to the connection object to ensure that the
-+	 * ioq/ctx references do not disappear out from under us.  We could
-+	 * acommplish the same thing more directly by acquiring a reference
-+	 * to the ioq and ctx explictly, but this would require an extra
-+	 * atomic_inc+dec pair, for no additional benefit
-+	 */
-+	conn = &priv->vbus.conn;
-+	vbus_connection_get(conn);
-+
-+	ioq = priv->vbus.txq.queue;
-+	ctx = priv->vbus.ctx;
-+
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_inuse, IOQ_ITER_AUTOUPDATE);
++	/* We want to iterate on the tail of the in-use index */
++	ret = ioq_iter_init(eventq->ioq, &iter, ioq_idxtype_inuse, 0);
 +	BUG_ON(ret < 0);
 +
 +	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
 +	BUG_ON(ret < 0);
 +
-+	while (priv->vbus.link && iter.desc->sown && priv->netif.txq.len) {
++	list_for_each_entry_safe(_event, tmp, &eventq->backlog, list) {
++		struct kvm_vbus_event *ev;
 +
-+		skb = __skb_dequeue(&priv->netif.txq.list);
-+		if (!skb)
++		if (!iter.desc->sown) {
++			eventq->backpressure = true;
++			ioq_notify_enable(eventq->ioq, 0);
 +			break;
-+
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+
-+		PDEBUG("tx-thread: sending %d bytes\n", skb->len);
-+
-+		if (skb->len <= iter.desc->len) {
-+			ret = ctx->ops->copy_to(ctx, (void *)iter.desc->ptr,
-+					       skb->data, skb->len);
-+			BUG_ON(ret);
-+
-+			iter.desc->len = skb->len;
-+
-+			npackets++;
-+			priv->netif.stats.tx_packets++;
-+			priv->netif.stats.tx_bytes += skb->len;
-+
-+			ret = ioq_iter_push(&iter, 0);
-+			BUG_ON(ret < 0);
-+		} else {
-+			printk(KERN_WARNING				\
-+			       "VENETTAP: discarding packet: buf too small " \
-+			       "(%d > %lld)\n", skb->len, iter.desc->len);
-+			priv->netif.stats.tx_errors++;
 +		}
 +
-+		dev_kfree_skb(skb);
-+		priv->netif.dev->trans_start = jiffies; /* save the timestamp */
-+
-+		spin_lock_irqsave(&priv->lock, flags);
-+
-+		priv->netif.txq.len--;
-+	}
-+
-+	PDEBUG("send complete\n");
-+
-+	if (!priv->vbus.link || !priv->netif.txq.len) {
-+		PDEBUG("descheduling TX: link=%d, len=%d\n",
-+		       priv->vbus.link, priv->netif.txq.len);
-+		clear_bit(TX_SCHED, &priv->flags);
-+	} else if (!test_and_set_bit(TX_IOQ_CONGESTED, &priv->flags)) {
-+		PDEBUG("congested with %d packets still queued\n",
-+		       priv->netif.txq.len);
-+		venettap_txq_notify_inc(priv);
-+	}
-+
-+	venettap_check_netif_congestion(priv);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	vbus_connection_put(conn);
-+
-+	return npackets;
-+}
-+
-+static int venettap_tx_thread(void *__priv)
-+{
-+	struct venettap *priv = __priv;
-+
-+	for (;;) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (!freezing(current) &&
-+		    !kthread_should_stop() &&
-+		    (test_bit(TX_IOQ_CONGESTED, &priv->flags) ||
-+		     !test_bit(TX_SCHED, &priv->flags)))
-+			schedule();
-+		set_current_state(TASK_RUNNING);
-+
-+		PDEBUG("tx wakeup: %s%s%s\n",
-+		       test_bit(TX_SCHED, &priv->flags) ? "s" : "-",
-+		       test_bit(TX_IOQ_CONGESTED, &priv->flags) ? "c" : "-",
-+		       test_bit(TX_NETIF_CONGESTED, &priv->flags) ? "b" : "-"
-+			);
-+
-+		try_to_freeze();
-+
-+		if (kthread_should_stop())
++		if (iter.desc->len < sizeof(*ev)) {
++			SHM_SIGNAL_FAULT(eventq->ioq->signal,
++					 "Desc too small on eventq: %p: %ld<%ld",
++					 (void*)iter.desc->ptr,
++					 (unsigned long)iter.desc->len, sizeof(*ev));
 +			break;
++		}
 +
-+		venettap_tx(priv);
++		ev = event_ptr_translate(eventq, iter.desc->ptr);
++		if (!ev) {
++			SHM_SIGNAL_FAULT(eventq->ioq->signal,
++					 "Invalid address on eventq: %p",
++					 (void*)iter.desc->ptr);
++			break;
++		}
++
++		memcpy(ev, &_event->data, sizeof(*ev));
++
++		list_del_init(&_event->list);
++		_event_put(_event);
++
++		ret = ioq_iter_push(&iter, 0);
++		BUG_ON(ret < 0);
++
++		dirty = 1;
 +	}
++
++	if (dirty)
++		ioq = ioq_get(eventq->ioq);
++
++	spin_unlock_irqrestore(&eventq->lock, flags);
++
++	/*
++	 * Signal the IOQ outside of the spinlock so that we can potentially
++	 * directly inject this interrupt instead of deferring it
++	 */
++	if (ioq) {
++		ioq_signal(ioq, 0);
++		ioq_put(ioq);
++	}
++}
++
++static int
++event_inject(struct kvm_vbus_eventq *eventq, struct _event *_event)
++{
++	unsigned long flags;
++
++	if (!list_empty(&_event->list))
++		return -EBUSY;
++
++	spin_lock_irqsave(&eventq->lock, flags);
++	list_add_tail(&_event->list, &eventq->backlog);
++	spin_unlock_irqrestore(&eventq->lock, flags);
++
++	events_flush(eventq);
 +
 +	return 0;
 +}
 +
 +static void
-+venettap_deferred_tx(struct venettap *priv)
++eventq_reinject(struct work_struct *work)
 +{
-+	PDEBUG("wake up txthread\n");
-+	wake_up_process(priv->txthread);
-+}
++	struct kvm_vbus_eventq *eventq;
 +
-+/* assumes priv->lock is held */
-+static void
-+venettap_apply_backpressure(struct venettap *priv)
-+{
-+	PDEBUG("backpressure\n");
++	eventq = container_of(work, struct kvm_vbus_eventq, wakeup);
 +
-+	if (!test_and_set_bit(TX_NETIF_CONGESTED, &priv->flags)) {
-+		/*
-+		 * We must flow-control the kernel by disabling the queue
-+		 */
-+		netif_stop_queue(priv->netif.dev);
-+		venettap_txq_notify_inc(priv);
-+	}
++	events_flush(eventq);
 +}
 +
 +/*
-+ * Transmit a packet (called by the kernel)
++ * devadd/drop are in the slow path and are rare enough that we will
++ * simply allocate memory for the event from the heap
++ */
++static int
++devadd_inject(struct kvm_vbus_eventq *eventq, const char *type, u64 id)
++{
++	struct _event *_event;
++	struct kvm_vbus_add_event *ae;
++	int ret;
++
++	_event = kmalloc(sizeof(*_event), GFP_KERNEL);
++	if (!_event)
++		return -ENOMEM;
++
++	_event_init(_event);
++
++	_event->data.eventid = KVM_VBUS_EVENT_DEVADD;
++	ae = (struct kvm_vbus_add_event *)&_event->data.data;
++	ae->id = id;
++	strncpy(ae->type, type, VBUS_MAX_DEVTYPE_LEN);
++
++	ret = event_inject(eventq, _event);
++	if (ret < 0)
++		_event_put(_event);
++
++	return ret;
++}
++
++/*
++ * "handle" events are used to send any kind of event that simply
++ * uses a handle as a parameter.  This includes things like DEVDROP
++ * and SHMSIGNAL, etc.
++ */
++static struct _event *
++handle_event_alloc(u64 id, u64 handle)
++{
++	struct _event *_event;
++	struct kvm_vbus_handle_event *he;
++
++	_event = kmalloc(sizeof(*_event), GFP_KERNEL);
++	if (!_event)
++		return NULL;
++
++	_event_init(_event);
++	_event->data.eventid = id;
++
++	he = (struct kvm_vbus_handle_event *)&_event->data.data;
++	he->handle = handle;
++
++	return _event;
++}
++
++static int
++devdrop_inject(struct kvm_vbus_eventq *eventq, u64 id)
++{
++	struct _event *_event;
++	int ret;
++
++	_event = handle_event_alloc(KVM_VBUS_EVENT_DEVDROP, id);
++	if (!_event)
++		return -ENOMEM;
++
++	ret = event_inject(eventq, _event);
++	if (ret < 0)
++		_event_put(_event);
++
++	return ret;
++}
++
++static struct kvm_vbus_eventq *
++prio_to_eventq(struct kvm_vbus *kvbus, int prio)
++{
++	int real_prio = min(prio, kvbus->eventq.count-1);
++
++	return &kvbus->eventq.queues[real_prio];
++}
++
++/*
++ * -----------------
++ * event ioq
 + *
-+ * We want to perform ctx->copy_to() operations from a sleepable process
-+ * context, so we defer the actual tx operations to a thread.
-+ * However, we want to be careful that we do not double-buffer the
-+ * queue, so we create a buffer whose space dynamically grows and
-+ * shrinks with the availability of the actual IOQ.  This means that
-+ * the netif flow control is still managed by the actual consumer,
-+ * thereby avoiding the creation of an extra servo-loop to the equation.
++ * This queue is used by the infrastructure to transmit events (such as
++ * "new device", or "signal an ioq") to the guest.  We do this so that
++ * we minimize the number of hypercalls required to inject an event.
++ * In theory, the guest only needs to process a single interrupt vector
++ * and it doesnt require switching back to host context since the state
++ * is placed within the ring
++ * -----------------
 + */
-+static int
-+venettap_netdev_tx(struct sk_buff *skb, struct net_device *dev)
++
++static void
++_eventq_signal_inject(struct kvm_vbus_eventq *eventq)
 +{
-+	struct venettap *priv = netdev_priv(dev);
-+	struct ioq      *ioq = NULL;
-+	unsigned long    flags;
++	struct kvm_vbus        *kvbus  = eventq_to_bus(eventq);
++	struct kvm             *kvm    = kvbus->kvm;
 +
-+	PDEBUG("queuing %d bytes\n", skb->len);
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	ioq = priv->vbus.txq.queue;
-+
-+	BUG_ON(test_bit(TX_NETIF_CONGESTED, &priv->flags));
-+
-+	if (!priv->vbus.link) {
-+		/*
-+		 * We have a link-down condition
-+		 */
-+		printk(KERN_ERR "VENETTAP: tx on link down\n");
-+		goto flowcontrol;
++	/* Inject an interrupt to the guest */
++	if (eventq->gsi) {
++		mutex_lock(&kvm->lock);
++		kvm_set_irq(kvm, kvbus->irqsrc, eventq->gsi, 1);
++		mutex_unlock(&kvm->lock);
 +	}
++}
 +
-+	__skb_queue_tail(&priv->netif.txq.list, skb);
-+	priv->netif.txq.len++;
-+	set_bit(TX_SCHED, &priv->flags);
++static void
++eventq_deferred_inject(struct work_struct *work)
++{
++	struct kvm_vbus_eventq *eventq;
 +
-+	if (priv->netif.txq.len >= ioq_remain(ioq, ioq_idxtype_inuse))
-+		venettap_apply_backpressure(priv);
++	eventq = container_of(work, struct kvm_vbus_eventq, inject);
 +
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	venettap_deferred_tx(priv);
-+
-+	return NETDEV_TX_OK;
-+
-+flowcontrol:
-+	venettap_apply_backpressure(priv);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return NETDEV_TX_BUSY;
++	_eventq_signal_inject(eventq);
 +}
 +
 +/*
-+ * Ioctl commands
++ * We need to take the kvm->lock before we can actually inject an interrupt
++ * to the guest.  Therefore, we check to see if this is executed in a
++ * preemptible context, which means it is safe to take a mutex.  If it
++ * is not preemptible, it either means that we are truly not preemptible
++ * and therefore must defer.  Or it means we are in a non-preemptible
++ * kernel, and simply cannot tell.  Perhaps someday someone will provide
++ * an api that can discern the context state without relying on
++ * CONFIG_PREEMPT, but until then this will suffice.
 + */
 +static int
-+venettap_netdev_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
++eventq_signal_inject(struct shm_signal *signal)
 +{
-+	PDEBUG("ioctl\n");
++	struct kvm_vbus_eventq *eventq = signal_to_eventq(signal);
++
++	if (preemptible())
++		_eventq_signal_inject(eventq);
++	else
++		schedule_work(&eventq->inject);
++
++	return 0;
++}
++
++static void
++eventq_signal_release(struct shm_signal *signal)
++{
++	struct kvm_vbus_eventq *eventq = signal_to_eventq(signal);
++	struct kvm_vbus        *kvbus  = eventq_to_bus(eventq);
++
++	eventq->active = false;
++
++	flush_work(&eventq->wakeup);
++	flush_work(&eventq->inject);
++
++	vbus_shm_put(eventq->shm);
++	eventq->shm = NULL;
++
++	if (eventq->ringdata.ptr)
++		kvm_vunmap(eventq->ringdata.ptr);
++
++	kvm_vbus_put(kvbus);
++}
++
++static struct shm_signal_ops eventq_signal_ops = {
++	.inject  = eventq_signal_inject,
++	.release = eventq_signal_release,
++};
++
++/*
++ * -----------------
++ * device_signal routines
++ *
++ * This is the more standard signal that is allocated to communicate
++ * with a specific device's shm region
++ * -----------------
++ */
++
++struct device_signal {
++	struct kvm_vbus   *kvbus;
++	struct vbus_shm   *shm;
++	struct shm_signal  signal;
++	struct _event     *inject;
++	int                prio;
++	u64                handle;
++};
++
++static struct device_signal *to_dsig(struct shm_signal *signal)
++{
++       return container_of(signal, struct device_signal, signal);
++}
++
++static void
++_device_signal_inject(struct device_signal *_signal)
++{
++	struct kvm_vbus_eventq *eventq;
++	int ret;
++
++	eventq = prio_to_eventq(_signal->kvbus, _signal->prio);
++
++	ret = event_inject(eventq, _signal->inject);
++	if (ret < 0)
++		_event_put(_signal->inject);
++}
++
++static int
++device_signal_inject(struct shm_signal *signal)
++{
++	struct device_signal *_signal = to_dsig(signal);
++
++	_event_get(_signal->inject); /* will be dropped by injection code */
++	_device_signal_inject(_signal);
++
++	return 0;
++}
++
++static void
++device_signal_release(struct shm_signal *signal)
++{
++	struct device_signal *_signal = to_dsig(signal);
++	struct kvm_vbus_eventq *eventq;
++	unsigned long flags;
++
++	eventq = prio_to_eventq(_signal->kvbus, _signal->prio);
++
++	/*
++	 * Change the event-type while holding the lock so we do not race
++	 * with any potential threads already processing the queue
++	 */
++	spin_lock_irqsave(&eventq->lock, flags);
++	_signal->inject->data.eventid = KVM_VBUS_EVENT_SHMCLOSE;
++	spin_unlock_irqrestore(&eventq->lock, flags);
++
++	/*
++	 * do not take a reference to event..last will be dropped once
++	 * transmitted.
++	 */
++	_device_signal_inject(_signal);
++
++	vbus_shm_put(_signal->shm);
++	kvm_vbus_put(_signal->kvbus);
++	kfree(_signal);
++}
++
++static struct shm_signal_ops device_signal_ops = {
++	.inject  = device_signal_inject,
++	.release = device_signal_release,
++};
++
++static int
++device_signal_alloc(struct kvm_vbus *kvbus, struct vbus_shm *shm,
++		    u32 offset, u32 prio, u64 cookie,
++		    struct device_signal **dsignal)
++{
++	struct device_signal *_signal;
++	int ret;
++
++	_signal = kzalloc(sizeof(*_signal), GFP_KERNEL);
++	if (!_signal)
++		return -ENOMEM;
++
++	ret = _signal_init(kvbus->kvm, shm->ptr + offset,
++			   &_signal->signal,
++			   &device_signal_ops);
++	if (ret < 0) {
++		kfree(_signal);
++		return ret;
++	}
++
++	_signal->kvbus = kvm_vbus_get(kvbus); /* released with the signal */
++
++	_signal->inject = handle_event_alloc(KVM_VBUS_EVENT_SHMSIGNAL, cookie);
++	if (!_signal->inject) {
++		shm_signal_put(&_signal->signal);
++		return -ENOMEM;
++	}
++
++	_signal->shm    = shm;
++	_signal->prio   = prio;
++	vbus_shm_get(shm); /* dropped when the signal is released */
++
++	*dsignal = _signal;
++
 +	return 0;
 +}
 +
 +/*
-+ * Return statistics to the caller
++ * ------------------
++ * notifiers
++ * ------------------
 + */
-+struct net_device_stats *
-+venettap_netdev_stats(struct net_device *dev)
-+{
-+	struct venettap *priv = netdev_priv(dev);
-+	return &priv->netif.stats;
-+}
-+
-+static void
-+venettap_netdev_unregister(struct venettap *priv)
-+{
-+	if (priv->netif.enabled) {
-+		venettap_netdev_stop(priv->netif.dev);
-+		unregister_netdev(priv->netif.dev);
-+	}
-+}
 +
 +/*
-+ * Assumes priv->lock held
++ * This is called whenever our associated vbus emits an event.  We inject
++ * these events at the highest logical priority
 + */
-+static void
-+venettap_rx_schedule(struct venettap *priv)
++static int
++vbus_notifier(struct notifier_block *nb, unsigned long nr, void *data)
 +{
-+	if (!priv->vbus.link)
++	struct kvm_vbus *kvbus = container_of(nb, struct kvm_vbus, vbusnotify);
++	struct kvm_vbus_eventq *eventq = prio_to_eventq(kvbus, 7);
++
++	switch (nr) {
++	case VBUS_EVENT_DEVADD: {
++		struct vbus_event_devadd *ev = data;
++
++		devadd_inject(eventq, ev->type, ev->id);
++		break;
++	}
++	case VBUS_EVENT_DEVDROP: {
++		unsigned long id = *(unsigned long *)data;
++
++		devdrop_inject(eventq, id);
++		break;
++	}
++	default:
++		break;
++	}
++
++	return 0;
++}
++
++static void
++kvm_vbus_eventq_init(struct kvm_vbus_eventq *eventq, int prio)
++{
++	spin_lock_init(&eventq->lock);
++	eventq->prio = prio;
++	INIT_WORK(&eventq->wakeup, eventq_reinject);
++	INIT_WORK(&eventq->inject, eventq_deferred_inject);
++
++	eventq->notifier.signal = eventq_notify;
++
++	INIT_LIST_HEAD(&eventq->backlog);
++}
++
++static int
++kvm_vbus_eventq_attach(struct kvm_vbus *kvbus, struct kvm_vbus_eventq *eventq,
++		      u32 count, u64 ring, u64 data)
++{
++	struct ioq_ring_head *desc;
++	struct ioq *ioq;
++	struct kvm_shm *_shm = NULL;
++	size_t len = IOQ_HEAD_DESC_SIZE(count);
++	void *ptr;
++	int ret;
++
++	if (eventq->active)
++		return -EINVAL;
++
++	ret = kvm_shm_map(kvbus, ring, len, &_shm);
++	if (ret < 0)
++		return ret;
++
++	desc = _shm->shm.ptr;
++
++	ret = _signal_init(kvbus->kvm,
++			   &desc->signal,
++			   &eventq->signal,
++			   &eventq_signal_ops);
++	if (ret < 0) {
++		vbus_shm_put(&_shm->shm);
++		return ret;
++	}
++
++	eventq->shm = &_shm->shm; /* we hold the baseline ref already */
++	kvm_vbus_get(kvbus);
++
++	/* FIXME: we should make maxcount configurable */
++	ret = vbus_shm_ioq_attach(&_shm->shm, &eventq->signal, 2048, &ioq);
++	if (ret < 0) {
++		shm_signal_put(&eventq->signal);
++		vbus_shm_put(&_shm->shm);
++		return ret;
++	}
++
++	/*
++	 * take refs for the successful ioq allocation, dropped when the
++	 * signal releases.
++	 */
++	vbus_shm_get(&_shm->shm);
++
++	/*
++	 * We are going to pre-vmap the eventq data for performance reasons
++	 *
++	 * This will allow us to skip trying to demand load these particular
++	 * pages in the fast-path, and it will also allow us to post writes
++	 * from interrupt context (which would not be able to demand-load)
++	 */
++	len = count * sizeof(struct kvm_vbus_event);
++	ptr =  kvm_vmap(kvbus->kvm, data, len);
++	if (!ptr) {
++		ioq_put(ioq);
++		return -EFAULT;
++	}
++
++	ioq->notifier = &eventq->notifier;
++
++	eventq->ioq          = ioq;
++	eventq->ringdata.len = len;
++	eventq->ringdata.gpa = data;
++	eventq->ringdata.ptr = ptr;
++
++	eventq->active = true;
++
++	return 0;
++}
++
++static void
++kvm_vbus_eventq_detach(struct kvm_vbus_eventq *eventq)
++{
++	struct ioq *ioq;
++	unsigned long flags;
++
++	spin_lock_irqsave(&eventq->lock, flags);
++
++	ioq = eventq->ioq;
++	eventq->ioq = NULL;
++
++	spin_unlock_irqrestore(&eventq->lock, flags);
++
++	if (ioq)
++		ioq_put(ioq);
++}
++
++static int
++kvm_vbus_alloc(struct kvm_vcpu *vcpu)
++{
++	struct vbus *vbus = task_vbus_get(current);
++	struct vbus_client *client;
++	struct kvm_vbus *kvbus;
++	int i;
++
++	if (!vbus)
++		return -EPERM;
++
++	client = vbus_client_attach(vbus);
++	if (!client) {
++		vbus_put(vbus);
++		return -ENOMEM;
++	}
++
++	kvbus = kzalloc(sizeof(*kvbus), GFP_KERNEL);
++	if (!kvbus) {
++		vbus_put(vbus);
++		vbus_client_put(client);
++		return -ENOMEM;
++	}
++
++	kvbus->irqsrc = kvm_request_irq_source_id(vcpu->kvm);
++	if (kvbus->irqsrc < 0) {
++		vbus_put(vbus);
++		vbus_client_put(client);
++		return kvbus->irqsrc;
++	}
++
++	atomic_set(&kvbus->refs, 1);
++	init_completion(&kvbus->free); /* signaled when all refs drop */
++
++	mutex_init(&kvbus->lock);
++	kvbus->state = kvm_vbus_state_registration;
++	kvbus->kvm = vcpu->kvm;
++	kvbus->vbus = vbus;
++	kvbus->client = client;
++
++	for (i = 0; i < EVENTQ_COUNT; i++)
++		kvm_vbus_eventq_init(&kvbus->eventq.queues[i], i);
++
++	vcpu->kvm->kvbus = kvbus;
++
++	kvbus->ctx = kvm_memctx_alloc(vcpu->kvm);
++
++	kvbus->vbusnotify.notifier_call = vbus_notifier;
++	kvbus->vbusnotify.priority = 0;
++
++	return 0;
++}
++
++void
++kvm_vbus_release(struct kvm_vbus *kvbus)
++{
++	int i;
++
++	if (!kvbus)
 +		return;
 +
-+	if (priv->netif.link
-+	    && !ioq_empty(priv->vbus.rxq.queue, ioq_idxtype_inuse)) {
-+		ioq_notify_disable(priv->vbus.rxq.queue, 0);
++	if (kvbus->ctx)
++		vbus_memctx_put(kvbus->ctx);
 +
-+		if (!test_and_set_bit(RX_SCHED, &priv->flags))
-+			wake_up_process(priv->rxthread);
++	for (i = 0; i < EVENTQ_COUNT; i++)
++		kvm_vbus_eventq_detach(&kvbus->eventq.queues[i]);
++
++	if (kvbus->client)
++		vbus_client_put(kvbus->client);
++
++	if (kvbus->vbus) {
++		vbus_notifier_unregister(kvbus->vbus, &kvbus->vbusnotify);
++		vbus_put(kvbus->vbus);
 +	}
++
++	kvm_vbus_put(kvbus);
++
++	/* block here until all outstanding references drop to zero */
++	wait_for_completion(&kvbus->free);
++
++	if (kvbus->irqsrc)
++		kvm_free_irq_source_id(kvbus->kvm, kvbus->irqsrc);
++
++	kvbus->kvm->kvbus = NULL;
++
++	kfree(kvbus);
 +}
 +
 +/*
-+ * receive interrupt-service-routine - called whenever the vbus-driver signals
-+ * our IOQ to indicate more inbound packets are ready.
++ * ------------------
++ * hypercall implementation
++ * ------------------
 + */
-+static void
-+venettap_rx_isr(struct ioq_notifier *notifier)
++
++static int
++hc_busopen(struct kvm_vcpu *vcpu, void *data)
 +{
-+	struct venettap *priv;
-+	unsigned long flags;
++	struct kvm_vbus_busopen *args = data;
 +
-+	priv = container_of(notifier, struct venettap, vbus.rxq.notifier);
++	if (args->magic != KVM_VBUS_MAGIC)
++		return -EINVAL;
 +
-+	spin_lock_irqsave(&priv->lock, flags);
++	if (args->version != KVM_VBUS_VERSION)
++		return -EINVAL;
 +
-+	/* Disable future interrupts and schedule our napi-poll */
-+	venettap_rx_schedule(priv);
++	args->capabilities = 0;
 +
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+}
++	/*
++	 * A guest that resets will try to (re) open the bus, even though
++	 * it may have been already opened by the previous session.  We
++	 * turn this into our reset notification by freeing the previous
++	 * instance.  This will close all of our previous device connections
++	 * etc.
++	 */
++	if (vcpu->kvm->kvbus)
++		kvm_vbus_release(vcpu->kvm->kvbus);
 +
-+/*
-+ * transmit interrupt-service-routine - called whenever the vbus-driver signals
-+ * our IOQ to indicate there is more room in the TX queue
-+ */
-+static void
-+venettap_tx_isr(struct ioq_notifier *notifier)
-+{
-+	struct venettap *priv;
-+	unsigned long flags;
-+
-+	priv = container_of(notifier, struct venettap, vbus.txq.notifier);
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	if (priv->vbus.link
-+	    && !ioq_full(priv->vbus.txq.queue, ioq_idxtype_inuse)
-+	    && test_and_clear_bit(TX_IOQ_CONGESTED, &priv->flags)) {
-+		PDEBUG("IOQ congestion cleared\n");
-+		venettap_txq_notify_dec(priv);
-+
-+		if (priv->netif.link)
-+			wake_up_process(priv->txthread);
-+	}
-+
-+	venettap_check_netif_congestion(priv);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
++	return kvm_vbus_alloc(vcpu);
 +}
 +
 +static int
-+venettap_vlink_up(struct venettap *priv)
++hc_busreg(struct kvm_vcpu *vcpu, void *data)
 +{
-+	int ret = 0;
-+	unsigned long flags;
++	struct kvm_vbus_busreg *args = data;
++	struct kvm_vbus_eventqreg *qreg = &args->eventq[0];
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	int i;
++	int ret;
 +
-+	spin_lock_irqsave(&priv->lock, flags);
++	if (args->count != kvbus->eventq.count)
++		return -EINVAL;
 +
-+	if (priv->vbus.link) {
-+		ret = -EEXIST;
-+		goto out;
++	for (i = 0; i < EVENTQ_COUNT; i++) {
++		ret = kvm_vbus_eventq_attach(kvbus,
++					     &kvbus->eventq.queues[i],
++					     qreg->count,
++					     qreg->ring,
++					     qreg->data);
++		if (ret < 0)
++			return ret;
 +	}
 +
-+	if (!priv->vbus.rxq.queue || !priv->vbus.txq.queue) {
++	ret = vbus_notifier_register(kvbus->vbus, &kvbus->vbusnotify);
++	if (ret < 0)
++		return ret;
++
++	kvbus->state = kvm_vbus_state_running;
++
++	return 0;
++}
++
++static int
++hc_deviceopen(struct kvm_vcpu *vcpu, void *data)
++{
++	struct vbus_deviceopen *args = data;
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	struct vbus_client *c = kvbus->client;
++
++	return c->ops->deviceopen(c, kvbus->ctx,
++				  args->devid, args->version, &args->handle);
++}
++
++static int
++hc_deviceclose(struct kvm_vcpu *vcpu, void *data)
++{
++	__u64 devh = *(__u64 *)data;
++	struct vbus_client *c = to_client(vcpu);
++
++	return c->ops->deviceclose(c, devh);
++}
++
++static int
++hc_devicecall(struct kvm_vcpu *vcpu, void *data)
++{
++	struct vbus_devicecall *args = data;
++	struct vbus_client *c = to_client(vcpu);
++
++	return c->ops->devicecall(c, args->devh, args->func,
++				  (void *)args->datap, args->len, args->flags);
++}
++
++static int
++hc_deviceshm(struct kvm_vcpu *vcpu, void *data)
++{
++	struct vbus_deviceshm *args = data;
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	struct vbus_client *c = to_client(vcpu);
++	struct device_signal *_signal = NULL;
++	struct shm_signal *signal = NULL;
++	struct kvm_shm *_shm;
++	u64 handle;
++	int ret;
++
++	ret = kvm_shm_map(kvbus, args->datap, args->len, &_shm);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * Establishing a signal is optional
++	 */
++	if (args->signal.offset != -1) {
++		ret = device_signal_alloc(kvbus, &_shm->shm,
++					  args->signal.offset,
++					  args->signal.prio,
++					  args->signal.cookie,
++					  &_signal);
++		if (ret < 0)
++			goto out;
++
++		signal = &_signal->signal;
++	}
++
++	ret = c->ops->deviceshm(c, args->devh, args->id,
++				&_shm->shm, signal,
++				args->flags, &handle);
++	if (ret < 0)
++		goto out;
++
++	args->handle = handle;
++	if (_signal)
++		_signal->handle = handle;
++
++	return 0;
++
++out:
++	if (signal)
++		shm_signal_put(signal);
++
++	vbus_shm_put(&_shm->shm);
++	return ret;
++}
++
++static int
++hc_shmsignal(struct kvm_vcpu *vcpu, void *data)
++{
++	__u64 handle = *(__u64 *)data;
++	struct kvm_vbus *kvbus;
++	struct vbus_client *c = to_client(vcpu);
++
++	/* A handle not 0-7 is targeted at a device's shm */
++	if (handle > EVENTQ_COUNT)
++		return c->ops->shmsignal(c, handle);
++
++	kvbus = vcpu->kvm->kvbus;
++
++	/* Otherwise they are signaling one of our eventqs */
++	_shm_signal_wakeup(kvbus->eventq.queues[handle].ioq->signal);
++
++	return 0;
++}
++
++struct hc_op {
++	int nr;
++	int len;
++	int dirty;
++	int (*func)(struct kvm_vcpu *vcpu, void *args);
++};
++
++static struct hc_op _hc_busopen = {
++	.nr = KVM_VBUS_OP_BUSOPEN,
++	.len = sizeof(struct kvm_vbus_busopen),
++	.dirty = 1,
++	.func = &hc_busopen,
++};
++
++static struct hc_op _hc_busreg = {
++	.nr = KVM_VBUS_OP_BUSREG,
++	.len = sizeof(struct kvm_vbus_busreg),
++	.func = &hc_busreg,
++};
++
++static struct hc_op _hc_devopen = {
++	.nr = KVM_VBUS_OP_DEVOPEN,
++	.len = sizeof(struct vbus_deviceopen),
++	.dirty = 1,
++	.func = &hc_deviceopen,
++};
++
++static struct hc_op _hc_devclose = {
++	.nr = KVM_VBUS_OP_DEVCLOSE,
++	.len = sizeof(u64),
++	.func = &hc_deviceclose,
++};
++
++static struct hc_op _hc_devcall = {
++	.nr = KVM_VBUS_OP_DEVCALL,
++	.len = sizeof(struct vbus_devicecall),
++	.func = &hc_devicecall,
++};
++
++static struct hc_op _hc_devshm = {
++	.nr = KVM_VBUS_OP_DEVSHM,
++	.len = sizeof(struct vbus_deviceshm),
++	.dirty = 1,
++	.func = &hc_deviceshm,
++};
++
++static struct hc_op _hc_shmsignal = {
++	.nr = KVM_VBUS_OP_SHMSIGNAL,
++	.len = sizeof(u64),
++	.func = &hc_shmsignal,
++};
++
++static struct hc_op *hc_ops[] = {
++	&_hc_busopen,
++	&_hc_busreg,
++	&_hc_devopen,
++	&_hc_devclose,
++	&_hc_devcall,
++	&_hc_devshm,
++	&_hc_shmsignal,
++	NULL,
++};
++
++static int
++hc_execute_indirect(struct kvm_vcpu *vcpu, struct hc_op *op, gpa_t gpa)
++{
++	struct kvm *kvm  = vcpu->kvm;
++	char       *args = NULL;
++	int         ret;
++
++	BUG_ON(!op->len);
++
++	args = kmalloc(op->len, GFP_KERNEL);
++	if (!args)
++		return -ENOMEM;
++
++	ret = kvm_read_guest(kvm, gpa, args, op->len);
++	if (ret < 0)
++		goto out;
++
++	ret = op->func(vcpu, args);
++
++	if (ret >= 0 && op->dirty)
++		ret = kvm_write_guest(kvm, gpa, args, op->len);
++
++out:
++	kfree(args);
++
++	return ret;
++}
++
++static int
++hc_execute_direct(struct kvm_vcpu *vcpu, struct hc_op *op, gpa_t gpa)
++{
++	struct kvm  *kvm   = vcpu->kvm;
++	void        *args;
++	char        *kaddr;
++	struct page *page;
++	int          ret;
++
++	page = gfn_to_page(kvm, gpa >> PAGE_SHIFT);
++	if (page == bad_page) {
 +		ret = -EINVAL;
 +		goto out;
 +	}
 +
-+	priv->vbus.link = 1;
++	kaddr = kmap(page);
++	if (!kaddr) {
++		ret = -EINVAL;
++		goto out;
++	}
 +
-+	if (priv->netif.link)
-+		netif_carrier_on(priv->netif.dev);
++	args = kaddr + offset_in_page(gpa);
 +
-+	venettap_check_netif_congestion(priv);
-+
-+	ioq_notify_enable(priv->vbus.rxq.queue, 0);
++	ret = op->func(vcpu, args);
 +
 +out:
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+	return ret;
-+}
++	if (kaddr)
++		kunmap(kaddr);
 +
-+/* Assumes priv->lock held */
-+static int
-+_venettap_vlink_down(struct venettap *priv)
-+{
-+	struct sk_buff *skb;
-+
-+	if (!priv->vbus.link)
-+		return -ENOENT;
-+
-+	priv->vbus.link = 0;
-+
-+	if (priv->netif.link)
-+		netif_carrier_off(priv->netif.dev);
-+
-+	/* just trash whatever might have been pending */
-+	while ((skb = __skb_dequeue(&priv->netif.txq.list)))
-+		dev_kfree_skb(skb);
-+
-+	priv->netif.txq.len = 0;
-+
-+	/* And deschedule any pending processing */
-+	clear_bit(RX_SCHED, &priv->flags);
-+	clear_bit(TX_SCHED, &priv->flags);
-+
-+	ioq_notify_disable(priv->vbus.rxq.queue, 0);
-+
-+	return 0;
-+}
-+
-+static int
-+venettap_vlink_down(struct venettap *priv)
-+{
-+	unsigned long flags;
-+	int ret;
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+	ret = _venettap_vlink_down(priv);
-+	spin_unlock_irqrestore(&priv->lock, flags);
++	if (ret >= 0 && op->dirty)
++		kvm_release_page_dirty(page);
++	else
++		kvm_release_page_clean(page);
 +
 +	return ret;
 +}
 +
 +static int
-+venettap_macquery(struct venettap *priv, void *data, unsigned long len)
++hc_execute(struct kvm_vcpu *vcpu, struct hc_op *op, gpa_t gpa, size_t len)
 +{
-+	struct vbus_memctx *ctx = priv->vbus.ctx;
-+	int ret;
-+
-+	if (len != ETH_ALEN)
++	if (len != op->len)
 +		return -EINVAL;
 +
-+	ret = ctx->ops->copy_to(ctx, data, priv->cmac, ETH_ALEN);
-+	if (ret)
-+		return -EFAULT;
++	/*
++	 * Execute-immediate if there is no data
++	 */
++	if (!len)
++		return op->func(vcpu, NULL);
 +
-+	return 0;
++	/*
++	 * We will need to copy the arguments in the unlikely case that the
++	 * gpa pointer crosses a page boundary
++	 *
++	 * FIXME: Is it safe to assume PAGE_SIZE is relevant to gpa?
++	 */
++	if (unlikely(len && (offset_in_page(gpa) + len) > PAGE_SIZE))
++		return hc_execute_indirect(vcpu, op, gpa);
++
++	/*
++	 * Otherwise just execute with zero-copy by mapping the arguments
++	 */
++	return hc_execute_direct(vcpu, op, gpa);
 +}
 +
 +/*
-+ * Negotiate Capabilities - This function is provided so that the
-+ * interface may be extended without breaking ABI compatability
-+ *
-+ * The caller is expected to send down any capabilities they would like
-+ * to enable, and the device will OR them with capabilities that it
-+ * supports.  This value is then returned so that both sides may
-+ * ascertain the lowest-common-denominator of features to enable
++ * Our hypercall format will always follow with the call-id in arg[0],
++ * a pointer to the arguments in arg[1], and the argument length in arg[2]
 + */
-+static int
-+venettap_negcap(struct venettap *priv, void *data, unsigned long len)
++int
++kvm_vbus_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len)
 +{
-+	struct vbus_memctx *ctx = priv->vbus.ctx;
-+	struct venet_capabilities caps;
-+	int ret;
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	enum kvm_vbus_state state = kvbus ? kvbus->state : kvm_vbus_state_init;
++	int i;
 +
-+	if (len != sizeof(caps))
-+		return -EINVAL;
++	PDEBUG("nr=%d, state=%d\n", nr, state);
 +
-+	if (priv->vbus.link)
-+		return -EINVAL;
-+
-+	ret = ctx->ops->copy_from(ctx, &caps, data, sizeof(caps));
-+	if (ret)
-+		return -EFAULT;
-+
-+	switch (caps.gid) {
++	switch (state) {
++	case kvm_vbus_state_init:
++		if (nr != KVM_VBUS_OP_BUSOPEN) {
++			PDEBUG("expected BUSOPEN\n");
++			return -EINVAL;
++		}
++		break;
++	case kvm_vbus_state_registration:
++		if (nr != KVM_VBUS_OP_BUSREG) {
++			PDEBUG("expected BUSREG\n");
++			return -EINVAL;
++		}
++		break;
 +	default:
-+		caps.bits = 0;
 +		break;
 +	}
 +
-+	ret = ctx->ops->copy_to(ctx, data, &caps, sizeof(caps));
-+	if (ret)
-+		return -EFAULT;
++	for (i = 0; i < ARRAY_SIZE(hc_ops); i++) {
++		struct hc_op *op = hc_ops[i];
++
++		if (op->nr != nr)
++			continue;
++
++		return hc_execute(vcpu, op, gpa, len);
++	}
++
++	PDEBUG("error: no matching function for nr=%d\n", nr);
++
++	return -EINVAL;
++}
++
++int kvm_vbus_assign_gsi(struct kvm *kvm, int queue, int gsi)
++{
++	struct kvm_vbus *kvbus = kvm->kvbus;
++
++	if (!kvbus
++	    || queue != kvbus->eventq.count
++	    || queue >= ARRAY_SIZE(kvbus->eventq.queues))
++		return -EINVAL;
++
++	kvbus->eventq.queues[queue].gsi = gsi;
++	kvbus->eventq.count++;
 +
 +	return 0;
 +}
-+
-+/*
-+ * Walk through and flush each remaining descriptor by returning
-+ * a zero length packet.
-+ *
-+ * This is useful, for instance, when the driver is changing the MTU
-+ * and wants to reclaim all the existing buffers outstanding which
-+ * are a different size than the new MTU
-+ */
-+static int
-+venettap_flushrx(struct venettap *priv)
-+{
-+	struct ioq_iterator         iter;
-+	struct ioq                 *ioq = NULL;
-+	int                         ret;
-+	unsigned long               flags;
-+
-+	PDEBUG("flushrx\n");
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	if (unlikely(!priv->vbus.link)) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return -EINVAL;
-+	}
-+
-+	ioq = priv->vbus.txq.queue;
-+
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_inuse, 0);
-+	BUG_ON(ret < 0);
-+
-+	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	while (iter.desc->sown) {
-+		iter.desc->len = 0;
-+		ret = ioq_iter_push(&iter, 0);
-+		if (ret < 0)
-+			SHM_SIGNAL_FAULT(ioq->signal, "could not flushrx");
-+	}
-+
-+	PDEBUG("flushrx complete\n");
-+
-+	if (!test_and_set_bit(TX_IOQ_CONGESTED, &priv->flags)) {
-+		PDEBUG("congested with %d packets still queued\n",
-+		       priv->netif.txq.len);
-+		venettap_txq_notify_inc(priv);
-+	}
-+
-+	/*
-+	 * we purposely do not ioq_signal() the other side here.  Since
-+	 * this function was invoked by the client, they can take care
-+	 * of explcitly calling any reclaim code if they like.  This also
-+	 * avoids a potential deadlock in case turning around and injecting
-+	 * a signal while we are in a call() is problematic to the
-+	 * connector design
-+	 */
-+
-+	venettap_check_netif_congestion(priv);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return 0;
-+}
-+
-+/*
-+ * This is called whenever a driver wants to perform a synchronous
-+ * "function call" to our device.  It is similar to the notion of
-+ * an ioctl().  The parameters are part of the ABI between the device
-+ * and driver.
-+ */
-+static int
-+venettap_vlink_call(struct vbus_connection *conn,
-+		    unsigned long func,
-+		    void *data,
-+		    unsigned long len,
-+		    unsigned long flags)
-+{
-+	struct venettap *priv = conn_to_priv(conn);
-+
-+	PDEBUG("call -> %d with %p/%d\n", func, data, len);
-+
-+	switch (func) {
-+	case VENET_FUNC_LINKUP:
-+		return venettap_vlink_up(priv);
-+	case VENET_FUNC_LINKDOWN:
-+		return venettap_vlink_down(priv);
-+	case VENET_FUNC_MACQUERY:
-+		return venettap_macquery(priv, data, len);
-+	case VENET_FUNC_NEGCAP:
-+		return venettap_negcap(priv, data, len);
-+	case VENET_FUNC_FLUSHRX:
-+		return venettap_flushrx(priv);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+/*
-+ * This is called whenever a driver wants to open a new IOQ between itself
-+ * and our device.  The "id" field is meant to convey meaning to the device
-+ * as to what the intended use of this IOQ is.  For instance, for venet "id=0"
-+ * means "rx" and "id=1" = "tx".  That namespace is managed by the device
-+ * and should be understood by the driver as part of its ABI agreement.
-+ *
-+ * The device should take a reference to the IOQ via ioq_get() and hold it
-+ * until the connection is released.
-+ */
-+static int
-+venettap_vlink_shm(struct vbus_connection *conn,
-+		   unsigned long id,
-+		   struct vbus_shm *shm,
-+		   struct shm_signal *signal,
-+		   unsigned long flags)
-+{
-+	struct venettap *priv = conn_to_priv(conn);
-+
-+	PDEBUG("queue -> %p/%d attached\n", ioq, id);
-+
-+	switch (id) {
-+	case VENET_QUEUE_RX:
-+		return venettap_queue_init(&priv->vbus.txq, shm, signal,
-+					   venettap_tx_isr);
-+	case VENET_QUEUE_TX:
-+		return venettap_queue_init(&priv->vbus.rxq, shm, signal,
-+					   venettap_rx_isr);
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+venettap_vlink_close(struct vbus_connection *conn)
-+{
-+	struct venettap *priv = conn_to_priv(conn);
-+	DEFINE_WAIT(wait);
-+	unsigned long flags;
-+
-+	PDEBUG("connection closed\n");
-+
-+	/* Block until all posted packets from the client have been processed */
-+	prepare_to_wait(&priv->vbus.rx_empty, &wait, TASK_UNINTERRUPTIBLE);
-+
-+	while (test_bit(RX_SCHED, &priv->flags))
-+		schedule();
-+
-+	finish_wait(&priv->vbus.rx_empty, &wait);
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	priv->vbus.opened = false;
-+	_venettap_vlink_down(priv);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+}
-+
-+/*
-+ * This is called whenever the driver closes all references to our device
-+ */
-+static void
-+venettap_vlink_release(struct vbus_connection *conn)
-+{
-+	struct venettap *priv = conn_to_priv(conn);
-+
-+	PDEBUG("connection released\n");
-+
-+	venettap_queue_release(&priv->vbus.rxq);
-+	venettap_queue_release(&priv->vbus.txq);
-+	vbus_memctx_put(priv->vbus.ctx);
-+
-+	kobject_put(priv->vbus.dev.kobj);
-+}
-+
-+static struct vbus_connection_ops venettap_vbus_link_ops = {
-+	.call    = venettap_vlink_call,
-+	.shm     = venettap_vlink_shm,
-+	.close   = venettap_vlink_close,
-+	.release = venettap_vlink_release,
-+};
-+
-+/*
-+ * This is called whenever a driver wants to open our device_interface
-+ * for communication.  The connection is represented by a
-+ * vbus_connection object.  It is up to the implementation to decide
-+ * if it allows more than one connection at a time.  This simple example
-+ * does not.
-+ */
-+static int
-+venettap_intf_open(struct vbus_device_interface *intf,
-+		   struct vbus_memctx *ctx,
-+		   int version,
-+		   struct vbus_connection **conn)
-+{
-+	struct venettap *priv = intf_to_priv(intf);
-+	unsigned long flags;
-+
-+	PDEBUG("open\n");
-+
-+	if (version != VENET_VERSION)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	/*
-+	 * We only allow one connection to this device
-+	 */
-+	if (priv->vbus.opened) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return -EBUSY;
-+	}
-+
-+	kobject_get(intf->dev->kobj);
-+
-+	vbus_connection_init(&priv->vbus.conn, &venettap_vbus_link_ops);
-+
-+	priv->vbus.opened = true;
-+	priv->vbus.ctx = ctx;
-+
-+	vbus_memctx_get(ctx);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	*conn = &priv->vbus.conn;
-+
-+	return 0;
-+}
-+
-+static void
-+venettap_intf_release(struct vbus_device_interface *intf)
-+{
-+	kobject_put(intf->dev->kobj);
-+}
-+
-+static struct vbus_device_interface_ops venettap_device_interface_ops = {
-+	.open = venettap_intf_open,
-+	.release = venettap_intf_release,
-+};
-+
-+/*
-+ * This is called whenever the admin creates a symbolic link between
-+ * a bus in /config/vbus/buses and our device.  It represents a bus
-+ * connection.  Your device can chose to allow more than one bus to
-+ * connect, or it can restrict it to one bus.  It can also choose to
-+ * register one or more device_interfaces on each bus that it
-+ * successfully connects to.
-+ *
-+ * This example device only registers a single interface
-+ */
-+static int
-+venettap_device_bus_connect(struct vbus_device *dev, struct vbus *vbus)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+	struct vbus_device_interface *intf = &priv->vbus.intf;
-+
-+	/* We only allow one bus to connect */
-+	if (priv->vbus.connected)
-+		return -EBUSY;
-+
-+	kobject_get(dev->kobj);
-+
-+	intf->name = "0";
-+	intf->type = VENET_TYPE;
-+	intf->ops = &venettap_device_interface_ops;
-+
-+	priv->vbus.connected = true;
-+
-+	/*
-+	 * Our example only registers one interface.  If you need
-+	 * more, simply call interface_register() multiple times
-+	 */
-+	return vbus_device_interface_register(dev, vbus, intf);
-+}
-+
-+/*
-+ * This is called whenever the admin removes the symbolic link between
-+ * a bus in /config/vbus/buses and our device.
-+ */
-+static int
-+venettap_device_bus_disconnect(struct vbus_device *dev, struct vbus *vbus)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+	struct vbus_device_interface *intf = &priv->vbus.intf;
-+
-+	if (!priv->vbus.connected)
-+		return -EINVAL;
-+
-+	vbus_device_interface_unregister(intf);
-+
-+	priv->vbus.connected = false;
-+	kobject_put(dev->kobj);
-+
-+	return 0;
-+}
-+
-+static void
-+venettap_device_release(struct vbus_device *dev)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+
-+	venettap_netdev_unregister(priv);
-+	free_netdev(priv->netif.dev);
-+	module_put(THIS_MODULE);
-+}
-+
-+
-+static struct vbus_device_ops venettap_device_ops = {
-+	.bus_connect = venettap_device_bus_connect,
-+	.bus_disconnect = venettap_device_bus_disconnect,
-+	.release = venettap_device_release,
-+};
-+
-+#define VENETTAP_TYPE "venet-tap"
-+
-+/*
-+ * Interface attributes show up as files under
-+ * /sys/vbus/devices/$devid
-+ */
-+static ssize_t
-+host_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+	 char *buf)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+
-+	return sysfs_format_mac(buf, priv->hmac, ETH_ALEN);
-+}
-+
-+static struct vbus_device_attribute attr_hmac =
-+	__ATTR_RO(host_mac);
-+
-+static ssize_t
-+client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+	 char *buf)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+
-+	return sysfs_format_mac(buf, priv->cmac, ETH_ALEN);
-+}
-+
-+static struct vbus_device_attribute attr_cmac =
-+	__ATTR_RO(client_mac);
-+
-+static ssize_t
-+enabled_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+	 char *buf)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", priv->netif.enabled);
-+}
-+
-+static ssize_t
-+enabled_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+	      const char *buf, size_t count)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+	int enabled = -1;
-+	int ret = 0;
-+
-+	if (count > 0)
-+		sscanf(buf, "%d", &enabled);
-+
-+	if (enabled != 0 && enabled != 1)
-+		return -EINVAL;
-+
-+	if (enabled && !priv->netif.enabled)
-+		ret = register_netdev(priv->netif.dev);
-+
-+	if (!enabled && priv->netif.enabled)
-+		venettap_netdev_unregister(priv);
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	priv->netif.enabled = enabled;
-+
-+	return count;
-+}
-+
-+static struct vbus_device_attribute attr_enabled =
-+	__ATTR(enabled, S_IRUGO | S_IWUSR, enabled_show, enabled_store);
-+
-+static ssize_t
-+ifname_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+	   char *buf)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+
-+	if (!priv->netif.enabled)
-+		return sprintf(buf, "<disabled>\n");
-+
-+	return snprintf(buf, PAGE_SIZE, "%s\n", priv->netif.dev->name);
-+}
-+
-+static struct vbus_device_attribute attr_ifname =
-+	__ATTR_RO(ifname);
-+
-+static struct attribute *attrs[] = {
-+	&attr_hmac.attr,
-+	&attr_cmac.attr,
-+	&attr_enabled.attr,
-+	&attr_ifname.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group venettap_attr_group = {
-+	.attrs = attrs,
-+};
-+
-+static struct net_device_ops venettap_netdev_ops = {
-+	.ndo_open        = venettap_netdev_open,
-+	.ndo_stop        = venettap_netdev_stop,
-+	.ndo_set_config  = venettap_netdev_config,
-+	.ndo_change_mtu  = venettap_change_mtu,
-+	.ndo_start_xmit  = venettap_netdev_tx,
-+	.ndo_do_ioctl    = venettap_netdev_ioctl,
-+	.ndo_get_stats   = venettap_netdev_stats,
-+};
-+
-+/*
-+ * This is called whenever the admin instantiates our devclass via
-+ * "mkdir /config/vbus/devices/$(inst)/venet-tap"
-+ */
-+static int
-+venettap_device_create(struct vbus_devclass *dc,
-+		       struct vbus_device **vdev)
-+{
-+	struct net_device *dev;
-+	struct venettap *priv;
-+	struct vbus_device *_vdev;
-+
-+	dev = alloc_etherdev(sizeof(struct venettap));
-+	if (!dev)
-+		return -ENOMEM;
-+
-+	priv = netdev_priv(dev);
-+	memset(priv, 0, sizeof(*priv));
-+
-+	spin_lock_init(&priv->lock);
-+	random_ether_addr(priv->hmac);
-+	random_ether_addr(priv->cmac);
-+
-+	/*
-+	 * vbus init
-+	 */
-+	_vdev = &priv->vbus.dev;
-+
-+	_vdev->type            = VENETTAP_TYPE;
-+	_vdev->ops             = &venettap_device_ops;
-+	_vdev->attrs           = &venettap_attr_group;
-+
-+	init_waitqueue_head(&priv->vbus.rx_empty);
-+
-+	/*
-+	 * netif init
-+	 */
-+	skb_queue_head_init(&priv->netif.txq.list);
-+	priv->netif.txq.len = 0;
-+
-+	priv->netif.dev = dev;
-+
-+	ether_setup(dev); /* assign some of the fields */
-+
-+	dev->netdev_ops = &venettap_netdev_ops;
-+	memcpy(dev->dev_addr, priv->hmac, ETH_ALEN);
-+
-+	dev->features |= NETIF_F_HIGHDMA;
-+
-+	*vdev = _vdev;
-+
-+	/*
-+	 * We don't need a try_get because the reference is held by the
-+	 * infrastructure during a create() operation
-+	 */
-+	__module_get(THIS_MODULE);
-+
-+	return 0;
-+}
-+
-+static struct vbus_devclass_ops venettap_devclass_ops = {
-+	.create = venettap_device_create,
-+};
-+
-+static struct vbus_devclass venettap_devclass = {
-+	.name = VENETTAP_TYPE,
-+	.ops = &venettap_devclass_ops,
-+	.owner = THIS_MODULE,
-+};
-+
-+static int __init venettap_init(void)
-+{
-+	return vbus_devclass_register(&venettap_devclass);
-+}
-+
-+static void __exit venettap_cleanup(void)
-+{
-+	vbus_devclass_unregister(&venettap_devclass);
-+}
-+
-+module_init(venettap_init);
-+module_exit(venettap_cleanup);
-diff --git a/kernel/vbus/Kconfig b/kernel/vbus/Kconfig
-index 71acd6f..3ce0adc 100644
---- a/kernel/vbus/Kconfig
-+++ b/kernel/vbus/Kconfig
-@@ -14,6 +14,17 @@ config VBUS
- 
- 	If unsure, say N
- 
-+config VBUS_DEVICES
-+       bool "Virtual-Bus Devices"
-+       depends on VBUS
-+       default n
-+       help
-+         Provides device-class modules for instantiation on a virtual-bus
-+
-+	 If unsure, say N
-+
-+source "drivers/vbus/devices/Kconfig"
-+
- config VBUS_DRIVERS
-        tristate "VBUS Driver support"
-        select IOQ
-@@ -23,3 +34,5 @@ config VBUS_DRIVERS
- 
- 	If unsure, say N
- 
-+
-+
 
