@@ -1,151 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZDUQYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZDUQZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbZDUQYw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbZDUQYn
+	id S1756473AbZDUQZR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbZDUQY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:24:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55662 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751051AbZDUQYl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:24:41 -0400
-Date: Tue, 21 Apr 2009 09:13:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-In-Reply-To: <20090420160121.268a8226@nehalam>
-Message-ID: <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>
-References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain> <49E72E83.50702@trash.net> <20090416.153354.170676392.davem@davemloft.net> <20090416234955.GL6924@linux.vnet.ibm.com> <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net>
- <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com>
- <20090420160121.268a8226@nehalam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 21 Apr 2009 12:24:57 -0400
+Received: from smtp.witbe.net ([81.88.96.48]:36949 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755615AbZDUQYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 12:24:49 -0400
+Date: Tue, 21 Apr 2009 18:24:48 +0200
+From: Paul Rolland <rol@as2917.net>
+To: linux-kernel@vger.kernel.org
+Subject: linux-2.6.30-rc2 - No sound (HDA Intel) avec resume
+Message-ID: <20090421182448.270f0e10@tux.DEF.witbe.net>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Ok, so others already pointed out how dangerous/buggy this looks, but I'd 
-like to strengthen that a bit more:
+For the first time, I can successfully suspend/resume my Dell laptop using
+linux 2.6.30-rc2.
+Unfortunately, after resume, xmms stays silent. I've tried to change the
+master channel, and everything I can access in the configuration, but no
+luck.
+All other devices are resuming correctly, including the video while running
+X and compiz, so this is quite good.
 
-On Mon, 20 Apr 2009, Stephen Hemminger wrote:
-> +
-> +/**
-> + * xt_table_info_rdlock_bh - recursive read lock for xt table info
-> + *
-> + * Table processing calls this to hold off any changes to table
-> + * (on current CPU). Always leaves with bottom half disabled.
-> + * If called recursively, then assumes bh/preempt already disabled.
-> + */
-> +void xt_info_rdlock_bh(void)
-> +{
-> +	struct xt_info_lock *lock;
-> +
-> +	preempt_disable();
-> +	lock = &__get_cpu_var(xt_info_locks);
-> +	if (likely(++lock->depth == 0))
-> +		spin_lock_bh(&lock->lock);
-> +	preempt_enable_no_resched();
-> +}
-> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+Is there anything I can do to help on this issue ?
 
-This function is FUCKED UP.
+At boot time, I have :
+Advanced Linux Sound Architecture Driver Version 1.0.19.
+HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+HDA Intel 0000:00:1b.0: setting latency timer to 64
+ALSA device list:
+  #0: Dummy 1
+  #1: Virtual MIDI Card 1
+  #2: HDA Intel at 0xefebc000 irq 21
 
-It's total crap for several reasons"
+When suspending :
+Apr 20 21:26:21 tux kernel: HDA Intel 0000:00:1b.0: PCI INT A disabled
 
- - the already-mentioned race with bottom half locking.
+When resuming :
+Apr 20 21:26:21 tux kernel: HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
 
-   If bottom halfs aren't already disabled, then if a bottom half comes in 
-   after the "++lock->depth" and before the spin_lock_bh(), then you will 
-   have no locking AT ALL for the processing of that bottom half - it will 
-   just increment the lock depth again, and nobody will have locked 
-   anything at all.
-
-   And if for some reason, you can prove that bottom half processing is 
-   already disabled, then ALL THAT OTHER CRAP is just that - CRAP. The 
-   whole preemption disabling, the whole "_bh()" thing, everything.
-
-   So either it's horribly buggy, or it's horribly broken and pointless. 
-   Take your pick.
-
- - the total lack of comments. Why does that "count" protect anything? 
-   It's not a recursive lock, since there is no ownership (two 
-   independent accessors could call this and both "get" the lock), so you 
-   had damn well better create some big-ass comments about why it's ok in 
-   this case, and what the rules are that make it ok.
-
-   So DON'T GO AROUND CALLING IT A RECURSIVE LOCK! Don't write comments 
-   that are TOTAL AND UTTER SH*T! Just DON'T!
-
-   It's a "reader lock". It's not "recursive".  It never was recursive, it 
-   never will be, and calling it that is just a sign that whoever wrote 
-   the function is a moron and doesn't know what he is doing. STOP DOING THIS!
-
- - that _idiotic_ "preempt_enable_no_resched()". F*ck me, but the comment 
-   already says that preemption is disabled when exiting, so why does it 
-   even bother to enable it? Why play those mindless games with preemption 
-   counts, knowing that they are bogus?
-
-   Do it readably. Disable preemption first, and just re-enable it at 
-   UNLOCK time. No odd pseudo-reenables anywhere.
-
-Oh, I know very well that the spli-locking will disable preemption, so 
-it's "correct" to play those games, but the point is, it's just damn 
-stupid and annoying. It just makes the source code actively _misleading_ 
-to see crap like that - it looks like you enabled preemption, when in fact 
-the code very much on purpose does _not_ enable preemption at all. 
-
-In other words, I really REALLY hate that patch. I think it looks slightly 
-better than Eric Dumazet's original patch (at least the locking subtlety 
-is now in a function of its own and _could_ be commented upon sanely and 
-if it wasn't broken it might be acceptable), but quite frankly, I'd still 
-horribly disgusted with the crap.
-
-Why are you doing this insane thing? If you want a read-lock, just use the 
-damned read-write locks already! Ad far as I can tell, this lock is in 
-_no_ way better than just using those counting reader-writer locks, except 
-it is open-coded and looks buggy.
-
-There is basically _never_ a good reason to re-implement locking 
-primitives: you'll just introduce bugs. As proven very ably by the amount 
-of crap above in what is supposed to be a very simple function.
-
-If you want a counting read-lock (in _order_ to allow recursion, but not 
-because the lock itself is somehow recursive!), then that function should 
-look like this:
-
-	void xt_info_rdlock_bh(void)
-	{
-		struct xt_info_lock *lock
-
-		local_bh_disable();
-		lock = &__get_cpu_var(xt_info_locks);
-		read_lock(&lock->lock);
-	}
-
-And then the "unlock" should be the reverse. No games, no crap, and 
-hopefully then no bugs. And if you do it that way, you don't even need the 
-comments, although quite frankly, it probably makes a lot of sense to talk 
-about the interaction between "local_bh_disable()" and the preempt count, 
-and why you're not using "read_lock_bh()".
-
-And if you don't want a read-lock, then fine - don't use a read-lock, do 
-something else. But then don't just re-implement it (badly) either and 
-call it something else!
-
-			Linus
-
-PS: Ingo, why do the *_bh() functions in kernel/spinlock.c do _both_ a 
-"local_bh_disable()" and a "preempt_disable()"? BH disable should disable 
-preemption too, no? Or am I confused? In which case we need that in 
-the above rdlock_bh too.
+Regards,
+Paul
