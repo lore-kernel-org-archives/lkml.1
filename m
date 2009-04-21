@@ -1,115 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbZDUBry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZDUBs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756965AbZDUBry (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 21:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZDUBri
+	id S1756992AbZDUBs0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 21:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZDUBsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 21:47:38 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:40771 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbZDUBrg convert rfc822-to-8bit (ORCPT
+	Mon, 20 Apr 2009 21:48:15 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:30782 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbZDUBsN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 21:47:36 -0400
+	Mon, 20 Apr 2009 21:48:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f7LW420clkf8BPnOo7o4OHxCyiZOWC4KvEPZ6avP5oixIyhFPw56R/SVzjB1eLdcdJ
-         AFImuTmurjSVV9pp7gu5vBY5gaMsMDzziZl5IO0j1dvRfLcU7RQke9Xa/VSr6+pGEAhl
-         VehV3iZ2VN+J2bjik//l0tIhLwVOobs7jGkAY=
-MIME-Version: 1.0
-In-Reply-To: <200904202208.23899.laurent.pinchart@skynet.be>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-	 <alpine.LFD.2.00.0904171952260.4042@localhost.localdomain>
-	 <20090418125111.6646e997@linux-lm>
-	 <200904202208.23899.laurent.pinchart@skynet.be>
-Date: Tue, 21 Apr 2009 09:47:34 +0800
-Message-ID: <d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-From: Ming Lei <tom.leiming@gmail.com>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       video4linux-list@redhat.com, mchehab@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=pEZOpN97EHUNGDggm4jESGCtmObO3kOz4OiSQl34ouGGcAp4+r5ukfd07BUpG8cjyu
+         qUfxzF8IKVvixl7SnBoFZnjIn7tVFVgvg0MTC+dJJ14G4vsu87srqC7CvLvdlwyB6HcE
+         rmlachE6K/epON34X7VUkX7t9amgAyxrbV6tk=
+Subject: [BUG] 2.6.29.1-rt8, undefined reference to hrtimer_wait_for_timer
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
+	 <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+	 <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+	 <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+	 <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Tue, 21 Apr 2009 09:47:40 +0800
+Message-Id: <1240278460.27360.8.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/21 Laurent Pinchart <laurent.pinchart@skynet.be>:
-> On Saturday 18 April 2009 06:51:11 leiming wrote:
->> On Fri, 17 Apr 2009 19:55:29 -0700 (PDT)
->>
->> Linus Torvalds <torvalds@linux-foundation.org> wrote:
->> > > @@ -742,7 +742,7 @@ static int uvc_alloc_urb_buffers(struct
->> > > uvc_video_device *video,
->> > >   /* Buffers are already allocated, bail out. */
->> > >   if (video->urb_size)
->> > > -         return 0;
->> > > +         return DIV_ROUND_UP(video->urb_size, psize);
->> >
->> > I don't think this is right. It should round _down_.
->> >
->> > It's supposed to return 'npackets', but if you pass it a different
->> > packet size than it was passed originally, it can now return a
->> > potentially bigger number than the already allocated buffer, no?
->> >
->> > So I think it should round down (ie use a regular divide). No?
->>
->> Yes,you are correct, please ignore my last reply, and following is
->> the fixed patch.
->
-> psize and video->urb_size shouldn't have changed before and after resume,
-> otherwise we'll get into trouble anyway. A regular divide and a round-up
-> divide should then return the same result. I'll take the regular divide, as it
-> will be more efficient.
+when using patch-2.6.29.1-rt8 with CONFIG_PREEMPT_SOFTIRQS=y, but not
+enable PREEMPT_RT, there will be an error when linking kernel:
 
-Yes.
+undefined reference to hrtimer_wait_for_timer
 
->
->> Thanks.
->>
->> From a3b3d72cdd57a0699fb643b41b78eb7beb211ff5 Mon Sep 17 00:00:00 2001
->> From: Ming Lei <tom.leiming@gmail.com>
->> Date: Wed, 15 Apr 2009 22:32:51 +0800
->> Subject: [PATCH] V4L/DVB:usbvideo:fix uvc resume failed(v2)
->>
->> Now urb buffers is not freed before suspend, so uvc_alloc_urb_buffers
->> should return packet counts allocated originally during uvc resume
->> , instead of zero.
->>
->> This version uses round down to return packet counts on Linus's
->> suggestions, or else may lead to buffer destructed if packet size
->> is changed before calling uvc_alloc_urb_buffers() in this kind of
->> case.
->
-> The comment is misleading. If the packet size changes we need to reallocate
-> the buffers anyway. Have you checked if the packet size (which depends on the
-> endpoint being selected) can be changed between suspend and resume, either by
-> the uvcvideo driver (I don't think it can) or the USB core ?
+I found that, hrtimer_wait_for_timer is only defined when PREEMPT_RT is
+enabled, but in include/linux/hrtimer.h, the source code is like this:
 
-The packet size does not change between suspend and resume.  I mean
-uvc_alloc_urb_buffers()
-still can be used in other cases if buffers was not freed and is
-reuesed in future. It seems there is no
-such cases in uvcvideo now, but uvc_alloc_urb_buffers() really __can__
- work in such case, isn't it?
+#ifdef CONFIG_PREEMPT_SOFTIRQS
+ extern void hrtimer_wait_for_timer(const struct hrtimer *timer);
+#else
+# define hrtimer_wait_for_timer(timer) do { cpu_relax(); } while (0)
 
-IMHO It is only used to allocate or reserve UVC_URBS usb buffers,
-which size is video->urb_size, and
-npackets can be shortened or enlarged if psize is changed, after all.
+a possible fix should be:
 
-Thanks!
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 8bafa35..1c1cdf3 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -366,7 +366,7 @@ static inline int hrtimer_restart(struct hrtimer
+*timer)
+ }
+ 
+ /* Softirq preemption could deadlock timer removal */
+-#ifdef CONFIG_PREEMPT_SOFTIRQS
++#if defined(CONFIG_PREEMPT_SOFTIRQS) && defined(CONFIG_PREEMPT_RT)
+   extern void hrtimer_wait_for_timer(const struct hrtimer *timer);
+ #else
+ # define hrtimer_wait_for_timer(timer) do { cpu_relax(); } while (0)
 
 -- 
-Lei Ming
+Wu Zhangjin
+DSLab, Lanzhou University, China
+www.lemote.com, Jiangsu Province, China
+
