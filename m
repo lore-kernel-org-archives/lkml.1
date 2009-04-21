@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZDUARW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZDUAVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbZDUARW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 20:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZDUARL
+	id S1755241AbZDUAVk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 20:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZDUAVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 20:17:11 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36670 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbZDUARK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 20:17:10 -0400
-Date: Tue, 21 Apr 2009 09:15:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+	Mon, 20 Apr 2009 20:21:31 -0400
+Received: from THUNK.ORG ([69.25.196.29]:33981 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbZDUAVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 20:21:30 -0400
+Date: Mon, 20 Apr 2009 20:18:22 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, baramsori72@gmail.com,
        Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
        Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
        fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
@@ -23,114 +23,87 @@ Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
        roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
        Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] res_counter: introduce ratelimiting attributes
-Message-Id: <20090421091534.971f676f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1240090712-1058-3-git-send-email-righi.andrea@gmail.com>
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com>
-	<1240090712-1058-3-git-send-email-righi.andrea@gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090421001822.GB19186@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	agk@sourceware.org, akpm@linux-foundation.org,
+	baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+	dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+	eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+	Hirokazu Takahashi <taka@valinux.co.jp>,
+	Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+	dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+	roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+	Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+	yoshikawa.takuya@oss.ntt.co.jp,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-10-git-send-email-righi.andrea@gmail.com> <20090417123805.GC7117@mit.edu> <20090417125004.GY4593@kernel.dk> <20090417143903.GA30365@linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090417143903.GA30365@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Apr 2009 23:38:27 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
+On Fri, Apr 17, 2009 at 04:39:05PM +0200, Andrea Righi wrote:
+> 
+> Exactly, the purpose here is is to prioritize the dispatching of journal
+> IO requests in the IO controller. I may have used an inappropriate flag
+> or a quick&dirty solution, but without this, any cgroup/process that
+> generates a lot of journal activity may be throttled and cause other
+> cgroups/processes to be incorrectly blocked when they try to write to
+> disk.
 
-> Introduce attributes and functions in res_counter to implement throttling-based
-> cgroup subsystems.
-> 
-> The following attributes have been added to struct res_counter:
->  * @policy:     the limiting policy / algorithm
->  * @capacity:   the maximum capacity of the resource
->  * @timestamp:  timestamp of the last accounted resource request
-> 
-> Currently the available policies are: token-bucket and leaky-bucket and the
-> attribute @capacity is only used by token-bucket policy (to represent the
-> bucket size).
-> 
-> The following function has been implemented to return the amount of time a
-> cgroup should sleep to remain within the defined resource limits.
-> 
->   unsigned long long
->   res_counter_ratelimit_sleep(struct res_counter *res, ssize_t val);
-> 
-> [ Note: only the interfaces needed by the cgroup IO controller are implemented
-> right now ]
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  include/linux/res_counter.h |   69 +++++++++++++++++++++++++++++++----------
->  kernel/res_counter.c        |   72 +++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 124 insertions(+), 17 deletions(-)
-> 
-> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> index 4c5bcf6..9bed6af 100644
-> --- a/include/linux/res_counter.h
-> +++ b/include/linux/res_counter.h
-> @@ -14,30 +14,36 @@
->   */
->  
->  #include <linux/cgroup.h>
-> +#include <linux/jiffies.h>
->  
-> -/*
-> - * The core object. the cgroup that wishes to account for some
-> - * resource may include this counter into its structures and use
-> - * the helpers described beyond
-> - */
-> +/* The various policies that can be used for ratelimiting resources */
-> +#define	RATELIMIT_LEAKY_BUCKET	0
-> +#define	RATELIMIT_TOKEN_BUCKET	1
->  
-> +/**
-> + * struct res_counter - the core object to account cgroup resources
-> + *
-> + * @usage:	the current resource consumption level
-> + * @max_usage:	the maximal value of the usage from the counter creation
-> + * @limit:	the limit that usage cannot be exceeded
-> + * @failcnt:	the number of unsuccessful attempts to consume the resource
-> + * @policy:	the limiting policy / algorithm
-> + * @capacity:	the maximum capacity of the resource
-> + * @timestamp:	timestamp of the last accounted resource request
-> + * @lock:	the lock to protect all of the above.
-> + *		The routines below consider this to be IRQ-safe
-> + *
-> + * The cgroup that wishes to account for some resource may include this counter
-> + * into its structures and use the helpers described beyond.
-> + */
->  struct res_counter {
-> -	/*
-> -	 * the current resource consumption level
-> -	 */
->  	unsigned long long usage;
-> -	/*
-> -	 * the maximal value of the usage from the counter creation
-> -	 */
->  	unsigned long long max_usage;
-> -	/*
-> -	 * the limit that usage cannot exceed
-> -	 */
->  	unsigned long long limit;
-> -	/*
-> -	 * the number of unsuccessful attempts to consume the resource
-> -	 */
->  	unsigned long long failcnt;
-> +	unsigned long long policy;
-> +	unsigned long long capacity;
-> +	unsigned long long timestamp;
->  
-Andrea, sizeof(struct res_counter) is getting close to 128bytes. (maybe someone adds more)
-Then, could you check "unsigned long or unsigned int" is allowed or not, again ?
+With ext3 and ext4, all journal I/O requests end up going through
+kjournald.  So the question is what I/O control group do you put
+kjournald in?  If you unrestrict it, it makes the problem go away
+entirely.  On the other hand, it is doing work on behalf of other
+processes, and there is no real way to separate out on whose behalf
+kjournald is doing said work.  So I'm not sure fundamentally you'll be
+able to do much with any filesystem journalling activity --- and ext3
+makes life especially bad because of data=ordered mode. 
 
-It's very bad if cacheline of spinlock is different from data field, in future.
+> > I'm assuming it's the "usual" problem with lower priority IO getting
+> > access to fs exclusive data. It's quite trivial to cause problems with
+> > higher IO priority tasks then getting stuck waiting for the low priority
+> > process, since they also need to access that fs exclusive data.
+> 
+> Right. I thought about using the BIO_RW_SYNC flag instead, but as Ted
+> pointed out, some cgroups/processes might be able to evade the IO
+> control issuing a lot of fsync()s. We could also limit the fsync()-rate
+> into the IO controller, but it sounds like a dirty workaround...
 
-Thanks,
--Kame
+Well, if you use data=writeback or Chris Mason's proposed data=guarded
+mode, then at least all of the data blocks will be written process
+context of the application, and not kjournald's process context.  So
+one solution that might be the best that we have for now is to treat
+kjournald as special from an I/O controller point of view (i.e., give
+it its own cgroup), and then use a filesystem mode which avoids data
+blocks getting written in kjournald (i.e., ext3 data=wirteback or
+data=guarded, ext4's delayed allocation, etc.)
 
+One major form of leakage that you're still going to have is pdflush;
+which again, is more I/O happening in somebody else's process context.
+Ultimately I think trying to throttle I/O at write submission time
+whether at entry into block layer or in the elevators, is going to be
+highly problematic.  Suppose someone dirties a large number of pages?
+That's a system resource, and delaying the writes because a particular
+container has used more than its fair share will cause the entire
+system to run out of memory, which is not a good thing.
+
+Ultimately, I think you'll need to do is write throttling, and suspend
+processes that are dirtying too many pages, instad of trying to
+control the I/O.
+
+					- Ted
