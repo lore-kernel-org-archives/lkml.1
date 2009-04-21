@@ -1,77 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZDUOHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZDUOLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbZDUOHv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZDUOHj
+	id S1754779AbZDUOLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZDUOLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:07:39 -0400
-Received: from THUNK.ORG ([69.25.196.29]:48085 "EHLO thunker.thunk.org"
+	Tue, 21 Apr 2009 10:11:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40725 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbZDUOHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:07:37 -0400
-Date: Tue, 21 Apr 2009 10:06:31 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
-Message-ID: <20090421140631.GF19186@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrea Righi <righi.andrea@gmail.com>,
-	Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	agk@sourceware.org, akpm@linux-foundation.org,
-	baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-	dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-	eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-	Hirokazu Takahashi <taka@valinux.co.jp>,
-	Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-	dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-	roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-	Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-	yoshikawa.takuya@oss.ntt.co.jp,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-10-git-send-email-righi.andrea@gmail.com> <20090417123805.GC7117@mit.edu> <20090417125004.GY4593@kernel.dk> <20090417143903.GA30365@linux> <20090421001822.GB19186@mit.edu> <20090421083001.GA8441@linux>
+	id S1751199AbZDUOLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:11:05 -0400
+Date: Tue, 21 Apr 2009 16:11:03 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Oliver Neukum <oliver@neukum.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input <linux-input@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: lockdep report at resume
+In-Reply-To: <200904211559.43497.oliver@neukum.org>
+Message-ID: <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
+References: <1234022517.4175.107.camel@johannes.local> <1238578840.5970.178.camel@johannes.local> <alpine.LNX.2.00.0904211550280.13028@wotan.suse.de> <200904211559.43497.oliver@neukum.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421083001.GA8441@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 10:30:02AM +0200, Andrea Righi wrote:
-> 
-> We're trying to address also this issue, setting max dirty pages limit
-> per cgroup, and force a direct writeback when these limits are exceeded.
-> 
-> In this case dirty ratio throttling should happen automatically because
-> the process will be throttled by the IO controller when it tries to
-> writeback the dirty pages and submit IO requests.
+On Tue, 21 Apr 2009, Oliver Neukum wrote:
 
-The challenge here will be the accounting; consider that you may have
-a file that had some of its pages in its page cache dirtied by a
-process in cgroup A.  Now another process in cgroup B dirties some
-more pages.  This could happen either via a mmap'ed file or via the
-standard read/write system calls.  How do you track which dirty pages
-should be charged against which cgroup?
+> > [ thanks for the analysis Johannes ... involving also Oliver here; really
+> >   seems like a false positive to me ]
+> I think he's right. But as a matter of principle I'd like to see 
+> flush_scheduled_work() avoided where possible, hence the patch.
 
-							- Ted
+I am not entirely sure that this is the same issue as the one from #13136 
+of kernel.org bugzilla.
+
+Anyway, for reference, the patch Oliver mentioned here is below.
+
+>From oliver@neukum.org Tue Apr 21 15:38:41 2009
+Date: Tue, 21 Apr 2009 15:38:12 +0200
+From: Oliver Neukum <oliver@neukum.org>
+To: Andrew Morton <akpm@linux-foundation.org>, casteyde.christian@free.fr
+Cc: Jiri Kosina <jkosina@suse.cz>, Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Re: [Bugme-new] [Bug 13136] New: possible circular locking dependency detected while suspending laptop to S3
+
+Am Dienstag 21 April 2009 01:01:13 schrieb Andrew Morton:
+> On Sat, 18 Apr 2009 11:17:47 GMT
+>
+> bugzilla-daemon@bugzilla.kernel.org wrote:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13136
+>
+> Looks like a post-2.6.29 regression in usb-hid.  usbhid_close() holding
+> hid_open_mut while doing flush_scheduled_work().
+>
+> Could you gents please work out where the problem is and suitably
+> assign the report?
+
+Please test this patch.
+
+	Regards
+		Oliver
+
+---
+
+commit 4bdc818cca662000cf195b1e83e8a0f8a3f0b9c6
+Author: Oliver Neukum <oneukum@linux-d698.(none)>
+Date:   Tue Apr 21 15:33:41 2009 +0200
+
+    avoid deadlock in usbhid_close by cancelling workqueues
+
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index 4306cb1..900ce18 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -662,8 +662,8 @@ void usbhid_close(struct hid_device *hid)
+ 	spin_lock_irq(&usbhid->lock);
+ 	if (!--hid->open) {
+ 		spin_unlock_irq(&usbhid->lock);
++		hid_cancel_delayed_stuff(usbhid);
+ 		usb_kill_urb(usbhid->urbin);
+-		flush_scheduled_work();
+ 		usbhid->intf->needs_remote_wakeup = 0;
+ 	} else {
+ 		spin_unlock_irq(&usbhid->lock);
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
