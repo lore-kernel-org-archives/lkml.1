@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZDUFvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZDUFwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbZDUFvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 01:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZDUFvE
+	id S1753895AbZDUFwA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 01:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZDUFvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 01:51:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:49269 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbZDUFvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 01:51:04 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2 0/4] Add support for compiling with -ffunction-sections -fdata-sections
-Date: Tue, 21 Apr 2009 15:20:56 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Tim Abbott <tabbott@mit.edu>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain>
+	Tue, 21 Apr 2009 01:51:50 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:14981 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751064AbZDUFvt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 01:51:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pK+Y6qVyh0MhRVeHwptb0U7PaZsODIXH3WOXUB6ZbVZGmqIlie1seX1i50e9kGRAj7
+         OucPXr5gU0/T4Ct7wpT77vVtI5FMTw+t6YyzAb97sx7ARy7DR7ycvjPFNfOccxPIZODP
+         cFURalNsmUZVWNvVXbwzzHoO/K7Yud/pkCwgE=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904211520.57861.rusty@rustcorp.com.au>
+In-Reply-To: <49ecf25e2378234eed@agluck-desktop.sc.intel.com>
+References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com>
+Date: Tue, 21 Apr 2009 08:51:47 +0300
+X-Google-Sender-Auth: 9339afaf00237488
+Message-ID: <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
+Subject: Re: linux-next ia64 build problems in slqb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       randy.dunlap_ocs10g@oracle.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 09:10:58 am Linus Torvalds wrote:
-> 
-> On Mon, 20 Apr 2009, Tim Abbott wrote:
-> >
-> > Is there a problem that is preventing this -ffunction-sections patch 
-> > series from being merged?
-> 
-> Quite frankly, every time I see something like this, I shudder.
+Hi Tony,
 
-It's the section name cleanup which is the invasive part, and I'd like to
-see merged now.
+On Tue, Apr 21, 2009 at 1:08 AM, Luck, Tony <tony.luck@intel.com> wrote:
+> The ia64 "allnoconfig" build ends up with the (possibly dubious) combination
+> of .config options:
+>
+>        CONFIG_SMP=n
+>        CONFIG_NUMA=y
 
-I don't care so much about actually flipping the option on.
+Yeah, I don't think the combination makes much sense and x86 doesn't
+allow it. Can we fix that in ia64 Kconfig? That said, this seems to
+come up with every architecture except x86, so if someone is kind
+enough to send me a tested fix for slqb, I'll just go ahead and apply
+it.
 
-Thanks,
-Rusty.
+                                   Pekka
