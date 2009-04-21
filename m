@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbZDUTMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbZDUTMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758539AbZDUTMW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 15:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZDUTML
+	id S1759489AbZDUTMl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 15:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbZDUTM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 15:12:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37762 "EHLO ogre.sisk.pl"
+	Tue, 21 Apr 2009 15:12:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37765 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754197AbZDUTMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 15:12:10 -0400
+	id S1754979AbZDUTM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 15:12:28 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Rolland <rol@as2917.net>
-Subject: Re: linux-2.6.30-rc2 - No sound (HDA Intel) avec resume
-Date: Tue, 21 Apr 2009 21:11:19 +0200
+To: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: Booting 2.6.30-rc2-git7 very slow
+Date: Tue, 21 Apr 2009 21:12:20 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
 Cc: linux-kernel@vger.kernel.org
-References: <20090421182448.270f0e10@tux.DEF.witbe.net>
-In-Reply-To: <20090421182448.270f0e10@tux.DEF.witbe.net>
+References: <547506.26789.qm@web32603.mail.mud.yahoo.com>
+In-Reply-To: <547506.26789.qm@web32603.mail.mud.yahoo.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904212111.19527.rjw@sisk.pl>
+Message-Id: <200904212112.20278.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 April 2009, Paul Rolland wrote:
-> Hello,
-
-Hi,
-
-> For the first time, I can successfully suspend/resume my Dell laptop using
-> linux 2.6.30-rc2.
-
-That's great to know. :-)
-
-> Unfortunately, after resume, xmms stays silent. I've tried to change the
-> master channel, and everything I can access in the configuration, but no
-> luck.
-> All other devices are resuming correctly, including the video while running
-> X and compiz, so this is quite good.
+On Tuesday 21 April 2009, Martin Knoblauch wrote:
 > 
-> Is there anything I can do to help on this issue ?
+> Hi, [please CC me on replies, as I am not subscribed]
 > 
-> At boot time, I have :
-> Advanced Linux Sound Architecture Driver Version 1.0.19.
-> HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
-> HDA Intel 0000:00:1b.0: setting latency timer to 64
-> ALSA device list:
->   #0: Dummy 1
->   #1: Virtual MIDI Card 1
->   #2: HDA Intel at 0xefebc000 irq 21
+>  booting  2.6.30-rc2-git7 on a HP/DL380G3 (x86_64, RHEL4.3, 64 bit userspace) is much slower that it used to be. It seems I run into timeouts when [trying to] load intel and tg3 microcodes:
 > 
-> When suspending :
-> Apr 20 21:26:21 tux kernel: HDA Intel 0000:00:1b.0: PCI INT A disabled
+> [   14.478892] platform microcode: firmware: requesting intel-ucode/0f-04-0a
+> [   74.476741] platform microcode: firmware: requesting intel-ucode/0f-04-0a
+> [  134.476638] platform microcode: firmware: requesting intel-ucode/0f-04-0a
+> [  194.476637] platform microcode: firmware: requesting intel-ucode/0f-04-0a
+> [  254.476493] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+> [  254.718489] Microcode Update Driver: v2.00 removed.
 > 
-> When resuming :
-> Apr 20 21:26:21 tux kernel: HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+>  So, we see 60 seconds for eaoch of the CPUs
+> 
+> [  255.273426] tg3 0000:03:01.0: PME# disabled
+> [  257.833769] tg3: eth0: Link is up at 1000 Mbps, full duplex.
+> [  257.833775] tg3: eth0: Flow control is off for TX and off for RX.
+> [  269.643973] tg3 0000:03:01.1: firmware: requesting tigon/tg3_tso.bin
+> [  329.640456] eth1: Failed to load firmware "tigon/tg3_tso.bin"
+> [  329.640463] eth1: TSO capability disabled.
+> [  329.640487] tg3 0000:03:01.1: PME# disabled
+> [  333.081753] tg3: eth1: Link is up at 1000 Mbps, full duplex.
+> [  333.081759] tg3: eth1: Flow control is off for TX and off for RX.
+> 
+>  We see 60 seconds for eth1, complaining about a failed firmware load.
+> /lib/firmware/tigon/tg3_tso.bin does exist and is from the current
+> build.
 
-That looks pretty usual.
+Do I assume correctly that 2.6.29 did not have this problem?
 
-Please attach dmesg output including a suspend-resume cycle and /proc/iomem.
-
-Best,
 Rafael
