@@ -1,155 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZDUIyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZDUI5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZDUIyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZDUIx6
+	id S1755007AbZDUI5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZDUI5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:53:58 -0400
-Received: from cmpxchg.org ([85.214.51.133]:48060 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754351AbZDUIx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:53:57 -0400
-Date: Tue, 21 Apr 2009 10:52:31 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
-Message-ID: <20090421085231.GB2527@cmpxchg.org>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <1240259085-25872-3-git-send-email-hannes@cmpxchg.org> <20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 21 Apr 2009 04:57:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:32500 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484AbZDUI5D convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:57:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KquDnWCNkWdkSX8SYr4M8CZwJxp5rG113p3RFhdBn2IKP7ecQ36L6eHxeVIBx5YZQm
+         jeiwk8omHuR7g6MBSY3LRfqgxNpYGOp8+xoBa8zGATRK/MH1wrr0a7+sw3lZVOwT6NRk
+         jOamMcy+hDhpjESMiz2DeLvfoWCpq6WFmy9hI=
+MIME-Version: 1.0
+In-Reply-To: <20090421084521.GA20459@elte.hu>
+References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>
+	 <adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu>
+	 <adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com>
+	 <20090420105304.GC6670@elte.hu>
+	 <a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com>
+	 <20090420160332.GB9689@elte.hu>
+	 <a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>
+	 <20090421084521.GA20459@elte.hu>
+Date: Tue, 21 Apr 2009 17:57:02 +0900
+Message-ID: <a6b9f31a0904210157w34ffcccbva5afc50f981b3b90@mail.gmail.com>
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 09:58:57AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon, 20 Apr 2009 22:24:45 +0200
-> Johannes Weiner <hannes@cmpxchg.org> wrote:
-> 
-> > Every swap slot allocation tries to be subsequent to the previous one
-> > to help keeping the LRU order of anon pages intact when they are
-> > swapped out.
-> > 
-> > With an increasing number of concurrent reclaimers, the average
-> > distance between two subsequent slot allocations of one reclaimer
-> > increases as well.  The contiguous LRU list chunks each reclaimer
-> > swaps out get 'multiplexed' on the swap space as they allocate the
-> > slots concurrently.
-> > 
-> > 	2 processes isolating 15 pages each and allocating swap slots
-> > 	concurrently:
-> > 
-> > 	#0			#1
-> > 
-> > 	page 0 slot 0		page 15 slot 1
-> > 	page 1 slot 2		page 16 slot 3
-> > 	page 2 slot 4		page 17 slot 5
-> > 	...
-> > 
-> > 	-> average slot distance of 2
-> > 
-> > All reclaimers being equally fast, this becomes a problem when the
-> > total number of concurrent reclaimers gets so high that even equal
-> > distribution makes the average distance between the slots of one
-> > reclaimer too wide for optimistic swap-in to compensate.
-> > 
-> > But right now, one reclaimer can take much longer than another one
-> > because its pages are mapped into more page tables and it has thus
-> > more work to do and the faster reclaimer will allocate multiple swap
-> > slots between two slot allocations of the slower one.
-> > 
-> > This patch makes shrink_page_list() allocate swap slots in batches,
-> > collecting all the anonymous memory pages in a list without
-> > rescheduling and actual reclaim in between.  And only after all anon
-> > pages are swap cached, unmap and write-out starts for them.
-> > 
-> > While this does not fix the fundamental issue of slot distribution
-> > increasing with reclaimers, it mitigates the problem by balancing the
-> > resulting fragmentation equally between the allocators.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > Cc: Rik van Riel <riel@redhat.com>
-> > Cc: Hugh Dickins <hugh@veritas.com>
-> > ---
-> >  mm/vmscan.c |   49 +++++++++++++++++++++++++++++++++++++++++--------
-> >  1 files changed, 41 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 70092fa..b3823fe 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -592,24 +592,42 @@ static unsigned long shrink_page_list(struct list_head *page_list,
-> >  					enum pageout_io sync_writeback)
-> >  {
-> >  	LIST_HEAD(ret_pages);
-> > +	LIST_HEAD(swap_pages);
-> >  	struct pagevec freed_pvec;
-> > -	int pgactivate = 0;
-> > +	int pgactivate = 0, restart = 0;
-> >  	unsigned long nr_reclaimed = 0;
-> >  
-> >  	cond_resched();
-> >  
-> >  	pagevec_init(&freed_pvec, 1);
-> > +restart:
-> >  	while (!list_empty(page_list)) {
-> >  		struct address_space *mapping;
-> >  		struct page *page;
-> >  		int may_enter_fs;
-> >  		int referenced;
-> >  
-> > -		cond_resched();
-> > +		if (list_empty(&swap_pages))
-> > +			cond_resched();
-> >  
-> Why this ?
+On Tue, Apr 21, 2009 at 17:45, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Hitoshi Mitake <h.mitake@gmail.com> wrote:
+>
+>> On Tue, Apr 21, 2009 at 01:03, Ingo Molnar <mingo@elte.hu> wrote:
+>> >
+>> > * Hitoshi Mitake <h.mitake@gmail.com> wrote:
+>> >
+>> >> On Mon, Apr 20, 2009 at 19:53, Ingo Molnar <mingo@elte.hu> wrote:
+>> >> >
+>> >> > * H. Peter Anvin <hpa@zytor.com> wrote:
+>> >> >
+>> >> >> Roland Dreier wrote:
+>> >> >> >
+>> >> >> > Notice that it reads from addr+4 *before* it reads from addr, rather
+>> >> >> > than after as in your example (and in fact your example depends on
+>> >> >> > undefined compiler semantics, since there is no sequence point between
+>> >> >> > the two operands of the | operator).  Now, I don't know that hardware,
+>> >> >> > so I don't know if it makes a difference, but the niu example I gave in
+>> >> >> > my original email shows that given hardware with clear-on-read
+>> >> >> > registers, the order does very much matter.
+>> >> >> >
+>> >> >>
+>> >> >> At least for x86, the order should be low-high, because that is the
+>> >> >> order that those two transactions would be seen on a 32-bit bus
+>> >> >> downstream from the CPU if the CPU issued a 64-bit transaction.
+>> >> >>
+>> >> >> The only sane way to handle this as something other than per-driver
+>> >> >> hacks would be something like:
+>> >> >>
+>> >> >> #include <linux/io64.h>               /* Any 64-bit I/O OK */
+>> >> >>
+>> >> >> #include <linux/io64lh.h>     /* Low-high splitting OK */
+>> >> >>
+>> >> >> #include <linux/io64hl.h>     /* High-low splitting OK */
+>> >> >>
+>> >> >> #include <linux/io64atomic.h> /* 64-bit I/O must be atomic */
+>> >> >>
+>> >> >> ... i.e. letting the driver choose what fallback method it will accept.
+>> >> >
+>> >> > Yeah - with the default being the natural low-high order.
+>> >> >
+>> >> > The other argument is that if a driver really wants some rare, oddly
+>> >> > different order it should better define its own method that is not
+>> >> > named in the same (or in a similar) way as an existing generic API.
+>> >> > Otherwise, confusion will ensue.
+>> >> I think this is a good way.
+>> >> readq/writeq are already in Linus's tree, removing these is not a good idea.
+>> >>
+>> >> And I've sent the patch to fix a little problem of Kconfig about
+>> >> readq/writeq to you.
+>> >> http://marc.info/?l=linux-kernel&m=123521109218008&w=2
+>> >> Did you notice?
+>> >>
+>> >> Adding cautions about accessing order or non-atomic to Kconfig's help
+>> >> part may be benefit.
+>> >
+>> > It's better to add add such non-interactive help text as Makefile
+>> > comments:
+>> >
+>> > #
+>> > # This option ...
+>> > #
+>> >
+>> > and they should be invisible in make menuconfig. This is a facility
+>> > provided by architectures.
+>> I'll move the help text from Kconfig to Makefile.
+>> (My original patch also doesn't make help text visible in make menuconfig.)
+>
+> sorry i meant the Kconfig file - you can put comments in there too.
+> help text is really meant for things that are interactive.
 
-It shouldn't schedule anymore when it's allocated the first swap slot.
-Another reclaimer could e.g. sleep on the cond_resched() before the
-loop and when we schedule while having swap slots allocated, we might
-continue further allocations multiple slots ahead.
-
-> >  		page = lru_to_page(page_list);
-> >  		list_del(&page->lru);
-> >  
-> > +		if (restart) {
-> > +			/*
-> > +			 * We are allowed to do IO when we restart for
-> > +			 * swap pages.
-> > +			 */
-> > +			may_enter_fs = 1;
-> > +			/*
-> > +			 * Referenced pages will be sorted out by
-> > +			 * try_to_unmap() and unmapped (anon!) pages
-> > +			 * are not to be referenced anymore.
-> > +			 */
-> > +			referenced = 0;
-> > +			goto reclaim;
-> > +		}
-> > +
-> >  		if (!trylock_page(page))
-> >  			goto keep;
-> >  
-> Keeping multiple pages locked while they stay on private list ? 
-
-Yeah, it's a bit suboptimal but I don't see a way around it.
-
-> BTW, isn't it better to add "allocate multiple swap space at once" function
-> like
->  - void get_swap_pages(nr, swp_entry_array[])
-> ? "nr" will not be bigger than SWAP_CLUSTER_MAX.
-
-It will sometimes be, see __zone_reclaim().
-
-I had such a function once.  The interesting part is: how and when do
-you call it?  If you drop the page lock in between, you need to redo
-the checks for unevictability and whether the page has become mapped
-etc.
-
-You also need to have the pages in swap cache as soon as possible or
-optimistic swap-in will 'steal' your swap slots.  See add_to_swap()
-when the cache radix tree says -EEXIST.
+Can I think that I should add help text to both of Kconfig and Makefile?
+(I'm not a native English speaker, and I'm not good at English.
+I'm sorry if I misunderstand something...)
