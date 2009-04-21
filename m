@@ -1,172 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbZDUJsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbZDUJtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbZDUJsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZDUJru
+	id S1756602AbZDUJtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZDUJsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:47:50 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42830 "EHLO gir.skynet.ie"
+	Tue, 21 Apr 2009 05:48:46 -0400
+Received: from smtp.zeuux.org ([210.51.160.52]:53004 "EHLO z.billxu.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbZDUJrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:47:49 -0400
-Date: Tue, 21 Apr 2009 10:47:45 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 07/25] Check in advance if the zonelist needs
-	additional filtering
-Message-ID: <20090421094745.GL12713@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-8-git-send-email-mel@csn.ul.ie> <20090421155038.F130.A69D9226@jp.fujitsu.com>
+	id S1754032AbZDUJsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 05:48:45 -0400
+Date: Tue, 21 Apr 2009 17:48:25 +0800
+From: Amos Kong <jianjun@zeuux.org>
+To: David Miller <davem@davemloft.net>
+Cc: jon.lin@vatics.com, dada1@cosmosbay.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
+Message-ID: <20090421094825.GA6752@ubuntu>
+References: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw> <20090421.015235.23457775.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421155038.F130.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090421.015235.23457775.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 03:52:48PM +0900, KOSAKI Motohiro wrote:
-> > Zonelist are filtered based on nodemasks for memory policies normally.
-> > It can be additionally filters on cpusets if they exist as well as
-> > noting when zones are full. These simple checks are expensive enough to
-> > be noticed in profiles. This patch checks in advance if zonelist
-> > filtering will ever be needed. If not, then the bulk of the checks are
-> > skipped.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  include/linux/cpuset.h |    2 ++
-> >  mm/page_alloc.c        |   37 ++++++++++++++++++++++++++-----------
-> >  2 files changed, 28 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-> > index a5740fc..978e2f1 100644
-> > --- a/include/linux/cpuset.h
-> > +++ b/include/linux/cpuset.h
-> > @@ -97,6 +97,8 @@ static inline void set_mems_allowed(nodemask_t nodemask)
-> >  
-> >  #else /* !CONFIG_CPUSETS */
-> >  
-> > +#define number_of_cpusets (0)
-> > +
-> >  static inline int cpuset_init(void) { return 0; }
-> >  static inline void cpuset_init_smp(void) {}
-> >  
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index c8465d0..3613ba4 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1137,7 +1137,11 @@ failed:
-> >  #define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
-> >  #define ALLOC_HARDER		0x10 /* try to alloc harder */
-> >  #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
-> > +#ifdef CONFIG_CPUSETS
-> >  #define ALLOC_CPUSET		0x40 /* check for correct cpuset */
-> > +#else
-> > +#define ALLOC_CPUSET		0x00
-> > +#endif /* CONFIG_CPUSETS */
-> >  
-> >  #ifdef CONFIG_FAIL_PAGE_ALLOC
-> >  
-> > @@ -1401,6 +1405,7 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
-> >  	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
-> >  	int zlc_active = 0;		/* set if using zonelist_cache */
-> >  	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
-> > +	int zonelist_filter = 0;
-> >  
-> >  	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
-> >  							&preferred_zone);
-> > @@ -1411,6 +1416,10 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
-> >  
-> >  	VM_BUG_ON(order >= MAX_ORDER);
-> >  
-> > +	/* Determine in advance if the zonelist needs filtering */
-> > +	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
-> > +		zonelist_filter = 1;
-> > +
-> >  zonelist_scan:
-> >  	/*
-> >  	 * Scan zonelist, looking for a zone with enough free.
-> > @@ -1418,12 +1427,16 @@ zonelist_scan:
-> >  	 */
-> >  	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-> >  						high_zoneidx, nodemask) {
-> > -		if (NUMA_BUILD && zlc_active &&
-> > -			!zlc_zone_worth_trying(zonelist, z, allowednodes))
-> > -				continue;
-> > -		if ((alloc_flags & ALLOC_CPUSET) &&
-> > -			!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> > -				goto try_next_zone;
-> > +
-> > +		/* Ignore the additional zonelist filter checks if possible */
-> > +		if (zonelist_filter) {
-> > +			if (NUMA_BUILD && zlc_active &&
-> > +				!zlc_zone_worth_trying(zonelist, z, allowednodes))
-> > +					continue;
-> > +			if ((alloc_flags & ALLOC_CPUSET) &&
-> > +				!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> > +					goto try_next_zone;
-> > +		}
-> 
-> if number_of_cpusets==1, old code call zlc_zone_worth_trying(). but your one never call.
-> it seems regression.
-> 
+...
+>> Unfortunately, this address is used by Linux kernel. So kernel panics.
+>> This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
+>> 
+>> Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+>
+>This patch does not apply, it was corrupted by your email client.
+>
+>I even think it has MS-DOS style newlines in it :-(
 
-True, but once fixed, the patch becomes a lot less useful. The intention was
-to avoid the zlc_setup() function which is pretty heavy and hits on HIGHMEM
-machines quite easily but I did it wrong. I should have made the
-decision to only call zlc_setup() when there were online NUMA nodes to
-care about.
+Another new patch :)
 
-I'll drop this patch and try again.
 
-> 
-> >  
-> >  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
-> >  			unsigned long mark;
-> > @@ -1445,13 +1458,15 @@ zonelist_scan:
-> >  		if (page)
-> >  			break;
-> >  this_zone_full:
-> > -		if (NUMA_BUILD)
-> > +		if (NUMA_BUILD && zonelist_filter)
-> >  			zlc_mark_zone_full(zonelist, z);
-> >  try_next_zone:
-> > -		if (NUMA_BUILD && !did_zlc_setup) {
-> > -			/* we do zlc_setup after the first zone is tried */
-> > -			allowednodes = zlc_setup(zonelist, alloc_flags);
-> > -			zlc_active = 1;
-> > +		if (NUMA_BUILD && zonelist_filter) {
-> > +			if (!did_zlc_setup) {
-> > +				/* do zlc_setup after the first zone is tried */
-> > +				allowednodes = zlc_setup(zonelist, alloc_flags);
-> > +				zlc_active = 1;
-> > +			}
-> >  			did_zlc_setup = 1;
-> >  		}
-> >  	}
-> > -- 
-> > 1.5.6.5
-> > 
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-> 
-> 
+ While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
+ In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA
+ buffer address. In this interval where RX was enabled and DMA buffer address is not yet set
+ up, any incoming broadcast packet would be send to a strange physical address:
+ 0x003e8800 which is the default value of DMA buffer address.
+ Unfortunately, this address is used by Linux kernel. So kernel panics.
+ This patch fix it by setting up DMA buffer address before RX enabled and everything is fine
+ even under broadcast packets attack.
 
+Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+Signed-off-by: Amos Kong <jianjun@zeuux.org>
+
+---
+ drivers/net/8139too.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index 29df398..1fc4543 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -1383,6 +1383,11 @@ static void rtl8139_hw_start (struct net_device *dev)
+ 	RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
+ 	RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
+ 
++	tp->cur_rx = 0;
++
++	/* init Rx ring buffer DMA address */
++	RTL_W32_F (RxBuf, tp->rx_ring_dma);
++
+ 	/* Must enable Tx/Rx before setting transfer thresholds! */
+ 	RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
+ 
+@@ -1390,8 +1395,6 @@ static void rtl8139_hw_start (struct net_device *dev)
+ 	RTL_W32 (RxConfig, tp->rx_config);
+ 	RTL_W32 (TxConfig, rtl8139_tx_config);
+ 
+-	tp->cur_rx = 0;
+-
+ 	rtl_check_media (dev, 1);
+ 
+ 	if (tp->chipset >= CH_8139B) {
+@@ -1406,9 +1409,6 @@ static void rtl8139_hw_start (struct net_device *dev)
+ 	/* Lock Config[01234] and BMCR register writes */
+ 	RTL_W8 (Cfg9346, Cfg9346_Lock);
+ 
+-	/* init Rx ring buffer DMA address */
+-	RTL_W32_F (RxBuf, tp->rx_ring_dma);
+-
+ 	/* init Tx buffer DMA addresses */
+ 	for (i = 0; i < NUM_TX_DESC; i++)
+ 		RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] - tp->tx_bufs));
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.5.6.3
+
