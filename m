@@ -1,45 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZDUI5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbZDUI6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbZDUI5k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZDUI5S
+	id S1751932AbZDUI6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDUI6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:57:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49726
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755181AbZDUI5Q (ORCPT
+	Tue, 21 Apr 2009 04:58:00 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:39079 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbZDUI57 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:57:16 -0400
-Date: Tue, 21 Apr 2009 01:57:08 -0700 (PDT)
-Message-Id: <20090421.015708.65867910.davem@davemloft.net>
-To: peter@holik.at
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH 0/2] usb driver for intellon int51x1 based PLC like
- devolo dlan duo
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <5c52681c17a9cd66ec59e9d9cad3ee46.squirrel@webmail.it-technology.at>
-References: <0681089db5bdc5acc805ed52130dc9a5.squirrel@webmail.it-technology.at>
-	<Pine.LNX.4.64.0904181834210.3691@wrl-59.cs.helsinki.fi>
-	<5c52681c17a9cd66ec59e9d9cad3ee46.squirrel@webmail.it-technology.at>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Apr 2009 04:57:59 -0400
+Message-ID: <49ED8A1F.7090506@cosmosbay.com>
+Date: Tue, 21 Apr 2009 10:55:59 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Evgeniy Polyakov <zbr@ioremap.net>
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com, mingo@elte.hu,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+References: <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <49ED406F.2040401@cn.fujitsu.com> <49ED4407.8010200@cosmosbay.com> <49ED5813.1000803@cn.fujitsu.com> <20090420224540.30d7b0ed@nehalam> <49ED6D2E.5060808@cn.fujitsu.com> <20090421081649.GA16782@ioremap.net>
+In-Reply-To: <20090421081649.GA16782@ioremap.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 21 Apr 2009 10:55:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Peter Holik" <peter@holik.at>
-Date: Sat, 18 Apr 2009 18:42:59 +0200 (CEST)
+Evgeniy Polyakov a écrit :
+> Hi.
+> 
+> On Tue, Apr 21, 2009 at 02:52:30PM +0800, Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+>>> +void xt_info_rdlock_bh(void)
+>>>> +{
+>>>> +	struct xt_info_lock *lock;
+>>>> +
+>>>> +	preempt_disable();
+>>>> +	lock = &__get_cpu_var(xt_info_locks);
+>>>> +	if (likely(++lock->depth == 0))
+>> So what happen when xt_info_rdlock_bh() called recursively here?
+>>
+>>>> +		spin_lock_bh(&lock->lock);
+>>>> +	preempt_enable_no_resched();
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+>>>> +
+>> ----------
+>> Is this OK? (Now I suppose we can enter the read-side critical region
+>> in irq context)
+>>
+>> void xt_info_rdlock_bh(void)
+>> {
+>> 	unsigned long flags;
+>> 	struct xt_info_lock *lock;
+>>
+>> 	local_irq_save(flags);
+>> 	lock = &__get_cpu_var(xt_info_locks);
+>> 	if (likely(++lock->depth == 0))
+>> 		spin_lock_bh(&lock->lock);
+>> 	local_irq_restore(flags);
+>> }
+> 
+> Netfilter as long as other generic network pathes are never accessed
+> from interrupt context, but your analysis looks right for the softirq
+> case.
+> 
+> Stephen, should preempt_disable() be replaced with local_bh_disable() to
+> prevent softirq to race on the same cpu for the lock's depth field? Or
+> can it be made atomic?
+> 
 
-> I am submitting a series of 2 patches for inclusion in 2.6.30.
-> Here is a brief description of the patch series:
-> - because of using the same function get_ethernet_addr as cdc_ether.c
->   i export usbnet_get_ethernet_addr from usbnet and fixed cdc_ether
->   (suggested by Oliver Neukum).
-> - usb driver for intellon int51x1 based PLC like devolo dlan duo
->   with improvements suggested by the guys of the mailinglist
 
-I've applied the most recent version of this driver submission
-to net-next-2.6, thanks!
+Maybe just dont care about calling several time local_bh_disable()
+(since we were doing this in previous kernels anyway, we used to call read_lock_bh())
+
+This shortens fastpath, is faster than local_irq_save()/local_irq_restore(),
+and looks better.
+
+void xt_info_rdlock_bh(void)
+{
+	struct xt_info_lock *lock;
+
+	local_bh_disable();
+ 	lock = &__get_cpu_var(xt_info_locks);
+ 	if (likely(++lock->depth == 0))
+ 		spin_lock(&lock->lock);
+}
+
+void xt_info_rdunlock_bh(void)
+{
+	struct xt_info_lock *lock = &__get_cpu_var(xt_info_locks);
+
+	BUG_ON(lock->depth < 0);
+	if (likely(--lock->depth < 0))
+		 spin_unlock(&lock->lock);
+	local_bh_enable();
+}
+
+
+
