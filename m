@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZDURkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZDURmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZDURkV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 13:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZDURkH
+	id S1756825AbZDURmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 13:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZDURmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 13:40:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37587 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751392AbZDURkF (ORCPT
+	Tue, 21 Apr 2009 13:42:23 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:12509 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753191AbZDURmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 13:40:05 -0400
-Date: Tue, 21 Apr 2009 10:31:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Woodhouse <dwmw2@infradead.org>
-cc: David Brownell <david-b@pacbell.net>, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, David VomLehn <dvomlehn@cisco.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-In-Reply-To: <1240333871.3632.70.camel@macbook.infradead.org>
-Message-ID: <alpine.LFD.2.00.0904211016190.2199@localhost.localdomain>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>  <20090421064346.GB8020@elte.hu>  <200904210013.48551.david-b@pacbell.net> <1240333871.3632.70.camel@macbook.infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 21 Apr 2009 13:42:22 -0400
+Message-ID: <49EE056C.1060605@panasas.com>
+Date: Tue, 21 Apr 2009 20:42:04 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: subrata@linux.vnet.ibm.com, NFS list <linux-nfs@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUILD FAILURE 03/04] Next April 21 : x86_64 randconfig	[fs/nfs/nfs.ko]
+References: <1240332715.9110.39.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1240332715.9110.39.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Apr 2009 17:42:16.0073 (UTC) FILETIME=[82C0AF90:01C9C2A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 21 Apr 2009, David Woodhouse wrote:
+On Apr. 21, 2009, 19:51 +0300, Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+> I think i am observing this for the first time in any randconfig builds:
 > 
-> We can provide un-hooked-up /dev/console though. Rather than just
-> failing to open it, why can't we make __tty_open() give you a dummy tty
-> driver which is basically equivalent to /dev/null? And then 'replace' it
-> with the real console driver if/when that later gets registered? The
-> latter will be a high-caffeine job, but surely not impossible?
+> BUILD   arch/x86/boot/bzImage
+> Root device is (8, 3)
+> Setup is 13020 bytes (padded to 13312 bytes).
+> System is 5625 kB
+> CRC a80d60ee
+> Kernel: arch/x86/boot/bzImage is ready  (#1)
+>   Building modules, stage 2.
+>   MODPOST 514 modules
+> ERROR: "find_last_bit" [fs/nfs/nfs.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> ---
+> 
+> Regards--
+> Subrata
+> 
 
-This sounds like a good option. 
+Trond, can you please merge
+http://git.linux-nfs.org/?p=bhalevy/linux-pnfs.git;a=commitdiff;h=9f32944d1bca79038ef3e9c9a27f11803d093d8e
+into your nfsv41 and linux-next branches?
 
-Right now we look through all the console_drivers at open time in that
+I've placed it right before "nfs41: free slot"
+in git://git.linux-nfs.org/projects/bhalevy/linux-pnfs.git nfs41-for-2.6.31
 
-	struct tty_driver *console_device(int *index)
+(see also this thread:
+http://article.gmane.org/gmane.linux.kernel.next/6951)
 
-thing, but it should be possible to just do something like
+Thanks,
 
-	static struct tty_driver console_driver;
-
-and then just make "console_device()" always return _that_ tty driver 
-instead. Then, we could make that console_device tty driver just at 
-run-time spread the IO to the proper device(s), rather than fix the one 
-particular device at "open()" time.
-
-[ Actually, looking closer we should not use that particular name: we 
-  already have something called a "console_driver" which is really the 
-  "current VT" driver.
-
-  So we should call it 'system_console_device' or something, but you 
-  get the idea. ]
-
-Anybody want to try it? Just make it ignore any IO if there are no 
-registered consoles. The patch shouldn't even be all that big, I suspect.
-
-		Linus
+Benny
