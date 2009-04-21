@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbZDUI6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZDUJBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbZDUI6X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDUI6A
+	id S1755097AbZDUJBW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZDUJBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:58:00 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:39079 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbZDUI57 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:57:59 -0400
-Message-ID: <49ED8A1F.7090506@cosmosbay.com>
-Date: Tue, 21 Apr 2009 10:55:59 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 21 Apr 2009 05:01:07 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60519 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752036AbZDUJBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 05:01:06 -0400
+Date: Tue, 21 Apr 2009 10:01:02 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 25/25] Use a pre-calculated value instead of
+	num_online_nodes() in fast paths
+Message-ID: <20090421090102.GI12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-26-git-send-email-mel@csn.ul.ie> <1240301300.771.58.camel@penberg-laptop>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-References: <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <49ED406F.2040401@cn.fujitsu.com> <49ED4407.8010200@cosmosbay.com> <49ED5813.1000803@cn.fujitsu.com> <20090420224540.30d7b0ed@nehalam> <49ED6D2E.5060808@cn.fujitsu.com> <20090421081649.GA16782@ioremap.net>
-In-Reply-To: <20090421081649.GA16782@ioremap.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 21 Apr 2009 10:55:59 +0200 (CEST)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1240301300.771.58.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov a écrit :
-> Hi.
+On Tue, Apr 21, 2009 at 11:08:20AM +0300, Pekka Enberg wrote:
+> On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
+> > diff --git a/mm/slab.c b/mm/slab.c
+> > index 1c680e8..41d1343 100644
+> > --- a/mm/slab.c
+> > +++ b/mm/slab.c
+> > @@ -3579,7 +3579,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+> >  	 * variable to skip the call, which is mostly likely to be present in
+> >  	 * the cache.
+> >  	 */
+> > -	if (numa_platform && cache_free_alien(cachep, objp))
+> > +	if (numa_platform > 1 && cache_free_alien(cachep, objp))
+> >  		return;
 > 
-> On Tue, Apr 21, 2009 at 02:52:30PM +0800, Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
->>> +void xt_info_rdlock_bh(void)
->>>> +{
->>>> +	struct xt_info_lock *lock;
->>>> +
->>>> +	preempt_disable();
->>>> +	lock = &__get_cpu_var(xt_info_locks);
->>>> +	if (likely(++lock->depth == 0))
->> So what happen when xt_info_rdlock_bh() called recursively here?
->>
->>>> +		spin_lock_bh(&lock->lock);
->>>> +	preempt_enable_no_resched();
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
->>>> +
->> ----------
->> Is this OK? (Now I suppose we can enter the read-side critical region
->> in irq context)
->>
->> void xt_info_rdlock_bh(void)
->> {
->> 	unsigned long flags;
->> 	struct xt_info_lock *lock;
->>
->> 	local_irq_save(flags);
->> 	lock = &__get_cpu_var(xt_info_locks);
->> 	if (likely(++lock->depth == 0))
->> 		spin_lock_bh(&lock->lock);
->> 	local_irq_restore(flags);
->> }
-> 
-> Netfilter as long as other generic network pathes are never accessed
-> from interrupt context, but your analysis looks right for the softirq
-> case.
-> 
-> Stephen, should preempt_disable() be replaced with local_bh_disable() to
-> prevent softirq to race on the same cpu for the lock's depth field? Or
-> can it be made atomic?
+> This doesn't look right. I assume you meant "nr_online_nodes > 1" here?
+> If so, please go ahead and remove "numa_platform" completely.
 > 
 
+It would need to be nr_possible_nodes which would be a separate patch to add
+the definition and then drop numa_platform. This change is wrong as part of
+this patch. I'll drop it. Thanks
 
-Maybe just dont care about calling several time local_bh_disable()
-(since we were doing this in previous kernels anyway, we used to call read_lock_bh())
-
-This shortens fastpath, is faster than local_irq_save()/local_irq_restore(),
-and looks better.
-
-void xt_info_rdlock_bh(void)
-{
-	struct xt_info_lock *lock;
-
-	local_bh_disable();
- 	lock = &__get_cpu_var(xt_info_locks);
- 	if (likely(++lock->depth == 0))
- 		spin_lock(&lock->lock);
-}
-
-void xt_info_rdunlock_bh(void)
-{
-	struct xt_info_lock *lock = &__get_cpu_var(xt_info_locks);
-
-	BUG_ON(lock->depth < 0);
-	if (likely(--lock->depth < 0))
-		 spin_unlock(&lock->lock);
-	local_bh_enable();
-}
-
-
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
