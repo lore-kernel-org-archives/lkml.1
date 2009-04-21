@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbZDUPVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZDUPY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbZDUPVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 11:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZDUPVl
+	id S1753161AbZDUPY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 11:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZDUPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 11:21:41 -0400
-Received: from langos.euedge.com ([209.190.22.130]:34171 "EHLO
-	langos.euedge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbZDUPVk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 11:21:40 -0400
-Message-ID: <49EDE481.1020304@maroy.hu>
-Date: Tue, 21 Apr 2009 17:21:37 +0200
-From: =?UTF-8?B?TWFyw7N5IMOBa29z?= <akos@maroy.hu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Tue, 21 Apr 2009 11:24:47 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36001 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbZDUPYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 11:24:46 -0400
+Date: Tue, 21 Apr 2009 16:24:42 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 24/25] Re-sort GFP flags and fix whitespace alignment
+	for easier reading.
+Message-ID: <20090421152442.GB29083@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-25-git-send-email-mel@csn.ul.ie> <1240301043.771.56.camel@penberg-laptop> <20090421085229.GH12713@csn.ul.ie> <alpine.DEB.1.10.0904211107250.19969@qirst.com>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: cdc-acm driver hangs on poll() call - 2.6.27, works on 2.6.24
-References: <49EDC44D.90106@maroy.hu> <200904211526.34199.oliver@neukum.org> <49EDCB0F.3040802@maroy.hu> <200904211539.23671.oliver@neukum.org>
-In-Reply-To: <200904211539.23671.oliver@neukum.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0904211107250.19969@qirst.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver,
+On Tue, Apr 21, 2009 at 11:08:46AM -0400, Christoph Lameter wrote:
+> On Tue, 21 Apr 2009, Mel Gorman wrote:
+> 
+> > Hmm, doh. This resorted when another patch existed that no longer exists
+> > due to difficulties. This patch only fixes whitespace now but I didn't fix
+> > the changelog.  I can either move it to the next set altogether where it
+> > does resort things or drop it on the grounds whitespace patches just muck
+> > with changelogs. I'm leaning towards the latter.
+> 
+> Where were we with that other patch? I vaguely recalling reworking the
+> other patch (gfp_zone I believe) to be calculated at compile time. Did I
+> drop this?
+> 
 
->> ok, let me upgrade to 2.6.28 first, and if the proplem still persists,
->> I'll compile 2.6.29 with the above settings manually.
+No, you didn't. I have a version still that's promising but doesn't currently
+work nor has been tested to show it really helps. It's on the long finger
+till pass 2 where it'll be high on the list to sort out.
 
-FYI, I upgraded to 2.6.28 (ubuntu 9.04), and the problem still persists.
-will go ahead and compile 2.6.29.
-
-
-Akos
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
