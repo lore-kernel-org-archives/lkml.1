@@ -1,121 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZDUNzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbZDUNzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbZDUNzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 09:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZDUNyz
+	id S1755714AbZDUNzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 09:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZDUNzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 09:54:55 -0400
-Received: from cathcart.site5.com ([74.54.107.137]:46024 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752777AbZDUNyy (ORCPT
+	Tue, 21 Apr 2009 09:55:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47541 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbZDUNzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 09:54:54 -0400
-Message-ID: <49EDD02B.5020407@compulab.co.il>
-Date: Tue, 21 Apr 2009 16:54:51 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+	Tue, 21 Apr 2009 09:55:42 -0400
+Date: Tue, 21 Apr 2009 09:55:40 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH][GIT PULL] ring-buffer: only warn on wrap if buffer is bigger
+ than two pages
+In-Reply-To: <20090421094616.GA14561@elte.hu>
+Message-ID: <alpine.DEB.2.00.0904210954090.10097@gandalf.stny.rr.com>
+References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>
-CC: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFD] voltage/current regulator consumer interface
-References: <49EC8775.8060609@compulab.co.il> <20090420145627.GA5281@rakim.wolfsonmicro.main> <49EDB569.2060701@compulab.co.il> <20090421125528.GD25828@sirena.org.uk>
-In-Reply-To: <20090421125528.GD25828@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Tue, Apr 21, 2009 at 03:00:41PM +0300, Mike Rapoport wrote:
-> 
->> I've managed to create some preliminary "line-consumer" driver. I don't really
->> like the name, but I couldn't think of something better and "virtual" is
->> already taken :)
-> 
-> "userspace" or "user"?  The goal here is to let userspace applications
-> be consumers.
 
-I don't quite understand your intention here. Do you mean that it would bebetter
-to use a character device rather than sysfs?
+Ingo,
 
->> +static ssize_t set_state(struct device *dev, struct device_attribute *attr,
->> +			 const char *buf, size_t count)
->> +{
->> +	struct line_consumer_data *data = dev_get_drvdata(dev);
->> +	bool enabled;
->> +	int ret;
->> +
->> +	/*
->> +	 * sysfs_streq() doesn't need the \n's, but we add them so the strings
->> +	 * will be shared with show_state(), above.
->> +	 */
->> +	if (sysfs_streq(buf, "enabled\n") == 0)
->> +		enabled = true;
->> +	else if (sysfs_streq(buf, "disabled\n") == 0)
->> +		enabled = false;
-> 
-> I'd be inclined to also accept 1 and 0 here.
-> 
->> +static DEVICE_ATTR(name, 0444, show_name, NULL);
->> +static DEVICE_ATTR(state, 0666, show_state, set_state);
-> 
-> Permissions for set_state() should probably be tighter?
-> 
->> +	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
->> +		ret = device_create_file(&pdev->dev, attributes[i]);
->> +		if (ret != 0)
->> +			goto err_create_attrs;
->> +	}
-> 
-> device_add_attributes()?
-> 
->> +	if (pdata->init_on)
->> +		ret = regulator_bulk_enable(drvdata->num_supplies,
->> +					    drvdata->supplies);
->> +	else
->> +		ret = regulator_bulk_disable(drvdata->num_supplies,
->> +					     drvdata->supplies);
-> 
-> The disable case will lead to unbalanced enables and disables, loosing
-> a reference to the supply.  Just don't do anything if the supplies
-> should not be enabled.
-> 
->> +static int regulator_line_consumer_remove(struct platform_device *pdev)
->> +{
->> +	struct line_consumer_data *drvdata = platform_get_drvdata(pdev);
->> +	int i;
->> +
->> +	for (i = 0; i < ARRAY_SIZE(attributes); i++)
->> +		device_remove_file(&pdev->dev, attributes[i]);
->> +
->> +	regulator_bulk_free(drvdata->num_supplies, drvdata->supplies);
->> +	kfree(drvdata->supplies);
->> +	kfree(drvdata);
->> +
->> +	return 0;
->> +}
-> 
-> Hrm.  You probably want to disable the supplies if you weren't using
-> them here.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
--- 
-Sincerely yours,
-Mike.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
+
+Steven Rostedt (1):
+      ring-buffer: only warn on wrap if buffer is bigger than two pages
+
+----
+ kernel/trace/ring_buffer.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+---------------------------
+commit b76929b6d87e98e49a0988b863debb1a12bcf42b
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Apr 21 09:41:26 2009 -0400
+
+    ring-buffer: only warn on wrap if buffer is bigger than two pages
+    
+    On boot up, to save memory, ftrace allocates the minimum buffer
+    which is two pages. Ftrace also goes through a series of tests
+    (when configured) on boot up. These tests can fill up a page within
+    a single interrupt.
+    
+    The ring buffer also has a WARN_ON when it detects that the buffer was
+    completely filled within a single commit (other commits are allowed to
+    be nested).
+    
+    Combine the small buffer on start up, with the tests that can fill more
+    than a single page within an interrupt, this can trigger the WARN_ON.
+    
+    This patch makes the WARN_ON only happen when the ring buffer consists
+    of more than two pages.
+    
+    [ Impact: prevent false WARN_ON in ftrace startup tests ]
+    
+    Reported-by: Ingo Molnar <mingo@elte.hu>
+    LKML-Reference: <20090421094616.GA14561@elte.hu>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 7bcfd3e..61dbdf2 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1241,7 +1241,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+ 		 * about it.
+ 		 */
+ 		if (unlikely(next_page == commit_page)) {
+-			WARN_ON_ONCE(1);
++			/* This can easily happen on small ring buffers */
++			WARN_ON_ONCE(buffer->pages > 2);
+ 			goto out_reset;
+ 		}
+ 
 
 
