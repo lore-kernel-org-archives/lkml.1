@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZDUFBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZDUFHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZDUFBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 01:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbZDUFBD
+	id S1752666AbZDUFHU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 01:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbZDUFHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 01:01:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:60963 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753080AbZDUFA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 01:00:57 -0400
-Date: Tue, 21 Apr 2009 15:00:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for April 21
-Message-Id: <20090421150050.31063868.sfr@canb.auug.org.au>
-In-Reply-To: <49ED50DA.3020602@in.ibm.com>
-References: <20090421141944.4c3f5a7a.sfr@canb.auug.org.au>
-	<49ED50DA.3020602@in.ibm.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 21 Apr 2009 01:07:07 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:15746 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbZDUFHF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 01:07:05 -0400
+Date: Tue, 21 Apr 2009 07:10:03 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: spock@gentoo.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] fbdev: fix fillrect for 24bpp modes
+Message-Id: <20090421071003.ded2ae3f.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090418185234.GA17853@tria>
+References: <20090413170954.GA8403@tria>
+	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
+	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
+	<20090418185234.GA17853@tria>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K"
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
+X-EMID: ece2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 18 Apr 2009 20:52:34 +0200
+Michal Januszewski <spock@gentoo.org> wrote:
 
-Hi Sachin,
+> The software fillrect routines do not work properly when the number of
+> pixels per machine word is not an integer.  To see that, run the following
+> command on a fbdev console with a 24bpp video mode, using a non-accelerated
+> driver such as (u)vesafb:
+> 
+>   reset ; echo -e '\e[41mtest\e[K'
+> 
+> The expected result is 'test' displayed on a line with red background.
+> Instead of that, 'test' has a red background, but the rest of the line
+> (rendered using fillrect()) contains a distored colorful pattern.
+> 
+> This patch fixes the problem by correctly computing rotation shifts.
+> It has been tested in a 24bpp mode on 32- and 64-bit little-endian
+> machines.
+> 
+> Signed-off-by: Micha³ Januszewski <spock@gentoo.org>
+> ---
 
-On Tue, 21 Apr 2009 10:21:38 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
->
-> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/ doesn't seem
-> to have today's next patch. Can you please upload the patch tarball ?
+I have tested the patch and it has worked with padded lines.
 
-I did so (to master.kernel.org) - I guess the mirroring is being slow (or
-is broken).
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
---Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K
-Content-Type: application/pgp-signature
+However, there is  a comment from Andrew Morton.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Regards,
+Krzysztof
 
-iEYEARECAAYFAkntUwIACgkQjjKRsyhoI8zcfACfXpUGDImyegY9FqlxrLhLSC7K
-x/MAnRr3QtrwcyTSvnohwm5ZfG8DHQqB
-=11e2
------END PGP SIGNATURE-----
+----------------------------------------------------------------------
+Gotowka na koncie. Otworz konto direct i wez podwojny limit.
+http://link.interia.pl/f2115
 
---Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K--
+
