@@ -1,85 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZDUJBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbZDUJDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbZDUJBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZDUJBO
+	id S1756432AbZDUJDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZDUJDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:01:14 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:32442 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754634AbZDUJBM (ORCPT
+	Tue, 21 Apr 2009 05:03:30 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60035 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbZDUJD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:01:12 -0400
-Date: Tue, 21 Apr 2009 11:01:02 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>, Greg KH <greg@kroah.com>,
-       Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PATCH] drivers: move media after i2c
-Message-ID: <20090421110102.78886dee@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.64.0904210908360.6551@axis700.grange>
-References: <Pine.LNX.4.64.0904210908360.6551@axis700.grange>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Apr 2009 05:03:29 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 10/25] Calculate the alloc_flags for allocation only once
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-11-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-11-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421165022.F13F.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 18:03:25 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 09:22:38 +0200 (CEST), Guennadi Liakhovetski wrote:
-> Currently drivers/media drivers are linked very early - directly after 
-> base, block, misc, and mfd and before ata, scsi, ide, input, firewire, 
-> usb, and i2c. This breaks static build of video4linux drivers, that use 
-> generic CPU i2c adapter drivers and the v4l2-subdev subsystem, because 
-> during video4linux probing the v4l2-subdev core requires a struct 
-> i2c_adapter context, which cannot be satisfied before the i2c subsystem is 
-> initialised. Moving drivers/media after drivers/i2c fixes this problem.
+> Factor out the mapping between GFP and alloc_flags only once. Once factored
+> out, it only needs to be calculated once but some care must be taken.
 > 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-
-Looks good to me.
-
-Acked-by: Jean Delvare <khali@linux-fr.org>
-
-> ---
+> [neilb@suse.de says]
+> As the test:
 > 
-> The best way to trigger action is by submitting a patch:-) So, let's see 
-> what comes out of it - on the one hand I don't see any reason why media 
-> has to be linked this early, and nobody was able to give me one yesterday 
-> as this problem has been discussed on linux-media, OTOH, maybe indeed it 
-> would be better to move i2c the whole way up above media, but that'd be 
-> much bigger of a change, I think.
+> -       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+> -                       && !in_interrupt()) {
+> -               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
 > 
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index 2618a61..1266ead 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -36,7 +36,7 @@ obj-$(CONFIG_FB_INTEL)          += video/intelfb/
+> has been replaced with a slightly weaker one:
+> 
+> +       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+> 
+> we need to ensure we don't recurse when PF_MEMALLOC is set.
+
+It seems good idea.
+
+
+
+
+> +static inline int
+> +gfp_to_alloc_flags(gfp_t gfp_mask)
+> +{
+> +	struct task_struct *p = current;
+> +	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+> +	const gfp_t wait = gfp_mask & __GFP_WAIT;
+> +
+> +	/*
+> +	 * The caller may dip into page reserves a bit more if the caller
+> +	 * cannot run direct reclaim, or if the caller has realtime scheduling
+> +	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> +	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+> +	 */
+> +	if (gfp_mask & __GFP_HIGH)
+> +		alloc_flags |= ALLOC_HIGH;
+> +
+> +	if (!wait) {
+> +		alloc_flags |= ALLOC_HARDER;
+> +		/*
+> +		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+> +		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> +		 */
+> +		alloc_flags &= ~ALLOC_CPUSET;
+> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
+
+wait==1 and in_interrupt==1 is never occur.
+I think in_interrupt check can be removed.
+
+
+>  	/* Atomic allocations - we can't balance anything */
+>  	if (!wait)
+>  		goto nopage;
 >  
->  obj-y				+= serial/
->  obj-$(CONFIG_PARPORT)		+= parport/
-> -obj-y				+= base/ block/ misc/ mfd/ media/
-> +obj-y				+= base/ block/ misc/ mfd/
->  obj-$(CONFIG_NUBUS)		+= nubus/
->  obj-y				+= macintosh/
->  obj-$(CONFIG_IDE)		+= ide/
-> @@ -71,7 +71,7 @@ obj-$(CONFIG_GAMEPORT)		+= input/gameport/
->  obj-$(CONFIG_INPUT)		+= input/
->  obj-$(CONFIG_I2O)		+= message/
->  obj-$(CONFIG_RTC_LIB)		+= rtc/
-> -obj-y				+= i2c/
-> +obj-y				+= i2c/ media/
->  obj-$(CONFIG_W1)		+= w1/
->  obj-$(CONFIG_POWER_SUPPLY)	+= power/
->  obj-$(CONFIG_HWMON)		+= hwmon/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +	/* Avoid recursion of direct reclaim */
+> +	if (p->flags & PF_MEMALLOC)
+> +		goto nopage;
+> +
+
+Again. old code doesn't only check PF_MEMALLOC, but also check TIF_MEMDIE.
 
 
--- 
-Jean Delvare
+>  	/* Try direct reclaim and then allocating */
+>  	page = __alloc_pages_direct_reclaim(gfp_mask, order,
+>  					zonelist, high_zoneidx,
+> -- 
+> 1.5.6.5
+> 
+
+
+
