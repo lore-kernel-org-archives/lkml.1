@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbZDUIJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZDUIKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbZDUIJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbZDUIIH
+	id S1754971AbZDUIKF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZDUII0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:08:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45533 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754318AbZDUIIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:08:05 -0400
-Date: Tue, 21 Apr 2009 08:07:22 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       steiner@sgi.com, weidong.han@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, suresh.b.siddha@intel.com, weidong.han@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090420200450.694598000@linux-os.sc.intel.com>
-References: <20090420200450.694598000@linux-os.sc.intel.com>
-Subject: [tip:x86/apic] x86: x2apic, IR: Make config X86_UV dependent on X86_X2APIC
-Message-ID: <tip-9d6c26e73bd248c286bb3597aaf788716e8fcceb@git.kernel.org>
-Git-Commit-ID: 9d6c26e73bd248c286bb3597aaf788716e8fcceb
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 08:07:24 +0000 (UTC)
+	Tue, 21 Apr 2009 04:08:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51948 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754724AbZDUIIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:08:24 -0400
+Subject: Re: [PATCH 25/25] Use a pre-calculated value instead of
+ num_online_nodes() in fast paths
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-26-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+	 <1240266011-11140-26-git-send-email-mel@csn.ul.ie>
+Date: Tue, 21 Apr 2009 11:08:20 +0300
+Message-Id: <1240301300.771.58.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9d6c26e73bd248c286bb3597aaf788716e8fcceb
-Gitweb:     http://git.kernel.org/tip/9d6c26e73bd248c286bb3597aaf788716e8fcceb
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Mon, 20 Apr 2009 13:02:31 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 21 Apr 2009 09:08:27 +0200
+On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 1c680e8..41d1343 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -3579,7 +3579,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+>  	 * variable to skip the call, which is mostly likely to be present in
+>  	 * the cache.
+>  	 */
+> -	if (numa_platform && cache_free_alien(cachep, objp))
+> +	if (numa_platform > 1 && cache_free_alien(cachep, objp))
+>  		return;
 
-x86: x2apic, IR: Make config X86_UV dependent on X86_X2APIC
-
-Instead of selecting X86_X2APIC, make config X86_UV dependent
-on X86_X2APIC.
-
-This will eliminate enabling CONFIG_X86_X2APIC with out
-enabling CONFIG_INTR_REMAP.
-
-[ Impact: cleanup ]
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: Jack Steiner <steiner@sgi.com>
-Cc: dwmw2@infradead.org
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Weidong Han <weidong.han@intel.com>
-LKML-Reference: <20090420200450.694598000@linux-os.sc.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This doesn't look right. I assume you meant "nr_online_nodes > 1" here?
+If so, please go ahead and remove "numa_platform" completely.
 
 
----
- arch/x86/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index c9086e6..58fb7b3 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -354,7 +354,7 @@ config X86_UV
- 	depends on X86_64
- 	depends on X86_EXTENDED_PLATFORM
- 	depends on NUMA
--	select X86_X2APIC
-+	depends on X86_X2APIC
- 	---help---
- 	  This option is needed in order to support SGI Ultraviolet systems.
- 	  If you don't have one of these, you should say N here.
