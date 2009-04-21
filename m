@@ -1,119 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZDUFWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZDUFW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbZDUFWk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 01:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZDUFWa
+	id S1753425AbZDUFW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 01:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDUFWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 01:22:30 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36919 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbZDUFW3 (ORCPT
+	Tue, 21 Apr 2009 01:22:38 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34147 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbZDUFWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 01:22:29 -0400
-Message-ID: <49ED580E.1050502@us.ibm.com>
-Date: Mon, 20 Apr 2009 22:22:22 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 21 Apr 2009 01:22:37 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: [PATCH] low order lumpy reclaim also should use PAGEOUT_IO_SYNC.
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090421142056.F127.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Sripathi Kodi <sripathik@in.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
-Subject: [PATCH][tip:core/futexes][next][rt] remove FUTEX_REQUEUE_PI (non
- CMP)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 14:22:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new requeue PI futex op codes were modeled after the existing
-FUTEX_REQUEUE and FUTEX_CMP_REQUEUE calls.  I was unaware at the time
-that FUTEX_REQUEUE was only around for compatibility reasons and
-shouldn't be used in new code.  Ulrich Drepper elaborates on this in his
-Futexes are Tricky paper: http://people.redhat.com/drepper/futex.pdf.
-The deprecated call doesn't catch changes to the futex corresponding to
-the destination futex which can lead to deadlock.
+Subject: [PATCH] low order lumpy reclaim also should use PAGEOUT_IO_SYNC.
 
-Therefor, I feel it best to remove FUTEX_REQUEUE_PI and leave only
-FUTEX_CMP_REQUEUE_PI as there are not yet any existing users of the API.
-This patch does change the OP code value of FUTEX_CMP_REQUEUE_PI to 12
-from 13.  Since my test case is the only known user of this API, I felt
-this was the right thing to do, rather than leave a hole in the
-enumeration.
+commit 33c120ed2843090e2bd316de1588b8bf8b96cbde (more aggressively use lumpy reclaim)
+change lumpy reclaim using condition. but it isn't enough change.
 
-I chose to continue using the _CMP_ modifier in the OP code to make it
-explicit to the user that the test is being done.
+lumpy reclaim don't only mean isolate neighber page, but also do pageout as synchronous.
+this patch does it.
 
-Builds, boots, and ran several hundred iterations requeue_pi.c.
-
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Sripathi Kodi <sripathik@in.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jakub Jelinek <jakub@redhat.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Andy Whitcroft <apw@shadowen.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Rik van Riel <riel@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
+ mm/vmscan.c |   29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
- include/linux/futex.h |    4 +---
- kernel/futex.c        |    6 +-----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1049,6 +1049,19 @@ static unsigned long shrink_inactive_lis
+ 	unsigned long nr_scanned = 0;
+ 	unsigned long nr_reclaimed = 0;
+ 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
++	int lumpy_reclaim = 0;
++
++	/*
++	 * If we need a large contiguous chunk of memory, or have
++	 * trouble getting a small set of contiguous pages, we
++	 * will reclaim both active and inactive pages.
++	 *
++	 * We use the same threshold as pageout congestion_wait below.
++	 */
++	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
++		lumpy_reclaim = 1;
++	else if (sc->order && priority < DEF_PRIORITY - 2)
++		lumpy_reclaim = 1;
+ 
+ 	pagevec_init(&pvec, 1);
+ 
+@@ -1061,19 +1074,7 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_freed;
+ 		unsigned long nr_active;
+ 		unsigned int count[NR_LRU_LISTS] = { 0, };
+-		int mode = ISOLATE_INACTIVE;
+-
+-		/*
+-		 * If we need a large contiguous chunk of memory, or have
+-		 * trouble getting a small set of contiguous pages, we
+-		 * will reclaim both active and inactive pages.
+-		 *
+-		 * We use the same threshold as pageout congestion_wait below.
+-		 */
+-		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
+-			mode = ISOLATE_BOTH;
+-		else if (sc->order && priority < DEF_PRIORITY - 2)
+-			mode = ISOLATE_BOTH;
++		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
+ 
+ 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+ 			     &page_list, &nr_scan, sc->order, mode,
+@@ -1110,7 +1111,7 @@ static unsigned long shrink_inactive_lis
+ 		 * but that should be acceptable to the caller
+ 		 */
+ 		if (nr_freed < nr_taken && !current_is_kswapd() &&
+-					sc->order > PAGE_ALLOC_COSTLY_ORDER) {
++		    lumpy_reclaim) {
+ 			congestion_wait(WRITE, HZ/10);
+ 
+ 			/*
 
-diff --git a/include/linux/futex.h b/include/linux/futex.h
-index b05519c..34956c8 100644
---- a/include/linux/futex.h
-+++ b/include/linux/futex.h
-@@ -24,8 +24,7 @@ union ktime;
- #define FUTEX_WAIT_BITSET	9
- #define FUTEX_WAKE_BITSET	10
- #define FUTEX_WAIT_REQUEUE_PI	11
--#define FUTEX_REQUEUE_PI	12
--#define FUTEX_CMP_REQUEUE_PI	13
-+#define FUTEX_CMP_REQUEUE_PI	12
- 
- #define FUTEX_PRIVATE_FLAG	128
- #define FUTEX_CLOCK_REALTIME	256
-@@ -43,7 +42,6 @@ union ktime;
- #define FUTEX_WAKE_BITSET_PRIVATE	(FUTEX_WAKE_BITS | FUTEX_PRIVATE_FLAG)
- #define FUTEX_WAIT_REQUEUE_PI_PRIVATE	(FUTEX_WAIT_REQUEUE_PI | \
- 					 FUTEX_PRIVATE_FLAG)
--#define FUTEX_REQUEUE_PI_PRIVATE	(FUTEX_REQUEUE_PI | FUTEX_PRIVATE_FLAG)
- #define FUTEX_CMP_REQUEUE_PI_PRIVATE	(FUTEX_CMP_REQUEUE_PI | \
- 					 FUTEX_PRIVATE_FLAG)
- 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 3421e27..0c406a3 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -2560,9 +2560,6 @@ long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
- 		ret = futex_wait_requeue_pi(uaddr, fshared, val, timeout, val3,
- 					    clockrt, uaddr2);
- 		break;
--	case FUTEX_REQUEUE_PI:
--		ret = futex_requeue(uaddr, fshared, uaddr2, val, val2, NULL, 1);
--		break;
- 	case FUTEX_CMP_REQUEUE_PI:
- 		ret = futex_requeue(uaddr, fshared, uaddr2, val, val2, &val3,
- 				    1);
-@@ -2601,8 +2598,7 @@ SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
- 	 * number of waiters to wake in 'utime' if cmd == FUTEX_WAKE_OP.
- 	 */
- 	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
--	    cmd == FUTEX_REQUEUE_PI || cmd == FUTEX_CMP_REQUEUE_PI ||
--	    cmd == FUTEX_WAKE_OP)
-+	    cmd == FUTEX_CMP_REQUEUE_PI || cmd == FUTEX_WAKE_OP)
- 		val2 = (u32) (unsigned long) utime;
- 
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+
