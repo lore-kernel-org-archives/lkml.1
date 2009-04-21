@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbZDUShl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758342AbZDUSi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbZDUShl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbZDUSfL
+	id S1758342AbZDUSi1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbZDUSfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:35:11 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37230 "EHLO
+	Tue, 21 Apr 2009 14:35:25 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:40590 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbZDUSei (ORCPT
+	with ESMTP id S1754671AbZDUSfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:34:38 -0400
+	Tue, 21 Apr 2009 14:35:06 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 02/17] vbus: add virtual-bus definitions
+Subject: [RFC PATCH v3 06/17] ioq: Add basic definitions for a shared-memory,
+	lockless queue
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
        rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
        bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
        chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:34:28 -0400
-Message-ID: <20090421183427.12548.88379.stgit@dev.haskins.net>
+Date: Tue, 21 Apr 2009 14:34:49 -0400
+Message-ID: <20090421183449.12548.90490.stgit@dev.haskins.net>
 In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
 References: <20090421183341.12548.33393.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -30,2532 +31,774 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-See Documentation/vbus.txt for details
+We can map these over VBUS shared memory (or really any shared-memory
+architecture if it supports shm-signals) to allow asynchronous
+communication between two end-points.  Memory is synchronized using
+pure barriers (i.e. lockless), so IOQs are friendly in many contexts,
+even if the memory is remote.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- Documentation/vbus.txt      |  385 +++++++++++++++++++++++++++++
- arch/x86/Kconfig            |    2 
- fs/proc/base.c              |   96 +++++++
- include/linux/sched.h       |    4 
- include/linux/vbus.h        |  147 +++++++++++
- include/linux/vbus_device.h |  417 ++++++++++++++++++++++++++++++++
- kernel/Makefile             |    1 
- kernel/exit.c               |    2 
- kernel/fork.c               |    2 
- kernel/vbus/Kconfig         |   14 +
- kernel/vbus/Makefile        |    1 
- kernel/vbus/attribute.c     |   52 ++++
- kernel/vbus/config.c        |  275 +++++++++++++++++++++
- kernel/vbus/core.c          |  567 +++++++++++++++++++++++++++++++++++++++++++
- kernel/vbus/devclass.c      |  124 +++++++++
- kernel/vbus/map.c           |   72 +++++
- kernel/vbus/map.h           |   41 +++
- kernel/vbus/vbus.h          |  116 +++++++++
- 18 files changed, 2318 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/vbus.txt
- create mode 100644 include/linux/vbus.h
- create mode 100644 include/linux/vbus_device.h
- create mode 100644 kernel/vbus/Kconfig
- create mode 100644 kernel/vbus/Makefile
- create mode 100644 kernel/vbus/attribute.c
- create mode 100644 kernel/vbus/config.c
- create mode 100644 kernel/vbus/core.c
- create mode 100644 kernel/vbus/devclass.c
- create mode 100644 kernel/vbus/map.c
- create mode 100644 kernel/vbus/map.h
- create mode 100644 kernel/vbus/vbus.h
+ include/linux/ioq.h |  410 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig         |   12 +
+ lib/Makefile        |    1 
+ lib/ioq.c           |  298 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 721 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/ioq.h
+ create mode 100644 lib/ioq.c
 
-diff --git a/Documentation/vbus.txt b/Documentation/vbus.txt
+diff --git a/include/linux/ioq.h b/include/linux/ioq.h
 new file mode 100644
-index 0000000..7e96758
+index 0000000..d450d9a
 --- /dev/null
-+++ b/Documentation/vbus.txt
-@@ -0,0 +1,385 @@
-+
-+Virtual-Bus:
-+======================
-+Author: Gregory Haskins <ghaskins@novell.com>
-+
-+
-+
-+
-+What is it?
-+--------------------
-+
-+Virtual-Bus is a kernel based IO resource container technology.  It is modeled
-+on a concept similar to the Linux Device-Model (LDM), where we have buses,
-+devices, and drivers as the primary actors.  However, VBUS has several
-+distinctions when contrasted with LDM:
-+
-+  1) "Busses" in LDM are relatively static and global to the kernel (e.g.
-+     "PCI", "USB", etc).  VBUS buses are arbitrarily created and destroyed
-+     dynamically, and are not globally visible.  Instead they are defined as
-+     visible only to a specific subset of the system (the contained context).
-+  2) "Devices" in LDM are typically tangible physical (or sometimes logical)
-+     devices.  VBUS devices are purely software abstractions (which may or
-+     may not have one or more physical devices behind them).  Devices may
-+     also be arbitrarily created or destroyed by software/administrative action
-+     as opposed to by a hardware discovery mechanism.
-+  3) "Drivers" in LDM sit within the same kernel context as the busses and
-+     devices they interact with.  VBUS drivers live in a foreign
-+     context (such as userspace, or a virtual-machine guest).
-+
-+The idea is that a vbus is created to contain access to some IO services.
-+Virtual devices are then instantiated and linked to a bus to grant access to
-+drivers actively present on the bus.  Drivers will only have visibility to
-+devices present on their respective bus, and nothing else.
-+
-+Virtual devices are defined by modules which register a deviceclass with the
-+system.  A deviceclass simply represents a type of device that _may_ be
-+instantiated into a device, should an administrator wish to do so.  Once
-+this has happened, the device may be associated with one or more buses where
-+it will become visible to all clients of those respective buses.
-+
-+Why do we need this?
-+----------------------
-+
-+There are various reasons why such a construct may be useful.  One of the
-+most interesting use cases is for virtualization, such as KVM.  Hypervisors
-+today provide virtualized IO resources to a guest, but this is often at a cost
-+in both latency and throughput compared to bare metal performance.  Utilizing
-+para-virtual resources instead of emulated devices helps to mitigate this
-+penalty, but even these techniques to date have not fully realized the
-+potential of the underlying bare-metal hardware.
-+
-+Some of the performance differential is unavoidable just given the extra
-+processing that occurs due to the deeper stack (guest+host).  However, some of
-+this overhead is a direct result of the rather indirect path most hypervisors
-+use to route IO.  For instance, KVM uses PIO faults from the guest to trigger
-+a guest->host-kernel->host-userspace->host-kernel sequence of events.
-+Contrast this to a typical userspace application on the host which must only
-+traverse app->kernel for most IO.
-+
-+The fact is that the linux kernel is already great at managing access to IO
-+resources.  Therefore, if you have a hypervisor that is based on the linux
-+kernel, is there some way that we can allow the hypervisor to manage IO
-+directly instead of forcing this convoluted path?
-+
-+The short answer is: "not yet" ;)
-+
-+In order to use such a concept, we need some new facilties.  For one, we
-+need to be able to define containers with their corresponding access-control so
-+that guests do not have unmitigated access to anything they wish.  Second,
-+we also need to define some forms of memory access that is uniform in the face
-+of various clients (e.g. "copy_to_user()" cannot be assumed to work for, say,
-+a KVM vcpu context).  Lastly, we need to provide access to these resources in
-+a way that makes sense for the application, such as asynchronous communication
-+paths and minimizing context switches.
-+
-+So we introduce VBUS as a framework to provide such facilities.  The net
-+result is a *substantial* reduction in IO overhead, even when compared to
-+state of the art para-virtualization techniques (such as virtio-net).
-+
-+How do I use it?
-+------------------------
-+
-+There are two components to utilizing a virtual-bus.  One is the
-+administrative function (creating and configuring a bus and its devices).  The
-+other is the consumption of the resources on the bus by a client (e.g. a
-+virtual machine, or a userspace application).  The former occurs on the host
-+kernel by means of interacting with various special filesystems (e.g. sysfs,
-+configfs, etc).  The latter occurs by means of a "vbus connector" which must
-+be developed specifically to bridge a particular environment.  To date, we
-+have developed such connectors for host-userspace and kvm-guests.  Conceivably
-+we could develop other connectors as needs arise (e.g. lguest, xen,
-+guest-userspace, etc).  This document deals with the administrative interface.
-+Details about developing a connector are out of scope for this document.
-+
-+Interacting with vbus
-+------------------------
-+
-+The first step is to enable virtual-bus support (CONFIG_VBUS) as well as any
-+desired vbus-device modules (e.g. CONFIG_VBUS_VENETTAP), and ensure that your
-+environment mounts both sysfs and configfs somewhere in the filesystem.  This
-+document will assume they are mounted to /sys and /config, respectively.
-+
-+VBUS will create a top-level directory "vbus" in each of the two respective
-+filesystems.  At boot-up, they will look like the following:
-+
-+/sys/vbus/
-+|-- deviceclass
-+|-- devices
-+|-- instances
-+`-- version
-+
-+/config/vbus/
-+|-- devices
-+`-- instances
-+
-+Following their respective roles, /config/vbus is for userspace to manage the
-+lifetime of some number of objects/attributes.  This is in contrast to
-+/sys/vbus which is a reflection of objects managed by the kernel.  It is
-+assumed the reader is already familiar with these two facilities, so we will
-+not go into depth about their general operation.  Suffice to say that vbus
-+consists of objects that are managed both by userspace and the kernel.
-+Modification of objects via /config/vbus will typically be reflected in the
-+/sys/vbus area.
-+
-+It all starts with a deviceclass
-+--------------------------------
-+
-+Before you can do anything useful with vbus, you need some registered
-+deviceclasses.  A deviceclass provides the implementation of a specific type
-+of virtual device.  A deviceclass will typically be registered by loading a
-+kernel-module.  Once loaded, the available device types are enumerated under
-+/sys/vbus/deviceclass.  For example, we will load our "venet-tap" module,
-+which provides network services:
-+
-+# modprobe venet-tap
-+# tree /sys/vbus
-+/sys/vbus
-+|-- deviceclass
-+|   `-- venet-tap
-+|-- devices
-+|-- instances
-+`-- version
-+
-+An administrative agent should be able to enumerate /sys/vbus/deviceclass to
-+determine what services are available on a given platform.
-+
-+Create the container
-+-------------------
-+
-+The next step is to create a new container.  In vbus, this comes in the form
-+of a vbus-instance and it is created by a simple "mkdir" in the
-+/config/vbus/instances area.  The only requirement is that the instance is
-+given a host-wide unique name.  This may be some kind of association to the
-+application (e.g. the unique VM GUID) or it can be arbitrary.  For the
-+purposes of example, we will let $(uuidgen) generate a random UUID for us.
-+
-+# mkdir /config/vbus/instances/$(uuidgen)
-+# tree /sys/vbus/
-+/sys/vbus/
-+|-- deviceclass
-+|   `-- venet-tap
-+|-- devices
-+|-- instances
-+|   `-- beb4df8f-7483-4028-b3f7-767512e2a18c
-+|       |-- devices
-+|       `-- members
-+`-- version
-+
-+So we can see that we have now created a vbus called
-+
-+               "beb4df8f-7483-4028-b3f7-767512e2a18c"
-+
-+in the /config area, and it was immediately reflected in the
-+/sys/vbus/instances area as well (with a few subobjects of its own: "devices"
-+and "members").  The "devices" object denotes any devices that are present on
-+the bus (in this case: none).  Likewise, "members" denotes the pids of any
-+tasks that are members of the bus (in this case: none).  We will come back to
-+this later.  For now, we move on to the next step
-+
-+Create a device instance
-+------------------------
-+
-+Devices are instantiated by again utilizing the /config/vbus configfs area.
-+They are represented as root-level objects under /config/vbus/devices as
-+opposed to bus subordinate objects specifically to allow greater flexibility
-+in the association of a device.  For instance, it may be desirable to have
-+a single device that spans multiple VMs (consider an ethernet switch, or
-+a shared disk for a cluster).  Therefore, device lifecycles are managed by
-+creating/deleting objects in /config/vbus/devices.
-+
-+Note: Creating a device instance is actually a two step process:  We need to
-+give the device instance a unique name, and we also need to give it a specific
-+device type.  It is hard to express both parameters using standard filesystem
-+operations like mkdir, so the design decision was made to require performing
-+the operation in two steps.
-+
-+Our first step is to create a unique instance.  We will again utilize
-+$(uuidgen) to yield an arbitrary name.  Any name will suffice as long as it is
-+unqie on this particular host.
-+
-+# mkdir /config/vbus/devices/$(uuidgen)
-+# tree /sys/vbus
-+/sys/vbus
-+|-- deviceclass
-+|   `-- venet-tap
-+|-- devices
-+|   `-- 6a1aff24-5dc0-4aea-9c35-435daef90e55
-+|       `-- interfaces
-+|-- instances
-+|   `-- beb4df8f-7483-4028-b3f7-767512e2a18c
-+|       |-- devices
-+|       `-- members
-+`-- version
-+
-+At this point we have created a partial instance, since we have not yet
-+assigned a type to the device.  Even so, we can see that some state has
-+changed under /sys/vbus/devices.  We now have an instance named
-+
-+	      	 6a1aff24-5dc0-4aea-9c35-435daef90e55
-+
-+and it has a single subordinate object: "interfaces".  This object in
-+particular is provided by the infrastructure, though do note that a
-+deviceclass may also provide its own attributes/objects once it is created.
-+
-+We will go ahead and give this device a type to complete its construction.  We
-+do this by setting the /config/vbus/devices/$devname/type attribute with a
-+valid deviceclass type:
-+
-+# echo foo > /config/vbus/devices/6a1aff24-5dc0-4aea-9c35-435daef90e55/type
-+bash: echo: write error: No such file or directory
-+
-+Oops!  What happened?  "foo" is not a valid deviceclass.  We need to consult
-+the /sys/vbus/deviceclass area to find out what our options are:
-+
-+# tree /sys/vbus/deviceclass/
-+/sys/vbus/deviceclass/
-+`-- venet-tap
-+
-+Lets try again:
-+
-+# echo venet-tap > /config/vbus/devices/6a1aff24-5dc0-4aea-9c35-435daef90e55/type
-+# tree /sys/vbus/
-+/sys/vbus/
-+|-- deviceclass
-+|   `-- venet-tap
-+|-- devices
-+|   `-- 6a1aff24-5dc0-4aea-9c35-435daef90e55
-+|       |-- class -> ../../deviceclass/venet-tap
-+|       |-- client_mac
-+|       |-- enabled
-+|       |-- host_mac
-+|       |-- ifname
-+|       `-- interfaces
-+|-- instances
-+|   `-- beb4df8f-7483-4028-b3f7-767512e2a18c
-+|       |-- devices
-+|       `-- members
-+`-- version
-+
-+Ok, that looks better.  And note that /sys/vbus/devices now has some more
-+subordinate objects.  Most of those were registered when the venet-tap
-+deviceclass was given a chance to create an instance of itself.  Those
-+attributes are a property of the venet-tap and therefore are out of scope
-+for this document.  Please see the documentation that accompanies a particular
-+module for more details.
-+
-+Put the device on the bus
-+-------------------------
-+
-+The next administrative step is to associate our new device with our bus.
-+This is accomplished using a symbolic link from the bus instance to our device
-+instance.
-+
-+ln -s /config/vbus/devices/6a1aff24-5dc0-4aea-9c35-435daef90e55/ /config/vbus/instances/beb4df8f-7483-4028-b3f7-767512e2a18c/
-+# tree /sys/vbus/
-+/sys/vbus/
-+|-- deviceclass
-+|   `-- venet-tap
-+|-- devices
-+|   `-- 6a1aff24-5dc0-4aea-9c35-435daef90e55
-+|       |-- class -> ../../deviceclass/venet-tap
-+|       |-- client_mac
-+|       |-- enabled
-+|       |-- host_mac
-+|       |-- ifname
-+|       `-- interfaces
-+|           `-- 0 -> ../../../instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/0
-+|-- instances
-+|   `-- beb4df8f-7483-4028-b3f7-767512e2a18c
-+|       |-- devices
-+|       |   `-- 0
-+|       |       |-- device -> ../../../../devices/6a1aff24-5dc0-4aea-9c35-435daef90e55
-+|       |       `-- type
-+|       `-- members
-+`-- version
-+
-+We can now see that the device indicates that it has an interface registered
-+to a bus:
-+
-+/sys/vbus/devices/6a1aff24-5dc0-4aea-9c35-435daef90e55/interfaces/
-+`-- 0 -> ../../../instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/0
-+
-+Likewise, we can see that the bus has a device listed (id = "0"):
-+
-+/sys/vbus/instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/
-+`-- 0
-+    |-- device -> ../../../../devices/6a1aff24-5dc0-4aea-9c35-435daef90e55
-+    `-- type
-+
-+At this point, our container is ready for use.  However, it currently has 0
-+members, so lets fix that
-+
-+Add some members
-+--------------------
-+
-+Membership is controlled by an attribute: /proc/$pid/vbus.  A pid can only be
-+a member of one (or zero) busses at a time.  To establish membership, we set
-+the name of the bus, like so:
-+
-+# echo beb4df8f-7483-4028-b3f7-767512e2a18c > /proc/self/vbus
-+# tree /sys/vbus/
-+/sys/vbus/
-+|-- deviceclass
-+|   `-- venet-tap
-+|-- devices
-+|   `-- 6a1aff24-5dc0-4aea-9c35-435daef90e55
-+|       |-- class -> ../../deviceclass/venet-tap
-+|       |-- client_mac
-+|       |-- enabled
-+|       |-- host_mac
-+|       |-- ifname
-+|       `-- interfaces
-+|           `-- 0 -> ../../../instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/0
-+|-- instances
-+|   `-- beb4df8f-7483-4028-b3f7-767512e2a18c
-+|       |-- devices
-+|       |   `-- 0
-+|       |       |-- device -> ../../../../devices/6a1aff24-5dc0-4aea-9c35-435daef90e55
-+|       |       `-- type
-+|       `-- members
-+|           |-- 4382
-+|           `-- 4588
-+`-- version
-+
-+Woah!  Why are there two members?  VBUS membership is inherited by forked
-+tasks.  Therefore 4382 is the pid of our shell (which we set via /proc/self),
-+and 4588 is the pid of the forked/exec'ed "tree" process.  This property can
-+be useful for having things like qemu set up the bus and then forking each
-+vcpu which will inherit access.
-+
-+At this point, we are ready to roll.  Pid 4382 has access to a virtual-bus
-+namespace with one device, id=0.  Its type is:
-+
-+# cat /sys/vbus/instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/0/type
-+virtual-ethernet
-+
-+"virtual-ethernet"?  Why is it not "venet-tap"?  Device-classes are allowed to
-+register their interfaces under an id that is not required to be the same as
-+their deviceclass.  This supports device polymorphism.   For instance,
-+consider that an interface "virtual-ethernet" may provide basic 802.x packet
-+exchange.  However, we could have various implementations of a device that
-+supports the 802.x interface, while having various implementations behind
-+them.
-+
-+For instance, "venet-tap" might act like a tuntap module, while
-+"venet-loopback" would loop packets back and "venet-switch" would form a
-+layer-2 domain among the participating guests.  All three modules would
-+presumably support the same basic 802.x interface, yet all three have
-+completely different implementations.
-+
-+Drivers on this particular bus would see this instance id=0 as a type
-+"virtual-ethernet" even though the underlying implementation happens to be a
-+tap device.  This means a single driver that supports the protocol advertised
-+by the "virtual-ethernet" type would be able to support the plethera of
-+available device types that we may wish to create.
-+
-+Teardown:
-+---------------
-+
-+We can descontruct a vbus container doing pretty much the opposite of what we
-+did to create it.  Echo "0" into /proc/self/vbus, rm the symlink between the
-+bus and device, and rmdir the bus and device objects.  Once that is done, we
-+can even rmmod the venet-tap module.  Note that the infrastructure will
-+maintain a module-ref while it is configured in a container, so be sure to
-+completely tear down the vbus/device before trying this.
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bc25b9f..e222395 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1978,6 +1978,8 @@ source "drivers/pcmcia/Kconfig"
- 
- source "drivers/pci/hotplug/Kconfig"
- 
-+source "kernel/vbus/Kconfig"
-+
- endmenu
- 
- 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index f715597..25a1c60 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -81,6 +81,7 @@
- #include <linux/elf.h>
- #include <linux/pid_namespace.h>
- #include <linux/fs_struct.h>
-+#include <linux/vbus.h>
- #include "internal.h"
- 
- /* NOTE:
-@@ -1048,6 +1049,98 @@ static const struct file_operations proc_oom_adjust_operations = {
- 	.write		= oom_adjust_write,
- };
- 
-+#ifdef CONFIG_VBUS
-+
-+static ssize_t vbus_read(struct file *file, char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+	struct vbus *vbus;
-+	const char *name;
-+	char buffer[256];
-+	size_t len;
-+
-+	if (!task)
-+		return -ESRCH;
-+
-+	vbus = task_vbus_get(task);
-+
-+	put_task_struct(task);
-+
-+	name = vbus_name(vbus);
-+
-+	len = snprintf(buffer, sizeof(buffer), "%s\n", name ? name : "<none>");
-+
-+	vbus_put(vbus);
-+
-+	return simple_read_from_buffer(buf, count, ppos, buffer, len);
-+}
-+
-+static ssize_t vbus_write(struct file *file, const char __user *buf,
-+			  size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task;
-+	struct vbus *vbus = NULL;
-+	char buffer[256];
-+	int disable = 0;
-+
-+	memset(buffer, 0, sizeof(buffer));
-+	if (count > sizeof(buffer) - 1)
-+		count = sizeof(buffer) - 1;
-+	if (copy_from_user(buffer, buf, count))
-+		return -EFAULT;
-+
-+	if (buffer[count-1] == '\n')
-+		buffer[count-1] = 0;
-+
-+	task = get_proc_task(file->f_path.dentry->d_inode);
-+	if (!task)
-+		return -ESRCH;
-+
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		put_task_struct(task);
-+		return -EACCES;
-+	}
-+
-+	if (strcmp(buffer, "0") == 0)
-+		disable = 1;
-+	else
-+		vbus = vbus_find(buffer);
-+
-+	if (disable || vbus)
-+		task_vbus_disassociate(task);
-+
-+	if (vbus) {
-+		int ret = vbus_associate(vbus, task);
-+
-+		if (ret < 0)
-+			printk(KERN_ERR \
-+			       "vbus: could not associate %s/%d with bus %s",
-+			       task->comm, task->pid, vbus_name(vbus));
-+		else
-+			rcu_assign_pointer(task->vbus, vbus);
-+
-+		vbus_put(vbus); /* Counter the vbus_find() */
-+	} else if (!disable) {
-+		put_task_struct(task);
-+		return -ENOENT;
-+	}
-+
-+	put_task_struct(task);
-+
-+	if (count == sizeof(buffer)-1)
-+		return -EIO;
-+
-+	return count;
-+}
-+
-+static const struct file_operations proc_vbus_operations = {
-+	.read		= vbus_read,
-+	.write		= vbus_write,
++++ b/include/linux/ioq.h
+@@ -0,0 +1,410 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * IOQ is a generic shared-memory, lockless queue mechanism. It can be used
++ * in a variety of ways, though its intended purpose is to become the
++ * asynchronous communication path for virtual-bus drivers.
++ *
++ * The following are a list of key design points:
++ *
++ * #) All shared-memory is always allocated on explicitly one side of the
++ *    link.  This typically would be the guest side in a VM/VMM scenario.
++ * #) Each IOQ has the concept of "north" and "south" locales, where
++ *    north denotes the memory-owner side (e.g. guest).
++ * #) An IOQ is manipulated using an iterator idiom.
++ * #) Provides a bi-directional signaling/notification infrastructure on
++ *    a per-queue basis, which includes an event mitigation strategy
++ *    to reduce boundary switching.
++ * #) The signaling path is abstracted so that various technologies and
++ *    topologies can define their own specific implementation while sharing
++ *    the basic structures and code.
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#ifndef _LINUX_IOQ_H
++#define _LINUX_IOQ_H
++
++#include <asm/types.h>
++#include <linux/shm_signal.h>
++
++/*
++ *---------
++ * The following structures represent data that is shared across boundaries
++ * which may be quite disparate from one another (e.g. Windows vs Linux,
++ * 32 vs 64 bit, etc).  Therefore, care has been taken to make sure they
++ * present data in a manner that is independent of the environment.
++ *-----------
++ */
++struct ioq_ring_desc {
++	__u64                 cookie; /* for arbitrary use by north-side */
++	__u64                 ptr;
++	__u64                 len;
++	__u8                  valid;
++	__u8                  sown; /* South owned = 1, North owned = 0 */
 +};
 +
-+#endif /* CONFIG_VBUS */
++#define IOQ_RING_MAGIC 0x47fa2fe4
++#define IOQ_RING_VER   4
 +
- #ifdef CONFIG_AUDITSYSCALL
- #define TMPBUFLEN 21
- static ssize_t proc_loginuid_read(struct file * file, char __user * buf,
-@@ -2539,6 +2632,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, proc_tgid_io_accounting),
- #endif
-+#ifdef CONFIG_VBUS
-+	REG("vbus", S_IRUGO|S_IWUSR, proc_vbus_operations),
-+#endif
- };
- 
- static int proc_tgid_base_readdir(struct file * filp,
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b4c38bc..5e3ff74 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -98,6 +98,7 @@ struct robust_list_head;
- struct bio;
- struct bts_tracer;
- struct fs_struct;
-+struct vbus;
- 
- /*
-  * List of flags we want to share for kernel threads,
-@@ -1339,6 +1340,9 @@ struct task_struct {
- 	struct held_lock held_locks[MAX_LOCK_DEPTH];
- 	gfp_t lockdep_reclaim_gfp;
- #endif
-+#ifdef CONFIG_VBUS
-+	struct vbus *vbus;
-+#endif
- 
- /* journalling filesystem info */
- 	void *journal_info;
-diff --git a/include/linux/vbus.h b/include/linux/vbus.h
-new file mode 100644
-index 0000000..5f0566c
---- /dev/null
-+++ b/include/linux/vbus.h
-@@ -0,0 +1,147 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Virtual-Bus
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
++struct ioq_ring_idx {
++	__u32                 head;    /* 0 based index to head of ptr array */
++	__u32                 tail;    /* 0 based index to tail of ptr array */
++	__u8                  full;
++};
 +
-+#ifndef _LINUX_VBUS_H
-+#define _LINUX_VBUS_H
++enum ioq_locality {
++	ioq_locality_north,
++	ioq_locality_south,
++};
 +
-+#ifdef CONFIG_VBUS
++struct ioq_ring_head {
++	__u32                  magic;
++	__u32                  ver;
++	struct shm_signal_desc signal;
++	struct ioq_ring_idx    idx[2];
++	__u32                  count;
++	struct ioq_ring_desc   ring[1]; /* "count" elements will be allocated */
++};
 +
-+#include <linux/module.h>
++#define IOQ_HEAD_DESC_SIZE(count) \
++    (sizeof(struct ioq_ring_head) + sizeof(struct ioq_ring_desc) * (count - 1))
++
++/* --- END SHARED STRUCTURES --- */
++
++#ifdef __KERNEL__
++
 +#include <linux/sched.h>
-+#include <linux/rcupdate.h>
-+#include <linux/vbus_device.h>
-+
-+struct vbus;
-+struct task_struct;
-+
-+/**
-+ * vbus_associate() - associate a task with a vbus
-+ * @vbus:      The bus context to associate with
-+ * @p:         The task to associate
-+ *
-+ * This function adds a task as a member of a vbus.  Tasks must be members
-+ * of a bus before they are allowed to use its resources.  Tasks may only
-+ * associate with a single bus at a time.
-+ *
-+ * Note: children inherit any association present at fork().
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int vbus_associate(struct vbus *vbus, struct task_struct *p);
-+
-+/**
-+ * vbus_disassociate() - disassociate a task with a vbus
-+ * @vbus:      The bus context to disassociate with
-+ * @p:         The task to disassociate
-+ *
-+ * This function removes a task as a member of a vbus.
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int vbus_disassociate(struct vbus *vbus, struct task_struct *p);
-+
-+struct vbus *vbus_get(struct vbus *);
-+void vbus_put(struct vbus *);
-+
-+/**
-+ * vbus_name() - returns the name of a bus
-+ * @vbus:      The bus context
-+ *
-+ * Returns: (char *) name of bus
-+ *
-+ **/
-+const char *vbus_name(struct vbus *vbus);
-+
-+/**
-+ * vbus_find() - retreives a vbus pointer from its name
-+ * @name:      The name of the bus to find
-+ *
-+ * Returns: NULL = failure, non-null = (vbus *)bus-pointer
-+ *
-+ **/
-+struct vbus *vbus_find(const char *name);
-+
-+/**
-+ * task_vbus_get() - retreives an associated vbus pointer from a task
-+ * @p:         The task context
-+ *
-+ * Safely retreives a pointer to an associated (if any) vbus from a task
-+ *
-+ * Returns: NULL = no association, non-null = (vbus *)bus-pointer
-+ *
-+ **/
-+static inline struct vbus *task_vbus_get(struct task_struct *p)
-+{
-+	struct vbus *vbus;
-+
-+	rcu_read_lock();
-+	vbus = rcu_dereference(p->vbus);
-+	if (vbus)
-+		vbus_get(vbus);
-+	rcu_read_unlock();
-+
-+	return vbus;
-+}
-+
-+/**
-+ * fork_vbus() - Helper function to handle associated task forking
-+ * @p:         The task context
-+ *
-+ **/
-+static inline void fork_vbus(struct task_struct *p)
-+{
-+	struct vbus *vbus = task_vbus_get(p);
-+
-+	if (vbus) {
-+		BUG_ON(vbus_associate(vbus, p) < 0);
-+		vbus_put(vbus);
-+	}
-+}
-+
-+/**
-+ * task_vbus_disassociate() - Helper function to handle disassociating tasks
-+ * @p:         The task context
-+ *
-+ **/
-+static inline void task_vbus_disassociate(struct task_struct *p)
-+{
-+	struct vbus *vbus = task_vbus_get(p);
-+
-+	if (vbus) {
-+		rcu_assign_pointer(p->vbus, NULL);
-+		synchronize_rcu();
-+
-+		vbus_disassociate(vbus, p);
-+		vbus_put(vbus);
-+	}
-+}
-+
-+#else /* CONFIG_VBUS */
-+
-+#define fork_vbus(p) do { } while (0)
-+#define task_vbus_disassociate(p) do { } while (0)
-+
-+#endif /* CONFIG_VBUS */
-+
-+#endif /* _LINUX_VBUS_H */
-diff --git a/include/linux/vbus_device.h b/include/linux/vbus_device.h
-new file mode 100644
-index 0000000..f73cd86
---- /dev/null
-+++ b/include/linux/vbus_device.h
-@@ -0,0 +1,417 @@
-+/*
-+ * VBUS device models
-+ *
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file deals primarily with the definitions for interfacing a virtual
-+ * device model to a virtual bus.  In a nutshell, a devclass begets a device,
-+ * which begets a device_interface, which begets a connection.
-+ *
-+ * devclass
-+ * -------
-+ *
-+ * To develop a vbus device, it all starts with a devclass.  You must register
-+ * a devclass using vbus_devclass_register().  Each registered devclass is
-+ * enumerated under /sys/vbus/deviceclass.
-+ *
-+ * In of itself, a devclass doesnt do much.  It is just an object factory for
-+ * a device whose lifetime is managed by userspace.  When userspace decides
-+ * it would like to create an instance of a particular devclass, the
-+ * devclass::create() callback is invoked (registered as part of the ops
-+ * structure during vbus_devclass_register()).  How and when userspace decides
-+ * to do this is beyond the scope of this document.  Please see:
-+ *
-+ *                         Documentation/vbus.txt
-+ *
-+ * for more details.
-+ *
-+ * device
-+ * -------
-+ *
-+ * A vbus device is created by a particular devclass during the invokation
-+ * of its devclass::create() callback.  A device is initially created without
-+ * any association with a bus.  One or more buses may attempt to connect to
-+ * a device (controlled, again, by userspace).  When this occurs, a
-+ * device::bus_connect() callback is invoked.
-+ *
-+ * This bus_connect() callback gives the device a chance to decide if it will
-+ * accept the connection, and if so, to register its interfaces.  Most devices
-+ * will likely only allow a connection to one bus.  Therefore, they may return
-+ * -EBUSY another bus is already connected.
-+ *
-+ * If the device accepts the connection, it should register one of more
-+ * interfaces with the bus using vbus_device_interface_register().  Most
-+ * devices will only support one interface, and therefore will only invoke
-+ * this method once.  However, some more elaborate devices may have multiple
-+ * functions, or abstracted topologies.  Therefore they may opt at their own
-+ * discretion to register more than one interface.  The interfaces do not need
-+ * to be uniform in type.
-+ *
-+ * device_interface
-+ * -------------------
-+ *
-+ * The purpose of an interface is two fold: 1) advertise a particular ABI
-+ * for communcation to a driver, 2) handle the initial connection of a driver.
-+ *
-+ * As such, a device_interface has a string "type" (which is akin to the
-+ * abi type that this interface supports, like a PCI-ID).  It also sports
-+ * an interface::open() method.
-+ *
-+ * The interface::open callback is invoked whenever a driver attempts to
-+ * connect to this device.  The device implements its own policy regarding
-+ * whether it accepts multiple connections or not.  Most devices will likely
-+ * only accept one connection at a time, and therefore will return -EBUSY if
-+ * subsequent attempts are made.
-+ *
-+ * However, if successful, the interface::open() should return a
-+ * vbus_connection object
-+ *
-+ * connections
-+ * -----------
-+ *
-+ * A connection represents an interface that is succesfully opened.  It will
-+ * remain in an active state as long as the client retains the connection.
-+ * The connection::release() method is invoked if the client should die,
-+ * restart, or explicitly close the connection.  The device-model should use
-+ * this release() callback as the indication to clean up any resources
-+ * associated with a particular connection such as allocated queues, etc.
-+ *
-+ * ---
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#ifndef _LINUX_VBUS_DEVICE_H
-+#define _LINUX_VBUS_DEVICE_H
-+
-+#include <linux/module.h>
-+#include <linux/configfs.h>
-+#include <linux/rbtree.h>
++#include <linux/wait.h>
++#include <linux/interrupt.h>
 +#include <linux/shm_signal.h>
-+#include <linux/vbus.h>
 +#include <asm/atomic.h>
 +
-+struct vbus_device_interface;
-+struct vbus_connection;
-+struct vbus_device;
-+struct vbus_devclass;
-+struct vbus_memctx;
-+
-+/*
-+ * ----------------------
-+ * devclass
-+ * ----------------------
-+ */
-+struct vbus_devclass_ops {
-+	int (*create)(struct vbus_devclass *dc,
-+		      struct vbus_device **dev);
-+	void (*release)(struct vbus_devclass *dc);
++enum ioq_idx_type {
++	ioq_idxtype_valid,
++	ioq_idxtype_inuse,
++	ioq_idxtype_both,
++	ioq_idxtype_invalid,
 +};
 +
-+struct vbus_devclass {
-+	const char *name;
-+	struct vbus_devclass_ops *ops;
-+	struct rb_node node;
-+	struct kobject kobj;
-+	struct module *owner;
++enum ioq_seek_type {
++	ioq_seek_tail,
++	ioq_seek_next,
++	ioq_seek_head,
++	ioq_seek_set
 +};
++
++struct ioq_iterator {
++	struct ioq            *ioq;
++	struct ioq_ring_idx   *idx;
++	u32                    pos;
++	struct ioq_ring_desc  *desc;
++	int                    update:1;
++	int                    dualidx:1;
++	int                    flipowner:1;
++};
++
++struct ioq_notifier {
++	void (*signal)(struct ioq_notifier *);
++};
++
++struct ioq_ops {
++	void     (*release)(struct ioq *ioq);
++};
++
++struct ioq {
++	struct ioq_ops *ops;
++
++	atomic_t               refs;
++	enum ioq_locality      locale;
++	struct ioq_ring_head  *head_desc;
++	struct ioq_ring_desc  *ring;
++	struct shm_signal     *signal;
++	wait_queue_head_t      wq;
++	struct ioq_notifier   *notifier;
++	size_t                 count;
++	struct shm_signal_notifier shm_notifier;
++};
++
++#define IOQ_ITER_AUTOUPDATE  (1 << 0)
++#define IOQ_ITER_NOFLIPOWNER (1 << 1)
 +
 +/**
-+ * vbus_devclass_register() - register a devclass with the system
-+ * @devclass:   The devclass context to register
++ * ioq_init() - initialize an IOQ
++ * @ioq:        IOQ context
 + *
-+ * Establishes a new device-class for consumption.  Registered device-classes
-+ * are enumerated under /sys/vbus/deviceclass.  For more details, please see
-+ * Documentation/vbus*
++ * Initializes IOQ context before first use
++ *
++ **/
++void ioq_init(struct ioq *ioq,
++	      struct ioq_ops *ops,
++	      enum ioq_locality locale,
++	      struct ioq_ring_head *head,
++	      struct shm_signal *signal,
++	      size_t count);
++
++/**
++ * ioq_get() - acquire an IOQ context reference
++ * @ioq:        IOQ context
++ *
++ **/
++static inline struct ioq *ioq_get(struct ioq *ioq)
++{
++	atomic_inc(&ioq->refs);
++
++	return ioq;
++}
++
++/**
++ * ioq_put() - release an IOQ context reference
++ * @ioq:        IOQ context
++ *
++ **/
++static inline void ioq_put(struct ioq *ioq)
++{
++	if (atomic_dec_and_test(&ioq->refs)) {
++		shm_signal_put(ioq->signal);
++		ioq->ops->release(ioq);
++	}
++}
++
++/**
++ * ioq_notify_enable() - enables local notifications on an IOQ
++ * @ioq:        IOQ context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Enables/unmasks the registered ioq_notifier (if applicable) and waitq to
++ * receive wakeups whenever the remote side performs an ioq_signal() operation.
++ * A notification will be dispatched immediately if any pending signals have
++ * already been issued prior to invoking this call.
++ *
++ * This is synonymous with unmasking an interrupt.
 + *
 + * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+int vbus_devclass_register(struct vbus_devclass *devclass);
++static inline int ioq_notify_enable(struct ioq *ioq, int flags)
++{
++	return shm_signal_enable(ioq->signal, 0);
++}
 +
 +/**
-+ * vbus_devclass_unregister() - unregister a devclass with the system
-+ * @devclass:   The devclass context to unregister
++ * ioq_notify_disable() - disable local notifications on an IOQ
++ * @ioq:        IOQ context
++ * @flags:      Reserved for future use, must be 0
 + *
-+ * Removes a devclass from the system
++ * Disables/masks the registered ioq_notifier (if applicable) and waitq
++ * from receiving any further notifications.  Any subsequent calls to
++ * ioq_signal() by the remote side will update the ring as dirty, but
++ * will not traverse the locale boundary and will not invoke the notifier
++ * callback or wakeup the waitq.  Signals delivered while masked will
++ * be deferred until ioq_notify_enable() is invoked
++ *
++ * This is synonymous with masking an interrupt
 + *
 + * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+int vbus_devclass_unregister(struct vbus_devclass *devclass);
-+
-+/**
-+ * vbus_devclass_get() - acquire a devclass context reference
-+ * @devclass:      devclass context
-+ *
-+ **/
-+static inline struct vbus_devclass *
-+vbus_devclass_get(struct vbus_devclass *devclass)
++static inline int ioq_notify_disable(struct ioq *ioq, int flags)
 +{
-+	if (!try_module_get(devclass->owner))
-+		return NULL;
-+
-+	kobject_get(&devclass->kobj);
-+	return devclass;
++	return shm_signal_disable(ioq->signal, 0);
 +}
 +
 +/**
-+ * vbus_devclass_put() - release a devclass context reference
-+ * @devclass:      devclass context
++ * ioq_signal() - notify the remote side about ring changes
++ * @ioq:        IOQ context
++ * @flags:      Reserved for future use, must be 0
 + *
-+ **/
-+static inline void
-+vbus_devclass_put(struct vbus_devclass *devclass)
-+{
-+	kobject_put(&devclass->kobj);
-+	module_put(devclass->owner);
-+}
-+
-+/*
-+ * ----------------------
-+ * device
-+ * ----------------------
-+ */
-+struct vbus_device_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct vbus_device *dev,
-+			struct vbus_device_attribute *attr,
-+			char *buf);
-+	ssize_t (*store)(struct vbus_device *dev,
-+			 struct vbus_device_attribute *attr,
-+			 const char *buf, size_t count);
-+};
-+
-+struct vbus_device_ops {
-+	int (*bus_connect)(struct vbus_device *dev, struct vbus *vbus);
-+	int (*bus_disconnect)(struct vbus_device *dev, struct vbus *vbus);
-+	void (*release)(struct vbus_device *dev);
-+};
-+
-+struct vbus_device {
-+	const char *type;
-+	struct vbus_device_ops *ops;
-+	struct attribute_group *attrs;
-+	struct kobject *kobj;
-+};
-+
-+/*
-+ * ----------------------
-+ * device_interface
-+ * ----------------------
-+ */
-+struct vbus_device_interface_ops {
-+	int (*open)(struct vbus_device_interface *intf,
-+		    struct vbus_memctx *ctx,
-+		    int version,
-+		    struct vbus_connection **conn);
-+	void (*release)(struct vbus_device_interface *intf);
-+};
-+
-+struct vbus_device_interface {
-+	const char *name;
-+	const char *type;
-+	struct vbus_device_interface_ops *ops;
-+	unsigned long id;
-+	struct vbus_device *dev;
-+	struct vbus *vbus;
-+	struct rb_node node;
-+	struct kobject kobj;
-+};
-+
-+/**
-+ * vbus_device_interface_register() - register an interface with a bus
-+ * @dev:        The device context of the caller
-+ * @vbus:       The bus context to register with
-+ * @intf:       The interface context to register
++ * Marks the ring state as "dirty" and, if enabled, will traverse
++ * a locale boundary to invoke a remote notification.  The remote
++ * side controls whether the notification should be delivered via
++ * the ioq_notify_enable/disable() interface.
 + *
-+ * This function is invoked (usually in the context of a device::bus_connect()
-+ * callback) to register a interface on a bus.  We make this an explicit
-+ * operation instead of implicit on the bus_connect() to facilitate devices
-+ * that may present multiple interfaces to a bus.  In those cases, a device
-+ * may invoke this function multiple times (one per supported interface).
++ * The specifics of how to traverse a locale boundary are abstracted
++ * by the ioq_ops->signal() interface and provided by a particular
++ * implementation.  However, typically going north to south would be
++ * something like a syscall/hypercall, and going south to north would be
++ * something like a posix-signal/guest-interrupt.
 + *
 + * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+int vbus_device_interface_register(struct vbus_device *dev,
-+				   struct vbus *vbus,
-+				   struct vbus_device_interface *intf);
++static inline int ioq_signal(struct ioq *ioq, int flags)
++{
++	return shm_signal_inject(ioq->signal, 0);
++}
 +
 +/**
-+ * vbus_device_interface_unregister() - unregister an interface with a bus
-+ * @intf:       The interface context to unregister
++ * ioq_count() - counts the number of outstanding descriptors in an index
++ * @ioq:        IOQ context
++ * @type:	Specifies the index type
++ *                 (*) valid: the descriptor is valid.  This is usually
++ *                     used to keep track of descriptors that may not
++ *                     be carrying a useful payload, but still need to
++ *                     be tracked carefully.
++ *                 (*) inuse: Descriptors that carry useful payload
 + *
-+ * This function is the converse of interface_register.  It is typically
-+ * invoked in the context of a device::bus_disconnect().
++ * Returns:
++ *  (*) >=0: # of descriptors outstanding in the index
++ *  (*) <0 = ERRNO
++ *
++ **/
++int ioq_count(struct ioq *ioq, enum ioq_idx_type type);
++
++/**
++ * ioq_remain() - counts the number of remaining descriptors in an index
++ * @ioq:        IOQ context
++ * @type:	Specifies the index type
++ *                 (*) valid: the descriptor is valid.  This is usually
++ *                     used to keep track of descriptors that may not
++ *                     be carrying a useful payload, but still need to
++ *                     be tracked carefully.
++ *                 (*) inuse: Descriptors that carry useful payload
++ *
++ * This is the converse of ioq_count().  This function returns the number
++ * of "free" descriptors left in a particular index
++ *
++ * Returns:
++ *  (*) >=0: # of descriptors remaining in the index
++ *  (*) <0 = ERRNO
++ *
++ **/
++int ioq_remain(struct ioq *ioq, enum ioq_idx_type type);
++
++/**
++ * ioq_size() - counts the maximum number of descriptors in an ring
++ * @ioq:        IOQ context
++ *
++ * This function returns the maximum number of descriptors supported in
++ * a ring, regardless of their current state (free or inuse).
++ *
++ * Returns:
++ *  (*) >=0: total # of descriptors in the ring
++ *  (*) <0 = ERRNO
++ *
++ **/
++int ioq_size(struct ioq *ioq);
++
++/**
++ * ioq_full() - determines if a specific index is "full"
++ * @ioq:        IOQ context
++ * @type:	Specifies the index type
++ *                 (*) valid: the descriptor is valid.  This is usually
++ *                     used to keep track of descriptors that may not
++ *                     be carrying a useful payload, but still need to
++ *                     be tracked carefully.
++ *                 (*) inuse: Descriptors that carry useful payload
++ *
++ * Returns:
++ *  (*) 0: index is not full
++ *  (*) 1: index is full
++ *  (*) <0 = ERRNO
++ *
++ **/
++int ioq_full(struct ioq *ioq, enum ioq_idx_type type);
++
++/**
++ * ioq_empty() - determines if a specific index is "empty"
++ * @ioq:        IOQ context
++ * @type:	Specifies the index type
++ *                 (*) valid: the descriptor is valid.  This is usually
++ *                     used to keep track of descriptors that may not
++ *                     be carrying a useful payload, but still need to
++ *                     be tracked carefully.
++ *                 (*) inuse: Descriptors that carry useful payload
++ *
++ * Returns:
++ *  (*) 0: index is not empty
++ *  (*) 1: index is empty
++ *  (*) <0 = ERRNO
++ *
++ **/
++static inline int ioq_empty(struct ioq *ioq, enum ioq_idx_type type)
++{
++    return !ioq_count(ioq, type);
++}
++
++/**
++ * ioq_iter_init() - initialize an iterator for IOQ descriptor traversal
++ * @ioq:        IOQ context to iterate on
++ * @iter:	Iterator context to init (usually from stack)
++ * @type:	Specifies the index type to iterate against
++ *                 (*) valid: iterate against the "valid" index
++ *                 (*) inuse: iterate against the "inuse" index
++ *                 (*) both: iterate against both indexes simultaneously
++ * @flags:      Bitfield with 0 or more bits set to alter behavior
++ *                 (*) autoupdate: automatically signal the remote side
++ *                     whenever the iterator pushes/pops to a new desc
++ *                 (*) noflipowner: do not flip the ownership bit during
++ *                     a push/pop operation
 + *
 + * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+int vbus_device_interface_unregister(struct vbus_device_interface *intf);
-+
-+/*
-+ * ----------------------
-+ * memory context
-+ * ----------------------
-+ */
-+struct vbus_memctx_ops {
-+	unsigned long (*copy_to)(struct vbus_memctx *ctx,
-+				 void *dst,
-+				 const void *src,
-+				 unsigned long len);
-+	unsigned long (*copy_from)(struct vbus_memctx *ctx,
-+				   void *dst,
-+				   const void *src,
-+				   unsigned long len);
-+	void (*release)(struct vbus_memctx *ctx);
-+};
-+
-+struct vbus_memctx {
-+	atomic_t refs;
-+	struct vbus_memctx_ops *ops;
-+};
-+
-+static inline void
-+vbus_memctx_init(struct vbus_memctx *ctx, struct vbus_memctx_ops *ops)
-+{
-+	memset(ctx, 0, sizeof(*ctx));
-+	atomic_set(&ctx->refs, 1);
-+	ctx->ops = ops;
-+}
-+
-+#define VBUS_MEMCTX_INIT(_ops) {                                   \
-+	.refs = ATOMIC_INIT(1),                                    \
-+	.ops = _ops,                                               \
-+}
-+
-+static inline void
-+vbus_memctx_get(struct vbus_memctx *ctx)
-+{
-+	atomic_inc(&ctx->refs);
-+}
-+
-+static inline void
-+vbus_memctx_put(struct vbus_memctx *ctx)
-+{
-+	if (atomic_dec_and_test(&ctx->refs))
-+		ctx->ops->release(ctx);
-+}
-+
-+/*
-+ * ----------------------
-+ * memory context
-+ * ----------------------
-+ */
-+struct vbus_shm;
-+
-+struct vbus_shm_ops {
-+	void (*release)(struct vbus_shm *shm);
-+};
-+
-+struct vbus_shm {
-+	atomic_t refs;
-+	struct vbus_shm_ops *ops;
-+	void                *ptr;
-+	size_t               len;
-+};
-+
-+static inline void
-+vbus_shm_init(struct vbus_shm *shm, struct vbus_shm_ops *ops,
-+	      void *ptr, size_t len)
-+{
-+	memset(shm, 0, sizeof(*shm));
-+	atomic_set(&shm->refs, 1);
-+	shm->ops = ops;
-+	shm->ptr = ptr;
-+	shm->len = len;
-+}
-+
-+static inline void
-+vbus_shm_get(struct vbus_shm *shm)
-+{
-+	atomic_inc(&shm->refs);
-+}
-+
-+static inline void
-+vbus_shm_put(struct vbus_shm *shm)
-+{
-+	if (atomic_dec_and_test(&shm->refs))
-+		shm->ops->release(shm);
-+}
-+
-+/*
-+ * ----------------------
-+ * connection
-+ * ----------------------
-+ */
-+struct vbus_connection_ops {
-+	int (*call)(struct vbus_connection *conn,
-+		    unsigned long func,
-+		    void *data,
-+		    unsigned long len,
-+		    unsigned long flags);
-+	int (*shm)(struct vbus_connection *conn,
-+		   unsigned long id,
-+		   struct vbus_shm *shm,
-+		   struct shm_signal *signal,
-+		   unsigned long flags);
-+	void (*close)(struct vbus_connection *conn);
-+	void (*release)(struct vbus_connection *conn);
-+};
-+
-+struct vbus_connection {
-+	atomic_t refs;
-+	struct vbus_connection_ops *ops;
-+};
++int ioq_iter_init(struct ioq *ioq, struct ioq_iterator *iter,
++		  enum ioq_idx_type type, int flags);
 +
 +/**
-+ * vbus_connection_init() - initialize a vbus_connection
-+ * @conn:       connection context
-+ * @ops:        ops structure to assign to context
++ * ioq_iter_seek() - seek to a specific location in the IOQ ring
++ * @iter:	Iterator context (must be initialized with ioq_iter_init)
++ * @type:	Specifies the type of seek operation
++ *                 (*) tail: seek to the absolute tail, offset is ignored
++ *                 (*) next: seek to the relative next, offset is ignored
++ *                 (*) head: seek to the absolute head, offset is ignored
++ *                 (*) set: seek to the absolute offset
++ * @offset:     Offset for ioq_seek_set operations
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+static inline void vbus_connection_init(struct vbus_connection *conn,
-+					struct vbus_connection_ops *ops)
-+{
-+	memset(conn, 0, sizeof(*conn));
-+	atomic_set(&conn->refs, 1);
-+	conn->ops = ops;
-+}
++int  ioq_iter_seek(struct ioq_iterator *iter, enum ioq_seek_type type,
++		   long offset, int flags);
 +
 +/**
-+ * vbus_connection_get() - acquire a connection context reference
-+ * @conn:       connection context
++ * ioq_iter_push() - push the tail pointer forward
++ * @iter:	Iterator context (must be initialized with ioq_iter_init)
++ * @flags:      Reserved for future use, must be 0
++ *
++ * This function will simultaneously advance the tail ptr in the current
++ * index (valid/inuse, as specified in the ioq_iter_init) as well as
++ * perform a seek(next) operation.  This effectively "pushes" a new pointer
++ * onto the tail of the index.
++ *
++ * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+static inline void vbus_connection_get(struct vbus_connection *conn)
-+{
-+	atomic_inc(&conn->refs);
-+}
++int  ioq_iter_push(struct ioq_iterator *iter, int flags);
 +
 +/**
-+ * vbus_connection_put() - release a connection context reference
-+ * @conn:       connection context
++ * ioq_iter_pop() - pop the head pointer from the ring
++ * @iter:	Iterator context (must be initialized with ioq_iter_init)
++ * @flags:      Reserved for future use, must be 0
++ *
++ * This function will simultaneously advance the head ptr in the current
++ * index (valid/inuse, as specified in the ioq_iter_init) as well as
++ * perform a seek(next) operation.  This effectively "pops" a pointer
++ * from the head of the index.
++ *
++ * Returns: success = 0, <0 = ERRNO
 + *
 + **/
-+static inline void vbus_connection_put(struct vbus_connection *conn)
-+{
-+	if (atomic_dec_and_test(&conn->refs))
-+		conn->ops->release(conn);
-+}
++int  ioq_iter_pop(struct ioq_iterator *iter,  int flags);
 +
-+#endif /* _LINUX_VBUS_DEVICE_H */
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 4242366..cc06c63 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -95,6 +95,7 @@ obj-$(CONFIG_FUNCTION_TRACER) += trace/
- obj-$(CONFIG_TRACING) += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
- obj-$(CONFIG_SLOW_WORK) += slow-work.o
-+obj-$(CONFIG_VBUS) += vbus/
++#endif /* __KERNEL__ */
++
++#endif /* _LINUX_IOQ_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 1b249a3..8fb4939 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -200,4 +200,16 @@ config SHM_SIGNAL
  
- ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-diff --git a/kernel/exit.c b/kernel/exit.c
-index abf9cf3..c86875d 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -49,6 +49,7 @@
- #include <linux/fs_struct.h>
- #include <linux/init_task.h>
- #include <trace/sched.h>
-+#include <linux/vbus.h>
+ 	 If unsure, say N
  
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -966,6 +967,7 @@ NORET_TYPE void do_exit(long code)
- 	check_stack_usage();
- 	exit_thread();
- 	cgroup_exit(tsk, 1);
-+	task_vbus_disassociate(tsk);
++config IOQ
++	boolean "IO-Queue library - Generic shared-memory queue"
++	select SHM_SIGNAL
++	default n
++	help
++	 IOQ is a generic shared-memory-queue mechanism that happens to be
++	 friendly to virtualization boundaries. It can be used in a variety
++	 of ways, though its intended purpose is to become the low-level
++	 communication path for paravirtualized drivers.
++
++	 If unsure, say N
++
+ endmenu
+diff --git a/lib/Makefile b/lib/Makefile
+index 1ef4156..68f2dc9 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -76,6 +76,7 @@ obj-$(CONFIG_TEXTSEARCH_FSM) += ts_fsm.o
+ obj-$(CONFIG_SMP) += percpu_counter.o
+ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
+ obj-$(CONFIG_SHM_SIGNAL) += shm_signal.o
++obj-$(CONFIG_IOQ) += ioq.o
  
- 	if (group_dead && tsk->signal->leader)
- 		disassociate_ctty(1);
-diff --git a/kernel/fork.c b/kernel/fork.c
-index b9e2edd..5954d6c 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -63,6 +63,7 @@
- #include <linux/fs_struct.h>
- #include <trace/sched.h>
- #include <linux/magic.h>
-+#include <linux/vbus.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -1266,6 +1267,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	write_unlock_irq(&tasklist_lock);
- 	proc_fork_connector(p);
- 	cgroup_post_fork(p);
-+	fork_vbus(p);
- 	return p;
- 
- bad_fork_free_graph:
-diff --git a/kernel/vbus/Kconfig b/kernel/vbus/Kconfig
+ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
+diff --git a/lib/ioq.c b/lib/ioq.c
 new file mode 100644
-index 0000000..f2b92f5
+index 0000000..803b5d6
 --- /dev/null
-+++ b/kernel/vbus/Kconfig
-@@ -0,0 +1,14 @@
-+#
-+# Virtual-Bus (VBus) configuration
-+#
++++ b/lib/ioq.c
+@@ -0,0 +1,298 @@
++/*
++ * Copyright 2008 Novell.  All Rights Reserved.
++ *
++ * See include/linux/ioq.h for documentation
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
 +
-+config VBUS
-+       bool "Virtual Bus"
-+       select CONFIGFS_FS
-+       select SHM_SIGNAL
-+       default n
-+       help
-+        Provides a mechansism for declaring virtual-bus objects and binding
-+	various tasks and devices which reside on the bus.
++#include <linux/sched.h>
++#include <linux/ioq.h>
++#include <asm/bitops.h>
++#include <linux/module.h>
 +
-+	If unsure, say N
-diff --git a/kernel/vbus/Makefile b/kernel/vbus/Makefile
-new file mode 100644
-index 0000000..367f65b
---- /dev/null
-+++ b/kernel/vbus/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_VBUS) += core.o devclass.o config.o attribute.o map.o
-diff --git a/kernel/vbus/attribute.c b/kernel/vbus/attribute.c
-new file mode 100644
-index 0000000..3928228
---- /dev/null
-+++ b/kernel/vbus/attribute.c
-@@ -0,0 +1,52 @@
-+#include <linux/vbus.h>
-+#include <linux/uaccess.h>
-+#include <linux/kobject.h>
-+#include <linux/kallsyms.h>
++#ifndef NULL
++#define NULL 0
++#endif
 +
-+#include "vbus.h"
-+
-+static struct vbus_device_attribute *to_vattr(struct attribute *attr)
++static int ioq_iter_setpos(struct ioq_iterator *iter, u32 pos)
 +{
-+	return container_of(attr, struct vbus_device_attribute, attr);
++	struct ioq *ioq = iter->ioq;
++
++	BUG_ON(pos >= ioq->count);
++
++	iter->pos  = pos;
++	iter->desc = &ioq->ring[pos];
++
++	return 0;
 +}
 +
-+static struct vbus_devshell *to_devshell(struct kobject *kobj)
++static inline u32 modulo_inc(u32 val, u32 mod)
 +{
-+	return container_of(kobj, struct vbus_devshell, kobj);
++	BUG_ON(val >= mod);
++
++	if (val == (mod - 1))
++		return 0;
++
++	return val + 1;
 +}
 +
-+static ssize_t _dev_attr_show(struct kobject *kobj, struct attribute *attr,
-+			     char *buf)
++static inline int idx_full(struct ioq_ring_idx *idx)
 +{
-+	struct vbus_devshell *ds = to_devshell(kobj);
-+	struct vbus_device_attribute *vattr = to_vattr(attr);
-+	ssize_t ret = -EIO;
++	return idx->full && (idx->head == idx->tail);
++}
 +
-+	if (vattr->show)
-+		ret = vattr->show(ds->dev, vattr, buf);
++int ioq_iter_seek(struct ioq_iterator *iter, enum ioq_seek_type type,
++		  long offset, int flags)
++{
++	struct ioq_ring_idx *idx = iter->idx;
++	u32 pos;
 +
-+	if (ret >= (ssize_t)PAGE_SIZE) {
-+		print_symbol("vbus_attr_show: %s returned bad count\n",
-+				(unsigned long)vattr->show);
++	switch (type) {
++	case ioq_seek_next:
++		pos = modulo_inc(iter->pos, iter->ioq->count);
++		break;
++	case ioq_seek_tail:
++		pos = idx->tail;
++		break;
++	case ioq_seek_head:
++		pos = idx->head;
++		break;
++	case ioq_seek_set:
++		if (offset >= iter->ioq->count)
++			return -1;
++		pos = offset;
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
-+	return ret;
++	return ioq_iter_setpos(iter, pos);
 +}
++EXPORT_SYMBOL_GPL(ioq_iter_seek);
 +
-+static ssize_t _dev_attr_store(struct kobject *kobj, struct attribute *attr,
-+			       const char *buf, size_t count)
++static int ioq_ring_count(struct ioq_ring_idx *idx, int count)
 +{
-+	struct vbus_devshell *ds = to_devshell(kobj);
-+	struct vbus_device_attribute *vattr = to_vattr(attr);
-+	ssize_t ret = -EIO;
-+
-+	if (vattr->store)
-+		ret = vattr->store(ds->dev, vattr, buf, count);
-+
-+	return ret;
-+}
-+
-+struct sysfs_ops vbus_dev_attr_ops = {
-+	.show	= _dev_attr_show,
-+	.store	= _dev_attr_store,
-+};
-diff --git a/kernel/vbus/config.c b/kernel/vbus/config.c
-new file mode 100644
-index 0000000..a40dbf1
---- /dev/null
-+++ b/kernel/vbus/config.c
-@@ -0,0 +1,275 @@
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+
-+#include <linux/vbus.h>
-+#include <linux/configfs.h>
-+
-+#include "vbus.h"
-+
-+static struct config_item_type perms_type = {
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct vbus *to_vbus(struct config_group *group)
-+{
-+	return group ? container_of(group, struct vbus, ci.group) : NULL;
-+}
-+
-+static struct vbus *item_to_vbus(struct config_item *item)
-+{
-+	return to_vbus(to_config_group(item));
-+}
-+
-+static struct vbus_devshell *to_devshell(struct config_group *group)
-+{
-+	return group ? container_of(group, struct vbus_devshell, ci_group)
-+		: NULL;
-+}
-+
-+static struct vbus_devshell *to_vbus_devshell(struct config_item *item)
-+{
-+	return to_devshell(to_config_group(item));
-+}
-+
-+static int
-+device_bus_connect(struct config_item *src, struct config_item *target)
-+{
-+	struct vbus *vbus = item_to_vbus(src);
-+	struct vbus_devshell *ds;
-+
-+	/* We only allow connections to devices */
-+	if (target->ci_parent != &vbus_root.devices.ci_group.cg_item)
-+		return -EINVAL;
-+
-+	ds = to_vbus_devshell(target);
-+	BUG_ON(!ds);
-+
-+	if (!ds->dev)
-+		return -EINVAL;
-+
-+	return ds->dev->ops->bus_connect(ds->dev, vbus);
-+}
-+
-+static int
-+device_bus_disconnect(struct config_item *src, struct config_item *target)
-+{
-+	struct vbus *vbus = item_to_vbus(src);
-+	struct vbus_devshell *ds;
-+
-+	ds = to_vbus_devshell(target);
-+	BUG_ON(!ds);
-+
-+	if (!ds->dev)
-+		return -EINVAL;
-+
-+	return ds->dev->ops->bus_disconnect(ds->dev, vbus);
-+}
-+
-+struct configfs_item_operations bus_ops = {
-+	.allow_link = device_bus_connect,
-+	.drop_link = device_bus_disconnect,
-+};
-+
-+static struct config_item_type bus_type = {
-+	.ct_item_ops    = &bus_ops,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct config_group *bus_create(struct config_group *group,
-+				       const char *name)
-+{
-+	struct vbus *bus = NULL;
-+	int ret;
-+
-+	ret = vbus_create(name, &bus);
-+	if (ret < 0)
-+		return ERR_PTR(ret);
-+
-+	config_group_init_type_name(&bus->ci.group, name, &bus_type);
-+	bus->ci.group.default_groups = bus->ci.defgroups;
-+	bus->ci.group.default_groups[0] = &bus->ci.perms;
-+	bus->ci.group.default_groups[1] = NULL;
-+
-+	config_group_init_type_name(&bus->ci.perms, "perms", &perms_type);
-+
-+	return &bus->ci.group;
-+}
-+
-+static void bus_destroy(struct config_group *group, struct config_item *item)
-+{
-+	struct vbus *vbus = item_to_vbus(item);
-+
-+	vbus_put(vbus);
-+}
-+
-+static struct configfs_group_operations buses_ops = {
-+	.make_group	= bus_create,
-+	.drop_item      = bus_destroy,
-+};
-+
-+static struct config_item_type buses_type = {
-+	.ct_group_ops	= &buses_ops,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+CONFIGFS_ATTR_STRUCT(vbus_devshell);
-+#define DEVSHELL_ATTR(_name, _mode, _show, _store)	\
-+struct vbus_devshell_attribute vbus_devshell_attr_##_name = \
-+    __CONFIGFS_ATTR(_name, _mode, _show, _store)
-+
-+static ssize_t devshell_type_read(struct vbus_devshell *ds, char *page)
-+{
-+	if (ds->dev)
-+		return sprintf(page, "%s\n", ds->dev->type);
++	if (idx->full && (idx->head == idx->tail))
++		return count;
++	else if (idx->tail >= idx->head)
++		return idx->tail - idx->head;
 +	else
-+		return sprintf(page, "\n");
++		return (idx->tail + count) - idx->head;
 +}
 +
-+static ssize_t devshell_type_write(struct vbus_devshell *ds, const char *page,
-+				   size_t count)
++static void idx_tail_push(struct ioq_ring_idx *idx, int count)
 +{
-+	struct vbus_devclass *dc;
-+	struct vbus_device *dev;
-+	char name[256];
++	u32 tail = modulo_inc(idx->tail, count);
++
++	if (idx->head == tail) {
++		rmb();
++
++		/*
++		 * Setting full here may look racy, but note that we havent
++		 * flipped the owner bit yet.  So it is impossible for the
++		 * remote locale to move head in such a way that this operation
++		 * becomes invalid
++		 */
++		idx->full = 1;
++		wmb();
++	}
++
++	idx->tail = tail;
++}
++
++int ioq_iter_push(struct ioq_iterator *iter, int flags)
++{
++	struct ioq_ring_head *head_desc = iter->ioq->head_desc;
++	struct ioq_ring_idx  *idx  = iter->idx;
 +	int ret;
 +
 +	/*
-+	 * The device-type can only be set once, and then it is permenent.
-+	 * The admin should delete the device-shell if they want to create
-+	 * a new type
++	 * Its only valid to push if we are currently pointed at the tail
 +	 */
-+	if (ds->dev)
++	if (iter->pos != idx->tail || iter->desc->sown != iter->ioq->locale)
 +		return -EINVAL;
 +
-+	if (count > sizeof(name))
-+		return -EINVAL;
-+
-+	strcpy(name, page);
-+	if (name[count-1] == '\n')
-+		name[count-1] = 0;
-+
-+	dc = vbus_devclass_find(name);
-+	if (!dc)
-+		return -ENOENT;
-+
-+	ret = dc->ops->create(dc, &dev);
-+	if (ret < 0) {
-+		vbus_devclass_put(dc);
-+		return ret;
-+	}
-+
-+	ds->dev = dev;
-+	ds->dc = dc;
-+	dev->kobj = &ds->kobj;
-+
-+	ret = vbus_devshell_type_set(ds);
-+	if (ret < 0) {
-+		vbus_devclass_put(dc);
-+		return ret;
-+	}
-+
-+	return count;
-+}
-+
-+DEVSHELL_ATTR(type, S_IRUGO | S_IWUSR, devshell_type_read,
-+	    devshell_type_write);
-+
-+static struct configfs_attribute *devshell_attrs[] = {
-+	&vbus_devshell_attr_type.attr,
-+	NULL,
-+};
-+
-+CONFIGFS_ATTR_OPS(vbus_devshell);
-+static struct configfs_item_operations devshell_item_ops = {
-+	.show_attribute		= vbus_devshell_attr_show,
-+	.store_attribute	= vbus_devshell_attr_store,
-+};
-+
-+static struct config_item_type devshell_type = {
-+	.ct_item_ops	= &devshell_item_ops,
-+	.ct_attrs	= devshell_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct config_group *devshell_create(struct config_group *group,
-+					    const char *name)
-+{
-+	struct vbus_devshell *ds = NULL;
-+	int ret;
-+
-+	ret = vbus_devshell_create(name, &ds);
-+	if (ret < 0)
-+		return ERR_PTR(ret);
-+
-+	config_group_init_type_name(&ds->ci_group, name, &devshell_type);
-+
-+	return &ds->ci_group;
-+}
-+
-+static void devshell_release(struct config_group *group,
-+			     struct config_item *item)
-+{
-+	struct vbus_devshell *ds = to_vbus_devshell(item);
-+
-+	kobject_put(&ds->kobj);
-+
-+	if (ds->dc)
-+		vbus_devclass_put(ds->dc);
-+}
-+
-+static struct configfs_group_operations devices_ops = {
-+	.make_group	= devshell_create,
-+	.drop_item      = devshell_release,
-+};
-+
-+static struct config_item_type devices_type = {
-+	.ct_group_ops	= &devices_ops,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct config_item_type root_type = {
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+int __init vbus_config_init(void)
-+{
-+	int ret;
-+	struct configfs_subsystem *subsys = &vbus_root.ci.subsys;
-+
-+	config_group_init_type_name(&subsys->su_group, "vbus", &root_type);
-+	mutex_init(&subsys->su_mutex);
-+
-+	subsys->su_group.default_groups = vbus_root.ci.defgroups;
-+	subsys->su_group.default_groups[0] = &vbus_root.buses.ci_group;
-+	subsys->su_group.default_groups[1] = &vbus_root.devices.ci_group;
-+	subsys->su_group.default_groups[2] = NULL;
-+
-+	config_group_init_type_name(&vbus_root.buses.ci_group,
-+				    "instances", &buses_type);
-+
-+	config_group_init_type_name(&vbus_root.devices.ci_group,
-+				    "devices", &devices_type);
-+
-+	ret = configfs_register_subsystem(subsys);
-+	if (ret) {
-+		printk(KERN_ERR "Error %d while registering subsystem %s\n",
-+		       ret,
-+		       subsys->su_group.cg_item.ci_namebuf);
-+		goto out_unregister;
-+	}
-+
-+	return 0;
-+
-+out_unregister:
-+	configfs_unregister_subsystem(subsys);
-+
-+	return ret;
-+}
-+
-+void __exit vbus_config_exit(void)
-+{
-+	configfs_unregister_subsystem(&vbus_root.ci.subsys);
-+}
-+
-+
-diff --git a/kernel/vbus/core.c b/kernel/vbus/core.c
-new file mode 100644
-index 0000000..033999f
---- /dev/null
-+++ b/kernel/vbus/core.c
-@@ -0,0 +1,567 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/vbus.h>
-+#include <linux/uaccess.h>
-+
-+#include "vbus.h"
-+
-+static struct vbus_device_interface *kobj_to_intf(struct kobject *kobj)
-+{
-+	return container_of(kobj, struct vbus_device_interface, kobj);
-+}
-+
-+static struct vbus_devshell *to_devshell(struct kobject *kobj)
-+{
-+	return container_of(kobj, struct vbus_devshell, kobj);
-+}
-+
-+static void interface_release(struct kobject *kobj)
-+{
-+	struct vbus_device_interface *intf = kobj_to_intf(kobj);
-+
-+	if (intf->ops->release)
-+		intf->ops->release(intf);
-+}
-+
-+static struct kobj_type interface_ktype = {
-+	.release = interface_release,
-+	.sysfs_ops = &kobj_sysfs_ops,
-+};
-+
-+static ssize_t
-+type_show(struct kobject *kobj, struct kobj_attribute *attr,
-+		  char *buf)
-+{
-+	struct vbus_device_interface *intf = kobj_to_intf(kobj);
-+
-+	return snprintf(buf, PAGE_SIZE, "%s\n", intf->type);
-+}
-+
-+static struct kobj_attribute devattr_type =
-+	__ATTR_RO(type);
-+
-+static struct attribute *attrs[] = {
-+	&devattr_type.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group attr_group = {
-+	.attrs = attrs,
-+};
-+
-+/*
-+ * Assumes dev->bus->lock is held
-+ */
-+static void _interface_unregister(struct vbus_device_interface *intf)
-+{
-+	struct vbus *vbus = intf->vbus;
-+	struct vbus_devshell *ds = to_devshell(intf->dev->kobj);
-+
-+	map_del(&vbus->devices.map, &intf->node);
-+	sysfs_remove_link(&ds->intfs, intf->name);
-+	sysfs_remove_link(&intf->kobj, "device");
-+	sysfs_remove_group(&intf->kobj, &attr_group);
-+}
-+
-+int vbus_device_interface_register(struct vbus_device *dev,
-+				   struct vbus *vbus,
-+				   struct vbus_device_interface *intf)
-+{
-+	int ret;
-+	struct vbus_devshell *ds = to_devshell(dev->kobj);
-+
-+	mutex_lock(&vbus->lock);
-+
-+	if (vbus->next_id == -1) {
-+		mutex_unlock(&vbus->lock);
-+		return -ENOSPC;
-+	}
-+
-+	intf->id = vbus->next_id++;
-+	intf->dev = dev;
-+	intf->vbus = vbus;
-+
-+	ret = map_add(&vbus->devices.map, &intf->node);
-+	if (ret < 0) {
-+		mutex_unlock(&vbus->lock);
-+		return ret;
-+	}
-+
-+	kobject_init_and_add(&intf->kobj, &interface_ktype,
-+			     &vbus->devices.kobj, "%ld", intf->id);
-+
-+	/* Create the basic attribute files associated with this kobject */
-+	ret = sysfs_create_group(&intf->kobj, &attr_group);
-+	if (ret)
-+		goto error;
-+
-+	/* Create cross-referencing links between the device and bus */
-+	ret = sysfs_create_link(&intf->kobj, dev->kobj, "device");
-+	if (ret)
-+		goto error;
-+
-+	ret = sysfs_create_link(&ds->intfs, &intf->kobj, intf->name);
-+	if (ret)
-+		goto error;
-+
-+	mutex_unlock(&vbus->lock);
-+
-+	return 0;
-+
-+error:
-+	_interface_unregister(intf);
-+	mutex_unlock(&vbus->lock);
-+
-+	kobject_put(&intf->kobj);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(vbus_device_interface_register);
-+
-+int vbus_device_interface_unregister(struct vbus_device_interface *intf)
-+{
-+	struct vbus *vbus = intf->vbus;
-+
-+	mutex_lock(&vbus->lock);
-+	_interface_unregister(intf);
-+	mutex_unlock(&vbus->lock);
-+
-+	kobject_put(&intf->kobj);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(vbus_device_interface_unregister);
-+
-+static struct vbus_device_interface *node_to_intf(struct rb_node *node)
-+{
-+	return node ? container_of(node, struct vbus_device_interface, node)
-+		: NULL;
-+}
-+
-+static int interface_item_compare(struct rb_node *lhs, struct rb_node *rhs)
-+{
-+	struct vbus_device_interface *lintf = node_to_intf(lhs);
-+	struct vbus_device_interface *rintf = node_to_intf(rhs);
-+
-+	return lintf->id - rintf->id;
-+}
-+
-+static int interface_key_compare(const void *key, struct rb_node *node)
-+{
-+	struct vbus_device_interface *intf = node_to_intf(node);
-+	unsigned long id = *(unsigned long *)key;
-+
-+	return id - intf->id;
-+}
-+
-+static struct map_ops interface_map_ops = {
-+	.key_compare = &interface_key_compare,
-+	.item_compare = &interface_item_compare,
-+};
-+
-+/*
-+ *-----------------
-+ * member
-+ *-----------------
-+ */
-+
-+static struct vbus_member *node_to_member(struct rb_node *node)
-+{
-+	return node ? container_of(node, struct vbus_member, node) : NULL;
-+}
-+
-+static struct vbus_member *kobj_to_member(struct kobject *kobj)
-+{
-+	return kobj ? container_of(kobj, struct vbus_member, kobj) : NULL;
-+}
-+
-+static int member_item_compare(struct rb_node *lhs, struct rb_node *rhs)
-+{
-+	struct vbus_member *lmember = node_to_member(lhs);
-+	struct vbus_member *rmember = node_to_member(rhs);
-+
-+	return lmember->tsk->pid - rmember->tsk->pid;
-+}
-+
-+static int member_key_compare(const void *key, struct rb_node *node)
-+{
-+	struct vbus_member *member = node_to_member(node);
-+	pid_t pid = *(pid_t *)key;
-+
-+	return pid - member->tsk->pid;
-+}
-+
-+static struct map_ops member_map_ops = {
-+	.key_compare = &member_key_compare,
-+	.item_compare = &member_item_compare,
-+};
-+
-+static void member_release(struct kobject *kobj)
-+{
-+	struct vbus_member *member = kobj_to_member(kobj);
-+
-+	vbus_put(member->vbus);
-+	put_task_struct(member->tsk);
-+
-+	kfree(member);
-+}
-+
-+static struct kobj_type member_ktype = {
-+	.release = member_release,
-+};
-+
-+int vbus_associate(struct vbus *vbus, struct task_struct *tsk)
-+{
-+	struct vbus_member *member;
-+	int ret;
-+
-+	member = kzalloc(sizeof(struct vbus_member), GFP_KERNEL);
-+	if (!member)
-+		return -ENOMEM;
-+
-+	mutex_lock(&vbus->lock);
-+
-+	get_task_struct(tsk);
-+	vbus_get(vbus);
-+
-+	member->vbus = vbus;
-+	member->tsk = tsk;
-+
-+	ret = kobject_init_and_add(&member->kobj, &member_ktype,
-+				   &vbus->members.kobj,
-+				   "%d", tsk->pid);
-+	if (ret < 0)
-+		goto error;
-+
-+	ret = map_add(&vbus->members.map, &member->node);
-+	if (ret < 0)
-+		goto error;
-+
-+out:
-+	mutex_unlock(&vbus->lock);
-+	return 0;
-+
-+error:
-+	kobject_put(&member->kobj);
-+	goto out;
-+}
-+
-+int vbus_disassociate(struct vbus *vbus, struct task_struct *tsk)
-+{
-+	struct vbus_member *member;
-+
-+	mutex_lock(&vbus->lock);
-+
-+	member = node_to_member(map_find(&vbus->members.map, &tsk->pid));
-+	BUG_ON(!member);
-+
-+	map_del(&vbus->members.map, &member->node);
-+
-+	mutex_unlock(&vbus->lock);
-+
-+	kobject_put(&member->kobj);
-+
-+	return 0;
-+}
-+
-+/*
-+ *-----------------
-+ * vbus_subdir
-+ *-----------------
-+ */
-+
-+static void vbus_subdir_init(struct vbus_subdir *subdir,
-+			     const char *name,
-+			     struct kobject *parent,
-+			     struct kobj_type *type,
-+			     struct map_ops *map_ops)
-+{
-+	int ret;
-+
-+	map_init(&subdir->map, map_ops);
-+
-+	ret = kobject_init_and_add(&subdir->kobj, type, parent, name);
-+	BUG_ON(ret < 0);
-+}
-+
-+/*
-+ *-----------------
-+ * vbus
-+ *-----------------
-+ */
-+
-+static void vbus_destroy(struct kobject *kobj)
-+{
-+	struct vbus *vbus = container_of(kobj, struct vbus, kobj);
-+
-+	kfree(vbus);
-+}
-+
-+static struct kobj_type vbus_ktype = {
-+	.release = vbus_destroy,
-+};
-+
-+static struct kobj_type null_ktype = {
-+};
-+
-+int vbus_create(const char *name, struct vbus **bus)
-+{
-+	struct vbus *_bus = NULL;
-+	int ret;
-+
-+	_bus = kzalloc(sizeof(struct vbus), GFP_KERNEL);
-+	if (!_bus)
-+		return -ENOMEM;
-+
-+	atomic_set(&_bus->refs, 1);
-+	mutex_init(&_bus->lock);
-+
-+	kobject_init_and_add(&_bus->kobj, &vbus_ktype,
-+			     vbus_root.buses.kobj, name);
-+
-+	vbus_subdir_init(&_bus->devices, "devices", &_bus->kobj,
-+			 &null_ktype, &interface_map_ops);
-+	vbus_subdir_init(&_bus->members, "members", &_bus->kobj,
-+			 &null_ktype, &member_map_ops);
-+
-+	_bus->next_id = 0;
-+
-+	mutex_lock(&vbus_root.lock);
-+
-+	ret = map_add(&vbus_root.buses.map, &_bus->node);
-+	BUG_ON(ret < 0);
-+
-+	mutex_unlock(&vbus_root.lock);
-+
-+	*bus = _bus;
-+
-+	return 0;
-+}
-+
-+static void devshell_release(struct kobject *kobj)
-+{
-+	struct vbus_devshell *ds = container_of(kobj,
-+						struct vbus_devshell, kobj);
-+
-+	if (ds->dev) {
-+		if (ds->dev->attrs)
-+			sysfs_remove_group(&ds->kobj, ds->dev->attrs);
-+
-+		if (ds->dev->ops->release)
-+			ds->dev->ops->release(ds->dev);
-+	}
-+
-+	if (ds->dc)
-+		sysfs_remove_link(&ds->kobj, "class");
-+
-+	kobject_put(&ds->intfs);
-+	kfree(ds);
-+}
-+
-+static struct kobj_type devshell_ktype = {
-+	.release = devshell_release,
-+	.sysfs_ops = &vbus_dev_attr_ops,
-+};
-+
-+static void _interfaces_init(struct vbus_devshell *ds)
-+{
-+	kobject_init_and_add(&ds->intfs, &null_ktype, &ds->kobj, "interfaces");
-+}
-+
-+int vbus_devshell_create(const char *name, struct vbus_devshell **ds)
-+{
-+	struct vbus_devshell *_ds = NULL;
-+
-+	_ds = kzalloc(sizeof(*_ds), GFP_KERNEL);
-+	if (!_ds)
-+		return -ENOMEM;
-+
-+	kobject_init_and_add(&_ds->kobj, &devshell_ktype,
-+			     vbus_root.devices.kobj, name);
-+
-+	_interfaces_init(_ds);
-+
-+	*ds = _ds;
-+
-+	return 0;
-+}
-+
-+int vbus_devshell_type_set(struct vbus_devshell *ds)
-+{
-+	int ret;
-+
-+	if (!ds->dev)
-+		return -EINVAL;
-+
-+	if (!ds->dev->attrs)
-+		return 0;
-+
-+	ret = sysfs_create_link(&ds->kobj, &ds->dc->kobj, "class");
-+	if (ret < 0)
-+		return ret;
-+
-+	return sysfs_create_group(&ds->kobj, ds->dev->attrs);
-+}
-+
-+struct vbus *vbus_get(struct vbus *vbus)
-+{
-+	if (vbus)
-+		atomic_inc(&vbus->refs);
-+
-+	return vbus;
-+}
-+EXPORT_SYMBOL_GPL(vbus_get);
-+
-+void vbus_put(struct vbus *vbus)
-+{
-+	if (vbus && atomic_dec_and_test(&vbus->refs)) {
-+		kobject_put(&vbus->devices.kobj);
-+		kobject_put(&vbus->members.kobj);
-+		kobject_put(&vbus->kobj);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(vbus_put);
-+
-+long vbus_interface_find(struct vbus *bus,
-+			 unsigned long id,
-+			 struct vbus_device_interface **intf)
-+{
-+	struct vbus_device_interface *_intf;
-+
-+	BUG_ON(!bus);
-+
-+	mutex_lock(&bus->lock);
-+
-+	_intf = node_to_intf(map_find(&bus->devices.map, &id));
-+	if (likely(_intf))
-+		kobject_get(&_intf->kobj);
-+
-+	mutex_unlock(&bus->lock);
-+
-+	if (!_intf)
-+		return -ENOENT;
-+
-+	*intf = _intf;
-+
-+	return 0;
-+}
-+
-+const char *vbus_name(struct vbus *vbus)
-+{
-+	return vbus ? vbus->kobj.name : NULL;
-+}
-+
-+/*
-+ *---------------------
-+ * vbus_buses
-+ *---------------------
-+ */
-+
-+static struct vbus *node_to_bus(struct rb_node *node)
-+{
-+	return node ? container_of(node, struct vbus, node) : NULL;
-+}
-+
-+static int bus_item_compare(struct rb_node *lhs, struct rb_node *rhs)
-+{
-+	struct vbus *lbus = node_to_bus(lhs);
-+	struct vbus *rbus = node_to_bus(rhs);
-+
-+	return strcmp(lbus->kobj.name, rbus->kobj.name);
-+}
-+
-+static int bus_key_compare(const void *key, struct rb_node *node)
-+{
-+	struct vbus *bus = node_to_bus(node);
-+
-+	return strcmp(key, bus->kobj.name);
-+}
-+
-+static struct map_ops bus_map_ops = {
-+	.key_compare = &bus_key_compare,
-+	.item_compare = &bus_item_compare,
-+};
-+
-+struct vbus *vbus_find(const char *name)
-+{
-+	struct vbus *bus;
-+
-+	mutex_lock(&vbus_root.lock);
-+
-+	bus = node_to_bus(map_find(&vbus_root.buses.map, name));
-+	if (!bus)
-+		goto out;
-+
-+	vbus_get(bus);
-+
-+out:
-+	mutex_unlock(&vbus_root.lock);
-+
-+	return bus;
-+
-+}
-+
-+struct vbus_root vbus_root;
-+
-+static ssize_t version_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", VBUS_VERSION);
-+}
-+
-+static struct kobj_attribute version_attr =
-+	__ATTR(version, S_IRUGO, version_show, NULL);
-+
-+static int __init vbus_init(void)
-+{
-+	int ret;
-+
-+	mutex_init(&vbus_root.lock);
-+
-+	ret = vbus_config_init();
-+	BUG_ON(ret < 0);
-+
-+	vbus_root.kobj = kobject_create_and_add("vbus", NULL);
-+	BUG_ON(!vbus_root.kobj);
-+
-+	ret = sysfs_create_file(vbus_root.kobj, &version_attr.attr);
-+	BUG_ON(ret);
-+
-+	ret = vbus_devclass_init();
-+	BUG_ON(ret < 0);
-+
-+	map_init(&vbus_root.buses.map, &bus_map_ops);
-+	vbus_root.buses.kobj = kobject_create_and_add("instances",
-+						      vbus_root.kobj);
-+	BUG_ON(!vbus_root.buses.kobj);
-+
-+	vbus_root.devices.kobj = kobject_create_and_add("devices",
-+							vbus_root.kobj);
-+	BUG_ON(!vbus_root.devices.kobj);
-+
-+	return 0;
-+}
-+
-+late_initcall(vbus_init);
-+
-+
-diff --git a/kernel/vbus/devclass.c b/kernel/vbus/devclass.c
-new file mode 100644
-index 0000000..3f5ef0d
---- /dev/null
-+++ b/kernel/vbus/devclass.c
-@@ -0,0 +1,124 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/vbus.h>
-+
-+#include "vbus.h"
-+
-+static struct vbus_devclass *node_to_devclass(struct rb_node *node)
-+{
-+	return node ? container_of(node, struct vbus_devclass, node) : NULL;
-+}
-+
-+static int devclass_item_compare(struct rb_node *lhs, struct rb_node *rhs)
-+{
-+	struct vbus_devclass *ldc = node_to_devclass(lhs);
-+	struct vbus_devclass *rdc = node_to_devclass(rhs);
-+
-+	return strcmp(ldc->name, rdc->name);
-+}
-+
-+static int devclass_key_compare(const void *key, struct rb_node *node)
-+{
-+	struct vbus_devclass *dc = node_to_devclass(node);
-+
-+	return strcmp((const char *)key, dc->name);
-+}
-+
-+static struct map_ops devclass_map_ops = {
-+	.key_compare = &devclass_key_compare,
-+	.item_compare = &devclass_item_compare,
-+};
-+
-+int __init vbus_devclass_init(void)
-+{
-+	struct vbus_devclasses *c = &vbus_root.devclasses;
-+
-+	map_init(&c->map, &devclass_map_ops);
-+
-+	c->kobj = kobject_create_and_add("deviceclass", vbus_root.kobj);
-+	BUG_ON(!c->kobj);
-+
-+	return 0;
-+}
-+
-+static void devclass_release(struct kobject *kobj)
-+{
-+	struct vbus_devclass *dc = container_of(kobj,
-+						struct vbus_devclass,
-+						kobj);
-+
-+	if (dc->ops->release)
-+		dc->ops->release(dc);
-+}
-+
-+static struct kobj_type devclass_ktype = {
-+	.release = devclass_release,
-+};
-+
-+int vbus_devclass_register(struct vbus_devclass *dc)
-+{
-+	int ret;
-+
-+	mutex_lock(&vbus_root.lock);
-+
-+	ret = map_add(&vbus_root.devclasses.map, &dc->node);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = kobject_init_and_add(&dc->kobj, &devclass_ktype,
-+				   vbus_root.devclasses.kobj, dc->name);
-+	if (ret < 0) {
-+		map_del(&vbus_root.devclasses.map, &dc->node);
-+		goto out;
-+	}
-+
-+out:
-+	mutex_unlock(&vbus_root.lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(vbus_devclass_register);
-+
-+int vbus_devclass_unregister(struct vbus_devclass *dc)
-+{
-+	mutex_lock(&vbus_root.lock);
-+	map_del(&vbus_root.devclasses.map, &dc->node);
-+	mutex_unlock(&vbus_root.lock);
-+
-+	kobject_put(&dc->kobj);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(vbus_devclass_unregister);
-+
-+struct vbus_devclass *vbus_devclass_find(const char *name)
-+{
-+	struct vbus_devclass *dev;
-+
-+	mutex_lock(&vbus_root.lock);
-+	dev = node_to_devclass(map_find(&vbus_root.devclasses.map, name));
-+	if (dev)
-+		dev = vbus_devclass_get(dev);
-+	mutex_unlock(&vbus_root.lock);
-+
-+	return dev;
-+}
-diff --git a/kernel/vbus/map.c b/kernel/vbus/map.c
-new file mode 100644
-index 0000000..a3bd841
---- /dev/null
-+++ b/kernel/vbus/map.c
-@@ -0,0 +1,72 @@
-+
-+#include <linux/errno.h>
-+
-+#include "map.h"
-+
-+void map_init(struct map *map, struct map_ops *ops)
-+{
-+	map->root = RB_ROOT;
-+	map->ops = ops;
-+}
-+
-+int map_add(struct map *map, struct rb_node *node)
-+{
-+	int		ret = 0;
-+	struct rb_root *root;
-+	struct rb_node **new, *parent = NULL;
-+
-+	root = &map->root;
-+	new  = &(root->rb_node);
-+
-+	/* Figure out where to put new node */
-+	while (*new) {
-+		int val;
-+
-+		parent = *new;
-+
-+		val = map->ops->item_compare(node, *new);
-+		if (val < 0)
-+			new = &((*new)->rb_left);
-+		else if (val > 0)
-+			new = &((*new)->rb_right);
-+		else {
-+			ret = -EEXIST;
-+			break;
++	idx_tail_push(idx, iter->ioq->count);
++	if (iter->dualidx) {
++		idx_tail_push(&head_desc->idx[ioq_idxtype_inuse],
++			      iter->ioq->count);
++		if (head_desc->idx[ioq_idxtype_inuse].tail !=
++		    head_desc->idx[ioq_idxtype_valid].tail) {
++			SHM_SIGNAL_FAULT(iter->ioq->signal,
++					 "Tails not synchronized");
++			return -EINVAL;
 +		}
 +	}
 +
-+	if (!ret) {
-+		/* Add new node and rebalance tree. */
-+		rb_link_node(node, parent, new);
-+		rb_insert_color(node, root);
++	wmb(); /* the index must be visible before the sown, or signal */
++
++	if (iter->flipowner) {
++		iter->desc->sown = !iter->ioq->locale;
++		wmb(); /* sown must be visible before we signal */
 +	}
++
++	ret = ioq_iter_seek(iter, ioq_seek_next, 0, flags);
++
++	if (iter->update)
++		ioq_signal(iter->ioq, 0);
 +
 +	return ret;
 +}
++EXPORT_SYMBOL_GPL(ioq_iter_push);
 +
-+struct rb_node *map_find(struct map *map, const void *key)
++int ioq_iter_pop(struct ioq_iterator *iter,  int flags)
 +{
-+	struct rb_node *node;
++	struct ioq_ring_idx *idx = iter->idx;
++	int full;
++	int ret;
 +
-+	node = map->root.rb_node;
++	/*
++	 * Its only valid to pop if we are currently pointed at the head
++	 */
++	if (iter->pos != idx->head || iter->desc->sown != iter->ioq->locale)
++		return -EINVAL;
 +
-+	while (node) {
-+		int val;
++	full = idx_full(idx);
++	rmb();
 +
-+		val = map->ops->key_compare(key, node);
-+		if (val < 0)
-+			node = node->rb_left;
-+		else if (val > 0)
-+			node = node->rb_right;
-+		else
-+			break;
++	idx->head = modulo_inc(idx->head, iter->ioq->count);
++	wmb(); /* head must be visible before full */
++
++	if (full) {
++		idx->full = 0;
++		wmb(); /* full must be visible before sown */
 +	}
 +
-+	return node;
-+}
++	if (iter->flipowner) {
++		iter->desc->sown = !iter->ioq->locale;
++		wmb(); /* sown must be visible before we signal */
++	}
 +
-+void map_del(struct map *map, struct rb_node *node)
++	ret = ioq_iter_seek(iter, ioq_seek_next, 0, flags);
++
++	if (iter->update)
++		ioq_signal(iter->ioq, 0);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(ioq_iter_pop);
++
++static struct ioq_ring_idx *idxtype_to_idx(struct ioq *ioq,
++					   enum ioq_idx_type type)
 +{
-+	rb_erase(node, &map->root);
++	struct ioq_ring_idx *idx;
++
++	switch (type) {
++	case ioq_idxtype_valid:
++	case ioq_idxtype_inuse:
++		idx = &ioq->head_desc->idx[type];
++		break;
++	default:
++		panic("IOQ: illegal index type: %d", type);
++		break;
++	}
++
++	return idx;
 +}
 +
-diff --git a/kernel/vbus/map.h b/kernel/vbus/map.h
-new file mode 100644
-index 0000000..7fb5164
---- /dev/null
-+++ b/kernel/vbus/map.h
-@@ -0,0 +1,41 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
++int ioq_iter_init(struct ioq *ioq, struct ioq_iterator *iter,
++		  enum ioq_idx_type type, int flags)
++{
++	iter->ioq        = ioq;
++	iter->update     = (flags & IOQ_ITER_AUTOUPDATE);
++	iter->flipowner  = !(flags & IOQ_ITER_NOFLIPOWNER);
++	iter->pos        = -1;
++	iter->desc       = NULL;
++	iter->dualidx    = 0;
 +
-+#ifndef __VBUS_MAP_H__
-+#define __VBUS_MAP_H__
++	if (type == ioq_idxtype_both) {
++		/*
++		 * "both" is a special case, so we set the dualidx flag.
++		 *
++		 * However, we also just want to use the valid-index
++		 * for normal processing, so override that here
++		 */
++		type = ioq_idxtype_valid;
++		iter->dualidx = 1;
++	}
 +
-+#include <linux/rbtree.h>
++	iter->idx = idxtype_to_idx(ioq, type);
 +
-+struct map_ops {
-+	int (*item_compare)(struct rb_node *lhs, struct rb_node *rhs);
-+	int (*key_compare)(const void *key, struct rb_node *item);
-+};
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ioq_iter_init);
 +
-+struct map {
-+	struct rb_root root;
-+	struct map_ops *ops;
-+};
++int ioq_count(struct ioq *ioq, enum ioq_idx_type type)
++{
++	return ioq_ring_count(idxtype_to_idx(ioq, type), ioq->count);
++}
++EXPORT_SYMBOL_GPL(ioq_count);
 +
-+void map_init(struct map *map, struct map_ops *ops);
-+int map_add(struct map *map, struct rb_node *node);
-+struct rb_node *map_find(struct map *map, const void *key);
-+void map_del(struct map *map, struct rb_node *node);
++int ioq_remain(struct ioq *ioq, enum ioq_idx_type type)
++{
++	int count = ioq_ring_count(idxtype_to_idx(ioq, type), ioq->count);
 +
-+#endif /* __VBUS_MAP_H__ */
-diff --git a/kernel/vbus/vbus.h b/kernel/vbus/vbus.h
-new file mode 100644
-index 0000000..1266d69
---- /dev/null
-+++ b/kernel/vbus/vbus.h
-@@ -0,0 +1,116 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
++	return ioq->count - count;
++}
++EXPORT_SYMBOL_GPL(ioq_remain);
 +
-+#ifndef __VBUS_H__
-+#define __VBUS_H__
++int ioq_size(struct ioq *ioq)
++{
++	return ioq->count;
++}
++EXPORT_SYMBOL_GPL(ioq_size);
 +
-+#include <linux/configfs.h>
-+#include <linux/rbtree.h>
-+#include <linux/mutex.h>
-+#include <linux/kobject.h>
-+#include <linux/cdev.h>
-+#include <linux/device.h>
++int ioq_full(struct ioq *ioq, enum ioq_idx_type type)
++{
++	struct ioq_ring_idx *idx = idxtype_to_idx(ioq, type);
 +
-+#include "map.h"
++	return idx_full(idx);
++}
++EXPORT_SYMBOL_GPL(ioq_full);
 +
-+#define VBUS_VERSION 1
++static void ioq_shm_signal(struct shm_signal_notifier *notifier)
++{
++	struct ioq *ioq = container_of(notifier, struct ioq, shm_notifier);
 +
-+struct vbus_subdir {
-+	struct map     map;
-+	struct kobject kobj;
-+};
++	wake_up(&ioq->wq);
++	if (ioq->notifier)
++		ioq->notifier->signal(ioq->notifier);
++}
 +
-+struct vbus {
-+	struct {
-+		struct config_group group;
-+		struct config_group perms;
-+		struct config_group *defgroups[2];
-+	} ci;
++void ioq_init(struct ioq *ioq,
++	      struct ioq_ops *ops,
++	      enum ioq_locality locale,
++	      struct ioq_ring_head *head,
++	      struct shm_signal *signal,
++	      size_t count)
++{
++	memset(ioq, 0, sizeof(*ioq));
++	atomic_set(&ioq->refs, 1);
++	init_waitqueue_head(&ioq->wq);
 +
-+	atomic_t refs;
-+	struct mutex lock;
-+	struct kobject kobj;
-+	struct vbus_subdir devices;
-+	struct vbus_subdir members;
-+	unsigned long next_id;
-+	struct rb_node node;
-+};
++	ioq->ops         = ops;
++	ioq->locale      = locale;
++	ioq->head_desc   = head;
++	ioq->ring        = &head->ring[0];
++	ioq->count       = count;
++	ioq->signal      = signal;
 +
-+struct vbus_member {
-+	struct rb_node      node;
-+	struct task_struct *tsk;
-+	struct vbus        *vbus;
-+	struct kobject      kobj;
-+};
-+
-+struct vbus_devclasses {
-+	struct kobject *kobj;
-+	struct map map;
-+};
-+
-+struct vbus_buses {
-+	struct config_group ci_group;
-+	struct map map;
-+	struct kobject *kobj;
-+};
-+
-+struct vbus_devshell {
-+	struct config_group ci_group;
-+	struct vbus_device *dev;
-+	struct vbus_devclass *dc;
-+	struct kobject kobj;
-+	struct kobject intfs;
-+};
-+
-+struct vbus_devices {
-+	struct config_group ci_group;
-+	struct kobject *kobj;
-+};
-+
-+struct vbus_root {
-+	struct {
-+		struct configfs_subsystem subsys;
-+		struct config_group      *defgroups[3];
-+	} ci;
-+
-+	struct mutex            lock;
-+	struct kobject         *kobj;
-+	struct vbus_devclasses  devclasses;
-+	struct vbus_buses       buses;
-+	struct vbus_devices     devices;
-+};
-+
-+extern struct vbus_root vbus_root;
-+extern struct sysfs_ops vbus_dev_attr_ops;
-+
-+int vbus_config_init(void);
-+int vbus_devclass_init(void);
-+
-+int vbus_create(const char *name, struct vbus **bus);
-+
-+int vbus_devshell_create(const char *name, struct vbus_devshell **ds);
-+struct vbus_devclass *vbus_devclass_find(const char *name);
-+int vbus_devshell_type_set(struct vbus_devshell *ds);
-+
-+long vbus_interface_find(struct vbus *vbus,
-+			 unsigned long id,
-+			 struct vbus_device_interface **intf);
-+
-+#endif /* __VBUS_H__ */
++	ioq->shm_notifier.signal = &ioq_shm_signal;
++	signal->notifier         = &ioq->shm_notifier;
++}
++EXPORT_SYMBOL_GPL(ioq_init);
 
