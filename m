@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZDUUAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbZDUUBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbZDUUAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZDUUA0
+	id S1757711AbZDUUBV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZDUUBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:00:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56413 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbZDUUAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:00:25 -0400
-Message-ID: <49EE25CB.6070709@redhat.com>
-Date: Tue, 21 Apr 2009 23:00:11 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 21 Apr 2009 16:01:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:9146 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZDUUBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 16:01:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ex0W7hVVaZpySZbhhcN4lPiK6eXUQIlt8O4z54xiMct0xwehNBSbvfFB8pAMSo3tAs
+         LEyr1aW+swBSfqhYnNUEs844r2MU7NIHkmbQ4lHYg3lWu+jZnN9EiGt735m9oTLDbdhv
+         7xUyMc/MlOwnx40zGgrXCAaiBB8X7ITLCn+/4=
+Message-ID: <49EE25FB.9050503@gmail.com>
+Date: Tue, 21 Apr 2009 23:00:59 +0300
+From: Aioanei Rares <krnl.list@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com> <49EDF057.9060501@codemonkey.ws> <49EDF287.9020908@redhat.com> <49EE2497.3060009@codemonkey.ws>
-In-Reply-To: <49EE2497.3060009@codemonkey.ws>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.29.1: Pid: 2831, comm: nfsd Not tainted 2.6.29.1 #4
+References: <alpine.DEB.2.00.0904211202590.10241@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.0904211202590.10241@p34.internal.lan>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Avi Kivity wrote:
->>>
->>> So Avi, regardless of what interface is chosen for KVM, can you hold 
->>> off applying these patches until there is a TCG implementation?  
->>> Otherwise, we'll be playing catchup between kvm-userspace and 
->>> upstream QEMU forever.
->>
->> I have a feeling we will anyway,
+Justin Piszcz wrote:
+
+
+
+> Hello,
 >
-> Not if we avoid committing things to kvm-userspace that would require 
-> major reworking to get into upstream QEMU.  Fixing these issues is 
-> much easier up front then down the road.
+> This has been happening with 2.6.28.(x) and now 2.6.29.(x), can anyone 
+> suggest the possible root cause of this problem, re: the nfsd page 
+> allocation
+> failures:
 >
 
-No argument.  But some kernel features will require major rework in qemu 
-before we can support them properly.  We'll still want to bring them to 
-users quickly so users can enjoy them (and we can enjoy users testing 
-them).  Waiting for a qemu rework may take a while, and we'll lose 
-valuable feedback.
 
-For this kind of work, we can provide kvm-userspace.git as a kind of 
-playground where these experiments may be made.  kvm-userspace.git 
-exists to support kvm.git; while qemu.git has a life of its own and more 
-stringent barriers to acceptance.
+<snip>
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Yes, it happened to me too on a Debian unstable machine with more than 
+one kernel, starting with 2.6.28 until now. I have a feeling it's a 
+Debian-specific problem rather than a kernel one.
