@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZDUAGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZDUAJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZDUAGG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 20:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbZDUAFw
+	id S1753596AbZDUAJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 20:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZDUAJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 20:05:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43029 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751174AbZDUAFw (ORCPT
+	Mon, 20 Apr 2009 20:09:17 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:34660 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751142AbZDUAJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 20:05:52 -0400
-Date: Mon, 20 Apr 2009 17:01:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adriano dos Santos Fernandes <adrianosf@uol.com.br>
-Cc: mingo@elte.hu, venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers: memory_open cleanup - lookup minor device
- number from devlist
-Message-Id: <20090420170155.9ff82860.akpm@linux-foundation.org>
-In-Reply-To: <49EBF483.8000908@uol.com.br>
-References: <49EBF483.8000908@uol.com.br>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 20:09:16 -0400
+Date: Tue, 21 Apr 2009 08:09:09 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in
+	crypto_{,de}compress_{update,final}() (was: Re: [PATCH/RFC] crypto:
+	compress - Add comp_request.total_out
+Message-ID: <20090421000909.GA11875@gondor.apana.org.au>
+References: <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au> <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be> <49ED090F.4050503@lougher.demon.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49ED090F.4050503@lougher.demon.co.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 01:05:23 -0300
-Adriano dos Santos Fernandes <adrianosf@uol.com.br> wrote:
+On Tue, Apr 21, 2009 at 12:45:19AM +0100, Phillip Lougher wrote:
+>
+> Herbert, are the other cryto API patches in linux-next (or any other
+> git repository)?
 
-> memory_open ignores devlist and does a switch for each item, duplicating 
-> code
-> and conditional definitions.
-> 
-> Clean it adding backing_dev_info to devlist and use it to lookup for the 
-> minor
-> device.
+They should be in Linus's tree.
 
-The patch looks reasonable, however your email client replaced all tabs
-with spaces and I didn't really feel like fixing it all up.
-
-I wonder what the lock_kernel() calls in memory_open() are doing.
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
