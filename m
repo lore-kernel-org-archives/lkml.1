@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZDUJBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZDUJBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbZDUJBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZDUJBH
+	id S1755281AbZDUJBk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZDUJBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:01:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60519 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbZDUJBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:01:06 -0400
-Date: Tue, 21 Apr 2009 10:01:02 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 25/25] Use a pre-calculated value instead of
-	num_online_nodes() in fast paths
-Message-ID: <20090421090102.GI12713@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-26-git-send-email-mel@csn.ul.ie> <1240301300.771.58.camel@penberg-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1240301300.771.58.camel@penberg-laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 21 Apr 2009 05:01:14 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:32442 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754634AbZDUJBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 05:01:12 -0400
+Date: Tue, 21 Apr 2009 11:01:02 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>, Greg KH <greg@kroah.com>,
+       Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [PATCH] drivers: move media after i2c
+Message-ID: <20090421110102.78886dee@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0904210908360.6551@axis700.grange>
+References: <Pine.LNX.4.64.0904210908360.6551@axis700.grange>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 11:08:20AM +0300, Pekka Enberg wrote:
-> On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
-> > diff --git a/mm/slab.c b/mm/slab.c
-> > index 1c680e8..41d1343 100644
-> > --- a/mm/slab.c
-> > +++ b/mm/slab.c
-> > @@ -3579,7 +3579,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
-> >  	 * variable to skip the call, which is mostly likely to be present in
-> >  	 * the cache.
-> >  	 */
-> > -	if (numa_platform && cache_free_alien(cachep, objp))
-> > +	if (numa_platform > 1 && cache_free_alien(cachep, objp))
-> >  		return;
+On Tue, 21 Apr 2009 09:22:38 +0200 (CEST), Guennadi Liakhovetski wrote:
+> Currently drivers/media drivers are linked very early - directly after 
+> base, block, misc, and mfd and before ata, scsi, ide, input, firewire, 
+> usb, and i2c. This breaks static build of video4linux drivers, that use 
+> generic CPU i2c adapter drivers and the v4l2-subdev subsystem, because 
+> during video4linux probing the v4l2-subdev core requires a struct 
+> i2c_adapter context, which cannot be satisfied before the i2c subsystem is 
+> initialised. Moving drivers/media after drivers/i2c fixes this problem.
 > 
-> This doesn't look right. I assume you meant "nr_online_nodes > 1" here?
-> If so, please go ahead and remove "numa_platform" completely.
-> 
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-It would need to be nr_possible_nodes which would be a separate patch to add
-the definition and then drop numa_platform. This change is wrong as part of
-this patch. I'll drop it. Thanks
+Looks good to me.
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+> ---
+> 
+> The best way to trigger action is by submitting a patch:-) So, let's see 
+> what comes out of it - on the one hand I don't see any reason why media 
+> has to be linked this early, and nobody was able to give me one yesterday 
+> as this problem has been discussed on linux-media, OTOH, maybe indeed it 
+> would be better to move i2c the whole way up above media, but that'd be 
+> much bigger of a change, I think.
+> 
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index 2618a61..1266ead 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -36,7 +36,7 @@ obj-$(CONFIG_FB_INTEL)          += video/intelfb/
+>  
+>  obj-y				+= serial/
+>  obj-$(CONFIG_PARPORT)		+= parport/
+> -obj-y				+= base/ block/ misc/ mfd/ media/
+> +obj-y				+= base/ block/ misc/ mfd/
+>  obj-$(CONFIG_NUBUS)		+= nubus/
+>  obj-y				+= macintosh/
+>  obj-$(CONFIG_IDE)		+= ide/
+> @@ -71,7 +71,7 @@ obj-$(CONFIG_GAMEPORT)		+= input/gameport/
+>  obj-$(CONFIG_INPUT)		+= input/
+>  obj-$(CONFIG_I2O)		+= message/
+>  obj-$(CONFIG_RTC_LIB)		+= rtc/
+> -obj-y				+= i2c/
+> +obj-y				+= i2c/ media/
+>  obj-$(CONFIG_W1)		+= w1/
+>  obj-$(CONFIG_POWER_SUPPLY)	+= power/
+>  obj-$(CONFIG_HWMON)		+= hwmon/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jean Delvare
