@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZDUIYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751124AbZDUIYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbZDUIYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZDUIXY
+	id S1751124AbZDUIYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZDUIYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:23:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42096 "EHLO gir.skynet.ie"
+	Tue, 21 Apr 2009 04:24:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40629 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZDUIXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:23:22 -0400
-Date: Tue, 21 Apr 2009 09:23:18 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 08/25] Calculate the preferred zone for allocation only
-	once
-Message-ID: <20090421082318.GA12713@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-9-git-send-email-mel@csn.ul.ie> <20090421155256.F133.A69D9226@jp.fujitsu.com>
+	id S1755121AbZDUIYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:24:01 -0400
+Date: Tue, 21 Apr 2009 10:23:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
+Message-ID: <20090421082354.GC12512@elte.hu>
+References: <20090420222257.267399830@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421155256.F133.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090420222257.267399830@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 04:03:59PM +0900, KOSAKI Motohiro wrote:
-> > get_page_from_freelist() can be called multiple times for an allocation.
-> > Part of this calculates the preferred_zone which is the first usable
-> > zone in the zonelist. This patch calculates preferred_zone once.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> I'm not sure this patch improve performance largely or not.
-> but I don't find the bug.
-> 
 
-It's pretty small. In most cases, the preferred zone is going to be the
-first one but in cases where it's not, this avoids walking the beginning
-of the zonelist multiple times. How much time saved depends on the
-number of times get_page_from_freelist() is called. It would be twice
-for most of the systems early lifetime as the slower paths are not
-entered but cost more when the system is lower on memory.
-
-> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-
-Thanks very much for these reviews.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
 > 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
 > 
 > 
+> Steven Rostedt (2):
+>       tracing: use recursive counter over irq level
+>       tracing: use nowakeup version of commit for function event trace tests
+> 
+> ----
+>  kernel/trace/ring_buffer.c  |   45 +++++++++++++++---------------------------
+>  kernel/trace/trace_events.c |    2 +-
+>  2 files changed, 17 insertions(+), 30 deletions(-)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Pulled, thanks guys! I've reactivated the self-tests in tip:master - 
+lets see how it goes today.
+
+	Ingo
