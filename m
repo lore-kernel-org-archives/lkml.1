@@ -1,105 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZDUO13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZDUOat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZDUO13 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZDUO1H
+	id S1754128AbZDUOat (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZDUOak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:27:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57355 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754901AbZDUO1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:27:05 -0400
-Date: Tue, 21 Apr 2009 16:26:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, David VomLehn <dvomlehn@cisco.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421142627.GA18129@elte.hu>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net> <20090421064346.GB8020@elte.hu> <20090421063549.3b71881d@infradead.org> <20090421135034.GA30114@elte.hu> <20090421140533.GA6375@shareable.org>
+	Tue, 21 Apr 2009 10:30:40 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:37198 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZDUOaj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:30:39 -0400
+Date: Tue, 21 Apr 2009 15:30:30 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: James Kosin <jkosin@beta.intcomgrp.com>
+Cc: Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org
+Subject: Re: [RFD] voltage/current regulator consumer interface
+Message-ID: <20090421143030.GG25828@sirena.org.uk>
+References: <ct38K-3Fq-11@gated-at.bofh.it> <49EC9709.8070002@support.intcomgrp.com> <49ED628A.4000505@compulab.co.il> <49EDC935.7080308@beta.intcomgrp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421140533.GA6375@shareable.org>
+In-Reply-To: <49EDC935.7080308@beta.intcomgrp.com>
+X-Cookie: Rubber bands have snappy endings!
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 21, 2009 at 09:25:09AM -0400, James Kosin wrote:
 
-* Jamie Lokier <jamie@shareable.org> wrote:
+> Then the GPS drivers should be made aware and let the drivers handle the
+> on/off interface.  If a user is allowed to turn interfaces on/off at
+> will with this then drivers could suffer from (shock)...  ie: you could
+> turn off your hard-drive in a middle of a write by the driver corrupting
+> data, if handled in the driver it could finish the write before turning
+> off the drive.  I know this is a far stretch from a GPS were the device
+> is only READ only.
 
-> Ingo Molnar wrote:
-> > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > > But more importantly... USB *CANNOT* do this fundamental 
-> > > operation. USB does not have the capability to know when you have 
-> > > seen all devices that are connected. Devices just show up a random 
-> > > amount of time after you turn the power on for the bus.... there's 
-> > > no "and now we've seen all" operation.
-> > 
-> > Yes - and this is fundamentally true of any hotplug bus design.
-> 
-> It's not fundamental, for devices you know are plugged in at boot. 
-> All it takes is for the bus to support a synchronous "enumerate 
-> all" procedure.  That _could_ involve a timeout, but there are 
-> better ways. But not for USB.
-> 
-> > What i'm saying is: instead of "wait 2000 msecs, maybe it works 
-> > out" hack, there should be a proper sleep+event based approach 
-> > to the same. With perhaps a _timeout_ for the "no console 
-> > arrived" negative case as well. (which timeout can be set to 
-> > zero in the "I _know_ there's no console around".)
-> 
-> Isn't the proposed code doing exactly that?  It sleeps waiting for 
-> a console, with a timeout of X msecs.  If a console arrives before 
-> that, doesn't it wake immediately?
+The proposed driver is a platform device.  This means that in order for
+user space to have anything to access the kernel will have to explicitly
+register a platform device and provide it with configuration.  Further,
+since the driver is a standard regulator consumer the kernel will also
+have to have provided explicit constraints which grant permission to the
+driver to modify the state of the regulator.
 
-Yes - except that the timeout is aspecific. I.e. we'll time out even 
-if the delay happens not due to a device arriving too late (or not 
-arriving at all), but due to some earlier init step taking an 
-unexpectedly long time.
+> I do agree it could be useful, but we need to be careful on how much
+> control the user has over the drivers and system.  To an extreme, a user
+> could be able to turn off CPU cores outside of the drivers control
+> causing serious pipeline hazards that would need to be handled at the
+> driver level.  This would not be an issue for GPS were the data is read
 
-> > Do you see the fundamental design difference between the two 
-> > solutions?
-> 
-> The only difference I see is: If you asked for a USB console, the 
-> timeout should begin relative to when the USB host driver kicks 
-> the bus, not the first /dev/console open.
-> 
-> Conceptually the timeout is a USB characteristic, not a generic 
-> console one.
-> 
-> For other (non-USB) devices which might take a while to 
-> initialise, it should work as you describe.  E.g. an ethernet TCP 
-> console should register ("i'm trying to give you a console") 
-> followed by ("got it") or ("failed, carry on without me").
-
-I guess we could live with this one too but still it feels wrong to 
-me. It would be much better to push the decision to time out into 
-individual console drivers.
-
-Also, if we end up doing this - the patch, as proposed right now, 
-appears to add a default 1000 msecs sleep to every __tty_open() 
-call:
-
-+config PRINTK_CONSOLE_WAIT
-+       int "Default number of milliseconds to wait for console device"
-+       default 1000
-
-Does this only delay init during a console-less bootup - or are 
-there other later apps that might trigger the delay?
-
-	Ingo
+This is why the regulator core requires that explicit configuration be
+done by the machine in order to allow any changes to the regulator
+state.
