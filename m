@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZDUSqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZDUSpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304AbZDUSqP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbZDUSpc
+	id S1758296AbZDUSpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757991AbZDUSls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:45:32 -0400
-Received: from mga01.intel.com ([192.55.52.88]:26335 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759225AbZDUSpb convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 14:41:48 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53947 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756080AbZDUSln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:45:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,225,1239001200"; 
-   d="scan'208";a="683580498"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>, Christoph Lameter <cl@linux.com>
-CC: Nick Piggin <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "randy.dunlap_ocs10g@oracle.com" <randy.dunlap_ocs10g@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "iwamatsu.nobuhiro@renesas.com" <iwamatsu.nobuhiro@renesas.com>
-Date: Tue, 21 Apr 2009 11:45:28 -0700
-Subject: RE: linux-next ia64 build problems in slqb
-Thread-Topic: linux-next ia64 build problems in slqb
-Thread-Index: AcnCrpAqjVCdfooqRiqcLPk1QqhODwAASCDQ
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA39EC57748@orsmsx505.amr.corp.intel.com>
-References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com>
-	 <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
-	 <alpine.DEB.1.10.0904211034550.19969@qirst.com>
- <84144f020904211125v68b98df4ke1c04bc29df65fda@mail.gmail.com>
-In-Reply-To: <84144f020904211125v68b98df4ke1c04bc29df65fda@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 21 Apr 2009 14:41:43 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH v3 11/17] venet-tap: add the ability to set the client's
+	mac address via sysfs
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
+       rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
+       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
+       chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
+Date: Tue, 21 Apr 2009 14:35:15 -0400
+Message-ID: <20090421183515.12548.1567.stgit@dev.haskins.net>
+In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
+References: <20090421183341.12548.33393.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Interesting. What exactly is an UP NUMA machine?
+From: Patrick Mullaney <pmullaney@novell.com>
 
-UP + NUMA is a special case of memory-only nodes.  There are
-some (crazy?) customers with problems that require very large
-amounts of memory, but not very much cpu horse power.  They
-buy large multi-node systems and populate all the nodes with
-as much memory as they can afford, but most nodes get zero
-cpus.
+Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-The limit case with only one cpu is becoming rare (since
-multi-core gives you more than one cpu even if you only
-fill a single cpu socket).
+ drivers/vbus/devices/venet-tap.c |   35 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 34 insertions(+), 1 deletions(-)
 
-N.B. Note that memory only nodes mean that it is a poor
-idea for the "free" code to just place returned remote
-memory on a queue for the node that it belongs to, and
-rely on a "local" cpu processing that queue ... there may
-not be any local cpus to do so.
+diff --git a/drivers/vbus/devices/venet-tap.c b/drivers/vbus/devices/venet-tap.c
+index 5e093a0..33ede4c 100644
+--- a/drivers/vbus/devices/venet-tap.c
++++ b/drivers/vbus/devices/venet-tap.c
+@@ -1214,6 +1214,39 @@ host_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
+ static struct vbus_device_attribute attr_hmac =
+ 	__ATTR_RO(host_mac);
+ 
++
++static ssize_t
++cmac_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
++	      const char *buf, size_t count)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++	const char *pbuf = buf;
++	unsigned int uc;
++	int i;
++
++	/*
++	 * Format 00:11:22:33:44:55
++	 */
++	if (count != 18)
++		return -EINVAL;
++
++	for (i = 2; i < 17; i += 3) {
++		if (pbuf[i] != ':')
++			return -EINVAL;
++	}
++
++	if (priv->vbus.opened)
++		return -EINVAL;
++
++	for (i = 0; i < ETH_ALEN; i++) {
++		sscanf(pbuf, "%x", &uc);
++		pbuf = pbuf + 3;
++		priv->cmac[i] = (u8)uc;
++	}
++
++	return count;
++}
++
+ static ssize_t
+ client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
+ 	 char *buf)
+@@ -1224,7 +1257,7 @@ client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
+ }
+ 
+ static struct vbus_device_attribute attr_cmac =
+-	__ATTR_RO(client_mac);
++	__ATTR(client_mac, S_IRUGO | S_IWUSR, client_mac_show, cmac_store);
+ 
+ static ssize_t
+ enabled_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
 
-> Anyway, I'm more than
-> happy to apply a tested patch to fix up SLQB. Nick?
-
-I'm trying to check whether http://lkml.org/lkml/2009/4/20/30
-fixes things.  It certainly solves the complilation problem,
-but I'm running into apparently unrelated issues trying to
-boot linux-next kernels.
-
--Tony
