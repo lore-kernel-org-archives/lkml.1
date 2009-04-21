@@ -1,66 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZDUBGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbZDUBLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbZDUBGg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 21:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZDUBG1
+	id S1756305AbZDUBLS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 21:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZDUBLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 21:06:27 -0400
-Received: from fwgate.192.149.94.202.in-addr.arpa ([202.94.149.254]:11708 "EHLO
-	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752690AbZDUBG1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 21:06:27 -0400
-X-Greylist: delayed 1919 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Apr 2009 21:06:26 EDT
-Date: Tue, 21 Apr 2009 09:34:21 +0900 (JST)
-Message-Id: <20090421.093421.139385711.nemoto@toshiba-tops.co.jp>
-To: dan.j.williams@intel.com
-Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
+	Mon, 20 Apr 2009 21:11:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42633 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753014AbZDUBLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 21:11:02 -0400
+Date: Mon, 20 Apr 2009 21:08:46 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] DMA: TXx9 Soc DMA Controller driver (v2)
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <49ECF040.2000508@intel.com>
-References: <e9c3a7c20904181305l5a7ea5dcy881b7faec8e447bf@mail.gmail.com>
-	<20090420.033446.65190767.anemo@mba.ocn.ne.jp>
-	<49ECF040.2000508@intel.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 1/9] io-throttle documentation
+Message-ID: <20090421010846.GA15850@redhat.com>
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux> <20090419134201.GF8493@redhat.com> <20090419154717.GB5514@linux> <20090420212827.GA9080@redhat.com> <20090420220511.GA8740@linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420220511.GA8740@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 14:59:28 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
-> >> There seems to be a lot of ifdef magic in the code based on these
-> >> defines.  Can we move this magic and some of the pure definitions to
-> >> drivers/dma/txx9dmac.h?  (See the "#ifdefs are ugly" section of
-> >> Documentation/SubmittingPatches)
-> > OK, I will try to clean them up.  But since I don't want to export
-> > internal implementation details, some of the magics will be left in
-> > txx9dmac.c, perhaps.
+On Tue, Apr 21, 2009 at 12:05:12AM +0200, Andrea Righi wrote:
+
+[..]
+> > > > Are we not already controlling submission of request (at crude level).
+> > > > If application is doing writeout at high rate, then it hits vm_dirty_ratio
+> > > > hits and this application is forced to do write out and hence it is slowed
+> > > > down and is not allowed to submit writes at high rate.
+> > > > 
+> > > > Just that it is not a very fair scheme right now as during right out
+> > > > a high prio/high weight cgroup application can start writing out some
+> > > > other cgroups' pages.
+> > > > 
+> > > > For this we probably need to have some combination of solutions like
+> > > > per cgroup upper limit on dirty pages. Secondly probably if an application
+> > > > is slowed down because of hitting vm_drity_ratio, it should try to
+> > > > write out the inode it is dirtying first instead of picking any random
+> > > > inode and associated pages. This will ensure that a high weight
+> > > > application can quickly get through the write outs and see higher
+> > > > throughput from the disk.
+> > > 
+> > > For the first, I submitted a patchset some months ago to provide this
+> > > feature in the memory controller:
+> > > 
+> > > https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
+> > > 
+> > > We focused on the best interface to use for setting the dirty pages
+> > > limit, but we didn't finalize it. I can rework on that and repost an
+> > > updated version. Now that we have the dirty_ratio/dirty_bytes to set the
+> > > global limit I think we can use the same interface and the same semantic
+> > > within the cgroup fs, something like:
+> > > 
+> > >   memory.dirty_ratio
+> > >   memory.dirty_bytes
+> > > 
+> > > For the second point something like this should be enough to force tasks
+> > > to write out only the inode they're actually dirtying when they hit the
+> > > vm_dirty_ratio limit. But it should be tested carefully and may cause
+> > > heavy performance regressions.
+> > > 
+> > > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> > > ---
+> > >  mm/page-writeback.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > > index 2630937..1e07c9d 100644
+> > > --- a/mm/page-writeback.c
+> > > +++ b/mm/page-writeback.c
+> > > @@ -543,7 +543,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+> > >  		 * been flushed to permanent storage.
+> > >  		 */
+> > >  		if (bdi_nr_reclaimable) {
+> > > -			writeback_inodes(&wbc);
+> > > +			sync_inode(mapping->host, &wbc);
+> > >  			pages_written += write_chunk - wbc.nr_to_write;
+> > >  			get_dirty_limits(&background_thresh, &dirty_thresh,
+> > >  				       &bdi_thresh, bdi);
+> > 
+> > This patch seems to be helping me a bit in getting more service
+> > differentiation between two writer dd of different weights. But strangely
+> > it is helping only for ext3 and not ext4. Debugging is on.
 > 
-> You only need to hide txx9dmac magic if the header was in
-> include/linux/, but since it will be in drivers/dma/ you can assume
-> it is private.
+> Are you explicitly mounting ext3 with data=ordered?
 
-Oh I missed that you said driver/dma/txx9dmac.h, not include/asm/txx9/dmac.h.
-OK, I will do.
+Yes. Still using 29-rc8 and data=ordered was the default then.
 
-> > The completion callback handler of the first descriptor should be
-> > called _after_ the completion of the _last_ child of the descriptor.
-> > Also I use desc_node for both dc->queue, dc->active_list and
-> > txd.tx_list.  So if I putted all children to dc->queue or
-> > dc->active_list, txx9dmac_descriptor_complete() (or its caller) will
-> > be more complex.
-> > Or do you mean adding another list_head to maintain txd.tx_list?  Or
-> > something another at all?
-> 
-> The piece I was missing was that it would make
-> txx9dmac_descriptor_complete() more complex.  So, I am fine with the
-> leaving the current implementation.
+I got two partitions on same disk and created one ext3 filesystem on each
+partition (just to take journaling intereference out of two dd threads 
+for the time being).
 
-Thanks.  I will add some comments about that.
+Two dd threads doing writes to each partition. 
 
----
-Atsushi Nemoto
+Thanks
+Vivek
