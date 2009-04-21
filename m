@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbZDUIRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZDUIUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbZDUIRT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZDUIRB
+	id S1754512AbZDUIUq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbZDUIU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:17:01 -0400
-Received: from broadrack.ru ([195.178.208.66]:47178 "EHLO tservice.net.ru"
+	Tue, 21 Apr 2009 04:20:29 -0400
+Received: from cmpxchg.org ([85.214.51.133]:39112 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751392AbZDUIQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:16:59 -0400
-Date: Tue, 21 Apr 2009 12:16:49 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, mingo@elte.hu, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090421081649.GA16782@ioremap.net>
-References: <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <49ED406F.2040401@cn.fujitsu.com> <49ED4407.8010200@cosmosbay.com> <49ED5813.1000803@cn.fujitsu.com> <20090420224540.30d7b0ed@nehalam> <49ED6D2E.5060808@cn.fujitsu.com>
-MIME-Version: 1.0
+	id S1750884AbZDUIU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:20:28 -0400
+Date: Tue, 21 Apr 2009 10:19:03 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] mm: fix pageref leak in do_swap_page()
+Message-ID: <20090421081903.GA2527@cmpxchg.org>
+References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <20090421031419.GB30001@balbir.in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49ED6D2E.5060808@cn.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090421031419.GB30001@balbir.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Tue, Apr 21, 2009 at 08:44:20AM +0530, Balbir Singh wrote:
+> * Johannes Weiner <hannes@cmpxchg.org> [2009-04-20 22:24:43]:
+> 
+> > By the time the memory cgroup code is notified about a swapin we
+> > already hold a reference on the fault page.
+> > 
+> > If the cgroup callback fails make sure to unlock AND release the page
+> > or we leak the reference.
+> > 
+> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> Seems reasonable to me, could you make the changelog more verbose and
+> mention that lookup_swap_cache() gets a reference to the page and we
+> need to release the extra reference.
 
-On Tue, Apr 21, 2009 at 02:52:30PM +0800, Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> > +void xt_info_rdlock_bh(void)
-> > > +{
-> > > +	struct xt_info_lock *lock;
-> > > +
-> > > +	preempt_disable();
-> > > +	lock = &__get_cpu_var(xt_info_locks);
-> > > +	if (likely(++lock->depth == 0))
-> 
-> So what happen when xt_info_rdlock_bh() called recursively here?
-> 
-> > > +		spin_lock_bh(&lock->lock);
-> > > +	preempt_enable_no_resched();
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
-> > > +
-> 
-> ----------
-> Is this OK? (Now I suppose we can enter the read-side critical region
-> in irq context)
-> 
-> void xt_info_rdlock_bh(void)
-> {
-> 	unsigned long flags;
-> 	struct xt_info_lock *lock;
-> 
-> 	local_irq_save(flags);
-> 	lock = &__get_cpu_var(xt_info_locks);
-> 	if (likely(++lock->depth == 0))
-> 		spin_lock_bh(&lock->lock);
-> 	local_irq_restore(flags);
-> }
+Okay, I will add that information.
 
-Netfilter as long as other generic network pathes are never accessed
-from interrupt context, but your analysis looks right for the softirq
-case.
+> BTW, have you had any luck reproducing the issue? How did you catch
+> the problem?
 
-Stephen, should preempt_disable() be replaced with local_bh_disable() to
-prevent softirq to race on the same cpu for the lock's depth field? Or
-can it be made atomic?
-
--- 
-	Evgeniy Polyakov
+I reviewed all the exit points when I shuffled code around in there
+for another series that uses a lighter version of do_wp_page() for
+swap write-faults.  I never triggered that problem.
