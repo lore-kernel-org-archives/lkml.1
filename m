@@ -1,70 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZDUXDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbZDUXIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbZDUXDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 19:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZDUXDM
+	id S1754120AbZDUXIV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 19:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZDUXIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 19:03:12 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42779 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbZDUXDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 19:03:11 -0400
-Date: Tue, 21 Apr 2009 17:03:09 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, mdharm-usb@one-eyed-alien.net,
-       linux-usb <linux-usb@vger.kernel.org>,
-       usb-storage@lists.one-eyed-alien.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH v2] fix sign extension with 1.5TB usb-storage LBD=y
-Message-ID: <20090421230309.GC1926@parisc-linux.org>
-References: <1240347174.10627.20.camel@nimitz> <20090421211858.GA1926@parisc-linux.org> <1240351210.10627.30.camel@nimitz>
+	Tue, 21 Apr 2009 19:08:04 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:45250 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751644AbZDUXIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 19:08:01 -0400
+Date: Tue, 21 Apr 2009 16:07:59 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, kaber@trash.net,
+       torvalds@linux-foundation.org, shemminger@vyatta.com,
+       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org
+Subject: Re: [RFC PATCH] v3 RCU implementation with fast grace periods
+Message-ID: <20090421230759.GO6642@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090421045931.GA9953@linux.vnet.ibm.com> <20090421151034.GA3792@Krystal> <20090421165151.GJ6642@linux.vnet.ibm.com> <20090421211158.GD15045@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240351210.10627.30.camel@nimitz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090421211158.GD15045@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 03:00:10PM -0700, Dave Hansen wrote:
-> Here's a patch implementing Al's suggestion.  Not quite as trivial as
-> Matthew's, but even nicer aesthetically.  (Description stolen from
-> Matthew's patch).  I have verified that this fixes my issue.
-
-I prefer this approach, but I'm equally happy with whichever patch
-James chooses.
-
-> Shifting an unsigned char implicitly casts it to a signed int.  This
-> caused 'lba' to sign-extend and Linux would then try READ CAPACITY 16
-> which was not supported by at least one drive.  Using the
-> get_unaligned_be*() helpers keeps us from having to worry about how the
-> extension might occur.
+On Tue, Apr 21, 2009 at 05:11:58PM -0400, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Tue, Apr 21, 2009 at 11:10:35AM -0400, Mathieu Desnoyers wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > 
+> > [ . . . ]
+> > 
+> > > > +void synchronize_rcu_fgp(void)
+> > > > +{
+> > > > +	mutex_lock(&rcu_fgp_mutex);
+> > > > +	
+> > > > +	/* CPUs must see earlier change before parity flip. */
+> > > > +	smp_call_function(rcu_fgp_do_mb, NULL, 1);
+> > > > +
+> > > 
+> > > Hrm, my original comment about missing smp_mb() here still applies, I
+> > > don't think we have come to an agreement yet.
+> > 
+> > My argument is that smp_call_function() must necessarily contain a
+> > full memory barrier, otherwise it cannot function properly.  ;-)
+> > 
 > 
-> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> Looking at :
+> 
+> kernel/smp.c
+> 
+> smp_call_function_many() indeed has a smp_mb(). It is called by
+> smp_call_function(). I wonder if it could eventually be turned into a
+> smp_wmb() instead ? If this is even a remote possibility, then the fact
+> that
+> 
+> - The rcu_fgp code does not document that it expects smp_call_function()
+>   to have a smp_mb().
+> - The fact that smp_call_function_many() comments do not state that this
+>   function provides the guarantee to run a smp_mb().
+> 
+> are both asking for an eventual bug to creep into the kernel.
 
-Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+Many bugs -- I believe that a number of users of smp_call_function()
+assume that it maintains ordering between the calling code and all
+invocations of the function passed to smp_call_function().
 
-> @@ -1344,12 +1345,8 @@ static int read_capacity_16(struct scsi_disk *sdkp, struct scsi_device *sdp,
->  		return -EINVAL;
->  	}
->  
-> -	sector_size =	(buffer[8] << 24) | (buffer[9] << 16) |
-> -			(buffer[10] << 8) | buffer[11];
-> -	lba =  (((u64)buffer[0] << 56) | ((u64)buffer[1] << 48) |
-> -		((u64)buffer[2] << 40) | ((u64)buffer[3] << 32) |
-> -		((u64)buffer[4] << 24) | ((u64)buffer[5] << 16) |
-> -		((u64)buffer[6] << 8) | (u64)buffer[7]);
-> +	sector_size = get_unaligned_be32(&buffer[8]);
-> +	lba =  get_unaligned_be64(&buffer[0]);
+> So your assumption seems OK, but I think it needs to be explicitly
+> documented.
 
-The smallest of quibbles ... you have an excess space after the = ...
+That might well be a good thing.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+							Thanx, Paul
+
+> Mathieu
+> 
+> > > > +	/*
+> > > > +	 * We must flip twice to correctly handle tasks that stall
+> > > > +	 * in rcu_read_lock_fgp() between the time that they fetch
+> > > > +	 * rcu_fgp_ctr and the time that the store to their CPU's
+> > > > +	 * rcu_fgp_active_readers.  No matter when they resume
+> > > > +	 * execution, we will wait for them to get to the corresponding
+> > > > +	 * rcu_read_unlock_fgp().
+> > > > +	 */
+> > > > +	ACCESS_ONCE(rcu_fgp_ctr) ^= RCU_FGP_PARITY;  /* flip parity 0 -> 1 */
+> > > > +	rcu_fgp_wait_for_quiescent_state();	     /* wait for old readers */
+> > > > +	ACCESS_ONCE(rcu_fgp_ctr) ^= RCU_FGP_PARITY;  /* flip parity 1 -> 0 */
+> > > > +	rcu_fgp_wait_for_quiescent_state();	     /* wait for old readers */
+> > > > +
+> > > > +	/* Prevent CPUs from reordering out of prior RCU critical sections. */
+> > > > +	smp_call_function(rcu_fgp_do_mb, NULL, 1);
+> > > > +
+> > > 
+> > > Same here.
+> > > 
+> > > So we would need to either add a smp_mb() at both of these locations, or
+> > > use on_each_cpu() rather than smp_call_function. Note that this is to
+> > > ensure that the "updater" thread executes these memory barriers.
+> > 
+> > Or rely on the barriers that must be part of smp_call_function.  ;-)
+> > 
+> > 						Thanx, Paul
+> > 
+> > > Mathieu
+> > > 
+> > > 
+> > > > +	rcu_fgp_completed++;
+> > > > +	mutex_unlock(&rcu_fgp_mutex);
+> > > > +}
+> > > > +EXPORT_SYMBOL_GPL(synchronize_rcu_fgp);
+> > > > +
+> > > > +/**
+> > > > + * rcu_fgp_batches_completed - return batches completed.
+> > > > + * @sp: srcu_struct on which to report batch completion.
+> > > > + *
+> > > > + * Report the number of batches, correlated with, but not necessarily
+> > > > + * precisely the same as, the number of grace periods that have elapsed.
+> > > > + */
+> > > > +long rcu_fgp_batches_completed(void)
+> > > > +{
+> > > > +	return rcu_fgp_completed;
+> > > > +}
+> > > > +EXPORT_SYMBOL_GPL(rcu_fgp_batches_completed);
+> > > 
+> > > -- 
+> > > Mathieu Desnoyers
+> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> --
+> To unsubscribe from this list: send the line "unsubscribe netfilter-devel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
