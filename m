@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbZDUOEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZDUOEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbZDUOEV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZDUOEK
+	id S1756978AbZDUOEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbZDUOE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:04:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33363 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbZDUOEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:04:08 -0400
-Date: Tue, 21 Apr 2009 14:03:29 GMT
-From: tip-bot for Steven Rostedt <srostedt@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, srostedt@redhat.com, tglx@linutronix.de,
+	Tue, 21 Apr 2009 10:04:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:52725 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756854AbZDUOE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:04:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=t01fTOpeyW0JziAIubybPeeP9YBnXI9F2PccxeaJJZJVepbhZFgVMUjrQfon6HC/00
+         CIJ1NxIFaEaz0SJrmXzMLwki6ztpfF0U/3Q4pKxmozXqFNWbxzpO7AcuKzLoPMpVmLAW
+         bBMiAMSC5danE23MPu3UIKRGIdAWn9WkwSUkQ=
+Date: Tue, 21 Apr 2009 18:04:16 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, weidong.han@intel.com, tglx@linutronix.de,
        mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, srostedt@redhat.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090421094616.GA14561@elte.hu>
-References: <20090421094616.GA14561@elte.hu>
-Subject: [tip:tracing/core] ring-buffer: only warn on wrap if buffer is bigger than two pages
-Message-ID: <tip-3554228d4289098a8fe5cfd87512ec32a19bbe5a@git.kernel.org>
-Git-Commit-ID: 3554228d4289098a8fe5cfd87512ec32a19bbe5a
-X-Mailer: tip-git-log-daemon
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86: x2apic, IR: Move eoi_ioapic_irq() into a
+	CONFIG_INTR_REMAP section
+Message-ID: <20090421140416.GB10856@lenovo>
+References: <20090420200450.271099000@linux-os.sc.intel.com> <tip-25629d810a52176758401184d9b437fbb7f79195@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 14:03:31 +0000 (UTC)
+In-Reply-To: <tip-25629d810a52176758401184d9b437fbb7f79195@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3554228d4289098a8fe5cfd87512ec32a19bbe5a
-Gitweb:     http://git.kernel.org/tip/3554228d4289098a8fe5cfd87512ec32a19bbe5a
-Author:     Steven Rostedt <srostedt@redhat.com>
-AuthorDate: Tue, 21 Apr 2009 09:41:26 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 21 Apr 2009 16:00:45 +0200
+[tip-bot for Suresh Siddha - Tue, Apr 21, 2009 at 08:07:00AM +0000]
+| Commit-ID:  25629d810a52176758401184d9b437fbb7f79195
+| Gitweb:     http://git.kernel.org/tip/25629d810a52176758401184d9b437fbb7f79195
+| Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+| AuthorDate: Mon, 20 Apr 2009 13:02:28 -0700
+| Committer:  Ingo Molnar <mingo@elte.hu>
+| CommitDate: Tue, 21 Apr 2009 09:08:26 +0200
+| 
+| x86: x2apic, IR: Move eoi_ioapic_irq() into a CONFIG_INTR_REMAP section
+| 
+| Address the following complier warning:
+| 
+|    arch/x86/kernel/apic/io_apic.c:2543: warning: `eoi_ioapic_irq' defined but not used
+| 
+| By moving that function (and eoi_ioapic_irq()) into an existing
+| #ifdef CONFIG_INTR_REMAP section of the code.
+| 
+| [ Impact: cleanup ]
+| 
+| Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+| Cc: dwmw2@infradead.org
+| Cc: Weidong Han <weidong.han@intel.com>
+| LKML-Reference: <20090420200450.271099000@linux-os.sc.intel.com>
+| Signed-off-by: Ingo Molnar <mingo@elte.hu>
+| Cc: Weidong Han <weidong.han@intel.com>
+| 
+| 
+| ---
+|  arch/x86/kernel/apic/io_apic.c |   66 ++++++++++++++++++++--------------------
+|  1 files changed, 33 insertions(+), 33 deletions(-)
+| 
+...  
+|  #ifdef CONFIG_INTR_REMAP
+| +static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
+| +{
+| +	int apic, pin;
+| +	struct irq_pin_list *entry;
+| +
+| +	entry = cfg->irq_2_pin;
+| +	for (;;) {
+| +
+| +		if (!entry)
+| +			break;
+| +
+| +		apic = entry->apic;
+| +		pin = entry->pin;
+| +		io_apic_eoi(apic, pin);
+| +		entry = entry->next;
+| +	}
+| +}
+| +
+...
 
-ring-buffer: only warn on wrap if buffer is bigger than two pages
+Btw, maybe we better could use plain "while(entry) {...}" here?
 
-On boot up, to save memory, ftrace allocates the minimum buffer
-which is two pages. Ftrace also goes through a series of tests
-(when configured) on boot up. These tests can fill up a page within
-a single interrupt.
-
-The ring buffer also has a WARN_ON when it detects that the buffer was
-completely filled within a single commit (other commits are allowed to
-be nested).
-
-Combine the small buffer on start up, with the tests that can fill more
-than a single page within an interrupt, this can trigger the WARN_ON.
-
-This patch makes the WARN_ON only happen when the ring buffer consists
-of more than two pages.
-
-[ Impact: prevent false WARN_ON in ftrace startup tests ]
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-LKML-Reference: <20090421094616.GA14561@elte.hu>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/ring_buffer.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 7bcfd3e..61dbdf2 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -1241,7 +1241,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		 * about it.
- 		 */
- 		if (unlikely(next_page == commit_page)) {
--			WARN_ON_ONCE(1);
-+			/* This can easily happen on small ring buffers */
-+			WARN_ON_ONCE(buffer->pages > 2);
- 			goto out_reset;
- 		}
- 
+        Cyrill
