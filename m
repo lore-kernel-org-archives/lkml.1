@@ -1,120 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbZDUGz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751683AbZDUG7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511AbZDUGz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 02:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZDUGzJ
+	id S1751683AbZDUG7H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 02:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZDUG6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 02:55:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61488 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbZDUGzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 02:55:07 -0400
-Message-ID: <49ED6D2E.5060808@cn.fujitsu.com>
-Date: Tue, 21 Apr 2009 14:52:30 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 21 Apr 2009 02:58:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55111 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbZDUG6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 02:58:54 -0400
+Date: Tue, 21 Apr 2009 08:58:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, Weidong Han <weidong.han@intel.com>
+Subject: Re: [patch 1/5] x2apic, IR: cleanup X86_X2APIC and INTR_REMAP
+	config checks
+Message-ID: <20090421065841.GA22937@elte.hu>
+References: <20090420200450.128993000@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com>	<20090417012812.GA25534@linux.vnet.ibm.com>	<20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<49ED406F.2040401@cn.fujitsu.com>	<49ED4407.8010200@cosmosbay.com>	<49ED5813.1000803@cn.fujitsu.com> <20090420224540.30d7b0ed@nehalam>
-In-Reply-To: <20090420224540.30d7b0ed@nehalam>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420200450.128993000@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
->> xt_info_rdlock_bh() called recursively here will enter the
->> critical region without &__get_cpu_var(xt_info_locks)->lock.
+
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+
+> Add x2apic_supported() to cleanup CONFIG_X86_X2APIC checks.
 > 
-> NO spin_lock_bh always does a preempt_disable
+> Fix CONFIG_INTR_REMAP checks.
 > 
->   xt_info_rdlock_bh            (depth = -1)
-> +1         preempt_disable
->            spin_lock_bh
-> +1             preempt_disable
-> -1         preempt_enable_no_resched
-> ---
-> +1
-> 
-> Second call preempt_count=1   (depth = 0)
->        xt_info_rdlock_bh
-> +1         preempt_disable
-> -1         preempt_enable_no_resched
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Cc: Weidong Han <weidong.han@intel.com>
 > ---
 > 
+> Index: tip/arch/x86/include/asm/apic.h
 
-I think I had made you mistook my email.
+Ob'nit'pick: please generate diffstats for future patches as it 
+makes in-email review much easier.
 
-The preempt_count is correct, but I thought about lock-save:
-we must hold &__get_cpu_var(xt_info_locks)->lock
-when we enter the read-side critical region.
+The diffstat is:
 
---------------------
-xt_info_rdlock_bh() (depth = -1)
-  preempt_disable()
-  depth++
-  ==========>interrupt here
-  ==========>
-  ==========>xt_info_rdlock_bh() (depth = 0)
-  ==========>  preempt_disable()
-  ==========>  depth++
-  ==========>  preempt_enable_no_resched()
-  ==========>
-  ==========>enter the read-side critical region *without* lock.
-  ==========>  it may get trashy data.
-  ==========>
-  ==========>xt_info_rdunlock_bh()
-  ==========>
-  ==========>interrupt return.
-  spin_lock_bh()
-  preempt_enable_no_resched()
+ arch/x86/include/asm/apic.h          |   10 +++----
+ arch/x86/include/asm/io_apic.h       |    2 -
+ arch/x86/include/asm/irq_remapping.h |    2 -
+ arch/x86/kernel/apic/apic.c          |   49 ++++++++---------------------------
+ arch/x86/kernel/apic/io_apic.c       |    2 -
+ arch/x86/kernel/apic/probe_64.c      |    2 -
+ include/linux/dmar.h                 |    2 +
+ 7 files changed, 21 insertions(+), 48 deletions(-)
 
-enter the read-side critical region *with* lock.
+Which already shows that the patch has a very nice cleanup factor.
 
-xt_info_rdunlock_bh().
-----------------------
+I've added an "[ Impact: cleanup ]" tag to it - the patch is not 
+supposed to have any functional side-effects, right? (i.e. has no 
+fixes embedded in it.)
 
-So I asked:
-> +void xt_info_rdlock_bh(void)
-> > +{
-> > +	struct xt_info_lock *lock;
-> > +
-> > +	preempt_disable();
-> > +	lock = &__get_cpu_var(xt_info_locks);
-> > +	if (likely(++lock->depth == 0))
+a question:
 
-So what happen when xt_info_rdlock_bh() called recursively here?
+>  	if (intr_remapping_enabled)
+>  		disable_intr_remapping();
 
-> > +		spin_lock_bh(&lock->lock);
-> > +	preempt_enable_no_resched();
-> > +}
-> > +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
-> > +
+Could the intr_remapping_enabled check be moved inside 
+disable_intr_remapping(), and thus the ugly 'if (flag)' construct 
+could go away?
 
-----------
-Is this OK? (Now I suppose we can enter the read-side critical region
-in irq context)
+>  	if (intr_remapping_enabled) {
+> +		reenable_intr_remapping(x2apic_mode);
+>  		unmask_8259A();
+>  		restore_IO_APIC_setup(ioapic_entries);
+>  		free_ioapic_entries(ioapic_entries);
+>  	}
 
-void xt_info_rdlock_bh(void)
-{
-	unsigned long flags;
-	struct xt_info_lock *lock;
+Ditto - shouldnt this sequence move into reenable_intr_remapping() - 
+or into a new helper function? (or is it too single-purpose)
 
-	local_irq_save(flags);
-	lock = &__get_cpu_var(xt_info_locks);
-	if (likely(++lock->depth == 0))
-		spin_lock_bh(&lock->lock);
-	local_irq_restore(flags);
-}
+Anyway, this already looks good as-is so i can apply it if you do 
+delta patches on top of it to improve it further.
 
-Lai
-
+	Ingo
