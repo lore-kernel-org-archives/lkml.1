@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZDUCo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZDUDA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbZDUCo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 22:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDUCor
+	id S1754734AbZDUDA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 23:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbZDUDAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 22:44:47 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43444 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbZDUCoq (ORCPT
+	Mon, 20 Apr 2009 23:00:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:35331 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbZDUDAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 22:44:46 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 03/25] Do not check NUMA node ID when the caller knows the node is valid
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-4-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090421114121.F11F.A69D9226@jp.fujitsu.com>
+	Mon, 20 Apr 2009 23:00:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RL66zPMUyd8bfdt/87Hr1+Xoot69Wt0yZgS8FpVUG+8xeqosFBRfj+FlmPMrXcf+1i
+         DxEVZrO/MDvVXoZtmkOCknWP8Df7SI/ZTAzyaX5fzV7YCpH2uCE4MHXgRPeBocCtTHA3
+         ba4OV6o6MX1vHF75uWGz9en25S72hOLJJ6j7M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <b239d23646a4054d65c791ca7118c1d1.squirrel@webmail-b.css.fujitsu.com>
+References: <20090416120316.GG7082@balbir.in.ibm.com>
+	 <20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090417034539.GD18558@balbir.in.ibm.com>
+	 <20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090417045623.GA3896@balbir.in.ibm.com>
+	 <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090417064726.GB3896@balbir.in.ibm.com>
+	 <20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090417141837.GD3896@balbir.in.ibm.com>
+	 <b239d23646a4054d65c791ca7118c1d1.squirrel@webmail-b.css.fujitsu.com>
+Date: Tue, 21 Apr 2009 08:30:08 +0530
+X-Google-Sender-Auth: f1a05d9bc5eb57d5
+Message-ID: <661de9470904202000w3e879ed6l12b08448a0c4255c@mail.gmail.com>
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource 
+	controller (v3)
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 11:44:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Callers of alloc_pages_node() can optionally specify -1 as a node to mean
-> "allocate from the current node". However, a number of the callers in fast
-> paths know for a fact their node is valid. To avoid a comparison and branch,
-> this patch adds alloc_pages_exact_node() that only checks the nid with
-> VM_BUG_ON(). Callers that know their node is valid are then converted.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+2009/4/17 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+[snip]
+> ok, let's start testing under -mm.
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> Nice feature :)
+>
 
-I think there still are convertable caller. (recently, caller increased a bit)
-but it isn't important. anyway,
+Hi, Andrew,
 
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Could you please pick this up for testing under -mm.
 
-
-
+Thanks,
+Balbir
