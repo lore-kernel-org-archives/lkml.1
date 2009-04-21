@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZDUFBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZDUFBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZDUFBc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 01:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZDUFBB
+	id S1755269AbZDUFBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 01:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbZDUFBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 01:01:01 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:41756 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753158AbZDUFA5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 01:01:03 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60963 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753080AbZDUFA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Apr 2009 01:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=iOpudVMk16P46oNAeJhgjB6qDbecI+e0Bg0OMOSenSlB4LGMuFMDXa+UTDUxz2G4d/
-         pCAt70TDMmhgY2fRpm8I8o/SR0CBSyrEILDly4CYEvQoclKcXQgvJI/eZU/Oqi4xEUqR
-         InlDXgycIORH4sgjg6oZ/mwlaVdg8OZ0fbgWk=
-MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-Date: Tue, 21 Apr 2009 17:00:56 +1200
-Message-ID: <cfd18e0f0904202200p5544c183j542e1e963b61f146@mail.gmail.com>
-Subject: man-pages-3.21 is released
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Tue, 21 Apr 2009 15:00:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for April 21
+Message-Id: <20090421150050.31063868.sfr@canb.auug.org.au>
+In-Reply-To: <49ED50DA.3020602@in.ibm.com>
+References: <20090421141944.4c3f5a7a.sfr@canb.auug.org.au>
+	<49ED50DA.3020602@in.ibm.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+--Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've released man-pages-3.21.tar.gz - man pages for Linux
+Hi Sachin,
 
-This release is now available for download at:
+On Tue, 21 Apr 2009 10:21:38 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
+>
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/ doesn't seem
+> to have today's next patch. Can you please upload the patch tarball ?
 
-http://www.kernel.org/pub/linux/docs/man-pages
-or ftp://ftp.kernel.org/pub/linux/docs/man-pages
-
-man-pages nowadays also has a public git repository at
-
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-
-The online changelog is available at
-http://www.kernel.org/doc/man-pages/changelog.html
-(blogged at
-http://linux-man-pages.blogspot.com/2009/04/man-pages-321-is-released.html )
-and the current version of the pages is browsable at
-http://www.kernel.org/doc/man-pages/
-An abridged list of changes that may be of interest to readers of this
-list is given below.
-
+I did so (to master.kernel.org) - I guess the mirroring is being slow (or
+is broken).
+--=20
 Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Michael
+--Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K
+Content-Type: application/pgp-signature
 
-==================== Changes in man-pages-3.21 ====================
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-New and rewritten pages
------------------------
+iEYEARECAAYFAkntUwIACgkQjjKRsyhoI8zcfACfXpUGDImyegY9FqlxrLhLSC7K
+x/MAnRr3QtrwcyTSvnohwm5ZfG8DHQqB
+=11e2
+-----END PGP SIGNATURE-----
 
-pthread_setconcurrency.3
-    Michael Kerrisk
-        New page documenting pthread_setconcurrency(3) and
-        pthread_getconcurrency(3)
-
-pthread_yield.3
-    Michael Kerrisk
-        New page documenting pthread_yield(3)
-
-Changes to individual pages
----------------------------
-
-feature_test_macros.7
-    Michael Kerrisk
-        Update for glibc 2.10 changes to <features.h>
-            From glibc 2.10, <features.h> understands the values 200809
-            for _POSIX_C_SOURCE and 700 for _XOPEN_SOURCE, and makes
-            corresponding changes to defaults for other feature test macros.
-    Michael Kerrisk
-        Add an example program
-            This example program makes it possible to explore what
-            feature test macros are set depending on the glibc version
-            and the macros that are explicitly set.
+--Signature=_Tue__21_Apr_2009_15_00_50_+1000_=yPgtLvY8waar3+K--
