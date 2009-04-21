@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751124AbZDUIYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZDUI0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751124AbZDUIYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZDUIYE
+	id S1754227AbZDUI0D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZDUIZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:24:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40629 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755121AbZDUIYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:24:01 -0400
-Date: Tue, 21 Apr 2009 10:23:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-Message-ID: <20090421082354.GC12512@elte.hu>
-References: <20090420222257.267399830@goodmis.org>
+	Tue, 21 Apr 2009 04:25:45 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49599 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZDUIZo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:25:44 -0400
+Date: Tue, 21 Apr 2009 17:20:37 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.30-rc3
+Message-ID: <20090421082036.GA15855@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090420222257.267399830@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please pull from:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.30
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (2):
->       tracing: use recursive counter over irq level
->       tracing: use nowakeup version of commit for function event trace tests
-> 
-> ----
->  kernel/trace/ring_buffer.c  |   45 +++++++++++++++---------------------------
->  kernel/trace/trace_events.c |    2 +-
->  2 files changed, 17 insertions(+), 30 deletions(-)
+Which contains:
 
-Pulled, thanks guys! I've reactivated the self-tests in tip:master - 
-lets see how it goes today.
+Paul Mundt (3):
+      rtc: rtc-sh: clock framework support.
+      sh: sh7722: Don't default enable the RTC clock.
+      sh: sh7723: Don't default enable the RTC clock.
 
-	Ingo
+Toshinobu Sugioka (1):
+      sh: Fix mmap2 for handling differing PAGE_SIZEs.
+
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c |    1 -
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c |    1 -
+ arch/sh/kernel/sys_sh.c                |    9 ++++
+ drivers/rtc/Kconfig                    |    2 +-
+ drivers/rtc/rtc-sh.c                   |   67 +++++++++++++++++++++++--------
+ 5 files changed, 59 insertions(+), 21 deletions(-)
