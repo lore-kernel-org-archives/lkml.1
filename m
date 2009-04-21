@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZDUJZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbZDUJ11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbZDUJZX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 05:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZDUJZG
+	id S1756866AbZDUJ11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 05:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbZDUJ1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 05:25:06 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59729 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753368AbZDUJZF (ORCPT
+	Tue, 21 Apr 2009 05:27:17 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45141 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbZDUJ1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 05:25:05 -0400
-Date: Tue, 21 Apr 2009 18:23:31 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 21 Apr 2009 05:27:17 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
        Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
-Message-Id: <20090421182331.5c96615e.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20090421085231.GB2527@cmpxchg.org>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
-	<1240259085-25872-3-git-send-email-hannes@cmpxchg.org>
-	<20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090421085231.GB2527@cmpxchg.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com> <20090421085231.GB2527@cmpxchg.org>
+Message-Id: <20090421182427.F14D.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 18:27:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 10:52:31 +0200
-Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > -		cond_resched();
+> > > +		if (list_empty(&swap_pages))
+> > > +			cond_resched();
+> > >  
+> > Why this ?
+> 
+> It shouldn't schedule anymore when it's allocated the first swap slot.
+> Another reclaimer could e.g. sleep on the cond_resched() before the
+> loop and when we schedule while having swap slots allocated, we might
+> continue further allocations multiple slots ahead.
 
-> > Keeping multiple pages locked while they stay on private list ? 
-> 
-> Yeah, it's a bit suboptimal but I don't see a way around it.
-> 
-Hmm, seems to increase stale swap cache dramatically under memcg ;)
+Oops, It seems regression. this cond_resched() intent to
 
-> > BTW, isn't it better to add "allocate multiple swap space at once" function
-> > like
-> >  - void get_swap_pages(nr, swp_entry_array[])
-> > ? "nr" will not be bigger than SWAP_CLUSTER_MAX.
-> 
-> It will sometimes be, see __zone_reclaim().
-> 
-Hm ? If I read the code correctly, __zone_reclaim() just call shrink_zone() and
-"nr" to shrink_page_list() is SWAP_CLUSTER_MAX, at most.
+cond_resched();
+pageout();
+cond_resched();
+pageout();
+cond_resched();
+pageout();
 
-> I had such a function once.  The interesting part is: how and when do
-> you call it?  If you drop the page lock in between, you need to redo
-> the checks for unevictability and whether the page has become mapped
-> etc.
-> 
-> You also need to have the pages in swap cache as soon as possible or
-> optimistic swap-in will 'steal' your swap slots.  See add_to_swap()
-> when the cache radix tree says -EEXIST.
-> 
 
-If I was you, modify "offset" calculation of
-  get_swap_pages()
-     -> scan_swap_map()
-to allow that a cpu  tends to find countinous swap page cluster.
-Too difficult ?
-
-Regards,
--Kame
 
