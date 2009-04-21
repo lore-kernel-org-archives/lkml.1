@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZDUBs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZDUBtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbZDUBs0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 21:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZDUBsP
+	id S1757950AbZDUBtQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 21:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZDUBs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 21:48:15 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:30782 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbZDUBsN (ORCPT
+	Mon, 20 Apr 2009 21:48:58 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:43128 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbZDUBs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 21:48:13 -0400
+	Mon, 20 Apr 2009 21:48:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=pEZOpN97EHUNGDggm4jESGCtmObO3kOz4OiSQl34ouGGcAp4+r5ukfd07BUpG8cjyu
-         qUfxzF8IKVvixl7SnBoFZnjIn7tVFVgvg0MTC+dJJ14G4vsu87srqC7CvLvdlwyB6HcE
-         rmlachE6K/epON34X7VUkX7t9amgAyxrbV6tk=
-Subject: [BUG] 2.6.29.1-rt8, undefined reference to hrtimer_wait_for_timer
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
-	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
-	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
-	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
-	 <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
-	 <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
-	 <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
-	 <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 21 Apr 2009 09:47:40 +0800
-Message-Id: <1240278460.27360.8.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=hfGU7y38BIrVSNmikVVQ/ZqBTrYvj8lgD9JqkFI7Wk3JhuQ8GBcFumeo+CYZgI/tfH
+         sKxT1xJhjj+8DUczzxRcWwof2LEPmRK852QK49z5XqarkUSXpX69o7hPW4NKtk8t1N4p
+         OzHxX7NN4IiV6XZaayGxX899wjIfx61HvSr+A=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v2 0/4] Add support for compiling with -ffunction-sections -fdata-sections
+Date: Tue, 21 Apr 2009 03:49:41 +0200
+User-Agent: KMail/1.8.2
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tim Abbott <tabbott@mit.edu>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <49ED2088.9090703@zytor.com>
+In-Reply-To: <49ED2088.9090703@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904210349.41463.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-when using patch-2.6.29.1-rt8 with CONFIG_PREEMPT_SOFTIRQS=y, but not
-enable PREEMPT_RT, there will be an error when linking kernel:
+On Tuesday 21 April 2009 03:25, H. Peter Anvin wrote:
+> Linus Torvalds wrote:
+> > 
+> > Are there any advantages outside of the size things?
+> > 
+> > Do we end up packing data better? 
+> > 
+> > I'd like to have some more champions of this code, in other words.
+> > 
+> > I'd be ok with merging it, but I haven't really gotten a strong feeling 
+> > that anybody is going to enable it or use it.
+> > 
+> 
+> It may be a long haul to get people to actually use it, but there is a
+> fairly major advantage near the end, and that is that we can structure
+> the source code in a way that makes sense for reading it, rather than
+> what will end up using what.
+> 
+> Assuming it does work correctly.
 
-undefined reference to hrtimer_wait_for_timer
-
-I found that, hrtimer_wait_for_timer is only defined when PREEMPT_RT is
-enabled, but in include/linux/hrtimer.h, the source code is like this:
-
-#ifdef CONFIG_PREEMPT_SOFTIRQS
- extern void hrtimer_wait_for_timer(const struct hrtimer *timer);
-#else
-# define hrtimer_wait_for_timer(timer) do { cpu_relax(); } while (0)
-
-a possible fix should be:
-
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 8bafa35..1c1cdf3 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -366,7 +366,7 @@ static inline int hrtimer_restart(struct hrtimer
-*timer)
- }
- 
- /* Softirq preemption could deadlock timer removal */
--#ifdef CONFIG_PREEMPT_SOFTIRQS
-+#if defined(CONFIG_PREEMPT_SOFTIRQS) && defined(CONFIG_PREEMPT_RT)
-   extern void hrtimer_wait_for_timer(const struct hrtimer *timer);
- #else
- # define hrtimer_wait_for_timer(timer) do { cpu_relax(); } while (0)
-
--- 
-Wu Zhangjin
-DSLab, Lanzhou University, China
-www.lemote.com, Jiangsu Province, China
-
+It's not like it's known to be broken. I use it all the time
+for the stuff I build.
+--
+vda
