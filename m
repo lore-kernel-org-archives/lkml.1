@@ -1,105 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbZDUOBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZDUOCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbZDUOBb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZDUOBU
+	id S1756571AbZDUOCP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZDUOB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:01:20 -0400
-Received: from mail.tmr.com ([64.65.253.246]:40306 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752189AbZDUOBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:01:19 -0400
-Message-ID: <49EDD11E.2030309@tmr.com>
-Date: Tue, 21 Apr 2009 09:58:54 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090328 Fedora/1.1.15-3.fc9 SeaMonkey/1.1.15
+	Tue, 21 Apr 2009 10:01:58 -0400
+Received: from cathcart.site5.com ([74.54.107.137]:44738 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbZDUOB6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:01:58 -0400
+Message-ID: <49EDD1C9.2060408@compulab.co.il>
+Date: Tue, 21 Apr 2009 17:01:45 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
 MIME-Version: 1.0
-To: Matti Aarnio <matti.aarnio@zmailer.org>
-CC: Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
-       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, neilb@suse.de
-Subject: Re: Proposal: make RAID6 code optional
-References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org>
-In-Reply-To: <20090418145850.GD28512@mea-ext.zmailer.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mark Brown <broonie@sirena.org.uk>
+CC: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFD] voltage/current regulator consumer interface
+References: <49EC8775.8060609@compulab.co.il> <20090420145627.GA5281@rakim.wolfsonmicro.main> <49EDB569.2060701@compulab.co.il> <20090421125528.GD25828@sirena.org.uk> <49EDD02B.5020407@compulab.co.il> <20090421135640.GE25828@sirena.org.uk>
+In-Reply-To: <20090421135640.GE25828@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matti Aarnio wrote:
-> On Sat, Apr 18, 2009 at 03:56:17PM +0200, Jesper Juhl wrote:
->   
->> On Sat, 18 Apr 2009, Prakash Punnoor wrote:
->>     
->>> On Samstag 18 April 2009 10:09:54 Michael Tokarev wrote:
->>>       
->>>> Prakash Punnoor wrote:
->>>>         
-> .....
->   
->>>> What's your goal?  What's the problem you're trying to solve?
->>>>         
->>> Having duplicate code is not good, of course. But unused code is also not 
->>> good. As I said, I only use RAID5, so I don't need RAID6 support. The RAID6 
->>> support enlarges kernel (the built-in.o in drivers/md grows from 325kb to 
->>> 414kb in my case), making boot time and compile time longer 
->>>       
->> By a few ms perhaps - nothing that you'd ever notice in real life... A 
->> small price to pay for the shared code. If you were to split them all 
->> again, the combined total size would be greater still.
->>     
->
->
-> I did quick "sum of symbol sizes" lookup of the   raid.ko, and got
-> it like this:
->
-> nm -t d -n -S /lib/modules/2.6.27.21-170.2.56.fc10.x86_64/kernel/drivers/md/raid456.ko | grep raid4|awk '{print $2}'|sed -e 's/^0*//g'|awk '{sum+=$1}END{print sum}'
->   ...
->
-> raid4:   152
-> raid5:  7165
-> raid6: 75558
->
-> Entire 64kB of that raid6 is single pre-initialized r/o datablock:  raid6_gfmul
->
->   
-It would seem that that space could be allocated and populated when 
-raid6 was first used, as part of the initialization. I haven't looked at 
-that code since it was new, so I might be optimistic about doing it that 
-way.
 
-> So yes, having RAID6 personality as separate module would be appropriate for
-> systems that are only interested in RAID4 or RAID5.  Separating the RAID4
-> personality wastes space, separating RAID5 ...  barely 2 of 4k memory pages.
->
-> There are perhaps a few kB more of codes for RAID5 and RAID6 classes - not all
-> local functions at each are named with relevant prefix,  but overall I would
-> consider extracting RAID6 as a reasonable goal with common codes on RAID4/5.
->
->   
->>> - admittedly not 
->>> by a big margin. But then again I could argue: Why not put RAID0,1,10,4,5,6 
->>> into one big module? Makes no sense, huh? 
->>>       
->> Makes perfect sense to me. Just modprobe raid.o and you have all 
->> raid levels available. That would make a lot of sense. 
->>     
->
-> Also, systems with so many disks that they run RAID4/5/6 to begin with are
-> likely to have enough memory so that "wasted" 75-80 kB does not matter.
->   
 
-Everything matters. "Take care of the pennies and the dollars will take 
-care of themselves" is not just an old German proverb.
+Mark Brown wrote:
+> On Tue, Apr 21, 2009 at 04:54:51PM +0300, Mike Rapoport wrote:
+>> Mark Brown wrote:
+>>> On Tue, Apr 21, 2009 at 03:00:41PM +0300, Mike Rapoport wrote:
+> 
+>>>> I've managed to create some preliminary "line-consumer" driver. I don't really
+>>>> like the name, but I couldn't think of something better and "virtual" is
+>>>> already taken :)
+> 
+>>> "userspace" or "user"?  The goal here is to let userspace applications
+>>> be consumers.
+> 
+>> I don't quite understand your intention here. Do you mean that it would bebetter
+>> to use a character device rather than sysfs?
+> 
+> I'm talking about the name.
+
+As I said, I could not invent something better. Any idea?
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-
-"You are disgraced professional losers. And by the way, give us our money back."
-    - Representative Earl Pomeroy,  Democrat of North Dakota
-on the A.I.G. executives who were paid bonuses  after a federal bailout.
-
+Sincerely yours,
+Mike.
 
