@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZDUAJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZDUAKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbZDUAJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 20:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZDUAJR
+	id S1755623AbZDUAKZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 20:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZDUAKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 20:09:17 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:34660 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751142AbZDUAJQ (ORCPT
+	Mon, 20 Apr 2009 20:10:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:17864 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752311AbZDUAKG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 20:09:16 -0400
-Date: Tue, 21 Apr 2009 08:09:09 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in
-	crypto_{,de}compress_{update,final}() (was: Re: [PATCH/RFC] crypto:
-	compress - Add comp_request.total_out
-Message-ID: <20090421000909.GA11875@gondor.apana.org.au>
-References: <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au> <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be> <49ED090F.4050503@lougher.demon.co.uk>
+	Mon, 20 Apr 2009 20:10:06 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ED090F.4050503@lougher.demon.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+Date: Mon, 20 Apr 2009 20:10:05 -0400
+Message-ID: <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC 
+	questions)
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: netdev <netdev@vger.kernel.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 12:45:19AM +0100, Phillip Lougher wrote:
+On Mon, Apr 20, 2009 at 8:29 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Fri, Apr 17, 2009 at 8:32 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
+>> Hello,
+>>
+>> I'm currently fiddling with a custom embedded prototype board using
+>> the ibm_newemac driver with some currently-unsupported PHYs.  Those
+>> PHYs *are* supported by phylib, but the emac driver seems to have its
+>> own PHY layer cribbed from the sungem driver.  I'm curious if there's
+>> some particular reason it hasn't been ported (aside from "nobody has
+>> bothered yet").
 >
-> Herbert, are the other cryto API patches in linux-next (or any other
-> git repository)?
+> IIRC, Ben had some issues with how phylib and the EMAC would need to
+> interact.  Not sure if he has those written down somewhere or not.
+> (CC'd).
 
-They should be in Linus's tree.
+Hmm, yeah, I'd be interested to see those.  There's enough similar
+between phylib and the EMAC and sungem drivers that I'm considering a
+series of somewhat-mechanical patches to make EMAC and sungem use the
+"struct phy_device" and "struct mii_bus" from phylib, possibly
+abstracting out some helper functions along the way.
+
+>> Also, if I end up
+>> going that route, are there others available with other hardware
+>> variants who would be willing to test my patches on their boards?
+>
+> I have a large variety of boards that I can test with since the entire
+> 4xx line relies on this driver for on-board network.
+
+Wonderful!  If/when I hack together a patch series I'll make sure to
+put you on the CC list.  Thanks!
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Kyle Moffett
