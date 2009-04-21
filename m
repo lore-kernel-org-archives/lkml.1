@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZDUDbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZDUDnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbZDUDbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 23:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZDUDbJ
+	id S1753756AbZDUDnZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 23:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZDUDnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 23:31:09 -0400
-Received: from kroah.org ([198.145.64.141]:60705 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750951AbZDUDbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 23:31:08 -0400
-Date: Mon, 20 Apr 2009 20:27:28 -0700
-From: Greg KH <greg@kroah.com>
-To: Abhijit Karmarkar <awk@google.com>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] question regarding the -stable patch queue ?
-Message-ID: <20090421032728.GA14175@kroah.com>
-References: <88cc3e770904201826odfde9baodcf8c221a0296909@mail.gmail.com>
+	Mon, 20 Apr 2009 23:43:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54911 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbZDUDnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Apr 2009 23:43:10 -0400
+Message-ID: <49ED406F.2040401@cn.fujitsu.com>
+Date: Tue, 21 Apr 2009 11:41:35 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <88cc3e770904201826odfde9baodcf8c221a0296909@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com, mingo@elte.hu,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com>	<20090417012812.GA25534@linux.vnet.ibm.com>	<20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam>
+In-Reply-To: <20090420160121.268a8226@nehalam>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 06:26:53PM -0700, Abhijit Karmarkar wrote:
-> hi,
-> 
-> i am trying to find if a particular upstream commit [1] will appear in
-> the next -stable release of 2.6.28 kernel.
+Stephen Hemminger wrote:
+> +/**
+> + * xt_table_info_rdlock_bh - recursive read lock for xt table info
+> + *
+> + * Table processing calls this to hold off any changes to table
+> + * (on current CPU). Always leaves with bottom half disabled.
+> + * If called recursively, then assumes bh/preempt already disabled.
+> + */
+> +void xt_info_rdlock_bh(void)
+> +{
+> +	struct xt_info_lock *lock;
+> +
+> +	preempt_disable();
+> +	lock = &__get_cpu_var(xt_info_locks);
+> +	if (likely(++lock->depth == 0))
 
-Yes it will.
+Maybe I missed something. I think softirq may be still enabled here.
+So what happen when xt_info_rdlock_bh() called recursively here?
 
-> i see this commit being marked as "-stable candidate". does that mean
-> it will automatically make it to the next stable release?
+> +		spin_lock_bh(&lock->lock);
+> +	preempt_enable_no_resched();
+> +}
+> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+> +
 
-Yes.
+Is this OK for you:
 
-> or should i submit a patch against the latest 2.6.28 stable series, to
-> have this patch queued up for next stable release (2.6.28.10). can
-> someone please advice?
+void xt_info_rdlock_bh(void)
+{
+	struct xt_info_lock *lock;
 
-If you know that the commit that went into Linus's tree will not apply
-to the 2.6.28-stable tree, please send an updated version to the
-stable@kernel.org address.
+	local_bh_disable();
+	lock = &__get_cpu_var(xt_info_locks);
+	if (likely(++lock->depth == 0))
+		spin_lock(&lock->lock);
+}
 
-> what is the recommend way to do this search ("will upstream patch X be
-> included in the next stable release")? so i don't bug this list in
-> future with similar queries.
+Lai.
 
-Just ask stable@kernel.org about it.  We've been a bit behind on
-flushing out the -stable queue (right now my todo-stable mbox contains
-399 emails I need to wade through), due to vacations and conferences.
-I'm slowly getting there, sorry for the delay.
-
-thanks for your patience,
-
-greg k-h
