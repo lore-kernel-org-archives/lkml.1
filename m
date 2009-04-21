@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbZDUTHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZDUTKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758680AbZDUTHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 15:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbZDUTHT
+	id S1757514AbZDUTKI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 15:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZDUTJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 15:07:19 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:48077 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbZDUTHS convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 15:09:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48035 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbZDUTJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 15:07:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=lty6TF3cz/HEaU/D9v8Dqlaa5Arr/kLUiuzVyfoEjT6WtftET8jmnljT4zLhjJ+t5F
-         zDDgkgC7McLMAUPMwCpyN0LmD2YDP4NvUDdHD0NEZA6iBjvFJeHqNgOIjhQcGN47pcPX
-         cA2DVrM9C5tSC4Ktwv3kI4R3Cxvg4IAL0Of68=
+	Tue, 21 Apr 2009 15:09:51 -0400
+Message-ID: <49EE19E0.8040405@zytor.com>
+Date: Tue, 21 Apr 2009 12:09:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA39EC57748@orsmsx505.amr.corp.intel.com>
-References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com>
-	 <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
-	 <alpine.DEB.1.10.0904211034550.19969@qirst.com>
-	 <84144f020904211125v68b98df4ke1c04bc29df65fda@mail.gmail.com>
-	 <57C9024A16AD2D4C97DC78E552063EA39EC57748@orsmsx505.amr.corp.intel.com>
-Date: Tue, 21 Apr 2009 22:07:16 +0300
-X-Google-Sender-Auth: 78f3e0677d5da03e
-Message-ID: <84144f020904211207q736bfc44n4cd622536cd0a67@mail.gmail.com>
-Subject: Re: linux-next ia64 build problems in slqb
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Christoph Lameter <cl@linux.com>, Nick Piggin <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "randy.dunlap_ocs10g@oracle.com" <randy.dunlap_ocs10g@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "iwamatsu.nobuhiro@renesas.com" <iwamatsu.nobuhiro@renesas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Roland Dreier <rdreier@cisco.com>
+CC: Hitoshi Mitake <h.mitake@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>	<adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu>	<adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com>	<20090420105304.GC6670@elte.hu>	<a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com>	<20090420160332.GB9689@elte.hu>	<a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>	<49EDE9E9.8090905@zytor.com> <adamyaavst5.fsf@cisco.com>	<49EE0013.6010008@zytor.com> <adaab69x6nd.fsf@cisco.com>
+In-Reply-To: <adaab69x6nd.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony,
+Roland Dreier wrote:
+>  > > However I worry that this just leaves driver authors too much rope.
+>  > > Choosing readq_atomic() vs. readq() is just one more thing to get wrong.
+> 
+>  > ... as is having each driver implementing their own substitutes.
+> 
+> Yes, I agree with that.  However at least status quo ante (readq/writeq
+> 64-bit only) means that driver authors who use readq/writeq are forced
+> (by a compile error) to spend a little thought on what 32-bit fallback
+> they should use.
+> 
+> I guess one possibility is to make readq/writeq the atomic version, and
+> add readq_nonatomic()/writeq_nonatomic() for 32-bit architectures.  Then
+> it's much more opt-in -- but then that makes the (perhaps) more common
+> case look a bit uglier.
+> 
 
-On Tue, Apr 21, 2009 at 9:45 PM, Luck, Tony <tony.luck@intel.com> wrote:
->> Interesting. What exactly is an UP NUMA machine?
->
-> UP + NUMA is a special case of memory-only nodes.  There are
-> some (crazy?) customers with problems that require very large
-> amounts of memory, but not very much cpu horse power.  They
-> buy large multi-node systems and populate all the nodes with
-> as much memory as they can afford, but most nodes get zero
-> cpus.
+Do you really expect driver authors to type writeq_nonatomic() for every 
+register reference?
 
-Oh, cool. Thanks for the explanation!
+I think an #include at the top is one thing, but something that 
+heavyweight for each call site really isn't going to fly.
 
-On Tue, Apr 21, 2009 at 9:45 PM, Luck, Tony <tony.luck@intel.com> wrote:
->> Anyway, I'm more than
->> happy to apply a tested patch to fix up SLQB. Nick?
->
-> I'm trying to check whether http://lkml.org/lkml/2009/4/20/30
-> fixes things.  It certainly solves the complilation problem,
-> but I'm running into apparently unrelated issues trying to
-> boot linux-next kernels.
+	-hpa
 
-Great! You can try it on top of the "topic/slqb/core" branch of
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
-
-if you want. It's basically plain 2.6.30-rc1 plus SLQB.
-
-One minor nit: the patch should define an empty static inline of
-claim_remote_free_list() for the !SMP case. I can fix it at my end
-before merging, though, if necessary.
-
-                                       Pekka
