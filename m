@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZDUB2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZDUBf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZDUB2L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 21:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZDUB14
+	id S1756543AbZDUBf1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 21:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZDUBfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 21:27:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53868 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752238AbZDUB1z (ORCPT
+	Mon, 20 Apr 2009 21:35:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51359 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbZDUBfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 21:27:55 -0400
-Message-ID: <49ED2088.9090703@zytor.com>
-Date: Mon, 20 Apr 2009 18:25:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 20 Apr 2009 21:35:10 -0400
+Date: Mon, 20 Apr 2009 21:35:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [BUG] NULL pointer crash in early NMI handler
+Message-ID: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Tim Abbott <tabbott@MIT.EDU>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH v2 0/4] Add support for compiling with -ffunction-sections
- -fdata-sections
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain> <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> Are there any advantages outside of the size things?
-> 
-> Do we end up packing data better? 
-> 
-> I'd like to have some more champions of this code, in other words.
-> 
-> I'd be ok with merging it, but I haven't really gotten a strong feeling 
-> that anybody is going to enable it or use it.
-> 
 
-It may be a long haul to get people to actually use it, but there is a
-fairly major advantage near the end, and that is that we can structure
-the source code in a way that makes sense for reading it, rather than
-what will end up using what.
+I'm hitting this bug in latest Linus tree:
 
-Assuming it does work correctly.
+[    0.161089] Setting APIC routing to flat
+[    0.171346] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
+[    0.180001] BUG: unable to handle kernel NULL pointer dereference at 
+(null)
+[    0.180001] IP: [<ffffffff8063f8a6>] nmi_watchdog_tick+0xd0/0x27d
 
-	-hpa
+[...]
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+[    0.180001] Call Trace:
+[    0.180001]  <NMI> <0> [<ffffffff8063e9b7>] do_nmi+0x12e/0x3af
+[    0.180001]  [<ffffffff8063e59a>] nmi+0x1a/0x2c
+[    0.180001]  [<ffffffff806415c2>] ? add_preempt_count+0xdc/0x18b
+[    0.180001]  <<EOE>> <0> [<ffffffff8040944c>] delay_tsc+0xa7/0x13b
+[    0.180001]  [<ffffffff804092df>] __delay+0xf/0x11
+[    0.180001]  [<ffffffff80409322>] __const_udelay+0x41/0x43
+[    0.180001]  [<ffffffff80f18539>] timer_irq_works+0x4e/0xb0
+[    0.180001]  [<ffffffff80f18ad4>] setup_IO_APIC+0x539/0xb26
+[    0.180001]  [<ffffffff8041b840>] ? debug_smp_processor_id+0x38/0x170
+[    0.180001]  [<ffffffff80226152>] ? setup_apic_nmi_watchdog+0xb8/0xdb
+[    0.180001]  [<ffffffff80f14231>] native_smp_prepare_cpus+0x606/0x6be
+[    0.180001]  [<ffffffff80f05a30>] kernel_init+0x56/0x1fc
+[    0.180001]  [<ffffffff8020d7fa>] child_rip+0xa/0x20
+[    0.180001]  [<ffffffff8020d1c0>] ? restore_args+0x0/0x30
+[    0.180001]  [<ffffffff80f059da>] ? kernel_init+0x0/0x1fc
+[    0.180001]  [<ffffffff8020d7f0>] ? child_rip+0x0/0x20
+
+
+Looking into exactly where it crashed, it seems to be when it accesses the 
+CPU mask variable backtrace_mask.
+
+When the APIC routing is set to flat, it somehow starts triggering the NMI 
+watchdog. This happens before we run "check_nmi_watchdog" which is what 
+allocates the backtrace_mask cpu mask.
+
+Yes I have CONFIG_CPUMASK_OFFSTACK=y.
+
+When I disable it, the box boots up fine.
+
+-- Steve
 
