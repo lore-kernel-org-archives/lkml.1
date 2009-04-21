@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZDUKXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZDUKXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbZDUKXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZDUKXE
+	id S1755819AbZDUKXn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZDUKXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:23:04 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35046 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZDUKXC (ORCPT
+	Tue, 21 Apr 2009 06:23:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37392 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbZDUKXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:23:02 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 13/25] Inline __rmqueue_smallest()
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090421101115.GP12713@csn.ul.ie>
-References: <20090421185025.F156.A69D9226@jp.fujitsu.com> <20090421101115.GP12713@csn.ul.ie>
-Message-Id: <20090421192141.F168.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 19:22:59 +0900 (JST)
+	Tue, 21 Apr 2009 06:23:32 -0400
+Date: Tue, 21 Apr 2009 12:26:57 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>
+Subject: Re: [PATCH v2 0/4] Add support for compiling with -ffunction-sections -fdata-sections
+Message-ID: <20090421102657.GA14687@one.firstfloor.org>
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain> <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <20090420201826.7c1f7f06@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090420201826.7c1f7f06@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Is this better?
-> 
-> Inline __rmqueue_smallest by altering flow very slightly so that there
-> is only one call site. Because there is only one call-site, this
-> function can then be inlined without causing text bloat.
+> we can probably drop a ton of ifdefs...
 
-very nice.
+That would require always forcing it to on.
 
+> an alternative approach would be to have a special build target that
+> uses this, but makes a 2nd vmlinux, and then runs a diff on the symbols
+> against the regular one... and finds which functions got dropped.
+> Some patient soul can then go about and stick in ifdefs and stuff...
 
-> I don't see a need to add a comment into the function itself as I don't
-> think it would help any.
+I bet that would result in horrible looking code. If the toolchain
+based approach can be made to work (and from the reports of people
+who tried it it sounds like it can) that would be vastly preferable.
 
-ok. I drop my claim.
+-Andi
 
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
