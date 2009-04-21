@@ -1,162 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZDUVxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbZDUVzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbZDUVxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 17:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZDUVw5
+	id S1756365AbZDUVzO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 17:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZDUVy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 17:52:57 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:51467 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbZDUVw4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 17:52:56 -0400
-Date: Tue, 21 Apr 2009 18:52:48 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       auke-jan.h.kok@intel.com, e1000-devel@lists.sourceforge.net
-Subject: Re: [PATCH] e100: do not go D3 in shutdown unless system is
-	powering off
-Message-ID: <20090421215248.GF6147@vespa.holoscopio.com>
-References: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com> <200904202114.01932.rjw@sisk.pl>
+	Tue, 21 Apr 2009 17:54:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40650 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083AbZDUVy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 17:54:58 -0400
+Date: Tue, 21 Apr 2009 21:54:01 +0000
+From: Chris Wright <chrisw@sous-sol.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] [PATCH] block: include empty disks in /proc/diskstats
+Message-ID: <20090421215401.GA24073@hera.kernel.org>
+References: <49E13D18.2090805@solemnwarning.net> <49E440D9.4020803@kernel.org> <49E45079.8070508@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pyE8wggRBhVBcj8z"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904202114.01932.rjw@sisk.pl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <49E45079.8070508@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 21:54:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Tejun Heo (tj@kernel.org) wrote:
+> /proc/diskstats used to show stats for all disks whether they're
+> zero-sized or not and their non-zero partitions.  Commit
+> 074a7aca7afa6f230104e8e65eba3420263714a5 accidentally changed the
+> behavior such that it doesn't print out zero sized disks.  This patch
+> implements DISK_PITER_INCL_EMPTY_PART0 flag to partition iterator and
+> uses it in diskstats_show() such that empty part0 is shown in
+> /proc/diskstats.
+> 
+> Reported and bisectd by Dianel Collins.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>
 
---pyE8wggRBhVBcj8z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+looks like this isn't upstream yet.
 
-On Mon, Apr 20, 2009 at 09:13:59PM +0200, Rafael J. Wysocki wrote:
-> On Monday 20 April 2009, Thadeu Lima de Souza Cascardo wrote:
-> > After experimenting with kexec with the last merges after 2.6.29, I've
-> > had some problems when probing e100. It would not read the eeprom. After
-> > some bisects, I realized this has been like that since forever (at least
-> > 2.6.18). The problem is that shutdown is doing the same thing that
-> > suspend does and puts the device in D3 state. I couldn't find a way to
-> > get the device back to a sane state in the probe function. So, based on
-> > some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
-> > I wrote this one for e100.
-> >=20
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > ---
-> >  drivers/net/e100.c |   27 +++++++++++++++++++++------
-> >  1 files changed, 21 insertions(+), 6 deletions(-)
-> >=20
-> > diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> > index c0f8443..3db7b29 100644
-> > --- a/drivers/net/e100.c
-> > +++ b/drivers/net/e100.c
-> > @@ -2728,7 +2728,7 @@ static void __devexit e100_remove(struct pci_dev =
-*pdev)
-> >  #define E100_82552_SMARTSPEED   0x14   /* SmartSpeed Ctrl register */
-> >  #define E100_82552_REV_ANEG     0x0200 /* Reverse auto-negotiation */
-> >  #define E100_82552_ANEG_NOW     0x0400 /* Auto-negotiate now */
-> > -static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +static int __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
-> >  {
-> >  	struct net_device *netdev =3D pci_get_drvdata(pdev);
-> >  	struct nic *nic =3D netdev_priv(netdev);
-> > @@ -2749,19 +2749,31 @@ static int e100_suspend(struct pci_dev *pdev, p=
-m_message_t state)
-> >  			           E100_82552_SMARTSPEED, smartspeed |
-> >  			           E100_82552_REV_ANEG | E100_82552_ANEG_NOW);
-> >  		}
-> > -		if (pci_enable_wake(pdev, PCI_D3cold, true))
-> > -			pci_enable_wake(pdev, PCI_D3hot, true);
-> > +		*enable_wake =3D true;
-> >  	} else {
-> > -		pci_enable_wake(pdev, PCI_D3hot, false);
-> > +		*enable_wake =3D false;
-> >  	}
-> > =20
-> >  	pci_disable_device(pdev);
-> > -	pci_set_power_state(pdev, PCI_D3hot);
-> > =20
-> >  	return 0;
-> >  }
-> > =20
-> > +static void __e100_power_off(struct pci_dev *pdev, bool wake)
-> > +{
-> > +	pci_enable_wake(pdev, PCI_D3hot, wake);
-> > +	pci_set_power_state(pdev, PCI_D3hot);
-> > +}
-> > +
-> >  #ifdef CONFIG_PM
-> > +static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +{
-> > +	bool wake;
-> > +	int retval =3D __e100_shutdown(pdev, &wake);
->=20
-> I'd call pci_prepare_to_sleep() here if wake is 'true' instead of the
-> __e100_power_off(), because there is a chance the platform will prefer so=
-me
-> other power state to put the device into.
->=20
-> In fact, looking at the entire driver's code, I think you could just call
-> pci_prepare_to_sleep(pdev) here instead of __e100_power_off(pdev, wake)
-> and discard the value of wake.
->=20
-
-If there is no advantage in using pci_enable_wake with false in the case
-the device cannot WOL or ASF, I will just use pci_prepare_to_sleep and
-drop this enable_wake/wake variable in both suspend and shutdown. Any
-reason we should use pci_enable_wake with false?
-
-> > +	__e100_power_off(pdev, wake);
->=20
-> Also, retval will always be 0 as far as I can see and if it could be diff=
-erent
-> from 0, it would be a good idea to return the error code before putting t=
-he
-> device into a low power state (.resume() won't be called for this device =
-if
-> .suspend() fails).
->=20
-> Apart from this, the patch looks fine to me.
->=20
-> > +	return retval;
-> > +}
-> > +
-> >  static int e100_resume(struct pci_dev *pdev)
-> >  {
-> >  	struct net_device *netdev =3D pci_get_drvdata(pdev);
-> > @@ -2792,7 +2804,10 @@ static int e100_resume(struct pci_dev *pdev)
-> > =20
-> >  static void e100_shutdown(struct pci_dev *pdev)
-> >  {
-> > -	e100_suspend(pdev, PMSG_SUSPEND);
-> > +	bool wake;
-> > +	__e100_shutdown(pdev, &wake);
-> > +	if (system_state =3D=3D SYSTEM_POWER_OFF)
-> > +		__e100_power_off(pdev, wake);
-> >  }
-> > =20
-> >  /* ------------------ PCI Error Recovery infrastructure  -------------=
-- */
->=20
-> Best,
-> Rafael
-
---pyE8wggRBhVBcj8z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknuQDAACgkQyTpryRcqtS0MBACdEMNotwOrFJuyPhk66aV6iZgp
-dMwAn3YWh7IbDvdQAV6KWqm9gW8QL6OQ
-=Unx6
------END PGP SIGNATURE-----
-
---pyE8wggRBhVBcj8z--
+thanks,
+-chris
