@@ -1,61 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZDUQMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZDUQMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbZDUQMa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZDUQMO
+	id S1756061AbZDUQMp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbZDUQMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:12:14 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:1198 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZDUQMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:12:12 -0400
-Message-ID: <49EDF057.9060501@codemonkey.ws>
-Date: Tue, 21 Apr 2009 11:12:07 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 21 Apr 2009 12:12:21 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55501 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755378AbZDUQMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 12:12:20 -0400
+Date: Tue, 21 Apr 2009 17:12:16 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 17/25] Do not call get_pageblock_migratetype() more
+	than necessary
+Message-ID: <20090421161215.GD29083@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-18-git-send-email-mel@csn.ul.ie> <20090421200154.F174.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com>
-In-Reply-To: <49EAE334.9020803@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090421200154.F174.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Anthony Liguori wrote:
->> Huang Ying wrote:
->>> The related MSRs are emulated. MCE capability is exported via
->>> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
->>> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
->>> such as the mcg_cap. MCE is injected via vcpu ioctl command
->>> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
->>> not simulated.
->>>   
->>
->> Maybe I'm missing something, but couldn't this be implemented 
->> entirely within userspace?  There's nothing VT/SVM specific about 
->> this.  If the issue is setting these MSRs from userspace via 
->> KVM_SET_MSRS isn't enough, perhaps we should add userspace MSR handling.
->>
->
-> You also need to inject the MCE.
+On Tue, Apr 21, 2009 at 08:03:10PM +0900, KOSAKI Motohiro wrote:
+> > get_pageblock_migratetype() is potentially called twice for every page
+> > free. Once, when being freed to the pcp lists and once when being freed
+> > back to buddy. When freeing from the pcp lists, it is known what the
+> > pageblock type was at the time of free so use it rather than rechecking.
+> > In low memory situations under memory pressure, this might skew
+> > anti-fragmentation slightly but the interference is minimal and
+> > decisions that are fragmenting memory are being made anyway.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> > ---
+> >  mm/page_alloc.c |   16 ++++++++++------
+> >  1 files changed, 10 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index c57c602..a1ca038 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -456,16 +456,18 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
+> >   */
+> >  
+> >  static inline void __free_one_page(struct page *page,
+> > -		struct zone *zone, unsigned int order)
+> > +		struct zone *zone, unsigned int order,
+> > +		int migratetype)
+> >  {
+> >  	unsigned long page_idx;
+> >  	int order_size = 1 << order;
+> > -	int migratetype = get_pageblock_migratetype(page);
+> >  
+> >  	if (unlikely(PageCompound(page)))
+> >  		if (unlikely(destroy_compound_page(page, order)))
+> >  			return;
+> >  
+> > +	VM_BUG_ON(migratetype == -1);
+> > +
+> >  	page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);
+> >  
+> >  	VM_BUG_ON(page_idx & (order_size - 1));
+> > @@ -534,17 +536,18 @@ static void free_pages_bulk(struct zone *zone, int count,
+> >  		page = list_entry(list->prev, struct page, lru);
+> >  		/* have to delete it as __free_one_page list manipulates */
+> >  		list_del(&page->lru);
+> > -		__free_one_page(page, zone, order);
+> > +		__free_one_page(page, zone, order, page_private(page));
+> >  	}
+> >  	spin_unlock(&zone->lock);
+> 
+> looks good.
+> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> 
+> btw, I can't review rest patch today. I plan to do that tommorow, sorry.
+> 
 
-Regardless of the KVM interface for this, to go upstream to QEMU, this 
-needs a TCG implementation which means the logic must be duplicated in 
-userspace.  In particular, this is because a user-visible command is 
-being introduced in the monitor.
+No problem. Thanks a million for the work you've done so far. It was a
+big help and you caught a fair few problems in there.
 
-So Avi, regardless of what interface is chosen for KVM, can you hold off 
-applying these patches until there is a TCG implementation?  Otherwise, 
-we'll be playing catchup between kvm-userspace and upstream QEMU forever.
-
-Regards,
-
-Anthony Liguori
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
