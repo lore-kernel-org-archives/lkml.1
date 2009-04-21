@@ -1,84 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbZDUO1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZDUO13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbZDUO1H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZDUO0q
+	id S1755454AbZDUO13 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZDUO1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:26:46 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:56917 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753704AbZDUO0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:26:45 -0400
-Subject: Re: lockdep report at resume
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input <linux-input@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
-References: <1234022517.4175.107.camel@johannes.local>
-	 <1238578840.5970.178.camel@johannes.local>
-	 <alpine.LNX.2.00.0904211550280.13028@wotan.suse.de>
-	 <200904211559.43497.oliver@neukum.org>
-	 <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-hxvv4Op8630SQVt5Ws4h"
-Date: Tue, 21 Apr 2009 16:26:08 +0200
-Message-Id: <1240323968.17388.22.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 21 Apr 2009 10:27:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57355 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754901AbZDUO1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:27:05 -0400
+Date: Tue, 21 Apr 2009 16:26:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, David VomLehn <dvomlehn@cisco.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090421142627.GA18129@elte.hu>
+References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net> <20090421064346.GB8020@elte.hu> <20090421063549.3b71881d@infradead.org> <20090421135034.GA30114@elte.hu> <20090421140533.GA6375@shareable.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421140533.GA6375@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-hxvv4Op8630SQVt5Ws4h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Jamie Lokier <jamie@shareable.org> wrote:
 
-On Tue, 2009-04-21 at 16:11 +0200, Jiri Kosina wrote:
-> On Tue, 21 Apr 2009, Oliver Neukum wrote:
->=20
-> > > [ thanks for the analysis Johannes ... involving also Oliver here; re=
-ally
-> > >   seems like a false positive to me ]
-> > I think he's right. But as a matter of principle I'd like to see=20
-> > flush_scheduled_work() avoided where possible, hence the patch.
->=20
-> I am not entirely sure that this is the same issue as the one from #13136=
-=20
-> of kernel.org bugzilla.
->=20
-> Anyway, for reference, the patch Oliver mentioned here is below.
+> Ingo Molnar wrote:
+> > * Arjan van de Ven <arjan@infradead.org> wrote:
+> > > But more importantly... USB *CANNOT* do this fundamental 
+> > > operation. USB does not have the capability to know when you have 
+> > > seen all devices that are connected. Devices just show up a random 
+> > > amount of time after you turn the power on for the bus.... there's 
+> > > no "and now we've seen all" operation.
+> > 
+> > Yes - and this is fundamentally true of any hotplug bus design.
+> 
+> It's not fundamental, for devices you know are plugged in at boot. 
+> All it takes is for the bus to support a synchronous "enumerate 
+> all" procedure.  That _could_ involve a timeout, but there are 
+> better ways. But not for USB.
+> 
+> > What i'm saying is: instead of "wait 2000 msecs, maybe it works 
+> > out" hack, there should be a proper sleep+event based approach 
+> > to the same. With perhaps a _timeout_ for the "no console 
+> > arrived" negative case as well. (which timeout can be set to 
+> > zero in the "I _know_ there's no console around".)
+> 
+> Isn't the proposed code doing exactly that?  It sleeps waiting for 
+> a console, with a timeout of X msecs.  If a console arrives before 
+> that, doesn't it wake immediately?
 
-Thanks. Unfortunately I have another problem that turns off lockdep so I
-can't test this right now, sorry.
+Yes - except that the timeout is aspecific. I.e. we'll time out even 
+if the delay happens not due to a device arriving too late (or not 
+arriving at all), but due to some earlier init step taking an 
+unexpectedly long time.
 
-johannes
+> > Do you see the fundamental design difference between the two 
+> > solutions?
+> 
+> The only difference I see is: If you asked for a USB console, the 
+> timeout should begin relative to when the USB host driver kicks 
+> the bus, not the first /dev/console open.
+> 
+> Conceptually the timeout is a USB characteristic, not a generic 
+> console one.
+> 
+> For other (non-USB) devices which might take a while to 
+> initialise, it should work as you describe.  E.g. an ethernet TCP 
+> console should register ("i'm trying to give you a console") 
+> followed by ("got it") or ("failed, carry on without me").
 
---=-hxvv4Op8630SQVt5Ws4h
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+I guess we could live with this one too but still it feels wrong to 
+me. It would be much better to push the decision to time out into 
+individual console drivers.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Also, if we end up doing this - the patch, as proposed right now, 
+appears to add a default 1000 msecs sleep to every __tty_open() 
+call:
 
-iQIbBAABAgAGBQJJ7dd9AAoJEKVg1VMiehFYzA0P+JKCA1O0sfht1jZqVb0MLpEZ
-/VXsEMxe58PLUqQEGPgyjqN6yDr8yRulISRrYrll4k6yer+pr6JBzwOVLPXr/tI7
-dU/0HsVpEpwVRAPNv2EemNS1X/iQFapyHsSuIARklnGP2Tu2zpjTEi/HNdELepWc
-bIFWIpAIMhX5Wf7eex/Lnr+uq6Er6ylHKmuh+JgEWO5MzE5pdQZA0MC1STX7ZiDo
-rshQSJ5EU4Q9gxfdMZot7ANB0bBhqjCSKJnpzLweWnZjKHS12pIq/JWOr2mXY6s4
-LQTNBTP5MUqVgVpdApt28IyO0OZvvNrgCOek3dvDAyh7A8jvhdXyOOWfcs91xg4d
-IyJFKG82tHuMTGKtNuwTs/U9yU80XXNwC+UZJX2jaOhYs2W9R9qrAke9ndKgB0aC
-Oo7+y+kJpxu7zejwxvXBqkEgk3MyH/EDo4PK7YGG8OrC2z3nodM4WXxy7eet9s0T
-vjbby3FRNR01a1fUWJ0WlXV5326z41SRC7D3lrCkIFWGlWFDHZJePvbb2yvwo634
-qBR4hjfCebbd5YooDRy8KXKf8Vmp0CAAc5BHCtYcrcj8HRhrbnC1VQTOk/+DOCV5
-QwhCBaFjNwcnmuK+ZJUtQnnXbVkd5BXJO2wBI+XJVVCBgTF+kEBfysJa/JvLHJMo
-L5jdIgVyEBmmdkTn+OI=
-=FnhA
------END PGP SIGNATURE-----
++config PRINTK_CONSOLE_WAIT
++       int "Default number of milliseconds to wait for console device"
++       default 1000
 
---=-hxvv4Op8630SQVt5Ws4h--
+Does this only delay init during a console-less bootup - or are 
+there other later apps that might trigger the delay?
 
+	Ingo
