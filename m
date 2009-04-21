@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZDUMU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbZDUM2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbZDUMU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 08:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZDUMUL
+	id S1752890AbZDUM2H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 08:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZDUM1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 08:20:11 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60701 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbZDUMUJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 08:20:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=SWV7TchdqXimU9KLKxftpCup5yOfZi8A110SYqUxl3eu8UdtU4rqfxcHPjMGErJvlP
-         DPEkf3296U4DDM0hN1SK5+Vc3E4ZeT6iSQwG6/n47uY6iYSwUCOAZZ1ZgGEBLVhJt509
-         hQ84vb+1OxOovtbUlXG5FHmGdCMfXAAFQZURk=
-Message-ID: <49EDB9F8.6000807@gmail.com>
-Date: Tue, 21 Apr 2009 14:20:08 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.2 Thunderbird/3.0b2
+	Tue, 21 Apr 2009 08:27:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54059 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751785AbZDUM1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 08:27:52 -0400
+Message-ID: <49EDBBBF.90509@redhat.com>
+Date: Tue, 21 Apr 2009 15:27:43 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
-       Christophe Lermytte <christophe.lermytte@thomson.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: mutex_lock_slowpath warning using mxser tty driver (input/output
- error)
-References: <1238689565.14822.99.camel@thom> <1238696349.5133.25.camel@laptop> <20090402194401.154bbc36@lxorguk.ukuu.org.uk> <49D51EDD.4060902@gmail.com> <20090402235508.31c7f2b6@lxorguk.ukuu.org.uk> <20090403003302.GB9052@cmpxchg.org>
-In-Reply-To: <20090403003302.GB9052@cmpxchg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gerd Hoffmann <kraxel@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: Xenner design and kvm msr handling
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com> <49EDB0E0.5060101@redhat.com>
+In-Reply-To: <49EDB0E0.5060101@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/2009 02:33 AM, Johannes Weiner wrote:
-> On Thu, Apr 02, 2009 at 11:55:08PM +0100, Alan Cox wrote:
->> On Thu, 02 Apr 2009 22:23:57 +0200
->> Jiri Slaby <jirislaby@gmail.com> wrote:
->>
->>> On 04/02/2009 08:44 PM, Alan Cox wrote:
->>>>> It appears to want to lock a mutex in interrupt context, something
->>>>> that's a definite no-no.
->>>>>
->>>>> CCed the folks who might know a thing or two about the driver.
->>>> Moxa is not a USB driver so the USB trace at the end makes no sense at
->>>> all.
->>> Yes, unreliable stack entries, but echo_set_canon_col is called from irq
->>> context and locks mutex.
->> Which means that either the driver is calling the ldisc receive handlers
->> from an IRQ directly (not allowed) or calling the tty_flip_buffer_push
->> paths and set tty->low_latency
->>
->> 2.6.29 is the first kernel that catches this bug with warnings.
-> 
-> It sets tty->low_latency = 1 on ->open(), unconditionally, and does
-> tty_flip_buffer_push() from the interrupt handler.
-> 
-> Both things seem to have been there for a very long time (git-blame
-> says longer than git).
+Gerd Hoffmann wrote:
+>> Can you explain the protocol used by this MSR? How does the guest know
+>> how many pages to load? How does the kernel know which type of page to
+>> put where?
+>
+> Sure.
+>
+>   (1) cpuid 0x40000000, check vmm signature
+>   (2) cpuid 0x40000002 -> returns # of pages (eax) and msr (ebx)
+>   (3) allocate pages (normal ram)
+>   (4) foreach page (wrmsr "guest physical address | pageno")
+>
+> Xen uses msr 0x40000000.  Due to the msr being queried via cpuid it 
+> should be possible to use another one.  Modulo guest bugs of course ...
 
-I have no idea why it was added in fact and so whether it is sufficient
-and correct just to remove the tty->low_latency setting hence I can't
-fix it on my own.
+Is there an interface to forget a page? (if not, how do you unload a 
+driver? presumably Xen remembers the page address so it can patch it)
 
-It was added when Alan merged moxa's updated driver in (from
-full-linux-history git):
+If you load each driver, do you run this multiple times, or does the 
+first driver run this once and the others reuse the same pages?
 
-commit c8caa4c1a9cda2fa01fa89c29020e31f5a923e0b
-Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date:   Wed Dec 22 01:14:43 2004 -0800
+>
+>> Note that it would still be interesting to have the guest call the
+>> kernel, so it can kick the host kernel Xen netback driver directly
+>> instead of going through qemu (and the userspace netback + tap).
+>
+> With the current codebase netback isn't involved at all.  Backend 
+> lives in qemu like virtio-net.  It is a very simple one (no GSO 
+> support, ...), there are tons of opportunities for optimizations.  
+> Don't feel like tackeling that right now though.  My patch queue is 
+> already deep enougth as-is.  Also as time passes the qemu network 
+> layer tweaks for virtio-net should make that job easier ;)
 
-[PATCH] Bring Moxa serial back into being
+Sure, but later on, we may want to take advantage of kernel netback.  Of 
+course we'll want to keep qemu netback as well, since it's much simpler 
+and can be used unprivileged.
 
-Moxa have released several driver updates now including support up to
-2.6.8 but don't themselves feel its worth the effort of doing a cleaned
-up merge for the base kernel.  So I pulled their latest driver release
-(1.8) and removed all the macro gunge that makes it build on
-2.2.0->2.6.8.  I then fixed it to run on 2.6.9/10 and fixed a bug in the
-break handling.
+-- 
+error compiling committee.c: too many arguments to function
 
-It still doesn't do PCI hotplug but I don't have any PCI moxa cards to
-really tackle that particular case.
-
-I've also merged Adriank Bunk's two 'could be static' changes into this
-diff set.
