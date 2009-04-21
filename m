@@ -1,143 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbZDUXIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZDUXJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbZDUXIV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 19:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZDUXIE
+	id S1756054AbZDUXJQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 19:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZDUXI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 19:08:04 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:45250 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZDUXIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 19:08:01 -0400
-Date: Tue, 21 Apr 2009 16:07:59 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, davem@davemloft.net, kaber@trash.net,
-       torvalds@linux-foundation.org, shemminger@vyatta.com,
-       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org
-Subject: Re: [RFC PATCH] v3 RCU implementation with fast grace periods
-Message-ID: <20090421230759.GO6642@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090421045931.GA9953@linux.vnet.ibm.com> <20090421151034.GA3792@Krystal> <20090421165151.GJ6642@linux.vnet.ibm.com> <20090421211158.GD15045@Krystal>
+	Tue, 21 Apr 2009 19:08:58 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:54497 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbZDUXI4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 19:08:56 -0400
+X-IronPort-AV: E=Sophos;i="4.40,226,1238976000"; 
+   d="scan'208";a="174913933"
+Date: Tue, 21 Apr 2009 16:08:49 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jamie Lokier <jamie@shareable.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090421230849.GA29555@cuplxvomd02.corp.sa.net>
+References: <20090421165214.GB8251@cuplxvomd02.corp.sa.net> <Pine.LNX.4.44L0.0904211457150.3986-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421211158.GD15045@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.44L0.0904211457150.3986-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 05:11:58PM -0400, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, Apr 21, 2009 at 11:10:35AM -0400, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+On Tue, Apr 21, 2009 at 03:09:52PM -0400, Alan Stern wrote:
+> On Tue, 21 Apr 2009, David VomLehn wrote:
+> 
+> > > If somebody would like to suggest a programming interface (a waitqueue 
+> > > perhaps?) by which the USB hub driver could send a notification when it 
+> > > becomes idle, I could implement it.
 > > 
-> > [ . . . ]
-> > 
-> > > > +void synchronize_rcu_fgp(void)
-> > > > +{
-> > > > +	mutex_lock(&rcu_fgp_mutex);
-> > > > +	
-> > > > +	/* CPUs must see earlier change before parity flip. */
-> > > > +	smp_call_function(rcu_fgp_do_mb, NULL, 1);
-> > > > +
-> > > 
-> > > Hrm, my original comment about missing smp_mb() here still applies, I
-> > > don't think we have come to an agreement yet.
-> > 
-> > My argument is that smp_call_function() must necessarily contain a
-> > full memory barrier, otherwise it cannot function properly.  ;-)
-> > 
+> > I actually started the USB console stuff with exactly this approach, but
+> > switched to the approach that's out there. A minor drawback, which is
+> > probably obvious, is that you actually wait for some interval without
+> > getting anything to do before you think things are idle.
 > 
-> Looking at :
+> Sorry, I don't understand.  You've got a waitqueue, and you wake up to
+> try again every time a console device is registered.  So if the console
+> device does exist, you'll find it as quickly as possible.  There's a
+> problem only when no console device is ever registered.  In that case
+> you want to stop waiting when all the devices present at boot time have
+> been probed (as opposed to waiting for the user to plug in a USB serial
+> device, for example).
 > 
-> kernel/smp.c
-> 
-> smp_call_function_many() indeed has a smp_mb(). It is called by
-> smp_call_function(). I wonder if it could eventually be turned into a
-> smp_wmb() instead ? If this is even a remote possibility, then the fact
-> that
-> 
-> - The rcu_fgp code does not document that it expects smp_call_function()
->   to have a smp_mb().
-> - The fact that smp_call_function_many() comments do not state that this
->   function provides the guarantee to run a smp_mb().
-> 
-> are both asking for an eventual bug to creep into the kernel.
+> So then the problem becomes: How do you tell when all the USB devices 
+> present at boot time have been probed?  That's exactly what this new 
+> interface is supposed to tell you.
 
-Many bugs -- I believe that a number of users of smp_call_function()
-assume that it maintains ordering between the calling code and all
-invocations of the function passed to smp_call_function().
+The current patch already uses a waitqueue and wakes up as soon as a console
+is registered, so that's the same. I agree that the other piece is determining
+when all USB devices at boot time have been probed. For this suggestion to
+work, two conditions must be met:
+1.	The USB hub driver becoming idle must indicate that every device has
+	been probed.
+2.	The USB driver must become idle after every USB device has been
+	probed.
 
-> So your assumption seems OK, but I think it needs to be explicitly
-> documented.
+If both conditions are met, this is a superior to a timeout for determining
+that the console will not show up. It would surprise me a bit if the first
+condition was true. Still, if it is true that the USB hub driver will be
+idle for some interval I, where I is greater than the timeout we would
+otherwise use, it is still a better approach.
 
-That might well be a good thing.
+There is one other possible gotcha to this approach. The code as I wrote it is
+bus-agnostic, i.e. it has no idea where the console is located. As far as
+I know, the long time to probe possible console devices only arises with
+USB. If this is not tree, we need to handle any other cases that can arise.
 
-							Thanx, Paul
-
-> Mathieu
+> >  But a bigger
+> > drawback is that you lose the ability to chose appropriate intervals for
+> > different classes of devices.
 > 
-> > > > +	/*
-> > > > +	 * We must flip twice to correctly handle tasks that stall
-> > > > +	 * in rcu_read_lock_fgp() between the time that they fetch
-> > > > +	 * rcu_fgp_ctr and the time that the store to their CPU's
-> > > > +	 * rcu_fgp_active_readers.  No matter when they resume
-> > > > +	 * execution, we will wait for them to get to the corresponding
-> > > > +	 * rcu_read_unlock_fgp().
-> > > > +	 */
-> > > > +	ACCESS_ONCE(rcu_fgp_ctr) ^= RCU_FGP_PARITY;  /* flip parity 0 -> 1 */
-> > > > +	rcu_fgp_wait_for_quiescent_state();	     /* wait for old readers */
-> > > > +	ACCESS_ONCE(rcu_fgp_ctr) ^= RCU_FGP_PARITY;  /* flip parity 1 -> 0 */
-> > > > +	rcu_fgp_wait_for_quiescent_state();	     /* wait for old readers */
-> > > > +
-> > > > +	/* Prevent CPUs from reordering out of prior RCU critical sections. */
-> > > > +	smp_call_function(rcu_fgp_do_mb, NULL, 1);
-> > > > +
-> > > 
-> > > Same here.
-> > > 
-> > > So we would need to either add a smp_mb() at both of these locations, or
-> > > use on_each_cpu() rather than smp_call_function. Note that this is to
-> > > ensure that the "updater" thread executes these memory barriers.
-> > 
-> > Or rely on the barriers that must be part of smp_call_function.  ;-)
-> > 
-> > 						Thanx, Paul
-> > 
-> > > Mathieu
-> > > 
-> > > 
-> > > > +	rcu_fgp_completed++;
-> > > > +	mutex_unlock(&rcu_fgp_mutex);
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(synchronize_rcu_fgp);
-> > > > +
-> > > > +/**
-> > > > + * rcu_fgp_batches_completed - return batches completed.
-> > > > + * @sp: srcu_struct on which to report batch completion.
-> > > > + *
-> > > > + * Report the number of batches, correlated with, but not necessarily
-> > > > + * precisely the same as, the number of grace periods that have elapsed.
-> > > > + */
-> > > > +long rcu_fgp_batches_completed(void)
-> > > > +{
-> > > > +	return rcu_fgp_completed;
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(rcu_fgp_batches_completed);
-> > > 
-> > > -- 
-> > > Mathieu Desnoyers
-> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Why do you need to choose any intervals at all?  Just keep waiting
+> until you know there's no point waiting any longer.  If you stop 
+> waiting before then, you run the risk of missing a device that could 
+> have worked.
+
+The question about appropriate intervals is that I need to wait for some
+devices, like consoles and network devices, but not all devices, like printers
+and cameras. There is no telling whether any two devices require the same
+interval when I am tuning it for my particular system. And if I have a USB
+console and no USB Ethernet device, I only want to wait for the console
+probe interval.
+
+> > So far, there appear to be three possible USB boot devices: consoles, network
+> > devices, and boot devices.
 > 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe netfilter-devel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Is that last supposed to be "disk drives containing root filesystems"?
+
+Yup.
+
+> > A system may not have all of these and so may not
+> > need to wait as long as a system with all of them. One of my goals is to
+> > preserve as much of the reduction in boot time as possible, even on systems
+> > that use USB devices that may or may not be plugged in.
+> 
+> Let's take console devices as an example.  If one is present then you
+> do want to wait until it is detected, instead of booting as quickly as
+> possible, right?  Which implies that if one isn't present, you want to 
+> wait until you _know_ that it's not present.  Which means waiting all 
+> all the devices present during boot have been probed.
+> 
+> This approach should work fine with USB consoles and network devices;
+> it's not so easy to implement for USB disk drives.  So let's not worry 
+> about them.
+
+I'm kinda flexible about whether all possible consoles show up; the patch
+presently only waits for a console to be identified as the "preferred" console.
+This gets the system going as soon as you have some place to write output,
+but I won't argue with anyone who says we need to wait for all possible
+consoles.
+
+> Now the only drawback I can see would crop up if some device takes a
+> very long time to probe (perhaps because of errors and retries).  If
+> there's no other console device, it could slow down the boot procedure
+> quite a lot.  But there doesn't appear to be any logical alternative,
+> given your goals as stated above.
+
+If there is a way to guarantee that we are done with the probing, I'm
+all for using that. Will waiting for the USB hub driver to be idle do this?
+
+> Alan Stern
+
+David VomLehn
