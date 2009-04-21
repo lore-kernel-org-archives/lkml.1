@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZDUOkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZDUOlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbZDUOkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZDUOju
+	id S1754335AbZDUOlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZDUOlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:39:50 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50222 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751083AbZDUOjt (ORCPT
+	Tue, 21 Apr 2009 10:41:04 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:38644 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZDUOlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:39:49 -0400
-Date: Tue, 21 Apr 2009 15:37:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jamie Lokier <jamie@shareable.org>, Arjan van de Ven <arjan@infradead.org>,
-       David VomLehn <dvomlehn@cisco.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421153745.2d8964c7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090421142627.GA18129@elte.hu>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>
-	<20090421064346.GB8020@elte.hu>
-	<20090421063549.3b71881d@infradead.org>
-	<20090421135034.GA30114@elte.hu>
-	<20090421140533.GA6375@shareable.org>
-	<20090421142627.GA18129@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Apr 2009 10:41:01 -0400
+Date: Tue, 21 Apr 2009 10:32:51 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: AIM9 from 2.6.22 to 2.6.29
+In-Reply-To: <20090421101855.F10D.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0904211011430.19969@qirst.com>
+References: <20090418154207.1260.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0904201300140.1585@qirst.com> <20090421101855.F10D.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +config PRINTK_CONSOLE_WAIT
-> +       int "Default number of milliseconds to wait for console device"
-> +       default 1000
-> 
-> Does this only delay init during a console-less bootup - or are 
-> there other later apps that might trigger the delay?
+On Tue, 21 Apr 2009, KOSAKI Motohiro wrote:
 
-The console proper needs to be event based not timeout hacks. Can we
-please fix this stuff properly ? To start with there is no reason that the
-USB console can't implement a "maybe we have hardware, maybe I buffer 64K
-until it shows up" behaviour and bind to hardware as and when USB serial
-devices get inserted. We do much of this for the VT drivers so we save
-messages before PCI and fb come up.
+> sourceforge search engine don't search reaim9 ;)
 
-The timeout wait proposed is also wrong I agree. Take a timestamp at the
-point we are ready to mount the root fs, any delays on root mount, console
-appearance etc should then be tested against this timestamp not as delays
-versus some undefined later event.
+It has an obscure name so the search wont find it.
 
-Alan
+http://sourceforge.net/project/showfiles.php?group_id=71019&package_id=79015&release_id=276799
+
+or try
+
+http://gentwo.org/benchmark
+
+I renamed the tarballs to aim9 and aim7 so that you can see which is
+which. Also includes Mel's vmregress stuff.
+
+
