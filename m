@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZDUSmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZDUSnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZDUSmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbZDUSlp
+	id S1758893AbZDUSnn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758746AbZDUSmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:41:45 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34569 "EHLO
+	Tue, 21 Apr 2009 14:42:11 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:37856 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756310AbZDUSln (ORCPT
+	with ESMTP id S1758700AbZDUSl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:41:43 -0400
+	Tue, 21 Apr 2009 14:41:59 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 15/17] kvm: Add guest-side support for VBUS
+Subject: [RFC PATCH v3 16/17] vbus: add a userspace connector
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
        rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
        bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
        chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:35:37 -0400
-Message-ID: <20090421183537.12548.52680.stgit@dev.haskins.net>
+Date: Tue, 21 Apr 2009 14:35:42 -0400
+Message-ID: <20090421183542.12548.42046.stgit@dev.haskins.net>
 In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
 References: <20090421183341.12548.33393.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -30,68 +30,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a driver to interface between the host VBUS support, and the
-guest-vbus bus model.
+This allows userspace applications to access vbus devices
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- arch/x86/Kconfig            |    9 +
- drivers/Makefile            |    1 
- drivers/vbus/proxy/Makefile |    2 
- drivers/vbus/proxy/kvm.c    |  751 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 763 insertions(+), 0 deletions(-)
- create mode 100644 drivers/vbus/proxy/Makefile
- create mode 100644 drivers/vbus/proxy/kvm.c
+ include/linux/vbus.h           |    4 
+ include/linux/vbus_client.h    |    2 
+ include/linux/vbus_userspace.h |   48 ++++
+ kernel/vbus/Kconfig            |   10 +
+ kernel/vbus/Makefile           |    2 
+ kernel/vbus/userspace-client.c |  485 ++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 550 insertions(+), 1 deletions(-)
+ create mode 100644 include/linux/vbus_userspace.h
+ create mode 100644 kernel/vbus/userspace-client.c
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index e222395..25bd822 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -486,6 +486,15 @@ config KVM_GUEST
- 	  This option enables various optimizations for running under the KVM
- 	  hypervisor.
+diff --git a/include/linux/vbus.h b/include/linux/vbus.h
+index 04db4ff..f967e59 100644
+--- a/include/linux/vbus.h
++++ b/include/linux/vbus.h
+@@ -23,6 +23,8 @@
+ #ifndef _LINUX_VBUS_H
+ #define _LINUX_VBUS_H
  
-+config KVM_GUEST_VBUS
-+       tristate "KVM virtual-bus (VBUS) guest-side support"
-+       depends on KVM_GUEST
-+       select VBUS_DRIVERS
-+       default y
-+       ---help---
-+          This option enables guest-side support for accessing virtual-bus
-+	  devices.
++#ifdef __KERNEL__
 +
- source "arch/x86/lguest/Kconfig"
+ #ifdef CONFIG_VBUS
  
- config PARAVIRT
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 4c66912..df088cf 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -108,3 +108,4 @@ obj-$(CONFIG_VIRTIO)		+= virtio/
- obj-$(CONFIG_STAGING)		+= staging/
- obj-y				+= platform/
- obj-$(CONFIG_VBUS_DEVICES)	+= vbus/devices/
-+obj-$(CONFIG_VBUS_DRIVERS)	+= vbus/proxy/
-diff --git a/drivers/vbus/proxy/Makefile b/drivers/vbus/proxy/Makefile
+ #include <linux/module.h>
+@@ -159,4 +161,6 @@ int vbus_notifier_unregister(struct vbus *vbus, struct notifier_block *nb);
+ 
+ #endif /* CONFIG_VBUS */
+ 
++#endif /* __KERNEL__ */
++
+ #endif /* _LINUX_VBUS_H */
+diff --git a/include/linux/vbus_client.h b/include/linux/vbus_client.h
+index 62dab78..4c82822 100644
+--- a/include/linux/vbus_client.h
++++ b/include/linux/vbus_client.h
+@@ -35,7 +35,7 @@
+ #ifndef _LINUX_VBUS_CLIENT_H
+ #define _LINUX_VBUS_CLIENT_H
+ 
+-#include <linux/types.h>
++#include <asm/types.h>
+ #include <linux/compiler.h>
+ 
+ struct vbus_deviceopen {
+diff --git a/include/linux/vbus_userspace.h b/include/linux/vbus_userspace.h
 new file mode 100644
-index 0000000..c18d58d
+index 0000000..0b78686
 --- /dev/null
-+++ b/drivers/vbus/proxy/Makefile
-@@ -0,0 +1,2 @@
-+kvm-guest-vbus-objs += kvm.o
-+obj-$(CONFIG_KVM_GUEST_VBUS) += kvm-guest-vbus.o
-diff --git a/drivers/vbus/proxy/kvm.c b/drivers/vbus/proxy/kvm.c
-new file mode 100644
-index 0000000..233412c
---- /dev/null
-+++ b/drivers/vbus/proxy/kvm.c
-@@ -0,0 +1,751 @@
++++ b/include/linux/vbus_userspace.h
+@@ -0,0 +1,48 @@
 +/*
-+ * Copyright (C) 2009 Novell.  All Rights Reserved.
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Virtual-Bus
 + *
 + * Author:
-+ *	Gregory Haskins <ghaskins@novell.com>
++ *      Gregory Haskins <ghaskins@novell.com>
 + *
 + * This file is free software; you can redistribute it and/or modify
 + * it under the terms of version 2 of the GNU General Public License
@@ -99,7 +98,7 @@ index 0000000..233412c
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + * GNU General Public License for more details.
 + *
 + * You should have received a copy of the GNU General Public License
@@ -107,735 +106,552 @@ index 0000000..233412c
 + * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/pci.h>
++#ifndef _LINUX_VBUS_USERSPACE_H
++#define _LINUX_VBUS_USERSPACE_H
++
++#include <linux/ioctl.h>
 +#include <linux/vbus.h>
-+#include <linux/kvm_para.h>
-+#include <linux/kvm.h>
-+#include <linux/mm.h>
-+#include <linux/ioq.h>
-+#include <linux/interrupt.h>
-+#include <linux/kvm_para.h>
 +#include <linux/vbus_client.h>
-+#include <linux/vbus_driver.h>
++
++#define VBUS_USERSPACE_ABI_MAGIC 0x4fa23b58
++#define VBUS_USERSPACE_ABI_VERSION 1
++
++struct vbus_userspace_busopen {
++	__u32 magic;
++	__u32 version;
++	__u64 capabilities;
++};
++
++#define VBUS_IOCTL_MAGIC 'v'
++
++#define VBUS_BUSOPEN       _IOWR(VBUS_IOCTL_MAGIC, 0x00, struct vbus_userspace_busopen)
++#define VBUS_DEVICEOPEN   _IOWR(VBUS_IOCTL_MAGIC, 0x01, struct vbus_deviceopen)
++#define VBUS_DEVICECLOSE  _IOWR(VBUS_IOCTL_MAGIC, 0x02, __u64)
++#define VBUS_DEVICECALL   _IOWR(VBUS_IOCTL_MAGIC, 0x03, struct vbus_devicecall)
++#define VBUS_DEVICESHM    _IOWR(VBUS_IOCTL_MAGIC, 0x04, struct vbus_deviceshm)
++#define VBUS_SHMSIGNAL    _IOWR(VBUS_IOCTL_MAGIC, 0x05, __u64)
++
++#endif /* _LINUX_VBUS_USERSPACE_H */
+diff --git a/kernel/vbus/Kconfig b/kernel/vbus/Kconfig
+index 3ce0adc..b894dd1 100644
+--- a/kernel/vbus/Kconfig
++++ b/kernel/vbus/Kconfig
+@@ -25,6 +25,16 @@ config VBUS_DEVICES
+ 
+ source "drivers/vbus/devices/Kconfig"
+ 
++config VBUS_USERSPACE
++       tristate "Virtual-Bus userspace client support"
++       depends on VBUS
++       default y
++       help
++         Provides facilities for userspace applications to access virtual-
++	 bus objects.
++
++	 If unsure, say N
++
+ config VBUS_DRIVERS
+        tristate "VBUS Driver support"
+        select IOQ
+diff --git a/kernel/vbus/Makefile b/kernel/vbus/Makefile
+index 45f6503..61d0371 100644
+--- a/kernel/vbus/Makefile
++++ b/kernel/vbus/Makefile
+@@ -4,3 +4,5 @@ obj-$(CONFIG_VBUS) += shm-ioq.o
+ vbus-proxy-objs += proxy.o
+ obj-$(CONFIG_VBUS_DRIVERS) += vbus-proxy.o
+ 
++vbus-userspace-objs += userspace-client.o
++obj-$(CONFIG_VBUS_USERSPACE) += vbus-userspace.o
+diff --git a/kernel/vbus/userspace-client.c b/kernel/vbus/userspace-client.c
+new file mode 100644
+index 0000000..b2fe447
+--- /dev/null
++++ b/kernel/vbus/userspace-client.c
+@@ -0,0 +1,485 @@
++#include <linux/ioctl.h>
++#include <linux/fs.h>
++#include <linux/miscdevice.h>
++#include <linux/mm.h>
++#include <linux/vmalloc.h>
++#include <linux/uaccess.h>
++#include <linux/spinlock.h>
++#include <linux/module.h>
++
++#include <linux/vbus.h>
++#include <linux/vbus_userspace.h>
++
++#include "vbus.h"
 +
 +MODULE_AUTHOR("Gregory Haskins");
 +MODULE_LICENSE("GPL");
-+MODULE_VERSION("1");
 +
-+static int kvm_vbus_hypercall(unsigned long nr, void *data, unsigned long len)
-+{
-+	return kvm_hypercall3(KVM_HC_VBUS, nr, __pa(data), len);
-+}
++struct userspace_chardev;
 +
-+struct kvm_vbus {
-+	spinlock_t                lock;
-+	struct ioq                eventq;
-+	struct kvm_vbus_event    *ring;
-+	int                       irq;
-+	int                       enabled:1;
++struct userspace_signal {
++	struct userspace_chardev *cd;
++	struct vbus_shm          *shm;
++	struct shm_signal         signal;
++	struct list_head          list;
++	int                       signaled;
++	int                       prio;
++	u64                       cookie;
 +};
 +
-+static struct kvm_vbus kvm_vbus;
-+
-+struct kvm_vbus_device {
-+	char                     type[VBUS_MAX_DEVTYPE_LEN];
-+	u64                      handle;
-+	struct list_head         shms;
-+	struct vbus_device_proxy vdev;
++struct userspace_shm {
++	struct vbus_shm shm;
 +};
 +
-+/*
-+ * -------------------
-+ * common routines
-+ * -------------------
-+ */
-+
-+struct kvm_vbus_device *
-+to_dev(struct vbus_device_proxy *vdev)
-+{
-+	return container_of(vdev, struct kvm_vbus_device, vdev);
-+}
-+
-+static void
-+_signal_init(struct shm_signal *signal, struct shm_signal_desc *desc,
-+	     struct shm_signal_ops *ops)
-+{
-+	desc->magic = SHM_SIGNAL_MAGIC;
-+	desc->ver   = SHM_SIGNAL_VER;
-+
-+	shm_signal_init(signal);
-+
-+	signal->locale = shm_locality_north;
-+	signal->ops    = ops;
-+	signal->desc   = desc;
-+}
-+
-+/*
-+ * -------------------
-+ * _signal
-+ * -------------------
-+ */
-+
-+struct _signal {
-+	struct kvm_vbus   *kvbus;
-+	struct shm_signal  signal;
-+	u64                handle;
-+	struct rb_node     node;
-+	struct list_head   list;
++struct userspace_chardev {
++	spinlock_t lock;
++	int opened;
++	struct vbus_memctx *ctx;
++	struct vbus_client *client;
++	struct list_head signal_list;
++	wait_queue_head_t wq;
++	struct vbus *vbus;
 +};
 +
-+static struct _signal *
-+to_signal(struct shm_signal *signal)
++static long
++_busopen(struct userspace_chardev *cd, struct vbus_userspace_busopen *args)
 +{
-+       return container_of(signal, struct _signal, signal);
++	if (cd->opened)
++		return -EINVAL;
++
++	if (args->magic != VBUS_USERSPACE_ABI_MAGIC)
++		return -EINVAL;
++
++	if (args->version != VBUS_USERSPACE_ABI_VERSION)
++		return -EINVAL;
++
++	/*
++	 * We have no extended capabilities yet, so we dont care if they set
++	 * any option bits.  Just clear them all.
++	 */
++	args->capabilities = 0;
++
++	cd->opened = 1;
++
++	return 0;
++}
++
++static long
++_deviceopen(struct userspace_chardev *cd, struct vbus_deviceopen *args)
++{
++	struct vbus_client *c = cd->client;
++
++	return c->ops->deviceopen(c, cd->ctx, args->devid, args->version,
++				  &args->handle);
++}
++
++static long
++_deviceclose(struct userspace_chardev *cd, unsigned long devh)
++{
++	struct vbus_client *c = cd->client;
++
++	return c->ops->deviceclose(c, devh);
++}
++
++static long
++_devicecall(struct userspace_chardev *cd, struct vbus_devicecall *args)
++{
++	struct vbus_client *c = cd->client;
++
++	return c->ops->devicecall(c, args->devh, args->func,
++				  (void *)args->datap,
++				  args->len, args->flags);
++}
++
++static void*
++userspace_vmap(__u64 addr, size_t len)
++{
++	struct page **page_list;
++	void *ptr = NULL;
++	unsigned long base;
++	off_t offset;
++	size_t npages;
++	int ret;
++
++	base = (unsigned long)addr & PAGE_MASK;
++	offset = (unsigned long)addr & ~PAGE_MASK;
++	npages = PAGE_ALIGN(len + offset) >> PAGE_SHIFT;
++
++	if (npages > (PAGE_SIZE / sizeof(struct page *)))
++		return NULL;
++
++	page_list = (struct page **) __get_free_page(GFP_KERNEL);
++	if (!page_list)
++		return NULL;
++
++	down_write(&current->mm->mmap_sem);
++
++	ret = get_user_pages(current, current->mm, base, npages,
++			     1, 0, page_list, NULL);
++	if (ret < 0)
++		goto out;
++
++	ptr = vmap(page_list, npages, VM_MAP, PAGE_KERNEL);
++	if (ptr)
++		current->mm->locked_vm += npages;
++
++out:
++	up_write(&current->mm->mmap_sem);
++	free_page((unsigned long)page_list);
++
++	return ptr+offset;
++}
++
++static struct userspace_signal *to_userspace(struct shm_signal *signal)
++{
++       return container_of(signal, struct userspace_signal, signal);
 +}
 +
 +static int
-+_signal_inject(struct shm_signal *signal)
++userspace_signal_inject(struct shm_signal *signal)
 +{
-+	struct _signal *_signal = to_signal(signal);
++	struct userspace_signal *_signal = to_userspace(signal);
++	struct userspace_chardev *cd = _signal->cd;
++	unsigned long flags;
 +
-+	kvm_vbus_hypercall(KVM_VBUS_OP_SHMSIGNAL,
-+			   &_signal->handle, sizeof(_signal->handle));
++	spin_lock_irqsave(&cd->lock, flags);
++
++	if (!_signal->signaled) {
++		_signal->signaled = 1;
++		list_add_tail(&_signal->list, &cd->signal_list);
++		wake_up_interruptible(&cd->wq);
++	}
++
++	spin_unlock_irqrestore(&cd->lock, flags);
 +
 +	return 0;
 +}
 +
 +static void
-+_signal_release(struct shm_signal *signal)
++userspace_signal_release(struct shm_signal *signal)
 +{
-+	struct _signal *_signal = to_signal(signal);
++	struct userspace_signal *_signal = to_userspace(signal);
 +
++	vbus_shm_put(_signal->shm);
 +	kfree(_signal);
 +}
 +
-+static struct shm_signal_ops _signal_ops = {
-+	.inject  = _signal_inject,
-+	.release = _signal_release,
++static struct shm_signal_ops userspace_signal_ops = {
++	.inject  = userspace_signal_inject,
++	.release = userspace_signal_release,
 +};
 +
-+/*
-+ * -------------------
-+ * vbus_device_proxy routines
-+ * -------------------
-+ */
-+
-+static int
-+kvm_vbus_device_open(struct vbus_device_proxy *vdev, int version, int flags)
++static long
++userspace_signal_alloc(struct vbus_shm *shm,
++		       u32 offset, u32 prio, u64 cookie,
++		       struct userspace_signal **usignal)
 +{
-+	struct kvm_vbus_device *dev = to_dev(vdev);
-+	struct vbus_deviceopen params;
-+	int ret;
++	struct userspace_signal *_signal;
++	struct shm_signal *signal;
++	struct shm_signal_desc *desc;
++	int ret = -EINVAL;
 +
-+	if (dev->handle)
-+		return -EINVAL;
-+
-+	params.devid   = vdev->id;
-+	params.version = version;
-+
-+	ret = kvm_vbus_hypercall(KVM_VBUS_OP_DEVOPEN,
-+				 &params, sizeof(params));
-+	if (ret < 0)
-+		return ret;
-+
-+	dev->handle = params.handle;
-+
-+	return 0;
-+}
-+
-+static int
-+kvm_vbus_device_close(struct vbus_device_proxy *vdev, int flags)
-+{
-+	struct kvm_vbus_device *dev = to_dev(vdev);
-+	unsigned long iflags;
-+	int ret;
-+
-+	if (!dev->handle)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&kvm_vbus.lock, iflags);
-+
-+	while (!list_empty(&dev->shms)) {
-+		struct _signal *_signal;
-+
-+		_signal = list_first_entry(&dev->shms, struct _signal, list);
-+
-+		list_del(&_signal->list);
-+
-+		spin_unlock_irqrestore(&kvm_vbus.lock, iflags);
-+		shm_signal_put(&_signal->signal);
-+		spin_lock_irqsave(&kvm_vbus.lock, iflags);
-+	}
-+
-+	spin_unlock_irqrestore(&kvm_vbus.lock, iflags);
-+
-+	/*
-+	 * The DEVICECLOSE will implicitly close all of the shm on the
-+	 * host-side, so there is no need to do an explicit per-shm
-+	 * hypercall
-+	 */
-+	ret = kvm_vbus_hypercall(KVM_VBUS_OP_DEVCLOSE,
-+				 &dev->handle, sizeof(dev->handle));
-+
-+	if (ret < 0)
-+		printk(KERN_ERR "KVM-VBUS: Error closing device %s/%lld: %d\n",
-+		       vdev->type, vdev->id, ret);
-+
-+	dev->handle = 0;
-+
-+	return 0;
-+}
-+
-+static int
-+kvm_vbus_device_shm(struct vbus_device_proxy *vdev, int id, int prio,
-+		    void *ptr, size_t len,
-+		    struct shm_signal_desc *sdesc, struct shm_signal **signal,
-+		    int flags)
-+{
-+	struct kvm_vbus_device *dev = to_dev(vdev);
-+	struct _signal *_signal = NULL;
-+	struct vbus_deviceshm params;
-+	unsigned long iflags;
-+	int ret;
-+
-+	if (!dev->handle)
-+		return -EINVAL;
-+
-+	params.devh   = dev->handle;
-+	params.id     = id;
-+	params.flags  = flags;
-+	params.datap  = (u64)__pa(ptr);
-+	params.len    = len;
-+
-+	if (signal) {
-+		/*
-+		 * The signal descriptor must be embedded within the
-+		 * provided ptr
-+		 */
-+		if (!sdesc
-+		    || (len < sizeof(*sdesc))
-+		    || ((void *)sdesc < ptr)
-+		    || ((void *)sdesc > (ptr + len - sizeof(*sdesc))))
-+			return -EINVAL;
-+
-+		_signal = kzalloc(sizeof(*_signal), GFP_KERNEL);
-+		if (!_signal)
-+			return -ENOMEM;
-+
-+		_signal_init(&_signal->signal, sdesc, &_signal_ops);
-+
-+		/*
-+		 * take another reference for the host.  This is dropped
-+		 * by a SHMCLOSE event
-+		 */
-+		shm_signal_get(&_signal->signal);
-+
-+		params.signal.offset = (u64)sdesc - (u64)ptr;
-+		params.signal.prio   = prio;
-+		params.signal.cookie = (u64)_signal;
-+
-+	} else
-+		params.signal.offset = -1; /* yes, this is a u32, but its ok */
-+
-+	ret = kvm_vbus_hypercall(KVM_VBUS_OP_DEVSHM,
-+				 &params, sizeof(params));
-+	if (ret < 0) {
-+		if (_signal) {
-+			/*
-+			 * We held two references above, so we need to drop
-+			 * both of them
-+			 */
-+			shm_signal_put(&_signal->signal);
-+			shm_signal_put(&_signal->signal);
-+		}
-+
-+		return ret;
-+	}
-+
-+	if (signal) {
-+		_signal->handle = params.handle;
-+
-+		spin_lock_irqsave(&kvm_vbus.lock, iflags);
-+
-+		list_add_tail(&_signal->list, &dev->shms);
-+
-+		spin_unlock_irqrestore(&kvm_vbus.lock, iflags);
-+
-+		shm_signal_get(&_signal->signal);
-+		*signal = &_signal->signal;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+kvm_vbus_device_call(struct vbus_device_proxy *vdev, u32 func, void *data,
-+		     size_t len, int flags)
-+{
-+	struct kvm_vbus_device *dev = to_dev(vdev);
-+	struct vbus_devicecall params = {
-+		.devh  = dev->handle,
-+		.func  = func,
-+		.datap = (u64)__pa(data),
-+		.len   = len,
-+		.flags = flags,
-+	};
-+
-+	if (!dev->handle)
-+		return -EINVAL;
-+
-+	return kvm_vbus_hypercall(KVM_VBUS_OP_DEVCALL, &params, sizeof(params));
-+}
-+
-+static void
-+kvm_vbus_device_release(struct vbus_device_proxy *vdev)
-+{
-+	struct kvm_vbus_device *_dev = to_dev(vdev);
-+
-+	kvm_vbus_device_close(vdev, 0);
-+
-+	kfree(_dev);
-+}
-+
-+struct vbus_device_proxy_ops kvm_vbus_device_ops = {
-+	.open    = kvm_vbus_device_open,
-+	.close   = kvm_vbus_device_close,
-+	.shm     = kvm_vbus_device_shm,
-+	.call    = kvm_vbus_device_call,
-+	.release = kvm_vbus_device_release,
-+};
-+
-+/*
-+ * -------------------
-+ * vbus events
-+ * -------------------
-+ */
-+
-+static void
-+event_devadd(struct kvm_vbus_add_event *event)
-+{
-+	int ret;
-+	struct kvm_vbus_device *new = kzalloc(sizeof(*new), GFP_KERNEL);
-+	if (!new) {
-+		printk(KERN_ERR "KVM_VBUS: Out of memory on add_event\n");
-+		return;
-+	}
-+
-+	INIT_LIST_HEAD(&new->shms);
-+
-+	memcpy(new->type, event->type, VBUS_MAX_DEVTYPE_LEN);
-+	new->vdev.type        = new->type;
-+	new->vdev.id          = event->id;
-+	new->vdev.ops         = &kvm_vbus_device_ops;
-+
-+	dev_set_name(&new->vdev.dev, "%lld", event->id);
-+
-+	ret = vbus_device_proxy_register(&new->vdev);
-+	if (ret < 0)
-+		panic("failed to register device %lld(%s): %d\n",
-+		      event->id, event->type, ret);
-+}
-+
-+static void
-+event_devdrop(struct kvm_vbus_handle_event *event)
-+{
-+	struct vbus_device_proxy *dev = vbus_device_proxy_find(event->handle);
-+
-+	if (!dev) {
-+		printk(KERN_WARNING "KVM-VBUS: devdrop failed: %lld\n",
-+		       event->handle);
-+		return;
-+	}
-+
-+	vbus_device_proxy_unregister(dev);
-+}
-+
-+static void
-+event_shmsignal(struct kvm_vbus_handle_event *event)
-+{
-+	struct _signal *_signal = (struct _signal *)event->handle;
-+
-+	_shm_signal_wakeup(&_signal->signal);
-+}
-+
-+static void
-+event_shmclose(struct kvm_vbus_handle_event *event)
-+{
-+	struct _signal *_signal = (struct _signal *)event->handle;
-+
-+	/*
-+	 * This reference was taken during the DEVICESHM call
-+	 */
-+	shm_signal_put(&_signal->signal);
-+}
-+
-+/*
-+ * -------------------
-+ * eventq routines
-+ * -------------------
-+ */
-+
-+static struct ioq_notifier eventq_notifier;
-+
-+static int __init
-+eventq_init(int qlen)
-+{
-+	struct ioq_iterator iter;
-+	int ret;
-+	int i;
-+
-+	kvm_vbus.ring = kzalloc(sizeof(struct kvm_vbus_event) * qlen,
-+				GFP_KERNEL);
-+	if (!kvm_vbus.ring)
++	_signal = kzalloc(sizeof(*_signal), GFP_KERNEL);
++	if (!_signal)
 +		return -ENOMEM;
 +
-+	/*
-+	 * We want to iterate on the "valid" index.  By default the iterator
-+	 * will not "autoupdate" which means it will not hypercall the host
-+	 * with our changes.  This is good, because we are really just
-+	 * initializing stuff here anyway.  Note that you can always manually
-+	 * signal the host with ioq_signal() if the autoupdate feature is not
-+	 * used.
-+	 */
-+	ret = ioq_iter_init(&kvm_vbus.eventq, &iter, ioq_idxtype_valid, 0);
-+	BUG_ON(ret < 0);
++	desc = (struct shm_signal_desc *)(shm->ptr + offset);
 +
-+	/*
-+	 * Seek to the tail of the valid index (which should be our first
-+	 * item since the queue is brand-new)
-+	 */
-+	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
-+	BUG_ON(ret < 0);
++	if (desc->magic != SHM_SIGNAL_MAGIC)
++		goto out;
 +
-+	/*
-+	 * Now populate each descriptor with an empty vbus_event and mark it
-+	 * valid
-+	 */
-+	for (i = 0; i < qlen; i++) {
-+		struct kvm_vbus_event *event = &kvm_vbus.ring[i];
-+		size_t                 len   = sizeof(*event);
-+		struct ioq_ring_desc  *desc  = iter.desc;
++	if (desc->ver != SHM_SIGNAL_VER)
++		goto out;
 +
-+		BUG_ON(iter.desc->valid);
++	signal = &_signal->signal;
 +
-+		desc->cookie = (u64)event;
-+		desc->ptr    = (u64)__pa(event);
-+		desc->len    = len; /* total length  */
-+		desc->valid  = 1;
++	shm_signal_init(signal);
 +
-+		/*
-+		 * This push operation will simultaneously advance the
-+		 * valid-tail index and increment our position in the queue
-+		 * by one.
-+		 */
-+		ret = ioq_iter_push(&iter, 0);
-+		BUG_ON(ret < 0);
-+	}
++	signal->locale    = shm_locality_south;
++	signal->ops       = &userspace_signal_ops;
++	signal->desc      = desc;
 +
-+	kvm_vbus.eventq.notifier = &eventq_notifier;
++	_signal->shm      = shm;
++	_signal->prio     = prio;
++	_signal->cookie   = cookie;
++	vbus_shm_get(shm); /* dropped when the signal is released */
 +
-+	/*
-+	 * And finally, ensure that we can receive notification
-+	 */
-+	ioq_notify_enable(&kvm_vbus.eventq, 0);
-+
-+	return 0;
-+}
-+
-+/* Invoked whenever the hypervisor ioq_signal()s our eventq */
-+static void
-+eventq_wakeup(struct ioq_notifier *notifier)
-+{
-+	struct ioq_iterator iter;
-+	int ret;
-+
-+	/* We want to iterate on the head of the in-use index */
-+	ret = ioq_iter_init(&kvm_vbus.eventq, &iter, ioq_idxtype_inuse, 0);
-+	BUG_ON(ret < 0);
-+
-+	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * The EOM is indicated by finding a packet that is still owned by
-+	 * the south side.
-+	 *
-+	 * FIXME: This in theory could run indefinitely if the host keeps
-+	 * feeding us events since there is nothing like a NAPI budget.  We
-+	 * might need to address that
-+	 */
-+	while (!iter.desc->sown) {
-+		struct ioq_ring_desc *desc  = iter.desc;
-+		struct kvm_vbus_event *event;
-+
-+		event = (struct kvm_vbus_event *)desc->cookie;
-+
-+		switch (event->eventid) {
-+		case KVM_VBUS_EVENT_DEVADD:
-+			event_devadd(&event->data.add);
-+			break;
-+		case KVM_VBUS_EVENT_DEVDROP:
-+			event_devdrop(&event->data.handle);
-+			break;
-+		case KVM_VBUS_EVENT_SHMSIGNAL:
-+			event_shmsignal(&event->data.handle);
-+			break;
-+		case KVM_VBUS_EVENT_SHMCLOSE:
-+			event_shmclose(&event->data.handle);
-+			break;
-+		default:
-+			printk(KERN_WARNING "KVM_VBUS: Unexpected event %d\n",
-+			       event->eventid);
-+			break;
-+		};
-+
-+		memset(event, 0, sizeof(*event));
-+
-+		/* Advance the in-use head */
-+		ret = ioq_iter_pop(&iter, 0);
-+		BUG_ON(ret < 0);
-+	}
-+
-+	/* And let the south side know that we changed the queue */
-+	ioq_signal(&kvm_vbus.eventq, 0);
-+}
-+
-+static struct ioq_notifier eventq_notifier = {
-+	.signal = &eventq_wakeup,
-+};
-+
-+/* Injected whenever the host issues an ioq_signal() on the eventq */
-+irqreturn_t
-+eventq_intr(int irq, void *dev)
-+{
-+	_shm_signal_wakeup(kvm_vbus.eventq.signal);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*
-+ * -------------------
-+ */
-+
-+static int
-+eventq_signal_inject(struct shm_signal *signal)
-+{
-+	u64 handle = 0; /* The eventq uses the special-case handle=0 */
-+
-+	kvm_vbus_hypercall(KVM_VBUS_OP_SHMSIGNAL, &handle, sizeof(handle));
-+
-+	return 0;
-+}
-+
-+static void
-+eventq_signal_release(struct shm_signal *signal)
-+{
-+	kfree(signal);
-+}
-+
-+static struct shm_signal_ops eventq_signal_ops = {
-+	.inject  = eventq_signal_inject,
-+	.release = eventq_signal_release,
-+};
-+
-+/*
-+ * -------------------
-+ */
-+
-+static void
-+eventq_ioq_release(struct ioq *ioq)
-+{
-+	/* released as part of the kvm_vbus object */
-+}
-+
-+static struct ioq_ops eventq_ioq_ops = {
-+	.release = eventq_ioq_release,
-+};
-+
-+/*
-+ * -------------------
-+ */
-+
-+static void
-+kvm_vbus_release(void)
-+{
-+	if (kvm_vbus.irq > 0)
-+		free_irq(kvm_vbus.irq, NULL);
-+
-+	kfree(kvm_vbus.eventq.head_desc);
-+	kfree(kvm_vbus.ring);
-+
-+	kvm_vbus.enabled = false;
-+}
-+
-+static int __init
-+kvm_vbus_open(void)
-+{
-+	struct kvm_vbus_busopen params = {
-+		.magic        = KVM_VBUS_MAGIC,
-+		.version      = KVM_VBUS_VERSION,
-+		.capabilities = 0,
-+	};
-+
-+	return kvm_vbus_hypercall(KVM_VBUS_OP_BUSOPEN, &params, sizeof(params));
-+}
-+
-+#define QLEN 1024
-+
-+static int __init
-+kvm_vbus_register(void)
-+{
-+	struct kvm_vbus_busreg params = {
-+		.count = 1,
-+		.eventq = {
-+			{
-+				.count = QLEN,
-+				.ring  = (u64)__pa(kvm_vbus.eventq.head_desc),
-+				.data  = (u64)__pa(kvm_vbus.ring),
-+			},
-+		},
-+	};
-+
-+	return kvm_vbus_hypercall(KVM_VBUS_OP_BUSREG, &params, sizeof(params));
-+}
-+
-+static int __init
-+_ioq_init(size_t ringsize, struct ioq *ioq, struct ioq_ops *ops)
-+{
-+	struct shm_signal    *signal = NULL;
-+	struct ioq_ring_head *head = NULL;
-+	size_t                len  = IOQ_HEAD_DESC_SIZE(ringsize);
-+
-+	head = kzalloc(len, GFP_KERNEL | GFP_DMA);
-+	if (!head)
-+		return -ENOMEM;
-+
-+	signal = kzalloc(sizeof(*signal), GFP_KERNEL);
-+	if (!signal) {
-+		kfree(head);
-+		return -ENOMEM;
-+	}
-+
-+	head->magic     = IOQ_RING_MAGIC;
-+	head->ver	= IOQ_RING_VER;
-+	head->count     = ringsize;
-+
-+	_signal_init(signal, &head->signal, &eventq_signal_ops);
-+
-+	ioq_init(ioq, ops, ioq_locality_north, head, signal, ringsize);
-+
-+	return 0;
-+}
-+
-+static int __devinit
-+vbus_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-+{
-+	int ret;
-+
-+	if (kvm_vbus.enabled)
-+		return -EEXIST;
-+
-+	ret = kvm_vbus_open();
-+	if (ret < 0) {
-+		printk(KERN_ERR "KVM_VBUS: Could not register with host: %d\n",
-+		       ret);
-+		goto out_fail;
-+	}
-+
-+	ret = pci_enable_device(pdev);
-+	if (ret < 0)
-+		return ret;
-+
-+	spin_lock_init(&kvm_vbus.lock);
-+
-+	/*
-+	 * Allocate an IOQ to use for host-2-guest event notification
-+	 */
-+	ret = _ioq_init(QLEN, &kvm_vbus.eventq, &eventq_ioq_ops);
-+	if (ret < 0) {
-+		printk(KERN_ERR "KVM_VBUS: Cound not init eventq\n");
-+		goto out_fail;
-+	}
-+
-+	ret = eventq_init(QLEN);
-+	if (ret < 0) {
-+		printk(KERN_ERR "KVM_VBUS: Cound not setup ring\n");
-+		goto out_fail;
-+	}
-+
-+	ret = pci_enable_msi(pdev);
-+	if (ret < 0) {
-+		printk(KERN_ERR "KVM_VBUS: Cound not enable MSI\n");
-+		goto out_fail;
-+	}
-+
-+	kvm_vbus.irq = pdev->irq;
-+
-+	ret = request_irq(pdev->irq, eventq_intr, 0, "vbus", NULL);
-+	if (ret < 0) {
-+		printk(KERN_ERR "KVM_VBUS: Failed to register IRQ %d\n: %d",
-+		       pdev->irq, ret);
-+		goto out_fail;
-+	}
-+
-+	/*
-+	 * Finally register our queue on the host to start receiving events
-+	 */
-+	ret = kvm_vbus_register();
-+	if (ret < 0) {
-+		printk(KERN_ERR "KVM_VBUS: Could not register with host: %d\n",
-+		       ret);
-+		goto out_fail;
-+	}
-+
-+	kvm_vbus.enabled = true;
++	*usignal = _signal;
 +
 +	return 0;
 +
-+ out_fail:
-+	kvm_vbus_release();
++out:
++	kfree(_signal);
 +
 +	return ret;
-+
 +}
 +
-+static void __devexit
-+vbus_pci_remove(struct pci_dev *pdev)
++static void
++userspace_shm_release(struct vbus_shm *shm)
 +{
-+	kvm_vbus_release();
++	struct userspace_shm *_shm = container_of(shm, struct userspace_shm,
++						  shm);
 +
-+	pci_disable_device(pdev);
++	/* FIXME: do we need to adjust current->mm->locked_vm? */
++	vunmap((void *)((unsigned long)shm->ptr & PAGE_MASK));
++	kfree(_shm);
 +}
 +
-+static DEFINE_PCI_DEVICE_TABLE(vbus_pci_tbl) = {
-+	{ PCI_DEVICE(0x11da, 0x2000) },
++static struct vbus_shm_ops userspace_shm_ops = {
++	.release = userspace_shm_release,
 +};
 +
-+MODULE_DEVICE_TABLE(pci, vbus_pci_tbl);
-+
-+static struct pci_driver vbus_pci_driver = {
-+	.name    = "pci-to-vbus-bridge",
-+	.id_table = vbus_pci_tbl,
-+	.probe    = vbus_pci_probe,
-+	.remove   = vbus_pci_remove,
-+};
-+
-+int __init
-+kvm_vbus_init(void)
++static int
++userspace_shm_map(struct userspace_chardev *cd,
++		  __u64 ptr, __u32 len,
++		  struct userspace_shm **ushm)
 +{
-+	memset(&kvm_vbus, 0, sizeof(kvm_vbus));
++	struct userspace_shm *_shm;
++	struct vbus_shm *shm;
++	void *vmap;
 +
-+	return pci_register_driver(&vbus_pci_driver);
++	_shm = kzalloc(sizeof(*_shm), GFP_KERNEL);
++	if (!_shm)
++		return -ENOMEM;
++
++	shm = &_shm->shm;
++
++	vmap = userspace_vmap(ptr, len);
++	if (!vmap) {
++		kfree(_shm);
++		return -EFAULT;
++	}
++
++	vbus_shm_init(shm, &userspace_shm_ops, vmap, len);
++
++	*ushm = _shm;
++
++	return 0;
++}
++
++static long
++_deviceshm(struct userspace_chardev *cd, struct vbus_deviceshm *args)
++{
++	struct vbus_client *c = cd->client;
++	struct userspace_signal *_signal = NULL;
++	struct shm_signal *signal = NULL;
++	struct userspace_shm *_shm;
++	u64 handle;
++	long ret;
++
++	ret = userspace_shm_map(cd, args->datap, args->len, &_shm);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * Establishing a signal is optional
++	 */
++	if (args->signal.offset != -1) {
++		ret = userspace_signal_alloc(&_shm->shm,
++					     args->signal.offset,
++					     args->signal.prio,
++					     args->signal.cookie,
++					     &_signal);
++		if (ret < 0)
++			goto out;
++
++		_signal->cd = cd;
++		signal = &_signal->signal;
++	}
++
++	ret = c->ops->deviceshm(c, args->devh, args->id,
++				&_shm->shm, signal,
++				args->flags, &handle);
++	if (ret < 0)
++		goto out;
++
++	args->handle = handle;
++
++	return 0;
++
++out:
++	if (signal)
++		shm_signal_put(signal);
++
++	vbus_shm_put(&_shm->shm);
++	return ret;
++}
++
++static long
++_shmsignal(struct userspace_chardev *cd, unsigned long handle)
++{
++	struct vbus_client *c = cd->client;
++
++	return c->ops->shmsignal(c, handle);
++}
++
++static int
++vbus_chardev_open(struct inode *inode, struct file *filp)
++{
++	struct vbus *vbus = task_vbus_get(current);
++	struct vbus_client *client;
++	struct vbus_memctx *ctx;
++	struct userspace_chardev *cd;
++
++	if (!vbus)
++		return -EPERM;
++
++	client = vbus_client_attach(vbus);
++	vbus_put(vbus);
++	if (!client)
++		return -ENOMEM;
++
++	ctx = task_memctx_alloc(current);
++	if (!ctx) {
++		vbus_client_put(client);
++		return -ENOMEM;
++	}
++
++	cd = kzalloc(sizeof(*cd), GFP_KERNEL);
++	if (!cd) {
++		vbus_memctx_put(ctx);
++		vbus_client_put(client);
++		return -ENOMEM;
++	}
++
++	spin_lock_init(&cd->lock);
++	cd->opened = 0;
++	cd->client = client;
++	cd->ctx = ctx;
++
++	INIT_LIST_HEAD(&cd->signal_list);
++	init_waitqueue_head(&cd->wq);
++
++	filp->private_data = cd;
++
++	return 0;
++}
++
++static long
++vbus_chardev_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
++{
++	struct userspace_chardev *cd = filp->private_data;
++
++	if (!cd->opened && ioctl != VBUS_BUSOPEN)
++		return -EINVAL;
++
++	switch (ioctl) {
++	case VBUS_BUSOPEN:
++		return _busopen(cd, (struct vbus_userspace_busopen *)arg);
++	case VBUS_DEVICEOPEN:
++		return _deviceopen(cd, (struct vbus_deviceopen *)arg);
++	case VBUS_DEVICECLOSE:
++		return _deviceclose(cd, *(__u64 *)arg);
++	case VBUS_DEVICECALL:
++		return _devicecall(cd, (struct vbus_devicecall *)arg);
++	case VBUS_DEVICESHM:
++		return _deviceshm(cd, (struct vbus_deviceshm *)arg);
++	case VBUS_SHMSIGNAL:
++		return _shmsignal(cd, *(__u64 *)arg);
++	default:
++		return -EINVAL;
++	}
++}
++
++static ssize_t
++vbus_chardev_read(struct file *filp, char __user *buf, size_t len,
++		  loff_t *ppos)
++{
++	DEFINE_WAIT(wait);
++	struct userspace_chardev *cd = filp->private_data;
++	ssize_t bytes = 0;
++	int count, i;
++	__u64 __user *p = (__u64 __user *)buf;
++	unsigned long flags;
++
++	count = len/sizeof(__u64);
++
++	if (!count)
++		return -EINVAL;
++
++	spin_lock_irqsave(&cd->lock, flags);
++
++	for (;;) {
++		prepare_to_wait(&cd->wq, &wait, TASK_INTERRUPTIBLE);
++
++		if (!list_empty(&cd->signal_list))
++			break;
++
++		if (signal_pending(current)) {
++			finish_wait(&cd->wq, &wait);
++			spin_unlock_irqrestore(&cd->lock, flags);
++			return -EINTR;
++		}
++
++		spin_unlock_irqrestore(&cd->lock, flags);
++		schedule();
++		spin_lock_irqsave(&cd->lock, flags);
++	}
++
++	finish_wait(&cd->wq, &wait);
++
++	for (i = 0; i < count; i++) {
++		struct userspace_signal *_signal;
++		__u64 cookie;
++
++		if (list_empty(&cd->signal_list))
++			break;
++
++		_signal = list_first_entry(&cd->signal_list,
++					   struct userspace_signal, list);
++
++		_signal->signaled = 0;
++		list_del(&_signal->list);
++
++		cookie = _signal->cookie;
++
++		put_user(cookie, p++);
++
++		bytes += sizeof(cookie);
++	}
++
++	spin_unlock_irqrestore(&cd->lock, flags);
++
++	return bytes;
++}
++
++static int
++vbus_chardev_release(struct inode *inode, struct file *filp)
++{
++	struct userspace_chardev *cd = filp->private_data;
++
++	vbus_memctx_put(cd->ctx);
++	vbus_client_put(cd->client);
++	kfree(cd);
++
++	return 0;
++}
++
++static const struct file_operations vbus_chardev_ops = {
++	.open           = vbus_chardev_open,
++	.read           = vbus_chardev_read,
++	.unlocked_ioctl = vbus_chardev_ioctl,
++	.compat_ioctl   = vbus_chardev_ioctl,
++	.release        = vbus_chardev_release,
++};
++
++static struct miscdevice vbus_chardev = {
++	MISC_DYNAMIC_MINOR,
++	"vbus",
++	&vbus_chardev_ops,
++};
++
++static int __init
++vbus_userspace_init(void)
++{
++	return misc_register(&vbus_chardev);
 +}
 +
 +static void __exit
-+kvm_vbus_exit(void)
++vbus_userspace_cleanup(void)
 +{
-+	pci_unregister_driver(&vbus_pci_driver);
++	misc_deregister(&vbus_chardev);
 +}
 +
-+module_init(kvm_vbus_init);
-+module_exit(kvm_vbus_exit);
-+
++module_init(vbus_userspace_init);
++module_exit(vbus_userspace_cleanup);
 
