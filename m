@@ -1,51 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZDUKgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbZDUKhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbZDUKgQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZDUKf5
+	id S1757045AbZDUKhe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZDUKhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:35:57 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:34694 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbZDUKf4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:35:56 -0400
-Message-ID: <49EDA14A.6000905@cosmosbay.com>
-Date: Tue, 21 Apr 2009 12:34:50 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 21 Apr 2009 06:37:16 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60723 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755834AbZDUKhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:37:14 -0400
+Date: Tue, 21 Apr 2009 11:37:10 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 10/25] Calculate the alloc_flags for allocation only
+	once
+Message-ID: <20090421103709.GR12713@csn.ul.ie>
+References: <20090421165022.F13F.A69D9226@jp.fujitsu.com> <20090421100530.GN12713@csn.ul.ie> <20090421190921.F15F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: jon.lin@vatics.com
-CC: jianjun@zeuux.org, davem@davemloft.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-References: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw> <20090421.015235.23457775.davem@davemloft.net> <20090421094825.GA6752@ubuntu> <0E04AEADD178614A86F3017CC5FA693B4959924D17@MS.vivotek.tw>
-In-Reply-To: <0E04AEADD178614A86F3017CC5FA693B4959924D17@MS.vivotek.tw>
-Content-Type: text/plain; charset=Big5
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 21 Apr 2009 12:34:50 +0200 (CEST)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090421190921.F15F.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jon.lin@vatics.com a e'crit :
-> Dear Sirs,
+On Tue, Apr 21, 2009 at 07:12:57PM +0900, KOSAKI Motohiro wrote:
+> > > > +	/* Avoid recursion of direct reclaim */
+> > > > +	if (p->flags & PF_MEMALLOC)
+> > > > +		goto nopage;
+> > > > +
+> > > 
+> > > Again. old code doesn't only check PF_MEMALLOC, but also check TIF_MEMDIE.
+> > > 
+> > 
+> > But a direct reclaim will have PF_MEMALLOC set and doesn't care about
+> > the value of TIF_MEMDIE with respect to recursion.
+> > 
+> > There is still a check made for TIF_MEMDIE for setting ALLOC_NO_WATERMARKS
+> > in gfp_to_alloc_flags() so that flag is still being taken care of.
 > 
-> I am so sorry for my clumsiness!
-> It is so embarrassed that I can't submit a valid patch...
-> Thank you all for your incredible patience.
-> I will try to use mail command in my Linux box to submit it again.
-> Sorry for these stupid failures.
+> Do you mean this is intentional change?
+> I only said there is changelog-less behavior change.
 > 
-> Regards
->   Jonathan
 
-It happens :(
+Yes, it's intentional.
 
-Next time you want to try, just send your patch to someone
-(this could be you or me) that can check patch before you re-submit it to
-the lists, this can avoid many iterations.
+> old code is here.
+> PF_MEMALLOC and TIF_MEMDIE makes goto nopage. it avoid reclaim.
 
-You did the hard work, finding and fixing the bug, dont forget it !
+PF_MEMALLOC avoiding reclaim makes sense but TIF_MEMDIE should be
+allowed to reclaim. I called it out a bit better in the changelog now.
 
+> -------------------------------------------------------------------------
+> rebalance:
+>         if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+>                         && !in_interrupt()) {
+>                 if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+> nofail_alloc:
+>                         /* go through the zonelist yet again, ignoring mins */
+>                         page = get_page_from_freelist(gfp_mask, nodemask, order,
+>                                 zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
+>                         if (page)
+>                                 goto got_pg;
+>                         if (gfp_mask & __GFP_NOFAIL) {
+>                                 congestion_wait(WRITE, HZ/50);
+>                                 goto nofail_alloc;
+>                         }
+>                 }
+>                 goto nopage;
+>         }
+> -------------------------------------------------------------------------
+> 
+> 
+> but I don't oppose this change if it is your intentional.
+> 
 
+The changelog now reads
+=====
+
+Factor out the mapping between GFP and alloc_flags only once. Once factored
+out, it only needs to be calculated once but some care must be taken.
+
+[neilb@suse.de says]
+As the test:
+
+-       if (((p->flags & PF_MEMALLOC) ||
+        unlikely(test_thread_flag(TIF_MEMDIE)))
+-                       && !in_interrupt()) {
+-               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+
+has been replaced with a slightly weaker one:
+
++       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+
+Without care, this would allow recursion into the allocator via direct
+reclaim. This patch ensures we do not recurse when PF_MEMALLOC is set
+but TF_MEMDIE callers are now allowed to directly reclaim where they
+would have been prevented in the past.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
