@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZDUQBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbZDUQBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755375AbZDUQBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZDUQBG
+	id S1753045AbZDUQBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZDUQBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:01:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57638 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbZDUQBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:01:05 -0400
-Message-ID: <49EDEDAD.20900@redhat.com>
-Date: Tue, 21 Apr 2009 18:00:45 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
+	Tue, 21 Apr 2009 12:01:10 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:41774 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbZDUQBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 12:01:08 -0400
+Date: Tue, 21 Apr 2009 11:09:59 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 25/25] Use a pre-calculated value instead of num_online_nodes()
+ in fast paths
+In-Reply-To: <20090421090102.GI12713@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0904211109450.19969@qirst.com>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-26-git-send-email-mel@csn.ul.ie> <1240301300.771.58.camel@penberg-laptop> <20090421090102.GI12713@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: Xenner design and kvm msr handling
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com> <49EDB0E0.5060101@redhat.com> <49EDBBBF.90509@redhat.com> <49EDC050.1040700@redhat.com> <49EDCB1D.1010301@redhat.com>
-In-Reply-To: <49EDCB1D.1010301@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/21/09 15:33, Avi Kivity wrote:
-> Gerd Hoffmann wrote:
->> Not sure, have to dig into the xen code to figure.
->>
->> Could be xen doesn't remember the page in the first place. They might
->> let the illegal instruction fault handler patch the opcode. At least I
->> vaguely remember some discussions about that.
+On Tue, 21 Apr 2009, Mel Gorman wrote:
 
-Xen does a simple msr-triggered memcpy() as well, without keeping track 
-of the page.  On a quick glimpse I can't find a opcode patching place 
-either.  Hmm.
-
->> Could be there isn't a interface to forgot the page. "reboot" in xen
->> land is "destroy guest, restart it".
+> On Tue, Apr 21, 2009 at 11:08:20AM +0300, Pekka Enberg wrote:
+> > On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
+> > > diff --git a/mm/slab.c b/mm/slab.c
+> > > index 1c680e8..41d1343 100644
+> > > --- a/mm/slab.c
+> > > +++ b/mm/slab.c
+> > > @@ -3579,7 +3579,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+> > >  	 * variable to skip the call, which is mostly likely to be present in
+> > >  	 * the cache.
+> > >  	 */
+> > > -	if (numa_platform && cache_free_alien(cachep, objp))
+> > > +	if (numa_platform > 1 && cache_free_alien(cachep, objp))
+> > >  		return;
+> >
+> > This doesn't look right. I assume you meant "nr_online_nodes > 1" here?
+> > If so, please go ahead and remove "numa_platform" completely.
+> >
 >
-> How do you unload a driver then?
+> It would need to be nr_possible_nodes which would be a separate patch to add
+> the definition and then drop numa_platform. This change is wrong as part of
+> this patch. I'll drop it. Thanks
 
-The linux module (xen-platform-pci) has no module_exit() ...
+nr_online_nodes would be okay as Pekka suggested.
 
-cheers,
-   Gerd
