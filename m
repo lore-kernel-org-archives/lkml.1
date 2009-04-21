@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbZDUUZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZDUU2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753013AbZDUUZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZDUUZo
+	id S1755962AbZDUU2Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZDUU2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:25:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41470 "EHLO
+	Tue, 21 Apr 2009 16:28:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35140 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751169AbZDUUZn (ORCPT
+	by vger.kernel.org with ESMTP id S1752777AbZDUU2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:25:43 -0400
-Date: Tue, 21 Apr 2009 13:14:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Stephen Hemminger <shemminger@vyatta.com>,
-       Paul Mackerras <paulus@samba.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-In-Reply-To: <20090421183429.GL6642@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.0904211308510.2199@localhost.localdomain>
-References: <20090417012812.GA25534@linux.vnet.ibm.com> <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com>
- <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421183429.GL6642@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 21 Apr 2009 16:28:14 -0400
+Date: Tue, 21 Apr 2009 13:25:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@linux.vnet.ibm.com
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add file based RSS accounting for memory resource
+ controller (v3)
+Message-Id: <20090421132551.38e9960a.akpm@linux-foundation.org>
+In-Reply-To: <20090417141837.GD3896@balbir.in.ibm.com>
+References: <20090416120316.GG7082@balbir.in.ibm.com>
+	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417014042.GB18558@balbir.in.ibm.com>
+	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417034539.GD18558@balbir.in.ibm.com>
+	<20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417045623.GA3896@balbir.in.ibm.com>
+	<20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417064726.GB3896@balbir.in.ibm.com>
+	<20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417141837.GD3896@balbir.in.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 17 Apr 2009 19:48:38 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-
-On Tue, 21 Apr 2009, Paul E. McKenney wrote:
+>
+> ...
+>
+> We currently don't track file RSS, the RSS we report is actually anon RSS.
+> All the file mapped pages, come in through the page cache and get accounted
+> there. This patch adds support for accounting file RSS pages. It should
 > 
-> I believe that at least some of this is naming...
+> 1. Help improve the metrics reported by the memory resource controller
+> 2. Will form the basis for a future shared memory accounting heuristic
+>    that has been proposed by Kamezawa.
+> 
+> Unfortunately, we cannot rename the existing "rss" keyword used in memory.stat
+> to "anon_rss". We however, add "mapped_file" data and hope to educate the end
+> user through documentation.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>
+> ...
+>
+> @@ -1096,6 +1135,10 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+>  	struct mem_cgroup_per_zone *from_mz, *to_mz;
+>  	int nid, zid;
+>  	int ret = -EBUSY;
+> +	struct page *page;
+> +	int cpu;
+> +	struct mem_cgroup_stat *stat;
+> +	struct mem_cgroup_stat_cpu *cpustat;
+>  
+>  	VM_BUG_ON(from == to);
+>  	VM_BUG_ON(PageLRU(pc->page));
+> @@ -1116,6 +1159,23 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+>  
+>  	res_counter_uncharge(&from->res, PAGE_SIZE);
+>  	mem_cgroup_charge_statistics(from, pc, false);
+> +
+> +	page = pc->page;
+> +	if (page_is_file_cache(page) && page_mapped(page)) {
+> +		cpu = smp_processor_id();
+> +		/* Update mapped_file data for mem_cgroup "from" */
+> +		stat = &from->stat;
+> +		cpustat = &stat->cpustat[cpu];
+> +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
+> +						-1);
+> +
+> +		/* Update mapped_file data for mem_cgroup "to" */
+> +		stat = &to->stat;
+> +		cpustat = &stat->cpustat[cpu];
+> +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
+> +						1);
+> +	}
 
-Maybe.
+This function (mem_cgroup_move_account()) does a trylock_page_cgroup()
+and if that fails it will bale out, and the newly-added code will not
+be executed.
 
-I do agree that the way netfilter would use the lock is somewhat different 
-from a normal 'reader-writer' lock, since this special case of readers is 
-about a per-cpu thing.
+What are the implications of this?  Does the missed accounting later get
+performed somewhere, or does the error remain in place?
 
-> So, would it help if the function names names in this patch said something
-> about "local" and "global" rather than "read" and "write"?
+That trylock_page_cgroup() really sucks - trylocks usually do.  Could
+someone please raise a patch which completely documents the reasons for
+its presence, and for any other uncommented/unobvious trylocks?
 
-Oh, I would have no problem at all with 'local' and 'global', in fact it 
-would explain _why_ that read-write lock works.
+Where appropriate, the comment should explain why the trylock isn't
+simply a bug - why it is safe and correct to omit the operations which
+we wished to perform.
 
-The problem with naming I have is with the 'recursive' part. There is no 
-ambiguity what-so-ever about what a "recursive lock" is (at least of the 
-traditional kind), and the lock described here is not it.
+Thanks.
 
-So don't get me wrong - I could certainly live with a special lock in the 
-networking. BUT:
-
- - it had damn well be documented as to what it does, and why it works
-
- - and it had better actually _work_, and not be buggy.
-
-I suspect that using our regular reader-writer locks works well enough, 
-and yes, it's probably worth making it really clear that the reader 
-variety can only ever be used in the "local" form. That kind of is implied 
-by the whole function, though.
-
-And if somebody wants to open-code it as a per-cpu spinlock and a per-cpu 
-'local counter', I can live with that too, but at that point I want people 
-to just be a lot more careful, and also document it a lot more. 
-
-		Linus
