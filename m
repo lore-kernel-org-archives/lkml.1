@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZDURUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZDURWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbZDURUI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 13:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZDURT4
+	id S1755976AbZDURWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 13:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZDURVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 13:19:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58309 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZDURTz (ORCPT
+	Tue, 21 Apr 2009 13:21:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48857 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753689AbZDURVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 13:19:55 -0400
-Message-ID: <49EE0013.6010008@zytor.com>
-Date: Tue, 21 Apr 2009 10:19:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Hitoshi Mitake <h.mitake@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Tue, 21 Apr 2009 13:21:53 -0400
+Date: Tue, 21 Apr 2009 13:21:51 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
-References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>	<adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu>	<adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com>	<20090420105304.GC6670@elte.hu>	<a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com>	<20090420160332.GB9689@elte.hu>	<a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>	<49EDE9E9.8090905@zytor.com> <adamyaavst5.fsf@cisco.com>
-In-Reply-To: <adamyaavst5.fsf@cisco.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka@firstfloor.org
+Subject: Re: [PATCH 2/8] tracing: create automated trace defines
+In-Reply-To: <49EDFFE6.1080401@goop.org>
+Message-ID: <alpine.DEB.2.00.0904211320440.10097@gandalf.stny.rr.com>
+References: <20090414172337.280621613@goodmis.org> <20090414172640.796858018@goodmis.org> <49E51FC1.8090306@goop.org> <20090415014548.GA7984@Krystal> <49E6065B.7080409@goop.org> <20090416023456.GC22378@Krystal> <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal>
+ <87zlebpzmk.fsf@basil.nowhere.org> <20090421155106.GE3792@Krystal> <49EDFFE6.1080401@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
+
+
+On Tue, 21 Apr 2009, Jeremy Fitzhardinge wrote:
+
+> Mathieu Desnoyers wrote:
+> > * Andi Kleen (andi@firstfloor.org) wrote:
+> >   
+> > > Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
+> > > 
+> > >     
+> > > > Given how slow function calls are, at least on x86,
+> > > >       
+> > > That was with frame pointers right? Frame pointers tend to make
+> > > function calls slow.
+> > > 
+> > >     
+> > 
+> > Looking at my .config, CONFIG_FRAME_POINTER is disabled here. So we
+> > should probably expect an even worse performance impact if we enable
+> > them.
 > 
-> However I worry that this just leaves driver authors too much rope.
-> Choosing readq_atomic() vs. readq() is just one more thing to get wrong.
-> 
+> I tried disabling frame pointers, but it looked to me like tracing selects
+> them.  Did I misread, or perhaps it was some other config option doing it...
 
-... as is having each driver implementing their own substitutes.
+It is needed for the function tracer (gcc -pg wont work without it). It is 
+the only tracer that selects it.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+-- Steve
 
