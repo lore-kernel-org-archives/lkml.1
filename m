@@ -1,72 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZDUI1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZDUI1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbZDUI1I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZDUI0v
+	id S1755465AbZDUI1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZDUI1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:26:51 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:50267 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751056AbZDUI0u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:26:50 -0400
-Date: Tue, 21 Apr 2009 10:26:45 +0200
-From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: VIA Padlock driver no longer loads automatically
-Message-ID: <20090421082645.GA22102@Chamillionaire.breakpoint.cc>
-Reply-To: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
-References: <20090420181402.2b0424f4@dhcp-100-2-144.bos.redhat.com> <20090421055331.GA14062@gondor.apana.org.au> <20090421055613.GA14319@gondor.apana.org.au>
+	Tue, 21 Apr 2009 04:27:36 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56758 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbZDUI1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:27:35 -0400
+Date: Tue, 21 Apr 2009 09:27:32 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 08/25] Calculate the preferred zone for allocation only
+	once
+Message-ID: <20090421082732.GB12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-9-git-send-email-mel@csn.ul.ie> <1240299457.771.42.camel@penberg-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090421055613.GA14319@gondor.apana.org.au>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1240299457.771.42.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Herbert Xu | 2009-04-21 13:56:13 [+0800]:
-
->On Tue, Apr 21, 2009 at 01:53:31PM +0800, Herbert Xu wrote:
->> 
->> Thanks for the report.  This patch should fix the problem.
->
->In fact, padlock-aes shouldn't have been aes-all in the first
->place so I'm going to add tihs patch too.
-You changed all algos which need fallback to *-all to get them
-probed/loaded after the generic algorithm. The same load/fallback/test
-pattern exist for the s390 aes for instance. Should it be renamed as
-well?
-
->commit acd246b7494c629aa617da49716409566cf52149
->Author: Herbert Xu <herbert@gondor.apana.org.au>
->Date:   Tue Apr 21 13:55:20 2009 +0800
->
->    crypto: padlock - Revert aes-all alias to aes
->    
->    Since the padlock-aes driver doesn't require a fallback (it's
->    only padlock-sha that does), it should use the aes alias rather
->    than aes-all so that ones that do need a fallback can use it.
->    
->    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->
->diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
->index 3f0fdd1..856b3cc 100644
->--- a/drivers/crypto/padlock-aes.c
->+++ b/drivers/crypto/padlock-aes.c
->@@ -489,4 +489,4 @@ MODULE_DESCRIPTION("VIA PadLock AES algorithm support");
-> MODULE_LICENSE("GPL");
-> MODULE_AUTHOR("Michal Ludvig");
+On Tue, Apr 21, 2009 at 10:37:37AM +0300, Pekka Enberg wrote:
+> Hi Mel,
 > 
->-MODULE_ALIAS("aes-all");
->+MODULE_ALIAS("aes");
->
->Thanks,
->-- 
+> On Mon, 2009-04-20 at 23:19 +0100, Mel Gorman wrote:
+> > get_page_from_freelist() can be called multiple times for an
+> > allocation.
+> > Part of this calculates the preferred_zone which is the first usable
+> > zone in the zonelist. This patch calculates preferred_zone once.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
 
-Sebastian
+Thanks
+
+> > @@ -1772,11 +1774,20 @@ __alloc_pages_nodemask(gfp_t gfp_mask,
+> > unsigned int order,
+> >  	if (unlikely(!zonelist->_zonerefs->zone))
+> >  		return NULL;
+> >  
+> > +	/* The preferred zone is used for statistics later */
+> > +	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+> > +							&preferred_zone);
+> > +	if (!preferred_zone)
+> > +		return NULL;
+> 
+> You might want to add an explanation to the changelog why this change is
+> safe. It looked like a functional change at first glance and it was
+> pretty difficult to convince myself that __alloc_pages_slowpath() will
+> always return NULL when there's no preferred zone because of the other
+> cleanups in this patch series.
+> 
+
+Is this better?
+
+get_page_from_freelist() can be called multiple times for an allocation.
+Part of this calculates the preferred_zone which is the first usable zone in
+the zonelist but the zone depends on the GFP flags specified at the beginning
+of the allocation call. This patch calculates preferred_zone once. It's safe
+to do this because if preferred_zone is NULL at the start of the call, no
+amount of direct reclaim or other actions will change the fact the allocation
+will fail.
+
+> > +
+> > +	/* First allocation attempt */
+> >  	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+> > -			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+> > +			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET,
+> > +			preferred_zone);
+> >  	if (unlikely(!page))
+> >  		page = __alloc_pages_slowpath(gfp_mask, order,
+> > -				zonelist, high_zoneidx, nodemask);
+> > +				zonelist, high_zoneidx, nodemask,
+> > +				preferred_zone);
+> >  
+> >  	return page;
+> >  }
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
