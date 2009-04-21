@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZDUSpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbZDUStH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbZDUSpi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757991AbZDUSls
+	id S1757793AbZDUStH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZDUSsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:41:48 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53947 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbZDUSln (ORCPT
+	Tue, 21 Apr 2009 14:48:52 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33886 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752284AbZDUSsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:41:43 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 11/17] venet-tap: add the ability to set the client's
-	mac address via sysfs
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
-       rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
-       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
-       chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:35:15 -0400
-Message-ID: <20090421183515.12548.1567.stgit@dev.haskins.net>
-In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
-References: <20090421183341.12548.33393.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Tue, 21 Apr 2009 14:48:51 -0400
+Date: Tue, 21 Apr 2009 14:47:35 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Anders Kaseorg <andersk@MIT.EDU>, Jeffrey B Arnold <jbarnold@MIT.EDU>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
+In-Reply-To: <alpine.DEB.2.00.0904211415520.10097@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0904211421260.18037@vinegar-pot.mit.edu>
+References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au> <alpine.DEB.1.10.0904191437250.31802@vinegar-pot.mit.edu> <alpine.DEB.2.00.0904211415520.10097@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick Mullaney <pmullaney@novell.com>
+On Tue, 21 Apr 2009, Steven Rostedt wrote:
 
-Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+> > However, Ksplice does its run-pre matching checks outside stop_machine, 
+> 
+> Does Ksplice use break points to do the modification? 
 
- drivers/vbus/devices/venet-tap.c |   35 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 34 insertions(+), 1 deletions(-)
+No, we use jump instructions.
 
-diff --git a/drivers/vbus/devices/venet-tap.c b/drivers/vbus/devices/venet-tap.c
-index 5e093a0..33ede4c 100644
---- a/drivers/vbus/devices/venet-tap.c
-+++ b/drivers/vbus/devices/venet-tap.c
-@@ -1214,6 +1214,39 @@ host_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
- static struct vbus_device_attribute attr_hmac =
- 	__ATTR_RO(host_mac);
- 
-+
-+static ssize_t
-+cmac_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+	      const char *buf, size_t count)
-+{
-+	struct venettap *priv = vdev_to_priv(dev);
-+	const char *pbuf = buf;
-+	unsigned int uc;
-+	int i;
-+
-+	/*
-+	 * Format 00:11:22:33:44:55
-+	 */
-+	if (count != 18)
-+		return -EINVAL;
-+
-+	for (i = 2; i < 17; i += 3) {
-+		if (pbuf[i] != ':')
-+			return -EINVAL;
-+	}
-+
-+	if (priv->vbus.opened)
-+		return -EINVAL;
-+
-+	for (i = 0; i < ETH_ALEN; i++) {
-+		sscanf(pbuf, "%x", &uc);
-+		pbuf = pbuf + 3;
-+		priv->cmac[i] = (u8)uc;
-+	}
-+
-+	return count;
-+}
-+
- static ssize_t
- client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
- 	 char *buf)
-@@ -1224,7 +1257,7 @@ client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
- }
- 
- static struct vbus_device_attribute attr_cmac =
--	__ATTR_RO(client_mac);
-+	__ATTR(client_mac, S_IRUGO | S_IWUSR, client_mac_show, cmac_store);
- 
- static ssize_t
- enabled_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
+> I'd be interested in knowing how Ksplice protects against the nastiness 
+> of code executing on one CPU that is being modified by another CPU.
 
+The run-pre matching checks, which verify that the pre-patch code the user 
+gave Ksplice matches the running kernel, occur before stop_machine with 
+the module_mutex held.  Then, inside stop_machine, we check that no thread 
+is in the process of executing a to-be-patched function before inserting 
+the jump instructions.  We need the transition from the old code to the 
+new code to be atomic (i.e. no old code can run after any new code is 
+run).  So, we need to check all the return addresses on each thread's 
+kernel stack as well as the instruction pointers.
+
+	-Tim Abbott
