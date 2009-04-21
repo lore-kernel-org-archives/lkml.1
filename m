@@ -1,101 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZDUM6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZDUNBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbZDUM6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 08:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZDUM6h
+	id S1754608AbZDUNBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 09:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZDUNBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 08:58:37 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:47384 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZDUM6h (ORCPT
+	Tue, 21 Apr 2009 09:01:24 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:60751 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbZDUNBX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 08:58:37 -0400
+	Tue, 21 Apr 2009 09:01:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=P+LsbQLD7bQSiA3Dq/6oaKuiR1hLOli3fvpTuaNnqAwOU0Fyd0IMmISGI+gHd3r9a2
-         LiLMD7KwGJF2wbErr+f8+UbiyrfifR2V7thh2dq5u64tTJQD3DLFnNG5PXS/5RnuyQCF
-         zPLBVCs1VTHRqUS/LKdXBdUt4pa29Lk1U8PVc=
-Date: Tue, 21 Apr 2009 14:58:30 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/7] io-throttle controller infrastructure
-Message-ID: <20090421125829.GD13699@linux>
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-5-git-send-email-righi.andrea@gmail.com> <20090420175904.GD6822@linux.vnet.ibm.com> <20090420212225.GA5819@linux> <20090421041524.GB6939@linux.vnet.ibm.com>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=JpO1wXT+ucBQnlhQuZuCMIT56RTreuNUNBgcMJF8ZB132goNqKcMBHj5tw5I8TveJE
+         03adbVGU0T5xKeIkyMLWdmMUI7sTUv4mhUtGnF21wnODsGSkwz4vx4r5vlSN+9L8uUKB
+         4I5b5bx6H6CT+35BaZVkI8dO559xbDyaBSP1w=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: =?iso-8859-15?q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Subject: Re: Quick question about libata and hdparm
+Date: Tue, 21 Apr 2009 14:59:26 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
+       linux-kernel@vger.kernel.org
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <20090420221955.2c71bd26@lxorguk.ukuu.org.uk> <20090421053258.GA18001@ime.usp.br>
+In-Reply-To: <20090421053258.GA18001@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421041524.GB6939@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904211459.26965.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 09:15:24PM -0700, Paul E. McKenney wrote:
-> > > How does the above lock relate to the iot->lock called out in the comment
-> > > headers in the earlier functions?  Hmmm...  Come to think of it, I don't
-> > > see an acquisition of iot->lock anywhere.
-> > > 
-> > > So, what is the story here?
+On Tuesday 21 April 2009 07:32:58 Rogério Brito wrote:
+> Hi Alan, Bart and Co.
+> 
+> On Apr 20 2009, Alan Cox wrote:
+> > > DISCLAIMER: I'm not handling this bugreport, this is best
+> > > done by pata_pdc202xx_old Maintainer or libata Maintainer.
 > > 
-> > As said before, only the comment in struct iothrottle is correct, we use
-> > cgroup_lock() to protect iot->list, so there's no need to introduce
-> > another lock inside struct iothrottle.
-> > 
-> > And the other comments about iot->lock must be fixed.
+> > Be that as it may thanks - thats well spotted and definitely a bug.
 > 
-> Sounds good!
+> Well, I just compiled the kernel both with libata and with the usual IDE
+> drivers.
 > 
-> So this code is compiled into the kernel only when cgroups are defined,
-> correct?  Otherwise, cgroup_lock() seems to be an empty function.
+> Unfortunately, it seems that Bart's patch isn't enough. OTOH, when I use
+> the older IDE drive, it seems to work OK, as the attached dmesgs show
+> (BTW, you may notice that there's something fishy with X, but that's
+> another story).
 
-Right, from init/Kconfig:
+Incremental patch (a certain theory to verify).
+---
+ drivers/ata/pata_pdc202xx_old.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-config CGROUP_IO_THROTTLE
-        bool "Enable cgroup I/O throttling"
-        depends on CGROUPS && RESOURCE_COUNTERS && EXPERIMENTAL
-...
-
-> > > > +int iothrottle_set_page_owner(struct page *page, struct mm_struct *mm)
-> > > > +{
-> > > > +	struct iothrottle *iot;
-> > > > +	unsigned short id = 0;
-> > > > +
-> > > > +	if (iothrottle_disabled())
-> > > > +		return 0;
-> > > > +	if (!mm)
-> > > > +		goto out;
-> > > > +	rcu_read_lock();
-> > > > +	iot = task_to_iothrottle(rcu_dereference(mm->owner));
-> > > 
-> > > Given that task_to_iothrottle() calls task_subsys_state(), which contains
-> > > an rcu_dereference(), why is the rcu_dereference() above required?
-> > > (There might well be a good reason, just cannot see it right offhand.)
-> > 
-> > The first rcu_dereference() is required to safely get a task_struct from
-> > mm_struct. The second rcu_dereference() inside task_to_iothrottle() is
-> > required to safely get the struct iothrottle from task_struct.
-> 
-> Why not put the rcu_dereference() down inside task_to_iothrottle()?
-> 
-
-mmmh... it is needed only when task_struct is taken from mm->owner,
-task_to_iothrottle(current) for example works fine without the
-rcu_dereference(current).
-
--Andrea
+Index: b/drivers/ata/pata_pdc202xx_old.c
+===================================================================
+--- a/drivers/ata/pata_pdc202xx_old.c
++++ b/drivers/ata/pata_pdc202xx_old.c
+@@ -163,9 +163,11 @@ static void pdc2026x_bmdma_start(struct 
+ 	else
+ 		iowrite8(ioread8(clock) & ~sel66, clock);
+ 
++	/* FIXME: this thrashes internal UDMA timings previously set by
++	   controller on SET FEATURES - XFER MODE command "snooping" */
+ 	/* The DMA clocks may have been trashed by a reset. FIXME: make conditional
+ 	   and move to qc_issue ? */
+-	pdc202xx_set_dmamode(ap, qc->dev);
++	/* pdc202xx_set_dmamode(ap, qc->dev); */
+ 
+ 	/* Cases the state machine will not complete correctly without help */
+ 	if ((tf->flags & ATA_TFLAG_LBA48) ||  tf->protocol == ATAPI_PROT_DMA) {
