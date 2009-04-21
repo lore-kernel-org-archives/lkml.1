@@ -1,124 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZDUKKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZDUKL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbZDUKKK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbZDUKJx
+	id S1757238AbZDUKL3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZDUKLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:09:53 -0400
-Received: from dns.vivotek.com ([211.21.25.250]:32651 "EHLO edge.vivotek.tw"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755231AbZDUKJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:09:52 -0400
-From: <jon.lin@vatics.com>
-To: <jianjun@zeuux.org>, <davem@davemloft.net>
-CC: <dada1@cosmosbay.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Date: Tue, 21 Apr 2009 18:09:46 +0800
-Subject: RE: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-Thread-Topic: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-Thread-Index: AcnCZyHOUVlywQYBTzmWYZApFxJICwAAZlWg
-Message-ID: <0E04AEADD178614A86F3017CC5FA693B4959924D17@MS.vivotek.tw>
-References: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw>
- <20090421.015235.23457775.davem@davemloft.net> <20090421094825.GA6752@ubuntu>
-In-Reply-To: <20090421094825.GA6752@ubuntu>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: zh-TW, en-US
-Content-Type: text/plain; charset="big5"
+	Tue, 21 Apr 2009 06:11:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51590 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752943AbZDUKLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:11:18 -0400
+Date: Tue, 21 Apr 2009 11:11:15 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 13/25] Inline __rmqueue_smallest()
+Message-ID: <20090421101115.GP12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-14-git-send-email-mel@csn.ul.ie> <20090421185025.F156.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090421185025.F156.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3LAAMqu026652
 
-Dear Sirs,
+On Tue, Apr 21, 2009 at 06:52:28PM +0900, KOSAKI Motohiro wrote:
+> > Inline __rmqueue_smallest by altering flow very slightly so that there
+> > is only one call site. This allows the function to be inlined without
+> > additional text bloat.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> > ---
+> >  mm/page_alloc.c |   23 ++++++++++++++++++-----
+> >  1 files changed, 18 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index b13fc29..91a2cdb 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -665,7 +665,8 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+> >   * Go through the free lists for the given migratetype and remove
+> >   * the smallest available page from the freelists
+> >   */
+> > -static struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
+> > +static inline
+> > +struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
+> >  						int migratetype)
+> 
+> "only one caller" is one of keypoint of this patch, I think.
+> so, commenting is better? but it isn't blocking reason at all.
+> 
+> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
 
-I am so sorry for my clumsiness!
-It is so embarrassed that I can't submit a valid patch...
-Thank you all for your incredible patience.
-I will try to use mail command in my Linux box to submit it again.
-Sorry for these stupid failures.
+Is this better?
 
-Regards
-  Jonathan
+Inline __rmqueue_smallest by altering flow very slightly so that there
+is only one call site. Because there is only one call-site, this
+function can then be inlined without causing text bloat.
 
+I don't see a need to add a comment into the function itself as I don't
+think it would help any.
 
------Original Message-----
-From: Amos Kong [mailto:jianjun@zeuux.org]
-Sent: Tuesday, April 21, 2009 5:48 PM
-To: David Miller
-Cc: Jon.Lin(ªL©v¼w); dada1@cosmosbay.com; netdev@vger.kernel.org; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-
-...
->> Unfortunately, this address is used by Linux kernel. So kernel panics.
->> This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
->>
->> Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
->
->This patch does not apply, it was corrupted by your email client.
->
->I even think it has MS-DOS style newlines in it :-(
-
-Another new patch :)
-
-
- While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
- In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA
- buffer address. In this interval where RX was enabled and DMA buffer address is not yet set
- up, any incoming broadcast packet would be send to a strange physical address:
- 0x003e8800 which is the default value of DMA buffer address.
- Unfortunately, this address is used by Linux kernel. So kernel panics.
- This patch fix it by setting up DMA buffer address before RX enabled and everything is fine
- even under broadcast packets attack.
-
-Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
-Signed-off-by: Amos Kong <jianjun@zeuux.org>
-
----
- drivers/net/8139too.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-index 29df398..1fc4543 100644
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -1383,6 +1383,11 @@ static void rtl8139_hw_start (struct net_device *dev)
-        RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
-        RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
-
-+       tp->cur_rx = 0;
-+
-+       /* init Rx ring buffer DMA address */
-+       RTL_W32_F (RxBuf, tp->rx_ring_dma);
-+
-        /* Must enable Tx/Rx before setting transfer thresholds! */
-        RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
-
-@@ -1390,8 +1395,6 @@ static void rtl8139_hw_start (struct net_device *dev)
-        RTL_W32 (RxConfig, tp->rx_config);
-        RTL_W32 (TxConfig, rtl8139_tx_config);
-
--       tp->cur_rx = 0;
--
-        rtl_check_media (dev, 1);
-
-        if (tp->chipset >= CH_8139B) {
-@@ -1406,9 +1409,6 @@ static void rtl8139_hw_start (struct net_device *dev)
-        /* Lock Config[01234] and BMCR register writes */
-        RTL_W8 (Cfg9346, Cfg9346_Lock);
-
--       /* init Rx ring buffer DMA address */
--       RTL_W32_F (RxBuf, tp->rx_ring_dma);
--
-        /* init Tx buffer DMA addresses */
-        for (i = 0; i < NUM_TX_DESC; i++)
-                RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] - tp->tx_bufs));
---
-1.5.6.3
-
-
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
