@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZDUKXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbZDUKZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbZDUKXn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZDUKXd
+	id S1756312AbZDUKZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZDUKZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:23:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37392 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbZDUKXc (ORCPT
+	Tue, 21 Apr 2009 06:25:15 -0400
+Received: from cobra.ee.ntu.edu.tw ([140.112.42.65]:50144 "EHLO
+	cobra.ee.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbZDUKZO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:23:32 -0400
-Date: Tue, 21 Apr 2009 12:26:57 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tim Abbott <tabbott@MIT.EDU>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH v2 0/4] Add support for compiling with -ffunction-sections -fdata-sections
-Message-ID: <20090421102657.GA14687@one.firstfloor.org>
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain> <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain> <20090420201826.7c1f7f06@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420201826.7c1f7f06@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 21 Apr 2009 06:25:14 -0400
+X-Greylist: delayed 461 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Apr 2009 06:25:14 EDT
+To: davem@davemloft.net
+Subject: [PATCH 2.6.29.1 1/1]8139too:fix HW initial flow
+Cc: dada1@cosmosbay.com, jon.lin@vatics.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, tzungder@cobra.ee.ntu.edu.tw
+Message-Id: <20090421101341.3ECFD1380B4@cobra.ee.ntu.edu.tw>
+Date: Tue, 21 Apr 2009 18:13:41 +0800 (CST)
+From: tzungder@cobra.ee.ntu.edu.tw (User Tzungder)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> we can probably drop a ton of ifdefs...
+From:Jonathan Lin <jon.lin@vatics.com>
 
-That would require always forcing it to on.
+While ifconfig eth0 up kernel call open() of 8139 driver(8139too.c).
+In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA buffer address. In this interval where RX was enabled and DMA buffer address is not yet set up, any incoming broadcast packet would be send to a strange physical address: 0x003e8800 which is the default value of DMA buffer address.
+Unfortunately, this address is used by Linux kernel. So kernel panics.
+This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
 
-> an alternative approach would be to have a special build target that
-> uses this, but makes a 2nd vmlinux, and then runs a diff on the symbols
-> against the regular one... and finds which functions got dropped.
-> Some patient soul can then go about and stick in ifdefs and stuff...
+Signed-off-by:Jonathan Lin <jon.lin@vatics.com>
 
-I bet that would result in horrible looking code. If the toolchain
-based approach can be made to work (and from the reports of people
-who tried it it sounds like it can) that would be vastly preferable.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--- linux-2.6.29.1/drivers/net/8139too.c.orig	2009-04-20 20:46:21.000000000 +0800
++++ linux-2.6.29.1/drivers/net/8139too.c	2009-04-20 20:58:39.000000000 +0800
+@@ -1382,6 +1382,10 @@ static void rtl8139_hw_start (struct net
+ 	RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
+ 	RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
+ 
++	tp->cur_rx = 0;
++	/* init Rx ring buffer DMA address BEFORE Rx enabled*/
++	RTL_W32_F (RxBuf, tp->rx_ring_dma);
++	
+ 	/* Must enable Tx/Rx before setting transfer thresholds! */
+ 	RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
+ 
+@@ -1389,8 +1393,6 @@ static void rtl8139_hw_start (struct net
+ 	RTL_W32 (RxConfig, tp->rx_config);
+ 	RTL_W32 (TxConfig, rtl8139_tx_config);
+ 
+-	tp->cur_rx = 0;
+-
+ 	rtl_check_media (dev, 1);
+ 
+ 	if (tp->chipset >= CH_8139B) {
+@@ -1405,9 +1407,6 @@ static void rtl8139_hw_start (struct net
+ 	/* Lock Config[01234] and BMCR register writes */
+ 	RTL_W8 (Cfg9346, Cfg9346_Lock);
+ 
+-	/* init Rx ring buffer DMA address */
+-	RTL_W32_F (RxBuf, tp->rx_ring_dma);
+-
+ 	/* init Tx buffer DMA addresses */
+ 	for (i = 0; i < NUM_TX_DESC; i++)
+ 		RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] - tp->tx_bufs));
