@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbZDUVQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbZDUVRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758427AbZDUVQj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 17:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZDUVQM
+	id S1758364AbZDUVRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 17:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZDUVRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 17:16:12 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:46833 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752486AbZDUVQL (ORCPT
+	Tue, 21 Apr 2009 17:17:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48489 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755379AbZDUVRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 17:16:11 -0400
-Date: Tue, 21 Apr 2009 17:15:59 -0400
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: David Woodhouse <dwmw2@infradead.org>, hooanon05@yahoo.co.jp,
-       hch@infradead.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH v2] Fix i_mutex handling in nfsd readdir
-Message-ID: <20090421211559.GA27411@fieldses.org>
-References: <1239960739.3428.33.camel@macbook.infradead.org> <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk> <20090417225306.GO26366@ZenIV.linux.org.uk> <1240013753.21423.86.camel@macbook.infradead.org> <1240144069.3589.156.camel@macbook.infradead.org> <20090419205154.GA18110@fieldses.org> <20090420195008.GE1823@fieldses.org> <20090421002934.GB8633@ZenIV.linux.org.uk>
+	Tue, 21 Apr 2009 17:17:10 -0400
+Message-ID: <49EE37AF.4020507@zytor.com>
+Date: Tue, 21 Apr 2009 14:16:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421002934.GB8633@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Roland Dreier <rdreier@cisco.com>
+CC: Hitoshi Mitake <h.mitake@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+References: <alpine.LFD.2.00.0904191543530.11789@localhost.localdomain>	<adaab6c1h7c.fsf@cisco.com> <20090419214602.GA21527@elte.hu>	<adaws9gywkd.fsf@cisco.com> <49EBCDC0.1020001@zytor.com>	<20090420105304.GC6670@elte.hu>	<a6b9f31a0904200747x7e28a4e3if0be4fc0d87241c9@mail.gmail.com>	<20090420160332.GB9689@elte.hu>	<a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>	<49EDE9E9.8090905@zytor.com> <adamyaavst5.fsf@cisco.com>	<49EE0013.6010008@zytor.com> <adaab69x6nd.fsf@cisco.com>	<49EE19E0.8040405@zytor.com> <adaocupvhid.fsf@cisco.com>
+In-Reply-To: <adaocupvhid.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 01:29:34AM +0100, Al Viro wrote:
-> > Sorry for the delay.  Simpler might be just to drop and reacquire the
-> > mutex each time through nfsd4_list_rec_dir()'s loop, but I'd just as
-> > soon rework the called functions to expect the mutex be held (and get
-> > rid of the unused, probably fragile, clear_clid_dir() in the process).
-> > 
-> > So the following could be folded in to your patch.
-> > 
-> > I tested the combined patch over 2.6.30-rc2.  I also tested 2.6.29 +
-> > 05f4f678 + the combined patch.  Both look  OK.  Feel free to add a
-> > tested-by or acked-by for "J. Bruce Fields" <bfields@citi.umich.edu> as
-> > appropriate.  Or happy to add a s-o-b and shepherd it along myself if
-> > it's easier....
+Roland Dreier wrote:
 > 
-> I can take both, but if you prefer to have that one go through nfs tree -
-> fine by me.
+> To be honest I think the status quo ante was not really that bad.
 > 
-> I'm going to push a queue into for-next in a couple of hours; running build
-> tests right now.  Patch from dwmw2 is in there...
 
-However it makes it there is fine by me; I'll wait for one of you to
-take care of it.
+That I have to vehemently disagree with.
 
---b.
+	-hpa
+
