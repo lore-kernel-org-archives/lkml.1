@@ -1,42 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZDUIxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZDUIyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbZDUIxD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:53:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZDUIwo
+	id S1756194AbZDUIyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZDUIx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:52:44 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44205
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755745AbZDUIwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:52:43 -0400
-Date: Tue, 21 Apr 2009 01:52:35 -0700 (PDT)
-Message-Id: <20090421.015235.23457775.davem@davemloft.net>
-To: jon.lin@vatics.com
-Cc: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw>
-References: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 21 Apr 2009 04:53:58 -0400
+Received: from cmpxchg.org ([85.214.51.133]:48060 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754351AbZDUIx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:53:57 -0400
+Date: Tue, 21 Apr 2009 10:52:31 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 3/3][rfc] vmscan: batched swap slot allocation
+Message-ID: <20090421085231.GB2527@cmpxchg.org>
+References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org> <1240259085-25872-3-git-send-email-hannes@cmpxchg.org> <20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421095857.b989ce44.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: <jon.lin@vatics.com>
-Date: Mon, 20 Apr 2009 20:58:01 +0800
-
-> While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
-> In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA buffer address. In this interval where RX was enabled and DMA buffer address is not yet set up, any incoming broadcast packet would be send to a strange physical address:
-> 0x003e8800 which is the default value of DMA buffer address.
-> Unfortunately, this address is used by Linux kernel. So kernel panics.
-> This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
+On Tue, Apr 21, 2009 at 09:58:57AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Mon, 20 Apr 2009 22:24:45 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+> > Every swap slot allocation tries to be subsequent to the previous one
+> > to help keeping the LRU order of anon pages intact when they are
+> > swapped out.
+> > 
+> > With an increasing number of concurrent reclaimers, the average
+> > distance between two subsequent slot allocations of one reclaimer
+> > increases as well.  The contiguous LRU list chunks each reclaimer
+> > swaps out get 'multiplexed' on the swap space as they allocate the
+> > slots concurrently.
+> > 
+> > 	2 processes isolating 15 pages each and allocating swap slots
+> > 	concurrently:
+> > 
+> > 	#0			#1
+> > 
+> > 	page 0 slot 0		page 15 slot 1
+> > 	page 1 slot 2		page 16 slot 3
+> > 	page 2 slot 4		page 17 slot 5
+> > 	...
+> > 
+> > 	-> average slot distance of 2
+> > 
+> > All reclaimers being equally fast, this becomes a problem when the
+> > total number of concurrent reclaimers gets so high that even equal
+> > distribution makes the average distance between the slots of one
+> > reclaimer too wide for optimistic swap-in to compensate.
+> > 
+> > But right now, one reclaimer can take much longer than another one
+> > because its pages are mapped into more page tables and it has thus
+> > more work to do and the faster reclaimer will allocate multiple swap
+> > slots between two slot allocations of the slower one.
+> > 
+> > This patch makes shrink_page_list() allocate swap slots in batches,
+> > collecting all the anonymous memory pages in a list without
+> > rescheduling and actual reclaim in between.  And only after all anon
+> > pages are swap cached, unmap and write-out starts for them.
+> > 
+> > While this does not fix the fundamental issue of slot distribution
+> > increasing with reclaimers, it mitigates the problem by balancing the
+> > resulting fragmentation equally between the allocators.
+> > 
+> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > Cc: Rik van Riel <riel@redhat.com>
+> > Cc: Hugh Dickins <hugh@veritas.com>
+> > ---
+> >  mm/vmscan.c |   49 +++++++++++++++++++++++++++++++++++++++++--------
+> >  1 files changed, 41 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 70092fa..b3823fe 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -592,24 +592,42 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+> >  					enum pageout_io sync_writeback)
+> >  {
+> >  	LIST_HEAD(ret_pages);
+> > +	LIST_HEAD(swap_pages);
+> >  	struct pagevec freed_pvec;
+> > -	int pgactivate = 0;
+> > +	int pgactivate = 0, restart = 0;
+> >  	unsigned long nr_reclaimed = 0;
+> >  
+> >  	cond_resched();
+> >  
+> >  	pagevec_init(&freed_pvec, 1);
+> > +restart:
+> >  	while (!list_empty(page_list)) {
+> >  		struct address_space *mapping;
+> >  		struct page *page;
+> >  		int may_enter_fs;
+> >  		int referenced;
+> >  
+> > -		cond_resched();
+> > +		if (list_empty(&swap_pages))
+> > +			cond_resched();
+> >  
+> Why this ?
 
-This patch does not apply, it was corrupted by your email client.
+It shouldn't schedule anymore when it's allocated the first swap slot.
+Another reclaimer could e.g. sleep on the cond_resched() before the
+loop and when we schedule while having swap slots allocated, we might
+continue further allocations multiple slots ahead.
 
-I even think it has MS-DOS style newlines in it :-(
+> >  		page = lru_to_page(page_list);
+> >  		list_del(&page->lru);
+> >  
+> > +		if (restart) {
+> > +			/*
+> > +			 * We are allowed to do IO when we restart for
+> > +			 * swap pages.
+> > +			 */
+> > +			may_enter_fs = 1;
+> > +			/*
+> > +			 * Referenced pages will be sorted out by
+> > +			 * try_to_unmap() and unmapped (anon!) pages
+> > +			 * are not to be referenced anymore.
+> > +			 */
+> > +			referenced = 0;
+> > +			goto reclaim;
+> > +		}
+> > +
+> >  		if (!trylock_page(page))
+> >  			goto keep;
+> >  
+> Keeping multiple pages locked while they stay on private list ? 
+
+Yeah, it's a bit suboptimal but I don't see a way around it.
+
+> BTW, isn't it better to add "allocate multiple swap space at once" function
+> like
+>  - void get_swap_pages(nr, swp_entry_array[])
+> ? "nr" will not be bigger than SWAP_CLUSTER_MAX.
+
+It will sometimes be, see __zone_reclaim().
+
+I had such a function once.  The interesting part is: how and when do
+you call it?  If you drop the page lock in between, you need to redo
+the checks for unevictability and whether the page has become mapped
+etc.
+
+You also need to have the pages in swap cache as soon as possible or
+optimistic swap-in will 'steal' your swap slots.  See add_to_swap()
+when the cache radix tree says -EEXIST.
