@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZDUQyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZDUQzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbZDUQyB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZDUQwn
+	id S1756709AbZDUQzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZDUQzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:52:43 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:19766 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757195AbZDUQw2 (ORCPT
+	Tue, 21 Apr 2009 12:55:33 -0400
+Received: from langos.euedge.com ([209.190.22.130]:60846 "EHLO
+	langos.euedge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752379AbZDUQzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:52:28 -0400
-X-IronPort-AV: E=Sophos;i="4.40,225,1238976000"; 
-   d="scan'208";a="290188159"
-Date: Tue, 21 Apr 2009 09:52:14 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jamie Lokier <jamie@shareable.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421165214.GB8251@cuplxvomd02.corp.sa.net>
-References: <20090421140533.GA6375@shareable.org> <Pine.LNX.4.44L0.0904211026080.2981-100000@iolanthe.rowland.org>
+	Tue, 21 Apr 2009 12:55:32 -0400
+Message-ID: <49EDFA80.9060305@maroy.hu>
+Date: Tue, 21 Apr 2009 18:55:28 +0200
+From: =?UTF-8?B?TWFyw7N5IMOBa29z?= <akos@maroy.hu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0904211026080.2981-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: cdc-acm driver hangs on poll() call - 2.6.27, works on 2.6.24
+References: <49EDC44D.90106@maroy.hu> <200904211526.34199.oliver@neukum.org> <49EDCB0F.3040802@maroy.hu> <200904211539.23671.oliver@neukum.org>
+In-Reply-To: <200904211539.23671.oliver@neukum.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If somebody would like to suggest a programming interface (a waitqueue 
-> perhaps?) by which the USB hub driver could send a notification when it 
-> becomes idle, I could implement it.
+Dear Olvier,
 
-I actually started the USB console stuff with exactly this approach, but
-switched to the approach that's out there. A minor drawback, which is
-probably obvious, is that you actually wait for some interval without
-getting anything to do before you think things are idle.  But a bigger
-drawback is that you lose the ability to chose appropriate intervals for
-different classes of devices.
+>>> Could you get dmesg of 2.6.2(7/9) with CONFIG_USB_DEBUG and debug
+>>> activated in drivers/usb/class/cdc-acm.c ?
 
-So far, there appear to be three possible USB boot devices: consoles, network
-devices, and boot devices. A system may not have all of these and so may not
-need to wait as long as a system with all of them. One of my goals is to
-preserve as much of the reduction in boot time as possible, even on systems
-that use USB devices that may or may not be plugged in.
+FYI, I compiled 2.6.29.1, and it doesn't work with this kernel either.
 
-> Alan Stern
+I'll compiple with the above flag, and will provide output. should I
+just paste dmesg for when the cdc-acm module is loaded?
 
-David VomLehn
+
+Akos
+
