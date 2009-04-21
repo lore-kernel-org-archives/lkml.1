@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZDUOVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZDUOXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbZDUOVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZDUOVn
+	id S1752541AbZDUOXO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZDUOW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:21:43 -0400
-Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:29138 "HELO
-	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750975AbZDUOVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:21:42 -0400
-Message-ID: <547506.26789.qm@web32603.mail.mud.yahoo.com>
-X-YMail-OSG: ZlgJZ_EVM1kJ0PxUj9h4Hl8I_gNp_fei1i6KXBhiEvclXh.1Yrv2OuLcyv33ZRx4aB8LLxf11wOKsnirtxfYf0oiK04gIG1qrf2moCFaslvFrQ8vrltOBp5DlFuEA_DqXnW71WiProWlfF90KzNiuAQM3S7KmOdalFg.1FdQhFwMdQ04Z3zmkjY15o1epuUmWS4lXzYMPtLyq2qEiIqEMOehm4EalF3h5Cc0y8xgIXCH_s8weT6.NxIdo2vsypgEBoEjCYEksUNfbQBXkp1Qclg_bENlvoJv1Ew7H_gL_JWPeRk6vbUJMx6KO6PuIEBnk8972mcEzHKl43It3sYuOYef
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
-Date: Tue, 21 Apr 2009 07:21:41 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Booting 2.6.30-rc2-git7 very slow
-To: linux-kernel@vger.kernel.org
+	Tue, 21 Apr 2009 10:22:56 -0400
+Received: from xenotime.net ([72.52.64.118]:38255 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751124AbZDUOWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:22:55 -0400
+Message-ID: <49EDD6BD.1010006@xenotime.net>
+Date: Tue, 21 Apr 2009 07:22:53 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: lkml <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
+Subject: [PATCH] platform: fix kernel-doc warnings
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hi, [please CC me on replies, as I am not subscribed]
+Fix function parameter notation in platform.c;
+fixes kernel-doc warnings.
 
- booting  2.6.30-rc2-git7 on a HP/DL380G3 (x86_64, RHEL4.3, 64 bit userspace) is much slower that it used to be. It seems I run into timeouts when [trying to] load intel and tg3 microcodes:
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/base/platform.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-[   14.478892] platform microcode: firmware: requesting intel-ucode/0f-04-0a
-[   74.476741] platform microcode: firmware: requesting intel-ucode/0f-04-0a
-[  134.476638] platform microcode: firmware: requesting intel-ucode/0f-04-0a
-[  194.476637] platform microcode: firmware: requesting intel-ucode/0f-04-0a
-[  254.476493] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-[  254.718489] Microcode Update Driver: v2.00 removed.
-
- So, we see 60 seconds for eaoch of the CPUs
-
-[  255.273426] tg3 0000:03:01.0: PME# disabled
-[  257.833769] tg3: eth0: Link is up at 1000 Mbps, full duplex.
-[  257.833775] tg3: eth0: Flow control is off for TX and off for RX.
-[  269.643973] tg3 0000:03:01.1: firmware: requesting tigon/tg3_tso.bin
-[  329.640456] eth1: Failed to load firmware "tigon/tg3_tso.bin"
-[  329.640463] eth1: TSO capability disabled.
-[  329.640487] tg3 0000:03:01.1: PME# disabled
-[  333.081753] tg3: eth1: Link is up at 1000 Mbps, full duplex.
-[  333.081759] tg3: eth1: Flow control is off for TX and off for RX.
-
- We see 60 seconds for eth1, complaining about a failed firmware load.
-/lib/firmware/tigon/tg3_tso.bin does exist and is from the current
-build.
-
+--- linux-2.6.30-rc2-git6.orig/drivers/base/platform.c
++++ linux-2.6.30-rc2-git6/drivers/base/platform.c
+@@ -1028,7 +1028,7 @@ static __initdata LIST_HEAD(early_platfo
  
-So, any ideas? Config is attached
-
-Cheers
-Martin
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
-
+ /**
+  * early_platform_driver_register
+- * @edrv: early_platform driver structure
++ * @epdrv: early_platform driver structure
+  * @buf: string passed from early_param()
+  */
+ int __init early_platform_driver_register(struct early_platform_driver *epdrv,
+@@ -1112,7 +1112,7 @@ void __init early_platform_driver_regist
+ 
+ /**
+  * early_platform_match
+- * @edrv: early platform driver structure
++ * @epdrv: early platform driver structure
+  * @id: id to match against
+  */
+ static  __init struct platform_device *
+@@ -1130,7 +1130,7 @@ early_platform_match(struct early_platfo
+ 
+ /**
+  * early_platform_left
+- * @edrv: early platform driver structure
++ * @epdrv: early platform driver structure
+  * @id: return true if id or above exists
+  */
+ static  __init int early_platform_left(struct early_platform_driver *epdrv,
