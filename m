@@ -1,262 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZDUIjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbZDUIli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbZDUIjk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZDUIjb
+	id S1754828AbZDUIli (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZDUIl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:39:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46735 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZDUIja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:39:30 -0400
-Subject: [PATCH] x86: unify noexec handling
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org
-Date: Tue, 21 Apr 2009 11:39:27 +0300
-Message-Id: <1240303167.771.69.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Tue, 21 Apr 2009 04:41:29 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36157 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751899AbZDUIl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:41:28 -0400
+Date: Tue, 21 Apr 2009 09:41:24 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 11/25] Calculate the cold parameter for allocation only
+	once
+Message-ID: <20090421084124.GD12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-12-git-send-email-mel@csn.ul.ie> <1240299805.771.46.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1240299805.771.46.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, Apr 21, 2009 at 10:43:25AM +0300, Pekka Enberg wrote:
+> On Mon, 2009-04-20 at 23:19 +0100, Mel Gorman wrote:
+> > GFP mask is checked for __GFP_COLD has been specified when deciding which
+> > end of the PCP lists to use. However, it is happening multiple times per
+> > allocation, at least once per zone traversed. Calculate it once.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  mm/page_alloc.c |   35 ++++++++++++++++++-----------------
+> >  1 files changed, 18 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 1506cd5..51e1ded 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1066,11 +1066,10 @@ void split_page(struct page *page, unsigned int order)
+> >   */
+> >  static struct page *buffered_rmqueue(struct zone *preferred_zone,
+> >  			struct zone *zone, int order, gfp_t gfp_flags,
+> > -			int migratetype)
+> > +			int migratetype, int cold)
+> >  {
+> >  	unsigned long flags;
+> >  	struct page *page;
+> > -	int cold = !!(gfp_flags & __GFP_COLD);
+> >  	int cpu;
+> >  
+> >  again:
+> 
+> Is this a measurable win? And does gcc inline all this nicely or does
+> this change actually increase kernel text size?
+> 
 
-This patch unifies noexec handling on 32-bit and 64-bit.
+It gets inlined later so it shouldn't affect code size as part of the overall
+patchset although it probably adds a small bit here. It showed up on profiles
+as a place where cache misses were hitting hard although it's probable that
+the misses are being incurred anyway but not as obvious due to sampling.
 
-[ Impact: cleanup ]
-[ mingo@elte.hu: build fix ]
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/x86/include/asm/pgtable_types.h |    1 -
- arch/x86/mm/init.c                   |   67 ++++++++++++++++++++++++++++++++--
- arch/x86/mm/init_32.c                |   52 --------------------------
- arch/x86/mm/init_64.c                |   33 -----------------
- 4 files changed, 63 insertions(+), 90 deletions(-)
+The win overall is small but it's the same mask that is applied to gfp_mask
+over and over again and could be considered a loop invariant in a weird sort
+of way.
 
-diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
-index b8238dc..4d258ad 100644
---- a/arch/x86/include/asm/pgtable_types.h
-+++ b/arch/x86/include/asm/pgtable_types.h
-@@ -273,7 +273,6 @@ typedef struct page *pgtable_t;
- 
- extern pteval_t __supported_pte_mask;
- extern int nx_enabled;
--extern void set_nx(void);
- 
- #define pgprot_writecombine	pgprot_writecombine
- extern pgprot_t pgprot_writecombine(pgprot_t prot);
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index fd3da1d..fedde53 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -22,6 +22,69 @@ int direct_gbpages
- #endif
- ;
- 
-+int nx_enabled;
-+
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+static int disable_nx __cpuinitdata;
-+
-+/*
-+ * noexec = on|off
-+ *
-+ * Control non-executable mappings for processes.
-+ *
-+ * on      Enable
-+ * off     Disable
-+ */
-+static int __init noexec_setup(char *str)
-+{
-+	if (!str)
-+		return -EINVAL;
-+	if (!strncmp(str, "on", 2)) {
-+		__supported_pte_mask |= _PAGE_NX;
-+		disable_nx = 0;
-+	} else if (!strncmp(str, "off", 3)) {
-+		disable_nx = 1;
-+		__supported_pte_mask &= ~_PAGE_NX;
-+	}
-+	return 0;
-+}
-+early_param("noexec", noexec_setup);
-+#endif
-+
-+#ifdef CONFIG_X86_PAE
-+static void __init set_nx(void)
-+{
-+	unsigned int v[4], l, h;
-+
-+	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
-+		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
-+
-+		if ((v[3] & (1 << 20)) && !disable_nx) {
-+			rdmsr(MSR_EFER, l, h);
-+			l |= EFER_NX;
-+			wrmsr(MSR_EFER, l, h);
-+			nx_enabled = 1;
-+			__supported_pte_mask |= _PAGE_NX;
-+		}
-+	}
-+}
-+#else
-+static inline void set_nx(void)
-+{
-+}
-+#endif
-+
-+#ifdef CONFIG_X86_64
-+void __cpuinit check_efer(void)
-+{
-+	unsigned long efer;
-+
-+	rdmsrl(MSR_EFER, efer);
-+	if (!(efer & EFER_NX) || disable_nx)
-+		__supported_pte_mask &= ~_PAGE_NX;
-+}
-+#endif
-+
- static void __init find_early_table_space(unsigned long end, int use_pse,
- 					  int use_gbpages)
- {
-@@ -158,12 +221,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	use_gbpages = direct_gbpages;
- #endif
- 
--#ifdef CONFIG_X86_32
--#ifdef CONFIG_X86_PAE
- 	set_nx();
- 	if (nx_enabled)
- 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
--#endif
- 
- 	/* Enable PSE if available */
- 	if (cpu_has_pse)
-@@ -174,7 +234,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 		set_in_cr4(X86_CR4_PGE);
- 		__supported_pte_mask |= _PAGE_GLOBAL;
- 	}
--#endif
- 
- 	if (use_gbpages)
- 		page_size_mask |= 1 << PG_LEVEL_1G;
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 749559e..2b27120 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -587,61 +587,9 @@ void zap_low_mappings(void)
- 	flush_tlb_all();
- }
- 
--int nx_enabled;
--
- pteval_t __supported_pte_mask __read_mostly = ~(_PAGE_NX | _PAGE_GLOBAL | _PAGE_IOMAP);
- EXPORT_SYMBOL_GPL(__supported_pte_mask);
- 
--#ifdef CONFIG_X86_PAE
--
--static int disable_nx __initdata;
--
--/*
-- * noexec = on|off
-- *
-- * Control non executable mappings.
-- *
-- * on      Enable
-- * off     Disable
-- */
--static int __init noexec_setup(char *str)
--{
--	if (!str || !strcmp(str, "on")) {
--		if (cpu_has_nx) {
--			__supported_pte_mask |= _PAGE_NX;
--			disable_nx = 0;
--		}
--	} else {
--		if (!strcmp(str, "off")) {
--			disable_nx = 1;
--			__supported_pte_mask &= ~_PAGE_NX;
--		} else {
--			return -EINVAL;
--		}
--	}
--
--	return 0;
--}
--early_param("noexec", noexec_setup);
--
--void __init set_nx(void)
--{
--	unsigned int v[4], l, h;
--
--	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
--		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
--
--		if ((v[3] & (1 << 20)) && !disable_nx) {
--			rdmsr(MSR_EFER, l, h);
--			l |= EFER_NX;
--			wrmsr(MSR_EFER, l, h);
--			nx_enabled = 1;
--			__supported_pte_mask |= _PAGE_NX;
--		}
--	}
--}
--#endif
--
- /* user-defined highmem size */
- static unsigned int highmem_pages = -1;
- 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1753e80..a4e7846 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -85,39 +85,6 @@ early_param("gbpages", parse_direct_gbpages_on);
- pteval_t __supported_pte_mask __read_mostly = ~_PAGE_IOMAP;
- EXPORT_SYMBOL_GPL(__supported_pte_mask);
- 
--static int disable_nx __cpuinitdata;
--
--/*
-- * noexec=on|off
-- * Control non-executable mappings for 64-bit processes.
-- *
-- * on	Enable (default)
-- * off	Disable
-- */
--static int __init nonx_setup(char *str)
--{
--	if (!str)
--		return -EINVAL;
--	if (!strncmp(str, "on", 2)) {
--		__supported_pte_mask |= _PAGE_NX;
--		disable_nx = 0;
--	} else if (!strncmp(str, "off", 3)) {
--		disable_nx = 1;
--		__supported_pte_mask &= ~_PAGE_NX;
--	}
--	return 0;
--}
--early_param("noexec", nonx_setup);
--
--void __cpuinit check_efer(void)
--{
--	unsigned long efer;
--
--	rdmsrl(MSR_EFER, efer);
--	if (!(efer & EFER_NX) || disable_nx)
--		__supported_pte_mask &= ~_PAGE_NX;
--}
--
- int force_personality32;
- 
- /*
 -- 
-1.5.6.3
-
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
