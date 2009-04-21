@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751192AbZDUGf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbZDUGhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751192AbZDUGf5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 02:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZDUGfq
+	id S1753507AbZDUGhl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 02:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZDUGhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 02:35:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60601 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbZDUGfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 02:35:45 -0400
-Date: Tue, 21 Apr 2009 08:35:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jon Hunter <jon-hunter@ti.com>, Thomas Gleixner <tglx@linutronix.de>,
-       John Stultz <johnstul@us.ibm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep for
-	more than 2.15 seconds
-Message-ID: <20090421063523.GA8020@elte.hu>
-References: <49ECE615.2010800@ti.com>
+	Tue, 21 Apr 2009 02:37:31 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52669 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbZDUGha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 02:37:30 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 06/25] Move check for disabled anti-fragmentation out of fastpath
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-7-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-7-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421153702.F12D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49ECE615.2010800@ti.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 15:37:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> @@ -50,9 +50,6 @@ extern int page_group_by_mobility_disabled;
+>  
+>  static inline int get_pageblock_migratetype(struct page *page)
+>  {
+> -	if (unlikely(page_group_by_mobility_disabled))
+> -		return MIGRATE_UNMOVABLE;
+> -
+>  	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
+>  }
+>  
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 13b4d11..c8465d0 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -172,6 +172,10 @@ int page_group_by_mobility_disabled __read_mostly;
+>  
+>  static void set_pageblock_migratetype(struct page *page, int migratetype)
+>  {
+> +
+> +	if (unlikely(page_group_by_mobility_disabled))
+> +		migratetype = MIGRATE_UNMOVABLE;
+> +
+>  	set_pageblock_flags_group(page, (unsigned long)migratetype,
+>  					PB_migrate, PB_migrate_end);
 
-* Jon Hunter <jon-hunter@ti.com> wrote:
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-> Hello,
->
-> From reviewing the dynamic tick code, I noticed that the 
-> "max_delta_ns" member of the "clock_event_device" structure, 
-> represents the upper limit between timer events in nanoseconds. 
-> The variable, "max_delta_ns", is defined as an unsigned long. An 
-> unsigned long is a 32-bit integer for 32-bit machines and is a 
-> 64-bit integer for 64-bit machines (if -m64 option is used for 
-> gcc). Also see [1].
->
-> The variable, "max_delta_ns", is configured by calling function 
-> "clockevent_delta2ns()". The maximum value that "max_delta_ns" can 
-> be set to by calling clockevent_delta2ns(), is LONG_MAX. For a 
-> 32-bit machine LONG_MAX is equal to 0x7fffffff and in nanoseconds 
-> this equates to ~2.15 seconds. Hence, the maximum sleep time for a 
-> 32-bit machine is ~2.15 seconds, where as for a 64-bit machine it 
-> will be many years.
->
-> Therefore, I wanted to propose changing the type of max_delta_ns 
-> to be "unsigned long long" instead of "unsigned long". My 
-> understanding is that a variable of type "unsigned long long" is 
-> 64-bits for both 32-bit and 64-bit machines and hence this would 
-> allow a 32-bit machine to sleep for longer than ~2.15 seconds. 
-> Please note that I also ended up making "min_delta_ns" of type 
-> "unsigned long long" too and although this is probably very 
-> unnecessary, it made the patch simpler. See below.
->
-> Anyway, making this change has allowed my 32-bit machine to sleep 
-> for longer than ~2.15 seconds and thought this could be of 
-> interest to others. Your comments/feedback would be appreciated.
->
-> [1] http://en.wikipedia.org/wiki/64-bit#64-bit_data_models
->
-> Cheers
-> Jon
->
->
-> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
-> ---
->  include/linux/clockchips.h |    6 +++---
->  kernel/hrtimer.c           |    2 +-
->  kernel/time/clockevents.c  |   10 +++++-----
->  kernel/time/tick-oneshot.c |    2 +-
->  kernel/time/timer_list.c   |    4 ++--
->  5 files changed, 12 insertions(+), 12 deletions(-)
 
-Looks like a good thing at first sight. Thomas, John, what do you 
-think?
 
-	Ingo
+
