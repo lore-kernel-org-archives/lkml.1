@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZDUOPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZDUOQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbZDUOPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZDUOPV
+	id S1755313AbZDUOQc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZDUOQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:15:21 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:50756 "EHLO comal.ext.ti.com"
+	Tue, 21 Apr 2009 10:16:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49979 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754970AbZDUOPS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:15:18 -0400
-From: "Kumar, Purushotam" <purushotam@ti.com>
-To: David Brownell <david-b@pacbell.net>
-CC: "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 21 Apr 2009 19:44:57 +0530
-Subject: RE: [PATCH 1/1] DaVinci: MMC: V4: MMC/SD controller driver for
- DaVinci family.
-Thread-Topic: [PATCH 1/1] DaVinci: MMC: V4: MMC/SD controller driver for
- DaVinci family.
-Thread-Index: Acm/lBYWUPEAh+drRcukdH0zK7kowgC9m+/w
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301CCA99738@dbde02.ent.ti.com>
-References: <1238666196-29979-1-git-send-email-purushotam@ti.com>
- <20090410214143.4aa4045e@mjolnir.ossman.eu>
- <B85A65D85D7EB246BE421B3FB0FBB59301CCA0190F@dbde02.ent.ti.com>
- <200904171238.15077.david-b@pacbell.net>
-In-Reply-To: <200904171238.15077.david-b@pacbell.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751370AbZDUOQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 10:16:21 -0400
+Date: Tue, 21 Apr 2009 10:16:07 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Mike Snitzer <snitzer@redhat.com>
+Cc: device-mapper development <dm-devel@redhat.com>, nauman@google.com,
+       fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org, jmoyer@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, balbir@linux.vnet.ibm.com
+Subject: Re: dm-ioband: Test results.
+Message-ID: <20090421141607.GA22619@redhat.com>
+References: <20090420.172959.193682665.ryov@valinux.co.jp> <e98e18940904200207y62eca680t7cf938049375f4b3@mail.gmail.com> <20090421.210614.112619728.ryov@valinux.co.jp> <20090421.211051.183023683.ryov@valinux.co.jp> <20090421135723.GA13953@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421135723.GA13953@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > This required by SD controller as suggested by IP designer. Please
-> > look at SD controller spec at http://www.ti.com/litv/pdf/sprue30d .
-> > Please check section 3.2/3.6 and point no 11/10 in the controller spec.
+On Tue, Apr 21, 2009 at 09:57:23AM -0400, Mike Snitzer wrote:
+> On Tue, Apr 21 2009 at  8:10am -0400,
+> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 > 
-> In this case the spec says in a note in 2.7.2 that priming
-> the fifo is needed for "write transactions" ... since no
-> "fifo became empty" IRQ is generated.  It does not limit it
-> to the WRITE_BLOCK and WRITE_MULTIPLE_BLOCK commands.
+> > Hi Nauman,
+> > 
+> > > > The real question is, once you create a version of dm-ioband that
+> > > > co-operates with CFQ scheduler, how that solution would compare with
+> > > > the patch set Vivek has posted? In my opinion, we need to converge to
+> > > > one solution as soon as possible, so that we can work on it together
+> > > > to refine and test it.
+> > > 
+> > > I think I can do some help for your work. but I want to continue the
+> > > development of dm-ioband, because dm-ioband actually works well and
+> > > I think it has some advantages against other IO controllers.
+> > >   - It can use without cgroup.
+> > >   - It can control bandwidth on a per partition basis.
+> > >   - The driver module can be replaced without stopping the system.
+> > 
+> > In addition, dm-ioband can run on the RHEL5.
 > 
-> Those examples are for writing single and multiple blocks; there
-> are no SDIO write operations shown, for example, or password
-> passing operations.  Those would also suffer from the lack of
-> a "fifo became empty" IRQ.
-> 
+> RHEL5 compatibility does not matter relative to merging an I/O bandwidth
+> controller upstream.  So both the "can [be] use without cgroup" and "can
+> run on RHEL5" features do not help your cause of getting dm-ioband
+> merged upstream.  In fact these features serve as distractions.
 
-It seems you are right that FIFO is required to be primed before any write transaction. 
+Exactly. I don't think that "it can be used without cgroup" is a feature
+or advantage. To me it is a disadvantage and should be fixed. cgroup is
+standard mechanism to group tasks arbitrarily and we should use that to make
+things working instead of coming up with own ways of grouping things and
+terming it as advantage.
 
-> > It does not talk about priming by 32 bytes for any other command.
-> Said diffferently, *every* PIO write transaction shown primes
-> the fifo ... but there are no examples of non-block writes.
+What do you mean by "The driver module can be replaced without stopping
+the system"? I guess you mean that one does not have to reboot the system
+to remove ioband device? So if one decides to not use the cgroup, then
+one shall have to remove the ioband devices, remount the filesystems and
+restart the application?
 
-We need to prime the FIFO beforehand with whatever data we intend to transfer. We looked into SDIO driver on DM6446 and observed that it requires priming.
+With cgroup approach, if one does not want things to be classified, a user
+can simply move all the tasks to root group and things will be fine. No
+remounting, no application stopping etc. So this also does not look like
+an advantage instead sounds like an disadvantage.
 
-
-> > This restriction is from SD controller.
-> 
-> Could you confirm that interpretation with the folk who have
-> provided that silicon block?
-> 
-> If your reading is correct, and it's really a restriction to
-> those two commands, the documentation should change to say
-> that "single and multiple block write commands" require FIFO
-> priming ... not all "write transactions" as now written.
-
-Apart from above there was a doubt for:
-	if (!host->do_dma && (host->data_dir == DAVINCI_MMC_DATADIR_WRITE))
-		davinci_fifo_data_trans(host, 32);
-We will also remove check for CMD25 and CMD24 before priming and so it will allow priming for all commands.
-
-Although there does seem to be a bug there ... it should never fill the
-fifo with more data than is being sent.
-
-The second parameter is rightly justified as it is the length of fifo. If
-you see inside the davinci_fifo_data_trans() the FIFO is only primed based
-upon the data size during that transfer. So in a way we are not filling the
-fifo with more data.
-
-We will re-submit patch tomorrow. Please let us know if you have any further concerns.
-Regards,
-Purushotam
+Thanks
+Vivek
