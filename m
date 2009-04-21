@@ -1,73 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZDUHOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZDUHV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbZDUHOH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 03:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZDUHNw
+	id S1753549AbZDUHV0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 03:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZDUHVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 03:13:52 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:45337 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751644AbZDUHNv (ORCPT
+	Tue, 21 Apr 2009 03:21:16 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47360 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZDUHVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 03:13:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kx2FtPSSIWPahZQm194KEDRk+Oh0K1Hwq5r0re933D1PRgCvb4X7xY70CvS2kMaYnWir4/R5IZ3Ijpv0z14qWUSIrzkjVkBgb3VBSzFqJBqLc0zL0cOnLaVfUaJptIABAR1TW2D9qrzXoulklXB/+hl6xBCNwDtST+ohAHuhYZ4=  ;
-X-YMail-OSG: nDlqUUAVM1mAVR5EYTXZ6ufHS4pDWjCMxbWQKUsSw9SbSLbCNKIto61_KK7yDQkbO72clgmU_vbGw8oFScaNFY7iT6C_qDca8uCPjc91LK.U7S4vjHiLDqnDzT1Uh_h3GuJ9TmCbGdEzaHOTLUqRD588xz9AONMTTS98Mnfpp1Q9lr.oE02HSg5Dg7ERFdjG6Q91p8aJxj3m8RBq6aNIGsu9gAwrSI0d5uIxdPm4Xzwc4L1XTuPZJhqLfg0QbjZF5dmWnIfaqOJDKSWFJpfifH67H0p.mFcTuy_3bXUamJgazTdGJd61
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Wait for console to become available, v3.2
-Date: Tue, 21 Apr 2009 00:13:48 -0700
-User-Agent: KMail/1.9.10
-Cc: David VomLehn <dvomlehn@cisco.com>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 21 Apr 2009 03:21:15 -0400
+Subject: Re: [PATCH 07/25] Check in advance if the zonelist needs
+ additional filtering
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net> <20090421064346.GB8020@elte.hu>
-In-Reply-To: <20090421064346.GB8020@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+	 <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
+Date: Tue, 21 Apr 2009 10:21:12 +0300
+Message-Id: <1240298472.771.29.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904210013.48551.david-b@pacbell.net>
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 April 2009, Ingo Molnar wrote:
-> The proper approach would be to use one of the async_synchronize*() 
-> facilities in kernel/async.c to properly order the opening of the 
-> console with device init.
+Hi Mel,
 
-Stepping back a moment from "how" to make sure "what" is agreed on.
+On Mon, 2009-04-20 at 23:19 +0100, Mel Gorman wrote:
+> Zonelist are filtered based on nodemasks for memory policies normally.
+> It can be additionally filters on cpusets if they exist as well as
+> noting when zones are full. These simple checks are expensive enough to
+> be noticed in profiles. This patch checks in advance if zonelist
+> filtering will ever be needed. If not, then the bulk of the checks are
+> skipped.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> @@ -1401,6 +1405,7 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+>  	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
+>  	int zlc_active = 0;		/* set if using zonelist_cache */
+>  	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
+> +	int zonelist_filter = 0;
+>  
+>  	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+>  							&preferred_zone);
+> @@ -1411,6 +1416,10 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+>  
+>  	VM_BUG_ON(order >= MAX_ORDER);
+>  
+> +	/* Determine in advance if the zonelist needs filtering */
+> +	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
+> +		zonelist_filter = 1;
+> +
+>  zonelist_scan:
+>  	/*
+>  	 * Scan zonelist, looking for a zone with enough free.
+> @@ -1418,12 +1427,16 @@ zonelist_scan:
+>  	 */
+>  	for_each_zone_zonelist_nodemask(zone, z, zonelist,
+>  						high_zoneidx, nodemask) {
+> -		if (NUMA_BUILD && zlc_active &&
+> -			!zlc_zone_worth_trying(zonelist, z, allowednodes))
+> -				continue;
+> -		if ((alloc_flags & ALLOC_CPUSET) &&
+> -			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+> -				goto try_next_zone;
+> +
+> +		/* Ignore the additional zonelist filter checks if possible */
+> +		if (zonelist_filter) {
+> +			if (NUMA_BUILD && zlc_active &&
+> +				!zlc_zone_worth_trying(zonelist, z, allowednodes))
+> +					continue;
+> +			if ((alloc_flags & ALLOC_CPUSET) &&
 
-I think I see three scenarios here:
+The above expression is always true here because of the earlier
+zonelists_filter check, no?
 
- - Classic PC or server, where there's a meaningful console;
-
- - Deeply embedded systems, where there isn't;
-
- - Development stages of "deeply embedded", where there *may* be one.
-
-If that's correct, then async_synchronize() isn't a full answer...
-
-I think a fair number of cases can be papered over with a serial
-console with no hardware flow control, which isn't hooked up to
-anything.  Maybe the board needs a test/development jig to get one;
-without it, the "console" bits spill out into the aether.  Linux
-can dump bits to ttyS0, which will act like /dev/null.
-
-But the problem case here seems to be one where such un-hooked-up
-serial ports are not realistic options.  Which is why the regression
-in USB console functionality has been troublesome.
+> +				!cpuset_zone_allowed_softwall(zone, gfp_mask))
+> +					goto try_next_zone;
+> +		}
+>  
+>  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+>  			unsigned long mark;
 
 
-Is that correct?
-
-- Dave
