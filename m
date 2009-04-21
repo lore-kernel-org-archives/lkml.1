@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZDULlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZDULwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbZDULlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 07:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZDULlf
+	id S1754657AbZDULwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 07:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZDULwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 07:41:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44651 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754197AbZDULle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 07:41:34 -0400
-Message-ID: <49EDB0E0.5060101@redhat.com>
-Date: Tue, 21 Apr 2009 13:41:20 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
+	Tue, 21 Apr 2009 07:52:05 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:45982 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753242AbZDULwE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 07:52:04 -0400
+Date: Tue, 21 Apr 2009 13:51:54 +0200
+From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: VIA Padlock driver no longer loads automatically
+Message-ID: <20090421115154.GA25685@Chamillionaire.breakpoint.cc>
+References: <20090420181402.2b0424f4@dhcp-100-2-144.bos.redhat.com> <20090421055331.GA14062@gondor.apana.org.au> <20090421055613.GA14319@gondor.apana.org.au> <20090421082645.GA22102@Chamillionaire.breakpoint.cc> <20090421105327.GA17166@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: Xenner design and kvm msr handling
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com>
-In-Reply-To: <49ED9C70.5010906@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090421105327.GA17166@gondor.apana.org.au>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/21/09 12:14, Avi Kivity wrote:
-> Gerd Hoffmann wrote:
->> xenner & pv-on-hvm
->> ==================
->>
->> Once we have all this in qemu it is just a small step to also support
->> xenish pv-on-hvm drivers in qemu using the xenner emulation bits.
->> Hypercalls are handled by a small pic binary loaded into the hypercall
->> pages. Loading of the binary is triggered by the msr writes discussed.
->> Size of the binary is only two pages: one hypercall entry points, one
->> code. Communication path is the very same ioport interface also used
->> by emu, i.e. it does *not* use vmcall and thus no opcode changes are
->> needed on migration.
->>
-> This gives a good case for exporting MSRs to userspace.
->
-> Can you explain the protocol used by this MSR? How does the guest know
-> how many pages to load? How does the kernel know which type of page to
-> put where?
+* Herbert Xu | 2009-04-21 18:53:27 [+0800]:
 
-Sure.
+>It was already renamed in the original patch.  The problem here
+>is that padlock-aes was incorrectly renamed as it doesn't require
+>a fallback.
 
-   (1) cpuid 0x40000000, check vmm signature
-   (2) cpuid 0x40000002 -> returns # of pages (eax) and msr (ebx)
-   (3) allocate pages (normal ram)
-   (4) foreach page (wrmsr "guest physical address | pageno")
+Right, just key computation which is not part of the crypto API.
 
-Xen uses msr 0x40000000.  Due to the msr being queried via cpuid it 
-should be possible to use another one.  Modulo guest bugs of course ...
+>Cheers,
+>-- 
 
-> Note that it would still be interesting to have the guest call the
-> kernel, so it can kick the host kernel Xen netback driver directly
-> instead of going through qemu (and the userspace netback + tap).
-
-With the current codebase netback isn't involved at all.  Backend lives 
-in qemu like virtio-net.  It is a very simple one (no GSO support, ...), 
-there are tons of opportunities for optimizations.  Don't feel like 
-tackeling that right now though.  My patch queue is already deep enougth 
-as-is.  Also as time passes the qemu network layer tweaks for virtio-net 
-should make that job easier ;)
-
-cheers,
-   Gerd
-
+Sebastian
