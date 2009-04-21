@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZDUBnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbZDUBob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZDUBnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 21:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZDUBnN
+	id S1757845AbZDUBob (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 21:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZDUBoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 21:43:13 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:50425 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbZDUBnM (ORCPT
+	Mon, 20 Apr 2009 21:44:22 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40721 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753571AbZDUBoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 21:43:12 -0400
-Date: Mon, 20 Apr 2009 18:43:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Henrik Austad <henrik@austad.us>
-Subject: [PATCH] Doc: hrtimers.txt was moved a long time ago, update
- reference
-Message-Id: <20090420184330.34f8d129.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 20 Apr 2009 21:44:21 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 01/25] Replace __alloc_pages_internal() with __alloc_pages_nodemask()
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-2-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-2-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421104346.F119.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsinet15.oracle.com [141.146.126.227]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.49ED248F.006A:SCFMA922111,ss=1,fgs=0
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 10:44:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Henrik Austad <henrik@austad.us>
-Subject: Doc: hrtimers.txt was moved a long time ago, update reference
 
-In 3833eecc183ce052e9ac96b39b45121a2d11ac16 hrtimers.txt was moved from
-Documentation/hrtimers into Documentation/timers in order to keep all
-timer-related together. The reference to hrtimers in highres.txt was not updated 
-however, and still pointed to the old directory.
+>  include/linux/gfp.h |   12 ++----------
+>  mm/page_alloc.c     |    4 ++--
+>  2 files changed, 4 insertions(+), 12 deletions(-)
+> 
+> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> index 0bbc15f..556c840 100644
+> --- a/include/linux/gfp.h
+> +++ b/include/linux/gfp.h
+> @@ -169,24 +169,16 @@ static inline void arch_alloc_page(struct page *page, int order) { }
+>  #endif
+>  
+>  struct page *
+> -__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
+> +__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+>  		       struct zonelist *zonelist, nodemask_t *nodemask);
+>  
+>  static inline struct page *
+>  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+>  		struct zonelist *zonelist)
+>  {
+> -	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
+> +	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
+>  }
+>  
+> -static inline struct page *
+> -__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+> -		struct zonelist *zonelist, nodemask_t *nodemask)
+> -{
+> -	return __alloc_pages_internal(gfp_mask, order, zonelist, nodemask);
+> -}
+> -
+> -
+>  static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+>  						unsigned int order)
+>  {
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index e4ea469..dcc4f05 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1462,7 +1462,7 @@ try_next_zone:
+>   * This is the 'heart' of the zoned buddy allocator.
+>   */
+>  struct page *
+> -__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
+> +__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+>  			struct zonelist *zonelist, nodemask_t *nodemask)
+>  {
 
-Signed-off-by: Henrik Austad <henrik@austad.us>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- Documentation/timers/highres.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+sorry, late review.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-diff --git a/Documentation/timers/highres.txt b/Documentation/timers/highres.txt
-index 2133223..e878997 100644
---- a/Documentation/timers/highres.txt
-+++ b/Documentation/timers/highres.txt
-@@ -30,7 +30,7 @@ hrtimer base infrastructure
- ---------------------------
- 
- The hrtimer base infrastructure was merged into the 2.6.16 kernel. Details of
--the base implementation are covered in Documentation/hrtimers/hrtimer.txt. See
-+the base implementation are covered in Documentation/timers/hrtimers.txt. See
- also figure #2 (OLS slides p. 15)
- 
- The main differences to the timer wheel, which holds the armed timer_list type
--- 
+
+
