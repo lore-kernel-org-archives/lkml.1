@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZDUIp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZDUIpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbZDUIp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZDUIpJ
+	id S1755703AbZDUIpp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZDUIpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:45:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55967 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752435AbZDUIpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:45:07 -0400
-Message-ID: <49ED8700.3010603@cn.fujitsu.com>
-Date: Tue, 21 Apr 2009 16:42:40 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 21 Apr 2009 04:45:25 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53954 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755444AbZDUIpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:45:23 -0400
+Date: Tue, 21 Apr 2009 09:45:19 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 12/25] Remove a branch by assuming __GFP_HIGH ==
+	ALLOC_HIGH
+Message-ID: <20090421084519.GE12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-13-git-send-email-mel@csn.ul.ie> <1240299982.771.48.camel@penberg-laptop>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Stephen Hemminger <shemminger@vyatta.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, Paul Mackerras <paulus@samba.org>,
-       paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>,
-       kaber@trash.net, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, mingo@elte.hu, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-References: <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <49ED406F.2040401@cn.fujitsu.com> <49ED4407.8010200@cosmosbay.com> <49ED5813.1000803@cn.fujitsu.com> <20090420224540.30d7b0ed@nehalam> <49ED6D2E.5060808@cn.fujitsu.com> <20090421081649.GA16782@ioremap.net>
-In-Reply-To: <20090421081649.GA16782@ioremap.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1240299982.771.48.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
+On Tue, Apr 21, 2009 at 10:46:22AM +0300, Pekka Enberg wrote:
+> On Mon, 2009-04-20 at 23:19 +0100, Mel Gorman wrote:
+> > Allocations that specify __GFP_HIGH get the ALLOC_HIGH flag. If these
+> > flags are equal to each other, we can eliminate a branch.
+> > 
+> > [akpm@linux-foundation.org: Suggested the hack]
 > 
-> Netfilter as long as other generic network pathes are never accessed
-> from interrupt context, but your analysis looks right for the softirq
-> case.
+> Yikes!
+> 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  mm/page_alloc.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 51e1ded..b13fc29 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1639,8 +1639,8 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+> >  	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+> >  	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+> >  	 */
+> > -	if (gfp_mask & __GFP_HIGH)
+> > -		alloc_flags |= ALLOC_HIGH;
+> > +	VM_BUG_ON(__GFP_HIGH != ALLOC_HIGH);
+> > +	alloc_flags |= (gfp_mask & __GFP_HIGH);
+> 
+> Shouldn't you then also change ALLOC_HIGH to use __GFP_HIGH or at least
+> add a comment somewhere?
 > 
 
-A question:
+That might break in weird ways if __GFP_HIGH changes in value then. I
+can add a comment though
 
-softirq is always not nesting. Why we need recursive lock?
+/*
+ * __GFP_HIGH is assumed to be the same as ALLOC_HIGH to save a branch.
+ * Check for DEBUG_VM that the assumption is still correct. It cannot be
+ * checked at compile-time due to casting
+ */
 
-Lai.
+?
 
+> >  
+> >  	if (!wait) {
+> >  		alloc_flags |= ALLOC_HARDER;
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
