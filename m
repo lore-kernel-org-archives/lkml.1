@@ -1,38 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZDUSio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZDUSkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZDUSio (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbZDUSf5
+	id S1758317AbZDUSkN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbZDUSgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:35:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54879 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758022AbZDUSf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:35:56 -0400
-Date: Tue, 21 Apr 2009 18:34:24 +0000
-From: Chris Wright <chrisw@sous-sol.org>
-To: Andrea Righi <righi.andrea@gmail.com>, Pavel Roskin <proski@gnu.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] [BISECTED] x11 fbdev on intelfb hangs hard after
-	66c1ca019078220dc1bf968f2bb18421100ef147
-Message-ID: <20090421183424.GE22386@hera.kernel.org>
-References: <1239314524.7390.14.camel@mj> <20090410081428.GA5595@linux>
+	Tue, 21 Apr 2009 14:36:24 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53735 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758026AbZDUSgP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 14:36:15 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH v3 08/17] venet: add the ABI definitions for an 802.x
+	packet interface
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
+       rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
+       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
+       chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
+Date: Tue, 21 Apr 2009 14:35:00 -0400
+Message-ID: <20090421183459.12548.58059.stgit@dev.haskins.net>
+In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
+References: <20090421183341.12548.33393.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090410081428.GA5595@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 18:34:27 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrea Righi (righi.andrea@gmail.com) wrote:
-> Thanks for reporting Pavel. I agree to revert 66c1ca ASAP.
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-Rather than dropping from -stable queue, looks like we should be adding:
-513adb58685615b0b1d47a3f0d40f5352beff189 "fbdev: fix info->lock deadlock
-in fbcon_event_notify()"? 
+ include/linux/venet.h |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 47 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/venet.h
 
-thanks,
--chris
+diff --git a/include/linux/venet.h b/include/linux/venet.h
+new file mode 100644
+index 0000000..ef6b199
+--- /dev/null
++++ b/include/linux/venet.h
+@@ -0,0 +1,47 @@
++/*
++ * Copyright 2008 Novell.  All Rights Reserved.
++ *
++ * Virtual-Ethernet adapter
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#ifndef _LINUX_VENET_H
++#define _LINUX_VENET_H
++
++#define VENET_VERSION 1
++
++#define VENET_TYPE "virtual-ethernet"
++
++#define VENET_QUEUE_RX 0
++#define VENET_QUEUE_TX 1
++
++struct venet_capabilities {
++	__u32 gid;
++	__u32 bits;
++};
++
++/* CAPABILITIES-GROUP 0 */
++/* #define VENET_CAP_FOO    0   (No capabilities defined yet, for now) */
++
++#define VENET_FUNC_LINKUP   0
++#define VENET_FUNC_LINKDOWN 1
++#define VENET_FUNC_MACQUERY 2
++#define VENET_FUNC_NEGCAP   3 /* negotiate capabilities */
++#define VENET_FUNC_FLUSHRX  4
++
++#endif /* _LINUX_VENET_H */
+
