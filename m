@@ -1,79 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbZEALRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbZEALSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbZEALRQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 May 2009 07:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbZEALQ5
+	id S1758914AbZEALSV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 May 2009 07:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbZEALSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 May 2009 07:16:57 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:40502 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757520AbZEALQ4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 May 2009 07:16:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=I81N04IwT/UnYwz6HjlZO6uArv0Adtc+Q0qObRxwOeScUoZzRmptdc6XQxbZKIvo9q
-         8InJBsBjOiPHs6Xl8HuvXP+HBplOHQRZYGPw16JFV7gGhDTBrq91i0cUjTuv8vx4G0St
-         H2CJJf1+XaQ6+ihahdg6tbkue9OsxRGHiarsc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: =?utf-8?q?Rog=C3=A9rio_Brito?= <rbrito@users.sf.net>
-Subject: Re: Quick question about libata and hdparm
-Date: Fri, 1 May 2009 13:20:57 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-next-20090403; KDE/4.2.2; i686; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
-       linux-kernel@vger.kernel.org
-References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <6540c930904232000t76aa4954l4f5cee5bad64aacb@mail.gmail.com> <20090501091804.GB29466@ime.usp.br>
-In-Reply-To: <20090501091804.GB29466@ime.usp.br>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905011320.57491.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Fri, 1 May 2009 07:18:10 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:55885 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755465AbZEALSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 May 2009 07:18:09 -0400
+X-IronPort-AV: E=Sophos;i="4.40,277,1239001200"; 
+   d="scan'208";a="164715877"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Petr Vandrovec <petr@vandrovec.name>, Jean Delvare <khali@linux-fr.org>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Tue, 21 Apr 2009 17:18:20 -0400
+Subject: [PATCH] SUNRPC: Fix the problem of EADDRNOTAVAIL syslog floods on
+ reconnect
+Message-Id: <1241176603.5162.0.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 01 May 2009 11:18:05.0941 (UTC) FILETIME=[7FEF2A50:01C9CA4E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 May 2009 11:18:04 Rogério Brito wrote:
-> Hi, Bart and other people.
-> 
-> On Apr 24 2009, Rogério Brito wrote:
-> > On 4/23/09, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > > You can try booting with "libata.force=1.00:mwdma2" kernel paramater
-> > > to force use of "regular" MWDMA2 transfer mode instead of UDMA ones
-> > > so we are sure that the issue is specific to pata_pdc202xx_old +
-> > > UDMA.
-> > 
-> > This *did* work. I see no other error messages, while using multword
-> > dma. So I think that this serves for us to rule out some unknown
-> > variables.
-> 
-> Is there anything that I can do right now? Just to remember, the
-> original IDE driver works without any problems, but I would like to
-> migrate everything to libata (and many distributions are already using
-> libata by default, even with IDE devices).
+See http://bugzilla.kernel.org/show_bug.cgi?id=13034
 
-DISCLAIMER was there for a reason...
+If the port gets into a TIME_WAIT state, then we cannot reconnect without
+binding to a new port.
 
-Please ping pata_pdc202xx_old maintainer, libata maintainer or said
-distributions about it, not me.
+Tested-by: Petr Vandrovec <petr@vandrovec.name>
+Tested-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+ include/linux/sunrpc/xprt.h |    1 +
+ net/sunrpc/xprt.c           |    6 ++----
+ net/sunrpc/xprtsock.c       |   26 +++++++++++++++++++++-----
+ 3 files changed, 24 insertions(+), 9 deletions(-)
 
-Don't get me wrong.  I would like to help but such problems usually
-take really long time to debug (you have to know both stacks, both
-drivers and be able to track subtle differences between all of them)
-and you have absolutely no guarantee that it will yield any results.
-
-[ Tejun has spent few days on trying to fix pata_ali MWDMA regression
-  and he is one of people who really know what they are doing. ]
-
-I don't have such time and my motivation to help is seriously effected
-by behaviors like that seen in:
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=12734
-
-Thanks,
-Bart
+diff --git a/include/linux/sunrpc/xprt.h b/include/linux/sunrpc/xprt.h
+index 1758d9f..08afe43 100644
+--- a/include/linux/sunrpc/xprt.h
++++ b/include/linux/sunrpc/xprt.h
+@@ -261,6 +261,7 @@ void			xprt_conditional_disconnect(struct rpc_xprt *xprt, unsigned int cookie);
+ #define XPRT_BINDING		(5)
+ #define XPRT_CLOSING		(6)
+ #define XPRT_CONNECTION_ABORT	(7)
++#define XPRT_CONNECTION_CLOSE	(8)
+ 
+ static inline void xprt_set_connected(struct rpc_xprt *xprt)
+ {
+diff --git a/net/sunrpc/xprt.c b/net/sunrpc/xprt.c
+index a0bfe53..06ca058 100644
+--- a/net/sunrpc/xprt.c
++++ b/net/sunrpc/xprt.c
+@@ -672,10 +672,8 @@ xprt_init_autodisconnect(unsigned long data)
+ 	if (test_and_set_bit(XPRT_LOCKED, &xprt->state))
+ 		goto out_abort;
+ 	spin_unlock(&xprt->transport_lock);
+-	if (xprt_connecting(xprt))
+-		xprt_release_write(xprt, NULL);
+-	else
+-		queue_work(rpciod_workqueue, &xprt->task_cleanup);
++	set_bit(XPRT_CONNECTION_CLOSE, &xprt->state);
++	queue_work(rpciod_workqueue, &xprt->task_cleanup);
+ 	return;
+ out_abort:
+ 	spin_unlock(&xprt->transport_lock);
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index d40ff50..e185961 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -807,6 +807,9 @@ static void xs_reset_transport(struct sock_xprt *transport)
+  *
+  * This is used when all requests are complete; ie, no DRC state remains
+  * on the server we want to save.
++ *
++ * The caller _must_ be holding XPRT_LOCKED in order to avoid issues with
++ * xs_reset_transport() zeroing the socket from underneath a writer.
+  */
+ static void xs_close(struct rpc_xprt *xprt)
+ {
+@@ -824,6 +827,14 @@ static void xs_close(struct rpc_xprt *xprt)
+ 	xprt_disconnect_done(xprt);
+ }
+ 
++static void xs_tcp_close(struct rpc_xprt *xprt)
++{
++	if (test_and_clear_bit(XPRT_CONNECTION_CLOSE, &xprt->state))
++		xs_close(xprt);
++	else
++		xs_tcp_shutdown(xprt);
++}
++
+ /**
+  * xs_destroy - prepare to shutdown a transport
+  * @xprt: doomed transport
+@@ -1772,6 +1783,15 @@ static void xs_tcp_setup_socket(struct rpc_xprt *xprt,
+ 			xprt, -status, xprt_connected(xprt),
+ 			sock->sk->sk_state);
+ 	switch (status) {
++	default:
++		printk("%s: connect returned unhandled error %d\n",
++			__func__, status);
++	case -EADDRNOTAVAIL:
++		/* We're probably in TIME_WAIT. Get rid of existing socket,
++		 * and retry
++		 */
++		set_bit(XPRT_CONNECTION_CLOSE, &xprt->state);
++		xprt_force_disconnect(xprt);
+ 	case -ECONNREFUSED:
+ 	case -ECONNRESET:
+ 	case -ENETUNREACH:
+@@ -1782,10 +1802,6 @@ static void xs_tcp_setup_socket(struct rpc_xprt *xprt,
+ 		xprt_clear_connecting(xprt);
+ 		return;
+ 	}
+-	/* get rid of existing socket, and retry */
+-	xs_tcp_shutdown(xprt);
+-	printk("%s: connect returned unhandled error %d\n",
+-			__func__, status);
+ out_eagain:
+ 	status = -EAGAIN;
+ out:
+@@ -1994,7 +2010,7 @@ static struct rpc_xprt_ops xs_tcp_ops = {
+ 	.buf_free		= rpc_free,
+ 	.send_request		= xs_tcp_send_request,
+ 	.set_retrans_timeout	= xprt_set_retrans_timeout_def,
+-	.close			= xs_tcp_shutdown,
++	.close			= xs_tcp_close,
+ 	.destroy		= xs_destroy,
+ 	.print_stats		= xs_tcp_print_stats,
+ };
+-- 
+1.6.0.4
