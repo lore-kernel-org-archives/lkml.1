@@ -1,121 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZDUUtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZDUUxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbZDUUtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZDUUtO
+	id S1757483AbZDUUxW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZDUUxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:49:14 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45474 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752437AbZDUUtN (ORCPT
+	Tue, 21 Apr 2009 16:53:07 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:39923 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbZDUUxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:49:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NCHfL993dAUDsyoPRcUSNYET7spAoArCHYb9wS1J5vcBdCVftLkagrx9ElsOU3nbge
-         u4WSdCi4hHdUXmzjhITH2Cja5dMzcv/3nAwSrwa9tkpjuMZyt55eX2VaYbWeTOzASGtS
-         l8gbtFlUxxqvn7UbXT5UUD9hyIoB7r0aIdiL8=
-Date: Tue, 21 Apr 2009 22:49:06 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
-Message-ID: <20090421204905.GA5573@linux>
-References: <20090417143903.GA30365@linux> <20090421001822.GB19186@mit.edu> <20090421083001.GA8441@linux> <20090421140631.GF19186@mit.edu> <20090421143130.GA22626@linux> <20090421163537.GI19186@mit.edu> <20090421172317.GM19637@balbir.in.ibm.com> <20090421174620.GD15541@mit.edu> <20090421181429.GO19637@balbir.in.ibm.com> <20090421191401.GF15541@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421191401.GF15541@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Apr 2009 16:53:04 -0400
+Subject: [RFC][PATCH] fix sign extension with 1.5TB usb-storage LBD=y
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, mdharm-usb@one-eyed-alien.net,
+       linux-usb <linux-usb@vger.kernel.org>,
+       usb-storage@lists.one-eyed-alien.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 21 Apr 2009 13:52:54 -0700
+Message-Id: <1240347174.10627.20.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 03:14:01PM -0400, Theodore Tso wrote:
-> On Tue, Apr 21, 2009 at 11:44:29PM +0530, Balbir Singh wrote:
-> > 
-> > That would be true in general, but only the process writing to the
-> > file will dirty it. So dirty already accounts for the read/write
-> > split. I'd assume that the cost is only for the dirty page, since we
-> > do IO only on write in this case, unless I am missing something very
-> > obvious.
-> 
-> Maybe I'm missing something, but the (in development) patches I saw
-> seemed to use the existing infrastructure designed for RSS cost
-> tracking (which is also not yet in mainline, unless I'm mistaken ---
-> but I didn't see page_get_page_cgroup() in the mainline tree yet).
+This is with current git as of this morning, which is at v2.6.30-rc2.
 
-page_get_page_cgroup() is the old page_cgroup interface, now it has been
-replaced by lookup_page_cgroup(), that is in the mainline.
+I have a 1.5TB USB device which gets a bit angry when I plug it in.  It
+ends up with a scsi_disk->capacity of ffffffffaea87b30.  I tracked it
+down to the lba calculation in read_capacity_10():
 
-> 
-> Right?  So if process A in cgroup A reads touches the file first by
-> reading from it, then the pages read by process A will be assigned as
-> being "owned" by cgroup A.   Then when the patch described at
-> 
->       http://lkml.org/lkml/2008/9/9/245
+	lba =	(buffer[0] << 24) | (buffer[1] << 16) |
+ 		(buffer[2] << 8) | buffer[3];
 
-And this patch must be completely reworked.
+lba is getting all 0xf's in its high 32 bits.  It seems odd that this
+would happen since 'buffer' is an 'unsigned char', but that is
+apparently what is going on.  Note that this isn't an issue 32-bit
+kernels compiled with CONFIG_LBD=n since there's no more bits into which
+the sign could be extended.
 
-> 
-> ... tries to charge a write done by process B in cgroup B, the code
-> will call page_get_page_cgroup(), see that it is "owned" by cgroup A,
-> and charge the dirty page to cgroup A.  If process A and all of the
-> other processes in cgroup A only access this file read-only, and
-> process B is updating this file very heavily --- and it is a large
-> file --- then cgroup B will get a completely free pass as far as
-> dirtying pages to this file, since it will be all charged 100% to
-> cgroup A, incorrectly.
+The attached one-liner seems to make my system happier.  
 
-yep! right. Anyway, it's not completely wrong to account dirty pages in
-this way. The dirty pages actually belong to cgroup A and providing per
-cgroup upper limits of dirty pages could help to equally distribute
-dirty pages, that are hard/slow to reclaim, among cgroups.
+Before patch (with a bit of my added debugging):
 
-But this is definitely another problem.
+sd 5:0:0:0: [sdb] read_capacity_10() sector size: 0x200/512 
+sd 5:0:0:0: [sdb] capacity (in 512-byte blocks: ffffffffaea87b30
+sd 5:0:0:0: [sdb] Very big device. Trying to use READ CAPACITY(16).
+sd 5:0:0:0: [sdb] Using 0xffffffff as device size sector_size was: 0xffffffea/-22
+sd 5:0:0:0: [sdb] 4294967296 512-byte hardware sectors: (2.19 TB/2.00 TiB)
+sd 5:0:0:0: [sdb] Write Protect is off
+sd 5:0:0:0: [sdb] Mode Sense: 1c 00 00 00
+sd 5:0:0:0: [sdb] Assuming drive cache: write through
+sd 5:0:0:0: [sdb] read_capacity_10() sector size: 0x200/512 
+sd 5:0:0:0: [sdb] capacity (in 512-byte blocks: ffffffffaea87b30
+sd 5:0:0:0: [sdb] Very big device. Trying to use READ CAPACITY(16).
+sd 5:0:0:0: [sdb] Using 0xffffffff as device size sector_size was: 0xffffffea/-22
+sd 5:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1 
+sd 5:0:0:0: [sdb] Attached SCSI disk 
+sd 5:0:0:0: [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE
+sd 5:0:0:0: [sdb] Sense Key : Aborted Command [current] 
+sd 5:0:0:0: [sdb] Add. Sense: No additional sense information
 
-And it doesn't help for the problem described by Ted, expecially for the
-IO controller. The only way I see to correctly handle that case is to
-limit the rate of dirty pages per cgroup, accounting the dirty activity
-to the cgroup that firstly touched the page (and not the owner as
-intended by the memory controller).
+after patch:
 
-And this should be probably strictly connected to the IO controller. If
-we throttle or delay the dispatching/submission of some IO requests
-without throttling the dirty pages rate a cgroup could completely waste
-its own available memory with dirty (hard and slow to reclaim) pages.
+[ 5257.068646] usb 5-2: new high speed USB device using ehci_hcd and address 9
+[ 5257.215421] usb 5-2: configuration #1 chosen from 1 choice
+[ 5257.221640] scsi14 : SCSI emulation for USB Mass Storage devices
+[ 5257.221937] usb-storage: device found at 9
+[ 5257.221939] usb-storage: waiting for device to settle before scanning
+[ 5262.225981] usb-storage: device scan complete
+[ 5262.227477] scsi 14:0:0:0: Direct-Access     Seagate  FreeAgent        102D PQ: 0 ANSI: 4
+[ 5262.227936] sd 14:0:0:0: Attached scsi generic sg3 type 0
+[ 5273.458856] sd 14:0:0:0: [sdc] 2930277168 512-byte hardware sectors: (1.50 TB/1.36 TiB)
+[ 5273.460121] sd 14:0:0:0: [sdc] Write Protect is off
+[ 5273.460126] sd 14:0:0:0: [sdc] Mode Sense: 1c 00 00 00
+[ 5273.460130] sd 14:0:0:0: [sdc] Assuming drive cache: write through
+[ 5273.475750] sd 14:0:0:0: [sdc] Assuming drive cache: write through
+[ 5273.488125]  sdc: sdc1
+[ 5273.541147] sd 14:0:0:0: [sdc] Attached SCSI disk
 
-That is in part the approach I used in io-throttle v12, adding a hook in
-balance_dirty_pages_ratelimited_nr() to throttle the current task when
-cgroup's IO limit are exceeded. Argh!
 
-So, another proposal could be to re-add in io-throttle v14 the old hook
-also in balance_dirty_pages_ratelimited_nr().
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 3fcb64b..db60e96 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1402,7 +1402,7 @@ static int read_capacity_10(struct scsi_disk *sdkp, struct scsi_device *sdp,
+ 
+ 	sector_size =	(buffer[4] << 24) | (buffer[5] << 16) |
+ 			(buffer[6] << 8) | buffer[7];
+-	lba =	(buffer[0] << 24) | (buffer[1] << 16) |
++	lba =	((sector_t)buffer[0] << 24) | (buffer[1] << 16) |
+ 		(buffer[2] << 8) | buffer[3];
+ 
+ 	if ((sizeof(sdkp->capacity) == 4) && (lba == 0xffffffff)) {
 
-In this way io-throttle would:
 
-- use page_cgroup infrastructure and page_cgroup->flags to encode the
-  cgroup id that firstly dirtied a generic page
-- account and opportunely throttle sync and writeback IO requests in
-  submit_bio()
-- at the same time throttle the tasks in
-  balance_dirty_pages_ratelimited_nr() if the cgroup they belong has
-  exhausted the IO BW (or quota, share, etc. in case of proportional BW
-  limit)
+-- Dave
 
--Andrea
