@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZDUDpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbZDUD6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbZDUDpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 23:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZDUDpm
+	id S1752789AbZDUD6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 23:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZDUD6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 23:45:42 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45796 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZDUDpl (ORCPT
+	Mon, 20 Apr 2009 23:58:33 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:59450 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbZDUD6c convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 23:45:41 -0400
-Date: Tue, 21 Apr 2009 12:44:07 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [patch 1/3] mm: fix pageref leak in do_swap_page()
-Message-Id: <20090421124407.0f8587dc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Apr 2009 23:58:32 -0400
+Message-ID: <49ED4407.8010200@cosmosbay.com>
+Date: Tue, 21 Apr 2009 05:56:55 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, mingo@elte.hu, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com>	<20090417012812.GA25534@linux.vnet.ibm.com>	<20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <49ED406F.2040401@cn.fujitsu.com>
+In-Reply-To: <49ED406F.2040401@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 21 Apr 2009 05:56:56 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 22:24:43 +0200
-Johannes Weiner <hannes@cmpxchg.org> wrote:
-
-> By the time the memory cgroup code is notified about a swapin we
-> already hold a reference on the fault page.
+Lai Jiangshan a écrit :
+> Stephen Hemminger wrote:
+>> +/**
+>> + * xt_table_info_rdlock_bh - recursive read lock for xt table info
+>> + *
+>> + * Table processing calls this to hold off any changes to table
+>> + * (on current CPU). Always leaves with bottom half disabled.
+>> + * If called recursively, then assumes bh/preempt already disabled.
+>> + */
+>> +void xt_info_rdlock_bh(void)
+>> +{
+>> +	struct xt_info_lock *lock;
+>> +
+>> +	preempt_disable();
+>> +	lock = &__get_cpu_var(xt_info_locks);
+>> +	if (likely(++lock->depth == 0))
 > 
-> If the cgroup callback fails make sure to unlock AND release the page
-> or we leak the reference.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Maybe I missed something. I think softirq may be still enabled here.
+> So what happen when xt_info_rdlock_bh() called recursively here?
 
-Wow, thanks.
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+well, first time its called, you are right softirqs are enabled until
+the point we call spin_lock_bh(), right after this line :
 
 
-> ---
->  mm/memory.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 366dab5..db126b6 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2536,8 +2536,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
->  
->  	if (mem_cgroup_try_charge_swapin(mm, page, GFP_KERNEL, &ptr)) {
->  		ret = VM_FAULT_OOM;
-> -		unlock_page(page);
-> -		goto out;
-> +		goto out_page;
->  	}
->  
->  	/*
-> @@ -2599,6 +2598,7 @@ out:
->  out_nomap:
->  	mem_cgroup_cancel_charge_swapin(ptr);
->  	pte_unmap_unlock(page_table, ptl);
-> +out_page:
->  	unlock_page(page);
->  	page_cache_release(page);
->  	return ret;
-> -- 
-> 1.6.2.1.135.gde769
+>> +		spin_lock_bh(&lock->lock);
+>> +	preempt_enable_no_resched();
+
+After this line, both softirqs and preempt are disabled.
+
+Future calls to this function temporarly raise preemptcount and decrease it.
+(Null effect)
+
+>> +}
+>> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+>> +
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> Is this OK for you:
+> 
+> void xt_info_rdlock_bh(void)
+> {
+> 	struct xt_info_lock *lock;
+> 
+> 	local_bh_disable();
+
+well, Stephen was trying to not change preempt count for the 2nd, 3rd, 4th?... invocation of this function.
+This is how I understood the code.
+
+> 	lock = &__get_cpu_var(xt_info_locks);
+> 	if (likely(++lock->depth == 0))
+> 		spin_lock(&lock->lock);
+> }
+> 
+> Lai.
+> 
+
+
+Thanks for reviewing Lai
 
