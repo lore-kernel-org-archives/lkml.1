@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZDUNdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZDUNdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbZDUNdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 09:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZDUNdR
+	id S1756130AbZDUNdw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 09:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbZDUNdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 09:33:17 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:3950 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755142AbZDUNdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 09:33:16 -0400
-Date: Tue, 21 Apr 2009 15:33:07 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] go7007: Convert to the new i2c device binding model
-Message-ID: <20090421153307.10b24cea@hyperion.delvare>
-In-Reply-To: <49ED781F.2000802@ladisch.de>
-References: <20090420194237.52630423@hyperion.delvare>
-	<49ED781F.2000802@ladisch.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Apr 2009 09:33:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53167 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755594AbZDUNdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 09:33:24 -0400
+Message-ID: <49EDCB1D.1010301@redhat.com>
+Date: Tue, 21 Apr 2009 16:33:17 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gerd Hoffmann <kraxel@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: Xenner design and kvm msr handling
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com> <49EDB0E0.5060101@redhat.com> <49EDBBBF.90509@redhat.com> <49EDC050.1040700@redhat.com>
+In-Reply-To: <49EDC050.1040700@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hallo Clemens,
+Gerd Hoffmann wrote:
+> Not sure, have to dig into the xen code to figure.
+>
+> Could be xen doesn't remember the page in the first place.  They might 
+> let the illegal instruction fault handler patch the opcode.  At least 
+> I vaguely remember some discussions about that.
+>
+> Could be there isn't a interface to forgot the page.  "reboot" in xen 
+> land is "destroy guest, restart it".
 
-On Tue, 21 Apr 2009 09:39:11 +0200, Clemens Ladisch wrote:
-> Jean Delvare wrote:
-> > I am puzzled by the s2250 I2C address, 0x86 really doesn't fit in
-> > 7 bits, there must be something wrong.
-> 
-> > -				.addr	= 0x34,
-> > +				.addr	= 0x86,	/* ?? */
-> 
-> > -#define S2250_VIDDEC        0x86
-> 
-> Many I2C controllers use an 8-bit address register, with the lowest bit
-> being the read/write bit (because this is the order in which the bits
-> are transmitted over the bus).  So it looks as if the actual address
-> _is_ 0x34;
+How do you unload a driver then?
 
-0x86 >> 1 is actually 0x43, not 0x34. 0x34 is the address for the audio
-part of the device:
+What about kexec?
 
-#define TLV320_ADDRESS	0x34
+I'm glad we didn't do a hypercall page in kvm.
 
-The original code was a little messy and used the same i2c_client for
-both parts, changing the address on the fly.
+>> Sure, but later on, we may want to take advantage of kernel netback.
+>
+> Agree.  But right now I have more important stuff to worry about ;)
 
-That being said, I think you are probably right, the 7-bit device's
-address is probably 0x43 for video. And now that we mention that,
-probably 0x34 for audio is incorrect as well. "TLV320" suggests some
-incarnation of the TI TLV320 series, many of which are already
-supported in the kernel, and all I've seen had address 0x18, 0x19, 0x1a
-or 0x1b. Given that 0x34 >> 1 is 0x1a... it's a good hint that 0x34
-wasn't a 7-bit address value, right?
+Still good to know what to expect later on.
 
-I'll change the addresses to 0x43 for video and 0x1a for audio. Updated
-patch coming.
-
-> the S2250_VIDDEC symbol is probably a relict of the old
-> driver that programmed the I2C controller directly.
-
-Could be. But then this means that the driver as it stands in the
-kernel today, doesn't work. Which, in a way, is good news, as it means
-I can push my changes immediately. Even if I got the conversion wrong,
-it won't be more broken than it already was ;)
-
-Thanks,
 -- 
-Jean Delvare
+error compiling committee.c: too many arguments to function
+
