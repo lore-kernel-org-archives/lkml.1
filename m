@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbZDUDDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZDUDEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbZDUDDf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 23:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZDUDD0
+	id S1756901AbZDUDEA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 23:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZDUDDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 23:03:26 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44407 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZDUDDZ (ORCPT
+	Mon, 20 Apr 2009 23:03:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44333 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbZDUDDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 23:03:25 -0400
-Date: Tue, 21 Apr 2009 12:01:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Wil" <nodenet@hotmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: swap hint
-Message-Id: <20090421120151.ae291dbd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <BAY116-DAV13797E9A8B8D61B9322909B0760@phx.gbl>
-References: <BAY116-DAV13797E9A8B8D61B9322909B0760@phx.gbl>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 20 Apr 2009 23:03:47 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 04/25] Check only once if the zonelist is suitable for the allocation
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-5-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-5-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421120258.F122.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 12:03:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 16:11:14 +0100
-"Wil" <nodenet@hotmail.com> wrote:
+> -restart:
+> -	z = zonelist->_zonerefs;  /* the list of zones suitable for gfp_mask */
+> -
+> +	/* the list of zones suitable for gfp_mask */
+> +	z = zonelist->_zonerefs;
+>  	if (unlikely(!z->zone)) {
+>  		/*
+>  		 * Happens if we have an empty zonelist as a result of
+> @@ -1497,6 +1496,7 @@ restart:
+>  		return NULL;
+>  	}
+>  
+> +restart:
+>  	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+>  			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+>  	if (page)
 
-> I've noticed that when running a VM such as qemu/vbox with approx 75% of
-> physical memory allocated with the default swappiness the swap file usage
-> will rise to approximately the same amount. Although setting swappiness to 0
-> seems to prevent this, running with this setting seems counter intuitive.
-> I'm wondering if the following is or would be possible
-> 
-> 1. Provide page hint to prevent swapping of certain pages. This would
-> presumably allow applications running in the remaining host memory to use
-> the swap file efficiently.
-> 2. Provide user space controls to prevent a certain process (or the memory
-> it allocates) being swapped. 
-> 
-> I'm not sure if memory ballooning will cover the above as I couldn't find
-> details of anything similar but would think that having some tunability for
-> special cases such as VMs would be useful especially if you could pick guest
-> performance / host memory usage on a per VM basis. I note that xen does seem
-> to do something along these lines as standard.
-> 
-> Will Wiseman
-> 
+looks good.
 
-Can't memory cgroup be a help for your case?
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-- Documentation/cgroup/memory.txt
-
-Thanks,
--Kame
 
