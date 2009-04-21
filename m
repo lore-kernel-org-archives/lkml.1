@@ -1,148 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZDUKST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbZDUKTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbZDUKST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZDUKSE
+	id S1757225AbZDUKTU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbZDUKTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:18:04 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:58202 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZDUKSB (ORCPT
+	Tue, 21 Apr 2009 06:19:06 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34900 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbZDUKTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:18:01 -0400
-Date: Tue, 21 Apr 2009 15:46:59 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       randy.dunlap@oracle.com, Paul Menage <menage@google.com>,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, eric.rannaud@gmail.com,
-       paolo.valente@unimore.it, fernando@oss.ntt.co.jp, dradford@bluehost.com,
-       fchecconi@gmail.com, agk@sourceware.org, subrata@linux.vnet.ibm.com,
-       axboe@kernel.dk, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
-       ngupta@google.com
-Subject: Re: [PATCH 2/7] res_counter: introduce ratelimiting attributes
-Message-ID: <20090421101659.GF19637@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-3-git-send-email-righi.andrea@gmail.com> <20090421091534.971f676f.kamezawa.hiroyu@jp.fujitsu.com> <20090421095525.GA13699@linux>
+	Tue, 21 Apr 2009 06:19:04 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 09/25] Calculate the migratetype for allocation only once
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090421083513.GC12713@csn.ul.ie>
+References: <20090421160729.F136.A69D9226@jp.fujitsu.com> <20090421083513.GC12713@csn.ul.ie>
+Message-Id: <20090421191344.F162.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090421095525.GA13699@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 19:19:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrea Righi <righi.andrea@gmail.com> [2009-04-21 11:55:26]:
-
-> On Tue, Apr 21, 2009 at 09:15:34AM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Sat, 18 Apr 2009 23:38:27 +0200
-> > Andrea Righi <righi.andrea@gmail.com> wrote:
-> > 
-> > > Introduce attributes and functions in res_counter to implement throttling-based
-> > > cgroup subsystems.
+> On Tue, Apr 21, 2009 at 04:37:28PM +0900, KOSAKI Motohiro wrote:
+> > > GFP mask is converted into a migratetype when deciding which pagelist to
+> > > take a page from. However, it is happening multiple times per
+> > > allocation, at least once per zone traversed. Calculate it once.
 > > > 
-> > > The following attributes have been added to struct res_counter:
-> > >  * @policy:     the limiting policy / algorithm
-> > >  * @capacity:   the maximum capacity of the resource
-> > >  * @timestamp:  timestamp of the last accounted resource request
-> > > 
-> > > Currently the available policies are: token-bucket and leaky-bucket and the
-> > > attribute @capacity is only used by token-bucket policy (to represent the
-> > > bucket size).
-> > > 
-> > > The following function has been implemented to return the amount of time a
-> > > cgroup should sleep to remain within the defined resource limits.
-> > > 
-> > >   unsigned long long
-> > >   res_counter_ratelimit_sleep(struct res_counter *res, ssize_t val);
-> > > 
-> > > [ Note: only the interfaces needed by the cgroup IO controller are implemented
-> > > right now ]
-> > > 
-> > > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 > > > ---
-> > >  include/linux/res_counter.h |   69 +++++++++++++++++++++++++++++++----------
-> > >  kernel/res_counter.c        |   72 +++++++++++++++++++++++++++++++++++++++++++
-> > >  2 files changed, 124 insertions(+), 17 deletions(-)
+> > >  mm/page_alloc.c |   43 ++++++++++++++++++++++++++-----------------
+> > >  1 files changed, 26 insertions(+), 17 deletions(-)
 > > > 
-> > > diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> > > index 4c5bcf6..9bed6af 100644
-> > > --- a/include/linux/res_counter.h
-> > > +++ b/include/linux/res_counter.h
-> > > @@ -14,30 +14,36 @@
+> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > index b27bcde..f960cf5 100644
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -1065,13 +1065,13 @@ void split_page(struct page *page, unsigned int order)
+> > >   * or two.
 > > >   */
-> > >  
-> > >  #include <linux/cgroup.h>
-> > > +#include <linux/jiffies.h>
-> > >  
-> > > -/*
-> > > - * The core object. the cgroup that wishes to account for some
-> > > - * resource may include this counter into its structures and use
-> > > - * the helpers described beyond
-> > > - */
-> > > +/* The various policies that can be used for ratelimiting resources */
-> > > +#define	RATELIMIT_LEAKY_BUCKET	0
-> > > +#define	RATELIMIT_TOKEN_BUCKET	1
-> > >  
-> > > +/**
-> > > + * struct res_counter - the core object to account cgroup resources
-> > > + *
-> > > + * @usage:	the current resource consumption level
-> > > + * @max_usage:	the maximal value of the usage from the counter creation
-> > > + * @limit:	the limit that usage cannot be exceeded
-> > > + * @failcnt:	the number of unsuccessful attempts to consume the resource
-> > > + * @policy:	the limiting policy / algorithm
-> > > + * @capacity:	the maximum capacity of the resource
-> > > + * @timestamp:	timestamp of the last accounted resource request
-> > > + * @lock:	the lock to protect all of the above.
-> > > + *		The routines below consider this to be IRQ-safe
-> > > + *
-> > > + * The cgroup that wishes to account for some resource may include this counter
-> > > + * into its structures and use the helpers described beyond.
-> > > + */
-> > >  struct res_counter {
-> > > -	/*
-> > > -	 * the current resource consumption level
-> > > -	 */
-> > >  	unsigned long long usage;
-> > > -	/*
-> > > -	 * the maximal value of the usage from the counter creation
-> > > -	 */
-> > >  	unsigned long long max_usage;
-> > > -	/*
-> > > -	 * the limit that usage cannot exceed
-> > > -	 */
-> > >  	unsigned long long limit;
-> > > -	/*
-> > > -	 * the number of unsuccessful attempts to consume the resource
-> > > -	 */
-> > >  	unsigned long long failcnt;
-> > > +	unsigned long long policy;
-> > > +	unsigned long long capacity;
-> > > +	unsigned long long timestamp;
-> > >  
-> > Andrea, sizeof(struct res_counter) is getting close to 128bytes. (maybe someone adds more)
-> > Then, could you check "unsigned long or unsigned int" is allowed or not, again ?
+> > >  static struct page *buffered_rmqueue(struct zone *preferred_zone,
+> > > -			struct zone *zone, int order, gfp_t gfp_flags)
+> > > +			struct zone *zone, int order, gfp_t gfp_flags,
+> > > +			int migratetype)
+> > >  {
+> > >  	unsigned long flags;
+> > >  	struct page *page;
+> > >  	int cold = !!(gfp_flags & __GFP_COLD);
+> > >  	int cpu;
+> > > -	int migratetype = allocflags_to_migratetype(gfp_flags);
 > > 
-> > It's very bad if cacheline of spinlock is different from data field, in future.
+> > hmmm....
+> > 
+> > allocflags_to_migratetype() is very cheap function and buffered_rmqueue()
+> > and other non-inline static function isn't guranteed inlined.
+> > 
 > 
-> Regarding the new attributes, policy can be surely an unsigned int or
-> even less (now only 1 bit is used!), maybe we can just add an unsigned
-> int flags, and encode also potential future informations there.
+> A later patch makes them inlined due to the fact there is only one call
+> site.
+
+Oh, I see.
+I drop my claim. thanks.
+
+
+
+> > -------------------------------------------------------------------
+> > /* Convert GFP flags to their corresponding migrate type */
+> > static inline int allocflags_to_migratetype(gfp_t gfp_flags)
+> > {
+> >         WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
+> > 
+> >         if (unlikely(page_group_by_mobility_disabled))
+> >                 return MIGRATE_UNMOVABLE;
+> > 
+> >         /* Group based on mobility */
+> >         return (((gfp_flags & __GFP_MOVABLE) != 0) << 1) |
+> >                 ((gfp_flags & __GFP_RECLAIMABLE) != 0);
+> > }
+> > -------------------------------------------------------------------
+> > 
+> > s/WARN_ON/VM_BUG_ON/ is better?
+> > 
 > 
-> Moreover, are we sure we really need an unsigned long long for failcnt?
->
+> I wanted to catch out-of-tree drivers but it's been a while so maybe VM_BUG_ON
+> wouldn't hurt. I can add a patch that does that a pass 2 of improving the
+> allocator or would you prefer to see it now?
 
-No we don't. But having it helps the members align well on a 8 byte
-boundary. For all you know the compiler might do that anyway, unless
-we pack the structure.
+no. another patch is better :)
 
-Why does policy need to be unsigned long long? Can't it be a boolean
-for now? Token or leaky? We can consider unioning of some fields like
-soft_limit when added along with the proposed fields.
 
--- 
-	Balbir
+> > GFP_MOVABLE_MASK makes 3. 3 mean MIGRATE_RESERVE. it seems obviously bug.
+> > 
+> 
+> Short answer;
+> No, GFP flags that result in MIGRATE_RESERVE is a bug. The caller should
+> never want to be allocating from there.
+> 
+> Longer answer;
+> The size of the MIGRATE_RESERVE depends on the number of free pages that
+> must be kept in the zone. Because GFP flags never result in here, the
+> area is only used when the alternative is to fail the allocation and the
+> watermarks are still met. The intention is that high-order atomic
+> allocations that were short lived may be allocated from here. This was
+> to preserve a behaviour in the allocator before MIGRATE_RESERVE was
+> introduced. It makes no sense for a caller to allocate directly out of
+> here and in fact the fallback list for MIGRATE_RESERVE are useless
+
+Yeah.
+My past mail is too poor. I agree it is caller's bug.
+I mean VM_BUG_ON is better because
+  - obviously caller bug 
+  - VM_BUG_ON is no runtime impact when VM_DEBUG is off.
+
+
+
