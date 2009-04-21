@@ -1,93 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbZDUTKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbZDUTLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758979AbZDUTKd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 15:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbZDUTJ4
+	id S1758070AbZDUTLH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 15:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758174AbZDUTKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 15:09:56 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:59451 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756209AbZDUTJy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 15:09:54 -0400
-Date: Tue, 21 Apr 2009 15:09:52 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David VomLehn <dvomlehn@cisco.com>
-cc: Jamie Lokier <jamie@shareable.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-In-Reply-To: <20090421165214.GB8251@cuplxvomd02.corp.sa.net>
-Message-ID: <Pine.LNX.4.44L0.0904211457150.3986-100000@iolanthe.rowland.org>
+	Tue, 21 Apr 2009 15:10:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37948 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757306AbZDUTKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 15:10:47 -0400
+Date: Tue, 21 Apr 2009 21:10:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Hemminger <shemminger@vyatta.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+Message-ID: <20090421191007.GA15485@elte.hu>
+References: <20090418094001.GA2369@ioremap.net> <20090418141455.GA7082@linux.vnet.ibm.com> <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421111541.228e977a@nehalam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009, David VomLehn wrote:
 
-> > If somebody would like to suggest a programming interface (a waitqueue 
-> > perhaps?) by which the USB hub driver could send a notification when it 
-> > becomes idle, I could implement it.
-> 
-> I actually started the USB console stuff with exactly this approach, but
-> switched to the approach that's out there. A minor drawback, which is
-> probably obvious, is that you actually wait for some interval without
-> getting anything to do before you think things are idle.
+* Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-Sorry, I don't understand.  You've got a waitqueue, and you wake up to
-try again every time a console device is registered.  So if the console
-device does exist, you'll find it as quickly as possible.  There's a
-problem only when no console device is ever registered.  In that case
-you want to stop waiting when all the devices present at boot time have
-been probed (as opposed to waiting for the user to plug in a USB serial
-device, for example).
+> +void xt_info_wrlock_bh(void)
+> +{
+> +	unsigned int i;
+> +
+> +	local_bh_disable();
+> +	for_each_possible_cpu(i) {
+> +		write_lock(&per_cpu(xt_info_locks, i));
+> +#if NR_CPUS > (PREEMPT_MASK - 1)
+> +		/*
+> +		 * Since spin_lock disables preempt, the following is
+> +		 * required to avoid overflowing the preempt counter
+> +		 */
+> +		preempt_enable_no_resched();
+> +#endif
+> +	}
+> +}
 
-So then the problem becomes: How do you tell when all the USB devices 
-present at boot time have been probed?  That's exactly what this new 
-interface is supposed to tell you.
+hm, this is rather ugly and it will make a lot of instrumentation 
+code explode.
 
->  But a bigger
-> drawback is that you lose the ability to chose appropriate intervals for
-> different classes of devices.
+Why not use the obvious solution: a _single_ wrlock for global 
+access and read_can_lock() plus per cpu locks in the fastpath?
 
-Why do you need to choose any intervals at all?  Just keep waiting
-until you know there's no point waiting any longer.  If you stop 
-waiting before then, you run the risk of missing a device that could 
-have worked.
+That way there's no global cacheline bouncing (just the _reading_ of 
+a global cacheline - which will be nicely localized - on NUMA too) - 
+and we will hold at most 1-2 locks at once!
 
-> So far, there appear to be three possible USB boot devices: consoles, network
-> devices, and boot devices.
+Something like:
 
-Is that last supposed to be "disk drives containing root filesystems"?
+	__cacheline_aligned DEFINE_RWLOCK(global_wrlock);
 
-> A system may not have all of these and so may not
-> need to wait as long as a system with all of them. One of my goals is to
-> preserve as much of the reduction in boot time as possible, even on systems
-> that use USB devices that may or may not be plugged in.
+	DEFINE_PER_CPU(rwlock_t local_lock);
 
-Let's take console devices as an example.  If one is present then you
-do want to wait until it is detected, instead of booting as quickly as
-possible, right?  Which implies that if one isn't present, you want to 
-wait until you _know_ that it's not present.  Which means waiting all 
-all the devices present during boot have been probed.
 
-This approach should work fine with USB consoles and network devices;
-it's not so easy to implement for USB disk drives.  So let's not worry 
-about them.
+	void local_read_lock(void)
+	{
+	again:
+		read_lock(&per_cpu(local_lock, this_cpu));
 
-Now the only drawback I can see would crop up if some device takes a
-very long time to probe (perhaps because of errors and retries).  If
-there's no other console device, it could slow down the boot procedure
-quite a lot.  But there doesn't appear to be any logical alternative,
-given your goals as stated above.
+		if (unlikely(!read_can_lock(&global_wrlock))) {
+			read_unlock(&per_cpu(local_lock, this_cpu));
+			/*
+			 * Just wait for any global write activity:
+			 */
+			read_unlock_wait(&global_wrlock);
+			goto again;
+		}
+	}
 
-Alan Stern
+	void global_write_lock(void)
+	{
+		write_lock(&global_wrlock);
 
+		for_each_possible_cpu(i)
+			write_unlock_wait(&per_cpu(local_lock, i));
+	}
+
+Note how nesting friendly this construct is: we dont actually _hold_ 
+NR_CPUS locks all at once, we simply cycle through all CPUs and make 
+sure they have our attention.
+
+No preempt overflow. No lockdep explosion. A very fast and scalable 
+read path.
+
+Okay - we need to implement read_unlock_wait() and 
+write_unlock_wait() which is similar to spin_unlock_wait(). The 
+trivial first-approximation is:
+
+	read_unlock_wait(x)
+	{
+		read_lock(x);
+		read_unlock(x);
+	}
+
+	write_unlock_wait(x)
+	{
+		write_lock(x);
+		write_unlock(x);
+	}
+
+Hm?
+
+	Ingo
