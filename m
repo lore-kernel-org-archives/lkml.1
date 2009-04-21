@@ -1,76 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbZDUGoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218AbZDUGxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752909AbZDUGoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 02:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZDUGoM
+	id S1752218AbZDUGxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 02:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZDUGw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 02:44:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39322 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbZDUGoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 02:44:10 -0400
-Date: Tue, 21 Apr 2009 08:43:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David VomLehn <dvomlehn@cisco.com>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+	Tue, 21 Apr 2009 02:52:56 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52912 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbZDUGw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 02:52:56 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 07/25] Check in advance if the zonelist needs additional filtering
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421064346.GB8020@elte.hu>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>
+In-Reply-To: <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-8-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090421155038.F130.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Tue, 21 Apr 2009 15:52:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David VomLehn <dvomlehn@cisco.com> wrote:
-
-> Parallelization to improve boot times has been successful enough 
-> that race conditions now exist between the init_post() open of 
-> /dev/console and initialization of the console device. When this 
-> occurs, opening /dev/console fails and any applications inherited 
-> from init have no standard in/out/error devices. This is expected 
-> behavior if no console device is available, but quite unfortunate 
-> in the case where the console is just a bit slow waking up.
+> Zonelist are filtered based on nodemasks for memory policies normally.
+> It can be additionally filters on cpusets if they exist as well as
+> noting when zones are full. These simple checks are expensive enough to
+> be noticed in profiles. This patch checks in advance if zonelist
+> filtering will ever be needed. If not, then the bulk of the checks are
+> skipped.
 > 
-> Some buses, such as USB, offer no guarantees about how long it 
-> takes to discover devices, so there is no reliable way to 
-> distinguish between a missing console and a slow one.  The 
-> pragmatic approach taken in this patch is to wait for a while to 
-> see if a console shows up, and just go on if it doesn't. The 
-> default delay is 1000 msec (1 second). This value is conjured out 
-> of thing air; any suggestions for a value that more closely 
-> approximates the effective delays from the olden days before USB 
-> consoles starting failing are more than welcome.
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  include/linux/cpuset.h |    2 ++
+>  mm/page_alloc.c        |   37 ++++++++++++++++++++++++++-----------
+>  2 files changed, 28 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
+> index a5740fc..978e2f1 100644
+> --- a/include/linux/cpuset.h
+> +++ b/include/linux/cpuset.h
+> @@ -97,6 +97,8 @@ static inline void set_mems_allowed(nodemask_t nodemask)
+>  
+>  #else /* !CONFIG_CPUSETS */
+>  
+> +#define number_of_cpusets (0)
+> +
+>  static inline int cpuset_init(void) { return 0; }
+>  static inline void cpuset_init_smp(void) {}
+>  
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index c8465d0..3613ba4 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1137,7 +1137,11 @@ failed:
+>  #define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
+>  #define ALLOC_HARDER		0x10 /* try to alloc harder */
+>  #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
+> +#ifdef CONFIG_CPUSETS
+>  #define ALLOC_CPUSET		0x40 /* check for correct cpuset */
+> +#else
+> +#define ALLOC_CPUSET		0x00
+> +#endif /* CONFIG_CPUSETS */
+>  
+>  #ifdef CONFIG_FAIL_PAGE_ALLOC
+>  
+> @@ -1401,6 +1405,7 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+>  	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
+>  	int zlc_active = 0;		/* set if using zonelist_cache */
+>  	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
+> +	int zonelist_filter = 0;
+>  
+>  	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+>  							&preferred_zone);
+> @@ -1411,6 +1416,10 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+>  
+>  	VM_BUG_ON(order >= MAX_ORDER);
+>  
+> +	/* Determine in advance if the zonelist needs filtering */
+> +	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
+> +		zonelist_filter = 1;
+> +
+>  zonelist_scan:
+>  	/*
+>  	 * Scan zonelist, looking for a zone with enough free.
+> @@ -1418,12 +1427,16 @@ zonelist_scan:
+>  	 */
+>  	for_each_zone_zonelist_nodemask(zone, z, zonelist,
+>  						high_zoneidx, nodemask) {
+> -		if (NUMA_BUILD && zlc_active &&
+> -			!zlc_zone_worth_trying(zonelist, z, allowednodes))
+> -				continue;
+> -		if ((alloc_flags & ALLOC_CPUSET) &&
+> -			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+> -				goto try_next_zone;
+> +
+> +		/* Ignore the additional zonelist filter checks if possible */
+> +		if (zonelist_filter) {
+> +			if (NUMA_BUILD && zlc_active &&
+> +				!zlc_zone_worth_trying(zonelist, z, allowednodes))
+> +					continue;
+> +			if ((alloc_flags & ALLOC_CPUSET) &&
+> +				!cpuset_zone_allowed_softwall(zone, gfp_mask))
+> +					goto try_next_zone;
+> +		}
 
-hm, this really seems like a bad hack and a workaround to me and as 
-such it is not really an acceptable solution.
+if number_of_cpusets==1, old code call zlc_zone_worth_trying(). but your one never call.
+it seems regression.
 
-The proper approach would be to use one of the async_synchronize*() 
-facilities in kernel/async.c to properly order the opening of the 
-console with device init.
 
-Certain subsystems like storage (SCSI, libata, mount code and 
-modules) has already been extended to this scheme.
+>  
+>  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+>  			unsigned long mark;
+> @@ -1445,13 +1458,15 @@ zonelist_scan:
+>  		if (page)
+>  			break;
+>  this_zone_full:
+> -		if (NUMA_BUILD)
+> +		if (NUMA_BUILD && zonelist_filter)
+>  			zlc_mark_zone_full(zonelist, z);
+>  try_next_zone:
+> -		if (NUMA_BUILD && !did_zlc_setup) {
+> -			/* we do zlc_setup after the first zone is tried */
+> -			allowednodes = zlc_setup(zonelist, alloc_flags);
+> -			zlc_active = 1;
+> +		if (NUMA_BUILD && zonelist_filter) {
+> +			if (!did_zlc_setup) {
+> +				/* do zlc_setup after the first zone is tried */
+> +				allowednodes = zlc_setup(zonelist, alloc_flags);
+> +				zlc_active = 1;
+> +			}
+>  			did_zlc_setup = 1;
+>  		}
+>  	}
+> -- 
+> 1.5.6.5
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-So i think the right approach, if you want to speed up bootup, would 
-be to extend the same concepts to console discovery, init and open 
-methods.
 
-	Ingo
+
