@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZDUURG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbZDUUXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbZDUURG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZDUUQx
+	id S1752783AbZDUUXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZDUUXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:16:53 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:41201 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbZDUUQx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:16:53 -0400
-Subject: [GIT PULL] Btrfs changes for 2.6.30-rc
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 21 Apr 2009 09:29:05 -0400
-Message-Id: <1240320545.4869.22.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49EDDAEC.017C:SCFMA4539814,ss=1,fgs=0
-X-QuarantineReason: Unscannable attachment
+	Tue, 21 Apr 2009 16:23:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50296 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751169AbZDUUXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 16:23:34 -0400
+Date: Tue, 21 Apr 2009 13:20:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Clemens Ladisch <clemens@ladisch.de>
+Subject: Re: [PATCH] go7007: Convert to the new i2c device binding model
+	(v2)
+Message-ID: <20090421202036.GA9343@suse.de>
+References: <20090421212430.57819f8f@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090421212430.57819f8f@hyperion.delvare>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Tue, Apr 21, 2009 at 09:24:30PM +0200, Jean Delvare wrote:
+> Move the go7007 driver away from the legacy i2c binding model, which
+> is going away really soon now.
+> 
+> The I2C addresses of the audio and video chips in s2250-board didn't
+> look quite right, apparently they were left-aligned values when Linux
+> wants right-aligned values, so I fixed them too.
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+> Note: I just pushed this to Linus, as this is blocking the removal of
+> the legacy i2c binding model, and I see no point in waiting for a
+> driver which clearly doesn't work today anyway.
 
-The master branch of:
+No objection from me, feel free to add my:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+if you need it.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+thanks,
 
-Has some fixes for oopsen and a cluster of bugs inside of one of the
-btree readahead functions.
-
-I also jumped on the fsync latency train for btrfs and switched over to
-WRITE_SYNC for the writes I was going to wait on.
-
-This is a bigger change in btrfs because I had to add a high priority
-list to the async helper threads, but it had a big impact on performance
-overall.  Before, the writes we were waiting on would get stuck behind
-the less critical writes in the async helper threads, and now they pop
-out much faster.
-
-Average fsync latencies concurrent with a streaming writer went down
-from ~5 seconds (with longer peaks) to < 1 second.
-
-Chris Mason (4):
-      Btrfs: use WRITE_SYNC for synchronous writes
-      Btrfs: add a priority queue to the async thread helpers
-      Btrfs: fix oops on page->mapping->host during writepage
-      Btrfs: use the right node in reada_for_balance
-
- fs/btrfs/async-thread.c |   60 ++++++++++++++++++-----
- fs/btrfs/async-thread.h |    2
- fs/btrfs/ctree.c        |   17 ++++--
- fs/btrfs/disk-io.c      |    9 ++-
- fs/btrfs/extent_io.c    |   86 ++++++++++++++++++++++++---------
- fs/btrfs/file.c         |    2
- fs/btrfs/ordered-data.c |    2
- fs/btrfs/volumes.c      |  124 +++++++++++++++++++++++++++++++++++++-----------
- fs/btrfs/volumes.h      |   13 ++++-
-
--chris
-
-
+greg k-h
