@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbZDUOOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZDUOPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753200AbZDUOOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZDUOOL
+	id S1754719AbZDUOPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZDUOPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:14:11 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:32968 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbZDUOOK (ORCPT
+	Tue, 21 Apr 2009 10:15:00 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:58409 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZDUOO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:14:10 -0400
-Date: Tue, 21 Apr 2009 15:14:08 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFD] voltage/current regulator consumer interface
-Message-ID: <20090421141408.GF25828@sirena.org.uk>
-References: <49EC8775.8060609@compulab.co.il> <20090420145627.GA5281@rakim.wolfsonmicro.main> <49EDB569.2060701@compulab.co.il> <20090421125528.GD25828@sirena.org.uk> <49EDD02B.5020407@compulab.co.il> <20090421135640.GE25828@sirena.org.uk> <49EDD1C9.2060408@compulab.co.il>
+	Tue, 21 Apr 2009 10:14:59 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: lockdep report at resume
+Date: Tue, 21 Apr 2009 16:14:56 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.29-9-default; KDE/4.1.3; x86_64; ; )
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input" <linux-input@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>
+References: <1234022517.4175.107.camel@johannes.local> <200904211559.43497.oliver@neukum.org> <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49EDD1C9.2060408@compulab.co.il>
-X-Cookie: Rubber bands have snappy endings!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Message-Id: <200904211614.57288.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 05:01:45PM +0300, Mike Rapoport wrote:
-> Mark Brown wrote:
+Am Dienstag 21 April 2009 16:11:03 schrieb Jiri Kosina:
+> On Tue, 21 Apr 2009, Oliver Neukum wrote:
+> > > [ thanks for the analysis Johannes ... involving also Oliver here;
+> > > really seems like a false positive to me ]
+> >
+> > I think he's right. But as a matter of principle I'd like to see
+> > flush_scheduled_work() avoided where possible, hence the patch.
+>
+> I am not entirely sure that this is the same issue as the one from #13136
+> of kernel.org bugzilla.
 
-> >>> "userspace" or "user"?  The goal here is to let userspace applications
-> >>> be consumers.
+Which flush_scheduled_work() do you think triggers it?
 
-> > I'm talking about the name.
+	Regards
+		Oliver
 
-> As I said, I could not invent something better. Any idea?
-
-Those are my ideas :)
