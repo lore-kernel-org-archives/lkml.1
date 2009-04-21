@@ -1,84 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZDUIIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZDUIIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbZDUIIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZDUIHh
+	id S1754923AbZDUIIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZDUIHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:07:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45507 "EHLO hera.kernel.org"
+	Tue, 21 Apr 2009 04:07:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45511 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbZDUIHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:07:34 -0400
-Date: Tue, 21 Apr 2009 08:06:37 GMT
-From: tip-bot for Gautham R Shenoy <ego@in.ibm.com>
+	id S1754152AbZDUIHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:07:41 -0400
+Date: Tue, 21 Apr 2009 08:07:00 GMT
+From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, ego@in.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, rusty@rustcorp.com.au, sfr@canb.auug.org.au,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mingo@elte.hu
-In-Reply-To: <20090421031049.GA4140@in.ibm.com>
-References: <20090421031049.GA4140@in.ibm.com>
-Subject: [tip:sched/core] sched: Replace first_cpu() with cpumask_first() in ILB nomination code
-Message-ID: <tip-6e29ec5701e9d44fa02b96c1c5c45f7516182b65@git.kernel.org>
-Git-Commit-ID: 6e29ec5701e9d44fa02b96c1c5c45f7516182b65
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       weidong.han@intel.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, weidong.han@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090420200450.271099000@linux-os.sc.intel.com>
+References: <20090420200450.271099000@linux-os.sc.intel.com>
+Subject: [tip:x86/apic] x86: x2apic, IR: Move eoi_ioapic_irq() into a CONFIG_INTR_REMAP section
+Message-ID: <tip-25629d810a52176758401184d9b437fbb7f79195@git.kernel.org>
+Git-Commit-ID: 25629d810a52176758401184d9b437fbb7f79195
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 08:06:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 08:07:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6e29ec5701e9d44fa02b96c1c5c45f7516182b65
-Gitweb:     http://git.kernel.org/tip/6e29ec5701e9d44fa02b96c1c5c45f7516182b65
-Author:     Gautham R Shenoy <ego@in.ibm.com>
-AuthorDate: Tue, 21 Apr 2009 08:40:49 +0530
+Commit-ID:  25629d810a52176758401184d9b437fbb7f79195
+Gitweb:     http://git.kernel.org/tip/25629d810a52176758401184d9b437fbb7f79195
+Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+AuthorDate: Mon, 20 Apr 2009 13:02:28 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 21 Apr 2009 08:06:05 +0200
+CommitDate: Tue, 21 Apr 2009 09:08:26 +0200
 
-sched: Replace first_cpu() with cpumask_first() in ILB nomination code
+x86: x2apic, IR: Move eoi_ioapic_irq() into a CONFIG_INTR_REMAP section
 
-Stephen Rothwell reported this build warning:
+Address the following complier warning:
 
->  kernel/sched.c: In function 'find_new_ilb':
->  kernel/sched.c:4355: warning: passing argument 1 of '__first_cpu' from incompatible pointer type
->
-> Possibly caused by commit f711f6090a81cbd396b63de90f415d33f563af9b
-> ("sched: Nominate idle load balancer from a semi-idle package") from
-> the sched tree.  Should this call to first_cpu be cpumask_first?
+   arch/x86/kernel/apic/io_apic.c:2543: warning: `eoi_ioapic_irq' defined but not used
 
-For !(CONFIG_SCHED_MC || CONFIG_SCHED_SMT), find_new_ilb() nominates the
-Idle load balancer as the first cpu from the nohz.cpu_mask.
+By moving that function (and eoi_ioapic_irq()) into an existing
+#ifdef CONFIG_INTR_REMAP section of the code.
 
-This code uses the older API first_cpu(). Replace it with cpumask_first(),
-which is the correct API here.
+[ Impact: cleanup ]
 
-[ Impact: cleanup, address build warning ]
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-LKML-Reference: <20090421031049.GA4140@in.ibm.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: dwmw2@infradead.org
+Cc: Weidong Han <weidong.han@intel.com>
+LKML-Reference: <20090420200450.271099000@linux-os.sc.intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Weidong Han <weidong.han@intel.com>
 
 
 ---
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |   66 ++++++++++++++++++++--------------------
+ 1 files changed, 33 insertions(+), 33 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 797f6fd..54d67b9 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4356,7 +4356,7 @@ out_done:
- #else /*  (CONFIG_SCHED_MC || CONFIG_SCHED_SMT) */
- static inline int find_new_ilb(int call_cpu)
- {
--	return first_cpu(nohz.cpu_mask);
-+	return cpumask_first(nohz.cpu_mask);
- }
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 3a45d2e..4baa9cb 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -2517,39 +2517,6 @@ static void irq_complete_move(struct irq_desc **descp)
+ static inline void irq_complete_move(struct irq_desc **descp) {}
  #endif
  
+-static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
+-{
+-	int apic, pin;
+-	struct irq_pin_list *entry;
+-
+-	entry = cfg->irq_2_pin;
+-	for (;;) {
+-
+-		if (!entry)
+-			break;
+-
+-		apic = entry->apic;
+-		pin = entry->pin;
+-		io_apic_eoi(apic, pin);
+-		entry = entry->next;
+-	}
+-}
+-
+-static void
+-eoi_ioapic_irq(struct irq_desc *desc)
+-{
+-	struct irq_cfg *cfg;
+-	unsigned long flags;
+-	unsigned int irq;
+-
+-	irq = desc->irq;
+-	cfg = desc->chip_data;
+-
+-	spin_lock_irqsave(&ioapic_lock, flags);
+-	__eoi_ioapic_irq(irq, cfg);
+-	spin_unlock_irqrestore(&ioapic_lock, flags);
+-}
+-
+ static void ack_apic_edge(unsigned int irq)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+@@ -2659,6 +2626,39 @@ static void ack_apic_level(unsigned int irq)
+ }
+ 
+ #ifdef CONFIG_INTR_REMAP
++static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
++{
++	int apic, pin;
++	struct irq_pin_list *entry;
++
++	entry = cfg->irq_2_pin;
++	for (;;) {
++
++		if (!entry)
++			break;
++
++		apic = entry->apic;
++		pin = entry->pin;
++		io_apic_eoi(apic, pin);
++		entry = entry->next;
++	}
++}
++
++static void
++eoi_ioapic_irq(struct irq_desc *desc)
++{
++	struct irq_cfg *cfg;
++	unsigned long flags;
++	unsigned int irq;
++
++	irq = desc->irq;
++	cfg = desc->chip_data;
++
++	spin_lock_irqsave(&ioapic_lock, flags);
++	__eoi_ioapic_irq(irq, cfg);
++	spin_unlock_irqrestore(&ioapic_lock, flags);
++}
++
+ static void ir_ack_apic_edge(unsigned int irq)
+ {
+ 	ack_APIC_irq();
