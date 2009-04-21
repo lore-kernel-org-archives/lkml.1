@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZDUPrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZDUPz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbZDUPrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 11:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZDUPrI
+	id S1753312AbZDUPz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 11:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZDUPzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 11:47:08 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42131 "EHLO gir.skynet.ie"
+	Tue, 21 Apr 2009 11:55:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43931 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753670AbZDUPrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 11:47:07 -0400
-Date: Tue, 21 Apr 2009 16:47:03 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
+	id S1750842AbZDUPzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 11:55:16 -0400
+Date: Tue, 21 Apr 2009 17:50:32 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 11/25] Calculate the cold parameter for allocation only
-	once
-Message-ID: <20090421154703.GC29083@csn.ul.ie>
-References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie> <1237543392-11797-12-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903201109250.3740@qirst.com> <20090421151355.GA29083@csn.ul.ie> <alpine.DEB.1.10.0904211122540.21796@qirst.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] ftrace, workqueuetrace: Make
+	workqueuetracepoints use TRACE_EVENT macro
+Message-ID: <20090421155032.GB5402@redhat.com>
+References: <20090420103612.4B4E.A69D9226@jp.fujitsu.com> <47EF9F5C609F496FBBD423EA81A00920@zhaoleiwin> <20090420104734.4B51.A69D9226@jp.fujitsu.com> <20090420084631.GA32625@elte.hu> <20090420222514.GA15680@redhat.com> <20090420234835.GC5997@nowhere> <20090421152843.GA5402@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904211122540.21796@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090421152843.GA5402@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 11:25:34AM -0400, Christoph Lameter wrote:
-> On Tue, 21 Apr 2009, Mel Gorman wrote:
-> 
-> > On Fri, Mar 20, 2009 at 11:09:40AM -0400, Christoph Lameter wrote:
-> > >
-> > > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> > I apologise, I've it added now. While the patch is currently dropped from the
-> > set, I'll bring it back later for further discussion when it can be
-> > established if it really helps or not.
-> 
-> Sooo much self-doubt.....
+On 04/21, Oleg Nesterov wrote:
+>
+> On 04/21, Frederic Weisbecker wrote:
+> >
+> > For example,
+> >
+> > - the user opens the stat file
+> > - then the entries are loaded and sorted into memory
+> > - one of the workqueues is destroyed
 
-Not as such. the objective was to get a patchset that was
-uncontroversial and relatively clear wins. This is not as clear cut as I
-don't have data on exactly how much it helps right now. It'll be easier
-to revisit in isolation than half-way through this set.
+Hmm. And what protects cws when, say, workqueue_stat_show() is called?
+Can't we race with probe_workqueue_destruction()->kfree() ?
 
-> Could you post the not included patches at the
-> end of your patchsets so that others can help improve those?
-> 
+Oleg.
 
-When I get this set finalised, pass two will start with a posting of
-everything that got thrown out during this pass such as this patch, the
-high order in PCP stuff, the gfp zone patch etc.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
