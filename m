@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZDUOsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbZDUOyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbZDUOsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZDUOsT
+	id S1753174AbZDUOyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZDUOyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:48:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35664 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbZDUOsS (ORCPT
+	Tue, 21 Apr 2009 10:54:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35049 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750975AbZDUOyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:48:18 -0400
-Date: Tue, 21 Apr 2009 10:48:10 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Suresh Jayaraman <sjayaraman@suse.de>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Masahiro Tamori <masahiro.tamori@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
-Message-ID: <20090421144810.GA7036@infradead.org>
-References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal> <49D45E42.3050502@suse.de> <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com> <49EC0A83.8060802@suse.de> <1240230224.8073.6.camel@heimdal.trondhjem.org> <49EC6CB3.8080800@suse.de> <1240237274.13636.9.camel@heimdal.trondhjem.org> <49EC990B.1030007@suse.de>
+	Tue, 21 Apr 2009 10:54:15 -0400
+Date: Tue, 21 Apr 2009 10:54:13 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL] ring-buffer: only warn on wrap if buffer is
+ bigger than two pages
+In-Reply-To: <20090421143509.GA5243@elte.hu>
+Message-ID: <alpine.DEB.2.00.0904211051590.10097@gandalf.stny.rr.com>
+References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904210954090.10097@gandalf.stny.rr.com> <20090421143509.GA5243@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EC990B.1030007@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 09:17:23PM +0530, Suresh Jayaraman wrote:
-> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-> +				     struct file *filp, loff_t *ppos,
-> +				     size_t count, unsigned int flags)
-> +{
-> +	struct dentry *dentry = filp->f_path.dentry;
-> +
-> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
-> +		dentry->d_parent->d_name.name, dentry->d_name.name,
-> +		(unsigned long) count, (unsigned long long) *ppos);
-> +
-> +	return generic_file_splice_write(pipe, filp, ppos, count, flags);
-> +}
-> +
 
-You need all calls from nfs_file_write, too:
 
- - most importantly the nfs_revalidate_file_size for O_APPEND
- - the nfs_do_fsync for sync writes
- - probably the stats increment
+
+On Tue, 21 Apr 2009, Ingo Molnar wrote:
+
+> 
+> here's a new one:
+> 
+>  Testing event sched_kthread_stop: <4>------------[ cut here ]------------
+>  WARNING: at kernel/fork.c:988 copy_process+0x147/0xf7d()
+>  Modules linked in:
+> 
+> config attached, bootlog below. This warning has the signs of some 
+> sort of lockdep interaction. (this too is a new one - it never 
+> triggered before)
+> 
+> 	Ingo
+> 
+> Running tests again, along with the function tracer
+> Running tests on trace events:
+> Testing event kfree_skb: OK
+> Testing event kmalloc: OK
+> Testing event kmem_cache_alloc: OK
+> Testing event kmalloc_node: OK
+> Testing event kmem_cache_alloc_node: OK
+> Testing event kfree: OK
+> Testing event kmem_cache_free: OK
+> Testing event irq_handler_exit: OK
+> Testing event irq_handler_entry: OK
+> Testing event softirq_entry: OK
+> Testing event softirq_exit: OK
+> Testing event lock_acquired: OK
+> Testing event lock_acquire: OK
+> Testing event lock_release: OK
+> Testing event lock_contended: OK
+> Testing event sched_kthread_stop: <4>------------[ cut here ]------------
+> WARNING: at kernel/fork.c:988 copy_process+0x147/0xf7d()
+> Modules linked in:
+> Pid: 2, comm: kthreadd Not tainted 2.6.30-rc2-tip-01581-gf4879a9-dirty #34509
+> Call Trace:
+>  [<ffffffff80249801>] warn_slowpath+0x96/0xca
+>  [<ffffffff8026f200>] ? trace_hardirqs_on_caller+0xff/0x14c
+>  [<ffffffff8026f25a>] ? trace_hardirqs_on+0xd/0xf
+>  [<ffffffff80261cb6>] ? __mutex_init+0x5a/0x64
+>  [<ffffffff802accdf>] ? perf_counter_init_task+0x65/0x17b
+>  [<ffffffff80247ca6>] copy_process+0x147/0xf7d
+>  [<ffffffff80211d57>] ? trace+0x3a/0x73
+>  [<ffffffff80248c7b>] do_fork+0x19f/0x478
+>  [<ffffffff8025f03c>] ? kthreadd+0xb8/0x11c
+>  [<ffffffff80212f12>] kernel_thread+0x82/0xe0
+>  [<ffffffff808cbad4>] ? schedule+0x11f/0x5e1
+>  [<ffffffff8025f0a0>] ? kthread+0x0/0x80
+>  [<ffffffff80212f70>] ? child_rip+0x0/0x20
+>  [<ffffffff8025f050>] ? kthreadd+0xcc/0x11c
+>  [<ffffffff80fde140>] ? early_idt_handler+0x0/0x71
+>  [<ffffffff80212f7a>] child_rip+0xa/0x20
+>  [<ffffffff80212a52>] ? restore_args+0x0/0x30
+>  [<ffffffff8025ef84>] ? kthreadd+0x0/0x11c
+>  [<ffffffff80212f70>] ? child_rip+0x0/0x20
+> ---[ end trace 0843ba422c5d704e ]---
+> OK
+> Testing event sched_kthread_stop_ret: OK
+
+The above looks like the tracer slowed things down enough to trigger a 
+race elsewhere.
+
+We have function tracing happening, and here we enabled the 
+sched_kthread_stop tracepoint. Each test starts and stops a kernel thread. 
+
+I'm not sure how this could have triggered.
+
+I'll investigate a little more.
+
+-- Steve
+
