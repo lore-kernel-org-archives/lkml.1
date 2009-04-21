@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZDUMQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZDUMSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbZDUMQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 08:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbZDUMQc
+	id S1753452AbZDUMSj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 08:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZDUMS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 08:16:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:50606 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZDUMQb (ORCPT
+	Tue, 21 Apr 2009 08:18:28 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:34580 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750832AbZDUMS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 08:16:31 -0400
-Message-ID: <49EDB8EF.7040503@vlnb.net>
-Date: Tue, 21 Apr 2009 16:15:43 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Douglas Gilbert <dgilbert@interlog.com>, Christoph Hellwig <hch@lst.de>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional legacy	scsi_execute_async()
- usage for Linux/SCSI passthrough
-References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org> <49EB036B.8090607@panasas.com>
-In-Reply-To: <49EB036B.8090607@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 21 Apr 2009 08:18:28 -0400
+Date: Tue, 21 Apr 2009 21:18:27 +0900 (JST)
+Message-Id: <20090421.211827.39163016.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: nauman@google.com, fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       jmoyer@redhat.com, dm-devel@redhat.com, jens.axboe@oracle.com,
+       agk@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com
+Subject: Re: [dm-devel] Re: dm-ioband: Test results.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090420213738.GB9080@redhat.com>
+References: <e98e18940904161324p9833457vdf699d66bb323591@mail.gmail.com>
+	<20090420.172959.193682665.ryov@valinux.co.jp>
+	<20090420213738.GB9080@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX184VTthQa12I7upGE2tN83hJ2M95/JpetgHneY
- Kw764sGfppxmJo6DK12Pe3SQogjvfGXZzP2qFJgS6NpBLukXLb
- jq9A/yOkf9PUJYcIYy8/A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh, on 04/19/2009 02:56 PM wrote:
-> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
+Hi Vivek,
 
-[..]
-
-> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
+> > I could see the priority inversion by running Vivek's script and I
+> > understand how RT requests has to be handled. I'll create a patch
+> > which makes dm-ioband cooperates with CFQ scheduler. However, do you
+> > think we need some kind of limitation on processes which belong to the
+> > RT class to prevent the processes from depleting bandwidth?
+>
+> I think to begin with, we can keep the same behavior as CFQ. An RT task
+> can starve other tasks.
 > 
-> I'm not sure what would be the best alternative for you. I would say
-> a bio, but it is still being debated. Your current options are:
+> But we should provide two configurations and user can choose any one.
+> If RT task is in root group, it will starve other sibling tasks/groups. If
+> it is with-in a cgroup, then it will starve its sibling only with-in that
+> cgroup and will not impact other cgroups.
 > 
-> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
->    (Which block people don't like)
-> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
->    struct rq_map_data mode. (not possible with all kind of sglists)
-> 2. sglist => iovec translation and blk_rq_map_user_iov()
->    (Very very ugly mapping of pages to virtual pointers)
+> What I mean is following.
 > 
-> I have a similar situation with my OSD code.
+> 			root
+> 			/  \
+> 		      RT   group1
+> 
+> In above configuration RT task will starve everybody else.
+> 
+> 			root
+> 		        /   \
+> 		   group1   group2
+> 		   /  \
+> 	         RT   BE
+> 
+> In above configuration  RT task will starve only sibling in group1 but
+> will not starve the tasks in group2 or in root.
 
-Do you have somewhere in it a need to run an arbitrary CDB with data 
-pages stored in an sglist? Is that code accepted in the mainline?
+Thanks for the suggestion. I'll try this way when dm-ioband supports
+hierarchical grouping.
 
-If yes, why not to resurrect the necessary bits of scsi_execute_async() 
-(option (1) above)? It was deleted, because in 2.6.30 there are no users 
-of it left, but if there are users (OSD), then why not to return it? 
-Seems nothing better for the sg->bio case can be invented.
-
-Vlad
+Thanks,
+Ryo Tsuruta
