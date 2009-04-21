@@ -1,104 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZDUFW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZDUFYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbZDUFW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 01:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDUFWi
+	id S1752967AbZDUFYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 01:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZDUFYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 01:22:38 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34147 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbZDUFWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 01:22:37 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andy Whitcroft <apw@shadowen.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: [PATCH] low order lumpy reclaim also should use PAGEOUT_IO_SYNC.
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090421142056.F127.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 01:24:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49466 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750811AbZDUFX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 01:23:58 -0400
+Message-ID: <49ED5813.1000803@cn.fujitsu.com>
+Date: Tue, 21 Apr 2009 13:22:27 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 21 Apr 2009 14:22:27 +0900 (JST)
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, mingo@elte.hu, jengelh@medozas.de,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>	<49E72E83.50702@trash.net>	<20090416.153354.170676392.davem@davemloft.net>	<20090416234955.GL6924@linux.vnet.ibm.com>	<20090417012812.GA25534@linux.vnet.ibm.com>	<20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <49ED406F.2040401@cn.fujitsu.com> <49ED4407.8010200@cosmosbay.com>
+In-Reply-To: <49ED4407.8010200@cosmosbay.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] low order lumpy reclaim also should use PAGEOUT_IO_SYNC.
+Eric Dumazet wrote:
+> Lai Jiangshan a écrit :
+>> Stephen Hemminger wrote:
+>>> +/**
+>>> + * xt_table_info_rdlock_bh - recursive read lock for xt table info
+>>> + *
+>>> + * Table processing calls this to hold off any changes to table
+>>> + * (on current CPU). Always leaves with bottom half disabled.
+>>> + * If called recursively, then assumes bh/preempt already disabled.
+>>> + */
+>>> +void xt_info_rdlock_bh(void)
+>>> +{
+>>> +	struct xt_info_lock *lock;
+>>> +
+>>> +	preempt_disable();
+>>> +	lock = &__get_cpu_var(xt_info_locks);
+>>> +	if (likely(++lock->depth == 0))
+>> Maybe I missed something. I think softirq may be still enabled here.
+>> So what happen when xt_info_rdlock_bh() called recursively here?
+> 
+> well, first time its called, you are right softirqs are enabled until
+> the point we call spin_lock_bh(), right after this line :
 
-commit 33c120ed2843090e2bd316de1588b8bf8b96cbde (more aggressively use lumpy reclaim)
-change lumpy reclaim using condition. but it isn't enough change.
+xt_info_rdlock_bh() called recursively here will enter the
+critical region without &__get_cpu_var(xt_info_locks)->lock.
 
-lumpy reclaim don't only mean isolate neighber page, but also do pageout as synchronous.
-this patch does it.
+Because xt_info_rdlock_bh() called recursively here sees
+lock->depth >= 0, and "++lock->depth == 0" is false.
 
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andy Whitcroft <apw@shadowen.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Rik van Riel <riel@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/vmscan.c |   29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+> 
+> 
+>>> +		spin_lock_bh(&lock->lock);
+>>> +	preempt_enable_no_resched();
+> 
+> After this line, both softirqs and preempt are disabled.
+> 
+> Future calls to this function temporarly raise preemptcount and decrease it.
+> (Null effect)
+> 
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+>>> +
+>> Is this OK for you:
+>>
+>> void xt_info_rdlock_bh(void)
+>> {
+>> 	struct xt_info_lock *lock;
+>>
+>> 	local_bh_disable();
+> 
+> well, Stephen was trying to not change preempt count for the 2nd, 3rd, 4th?... invocation of this function.
+> This is how I understood the code.
+> 
+>> 	lock = &__get_cpu_var(xt_info_locks);
+>> 	if (likely(++lock->depth == 0))
+>> 		spin_lock(&lock->lock);
+>> }
+>>
 
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1049,6 +1049,19 @@ static unsigned long shrink_inactive_lis
- 	unsigned long nr_scanned = 0;
- 	unsigned long nr_reclaimed = 0;
- 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-+	int lumpy_reclaim = 0;
-+
-+	/*
-+	 * If we need a large contiguous chunk of memory, or have
-+	 * trouble getting a small set of contiguous pages, we
-+	 * will reclaim both active and inactive pages.
-+	 *
-+	 * We use the same threshold as pageout congestion_wait below.
-+	 */
-+	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
-+		lumpy_reclaim = 1;
-+	else if (sc->order && priority < DEF_PRIORITY - 2)
-+		lumpy_reclaim = 1;
- 
- 	pagevec_init(&pvec, 1);
- 
-@@ -1061,19 +1074,7 @@ static unsigned long shrink_inactive_lis
- 		unsigned long nr_freed;
- 		unsigned long nr_active;
- 		unsigned int count[NR_LRU_LISTS] = { 0, };
--		int mode = ISOLATE_INACTIVE;
--
--		/*
--		 * If we need a large contiguous chunk of memory, or have
--		 * trouble getting a small set of contiguous pages, we
--		 * will reclaim both active and inactive pages.
--		 *
--		 * We use the same threshold as pageout congestion_wait below.
--		 */
--		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
--			mode = ISOLATE_BOTH;
--		else if (sc->order && priority < DEF_PRIORITY - 2)
--			mode = ISOLATE_BOTH;
-+		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
- 
- 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
- 			     &page_list, &nr_scan, sc->order, mode,
-@@ -1110,7 +1111,7 @@ static unsigned long shrink_inactive_lis
- 		 * but that should be acceptable to the caller
- 		 */
- 		if (nr_freed < nr_taken && !current_is_kswapd() &&
--					sc->order > PAGE_ALLOC_COSTLY_ORDER) {
-+		    lumpy_reclaim) {
- 			congestion_wait(WRITE, HZ/10);
- 
- 			/*
+Sorry for it.
+Is this OK:
+
+void xt_info_rdlock_bh(void)
+{
+	struct xt_info_lock *lock;
+
+	local_bh_disable();
+	lock = &__get_cpu_var(xt_info_locks);
+	if (likely(++lock->depth == 0))
+		spin_lock(&lock->lock);
+	else
+		local_bh_enable();
+}
+
+I did not think things carefully enough, and I do know
+nothing about ip/ip6/arp.
+
+Lai
+
 
 
