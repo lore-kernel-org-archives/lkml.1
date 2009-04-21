@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZDUINs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZDUIOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbZDUINs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZDUIN3
+	id S1755256AbZDUIOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbZDUIN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:13:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33821 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754734AbZDUINZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:13:25 -0400
-Date: Tue, 21 Apr 2009 08:12:42 GMT
-From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
-Subject: [tip:x86/urgent] x86: avoid theoretical spurious NMI backtraces with CONFIG_CPUMASK_OFFSTACK=y
-Message-ID: <tip-fcc5c4a2feea3886dc058498b28508b2731720d5@git.kernel.org>
-Git-Commit-ID: fcc5c4a2feea3886dc058498b28508b2731720d5
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 08:12:44 +0000 (UTC)
+	Tue, 21 Apr 2009 04:13:58 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40148 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754318AbZDUIN5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:13:57 -0400
+Subject: Re: [PATCH 00/25] Cleanup and optimise the page allocator V6
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+Date: Tue, 21 Apr 2009 11:13:54 +0300
+Message-Id: <1240301634.771.64.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fcc5c4a2feea3886dc058498b28508b2731720d5
-Gitweb:     http://git.kernel.org/tip/fcc5c4a2feea3886dc058498b28508b2731720d5
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Tue, 21 Apr 2009 16:03:41 +0930
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 21 Apr 2009 10:09:50 +0200
+On Mon, 2009-04-20 at 23:19 +0100, Mel Gorman wrote:
+> Here is V6 of the cleanup and optimisation of the page allocator and it
+> should be ready for wider testing. Please consider a possibility for
+> merging as a Pass 1 at making the page allocator faster.
 
-x86: avoid theoretical spurious NMI backtraces with CONFIG_CPUMASK_OFFSTACK=y
+The patch series is quite big. Can we fast-track some of the less
+controversial patches to make it more manageable? AFAICT, 1-4 are ready
+to go in to -mm as-is.
 
-In theory (though not shown in practice) alloc_cpumask_var() doesn't zero
-memory, so CPUs might print an "NMI backtrace for cpu %d" once on boot.
-
-(Bug introduced in fcef8576d8a64fc603e719c97d423f9f6d4e0e8b).
-
-[ Impact: avoid theoretical syslog noise in rare configs ]
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <alpine.DEB.2.00.0904202113520.10097@gandalf.stny.rr.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/apic/nmi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
-index 2ba52f3..ce4fbfa 100644
---- a/arch/x86/kernel/apic/nmi.c
-+++ b/arch/x86/kernel/apic/nmi.c
-@@ -138,7 +138,7 @@ int __init check_nmi_watchdog(void)
- 	if (!prev_nmi_count)
- 		goto error;
- 
--	alloc_cpumask_var(&backtrace_mask, GFP_KERNEL);
-+	alloc_cpumask_var(&backtrace_mask, GFP_KERNEL|__GFP_ZERO);
- 	printk(KERN_INFO "Testing NMI watchdog ... ");
- 
- #ifdef CONFIG_SMP
