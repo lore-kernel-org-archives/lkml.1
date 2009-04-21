@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZDUQLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZDUQMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbZDUQLM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZDUQKz
+	id S1755177AbZDUQMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZDUQMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:10:55 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:48900 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283AbZDUQKy (ORCPT
+	Tue, 21 Apr 2009 12:12:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:1198 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbZDUQMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:10:54 -0400
-X-Greylist: delayed 372 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Apr 2009 12:10:53 EDT
-Message-ID: <49EDEE93.30103@codemonkey.ws>
-Date: Tue, 21 Apr 2009 11:04:35 -0500
+	Tue, 21 Apr 2009 12:12:12 -0400
+Message-ID: <49EDF057.9060501@codemonkey.ws>
+Date: Tue, 21 Apr 2009 11:12:07 -0500
 From: Anthony Liguori <anthony@codemonkey.ws>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
 To: Avi Kivity <avi@redhat.com>
-CC: Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add MCE support to KVM
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com>
-In-Reply-To: <49EAE1F6.9050205@redhat.com>
+CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -v2] Add MCE support to KVM
+References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com>
+In-Reply-To: <49EAE334.9020803@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,33 +29,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Avi Kivity wrote:
 > Anthony Liguori wrote:
->> Avi Kivity wrote:
->>>
->>> Then we would need to tell which read-only MSRs are setup writeable 
->>> and which aren't...
->>>
->>> I'm okay with an ioctl to setup MCE, but just make sure userspace 
->>> has all the information to know what the kernel can do rather than 
->>> the try-and-see-if-it-works approach.  We can publish this 
->>> information via KVM_CAP things, or via another ioctl (see 
->>> KVM_GET_SUPPORTED_CPUID2 for an example).
+>> Huang Ying wrote:
+>>> The related MSRs are emulated. MCE capability is exported via
+>>> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new
+>>> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+>>> such as the mcg_cap. MCE is injected via vcpu ioctl command
+>>> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI are
+>>> not simulated.
+>>>   
 >>
->> Why not introduce a new exit type for MSR reads/writes that aren't 
->> handled by the kernel?  You just need a bit on the return that 
->> indicates whether to GPF because of an invalid MSR access.
->>
->> KVM_SET_MSRs should be reserved for MSRs that are performance 
->> sensitive.  Not all of them will be.
+>> Maybe I'm missing something, but couldn't this be implemented 
+>> entirely within userspace?  There's nothing VT/SVM specific about 
+>> this.  If the issue is setting these MSRs from userspace via 
+>> KVM_SET_MSRS isn't enough, perhaps we should add userspace MSR handling.
 >>
 >
-> Right now everything in the vcpu is emulated in the kernel.  
-> Everything else is emulated either in the kernel (irqchip) or in 
-> userspace.  This makes things easier to understand, and is more future 
-> friendly if more cpu features become virtualized by hardware.
+> You also need to inject the MCE.
 
-Except cpuid, which is handled in userspace, sort of :-)  I think the 
-same arguments apply here too.
+Regardless of the KVM interface for this, to go upstream to QEMU, this 
+needs a TCG implementation which means the logic must be duplicated in 
+userspace.  In particular, this is because a user-visible command is 
+being introduced in the monitor.
+
+So Avi, regardless of what interface is chosen for KVM, can you hold off 
+applying these patches until there is a TCG implementation?  Otherwise, 
+we'll be playing catchup between kvm-userspace and upstream QEMU forever.
 
 Regards,
 
 Anthony Liguori
+
