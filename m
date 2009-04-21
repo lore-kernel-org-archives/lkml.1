@@ -1,60 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZDUSZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZDUS0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbZDUSZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZDUSZd
+	id S1757160AbZDUS0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZDUS0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:25:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:14285 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZDUSZc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:25:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=naRM6xrO9arV/et5H/SZkVzKpm996q4H5kN/M764B7o8P/Le4ST4c5r6TiJrIsf1p3
-         LZcaTrwZjgFDqhwprIN5r5xEf+v68cSZ9F28ESKOd/F8qXD/k8FnIvi/dfUJjRN+mQ7m
-         c+reHAdaIW2/SoO0JVNH84SlHF/mjmTkmKUUs=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0904211034550.19969@qirst.com>
-References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com>
-	 <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
-	 <alpine.DEB.1.10.0904211034550.19969@qirst.com>
-Date: Tue, 21 Apr 2009 21:25:31 +0300
-X-Google-Sender-Auth: c6658cb7204e3672
-Message-ID: <84144f020904211125v68b98df4ke1c04bc29df65fda@mail.gmail.com>
-Subject: Re: linux-next ia64 build problems in slqb
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, randy.dunlap_ocs10g@oracle.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, iwamatsu.nobuhiro@renesas.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 21 Apr 2009 14:26:08 -0400
+Received: from mga11.intel.com ([192.55.52.93]:17089 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbZDUS0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 14:26:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,225,1239001200"; 
+   d="scan'208";a="449984936"
+Subject: Re: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Han, Weidong" <weidong.han@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>
+In-Reply-To: <20090421070130.GC22937@elte.hu>
+References: <20090420200450.128993000@linux-os.sc.intel.com>
+	 <20090420200450.552359000@linux-os.sc.intel.com>
+	 <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com>
+	 <20090421070130.GC22937@elte.hu>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 21 Apr 2009 11:24:44 -0700
+Message-Id: <1240338284.27006.8519.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 1:08 AM, Luck, Tony <tony.luck@intel.com> wrote:
->> > The ia64 "allnoconfig" build ends up with the (possibly dubious) combination
->> > of .config options:
->> >
->> >        CONFIG_SMP=n
->> >        CONFIG_NUMA=y
->>
->> Yeah, I don't think the combination makes much sense and x86 doesn't
->> allow it. Can we fix that in ia64 Kconfig? That said, this seems to
->> come up with every architecture except x86, so if someone is kind
->> enough to send me a tested fix for slqb, I'll just go ahead and apply
->> it.
+On Tue, 2009-04-21 at 00:01 -0700, Ingo Molnar wrote:
+> * Han, Weidong <weidong.han@intel.com> wrote:
+> 
+> > Siddha, Suresh B wrote:
+> > > When interrupt-remapping is enabled, We are relying on
+> > > setup_IO_APIC_irqs() 
+> > > to configure remapped entries in the IO-APIC, which comes little bit
+> > > later after enabling interrupt-remapping.
+> > > 
+> > > Meanwhile, Restore of old io-apic entries after enabling
+> > > interrupt-remapping will not make the interrupts through io-apic
+> > > functional anyway. 
+> > > 
+> > > So remove unnecessary reinit_intr_remapped_IO_APIC().
+> > > 
+> > > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> > > Cc: Weidong Han <weidong.han@intel.com>
+> > > ---
+> > > 
+> > > Index: tip/arch/x86/include/asm/io_apic.h
+> > > ===================================================================
+> > > --- tip.orig/arch/x86/include/asm/io_apic.h
+> > > +++ tip/arch/x86/include/asm/io_apic.h
+> > > @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
+> > >  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
+> > >  **ioapic_entries); extern void mask_IO_APIC_setup(struct
+> > >  IO_APIC_route_entry **ioapic_entries); extern int
+> > > restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries); 
+> > > -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
+> > > -	struct IO_APIC_route_entry **ioapic_entries);
+> > > 
+> > >  extern void probe_nr_irqs_gsi(void);
+> > > 
+> > > Index: tip/arch/x86/kernel/apic/apic.c
+> > > ===================================================================
+> > > --- tip.orig/arch/x86/kernel/apic/apic.c
+> > > +++ tip/arch/x86/kernel/apic/apic.c
+> > > @@ -1416,8 +1416,6 @@ end_restore:
+> > >  		 * IR enabling failed
+> > >  		 */
+> > >  		restore_IO_APIC_setup(ioapic_entries);
+> > > -	else
+> > > -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
+> > 
+> > Whether IR enabling succeeds or fails, it always needs to restore 
+> > old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC 
+> > here, it needs to also remove the "if (ret)" before 
+> > restore_IO_APIC_setup(ioapic_entries);
+> 
+> Ok - i skipped this patch for now.
 
-On Tue, Apr 21, 2009 at 5:35 PM, Christoph Lameter <cl@linux.com> wrote:
-> Tony runs tests with this configuration. This is an established
-> configuration and has been historically supported.
+Let me clarify what I am doing in this patch:
 
-Interesting. What exactly is an UP NUMA machine? Anyway, I'm more than
-happy to apply a tested patch to fix up SLQB. Nick?
+When interrupt-remapping is enabled, IO-APIC entries need to be setup in
+the re-mappable format (pointing to interrupt-remapping table entries
+setup by the OS). This remapping configuration is happening in the same
+place where we traditionally configure IO-APIC (i.e., in
+setup_IO_APIC_irqs()).
+
+So when we enable interrupt-remapping successfully, there is no need to
+restore old io-apic RTE entries before we actually do a complete
+configuration shortly in setup_IO_APIC_irqs(). Old IO-APIC RTE's may be
+in traditional format (non re-mappable) or in re-mappable format
+pointing to interrupt-remapping table entries setup by BIOS. Restoring
+both of these will not make IO-APIC functional. We have to rely on
+setup_IO_APIC_irqs() for proper configuration by OS.
+
+So I am removing this unnecessary and broken step.
+
+When enabling interrupt-remapping is not successful, we are doing plain
+restore of old RTE's (which will still work as we went back to original
+no-remapping state). Complete IO-APIC configuration will be done shortly
+in setup_IO_APIC_irqs().
+
+thanks,
+suresh
+
