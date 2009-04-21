@@ -1,137 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbZDUKJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZDUKKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbZDUKJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbZDUKJZ
+	id S1757265AbZDUKKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbZDUKJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:09:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42157 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754411AbZDUKJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:09:24 -0400
-Date: Tue, 21 Apr 2009 10:08:23 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49ED8DEB.6000700@cn.fujitsu.com>
-References: <49ED8DEB.6000700@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing/filters: allow user-input to be integer-like string
-Message-ID: <tip-f66578a7637b87810cbb9041c4e3a77fd2fa4706@git.kernel.org>
-Git-Commit-ID: f66578a7637b87810cbb9041c4e3a77fd2fa4706
-X-Mailer: tip-git-log-daemon
+	Tue, 21 Apr 2009 06:09:53 -0400
+Received: from dns.vivotek.com ([211.21.25.250]:32651 "EHLO edge.vivotek.tw"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755231AbZDUKJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:09:52 -0400
+From: <jon.lin@vatics.com>
+To: <jianjun@zeuux.org>, <davem@davemloft.net>
+CC: <dada1@cosmosbay.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Date: Tue, 21 Apr 2009 18:09:46 +0800
+Subject: RE: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
+Thread-Topic: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
+Thread-Index: AcnCZyHOUVlywQYBTzmWYZApFxJICwAAZlWg
+Message-ID: <0E04AEADD178614A86F3017CC5FA693B4959924D17@MS.vivotek.tw>
+References: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw>
+ <20090421.015235.23457775.davem@davemloft.net> <20090421094825.GA6752@ubuntu>
+In-Reply-To: <20090421094825.GA6752@ubuntu>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: zh-TW, en-US
+Content-Type: text/plain; charset="big5"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 10:08:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3LAAMqu026652
 
-Commit-ID:  f66578a7637b87810cbb9041c4e3a77fd2fa4706
-Gitweb:     http://git.kernel.org/tip/f66578a7637b87810cbb9041c4e3a77fd2fa4706
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 21 Apr 2009 17:12:11 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 21 Apr 2009 11:58:28 +0200
+Dear Sirs,
 
-tracing/filters: allow user-input to be integer-like string
+I am so sorry for my clumsiness!
+It is so embarrassed that I can't submit a valid patch...
+Thank you all for your incredible patience.
+I will try to use mail command in my Linux box to submit it again.
+Sorry for these stupid failures.
 
-Suppose we would like to trace all tasks named '123', but this
-will fail:
+Regards
+  Jonathan
 
- # echo 'parent_comm == 123' > events/sched/sched_process_fork/filter
- bash: echo: write error: Invalid argument
 
-Don't guess the type of the filter pred in filter_parse(), but instead
-we check it in __filter_add_pred().
+-----Original Message-----
+From: Amos Kong [mailto:jianjun@zeuux.org]
+Sent: Tuesday, April 21, 2009 5:48 PM
+To: David Miller
+Cc: Jon.Lin(ªL©v¼w); dada1@cosmosbay.com; netdev@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
 
-[ Impact: extend allowed filter field string values ]
+...
+>> Unfortunately, this address is used by Linux kernel. So kernel panics.
+>> This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
+>>
+>> Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+>
+>This patch does not apply, it was corrupted by your email client.
+>
+>I even think it has MS-DOS style newlines in it :-(
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <49ED8DEB.6000700@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Another new patch :)
 
+
+ While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
+ In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA
+ buffer address. In this interval where RX was enabled and DMA buffer address is not yet set
+ up, any incoming broadcast packet would be send to a strange physical address:
+ 0x003e8800 which is the default value of DMA buffer address.
+ Unfortunately, this address is used by Linux kernel. So kernel panics.
+ This patch fix it by setting up DMA buffer address before RX enabled and everything is fine
+ even under broadcast packets attack.
+
+Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+Signed-off-by: Amos Kong <jianjun@zeuux.org>
 
 ---
- kernel/trace/trace_events_filter.c |   26 ++++++++++++--------------
- 1 files changed, 12 insertions(+), 14 deletions(-)
+ drivers/net/8139too.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index e0fcfd2..6541828 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -313,6 +313,7 @@ static int __filter_add_pred(struct ftrace_event_call *call,
- {
- 	struct ftrace_event_field *field;
- 	filter_pred_fn_t fn;
-+	unsigned long long val;
- 
- 	field = find_event_field(call, pred->field_name);
- 	if (!field)
-@@ -322,14 +323,13 @@ static int __filter_add_pred(struct ftrace_event_call *call,
- 	pred->offset = field->offset;
- 
- 	if (is_string_field(field->type)) {
--		if (!pred->str_len)
--			return -EINVAL;
- 		fn = filter_pred_string;
- 		pred->str_len = field->size;
- 		return filter_add_pred_fn(call, pred, fn);
- 	} else {
--		if (pred->str_len)
-+		if (strict_strtoull(pred->str_val, 0, &val))
- 			return -EINVAL;
-+		pred->val = val;
- 	}
- 
- 	switch (field->size) {
-@@ -413,12 +413,16 @@ int filter_add_subsystem_pred(struct event_subsystem *system,
- 	return 0;
- }
- 
-+/*
-+ * The filter format can be
-+ *   - 0, which means remove all filter preds
-+ *   - [||/&&] <field> ==/!= <val>
-+ */
- int filter_parse(char **pbuf, struct filter_pred *pred)
- {
--	char *tmp, *tok, *val_str = NULL;
-+	char *tok, *val_str = NULL;
- 	int tok_n = 0;
- 
--	/* field ==/!= number, or/and field ==/!= number, number */
- 	while ((tok = strsep(pbuf, " \n"))) {
- 		if (tok_n == 0) {
- 			if (!strcmp(tok, "0")) {
-@@ -478,19 +482,13 @@ int filter_parse(char **pbuf, struct filter_pred *pred)
- 		return -EINVAL;
- 	}
- 
-+	strcpy(pred->str_val, val_str);
-+	pred->str_len = strlen(val_str);
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index 29df398..1fc4543 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -1383,6 +1383,11 @@ static void rtl8139_hw_start (struct net_device *dev)
+        RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
+        RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
+
++       tp->cur_rx = 0;
 +
- 	pred->field_name = kstrdup(pred->field_name, GFP_KERNEL);
- 	if (!pred->field_name)
- 		return -ENOMEM;
- 
--	pred->str_len = 0;
--	pred->val = simple_strtoull(val_str, &tmp, 0);
--	if (tmp == val_str) {
--		strncpy(pred->str_val, val_str, MAX_FILTER_STR_VAL);
--		pred->str_len = strlen(val_str);
--		pred->str_val[pred->str_len] = '\0';
--	} else if (*tmp != '\0')
--		return -EINVAL;
++       /* init Rx ring buffer DMA address */
++       RTL_W32_F (RxBuf, tp->rx_ring_dma);
++
+        /* Must enable Tx/Rx before setting transfer thresholds! */
+        RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
+
+@@ -1390,8 +1395,6 @@ static void rtl8139_hw_start (struct net_device *dev)
+        RTL_W32 (RxConfig, tp->rx_config);
+        RTL_W32 (TxConfig, rtl8139_tx_config);
+
+-       tp->cur_rx = 0;
 -
- 	return 0;
- }
- 
+        rtl_check_media (dev, 1);
+
+        if (tp->chipset >= CH_8139B) {
+@@ -1406,9 +1409,6 @@ static void rtl8139_hw_start (struct net_device *dev)
+        /* Lock Config[01234] and BMCR register writes */
+        RTL_W8 (Cfg9346, Cfg9346_Lock);
+
+-       /* init Rx ring buffer DMA address */
+-       RTL_W32_F (RxBuf, tp->rx_ring_dma);
+-
+        /* init Tx buffer DMA addresses */
+        for (i = 0; i < NUM_TX_DESC; i++)
+                RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] - tp->tx_bufs));
+--
+1.5.6.3
+
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
