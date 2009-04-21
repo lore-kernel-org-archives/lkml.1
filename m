@@ -1,20 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZDUQmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbZDUQnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbZDUQmW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbZDUQiZ
+	id S1757396AbZDUQnY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZDUQj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:38:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40133 "EHLO hera.kernel.org"
+	Tue, 21 Apr 2009 12:39:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38852 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754624AbZDUQiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:38:21 -0400
+	id S1756922AbZDUQjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 12:39:54 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
-Cc: Tejun Heo <tj@kernel.org>, Boaz Harrosh <bharrosh@panasas.com>
-Subject: [PATCH 14/14] block-kill-data
-Date: Wed, 22 Apr 2009 01:38:01 +0900
-Message-Id: <1240331881-28218-15-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Russell King <rmk@arm.linux.org.uk>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Mike Miller <mike.miller@hp.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Alex Dubov <oakad@yahoo.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 11/14] block: implement and use [__]blk_end_request_all()
+Date: Wed, 22 Apr 2009 01:37:58 +0900
+Message-Id: <1240331881-28218-12-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1240331881-28218-1-git-send-email-tj@kernel.org>
 References: <1240331881-28218-1-git-send-email-tj@kernel.org>
@@ -23,118 +30,461 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that all block request data transfer is done via bio, rq->data
-isn't used.  Kill it.
+There are many [__]blk_end_request() call sites which call it with
+full request length and expect full completion.  Many of them ensure
+that the request actually completes by doing BUG_ON() the return
+value, which is awkward and error-prone.
 
-While at it, make the roles of rq->special and buffer clear.
+This patch adds [__]blk_end_request_all() which takes @rq and @error
+and fully completes the request.  BUG_ON() is added to to ensure that
+this actually happens.
 
-[ Impact: drop now unncessary field from struct request ]
+Most conversions are simple but there are a few noteworthy ones.
+
+* cdrom/viocd: viocd_end_request() replaced with direct calls to
+  __blk_end_request_all().
+
+* s390/block/dasd: dasd_end_request() replaced with direct calls to
+  __blk_end_request_all().
+
+* s390/char/tape_block: tapeblock_end_request() replaced with direct
+  calls to blk_end_request_all().
+
+[ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Mike Miller <mike.miller@hp.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Alex Dubov <oakad@yahoo.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- block/blk-core.c        |    5 ++---
- block/blk-map.c         |    6 +++---
- block/scsi_ioctl.c      |    1 -
- drivers/scsi/scsi_lib.c |    1 -
- include/linux/blkdev.h  |    5 ++---
- 5 files changed, 7 insertions(+), 11 deletions(-)
+ arch/arm/plat-omap/mailbox.c        |   11 +++--------
+ block/blk-barrier.c                 |    9 ++-------
+ block/blk-core.c                    |    2 +-
+ block/elevator.c                    |    2 +-
+ drivers/block/cpqarray.c            |    3 +--
+ drivers/block/sx8.c                 |    3 +--
+ drivers/block/virtio_blk.c          |    2 +-
+ drivers/block/xen-blkfront.c        |    4 +---
+ drivers/cdrom/gdrom.c               |    2 +-
+ drivers/cdrom/viocd.c               |   25 ++++---------------------
+ drivers/memstick/core/mspro_block.c |    2 +-
+ drivers/s390/block/dasd.c           |   17 ++++-------------
+ drivers/s390/char/tape_block.c      |   15 ++++-----------
+ drivers/scsi/scsi_lib.c             |    2 +-
+ include/linux/blkdev.h              |   32 ++++++++++++++++++++++++++++++++
+ 15 files changed, 58 insertions(+), 73 deletions(-)
 
+diff --git a/arch/arm/plat-omap/mailbox.c b/arch/arm/plat-omap/mailbox.c
+index 0abfbaa..cf81bad 100644
+--- a/arch/arm/plat-omap/mailbox.c
++++ b/arch/arm/plat-omap/mailbox.c
+@@ -192,8 +192,7 @@ static void mbox_tx_work(struct work_struct *work)
+ 		}
+ 
+ 		spin_lock(q->queue_lock);
+-		if (__blk_end_request(rq, 0, 0))
+-			BUG();
++		__blk_end_request_all(rq, 0);
+ 		spin_unlock(q->queue_lock);
+ 	}
+ }
+@@ -224,10 +223,7 @@ static void mbox_rx_work(struct work_struct *work)
+ 			break;
+ 
+ 		msg = (mbox_msg_t) rq->data;
+-
+-		if (blk_end_request(rq, 0, 0))
+-			BUG();
+-
++		blk_end_request_all(rq, 0);
+ 		mbox->rxq->callback((void *)msg);
+ 	}
+ }
+@@ -337,8 +333,7 @@ omap_mbox_read(struct device *dev, struct device_attribute *attr, char *buf)
+ 
+ 		*p = (mbox_msg_t) rq->data;
+ 
+-		if (blk_end_request(rq, 0, 0))
+-			BUG();
++		blk_end_request_all(rq, 0);
+ 
+ 		if (unlikely(mbox_seq_test(mbox, *p))) {
+ 			pr_info("mbox: Illegal seq bit!(%08x) ignored\n", *p);
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index 20b4111..c8d0876 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -106,10 +106,7 @@ bool blk_ordered_complete_seq(struct request_queue *q, unsigned seq, int error)
+ 	 */
+ 	q->ordseq = 0;
+ 	rq = q->orig_bar_rq;
+-
+-	if (__blk_end_request(rq, q->orderr, blk_rq_bytes(rq)))
+-		BUG();
+-
++	__blk_end_request_all(rq, q->orderr);
+ 	return true;
+ }
+ 
+@@ -252,9 +249,7 @@ bool blk_do_ordered(struct request_queue *q, struct request **rqp)
+ 			 * with prejudice.
+ 			 */
+ 			elv_dequeue_request(q, rq);
+-			if (__blk_end_request(rq, -EOPNOTSUPP,
+-					      blk_rq_bytes(rq)))
+-				BUG();
++			__blk_end_request_all(rq, -EOPNOTSUPP);
+ 			*rqp = NULL;
+ 			return false;
+ 		}
 diff --git a/block/blk-core.c b/block/blk-core.c
-index b7c9464..339e5e9 100644
+index 4b39e9e..b7c9464 100644
 --- a/block/blk-core.c
 +++ b/block/blk-core.c
-@@ -189,10 +189,9 @@ void blk_dump_rq_flags(struct request *rq, char *msg)
- 						(unsigned long long)rq->sector,
- 						rq->nr_sectors,
- 						rq->current_nr_sectors);
--	printk(KERN_INFO "  bio %p, biotail %p, buffer %p, data %p, len %u\n",
-+	printk(KERN_INFO "  bio %p, biotail %p, buffer %p, len %u\n",
- 						rq->bio, rq->biotail,
--						rq->buffer, rq->data,
--						rq->data_len);
-+						rq->buffer, rq->data_len);
+@@ -1778,7 +1778,7 @@ struct request *elv_next_request(struct request_queue *q)
+ 			break;
+ 		} else if (ret == BLKPREP_KILL) {
+ 			rq->cmd_flags |= REQ_QUIET;
+-			__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
++			__blk_end_request_all(rq, -EIO);
+ 		} else {
+ 			printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
+ 			break;
+diff --git a/block/elevator.c b/block/elevator.c
+index b03b875..1af5d9f 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -810,7 +810,7 @@ void elv_abort_queue(struct request_queue *q)
+ 		rq = list_entry_rq(q->queue_head.next);
+ 		rq->cmd_flags |= REQ_QUIET;
+ 		trace_block_rq_abort(q, rq);
+-		__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
++		__blk_end_request_all(rq, -EIO);
+ 	}
+ }
+ EXPORT_SYMBOL(elv_abort_queue);
+diff --git a/drivers/block/cpqarray.c b/drivers/block/cpqarray.c
+index ca268ca..488a8f4 100644
+--- a/drivers/block/cpqarray.c
++++ b/drivers/block/cpqarray.c
+@@ -1024,8 +1024,7 @@ static inline void complete_command(cmdlist_t *cmd, int timeout)
+ 				cmd->req.sg[i].size, ddir);
  
- 	if (blk_pc_request(rq)) {
- 		printk(KERN_INFO "  cdb: ");
-diff --git a/block/blk-map.c b/block/blk-map.c
-index f103729..694fefa 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -156,7 +156,7 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
- 	if (!bio_flagged(bio, BIO_USER_MAPPED))
- 		rq->cmd_flags |= REQ_COPY_USER;
+ 	DBGPX(printk("Done with %p\n", rq););
+-	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+-		BUG();
++	__blk_end_request_all(rq, error);
+ }
  
--	rq->buffer = rq->data = NULL;
-+	rq->buffer = NULL;
- 	return 0;
- unmap_rq:
- 	blk_rq_unmap_user(bio);
-@@ -235,7 +235,7 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
- 	blk_queue_bounce(q, &bio);
- 	bio_get(bio);
- 	blk_rq_bio_prep(q, rq, bio);
--	rq->buffer = rq->data = NULL;
-+	rq->buffer = NULL;
+ /*
+diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
+index ff0448e..60e85bb 100644
+--- a/drivers/block/sx8.c
++++ b/drivers/block/sx8.c
+@@ -749,8 +749,7 @@ static inline void carm_end_request_queued(struct carm_host *host,
+ 	struct request *req = crq->rq;
+ 	int rc;
+ 
+-	rc = __blk_end_request(req, error, blk_rq_bytes(req));
+-	assert(rc == 0);
++	__blk_end_request_all(req, error);
+ 
+ 	rc = carm_put_request(host, crq);
+ 	assert(rc == 0);
+diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
+index 5d34764..50745e6 100644
+--- a/drivers/block/virtio_blk.c
++++ b/drivers/block/virtio_blk.c
+@@ -62,7 +62,7 @@ static void blk_done(struct virtqueue *vq)
+ 			break;
+ 		}
+ 
+-		__blk_end_request(vbr->req, error, blk_rq_bytes(vbr->req));
++		__blk_end_request_all(vbr->req, error);
+ 		list_del(&vbr->list);
+ 		mempool_free(vbr, vblk->pool);
+ 	}
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index 8f90508..cd6cfe3 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -551,7 +551,6 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+ 
+ 	for (i = info->ring.rsp_cons; i != rp; i++) {
+ 		unsigned long id;
+-		int ret;
+ 
+ 		bret = RING_GET_RESPONSE(&info->ring, i);
+ 		id   = bret->id;
+@@ -578,8 +577,7 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+ 				dev_dbg(&info->xbdev->dev, "Bad return from blkdev data "
+ 					"request: %x\n", bret->status);
+ 
+-			ret = __blk_end_request(req, error, blk_rq_bytes(req));
+-			BUG_ON(ret);
++			__blk_end_request_all(req, error);
+ 			break;
+ 		default:
+ 			BUG();
+diff --git a/drivers/cdrom/gdrom.c b/drivers/cdrom/gdrom.c
+index 2eecb77..fee9a9e 100644
+--- a/drivers/cdrom/gdrom.c
++++ b/drivers/cdrom/gdrom.c
+@@ -632,7 +632,7 @@ static void gdrom_readdisk_dma(struct work_struct *work)
+ 		* before handling ending the request */
+ 		spin_lock(&gdrom_lock);
+ 		list_del_init(&req->queuelist);
+-		__blk_end_request(req, err, blk_rq_bytes(req));
++		__blk_end_request_all(req, err);
+ 	}
+ 	spin_unlock(&gdrom_lock);
+ 	kfree(read_command);
+diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
+index 1392935..cc3efa0 100644
+--- a/drivers/cdrom/viocd.c
++++ b/drivers/cdrom/viocd.c
+@@ -291,23 +291,6 @@ static int send_request(struct request *req)
  	return 0;
  }
- EXPORT_SYMBOL(blk_rq_map_user_iov);
-@@ -313,7 +313,7 @@ int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
  
- 	blk_rq_bio_prep(q, rq, bio);
- 	blk_queue_bounce(q, &rq->bio);
--	rq->buffer = rq->data = NULL;
-+	rq->buffer = NULL;
- 	return 0;
+-static void viocd_end_request(struct request *req, int error)
+-{
+-	int nsectors = req->hard_nr_sectors;
+-
+-	/*
+-	 * Make sure it's fully ended, and ensure that we process
+-	 * at least one sector.
+-	 */
+-	if (blk_pc_request(req))
+-		nsectors = (req->data_len + 511) >> 9;
+-	if (!nsectors)
+-		nsectors = 1;
+-
+-	if (__blk_end_request(req, error, nsectors << 9))
+-		BUG();
+-}
+-
+ static int rwreq;
+ 
+ static void do_viocd_request(struct request_queue *q)
+@@ -316,11 +299,11 @@ static void do_viocd_request(struct request_queue *q)
+ 
+ 	while ((rwreq == 0) && ((req = elv_next_request(q)) != NULL)) {
+ 		if (!blk_fs_request(req))
+-			viocd_end_request(req, -EIO);
++			__blk_end_request_all(req, -EIO);
+ 		else if (send_request(req) < 0) {
+ 			printk(VIOCD_KERN_WARNING
+ 					"unable to send message to OS/400!");
+-			viocd_end_request(req, -EIO);
++			__blk_end_request_all(req, -EIO);
+ 		} else
+ 			rwreq++;
+ 	}
+@@ -531,9 +514,9 @@ return_complete:
+ 					"with rc %d:0x%04X: %s\n",
+ 					req, event->xRc,
+ 					bevent->sub_result, err->msg);
+-			viocd_end_request(req, -EIO);
++			__blk_end_request_all(req, -EIO);
+ 		} else
+-			viocd_end_request(req, 0);
++			__blk_end_request_all(req, 0);
+ 
+ 		/* restart handling of incoming requests */
+ 		spin_unlock_irqrestore(&viocd_reqlock, flags);
+diff --git a/drivers/memstick/core/mspro_block.c b/drivers/memstick/core/mspro_block.c
+index de143de..a416346 100644
+--- a/drivers/memstick/core/mspro_block.c
++++ b/drivers/memstick/core/mspro_block.c
+@@ -826,7 +826,7 @@ static void mspro_block_submit_req(struct request_queue *q)
+ 
+ 	if (msb->eject) {
+ 		while ((req = elv_next_request(q)) != NULL)
+-			__blk_end_request(req, -ENODEV, blk_rq_bytes(req));
++			__blk_end_request_all(req, -ENODEV);
+ 
+ 		return;
+ 	}
+diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
+index d181527..fabec95 100644
+--- a/drivers/s390/block/dasd.c
++++ b/drivers/s390/block/dasd.c
+@@ -1614,15 +1614,6 @@ void dasd_block_clear_timer(struct dasd_block *block)
  }
- EXPORT_SYMBOL(blk_rq_map_kern);
-diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-index 82a0ca2..bb9aa43 100644
---- a/block/scsi_ioctl.c
-+++ b/block/scsi_ioctl.c
-@@ -500,7 +500,6 @@ static int __blk_send_generic(struct request_queue *q, struct gendisk *bd_disk,
  
- 	rq = blk_get_request(q, WRITE, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_BLOCK_PC;
--	rq->data = NULL;
- 	rq->data_len = 0;
- 	rq->extra_len = 0;
- 	rq->timeout = BLK_DEFAULT_SG_TIMEOUT;
+ /*
+- * posts the buffer_cache about a finalized request
+- */
+-static inline void dasd_end_request(struct request *req, int error)
+-{
+-	if (__blk_end_request(req, error, blk_rq_bytes(req)))
+-		BUG();
+-}
+-
+-/*
+  * Process finished error recovery ccw.
+  */
+ static inline void __dasd_block_process_erp(struct dasd_block *block,
+@@ -1676,7 +1667,7 @@ static void __dasd_process_request_queue(struct dasd_block *block)
+ 				      "Rejecting write request %p",
+ 				      req);
+ 			blkdev_dequeue_request(req);
+-			dasd_end_request(req, -EIO);
++			__blk_end_request_all(req, -EIO);
+ 			continue;
+ 		}
+ 		cqr = basedev->discipline->build_cp(basedev, block, req);
+@@ -1705,7 +1696,7 @@ static void __dasd_process_request_queue(struct dasd_block *block)
+ 				      "on request %p",
+ 				      PTR_ERR(cqr), req);
+ 			blkdev_dequeue_request(req);
+-			dasd_end_request(req, -EIO);
++			__blk_end_request_all(req, -EIO);
+ 			continue;
+ 		}
+ 		/*
+@@ -1731,7 +1722,7 @@ static void __dasd_cleanup_cqr(struct dasd_ccw_req *cqr)
+ 	status = cqr->block->base->discipline->free_cp(cqr, req);
+ 	if (status <= 0)
+ 		error = status ? status : -EIO;
+-	dasd_end_request(req, error);
++	__blk_end_request_all(req, error);
+ }
+ 
+ /*
+@@ -2040,7 +2031,7 @@ static void dasd_flush_request_queue(struct dasd_block *block)
+ 	spin_lock_irq(&block->request_queue_lock);
+ 	while ((req = elv_next_request(block->request_queue))) {
+ 		blkdev_dequeue_request(req);
+-		dasd_end_request(req, -EIO);
++		__blk_end_request_all(req, -EIO);
+ 	}
+ 	spin_unlock_irq(&block->request_queue_lock);
+ }
+diff --git a/drivers/s390/char/tape_block.c b/drivers/s390/char/tape_block.c
+index f32e89e..86596d3 100644
+--- a/drivers/s390/char/tape_block.c
++++ b/drivers/s390/char/tape_block.c
+@@ -74,13 +74,6 @@ tapeblock_trigger_requeue(struct tape_device *device)
+  * Post finished request.
+  */
+ static void
+-tapeblock_end_request(struct request *req, int error)
+-{
+-	if (blk_end_request(req, error, blk_rq_bytes(req)))
+-		BUG();
+-}
+-
+-static void
+ __tapeblock_end_request(struct tape_request *ccw_req, void *data)
+ {
+ 	struct tape_device *device;
+@@ -90,7 +83,7 @@ __tapeblock_end_request(struct tape_request *ccw_req, void *data)
+ 
+ 	device = ccw_req->device;
+ 	req = (struct request *) data;
+-	tapeblock_end_request(req, (ccw_req->rc == 0) ? 0 : -EIO);
++	blk_end_request_all(req, (ccw_req->rc == 0) ? 0 : -EIO);
+ 	if (ccw_req->rc == 0)
+ 		/* Update position. */
+ 		device->blk_data.block_position =
+@@ -118,7 +111,7 @@ tapeblock_start_request(struct tape_device *device, struct request *req)
+ 	ccw_req = device->discipline->bread(device, req);
+ 	if (IS_ERR(ccw_req)) {
+ 		DBF_EVENT(1, "TBLOCK: bread failed\n");
+-		tapeblock_end_request(req, -EIO);
++		blk_end_request_all(req, -EIO);
+ 		return PTR_ERR(ccw_req);
+ 	}
+ 	ccw_req->callback = __tapeblock_end_request;
+@@ -131,7 +124,7 @@ tapeblock_start_request(struct tape_device *device, struct request *req)
+ 		 * Start/enqueueing failed. No retries in
+ 		 * this case.
+ 		 */
+-		tapeblock_end_request(req, -EIO);
++		blk_end_request_all(req, -EIO);
+ 		device->discipline->free_bread(ccw_req);
+ 	}
+ 
+@@ -177,7 +170,7 @@ tapeblock_requeue(struct work_struct *work) {
+ 			DBF_EVENT(1, "TBLOCK: Rejecting write request\n");
+ 			blkdev_dequeue_request(req);
+ 			spin_unlock_irq(&device->blk_data.request_queue_lock);
+-			tapeblock_end_request(req, -EIO);
++			blk_end_request_all(req, -EIO);
+ 			spin_lock_irq(&device->blk_data.request_queue_lock);
+ 			continue;
+ 		}
 diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 756ac7c..aa9fc57 100644
+index d1cb64a..756ac7c 100644
 --- a/drivers/scsi/scsi_lib.c
 +++ b/drivers/scsi/scsi_lib.c
-@@ -1088,7 +1088,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req)
- 			return ret;
- 	} else {
- 		BUG_ON(req->data_len);
--		BUG_ON(req->data);
- 
- 		memset(&cmd->sdb, 0, sizeof(cmd->sdb));
- 		req->buffer = NULL;
+@@ -922,7 +922,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+ 			if (driver_byte(result) & DRIVER_SENSE)
+ 				scsi_print_sense("", cmd);
+ 		}
+-		blk_end_request(req, -EIO, blk_rq_bytes(req));
++		blk_end_request_all(req, -EIO);
+ 		scsi_next_command(cmd);
+ 		break;
+ 	case ACTION_REPREP:
 diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 0bb3ed4..b1de769 100644
+index 0d94ad6..0a5f383 100644
 --- a/include/linux/blkdev.h
 +++ b/include/linux/blkdev.h
-@@ -209,8 +209,8 @@ struct request {
+@@ -879,6 +879,22 @@ static inline bool blk_end_request(struct request *rq, int error,
+ }
  
- 	unsigned short ioprio;
+ /**
++ * blk_end_request_all - Helper function for drives to finish the request.
++ * @rq: the request to finish
++ * @err: %0 for success, < %0 for error
++ *
++ * Description:
++ *     Completely finish @rq.
++ */
++static inline void blk_end_request_all(struct request *rq, int error)
++{
++	bool pending;
++
++	pending = blk_end_request(rq, error, blk_rq_bytes(rq));
++	BUG_ON(pending);
++}
++
++/**
+  * __blk_end_request - Helper function for drivers to complete the request.
+  * @rq:       the request being processed
+  * @error:    %0 for success, < %0 for error
+@@ -898,6 +914,22 @@ static inline bool __blk_end_request(struct request *rq, int error,
+ }
  
--	void *special;
--	char *buffer;
-+	void *special;		/* opaque pointer available for LLD use */
-+	char *buffer;		/* kaddr of the current segment if available */
- 
- 	int tag;
- 	int errors;
-@@ -227,7 +227,6 @@ struct request {
- 	unsigned int data_len;
- 	unsigned int extra_len;	/* length of alignment and padding */
- 	unsigned int sense_len;
--	void *data;
- 	void *sense;
- 
- 	unsigned long deadline;
+ /**
++ * __blk_end_request_all - Helper function for drives to finish the request.
++ * @rq: the request to finish
++ * @err: %0 for success, < %0 for error
++ *
++ * Description:
++ *     Completely finish @rq.  Must be called with queue lock held.
++ */
++static inline void __blk_end_request_all(struct request *rq, int error)
++{
++	bool pending;
++
++	pending = __blk_end_request(rq, error, blk_rq_bytes(rq));
++	BUG_ON(pending);
++}
++
++/**
+  * blk_end_bidi_request - Helper function for drivers to complete bidi request.
+  * @rq:         the bidi request being processed
+  * @error:      %0 for success, < %0 for error
 -- 
 1.6.0.2
 
