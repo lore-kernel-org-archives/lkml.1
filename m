@@ -1,115 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZDUS0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbZDUS06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbZDUS0V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZDUS0I
+	id S1757532AbZDUS06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbZDUS0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:26:08 -0400
-Received: from mga11.intel.com ([192.55.52.93]:17089 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbZDUS0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:26:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,225,1239001200"; 
-   d="scan'208";a="449984936"
-Subject: Re: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Han, Weidong" <weidong.han@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>
-In-Reply-To: <20090421070130.GC22937@elte.hu>
-References: <20090420200450.128993000@linux-os.sc.intel.com>
-	 <20090420200450.552359000@linux-os.sc.intel.com>
-	 <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com>
-	 <20090421070130.GC22937@elte.hu>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 21 Apr 2009 11:24:44 -0700
-Message-Id: <1240338284.27006.8519.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Apr 2009 14:26:48 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:45058 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752853AbZDUS0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 14:26:47 -0400
+Date: Tue, 21 Apr 2009 23:55:55 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Vivek Kashyap <vivk@us.ibm.com>, Mel Gorman <mel@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Robert MacFarlan <Robert_MacFarlan@us.ibm.com>
+Subject: Re: Large Pages - Linux Foundation HPC
+Message-ID: <20090421182555.GA8977@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1240331533.32731.2.camel@badari-desktop> <1240333025.32604.392.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1240333025.32604.392.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-21 at 00:01 -0700, Ingo Molnar wrote:
-> * Han, Weidong <weidong.han@intel.com> wrote:
-> 
-> > Siddha, Suresh B wrote:
-> > > When interrupt-remapping is enabled, We are relying on
-> > > setup_IO_APIC_irqs() 
-> > > to configure remapped entries in the IO-APIC, which comes little bit
-> > > later after enabling interrupt-remapping.
-> > > 
-> > > Meanwhile, Restore of old io-apic entries after enabling
-> > > interrupt-remapping will not make the interrupts through io-apic
-> > > functional anyway. 
-> > > 
-> > > So remove unnecessary reinit_intr_remapped_IO_APIC().
-> > > 
-> > > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> > > Cc: Weidong Han <weidong.han@intel.com>
-> > > ---
-> > > 
-> > > Index: tip/arch/x86/include/asm/io_apic.h
-> > > ===================================================================
-> > > --- tip.orig/arch/x86/include/asm/io_apic.h
-> > > +++ tip/arch/x86/include/asm/io_apic.h
-> > > @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
-> > >  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
-> > >  **ioapic_entries); extern void mask_IO_APIC_setup(struct
-> > >  IO_APIC_route_entry **ioapic_entries); extern int
-> > > restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries); 
-> > > -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
-> > > -	struct IO_APIC_route_entry **ioapic_entries);
-> > > 
-> > >  extern void probe_nr_irqs_gsi(void);
-> > > 
-> > > Index: tip/arch/x86/kernel/apic/apic.c
-> > > ===================================================================
-> > > --- tip.orig/arch/x86/kernel/apic/apic.c
-> > > +++ tip/arch/x86/kernel/apic/apic.c
-> > > @@ -1416,8 +1416,6 @@ end_restore:
-> > >  		 * IR enabling failed
-> > >  		 */
-> > >  		restore_IO_APIC_setup(ioapic_entries);
-> > > -	else
-> > > -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
+[Fix my email address to balbir@linux.vnet.ibm.com]
+
+* Dave Hansen <dave@linux.vnet.ibm.com> [2009-04-21 09:57:05]:
+> On Tue, 2009-04-21 at 09:32 -0700, Badari Pulavarty wrote:
+> > Hi Dave,
 > > 
-> > Whether IR enabling succeeds or fails, it always needs to restore 
-> > old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC 
-> > here, it needs to also remove the "if (ret)" before 
-> > restore_IO_APIC_setup(ioapic_entries);
+> > On the Linux foundation HPC track summary, I saw:
+> > 
+> > -- Memory and interface to it - mapping memory into apps
+> >      - large pages important - current state not good enough
 > 
-> Ok - i skipped this patch for now.
+> I'm not sure exactly what this means.  But, there was continuing concern
+> about large page interfaces.  hugetlbfs is fine, but it still requires
+> special tools, planning, and requires some modification of the app.  We
+> can modify it with linker tricks or with LD_PRELOAD, but those certainly
+> don't work everywhere.  I was told over and over again that hugetlbfs
+> isn't a sufficient interface for large pages, no matter how much
+> userspace we try to stick in front of it.
+> 
+> Some of their apps get a 6-7x speedup from large pages!
+> 
+> Fragmentation also isn't an issue for a big chunk of the users since
+> they reboot between each job.
+> 
+> > nodes going down due to memory exhaustion
+> 
+> Virtually all the apps in an HPC environment start up try to use all the
+> memory they can get their hands on.  With strict overcommit on, that
+> probably means brk() or mmap() until they fail.  They also usually
+> mlock() anything they're able to allocate.  Swapping is the devil to
+> them. :)
+> 
+> Basically, what all the apps do is a recipe for stressing the VM and
+> triggering the OOM killer.  Most of the users simply hack the kernel and
+> replace the OOM killer with one that fits their needs.  Some have an
+> attitude that "the user's app should never die" and others "the user
+> caused this, so kill their app".  Basically, there's no way to make
+> everyone happy since they have conflicting requirements.  But, this is
+> true of the kernel in general... nothing special here.
 
-Let me clarify what I am doing in this patch:
+OOM killer has been a hot topic. Have you seen Dan Malek's patches at
+http://lkml.org/lkml/2009/4/13/276.
 
-When interrupt-remapping is enabled, IO-APIC entries need to be setup in
-the re-mappable format (pointing to interrupt-remapping table entries
-setup by the OS). This remapping configuration is happening in the same
-place where we traditionally configure IO-APIC (i.e., in
-setup_IO_APIC_irqs()).
+> 
+> The split LRU should help things.  It will at least make our memory
+> scanning more efficient and ensure we're making more efficient reclaim
+> progress.  I'm not sure that anyone there knew about the oom_adjust and
+> oom_score knobs in /proc.  They do now. :)
 
-So when we enable interrupt-remapping successfully, there is no need to
-restore old io-apic RTE entries before we actually do a complete
-configuration shortly in setup_IO_APIC_irqs(). Old IO-APIC RTE's may be
-in traditional format (non re-mappable) or in re-mappable format
-pointing to interrupt-remapping table entries setup by BIOS. Restoring
-both of these will not make IO-APIC functional. We have to rely on
-setup_IO_APIC_irqs() for proper configuration by OS.
+:-)
 
-So I am removing this unnecessary and broken step.
+> 
+> One of my suggestions was to use the memory resource controller.  They
+> could give each app 95% (or whatever) of the system.  This should let
+> them keep their current "consume all memory" behavior, but stop them at
+> sane limits.
+> 
 
-When enabling interrupt-remapping is not successful, we are doing plain
-restore of old RTE's (which will still work as we went back to original
-no-remapping state). Complete IO-APIC configuration will be done shortly
-in setup_IO_APIC_irqs().
+Soft limits should help as well, basically we are trying to allow
+unrestricted memory access until there is contention. The patches are
+still under development.
 
-thanks,
-suresh
+> That leads into another issue, which is the "wedding cake" software
+> stack.  There are a lot of software dependencies both in and out of the
+> kernel.  It is hard to change individual components, especially in the
+> lower levels.  This leads many of the users to use old (think 2.6.9)
+> kernels.  Nobody runs mainline, of course.
+> 
+> Then, there's Lustre.  Everybody uses it, it's definitely a big hunk of
+> the "wedding cake".  I haven't seen any LKML postings on it in years and
+> I really wonder how it interacts with the VM.  No idea.
+> 
+> There's a "Hyperion cluster" which is for testing new HPC software on a
+> decently sized cluster.  One suggestion of ours was to try and get
+> mainline tested on this every so often to look for regressions since
+> we're not able to glean feedback from 2.6.9 kernel users.  We'll see
+> where that goes. 
+> 
+> > checkpoint/restart
+> 
+> Many of the MPI implementations have mechanisms in userspace for
+> checkpointing of user jobs.  Most cluster administrators instruct their
+> users to use these mechanisms.  Some do.  Most don't.
+>
 
+Good inputs and summary. Thanks! 
+
+-- 
+	Balbir
