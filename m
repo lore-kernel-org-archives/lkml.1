@@ -1,188 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZDUSgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZDUSio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757745AbZDUSgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757755AbZDUSey
+	id S1757379AbZDUSio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbZDUSf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:34:54 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:41557 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757765AbZDUSev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:34:51 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 04/17] vbus: add bus-registration notifiers
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
-       rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
-       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
-       chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:34:38 -0400
-Message-ID: <20090421183438.12548.53176.stgit@dev.haskins.net>
-In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
-References: <20090421183341.12548.33393.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Tue, 21 Apr 2009 14:35:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54879 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758022AbZDUSf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 14:35:56 -0400
+Date: Tue, 21 Apr 2009 18:34:24 +0000
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andrea Righi <righi.andrea@gmail.com>, Pavel Roskin <proski@gnu.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] [BISECTED] x11 fbdev on intelfb hangs hard after
+	66c1ca019078220dc1bf968f2bb18421100ef147
+Message-ID: <20090421183424.GE22386@hera.kernel.org>
+References: <1239314524.7390.14.camel@mj> <20090410081428.GA5595@linux>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410081428.GA5595@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 18:34:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to get hotswap events in environments which cannot use existing
-facilities (e.g. inotify).  So we add a notifier-chain to allow client
-callbacks whenever an interface is {un}registered.
+* Andrea Righi (righi.andrea@gmail.com) wrote:
+> Thanks for reporting Pavel. I agree to revert 66c1ca ASAP.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+Rather than dropping from -stable queue, looks like we should be adding:
+513adb58685615b0b1d47a3f0d40f5352beff189 "fbdev: fix info->lock deadlock
+in fbcon_event_notify()"? 
 
- include/linux/vbus.h |   15 +++++++++++++
- kernel/vbus/core.c   |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/vbus/vbus.h   |    1 +
- 3 files changed, 75 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/vbus.h b/include/linux/vbus.h
-index 5f0566c..04db4ff 100644
---- a/include/linux/vbus.h
-+++ b/include/linux/vbus.h
-@@ -29,6 +29,7 @@
- #include <linux/sched.h>
- #include <linux/rcupdate.h>
- #include <linux/vbus_device.h>
-+#include <linux/notifier.h>
- 
- struct vbus;
- struct task_struct;
-@@ -137,6 +138,20 @@ static inline void task_vbus_disassociate(struct task_struct *p)
- 	}
- }
- 
-+enum {
-+	VBUS_EVENT_DEVADD,
-+	VBUS_EVENT_DEVDROP,
-+};
-+
-+struct vbus_event_devadd {
-+	const char   *type;
-+	unsigned long id;
-+};
-+
-+int vbus_notifier_register(struct vbus *vbus, struct notifier_block *nb);
-+int vbus_notifier_unregister(struct vbus *vbus, struct notifier_block *nb);
-+
-+
- #else /* CONFIG_VBUS */
- 
- #define fork_vbus(p) do { } while (0)
-diff --git a/kernel/vbus/core.c b/kernel/vbus/core.c
-index 033999f..b6df487 100644
---- a/kernel/vbus/core.c
-+++ b/kernel/vbus/core.c
-@@ -89,6 +89,7 @@ int vbus_device_interface_register(struct vbus_device *dev,
- {
- 	int ret;
- 	struct vbus_devshell *ds = to_devshell(dev->kobj);
-+	struct vbus_event_devadd ev;
- 
- 	mutex_lock(&vbus->lock);
- 
-@@ -124,6 +125,14 @@ int vbus_device_interface_register(struct vbus_device *dev,
- 	if (ret)
- 		goto error;
- 
-+	ev.type = intf->type;
-+	ev.id   = intf->id;
-+
-+	/* and let any clients know about the new device */
-+	ret = raw_notifier_call_chain(&vbus->notifier, VBUS_EVENT_DEVADD, &ev);
-+	if (ret < 0)
-+		goto error;
-+
- 	mutex_unlock(&vbus->lock);
- 
- 	return 0;
-@@ -144,6 +153,7 @@ int vbus_device_interface_unregister(struct vbus_device_interface *intf)
- 
- 	mutex_lock(&vbus->lock);
- 	_interface_unregister(intf);
-+	raw_notifier_call_chain(&vbus->notifier, VBUS_EVENT_DEVDROP, &intf->id);
- 	mutex_unlock(&vbus->lock);
- 
- 	kobject_put(&intf->kobj);
-@@ -346,6 +356,8 @@ int vbus_create(const char *name, struct vbus **bus)
- 
- 	_bus->next_id = 0;
- 
-+	RAW_INIT_NOTIFIER_HEAD(&_bus->notifier);
-+
- 	mutex_lock(&vbus_root.lock);
- 
- 	ret = map_add(&vbus_root.buses.map, &_bus->node);
-@@ -358,6 +370,53 @@ int vbus_create(const char *name, struct vbus **bus)
- 	return 0;
- }
- 
-+#define for_each_rbnode(node, root) \
-+	for (node = rb_first(root); node != NULL; node = rb_next(node))
-+
-+int vbus_notifier_register(struct vbus *vbus, struct notifier_block *nb)
-+{
-+	int ret;
-+	struct rb_node *node;
-+
-+	mutex_lock(&vbus->lock);
-+
-+	/*
-+	 * resync the client for any devices we might already have
-+	 */
-+	for_each_rbnode(node, &vbus->devices.map.root) {
-+		struct vbus_device_interface *intf = node_to_intf(node);
-+		struct vbus_event_devadd ev = {
-+			.type = intf->type,
-+			.id   = intf->id,
-+		};
-+
-+		ret = nb->notifier_call(nb, VBUS_EVENT_DEVADD, &ev);
-+		if (ret & NOTIFY_STOP_MASK) {
-+			mutex_unlock(&vbus->lock);
-+			return -EPERM;
-+		}
-+	}
-+
-+	ret = raw_notifier_chain_register(&vbus->notifier, nb);
-+
-+	mutex_unlock(&vbus->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(vbus_notifier_register);
-+
-+int vbus_notifier_unregister(struct vbus *vbus, struct notifier_block *nb)
-+{
-+	int ret;
-+
-+	mutex_lock(&vbus->lock);
-+	ret = raw_notifier_chain_unregister(&vbus->notifier, nb);
-+	mutex_unlock(&vbus->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(vbus_notifier_unregister);
-+
- static void devshell_release(struct kobject *kobj)
- {
- 	struct vbus_devshell *ds = container_of(kobj,
-diff --git a/kernel/vbus/vbus.h b/kernel/vbus/vbus.h
-index 1266d69..cd2676b 100644
---- a/kernel/vbus/vbus.h
-+++ b/kernel/vbus/vbus.h
-@@ -51,6 +51,7 @@ struct vbus {
- 	struct vbus_subdir members;
- 	unsigned long next_id;
- 	struct rb_node node;
-+	struct raw_notifier_head notifier;
- };
- 
- struct vbus_member {
-
+thanks,
+-chris
