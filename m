@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZDULja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZDULlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbZDULja (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 07:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZDULjT
+	id S1755151AbZDULlp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 07:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZDULlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 07:39:19 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:52448 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753367AbZDULjS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 07:39:18 -0400
-Date: Tue, 21 Apr 2009 20:39:17 +0900 (JST)
-Message-Id: <20090421.203917.189725396.ryov@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: balbir@linux.vnet.ibm.com, randy.dunlap@oracle.com, axboe@kernel.dk,
-       dradford@bluehost.com, akpm@linux-foundation.org, ngupta@google.com,
-       fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
-       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, roberto@unbit.it,
-       agk@sourceware.org, matt@bluehost.com,
-       containers@lists.linux-foundation.org, menage@google.com,
-       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com
-Subject: Re: [PATCH 3/9] bio-cgroup controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090420145658.GB13307@linux>
-References: <20090417102214.GC3896@balbir.in.ibm.com>
-	<20090420.203540.104031006.ryov@valinux.co.jp>
-	<20090420145658.GB13307@linux>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 21 Apr 2009 07:41:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44651 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754197AbZDULle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 07:41:34 -0400
+Message-ID: <49EDB0E0.5060101@redhat.com>
+Date: Tue, 21 Apr 2009 13:41:20 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: Xenner design and kvm msr handling
+References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com>
+In-Reply-To: <49ED9C70.5010906@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea,
+On 04/21/09 12:14, Avi Kivity wrote:
+> Gerd Hoffmann wrote:
+>> xenner & pv-on-hvm
+>> ==================
+>>
+>> Once we have all this in qemu it is just a small step to also support
+>> xenish pv-on-hvm drivers in qemu using the xenner emulation bits.
+>> Hypercalls are handled by a small pic binary loaded into the hypercall
+>> pages. Loading of the binary is triggered by the msr writes discussed.
+>> Size of the binary is only two pages: one hypercall entry points, one
+>> code. Communication path is the very same ioport interface also used
+>> by emu, i.e. it does *not* use vmcall and thus no opcode changes are
+>> needed on migration.
+>>
+> This gives a good case for exporting MSRs to userspace.
+>
+> Can you explain the protocol used by this MSR? How does the guest know
+> how many pages to load? How does the kernel know which type of page to
+> put where?
 
-> On Mon, Apr 20, 2009 at 08:35:40PM +0900, Ryo Tsuruta wrote:
-> > > > +/*
-> > > > + * Assign "page" the same owner as "opage."
-> > > > + */
-> > > > +void bio_cgroup_copy_owner(struct page *npage, struct page *opage)
-> > > > +{
-> > > > +	struct page_cgroup *npc, *opc;
-> > > > +
-> > > > +	if (bio_cgroup_disabled())
-> > > > +		return;
-> > > > +	npc = lookup_page_cgroup(npage);
-> > > > +	if (unlikely(!npc))
-> > > > +		return;
-> > > > +	opc = lookup_page_cgroup(opage);
-> > > > +	if (unlikely(!opc))
-> > > > +		return;
-> > > > +
-> > > > +	/*
-> > > > +	 * Do this without any locks. The reason is the same as
-> > > > +	 * bio_cgroup_reset_owner().
-> > > > +	 */
-> > > > +	npc->bio_cgroup_id = opc->bio_cgroup_id;
-> > > 
-> > > What protects npc and opc?
-> > 
-> > As the same reason mentioned above, bio_cgroup_id can be updated
-> > without any locks, and npc and opc always point to page_cgroups.
-> > An integer variable can be set a new value at once on a system which
-> > can use RCU lock.
-> 
-> mmmh... I'm not sure about this. Actually you read opc->bio_cgroup_id
-> first and then write to npc->bio_cgroup_id, so it is not atomic at all.
-> So, you can read or set a wrong ID, but at least it should be always
-> consistent (the single read or write itself is atomic).
+Sure.
 
-Even if opc->bio_cgroup_id is changed before copying to
-npc->bio_cgroup_id, npc->bio_cgroup_id is correctly updated at some time.
-The implementation is not completely accurate, but is faster and lighter.
+   (1) cpuid 0x40000000, check vmm signature
+   (2) cpuid 0x40000002 -> returns # of pages (eax) and msr (ebx)
+   (3) allocate pages (normal ram)
+   (4) foreach page (wrmsr "guest physical address | pageno")
 
-Thanks,
-Ryo Tsuruta
+Xen uses msr 0x40000000.  Due to the msr being queried via cpuid it 
+should be possible to use another one.  Modulo guest bugs of course ...
+
+> Note that it would still be interesting to have the guest call the
+> kernel, so it can kick the host kernel Xen netback driver directly
+> instead of going through qemu (and the userspace netback + tap).
+
+With the current codebase netback isn't involved at all.  Backend lives 
+in qemu like virtio-net.  It is a very simple one (no GSO support, ...), 
+there are tons of opportunities for optimizations.  Don't feel like 
+tackeling that right now though.  My patch queue is already deep enougth 
+as-is.  Also as time passes the qemu network layer tweaks for virtio-net 
+should make that job easier ;)
+
+cheers,
+   Gerd
+
