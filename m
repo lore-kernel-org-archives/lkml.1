@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZDUKId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZDUKJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbZDUKId (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZDUKIY
+	id S1757173AbZDUKJA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbZDUKIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:08:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51527 "EHLO gir.skynet.ie"
+	Tue, 21 Apr 2009 06:08:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42140 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753619AbZDUKIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:08:23 -0400
-Date: Tue, 21 Apr 2009 11:08:20 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 11/25] Calculate the cold parameter for allocation only
-	once
-Message-ID: <20090421100818.GO12713@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-12-git-send-email-mel@csn.ul.ie> <20090421180551.F142.A69D9226@jp.fujitsu.com>
+	id S1753257AbZDUKIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:08:46 -0400
+Date: Tue, 21 Apr 2009 10:08:12 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
+       lizf@cn.fujitsu.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49ED8DD2.2070700@cn.fujitsu.com>
+References: <49ED8DD2.2070700@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/filters: don't remove old filters when failed to write subsys->filter
+Message-ID: <tip-e8082f3f5a17d7a7bfc7dd1050a3f958dc034e9a@git.kernel.org>
+Git-Commit-ID: e8082f3f5a17d7a7bfc7dd1050a3f958dc034e9a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090421180551.F142.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 10:08:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 06:07:24PM +0900, KOSAKI Motohiro wrote:
-> > GFP mask is checked for __GFP_COLD has been specified when deciding which
-> > end of the PCP lists to use. However, it is happening multiple times per
-> > allocation, at least once per zone traversed. Calculate it once.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  mm/page_alloc.c |   35 ++++++++++++++++++-----------------
-> >  1 files changed, 18 insertions(+), 17 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 1506cd5..51e1ded 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1066,11 +1066,10 @@ void split_page(struct page *page, unsigned int order)
-> >   */
-> >  static struct page *buffered_rmqueue(struct zone *preferred_zone,
-> >  			struct zone *zone, int order, gfp_t gfp_flags,
-> > -			int migratetype)
-> > +			int migratetype, int cold)
-> >  {
-> >  	unsigned long flags;
-> >  	struct page *page;
-> > -	int cold = !!(gfp_flags & __GFP_COLD);
-> >  	int cpu;
-> 
-> Honestly, I don't like this ;-)
-> 
-> It seems benefit is too small. It don't win against code ugliness, I think.
-> 
+Commit-ID:  e8082f3f5a17d7a7bfc7dd1050a3f958dc034e9a
+Gitweb:     http://git.kernel.org/tip/e8082f3f5a17d7a7bfc7dd1050a3f958dc034e9a
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Tue, 21 Apr 2009 17:11:46 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 21 Apr 2009 11:58:27 +0200
 
-Ok, I'll drop it for now and then generate figures for it at a later
-time. The intention is to have this first set relatively
-uncontroversial.
+tracing/filters: don't remove old filters when failed to write subsys->filter
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+If writing subsys->filter returns EINVAL or ENOSPC, the original
+filters in subsys/ and subsys/events/ will be removed. This is
+definitely wrong.
+
+[ Impact: fix filter setting semantics on error condition ]
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <49ED8DD2.2070700@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/trace/trace_events.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 672b195..9ea55a7 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -600,7 +600,6 @@ subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 
+ 	err = filter_add_subsystem_pred(system, pred);
+ 	if (err < 0) {
+-		filter_free_subsystem_preds(system);
+ 		filter_free_pred(pred);
+ 		return err;
+ 	}
