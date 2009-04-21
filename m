@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbZDUWEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbZDUWE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbZDUWEK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 18:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbZDUWDy
+	id S1758717AbZDUWE1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 18:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757711AbZDUWDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 18:03:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59722 "EHLO mx2.redhat.com"
+	Tue, 21 Apr 2009 18:03:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59723 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753655AbZDUWDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755500AbZDUWDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Apr 2009 18:03:53 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] FRV: Fix the section attribute on UP DECLARE_PER_CPU()
+Subject: [PATCH 2/2] PERCPU: Collect the DECLARE/DEFINE declarations together
 To: torvalds@osdl.org, akpm@linux-foundation.org, mingo@elte.hu
 Cc: dhowells@redhat.com, jeremy@goop.org, tglx@linutronix.de, hpa@zytor.com,
        tj@kernel.org, linux-kernel@vger.kernel.org, tony.luck@intel.com
-Date: Tue, 21 Apr 2009 23:00:24 +0100
-Message-ID: <20090421220024.5927.82550.stgit@warthog.procyon.org.uk>
+Date: Tue, 21 Apr 2009 23:00:29 +0100
+Message-ID: <20090421220029.5927.32727.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090421220024.5927.82550.stgit@warthog.procyon.org.uk>
+References: <20090421220024.5927.82550.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,238 +30,186 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In non-SMP mode, the variable section attribute specified by DECLARE_PER_CPU()
-does not agree with that specified by DEFINE_PER_CPU().  This means that
-architectures that have a small data section references relative to a base
-register may throw up linkage errors due to too great a displacement between
-where the base register points and the per-CPU variable.
+Collect the DECLARE/DEFINE declarations together in linux/percpu-defs.h so
+that they're in one place, and give them descriptive comments, particularly
+the SHARED_ALIGNED variant.
 
-On FRV, the .h declaration says that the variable is in the .sdata section, but
-the .c definition says it's actually in the .data section.  The linker throws
-up the following errors:
-
-kernel/built-in.o: In function `release_task':
-kernel/exit.c:78: relocation truncated to fit: R_FRV_GPREL12 against symbol `per_cpu__process_counts' defined in .data section in kernel/built-in.o
-kernel/exit.c:78: relocation truncated to fit: R_FRV_GPREL12 against symbol `per_cpu__process_counts' defined in .data section in kernel/built-in.o
-
-To fix this, DECLARE_PER_CPU() should simply apply the same section attribute
-as does DEFINE_PER_CPU().  However, this is made slightly more complex by
-virtue of the fact that there are several variants on DEFINE, so these need to
-be matched by variants on DECLARE.
+It would be nice to collect these in linux/percpu.h, but that's not possible
+without sorting out the severe #include recursion between the x86 arch headers
+and the general headers (and possibly other arches too).
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- arch/alpha/include/asm/percpu.h  |    2 +-
- arch/ia64/include/asm/smp.h      |    2 +-
- arch/x86/include/asm/desc.h      |    2 +-
- arch/x86/include/asm/hardirq.h   |    2 +-
- arch/x86/include/asm/processor.h |    6 +++--
- arch/x86/include/asm/tlbflush.h  |    2 +-
- include/asm-generic/percpu.h     |   43 ++++++++++++++++++++++++++++++++++++--
- include/linux/percpu.h           |   24 ---------------------
- net/rds/rds.h                    |    2 +-
- 9 files changed, 50 insertions(+), 35 deletions(-)
+ include/asm-generic/percpu.h |   26 +------------
+ include/linux/percpu-defs.h  |   84 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/percpu.h       |   20 ----------
+ 3 files changed, 86 insertions(+), 44 deletions(-)
+ create mode 100644 include/linux/percpu-defs.h
 
 
-diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
-index 3495e8e..e9e0bb5 100644
---- a/arch/alpha/include/asm/percpu.h
-+++ b/arch/alpha/include/asm/percpu.h
-@@ -73,6 +73,6 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- 
- #endif /* SMP */
- 
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
-+#include <asm-generic/percpu.h>
- 
- #endif /* __ALPHA_PERCPU_H */
-diff --git a/arch/ia64/include/asm/smp.h b/arch/ia64/include/asm/smp.h
-index 5984083..d217d1d 100644
---- a/arch/ia64/include/asm/smp.h
-+++ b/arch/ia64/include/asm/smp.h
-@@ -58,7 +58,7 @@ extern struct smp_boot_data {
- extern char no_int_routing __devinitdata;
- 
- extern cpumask_t cpu_core_map[NR_CPUS];
--DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
-+DECLARE_PER_CPU_SHARED_ALIGNED(cpumask_t, cpu_sibling_map);
- extern int smp_num_siblings;
- extern void __iomem *ipi_base_addr;
- extern unsigned char smp_int_redirect;
-diff --git a/arch/x86/include/asm/desc.h b/arch/x86/include/asm/desc.h
-index 5623c50..c45f415 100644
---- a/arch/x86/include/asm/desc.h
-+++ b/arch/x86/include/asm/desc.h
-@@ -37,7 +37,7 @@ extern gate_desc idt_table[];
- struct gdt_page {
- 	struct desc_struct gdt[GDT_ENTRIES];
- } __attribute__((aligned(PAGE_SIZE)));
--DECLARE_PER_CPU(struct gdt_page, gdt_page);
-+DECLARE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page);
- 
- static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
- {
-diff --git a/arch/x86/include/asm/hardirq.h b/arch/x86/include/asm/hardirq.h
-index 039db6a..37555e5 100644
---- a/arch/x86/include/asm/hardirq.h
-+++ b/arch/x86/include/asm/hardirq.h
-@@ -26,7 +26,7 @@ typedef struct {
- #endif
- } ____cacheline_aligned irq_cpustat_t;
- 
--DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
-+DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- 
- /* We can have at most NR_VECTORS irqs routed to a cpu at a time */
- #define MAX_HARDIRQS_PER_CPU NR_VECTORS
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index fcf4d92..c2cceae 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -138,7 +138,7 @@ extern struct tss_struct	doublefault_tss;
- extern __u32			cleared_cpu_caps[NCAPINTS];
- 
- #ifdef CONFIG_SMP
--DECLARE_PER_CPU(struct cpuinfo_x86, cpu_info);
-+DECLARE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
- #define cpu_data(cpu)		per_cpu(cpu_info, cpu)
- #define current_cpu_data	__get_cpu_var(cpu_info)
- #else
-@@ -270,7 +270,7 @@ struct tss_struct {
- 
- } ____cacheline_aligned;
- 
--DECLARE_PER_CPU(struct tss_struct, init_tss);
-+DECLARE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss);
- 
- /*
-  * Save the original ist values for checking stack pointers during debugging
-@@ -393,7 +393,7 @@ union irq_stack_union {
- 	};
- };
- 
--DECLARE_PER_CPU(union irq_stack_union, irq_stack_union);
-+DECLARE_PER_CPU_FIRST(union irq_stack_union, irq_stack_union);
- DECLARE_INIT_PER_CPU(irq_stack_union);
- 
- DECLARE_PER_CPU(char *, irq_stack_ptr);
-diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-index d3539f9..16a5c84 100644
---- a/arch/x86/include/asm/tlbflush.h
-+++ b/arch/x86/include/asm/tlbflush.h
-@@ -152,7 +152,7 @@ struct tlb_state {
- 	struct mm_struct *active_mm;
- 	int state;
- };
--DECLARE_PER_CPU(struct tlb_state, cpu_tlbstate);
-+DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate);
- 
- static inline void reset_lazy_tlbstate(void)
- {
 diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
-index b0e63c6..af47b9e 100644
+index af47b9e..d7d50d7 100644
 --- a/include/asm-generic/percpu.h
 +++ b/include/asm-generic/percpu.h
-@@ -73,11 +73,50 @@ extern void setup_per_cpu_areas(void);
+@@ -1,13 +1,9 @@
+ #ifndef _ASM_GENERIC_PERCPU_H_
+ #define _ASM_GENERIC_PERCPU_H_
++
+ #include <linux/compiler.h>
+ #include <linux/threads.h>
+-
+-/*
+- * Determine the real variable name from the name visible in the
+- * kernel sources.
+- */
+-#define per_cpu_var(var) per_cpu__##var
++#include <linux/percpu-defs.h>
  
- #endif	/* SMP */
+ #ifdef CONFIG_SMP
  
-+#ifndef PER_CPU_BASE_SECTION
-+#ifdef CONFIG_SMP
-+#define PER_CPU_BASE_SECTION ".data.percpu"
-+#else
-+#define PER_CPU_BASE_SECTION ".data"
-+#endif
-+#endif
-+
-+#ifdef CONFIG_SMP
-+
-+#ifdef MODULE
-+#define PER_CPU_SHARED_ALIGNED_SECTION ""
-+#else
-+#define PER_CPU_SHARED_ALIGNED_SECTION ".shared_aligned"
-+#endif
-+#define PER_CPU_FIRST_SECTION ".first"
-+
-+#else
-+
-+#define PER_CPU_SHARED_ALIGNED_SECTION ""
-+#define PER_CPU_FIRST_SECTION ""
-+
-+#endif
-+
- #ifndef PER_CPU_ATTRIBUTES
+@@ -101,22 +97,4 @@ extern void setup_per_cpu_areas(void);
  #define PER_CPU_ATTRIBUTES
  #endif
  
--#define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
--					__typeof__(type) per_cpu_var(name)
+-#define DECLARE_PER_CPU_SECTION(type, name, section)			\
+-	extern \
+-	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+-
+-#define DECLARE_PER_CPU(type, name)					\
+-	DECLARE_PER_CPU_SECTION(type, name, "")
+-
+-#define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)			\
+-	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
+-	____cacheline_aligned_in_smp
+-
+-#define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)				\
+-	DECLARE_PER_CPU_SECTION(type, name, ".page_aligned")
+-
+-#define DECLARE_PER_CPU_FIRST(type, name)				\
+-	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
+-
+ #endif /* _ASM_GENERIC_PERCPU_H_ */
+diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
+new file mode 100644
+index 0000000..8f921d7
+--- /dev/null
++++ b/include/linux/percpu-defs.h
+@@ -0,0 +1,84 @@
++#ifndef _LINUX_PERCPU_DEFS_H
++#define _LINUX_PERCPU_DEFS_H
++
++/*
++ * Determine the real variable name from the name visible in the
++ * kernel sources.
++ */
++#define per_cpu_var(var) per_cpu__##var
++
++/*
++ * Base implementations of per-CPU variable declarations and definitions, where
++ * the section in which the variable is to be placed is provided by the
++ * 'section' argument.  This may be used to affect the parameters governing the
++ * variable's storage.
++ *
++ * NOTE!  The sections for the DECLARE and for the DEFINE must match, lest
++ * linkage errors occur due the compiler generating the wrong code to access
++ * that section.
++ */
 +#define DECLARE_PER_CPU_SECTION(type, name, section)			\
-+	extern \
++	extern								\
 +	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
 +	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
 +
++#define DEFINE_PER_CPU_SECTION(type, name, section)			\
++	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
++	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++
++/*
++ * Variant on the per-CPU variable declaration/definition theme used for
++ * ordinary per-CPU variables.
++ */
 +#define DECLARE_PER_CPU(type, name)					\
 +	DECLARE_PER_CPU_SECTION(type, name, "")
 +
++#define DEFINE_PER_CPU(type, name)					\
++	DEFINE_PER_CPU_SECTION(type, name, "")
++
++/*
++ * Declaration/definition used for per-CPU variables that must come first in
++ * the set of variables.
++ */
++#define DECLARE_PER_CPU_FIRST(type, name)				\
++	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
++
++#define DEFINE_PER_CPU_FIRST(type, name)				\
++	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
++
++/*
++ * Declaration/definition used for per-CPU variables that must be cacheline
++ * aligned under SMP conditions so that, whilst a particular instance of the
++ * data corresponds to a particular CPU, inefficiencies due to direct access by
++ * other CPUs are reduced by preventing the data from unnecessarily spanning
++ * cachelines.
++ *
++ * An example of this would be statistical data, where each CPU's set of data
++ * is updated by that CPU alone, but the data from across all CPUs is collated
++ * by a CPU processing a read from a proc file.
++ */
 +#define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)			\
 +	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
 +	____cacheline_aligned_in_smp
 +
++#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
++	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
++	____cacheline_aligned_in_smp
++
++/*
++ * Declaration/definition used for per-CPU variables that must be page aligned.
++ */
 +#define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)				\
 +	DECLARE_PER_CPU_SECTION(type, name, ".page_aligned")
 +
-+#define DECLARE_PER_CPU_FIRST(type, name)				\
-+	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
- 
- #endif /* _ASM_GENERIC_PERCPU_H_ */
++#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
++	DEFINE_PER_CPU_SECTION(type, name, ".page_aligned")
++
++/*
++ * Intermodule exports for per-CPU variables.
++ */
++#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
++#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
++
++
++#endif /* _LINUX_PERCPU_DEFS_H */
 diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index cfda2d5..f052d81 100644
+index f052d81..1581ff2 100644
 --- a/include/linux/percpu.h
 +++ b/include/linux/percpu.h
-@@ -9,30 +9,6 @@
+@@ -9,26 +9,6 @@
  
  #include <asm/percpu.h>
  
--#ifndef PER_CPU_BASE_SECTION
--#ifdef CONFIG_SMP
--#define PER_CPU_BASE_SECTION ".data.percpu"
--#else
--#define PER_CPU_BASE_SECTION ".data"
--#endif
--#endif
+-#define DEFINE_PER_CPU_SECTION(type, name, section)			\
+-	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
 -
--#ifdef CONFIG_SMP
+-#define DEFINE_PER_CPU(type, name)					\
+-	DEFINE_PER_CPU_SECTION(type, name, "")
 -
--#ifdef MODULE
--#define PER_CPU_SHARED_ALIGNED_SECTION ""
--#else
--#define PER_CPU_SHARED_ALIGNED_SECTION ".shared_aligned"
--#endif
--#define PER_CPU_FIRST_SECTION ".first"
+-#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
+-	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
+-	____cacheline_aligned_in_smp
 -
--#else
+-#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
+-	DEFINE_PER_CPU_SECTION(type, name, ".page_aligned")
 -
--#define PER_CPU_SHARED_ALIGNED_SECTION ""
--#define PER_CPU_FIRST_SECTION ""
+-#define DEFINE_PER_CPU_FIRST(type, name)				\
+-	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
 -
--#endif
+-#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+-#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
 -
- #define DEFINE_PER_CPU_SECTION(type, name, section)			\
- 	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
-diff --git a/net/rds/rds.h b/net/rds/rds.h
-index 619f0a3..7179444 100644
---- a/net/rds/rds.h
-+++ b/net/rds/rds.h
-@@ -638,7 +638,7 @@ struct rds_message *rds_send_get_message(struct rds_connection *,
- void rds_rdma_unuse(struct rds_sock *rs, u32 r_key, int force);
- 
- /* stats.c */
--DECLARE_PER_CPU(struct rds_statistics, rds_stats);
-+DECLARE_PER_CPU_SHARED_ALIGNED(struct rds_statistics, rds_stats);
- #define rds_stats_inc_which(which, member) do {		\
- 	per_cpu(which, get_cpu()).member++;		\
- 	put_cpu();					\
+ /* enough to cover all DEFINE_PER_CPUs in modules */
+ #ifdef CONFIG_MODULES
+ #define PERCPU_MODULE_RESERVE		(8 << 10)
 
