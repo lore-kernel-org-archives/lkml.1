@@ -1,109 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZDUQij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZDUQjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbZDUQij (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbZDUQiL
+	id S1756549AbZDUQjU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZDUQiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:38:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40084 "EHLO hera.kernel.org"
+	Tue, 21 Apr 2009 12:38:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40086 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755175AbZDUQiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754516AbZDUQiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Apr 2009 12:38:10 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/14] block: merge blk_invoke_request_fn() into __blk_run_queue()
-Date: Wed, 22 Apr 2009 01:37:48 +0900
-Message-Id: <1240331881-28218-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 03/14] block: don't set REQ_NOMERGE unnecessarily
+Date: Wed, 22 Apr 2009 01:37:50 +0900
+Message-Id: <1240331881-28218-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1240331881-28218-1-git-send-email-tj@kernel.org>
 References: <1240331881-28218-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 16:38:06 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 16:38:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__blk_run_queue wraps blk_invoke_request_fn() such that it
-additionally removes plug and bails out early if the queue is empty.
-Both extra operations have their own pending mechanisms and don't
-cause any harm correctness-wise when they are done superflously.
+RQ_NOMERGE_FLAGS already clears defines which REQ flags aren't
+mergeable.  There is no reason to specify it superflously.  It only
+adds to confusion.  Don't set REQ_NOMERGE for barriers and requests
+with specific queueing directive.  REQ_NOMERGE is now exclusively used
+by the merging code.
 
-The only user of blk_invoke_request_fn() being blk_start_queue(),
-there isn't much reason to keep both functions around.  Merge
-blk_invoke_request_fn() into __blk_run_queue() and make
-blk_start_queue() use __blk_run_queue() instead.
-
-[ Impact: merge two subtly different internal functions ]
+[ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-core.c |   35 ++++++++++++++---------------------
- 1 files changed, 14 insertions(+), 21 deletions(-)
+ block/blk-core.c |    5 +----
+ block/blk-exec.c |    1 -
+ 2 files changed, 1 insertions(+), 5 deletions(-)
 
 diff --git a/block/blk-core.c b/block/blk-core.c
-index cce7a88..3de653d 100644
+index d4c7260..bcc85ec 100644
 --- a/block/blk-core.c
 +++ b/block/blk-core.c
-@@ -333,24 +333,6 @@ void blk_unplug(struct request_queue *q)
- }
- EXPORT_SYMBOL(blk_unplug);
+@@ -1080,16 +1080,13 @@ void init_request_from_bio(struct request *req, struct bio *bio)
+ 	if (bio_failfast_driver(bio))
+ 		req->cmd_flags |= REQ_FAILFAST_DRIVER;
  
--static void blk_invoke_request_fn(struct request_queue *q)
--{
--	if (unlikely(blk_queue_stopped(q)))
--		return;
--
 -	/*
--	 * one level of recursion is ok and is much faster than kicking
--	 * the unplug handling
+-	 * REQ_BARRIER implies no merging, but lets make it explicit
 -	 */
--	if (!queue_flag_test_and_set(QUEUE_FLAG_REENTER, q)) {
--		q->request_fn(q);
--		queue_flag_clear(QUEUE_FLAG_REENTER, q);
--	} else {
--		queue_flag_set(QUEUE_FLAG_PLUGGED, q);
--		kblockd_schedule_work(q, &q->unplug_work);
--	}
--}
--
- /**
-  * blk_start_queue - restart a previously stopped queue
-  * @q:    The &struct request_queue in question
-@@ -365,7 +347,7 @@ void blk_start_queue(struct request_queue *q)
- 	WARN_ON(!irqs_disabled());
+ 	if (unlikely(bio_discard(bio))) {
+ 		req->cmd_flags |= REQ_DISCARD;
+ 		if (bio_barrier(bio))
+ 			req->cmd_flags |= REQ_SOFTBARRIER;
+ 		req->q->prepare_discard_fn(req->q, req);
+ 	} else if (unlikely(bio_barrier(bio)))
+-		req->cmd_flags |= (REQ_HARDBARRIER | REQ_NOMERGE);
++		req->cmd_flags |= REQ_HARDBARRIER;
  
- 	queue_flag_clear(QUEUE_FLAG_STOPPED, q);
--	blk_invoke_request_fn(q);
-+	__blk_run_queue(q);
- }
- EXPORT_SYMBOL(blk_start_queue);
+ 	if (bio_sync(bio))
+ 		req->cmd_flags |= REQ_RW_SYNC;
+diff --git a/block/blk-exec.c b/block/blk-exec.c
+index 6af716d..49557e9 100644
+--- a/block/blk-exec.c
++++ b/block/blk-exec.c
+@@ -51,7 +51,6 @@ void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
+ 	int where = at_head ? ELEVATOR_INSERT_FRONT : ELEVATOR_INSERT_BACK;
  
-@@ -425,12 +407,23 @@ void __blk_run_queue(struct request_queue *q)
- {
- 	blk_remove_plug(q);
- 
-+	if (unlikely(blk_queue_stopped(q)))
-+		return;
-+
-+	if (elv_queue_empty(q))
-+		return;
-+
- 	/*
- 	 * Only recurse once to avoid overrunning the stack, let the unplug
- 	 * handling reinvoke the handler shortly if we already got there.
- 	 */
--	if (!elv_queue_empty(q))
--		blk_invoke_request_fn(q);
-+	if (!queue_flag_test_and_set(QUEUE_FLAG_REENTER, q)) {
-+		q->request_fn(q);
-+		queue_flag_clear(QUEUE_FLAG_REENTER, q);
-+	} else {
-+		queue_flag_set(QUEUE_FLAG_PLUGGED, q);
-+		kblockd_schedule_work(q, &q->unplug_work);
-+	}
- }
- EXPORT_SYMBOL(__blk_run_queue);
- 
+ 	rq->rq_disk = bd_disk;
+-	rq->cmd_flags |= REQ_NOMERGE;
+ 	rq->end_io = done;
+ 	WARN_ON(irqs_disabled());
+ 	spin_lock_irq(q->queue_lock);
 -- 
 1.6.0.2
 
