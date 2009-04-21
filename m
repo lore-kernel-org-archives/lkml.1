@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbZDURYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZDURaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbZDURYn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 13:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbZDURYZ
+	id S1756089AbZDURaV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 13:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZDURaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 13:24:25 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41382 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756665AbZDURYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 13:24:24 -0400
-Message-ID: <49EE00F9.6090000@zytor.com>
-Date: Tue, 21 Apr 2009 10:23:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 21 Apr 2009 13:30:03 -0400
+Received: from lixom.net ([66.141.50.11]:39153 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbZDURaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 13:30:00 -0400
+X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Apr 2009 13:30:00 EDT
+Date: Tue, 21 Apr 2009 12:25:02 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Paul Mackerras <paulus@samba.org>, subrata@linux.vnet.ibm.com,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] powerpc/pasemi: Fix no SMP build error
+Message-ID: <20090421172502.GA20237@lixom.net>
+References: <1239285094.5188.65.camel@subratamodak.linux.ibm.com> <49E8B015.7060808@am.sony.com>
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Matti Aarnio <matti.aarnio@zmailer.org>, Jesper Juhl <jj@chaosbits.net>,
-       Prakash Punnoor <prakash@punnoor.de>, Michael Tokarev <mjt@tls.msk.ru>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
-Subject: Re: Proposal: make RAID6 code optional
-References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org> <49EDD11E.2030309@tmr.com>
-In-Reply-To: <49EDD11E.2030309@tmr.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49E8B015.7060808@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> It would seem that that space could be allocated and populated when
-> raid6 was first used, as part of the initialization. I haven't looked at
-> that code since it was new, so I might be optimistic about doing it that
-> way.
+On Fri, Apr 17, 2009 at 09:36:37AM -0700, Geoff Levand wrote:
+> A non-SMP version of smp_send_stop() is now included in smp.h.
+> Remove the unneeded def in the pasemi setup.c.
+> 
+> Fixes build errors like these when CONFIG_SMP=n:
+> 
+>   arch/powerpc/platforms/pasemi/setup.c:48: error: redefinition of ???smp_send_stop???
+>   include/linux/smp.h:125: error: previous definition of 'smp_send_stop' was here
 
-We could use vmalloc() and generate the tables at initialization time.
-However, having a separate module which exports the raid6 declaration
-and uses the raid5 module as a subroutine library seems easier.
+Thanks for taking care of this.
 
-	-hpa
+> Reported-by: subrata@linux.vnet.ibm.com
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
 
+Acked-by: Olof Johansson <olof@lixom.net>
+
+
+-Olof
