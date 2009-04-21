@@ -1,44 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbZDUItq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZDUIuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbZDUItq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZDUItd
+	id S1755936AbZDUIuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZDUIuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:49:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43153
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753475AbZDUItc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:49:32 -0400
-Date: Tue, 21 Apr 2009 01:49:23 -0700 (PDT)
-Message-Id: <20090421.014923.169153421.davem@davemloft.net>
-To: laijs@cn.fujitsu.com
-Cc: zbr@ioremap.net, shemminger@vyatta.com, dada1@cosmosbay.com,
-       paulus@samba.org, paulmck@linux.vnet.ibm.com, kaber@trash.net,
-       torvalds@linux-foundation.org, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49ED8700.3010603@cn.fujitsu.com>
-References: <49ED6D2E.5060808@cn.fujitsu.com>
-	<20090421081649.GA16782@ioremap.net>
-	<49ED8700.3010603@cn.fujitsu.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Apr 2009 04:50:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43657 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755656AbZDUIuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:50:12 -0400
+Date: Tue, 21 Apr 2009 09:50:08 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 18/25] Do not disable interrupts in free_page_mlock()
+Message-ID: <20090421085007.GG12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-19-git-send-email-mel@csn.ul.ie> <1240300507.771.52.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1240300507.771.52.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-Date: Tue, 21 Apr 2009 16:42:40 +0800
+On Tue, Apr 21, 2009 at 10:55:07AM +0300, Pekka Enberg wrote:
+> On Mon, 2009-04-20 at 23:20 +0100, Mel Gorman wrote:
+> > free_page_mlock() tests and clears PG_mlocked using locked versions of the
+> > bit operations. If set, it disables interrupts to update counters and this
+> > happens on every page free even though interrupts are disabled very shortly
+> > afterwards a second time.  This is wasteful.
+> > 
+> > This patch splits what free_page_mlock() does. The bit check is still
+> > made. However, the update of counters is delayed until the interrupts are
+> > disabled and the non-lock version for clearing the bit is used. One potential
+> > weirdness with this split is that the counters do not get updated if the
+> > bad_page() check is triggered but a system showing bad pages is getting
+> > screwed already.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> > ---
+> >  mm/internal.h   |   11 +++--------
+> >  mm/page_alloc.c |    8 +++++++-
+> >  2 files changed, 10 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index 987bb03..58ec1bc 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+> >   */
+> >  static inline void free_page_mlock(struct page *page)
+> >  {
+> > -	if (unlikely(TestClearPageMlocked(page))) {
+> > -		unsigned long flags;
+> > -
+> > -		local_irq_save(flags);
+> > -		__dec_zone_page_state(page, NR_MLOCK);
+> > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > -		local_irq_restore(flags);
+> > -	}
+> 
+> Maybe add a VM_BUG_ON(!PageMlocked(page))?
+> 
 
-> softirq is always not nesting. Why we need recursive lock?
+We always check in the caller and I don't see callers to this function
+expanding. I can add it if you insist but I don't think it'll catch
+anything in this case.
 
-Netfilter itself, is nesting.
+> > +	__ClearPageMlocked(page);
+> > +	__dec_zone_page_state(page, NR_MLOCK);
+> > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> >  }
+> >  
+> >  #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+> 
 
-When using bridging netfilter, iptables can be entered twice
-in the same call chain.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
