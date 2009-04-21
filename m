@@ -1,100 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbZDUMzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZDUM6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754385AbZDUMzl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 08:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbZDUMzb
+	id S1753997AbZDUM6r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 08:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZDUM6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 08:55:31 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:56322 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbZDUMza (ORCPT
+	Tue, 21 Apr 2009 08:58:37 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:47384 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZDUM6h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 08:55:30 -0400
-Date: Tue, 21 Apr 2009 13:55:29 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFD] voltage/current regulator consumer interface
-Message-ID: <20090421125528.GD25828@sirena.org.uk>
-References: <49EC8775.8060609@compulab.co.il> <20090420145627.GA5281@rakim.wolfsonmicro.main> <49EDB569.2060701@compulab.co.il>
+	Tue, 21 Apr 2009 08:58:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=P+LsbQLD7bQSiA3Dq/6oaKuiR1hLOli3fvpTuaNnqAwOU0Fyd0IMmISGI+gHd3r9a2
+         LiLMD7KwGJF2wbErr+f8+UbiyrfifR2V7thh2dq5u64tTJQD3DLFnNG5PXS/5RnuyQCF
+         zPLBVCs1VTHRqUS/LKdXBdUt4pa29Lk1U8PVc=
+Date: Tue, 21 Apr 2009 14:58:30 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/7] io-throttle controller infrastructure
+Message-ID: <20090421125829.GD13699@linux>
+References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-5-git-send-email-righi.andrea@gmail.com> <20090420175904.GD6822@linux.vnet.ibm.com> <20090420212225.GA5819@linux> <20090421041524.GB6939@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49EDB569.2060701@compulab.co.il>
-X-Cookie: Rubber bands have snappy endings!
+In-Reply-To: <20090421041524.GB6939@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 03:00:41PM +0300, Mike Rapoport wrote:
+On Mon, Apr 20, 2009 at 09:15:24PM -0700, Paul E. McKenney wrote:
+> > > How does the above lock relate to the iot->lock called out in the comment
+> > > headers in the earlier functions?  Hmmm...  Come to think of it, I don't
+> > > see an acquisition of iot->lock anywhere.
+> > > 
+> > > So, what is the story here?
+> > 
+> > As said before, only the comment in struct iothrottle is correct, we use
+> > cgroup_lock() to protect iot->list, so there's no need to introduce
+> > another lock inside struct iothrottle.
+> > 
+> > And the other comments about iot->lock must be fixed.
+> 
+> Sounds good!
+> 
+> So this code is compiled into the kernel only when cgroups are defined,
+> correct?  Otherwise, cgroup_lock() seems to be an empty function.
 
-> I've managed to create some preliminary "line-consumer" driver. I don't really
-> like the name, but I couldn't think of something better and "virtual" is
-> already taken :)
+Right, from init/Kconfig:
 
-"userspace" or "user"?  The goal here is to let userspace applications
-be consumers.
+config CGROUP_IO_THROTTLE
+        bool "Enable cgroup I/O throttling"
+        depends on CGROUPS && RESOURCE_COUNTERS && EXPERIMENTAL
+...
 
-> +static ssize_t set_state(struct device *dev, struct device_attribute *attr,
-> +			 const char *buf, size_t count)
-> +{
-> +	struct line_consumer_data *data = dev_get_drvdata(dev);
-> +	bool enabled;
-> +	int ret;
-> +
-> +	/*
-> +	 * sysfs_streq() doesn't need the \n's, but we add them so the strings
-> +	 * will be shared with show_state(), above.
-> +	 */
-> +	if (sysfs_streq(buf, "enabled\n") == 0)
-> +		enabled = true;
-> +	else if (sysfs_streq(buf, "disabled\n") == 0)
-> +		enabled = false;
+> > > > +int iothrottle_set_page_owner(struct page *page, struct mm_struct *mm)
+> > > > +{
+> > > > +	struct iothrottle *iot;
+> > > > +	unsigned short id = 0;
+> > > > +
+> > > > +	if (iothrottle_disabled())
+> > > > +		return 0;
+> > > > +	if (!mm)
+> > > > +		goto out;
+> > > > +	rcu_read_lock();
+> > > > +	iot = task_to_iothrottle(rcu_dereference(mm->owner));
+> > > 
+> > > Given that task_to_iothrottle() calls task_subsys_state(), which contains
+> > > an rcu_dereference(), why is the rcu_dereference() above required?
+> > > (There might well be a good reason, just cannot see it right offhand.)
+> > 
+> > The first rcu_dereference() is required to safely get a task_struct from
+> > mm_struct. The second rcu_dereference() inside task_to_iothrottle() is
+> > required to safely get the struct iothrottle from task_struct.
+> 
+> Why not put the rcu_dereference() down inside task_to_iothrottle()?
+> 
 
-I'd be inclined to also accept 1 and 0 here.
+mmmh... it is needed only when task_struct is taken from mm->owner,
+task_to_iothrottle(current) for example works fine without the
+rcu_dereference(current).
 
-> +static DEVICE_ATTR(name, 0444, show_name, NULL);
-> +static DEVICE_ATTR(state, 0666, show_state, set_state);
-
-Permissions for set_state() should probably be tighter?
-
-> +	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
-> +		ret = device_create_file(&pdev->dev, attributes[i]);
-> +		if (ret != 0)
-> +			goto err_create_attrs;
-> +	}
-
-device_add_attributes()?
-
-> +	if (pdata->init_on)
-> +		ret = regulator_bulk_enable(drvdata->num_supplies,
-> +					    drvdata->supplies);
-> +	else
-> +		ret = regulator_bulk_disable(drvdata->num_supplies,
-> +					     drvdata->supplies);
-
-The disable case will lead to unbalanced enables and disables, loosing
-a reference to the supply.  Just don't do anything if the supplies
-should not be enabled.
-
-> +static int regulator_line_consumer_remove(struct platform_device *pdev)
-> +{
-> +	struct line_consumer_data *drvdata = platform_get_drvdata(pdev);
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(attributes); i++)
-> +		device_remove_file(&pdev->dev, attributes[i]);
-> +
-> +	regulator_bulk_free(drvdata->num_supplies, drvdata->supplies);
-> +	kfree(drvdata->supplies);
-> +	kfree(drvdata);
-> +
-> +	return 0;
-> +}
-
-Hrm.  You probably want to disable the supplies if you weren't using
-them here.
+-Andrea
