@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZDUSnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbZDUSnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbZDUSnn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758746AbZDUSmL
+	id S1758854AbZDUSnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZDUSmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:42:11 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37856 "EHLO
+	Tue, 21 Apr 2009 14:42:05 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:52014 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758700AbZDUSl7 (ORCPT
+	with ESMTP id S1757324AbZDUSlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 14:41:59 -0400
+	Tue, 21 Apr 2009 14:41:45 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 16/17] vbus: add a userspace connector
+Subject: [RFC PATCH v3 09/17] net: Add vbus_enet driver
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
        rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
        bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
        chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:35:42 -0400
-Message-ID: <20090421183542.12548.42046.stgit@dev.haskins.net>
+Date: Tue, 21 Apr 2009 14:35:05 -0400
+Message-ID: <20090421183505.12548.36781.stgit@dev.haskins.net>
 In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
 References: <20090421183341.12548.33393.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -30,628 +30,725 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows userspace applications to access vbus devices
-
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- include/linux/vbus.h           |    4 
- include/linux/vbus_client.h    |    2 
- include/linux/vbus_userspace.h |   48 ++++
- kernel/vbus/Kconfig            |   10 +
- kernel/vbus/Makefile           |    2 
- kernel/vbus/userspace-client.c |  485 ++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 550 insertions(+), 1 deletions(-)
- create mode 100644 include/linux/vbus_userspace.h
- create mode 100644 kernel/vbus/userspace-client.c
+ drivers/net/Kconfig     |   13 +
+ drivers/net/Makefile    |    1 
+ drivers/net/vbus-enet.c |  672 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 686 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/net/vbus-enet.c
 
-diff --git a/include/linux/vbus.h b/include/linux/vbus.h
-index 04db4ff..f967e59 100644
---- a/include/linux/vbus.h
-+++ b/include/linux/vbus.h
-@@ -23,6 +23,8 @@
- #ifndef _LINUX_VBUS_H
- #define _LINUX_VBUS_H
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 9e92154..f46239b 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -3155,4 +3155,17 @@ config VIRTIO_NET
+ 	  This is the virtual network driver for virtio.  It can be used with
+           lguest or QEMU based VMMs (like KVM or Xen).  Say Y or M.
  
-+#ifdef __KERNEL__
++config VBUS_ENET
++	tristate "Virtual Ethernet Driver"
++	depends on VBUS_DRIVERS
++	help
++	   A virtualized 802.x network device based on the VBUS interface.
++	   It can be used with any hypervisor/kernel that supports the
++	   vbus protocol.
 +
- #ifdef CONFIG_VBUS
- 
- #include <linux/module.h>
-@@ -159,4 +161,6 @@ int vbus_notifier_unregister(struct vbus *vbus, struct notifier_block *nb);
- 
- #endif /* CONFIG_VBUS */
- 
-+#endif /* __KERNEL__ */
++config VBUS_ENET_DEBUG
++        bool "Enable Debugging"
++	depends on VBUS_ENET
++	default n
 +
- #endif /* _LINUX_VBUS_H */
-diff --git a/include/linux/vbus_client.h b/include/linux/vbus_client.h
-index 62dab78..4c82822 100644
---- a/include/linux/vbus_client.h
-+++ b/include/linux/vbus_client.h
-@@ -35,7 +35,7 @@
- #ifndef _LINUX_VBUS_CLIENT_H
- #define _LINUX_VBUS_CLIENT_H
+ endif # NETDEVICES
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index 1fc4602..ee76236 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -268,6 +268,7 @@ obj-$(CONFIG_FS_ENET) += fs_enet/
+ obj-$(CONFIG_NETXEN_NIC) += netxen/
+ obj-$(CONFIG_NIU) += niu.o
+ obj-$(CONFIG_VIRTIO_NET) += virtio_net.o
++obj-$(CONFIG_VBUS_ENET) += vbus-enet.o
+ obj-$(CONFIG_SFC) += sfc/
  
--#include <linux/types.h>
-+#include <asm/types.h>
- #include <linux/compiler.h>
- 
- struct vbus_deviceopen {
-diff --git a/include/linux/vbus_userspace.h b/include/linux/vbus_userspace.h
+ obj-$(CONFIG_WIMAX) += wimax/
+diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
 new file mode 100644
-index 0000000..0b78686
+index 0000000..8fcc2d6
 --- /dev/null
-+++ b/include/linux/vbus_userspace.h
-@@ -0,0 +1,48 @@
++++ b/drivers/net/vbus-enet.c
+@@ -0,0 +1,672 @@
 +/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
++ * vbus_enet - A virtualized 802.x network device based on the VBUS interface
 + *
-+ * Virtual-Bus
++ * Copyright (C) 2009 Novell, Gregory Haskins <ghaskins@novell.com>
 + *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ * Derived from the SNULL example from the book "Linux Device Drivers" by
++ * Alessandro Rubini, Jonathan Corbet, and Greg Kroah-Hartman, published
++ * by O'Reilly & Associates.
 + */
 +
-+#ifndef _LINUX_VBUS_USERSPACE_H
-+#define _LINUX_VBUS_USERSPACE_H
-+
-+#include <linux/ioctl.h>
-+#include <linux/vbus.h>
-+#include <linux/vbus_client.h>
-+
-+#define VBUS_USERSPACE_ABI_MAGIC 0x4fa23b58
-+#define VBUS_USERSPACE_ABI_VERSION 1
-+
-+struct vbus_userspace_busopen {
-+	__u32 magic;
-+	__u32 version;
-+	__u64 capabilities;
-+};
-+
-+#define VBUS_IOCTL_MAGIC 'v'
-+
-+#define VBUS_BUSOPEN       _IOWR(VBUS_IOCTL_MAGIC, 0x00, struct vbus_userspace_busopen)
-+#define VBUS_DEVICEOPEN   _IOWR(VBUS_IOCTL_MAGIC, 0x01, struct vbus_deviceopen)
-+#define VBUS_DEVICECLOSE  _IOWR(VBUS_IOCTL_MAGIC, 0x02, __u64)
-+#define VBUS_DEVICECALL   _IOWR(VBUS_IOCTL_MAGIC, 0x03, struct vbus_devicecall)
-+#define VBUS_DEVICESHM    _IOWR(VBUS_IOCTL_MAGIC, 0x04, struct vbus_deviceshm)
-+#define VBUS_SHMSIGNAL    _IOWR(VBUS_IOCTL_MAGIC, 0x05, __u64)
-+
-+#endif /* _LINUX_VBUS_USERSPACE_H */
-diff --git a/kernel/vbus/Kconfig b/kernel/vbus/Kconfig
-index 3ce0adc..b894dd1 100644
---- a/kernel/vbus/Kconfig
-+++ b/kernel/vbus/Kconfig
-@@ -25,6 +25,16 @@ config VBUS_DEVICES
- 
- source "drivers/vbus/devices/Kconfig"
- 
-+config VBUS_USERSPACE
-+       tristate "Virtual-Bus userspace client support"
-+       depends on VBUS
-+       default y
-+       help
-+         Provides facilities for userspace applications to access virtual-
-+	 bus objects.
-+
-+	 If unsure, say N
-+
- config VBUS_DRIVERS
-        tristate "VBUS Driver support"
-        select IOQ
-diff --git a/kernel/vbus/Makefile b/kernel/vbus/Makefile
-index 45f6503..61d0371 100644
---- a/kernel/vbus/Makefile
-+++ b/kernel/vbus/Makefile
-@@ -4,3 +4,5 @@ obj-$(CONFIG_VBUS) += shm-ioq.o
- vbus-proxy-objs += proxy.o
- obj-$(CONFIG_VBUS_DRIVERS) += vbus-proxy.o
- 
-+vbus-userspace-objs += userspace-client.o
-+obj-$(CONFIG_VBUS_USERSPACE) += vbus-userspace.o
-diff --git a/kernel/vbus/userspace-client.c b/kernel/vbus/userspace-client.c
-new file mode 100644
-index 0000000..b2fe447
---- /dev/null
-+++ b/kernel/vbus/userspace-client.c
-@@ -0,0 +1,485 @@
-+#include <linux/ioctl.h>
-+#include <linux/fs.h>
-+#include <linux/miscdevice.h>
-+#include <linux/mm.h>
-+#include <linux/vmalloc.h>
-+#include <linux/uaccess.h>
-+#include <linux/spinlock.h>
 +#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/moduleparam.h>
 +
-+#include <linux/vbus.h>
-+#include <linux/vbus_userspace.h>
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/errno.h>
++#include <linux/types.h>
++#include <linux/interrupt.h>
 +
-+#include "vbus.h"
++#include <linux/in.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/ip.h>
++#include <linux/tcp.h>
++#include <linux/skbuff.h>
++#include <linux/ioq.h>
++#include <linux/vbus_driver.h>
++
++#include <linux/in6.h>
++#include <asm/checksum.h>
++
++#include <linux/venet.h>
 +
 +MODULE_AUTHOR("Gregory Haskins");
 +MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("virtual-ethernet");
++MODULE_VERSION("1");
 +
-+struct userspace_chardev;
++static int rx_ringlen = 256;
++module_param(rx_ringlen, int, 0444);
++static int tx_ringlen = 256;
++module_param(tx_ringlen, int, 0444);
 +
-+struct userspace_signal {
-+	struct userspace_chardev *cd;
-+	struct vbus_shm          *shm;
-+	struct shm_signal         signal;
-+	struct list_head          list;
-+	int                       signaled;
-+	int                       prio;
-+	u64                       cookie;
++#define PDEBUG(_dev, fmt, args...) dev_dbg(&(_dev)->dev, fmt, ## args)
++
++struct vbus_enet_queue {
++	struct ioq              *queue;
++	struct ioq_notifier      notifier;
 +};
 +
-+struct userspace_shm {
-+	struct vbus_shm shm;
++struct vbus_enet_priv {
++	spinlock_t                 lock;
++	struct net_device         *dev;
++	struct vbus_device_proxy  *vdev;
++	struct napi_struct         napi;
++	struct vbus_enet_queue     rxq;
++	struct vbus_enet_queue     txq;
++	struct tasklet_struct      txtask;
 +};
 +
-+struct userspace_chardev {
-+	spinlock_t lock;
-+	int opened;
-+	struct vbus_memctx *ctx;
-+	struct vbus_client *client;
-+	struct list_head signal_list;
-+	wait_queue_head_t wq;
-+	struct vbus *vbus;
-+};
-+
-+static long
-+_busopen(struct userspace_chardev *cd, struct vbus_userspace_busopen *args)
++static struct vbus_enet_priv *
++napi_to_priv(struct napi_struct *napi)
 +{
-+	if (cd->opened)
-+		return -EINVAL;
++	return container_of(napi, struct vbus_enet_priv, napi);
++}
 +
-+	if (args->magic != VBUS_USERSPACE_ABI_MAGIC)
-+		return -EINVAL;
++static int
++queue_init(struct vbus_enet_priv *priv,
++	   struct vbus_enet_queue *q,
++	   int qid,
++	   size_t ringsize,
++	   void (*func)(struct ioq_notifier *))
++{
++	struct vbus_device_proxy *dev = priv->vdev;
++	int ret;
 +
-+	if (args->version != VBUS_USERSPACE_ABI_VERSION)
-+		return -EINVAL;
++	ret = vbus_driver_ioq_alloc(dev, qid, 0, ringsize, &q->queue);
++	if (ret < 0)
++		panic("ioq_alloc failed: %d\n", ret);
 +
-+	/*
-+	 * We have no extended capabilities yet, so we dont care if they set
-+	 * any option bits.  Just clear them all.
-+	 */
-+	args->capabilities = 0;
-+
-+	cd->opened = 1;
++	if (func) {
++		q->notifier.signal = func;
++		q->queue->notifier = &q->notifier;
++	}
 +
 +	return 0;
 +}
 +
-+static long
-+_deviceopen(struct userspace_chardev *cd, struct vbus_deviceopen *args)
++static int
++devcall(struct vbus_enet_priv *priv, u32 func, void *data, size_t len)
 +{
-+	struct vbus_client *c = cd->client;
++	struct vbus_device_proxy *dev = priv->vdev;
 +
-+	return c->ops->deviceopen(c, cd->ctx, args->devid, args->version,
-+				  &args->handle);
++	return dev->ops->call(dev, func, data, len, 0);
 +}
 +
-+static long
-+_deviceclose(struct userspace_chardev *cd, unsigned long devh)
-+{
-+	struct vbus_client *c = cd->client;
++/*
++ * ---------------
++ * rx descriptors
++ * ---------------
++ */
 +
-+	return c->ops->deviceclose(c, devh);
++static void
++rxdesc_alloc(struct net_device *dev, struct ioq_ring_desc *desc, size_t len)
++{
++	struct sk_buff *skb;
++
++	len += ETH_HLEN;
++
++	skb = netdev_alloc_skb(dev, len + 2);
++	BUG_ON(!skb);
++
++	skb_reserve(skb, NET_IP_ALIGN); /* align IP on 16B boundary */
++
++	desc->cookie = (u64)skb;
++	desc->ptr    = (u64)__pa(skb->data);
++	desc->len    = len; /* total length  */
++	desc->valid  = 1;
 +}
 +
-+static long
-+_devicecall(struct userspace_chardev *cd, struct vbus_devicecall *args)
++static void
++rx_setup(struct vbus_enet_priv *priv)
 +{
-+	struct vbus_client *c = cd->client;
-+
-+	return c->ops->devicecall(c, args->devh, args->func,
-+				  (void *)args->datap,
-+				  args->len, args->flags);
-+}
-+
-+static void*
-+userspace_vmap(__u64 addr, size_t len)
-+{
-+	struct page **page_list;
-+	void *ptr = NULL;
-+	unsigned long base;
-+	off_t offset;
-+	size_t npages;
++	struct ioq *ioq = priv->rxq.queue;
++	struct ioq_iterator iter;
 +	int ret;
 +
-+	base = (unsigned long)addr & PAGE_MASK;
-+	offset = (unsigned long)addr & ~PAGE_MASK;
-+	npages = PAGE_ALIGN(len + offset) >> PAGE_SHIFT;
++	/*
++	 * We want to iterate on the "valid" index.  By default the iterator
++	 * will not "autoupdate" which means it will not hypercall the host
++	 * with our changes.  This is good, because we are really just
++	 * initializing stuff here anyway.  Note that you can always manually
++	 * signal the host with ioq_signal() if the autoupdate feature is not
++	 * used.
++	 */
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
++	BUG_ON(ret < 0); /* will never fail unless seriously broken */
 +
-+	if (npages > (PAGE_SIZE / sizeof(struct page *)))
-+		return NULL;
++	/*
++	 * Seek to the tail of the valid index (which should be our first
++	 * item, since the queue is brand-new)
++	 */
++	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
++	BUG_ON(ret < 0);
 +
-+	page_list = (struct page **) __get_free_page(GFP_KERNEL);
-+	if (!page_list)
-+		return NULL;
++	/*
++	 * Now populate each descriptor with an empty SKB and mark it valid
++	 */
++	while (!iter.desc->valid) {
++		rxdesc_alloc(priv->dev, iter.desc, priv->dev->mtu);
 +
-+	down_write(&current->mm->mmap_sem);
-+
-+	ret = get_user_pages(current, current->mm, base, npages,
-+			     1, 0, page_list, NULL);
-+	if (ret < 0)
-+		goto out;
-+
-+	ptr = vmap(page_list, npages, VM_MAP, PAGE_KERNEL);
-+	if (ptr)
-+		current->mm->locked_vm += npages;
-+
-+out:
-+	up_write(&current->mm->mmap_sem);
-+	free_page((unsigned long)page_list);
-+
-+	return ptr+offset;
++		/*
++		 * This push operation will simultaneously advance the
++		 * valid-head index and increment our position in the queue
++		 * by one.
++		 */
++		ret = ioq_iter_push(&iter, 0);
++		BUG_ON(ret < 0);
++	}
 +}
 +
-+static struct userspace_signal *to_userspace(struct shm_signal *signal)
++static void
++rx_teardown(struct vbus_enet_priv *priv)
 +{
-+       return container_of(signal, struct userspace_signal, signal);
++	struct ioq *ioq = priv->rxq.queue;
++	struct ioq_iterator iter;
++	int ret;
++
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * free each valid descriptor
++	 */
++	while (iter.desc->valid) {
++		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
++
++		iter.desc->valid = 0;
++		wmb();
++
++		iter.desc->ptr = 0;
++		iter.desc->cookie = 0;
++
++		ret = ioq_iter_pop(&iter, 0);
++		BUG_ON(ret < 0);
++
++		dev_kfree_skb(skb);
++	}
++}
++
++/*
++ * Open and close
++ */
++
++static int
++vbus_enet_open(struct net_device *dev)
++{
++	struct vbus_enet_priv *priv = netdev_priv(dev);
++	int ret;
++
++	ret = devcall(priv, VENET_FUNC_LINKUP, NULL, 0);
++	BUG_ON(ret < 0);
++
++	napi_enable(&priv->napi);
++
++	return 0;
 +}
 +
 +static int
-+userspace_signal_inject(struct shm_signal *signal)
++vbus_enet_stop(struct net_device *dev)
 +{
-+	struct userspace_signal *_signal = to_userspace(signal);
-+	struct userspace_chardev *cd = _signal->cd;
-+	unsigned long flags;
++	struct vbus_enet_priv *priv = netdev_priv(dev);
++	int ret;
 +
-+	spin_lock_irqsave(&cd->lock, flags);
++	napi_disable(&priv->napi);
 +
-+	if (!_signal->signaled) {
-+		_signal->signaled = 1;
-+		list_add_tail(&_signal->list, &cd->signal_list);
-+		wake_up_interruptible(&cd->wq);
++	ret = devcall(priv, VENET_FUNC_LINKDOWN, NULL, 0);
++	BUG_ON(ret < 0);
++
++	return 0;
++}
++
++/*
++ * Configuration changes (passed on by ifconfig)
++ */
++static int
++vbus_enet_config(struct net_device *dev, struct ifmap *map)
++{
++	if (dev->flags & IFF_UP) /* can't act on a running interface */
++		return -EBUSY;
++
++	/* Don't allow changing the I/O address */
++	if (map->base_addr != dev->base_addr) {
++		dev_warn(&dev->dev, "Can't change I/O address\n");
++		return -EOPNOTSUPP;
 +	}
 +
-+	spin_unlock_irqrestore(&cd->lock, flags);
-+
++	/* ignore other fields */
 +	return 0;
 +}
 +
 +static void
-+userspace_signal_release(struct shm_signal *signal)
++vbus_enet_schedule_rx(struct vbus_enet_priv *priv)
 +{
-+	struct userspace_signal *_signal = to_userspace(signal);
++	unsigned long flags;
 +
-+	vbus_shm_put(_signal->shm);
-+	kfree(_signal);
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (napi_schedule_prep(&priv->napi)) {
++		/* Disable further interrupts */
++		ioq_notify_disable(priv->rxq.queue, 0);
++		__napi_schedule(&priv->napi);
++	}
++
++	spin_unlock_irqrestore(&priv->lock, flags);
 +}
 +
-+static struct shm_signal_ops userspace_signal_ops = {
-+	.inject  = userspace_signal_inject,
-+	.release = userspace_signal_release,
-+};
-+
-+static long
-+userspace_signal_alloc(struct vbus_shm *shm,
-+		       u32 offset, u32 prio, u64 cookie,
-+		       struct userspace_signal **usignal)
++static int
++vbus_enet_change_mtu(struct net_device *dev, int new_mtu)
 +{
-+	struct userspace_signal *_signal;
-+	struct shm_signal *signal;
-+	struct shm_signal_desc *desc;
-+	int ret = -EINVAL;
++	struct vbus_enet_priv *priv = netdev_priv(dev);
++	int ret;
 +
-+	_signal = kzalloc(sizeof(*_signal), GFP_KERNEL);
-+	if (!_signal)
-+		return -ENOMEM;
++	dev->mtu = new_mtu;
 +
-+	desc = (struct shm_signal_desc *)(shm->ptr + offset);
++	/*
++	 * FLUSHRX will cause the device to flush any outstanding
++	 * RX buffers.  They will appear to come in as 0 length
++	 * packets which we can simply discard and replace with new_mtu
++	 * buffers for the future.
++	 */
++	ret = devcall(priv, VENET_FUNC_FLUSHRX, NULL, 0);
++	BUG_ON(ret < 0);
 +
-+	if (desc->magic != SHM_SIGNAL_MAGIC)
-+		goto out;
-+
-+	if (desc->ver != SHM_SIGNAL_VER)
-+		goto out;
-+
-+	signal = &_signal->signal;
-+
-+	shm_signal_init(signal);
-+
-+	signal->locale    = shm_locality_south;
-+	signal->ops       = &userspace_signal_ops;
-+	signal->desc      = desc;
-+
-+	_signal->shm      = shm;
-+	_signal->prio     = prio;
-+	_signal->cookie   = cookie;
-+	vbus_shm_get(shm); /* dropped when the signal is released */
-+
-+	*usignal = _signal;
++	vbus_enet_schedule_rx(priv);
 +
 +	return 0;
++}
 +
-+out:
-+	kfree(_signal);
++/*
++ * The poll implementation.
++ */
++static int
++vbus_enet_poll(struct napi_struct *napi, int budget)
++{
++	struct vbus_enet_priv *priv = napi_to_priv(napi);
++	int npackets = 0;
++	struct ioq_iterator iter;
++	int ret;
++
++	PDEBUG(priv->dev, "polling...\n");
++
++	/* We want to iterate on the head of the in-use index */
++	ret = ioq_iter_init(priv->rxq.queue, &iter, ioq_idxtype_inuse,
++			    IOQ_ITER_AUTOUPDATE);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * We stop if we have met the quota or there are no more packets.
++	 * The EOM is indicated by finding a packet that is still owned by
++	 * the south side
++	 */
++	while ((npackets < budget) && (!iter.desc->sown)) {
++		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
++
++		if (iter.desc->len) {
++			skb_put(skb, iter.desc->len);
++
++			/* Maintain stats */
++			npackets++;
++			priv->dev->stats.rx_packets++;
++			priv->dev->stats.rx_bytes += iter.desc->len;
++
++			/* Pass the buffer up to the stack */
++			skb->dev      = priv->dev;
++			skb->protocol = eth_type_trans(skb, priv->dev);
++			netif_receive_skb(skb);
++
++			mb();
++		} else
++			/*
++			 * the device may send a zero-length packet when its
++			 * flushing references on the ring.  We can just drop
++			 * these on the floor
++			 */
++			dev_kfree_skb(skb);
++
++		/* Grab a new buffer to put in the ring */
++		rxdesc_alloc(priv->dev, iter.desc, priv->dev->mtu);
++
++		/* Advance the in-use tail */
++		ret = ioq_iter_pop(&iter, 0);
++		BUG_ON(ret < 0);
++	}
++
++	PDEBUG(priv->dev, "%d packets received\n", npackets);
++
++	/*
++	 * If we processed all packets, we're done; tell the kernel and
++	 * reenable ints
++	 */
++	if (ioq_empty(priv->rxq.queue, ioq_idxtype_inuse)) {
++		napi_complete(napi);
++		ioq_notify_enable(priv->rxq.queue, 0);
++		ret = 0;
++	} else
++		/* We couldn't process everything. */
++		ret = 1;
 +
 +	return ret;
 +}
 +
-+static void
-+userspace_shm_release(struct vbus_shm *shm)
-+{
-+	struct userspace_shm *_shm = container_of(shm, struct userspace_shm,
-+						  shm);
-+
-+	/* FIXME: do we need to adjust current->mm->locked_vm? */
-+	vunmap((void *)((unsigned long)shm->ptr & PAGE_MASK));
-+	kfree(_shm);
-+}
-+
-+static struct vbus_shm_ops userspace_shm_ops = {
-+	.release = userspace_shm_release,
-+};
-+
++/*
++ * Transmit a packet (called by the kernel)
++ */
 +static int
-+userspace_shm_map(struct userspace_chardev *cd,
-+		  __u64 ptr, __u32 len,
-+		  struct userspace_shm **ushm)
++vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
 +{
-+	struct userspace_shm *_shm;
-+	struct vbus_shm *shm;
-+	void *vmap;
++	struct vbus_enet_priv *priv = netdev_priv(dev);
++	struct ioq_iterator    iter;
++	int ret;
++	unsigned long flags;
 +
-+	_shm = kzalloc(sizeof(*_shm), GFP_KERNEL);
-+	if (!_shm)
-+		return -ENOMEM;
++	PDEBUG(priv->dev, "sending %d bytes\n", skb->len);
 +
-+	shm = &_shm->shm;
++	spin_lock_irqsave(&priv->lock, flags);
 +
-+	vmap = userspace_vmap(ptr, len);
-+	if (!vmap) {
-+		kfree(_shm);
-+		return -EFAULT;
++	if (ioq_full(priv->txq.queue, ioq_idxtype_valid)) {
++		/*
++		 * We must flow-control the kernel by disabling the
++		 * queue
++		 */
++		spin_unlock_irqrestore(&priv->lock, flags);
++		netif_stop_queue(dev);
++		dev_err(&priv->dev->dev, "tx on full queue bug\n");
++		return 1;
 +	}
 +
-+	vbus_shm_init(shm, &userspace_shm_ops, vmap, len);
++	/*
++	 * We want to iterate on the tail of both the "inuse" and "valid" index
++	 * so we specify the "both" index
++	 */
++	ret = ioq_iter_init(priv->txq.queue, &iter, ioq_idxtype_both,
++			    IOQ_ITER_AUTOUPDATE);
++	BUG_ON(ret < 0);
 +
-+	*ushm = _shm;
++	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
++	BUG_ON(ret < 0);
++	BUG_ON(iter.desc->sown);
++
++	/*
++	 * We simply put the skb right onto the ring.  We will get an interrupt
++	 * later when the data has been consumed and we can reap the pointers
++	 * at that time
++	 */
++	iter.desc->cookie = (u64)skb;
++	iter.desc->len = (u64)skb->len;
++	iter.desc->ptr = (u64)__pa(skb->data);
++	iter.desc->valid  = 1;
++
++	priv->dev->stats.tx_packets++;
++	priv->dev->stats.tx_bytes += skb->len;
++
++	/*
++	 * This advances both indexes together implicitly, and then
++	 * signals the south side to consume the packet
++	 */
++	ret = ioq_iter_push(&iter, 0);
++	BUG_ON(ret < 0);
++
++	dev->trans_start = jiffies; /* save the timestamp */
++
++	if (ioq_full(priv->txq.queue, ioq_idxtype_valid)) {
++		/*
++		 * If the queue is congested, we must flow-control the kernel
++		 */
++		PDEBUG(priv->dev, "backpressure tx queue\n");
++		netif_stop_queue(dev);
++	}
++
++	spin_unlock_irqrestore(&priv->lock, flags);
 +
 +	return 0;
 +}
 +
-+static long
-+_deviceshm(struct userspace_chardev *cd, struct vbus_deviceshm *args)
++/*
++ * reclaim any outstanding completed tx packets
++ *
++ * assumes priv->lock held
++ */
++static void
++vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
 +{
-+	struct vbus_client *c = cd->client;
-+	struct userspace_signal *_signal = NULL;
-+	struct shm_signal *signal = NULL;
-+	struct userspace_shm *_shm;
-+	u64 handle;
-+	long ret;
++	struct ioq_iterator iter;
++	int ret;
 +
-+	ret = userspace_shm_map(cd, args->datap, args->len, &_shm);
++	/*
++	 * We want to iterate on the head of the valid index, but we
++	 * do not want the iter_pop (below) to flip the ownership, so
++	 * we set the NOFLIPOWNER option
++	 */
++	ret = ioq_iter_init(priv->txq.queue, &iter, ioq_idxtype_valid,
++			    IOQ_ITER_NOFLIPOWNER);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * We are done once we find the first packet either invalid or still
++	 * owned by the south-side
++	 */
++	while (iter.desc->valid && (!iter.desc->sown || force)) {
++		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
++
++		PDEBUG(priv->dev, "completed sending %d bytes\n", skb->len);
++
++		/* Reset the descriptor */
++		iter.desc->valid  = 0;
++
++		dev_kfree_skb(skb);
++
++		/* Advance the valid-index head */
++		ret = ioq_iter_pop(&iter, 0);
++		BUG_ON(ret < 0);
++	}
++
++	/*
++	 * If we were previously stopped due to flow control, restart the
++	 * processing
++	 */
++	if (netif_queue_stopped(priv->dev)
++	    && !ioq_full(priv->txq.queue, ioq_idxtype_valid)) {
++		PDEBUG(priv->dev, "re-enabling tx queue\n");
++		netif_wake_queue(priv->dev);
++	}
++}
++
++static void
++vbus_enet_timeout(struct net_device *dev)
++{
++	struct vbus_enet_priv *priv = netdev_priv(dev);
++	unsigned long flags;
++
++	dev_dbg(&dev->dev, "Transmit timeout\n");
++
++	spin_lock_irqsave(&priv->lock, flags);
++	vbus_enet_tx_reap(priv, 0);
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
++
++static void
++rx_isr(struct ioq_notifier *notifier)
++{
++	struct vbus_enet_priv *priv;
++	struct net_device  *dev;
++
++	priv = container_of(notifier, struct vbus_enet_priv, rxq.notifier);
++	dev = priv->dev;
++
++	if (!ioq_empty(priv->rxq.queue, ioq_idxtype_inuse))
++		vbus_enet_schedule_rx(priv);
++}
++
++static void
++deferred_tx_isr(unsigned long data)
++{
++	struct vbus_enet_priv *priv = (struct vbus_enet_priv *)data;
++	unsigned long flags;
++
++	PDEBUG(priv->dev, "deferred_tx_isr\n");
++
++	spin_lock_irqsave(&priv->lock, flags);
++	vbus_enet_tx_reap(priv, 0);
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	ioq_notify_enable(priv->txq.queue, 0);
++}
++
++static void
++tx_isr(struct ioq_notifier *notifier)
++{
++       struct vbus_enet_priv *priv;
++
++       priv = container_of(notifier, struct vbus_enet_priv, txq.notifier);
++
++       PDEBUG(priv->dev, "tx_isr\n");
++
++       ioq_notify_disable(priv->txq.queue, 0);
++       tasklet_schedule(&priv->txtask);
++}
++
++static const struct net_device_ops vbus_enet_netdev_ops = {
++	.ndo_open          = vbus_enet_open,
++	.ndo_stop          = vbus_enet_stop,
++	.ndo_set_config    = vbus_enet_config,
++	.ndo_start_xmit    = vbus_enet_tx_start,
++	.ndo_change_mtu	   = vbus_enet_change_mtu,
++	.ndo_tx_timeout    = vbus_enet_timeout,
++};
++
++/*
++ * This is called whenever a new vbus_device_proxy is added to the vbus
++ * with the matching VENET_ID
++ */
++static int
++vbus_enet_probe(struct vbus_device_proxy *vdev)
++{
++	struct net_device  *dev;
++	struct vbus_enet_priv *priv;
++	int ret;
++
++	printk(KERN_INFO "VENET: Found new device at %lld\n", vdev->id);
++
++	ret = vdev->ops->open(vdev, VENET_VERSION, 0);
 +	if (ret < 0)
 +		return ret;
 +
-+	/*
-+	 * Establishing a signal is optional
-+	 */
-+	if (args->signal.offset != -1) {
-+		ret = userspace_signal_alloc(&_shm->shm,
-+					     args->signal.offset,
-+					     args->signal.prio,
-+					     args->signal.cookie,
-+					     &_signal);
-+		if (ret < 0)
-+			goto out;
++	dev = alloc_etherdev(sizeof(struct vbus_enet_priv));
++	if (!dev)
++		return -ENOMEM;
 +
-+		_signal->cd = cd;
-+		signal = &_signal->signal;
++	priv = netdev_priv(dev);
++
++	spin_lock_init(&priv->lock);
++	priv->dev  = dev;
++	priv->vdev = vdev;
++
++	tasklet_init(&priv->txtask, deferred_tx_isr, (unsigned long)priv);
++
++	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
++	queue_init(priv, &priv->txq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
++
++	rx_setup(priv);
++
++	ioq_notify_enable(priv->rxq.queue, 0);  /* enable interrupts */
++	ioq_notify_enable(priv->txq.queue, 0);
++
++	dev->netdev_ops     = &vbus_enet_netdev_ops;
++	dev->watchdog_timeo = 5 * HZ;
++
++	netif_napi_add(dev, &priv->napi, vbus_enet_poll, 128);
++
++	ret = devcall(priv, VENET_FUNC_MACQUERY, priv->dev->dev_addr, ETH_ALEN);
++	if (ret < 0) {
++		printk(KERN_INFO "VENET: Error obtaining MAC address for " \
++		       "%lld\n",
++		       priv->vdev->id);
++		goto out_free;
 +	}
 +
-+	ret = c->ops->deviceshm(c, args->devh, args->id,
-+				&_shm->shm, signal,
-+				args->flags, &handle);
-+	if (ret < 0)
-+		goto out;
++	dev->features |= NETIF_F_HIGHDMA;
 +
-+	args->handle = handle;
++	ret = register_netdev(dev);
++	if (ret < 0) {
++		printk(KERN_INFO "VENET: error %i registering device \"%s\"\n",
++		       ret, dev->name);
++		goto out_free;
++	}
++
++	vdev->priv = priv;
 +
 +	return 0;
 +
-+out:
-+	if (signal)
-+		shm_signal_put(signal);
++ out_free:
++	free_netdev(dev);
 +
-+	vbus_shm_put(&_shm->shm);
 +	return ret;
 +}
 +
-+static long
-+_shmsignal(struct userspace_chardev *cd, unsigned long handle)
-+{
-+	struct vbus_client *c = cd->client;
-+
-+	return c->ops->shmsignal(c, handle);
-+}
-+
 +static int
-+vbus_chardev_open(struct inode *inode, struct file *filp)
++vbus_enet_remove(struct vbus_device_proxy *vdev)
 +{
-+	struct vbus *vbus = task_vbus_get(current);
-+	struct vbus_client *client;
-+	struct vbus_memctx *ctx;
-+	struct userspace_chardev *cd;
++	struct vbus_enet_priv *priv = (struct vbus_enet_priv *)vdev->priv;
++	struct vbus_device_proxy *dev = priv->vdev;
 +
-+	if (!vbus)
-+		return -EPERM;
++	unregister_netdev(priv->dev);
++	napi_disable(&priv->napi);
 +
-+	client = vbus_client_attach(vbus);
-+	vbus_put(vbus);
-+	if (!client)
-+		return -ENOMEM;
++	rx_teardown(priv);
++	vbus_enet_tx_reap(priv, 1);
 +
-+	ctx = task_memctx_alloc(current);
-+	if (!ctx) {
-+		vbus_client_put(client);
-+		return -ENOMEM;
-+	}
++	ioq_put(priv->rxq.queue);
++	ioq_put(priv->txq.queue);
 +
-+	cd = kzalloc(sizeof(*cd), GFP_KERNEL);
-+	if (!cd) {
-+		vbus_memctx_put(ctx);
-+		vbus_client_put(client);
-+		return -ENOMEM;
-+	}
++	dev->ops->close(dev, 0);
 +
-+	spin_lock_init(&cd->lock);
-+	cd->opened = 0;
-+	cd->client = client;
-+	cd->ctx = ctx;
-+
-+	INIT_LIST_HEAD(&cd->signal_list);
-+	init_waitqueue_head(&cd->wq);
-+
-+	filp->private_data = cd;
++	free_netdev(priv->dev);
 +
 +	return 0;
 +}
 +
-+static long
-+vbus_chardev_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
-+{
-+	struct userspace_chardev *cd = filp->private_data;
++/*
++ * Finally, the module stuff
++ */
 +
-+	if (!cd->opened && ioctl != VBUS_BUSOPEN)
-+		return -EINVAL;
-+
-+	switch (ioctl) {
-+	case VBUS_BUSOPEN:
-+		return _busopen(cd, (struct vbus_userspace_busopen *)arg);
-+	case VBUS_DEVICEOPEN:
-+		return _deviceopen(cd, (struct vbus_deviceopen *)arg);
-+	case VBUS_DEVICECLOSE:
-+		return _deviceclose(cd, *(__u64 *)arg);
-+	case VBUS_DEVICECALL:
-+		return _devicecall(cd, (struct vbus_devicecall *)arg);
-+	case VBUS_DEVICESHM:
-+		return _deviceshm(cd, (struct vbus_deviceshm *)arg);
-+	case VBUS_SHMSIGNAL:
-+		return _shmsignal(cd, *(__u64 *)arg);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static ssize_t
-+vbus_chardev_read(struct file *filp, char __user *buf, size_t len,
-+		  loff_t *ppos)
-+{
-+	DEFINE_WAIT(wait);
-+	struct userspace_chardev *cd = filp->private_data;
-+	ssize_t bytes = 0;
-+	int count, i;
-+	__u64 __user *p = (__u64 __user *)buf;
-+	unsigned long flags;
-+
-+	count = len/sizeof(__u64);
-+
-+	if (!count)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&cd->lock, flags);
-+
-+	for (;;) {
-+		prepare_to_wait(&cd->wq, &wait, TASK_INTERRUPTIBLE);
-+
-+		if (!list_empty(&cd->signal_list))
-+			break;
-+
-+		if (signal_pending(current)) {
-+			finish_wait(&cd->wq, &wait);
-+			spin_unlock_irqrestore(&cd->lock, flags);
-+			return -EINTR;
-+		}
-+
-+		spin_unlock_irqrestore(&cd->lock, flags);
-+		schedule();
-+		spin_lock_irqsave(&cd->lock, flags);
-+	}
-+
-+	finish_wait(&cd->wq, &wait);
-+
-+	for (i = 0; i < count; i++) {
-+		struct userspace_signal *_signal;
-+		__u64 cookie;
-+
-+		if (list_empty(&cd->signal_list))
-+			break;
-+
-+		_signal = list_first_entry(&cd->signal_list,
-+					   struct userspace_signal, list);
-+
-+		_signal->signaled = 0;
-+		list_del(&_signal->list);
-+
-+		cookie = _signal->cookie;
-+
-+		put_user(cookie, p++);
-+
-+		bytes += sizeof(cookie);
-+	}
-+
-+	spin_unlock_irqrestore(&cd->lock, flags);
-+
-+	return bytes;
-+}
-+
-+static int
-+vbus_chardev_release(struct inode *inode, struct file *filp)
-+{
-+	struct userspace_chardev *cd = filp->private_data;
-+
-+	vbus_memctx_put(cd->ctx);
-+	vbus_client_put(cd->client);
-+	kfree(cd);
-+
-+	return 0;
-+}
-+
-+static const struct file_operations vbus_chardev_ops = {
-+	.open           = vbus_chardev_open,
-+	.read           = vbus_chardev_read,
-+	.unlocked_ioctl = vbus_chardev_ioctl,
-+	.compat_ioctl   = vbus_chardev_ioctl,
-+	.release        = vbus_chardev_release,
++static struct vbus_driver_ops vbus_enet_driver_ops = {
++	.probe  = vbus_enet_probe,
++	.remove = vbus_enet_remove,
 +};
 +
-+static struct miscdevice vbus_chardev = {
-+	MISC_DYNAMIC_MINOR,
-+	"vbus",
-+	&vbus_chardev_ops,
++static struct vbus_driver vbus_enet_driver = {
++	.type   = VENET_TYPE,
++	.owner  = THIS_MODULE,
++	.ops    = &vbus_enet_driver_ops,
 +};
 +
-+static int __init
-+vbus_userspace_init(void)
++static __init int
++vbus_enet_init_module(void)
 +{
-+	return misc_register(&vbus_chardev);
++	printk(KERN_INFO "Virtual Ethernet: Copyright (C) 2009 Novell, Gregory Haskins\n");
++	printk(KERN_DEBUG "VENET: Using %d/%d queue depth\n",
++	       rx_ringlen, tx_ringlen);
++	return vbus_driver_register(&vbus_enet_driver);
 +}
 +
-+static void __exit
-+vbus_userspace_cleanup(void)
++static __exit void
++vbus_enet_cleanup(void)
 +{
-+	misc_deregister(&vbus_chardev);
++	vbus_driver_unregister(&vbus_enet_driver);
 +}
 +
-+module_init(vbus_userspace_init);
-+module_exit(vbus_userspace_cleanup);
++module_init(vbus_enet_init_module);
++module_exit(vbus_enet_cleanup);
 
