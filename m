@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759091AbZDUSop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbZDUSo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759091AbZDUSop (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 14:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbZDUSmZ
+	id S1758835AbZDUSo1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 14:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbZDUSmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 14:42:25 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53619 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758739AbZDUSmA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 21 Apr 2009 14:42:00 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:47114 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756738AbZDUSlp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 14:41:45 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v3 17/17] virtio: add a vbus transport
+Subject: [RFC PATCH v3 10/17] venet-tap: Adds a "venet" compatible "tap"
+	device to VBUS
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, alext@novell.com, anthony@codemonkey.ws,
        rusty@rustcorp.com.au, netdev@vger.kernel.org, avi@redhat.com,
        bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
        chrisw@sous-sol.org, shemminger@vyatta.com, alex.williamson@hp.com
-Date: Tue, 21 Apr 2009 14:35:48 -0400
-Message-ID: <20090421183547.12548.4186.stgit@dev.haskins.net>
+Date: Tue, 21 Apr 2009 14:35:10 -0400
+Message-ID: <20090421183510.12548.55292.stgit@dev.haskins.net>
 In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
 References: <20090421183341.12548.33393.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -30,776 +31,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We add a new virtio transport for accessing backends located on vbus.  This
-complements the existing transports for virtio-pci, virtio-s390, and
-virtio-lguest that already exist.
+This module is similar in concept to a "tuntap".  A tuntap module provides
+a netif() interface on one side, and a char-dev interface on the other.
+Packets that ingress on one interface, egress on the other (and vice versa).
+
+This module offers a similar concept, except that it substitues the
+char-dev for a VBUS/IOQ interface.  This allows a VBUS compatible entity
+(e.g. userspace or a guest) to directly inject and receive packets
+from the host/kernel stack.
+
+Thanks to Pat Mullaney for contributing the maxcount modification
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/virtio/Kconfig       |   15 +
- drivers/virtio/Makefile      |    1 
- drivers/virtio/virtio_vbus.c |  496 +++++++++++++++++++++++++++++++++
- include/linux/virtio_vbus.h  |  163 +++++++++++
- kernel/vbus/Kconfig          |    8 +
- kernel/vbus/Makefile         |    3 
- kernel/vbus/virtio.c         |  627 ++++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 1313 insertions(+), 0 deletions(-)
- create mode 100644 drivers/virtio/virtio_vbus.c
- create mode 100644 include/linux/virtio_vbus.h
- create mode 100644 kernel/vbus/virtio.c
+ drivers/Makefile                 |    1 
+ drivers/vbus/devices/Kconfig     |   17 
+ drivers/vbus/devices/Makefile    |    1 
+ drivers/vbus/devices/venet-tap.c | 1387 ++++++++++++++++++++++++++++++++++++++
+ kernel/vbus/Kconfig              |   13 
+ 5 files changed, 1419 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/vbus/devices/Kconfig
+ create mode 100644 drivers/vbus/devices/Makefile
+ create mode 100644 drivers/vbus/devices/venet-tap.c
 
-diff --git a/drivers/virtio/Kconfig b/drivers/virtio/Kconfig
-index 3dd6294..e8562ee 100644
---- a/drivers/virtio/Kconfig
-+++ b/drivers/virtio/Kconfig
-@@ -23,6 +23,21 @@ config VIRTIO_PCI
- 
- 	  If unsure, say M.
- 
-+config VIRTIO_VBUS
-+	tristate "VBUS driver for virtio devices (EXPERIMENTAL)"
-+	depends on VBUS_DRIVERS && EXPERIMENTAL
-+	select VIRTIO
-+	select VIRTIO_RING
-+	---help---
-+	  This drivers provides support for virtio based paravirtual device
-+	  drivers over VBUS.  This requires that your VMM has appropriate VBUS
-+	  virtio backends.
-+
-+	  Currently, the ABI is not considered stable so there is no guarantee
-+	  that this version of the driver will work with your VMM.
-+
-+	  If unsure, say M.
-+
- config VIRTIO_BALLOON
- 	tristate "Virtio balloon driver (EXPERIMENTAL)"
- 	select VIRTIO
-diff --git a/drivers/virtio/Makefile b/drivers/virtio/Makefile
-index 6738c44..0342e42 100644
---- a/drivers/virtio/Makefile
-+++ b/drivers/virtio/Makefile
-@@ -1,4 +1,5 @@
- obj-$(CONFIG_VIRTIO) += virtio.o
- obj-$(CONFIG_VIRTIO_RING) += virtio_ring.o
- obj-$(CONFIG_VIRTIO_PCI) += virtio_pci.o
-+obj-$(CONFIG_VIRTIO_VBUS) += virtio_vbus.o
- obj-$(CONFIG_VIRTIO_BALLOON) += virtio_balloon.o
-diff --git a/drivers/virtio/virtio_vbus.c b/drivers/virtio/virtio_vbus.c
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 2618a61..4c66912 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -107,3 +107,4 @@ obj-$(CONFIG_SSB)		+= ssb/
+ obj-$(CONFIG_VIRTIO)		+= virtio/
+ obj-$(CONFIG_STAGING)		+= staging/
+ obj-y				+= platform/
++obj-$(CONFIG_VBUS_DEVICES)	+= vbus/devices/
+diff --git a/drivers/vbus/devices/Kconfig b/drivers/vbus/devices/Kconfig
 new file mode 100644
-index 0000000..ebefcf2
+index 0000000..64e4731
 --- /dev/null
-+++ b/drivers/virtio/virtio_vbus.c
-@@ -0,0 +1,496 @@
-+/*
-+ * Virtio VBUS driver
-+ *
-+ * This module allows virtio devices to be used over a virtual-bus device.
-+ *
-+ * Copyright: Novell, 2009
-+ *
-+ * Authors:
-+ *  Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * Derived from virtio-pci, written by
-+ *  Anthony Liguori  <aliguori@us.ibm.com>
-+ *
-+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
-+ * See the COPYING file in the top-level directory.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/list.h>
-+#include <linux/interrupt.h>
-+#include <linux/virtio.h>
-+#include <linux/virtio_config.h>
-+#include <linux/virtio_ring.h>
-+#include <linux/virtio_vbus.h>
-+#include <linux/vbus_driver.h>
-+#include <linux/spinlock.h>
-+
-+MODULE_AUTHOR("Gregory Haskins <ghaskins@novell.com>");
-+MODULE_DESCRIPTION("virtio-vbus");
-+MODULE_LICENSE("GPL");
-+MODULE_VERSION("1");
-+
-+struct virtio_vbus_priv {
-+	struct virtio_device                   virtio_dev;
-+	struct vbus_device_proxy              *vbus_dev;
-+	struct {
-+		struct virtio_vbus_shm        *shm;
-+		struct shm_signal             *signal;
-+		struct shm_signal_notifier     notifier;
-+	} config;
-+};
-+
-+struct vbus_virtqueue {
-+	struct virtqueue           *vq;
-+	u64                         index;
-+	int                         num;
-+	struct virtio_vbus_shm     *shm;
-+	size_t                      size;
-+	struct shm_signal          *signal;
-+	struct shm_signal_notifier  notifier;
-+};
-+
-+static struct virtio_vbus_priv *
-+virtio_to_priv(struct virtio_device *virtio_dev)
-+{
-+	return container_of(virtio_dev, struct virtio_vbus_priv, virtio_dev);
-+}
-+
-+static int
-+devcall(struct virtio_vbus_priv *priv, u32 func, void *data, size_t len)
-+{
-+	struct vbus_device_proxy *dev = priv->vbus_dev;
-+
-+	return dev->ops->call(dev, func, data, len, 0);
-+}
-+
-+/*
-+ * This is called whenever the host signals our config-space shm
-+ */
-+static void
-+config_isr(struct shm_signal_notifier *notifier)
-+{
-+	struct virtio_vbus_priv *priv = container_of(notifier,
-+						     struct virtio_vbus_priv,
-+						     config.notifier);
-+	struct virtio_driver *drv = container_of(priv->virtio_dev.dev.driver,
-+						 struct virtio_driver, driver);
-+
-+	if (drv && drv->config_changed)
-+		drv->config_changed(&priv->virtio_dev);
-+}
-+
-+/*
-+ * ------------------
-+ * virtio config ops
-+ * ------------------
-+ */
-+
-+static u32
-+_virtio_get_features(struct virtio_device *dev)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(dev);
-+	u32 features;
-+	int ret;
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_GET_FEATURES,
-+		      &features, sizeof(features));
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * When someone needs more than 32 feature bits, we'll need to
-+	 * steal a bit to indicate that the rest are somewhere else.
-+	 */
-+	return features;
-+}
-+
-+static void
-+_virtio_finalize_features(struct virtio_device *dev)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(dev);
-+	int ret;
-+
-+	/* Give virtio_ring a chance to accept features. */
-+	vring_transport_features(dev);
-+
-+	/* We only support 32 feature bits. */
-+	BUILD_BUG_ON(ARRAY_SIZE(dev->features) != 1);
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_FINALIZE_FEATURES,
-+		      &dev->features[0], sizeof(dev->features[0]));
-+	BUG_ON(ret < 0);
-+}
-+
-+static void
-+_virtio_get(struct virtio_device *vdev, unsigned offset,
-+	    void *buf, unsigned len)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vdev);
-+
-+	BUG_ON((offset + len) > VIRTIO_VBUS_CONFIGSPACE_LEN);
-+	memcpy(buf, &priv->config.shm->data[offset], len);
-+}
-+
-+static void
-+_virtio_set(struct virtio_device *vdev, unsigned offset,
-+	    const void *buf, unsigned len)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vdev);
-+	int ret;
-+
-+	BUG_ON((offset + len) > VIRTIO_VBUS_CONFIGSPACE_LEN);
-+	memcpy(&priv->config.shm->data[offset], buf, len);
-+
-+	ret = shm_signal_inject(priv->config.signal, 0);
-+	BUG_ON(ret < 0);
-+}
-+
-+static u8
-+_virtio_get_status(struct virtio_device *vdev)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vdev);
-+	u8 data;
-+	int ret;
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_GET_STATUS, &data, sizeof(data));
-+	BUG_ON(ret < 0);
-+
-+	return data;
-+}
-+
-+static void
-+_virtio_set_status(struct virtio_device *vdev, u8 status)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vdev);
-+	int ret;
-+
-+	/* We should never be setting status to 0. */
-+	BUG_ON(status == 0);
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_SET_STATUS, &status,
-+		      sizeof(status));
-+	BUG_ON(ret < 0);
-+}
-+
-+static void
-+_virtio_reset(struct virtio_device *vdev)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vdev);
-+	int ret;
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_RESET, NULL, 0);
-+	BUG_ON(ret < 0);
-+}
-+
-+/*
-+ * ------------------
-+ * virtqueue ops
-+ * ------------------
-+ */
-+
-+static int
-+_vq_getlen(struct virtio_vbus_priv *priv, int index)
-+{
-+	struct virtio_vbus_queryqueue query = {
-+		.index = index,
-+	};
-+	int ret;
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_QUERY_QUEUE,
-+		      &query, sizeof(query));
-+	if (ret < 0)
-+		return ret;
-+
-+	return query.num;
-+}
-+
-+static void
-+_vq_kick(struct virtqueue *vq)
-+{
-+	struct vbus_virtqueue *_vq = vq->priv;
-+	int ret;
-+
-+	ret = shm_signal_inject(_vq->signal, 0);
-+	BUG_ON(ret < 0);
-+}
-+
-+/*
-+ * This is called whenever the host signals our virtqueue
-+ */
-+static void
-+_vq_isr(struct shm_signal_notifier *notifier)
-+{
-+	struct vbus_virtqueue *_vq = container_of(notifier,
-+						  struct vbus_virtqueue,
-+						  notifier);
-+	vring_interrupt(0, _vq->vq);
-+}
-+
-+static struct virtqueue *
-+_virtio_find_vq(struct virtio_device *vdev, unsigned index,
-+	 void (*callback)(struct virtqueue *vq))
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vdev);
-+	struct vbus_device_proxy *dev = priv->vbus_dev;
-+	struct vbus_virtqueue *_vq;
-+	struct virtqueue *vq;
-+	unsigned long ringsize;
-+	int num;
-+	int ret;
-+
-+	num = _vq_getlen(priv, index);
-+	if (num < 0)
-+		return ERR_PTR(num);
-+
-+	_vq = kmalloc(sizeof(struct vbus_virtqueue), GFP_KERNEL);
-+	if (!_vq)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ringsize = vring_size(num, PAGE_SIZE);
-+
-+	_vq->index = index;
-+	_vq->num   = num;
-+	_vq->size  = PAGE_ALIGN(sizeof(struct virtio_vbus_shm) + ringsize - 1);
-+
-+	_vq->shm = alloc_pages_exact(_vq->size, GFP_KERNEL|__GFP_ZERO);
-+	if (!_vq->shm) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	/* initialize the shm with a ring */
-+	vq = vring_new_virtqueue(_vq->num, PAGE_SIZE, vdev,
-+				 &_vq->shm->data[0],
-+				 _vq_kick,
-+				 callback);
-+	if (!vq) {
-+		ret = -ENOMEM;
-+		goto out_free;
-+	}
-+
-+	/* register the shm with an id of the vq index + RING_OFFSET */
-+	ret = dev->ops->shm(dev, index + VIRTIO_VBUS_RING_OFFSET, 0,
-+			    _vq->shm, _vq->size,
-+			    &_vq->shm->signal, &_vq->signal, 0);
-+	if (ret < 0)
-+		goto out_free;
-+
-+	_vq->notifier.signal = &_vq_isr;
-+	_vq->signal->notifier = &_vq->notifier;
-+
-+	shm_signal_enable(_vq->signal, 0);
-+
-+	vq->priv = _vq;
-+	_vq->vq = vq;
-+
-+	return vq;
-+
-+out_free:
-+	free_pages_exact(_vq->shm, _vq->size);
-+out:
-+	if (_vq && _vq->signal)
-+		shm_signal_put(_vq->signal);
-+	kfree(_vq);
-+	return ERR_PTR(ret);
-+}
-+
-+/* the config->del_vq() implementation */
-+static void
-+_virtio_del_vq(struct virtqueue *vq)
-+{
-+	struct virtio_vbus_priv *priv = virtio_to_priv(vq->vdev);
-+	struct vbus_virtqueue *_vq = vq->priv;
-+
-+	devcall(priv, VIRTIO_VBUS_FUNC_DEL_QUEUE,
-+		&_vq->index, sizeof(_vq->index));
-+
-+	vring_del_virtqueue(vq);
-+
-+	shm_signal_put(_vq->signal);
-+	free_pages_exact(_vq->shm, _vq->size);
-+	kfree(_vq);
-+}
-+
-+/*
-+ * ------------------
-+ * general setup
-+ * ------------------
-+ */
-+
-+static struct virtio_config_ops virtio_vbus_config_ops = {
-+	.get		   = _virtio_get,
-+	.set		   = _virtio_set,
-+	.get_status	   = _virtio_get_status,
-+	.set_status	   = _virtio_set_status,
-+	.reset		   = _virtio_reset,
-+	.find_vq	   = _virtio_find_vq,
-+	.del_vq		   = _virtio_del_vq,
-+	.get_features	   = _virtio_get_features,
-+	.finalize_features = _virtio_finalize_features,
-+};
-+
-+/*
-+ * Negotiate vbus transport features.  This is not to be confused with the
-+ * higher-level function FUNC_GET/FINALIZE_FEATURES, which is specifically
-+ * for the virtio transport
-+ */
-+static void
-+virtio_vbus_negcap(struct virtio_vbus_priv *priv)
-+{
-+	u64 features = 0; /* We do not have any advanced features to enable */
-+	int ret;
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_NEG_CAP,
-+		      &features, sizeof(features));
-+	BUG_ON(ret < 0);
-+}
-+
-+static void
-+virtio_vbus_getid(struct virtio_vbus_priv *priv)
-+{
-+	struct virtio_vbus_id id;
-+	int ret;
-+
-+	ret = devcall(priv, VIRTIO_VBUS_FUNC_GET_ID, &id, sizeof(id));
-+	BUG_ON(ret < 0);
-+
-+	priv->virtio_dev.id.vendor = id.vendor;
-+	priv->virtio_dev.id.device = id.device;
-+}
-+
-+static int
-+virtio_vbus_initconfig(struct virtio_vbus_priv *priv)
-+{
-+	struct vbus_device_proxy *vdev = priv->vbus_dev;
-+	size_t len;
-+	int ret;
-+
-+	len = sizeof(struct virtio_vbus_shm) + VIRTIO_VBUS_CONFIGSPACE_LEN - 1;
-+
-+	priv->config.shm = kzalloc(len, GFP_KERNEL);
-+	if (!priv->config.shm)
-+		return -ENOMEM;
-+
-+	ret = vdev->ops->shm(vdev, 0, 0,
-+			     &priv->config.shm, len,
-+			     &priv->config.shm->signal, &priv->config.signal,
-+			     0);
-+	BUG_ON(ret < 0);
-+
-+	priv->config.notifier.signal = &config_isr;
-+	priv->config.signal->notifier = &priv->config.notifier;
-+
-+	shm_signal_enable(priv->config.signal, 0);
-+
-+	return 0;
-+}
-+
-+/* the VBUS probing function */
-+static int
-+virtio_vbus_probe(struct vbus_device_proxy *vdev)
-+{
-+	struct virtio_vbus_priv *priv;
-+	int ret;
-+
-+	printk(KERN_INFO "VIRTIO-VBUS: Found new device at %lld\n", vdev->id);
-+
-+	ret = vdev->ops->open(vdev, VIRTIO_VBUS_ABI_VERSION, 0);
-+	if (ret < 0) {
-+		printk(KERN_ERR "virtio_vbus: ABI version %d failed with: %d\n",
-+		       VIRTIO_VBUS_ABI_VERSION, ret);
-+		return ret;
-+	}
-+
-+	priv = kzalloc(sizeof(struct virtio_vbus_priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->virtio_dev.config = &virtio_vbus_config_ops;
-+	priv->vbus_dev = vdev;
-+
-+	/*
-+	 * Negotiate for any vbus specific features
-+	 */
-+	virtio_vbus_negcap(priv);
-+
-+	/*
-+	 * This probe occurs for any "virtio" device on the vbus, so we need
-+	 * to hypercall the host to figure out what specific PCI-ID type
-+	 * device this is
-+	 */
-+	virtio_vbus_getid(priv);
-+
-+	/*
-+	 * Map our config-space to the device, and establish a signal-path
-+	 * for config-space updates
-+	 */
-+	virtio_vbus_initconfig(priv);
-+
-+	/* finally register the virtio device */
-+	ret = register_virtio_device(&priv->virtio_dev);
-+	if (ret)
-+		goto out;
-+
-+	vdev->priv = priv;
-+
-+	return 0;
-+
-+out:
-+	kfree(priv);
-+	return ret;
-+}
-+
-+#ifdef NOTYET
-+/* FIXME: wire this up */
-+static void
-+virtio_vbus_release(struct virtio_vbus_priv *priv)
-+{
-+	shm_signal_put(priv->config.signal);
-+	kfree(priv->config.shm);
-+	kfree(priv);
-+}
-+
-+#endif
-+
-+static int
-+virtio_vbus_remove(struct vbus_device_proxy *vdev)
-+{
-+	struct virtio_vbus_priv *priv = vdev->priv;
-+
-+	unregister_virtio_device(&priv->virtio_dev);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Finally, the module stuff
-+ */
-+
-+static struct vbus_driver_ops virtio_vbus_driver_ops = {
-+	.probe  = virtio_vbus_probe,
-+	.remove = virtio_vbus_remove,
-+};
-+
-+static struct vbus_driver virtio_vbus_driver = {
-+	.type   = "virtio",
-+	.owner  = THIS_MODULE,
-+	.ops    = &virtio_vbus_driver_ops,
-+};
-+
-+static __init int
-+virtio_vbus_init_module(void)
-+{
-+	printk(KERN_INFO "Virtio-VBUS: Copyright (C) 2009 Novell, Gregory Haskins\n");
-+	return vbus_driver_register(&virtio_vbus_driver);
-+}
-+
-+static __exit void
-+virtio_vbus_cleanup(void)
-+{
-+	vbus_driver_unregister(&virtio_vbus_driver);
-+}
-+
-+module_init(virtio_vbus_init_module);
-+module_exit(virtio_vbus_cleanup);
-+
-diff --git a/include/linux/virtio_vbus.h b/include/linux/virtio_vbus.h
-new file mode 100644
-index 0000000..05791bf
---- /dev/null
-+++ b/include/linux/virtio_vbus.h
-@@ -0,0 +1,163 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Virtio VBUS driver
-+ *
-+ * This module allows virtio devices to be used over a VBUS interface
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#ifndef _LINUX_VIRTIO_VBUS_H
-+#define _LINUX_VIRTIO_VBUS_H
-+
-+#include <linux/shm_signal.h>
-+
-+#define VIRTIO_VBUS_ABI_VERSION 1
-+
-+enum {
-+	VIRTIO_VBUS_FUNC_NEG_CAP,
-+	VIRTIO_VBUS_FUNC_GET_ID,
-+	VIRTIO_VBUS_FUNC_GET_FEATURES,
-+	VIRTIO_VBUS_FUNC_FINALIZE_FEATURES,
-+	VIRTIO_VBUS_FUNC_GET_STATUS,
-+	VIRTIO_VBUS_FUNC_SET_STATUS,
-+	VIRTIO_VBUS_FUNC_RESET,
-+	VIRTIO_VBUS_FUNC_QUERY_QUEUE,
-+	VIRTIO_VBUS_FUNC_DEL_QUEUE,
-+};
-+
-+struct virtio_vbus_id {
-+	u16 vendor;
-+	u16 device;
-+};
-+
-+struct virtio_vbus_queryqueue {
-+	u64 index;  /* in: queue index */
-+	u32 num;    /* out: number of entries */
-+	u32 pad[0];
-+};
-+
-+#define VIRTIO_VBUS_CONFIGSPACE_LEN 1024
-+#define VIRTIO_VBUS_RING_OFFSET     10000 /* shm-index where rings start */
-+
-+struct virtio_vbus_shm {
-+	struct shm_signal_desc signal;
-+	char                   data[1];
-+};
-+
-+/*
-+ * --------------------------------------------------
-+ * Backend support - These components are only needed
-+ * for interfacing a virtio-backend to the vbus-backend
-+ * --------------------------------------------------
-+ */
-+
-+#include <linux/vbus_device.h>
-+
-+struct virtio_device_interface;
-+struct virtio_connection;
-+
-+struct virtio_queue_def {
-+	int index;
-+	int entries;
-+};
-+
-+/*
-+ * ----------------------
-+ * interface
-+ * ----------------------
-+ */
-+
-+struct virtio_device_interface_ops {
-+	int (*open)(struct virtio_device_interface *intf,
-+		    struct vbus_memctx *ctx,
-+		    struct virtio_connection **conn);
-+	void (*release)(struct virtio_device_interface *intf);
-+};
-+
-+struct virtio_device_interface {
-+	struct virtio_vbus_id id;
-+	struct virtio_device_interface_ops *ops;
-+	struct virtio_queue_def *queues;
-+	struct vbus_device_interface *parent;
-+};
-+
-+/**
-+ * virtio_device_interface_register() - register an interface with a bus
-+ * @dev:        The device context of the caller
-+ * @vbus:       The bus context to register with
-+ * @intf:       The interface context to register
-+ *
-+ * This function is invoked (usually in the context of a device::bus_connect()
-+ * callback) to register a interface on a bus.  We make this an explicit
-+ * operation instead of implicit on the bus_connect() to facilitate devices
-+ * that may present multiple interfaces to a bus.  In those cases, a device
-+ * may invoke this function multiple times (one per supported interface).
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int virtio_device_interface_register(struct vbus_device *dev,
-+				   struct vbus *vbus,
-+				   struct virtio_device_interface *intf);
-+
-+/**
-+ * virtio_device_interface_unregister() - unregister an interface with a bus
-+ * @intf:       The interface context to unregister
-+ *
-+ * This function is the converse of interface_register.  It is typically
-+ * invoked in the context of a device::bus_disconnect().
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int virtio_device_interface_unregister(struct virtio_device_interface *intf);
-+
-+/*
-+ * ----------------------
-+ * connection
-+ * ----------------------
-+ */
-+struct virtqueue;
-+
-+struct virtio_connection_ops {
-+	void (*config_changed)(struct virtio_connection *vconn);
-+	u8 (*get_status)(struct virtio_connection *vconn);
-+	void (*set_status)(struct virtio_connection *vconn, u8 status);
-+	void (*reset)(struct virtio_connection *vconn);
-+	u32 (*get_features)(struct virtio_connection *vconn);
-+	void (*finalize_features)(struct virtio_connection *vconn);
-+	void (*add_vq)(struct virtio_connection *vconn, int index,
-+		       struct virtqueue *vq);
-+	void (*del_vq)(struct virtio_connection *vconn, int index);
-+	void (*notify_vq)(struct virtio_connection *vconn, int index);
-+	void (*release)(struct virtio_connection *conn);
-+};
-+
-+struct virtio_connection {
-+	struct virtio_connection_ops *ops;
-+	struct vbus_connection *parent;
-+};
-+
-+int virtio_connection_config_get(struct virtio_connection *vconn,
-+				 int offset, void *buf, size_t len);
-+
-+int virtio_connection_config_set(struct virtio_connection *vconn,
-+				 int offset, void *buf, size_t len);
-+
-+#endif /* _LINUX_VIRTIO_VBUS_H */
-diff --git a/kernel/vbus/Kconfig b/kernel/vbus/Kconfig
-index b894dd1..0a4813e 100644
---- a/kernel/vbus/Kconfig
-+++ b/kernel/vbus/Kconfig
-@@ -14,6 +14,14 @@ config VBUS
- 
- 	If unsure, say N
- 
-+config VBUS_VIRTIO_BACKEND
-+       tristate "Virtio VBUS Backend"
-+       depends on VIRTIO_RING
-+       depends on VBUS
++++ b/drivers/vbus/devices/Kconfig
+@@ -0,0 +1,17 @@
++#
++# Virtual-Bus (VBus) configuration
++#
++
++config VBUS_VENETTAP
++       tristate "Virtual-Bus Ethernet Tap Device"
++       depends on VBUS_DEVICES
 +       default n
 +       help
-+        Provides backend support for virtio devices over vbus
++        Provides a virtual ethernet adapter to a vbus, which in turn
++        manifests itself as a standard netif based adapter to the
++	kernel.  It can be used similarly to a "tuntap" device,
++        except that the char-dev transport is replaced with a vbus/ioq
++        interface.
 +
- config VBUS_DEVICES
-        bool "Virtual-Bus Devices"
-        depends on VBUS
-diff --git a/kernel/vbus/Makefile b/kernel/vbus/Makefile
-index 61d0371..c2bd140 100644
---- a/kernel/vbus/Makefile
-+++ b/kernel/vbus/Makefile
-@@ -1,6 +1,9 @@
- obj-$(CONFIG_VBUS) += core.o devclass.o config.o attribute.o map.o client.o
- obj-$(CONFIG_VBUS) += shm-ioq.o
- 
-+virtio-backend-objs += virtio.o
-+obj-$(CONFIG_VBUS_VIRTIO_BACKEND) += virtio-backend.o
++	If unsure, say N
 +
- vbus-proxy-objs += proxy.o
- obj-$(CONFIG_VBUS_DRIVERS) += vbus-proxy.o
- 
-diff --git a/kernel/vbus/virtio.c b/kernel/vbus/virtio.c
+diff --git a/drivers/vbus/devices/Makefile b/drivers/vbus/devices/Makefile
 new file mode 100644
-index 0000000..b2fe002
+index 0000000..2ea7d2a
 --- /dev/null
-+++ b/kernel/vbus/virtio.c
-@@ -0,0 +1,627 @@
++++ b/drivers/vbus/devices/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_VBUS_VENETTAP) += venet-tap.o
+diff --git a/drivers/vbus/devices/venet-tap.c b/drivers/vbus/devices/venet-tap.c
+new file mode 100644
+index 0000000..5e093a0
+--- /dev/null
++++ b/drivers/vbus/devices/venet-tap.c
+@@ -0,0 +1,1387 @@
 +/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
++ * venettap - A 802.x virtual network device based on the VBUS/IOQ interface
 + *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
++ * Copyright (C) 2009 Novell, Gregory Haskins <ghaskins@novell.com>
++ *
++ * Derived from the SNULL example from the book "Linux Device Drivers" by
++ * Alessandro Rubini, Jonathan Corbet, and Greg Kroah-Hartman, published
++ * by O'Reilly & Associates.
 + *
 + * This file is free software; you can redistribute it and/or modify
 + * it under the terms of version 2 of the GNU General Public License
@@ -816,108 +124,828 @@ index 0000000..b2fe002
 + */
 +
 +#include <linux/module.h>
-+#include <linux/virtio.h>
-+#include <linux/virtio_ring.h>
-+#include <linux/virtio_vbus.h>
++#include <linux/init.h>
++#include <linux/moduleparam.h>
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/errno.h>
++#include <linux/types.h>
++#include <linux/interrupt.h>
++#include <linux/wait.h>
++
++#include <linux/in.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/ip.h>
++#include <linux/tcp.h>
++#include <linux/skbuff.h>
++#include <linux/ioq.h>
++#include <linux/vbus.h>
++#include <linux/freezer.h>
++#include <linux/kthread.h>
++
++#include <linux/venet.h>
++
++#include <linux/in6.h>
++#include <asm/checksum.h>
 +
 +MODULE_AUTHOR("Gregory Haskins");
 +MODULE_LICENSE("GPL");
 +
-+#undef PDEBUG
++#undef PDEBUG             /* undef it, just in case */
 +#ifdef VENETTAP_DEBUG
-+#  define PDEBUG(fmt, args...) printk(KERN_DEBUG "virtio-vbus: " fmt, ## args)
++#  define PDEBUG(fmt, args...) printk(KERN_DEBUG "venet-tap: " fmt, ## args)
 +#else
-+#  define PDEBUG(fmt, args...)
++#  define PDEBUG(fmt, args...) /* not debugging: nothing */
 +#endif
 +
-+struct _virtio_device_interface {
-+	struct virtio_device_interface *vintf;
-+	struct vbus_device_interface    intf;
++static int maxcount = 2048;
++module_param(maxcount, int, 0600);
++MODULE_PARM_DESC(maxcount, "maximum size for rx/tx ioq ring");
++
++static void venettap_tx_isr(struct ioq_notifier *notifier);
++static int venettap_rx_thread(void *__priv);
++static int venettap_tx_thread(void *__priv);
++
++struct venettap_queue {
++	struct ioq              *queue;
++	struct ioq_notifier      notifier;
 +};
 +
-+struct _virtio_connection {
-+	struct _virtio_device_interface *_vintf;
-+	struct virtio_connection        *vconn;
-+	struct vbus_connection           conn;
-+	struct vbus_memctx              *ctx;
-+	struct list_head                 queues;
++struct venettap;
++
++enum {
++	RX_SCHED,
++	TX_SCHED,
++	TX_NETIF_CONGESTED,
++	TX_IOQ_CONGESTED,
++};
++
++struct venettap {
++	spinlock_t                   lock;
++	unsigned char                hmac[ETH_ALEN]; /* host-mac */
++	unsigned char                cmac[ETH_ALEN]; /* client-mac */
++	struct task_struct          *rxthread;
++	struct task_struct          *txthread;
++	unsigned long                flags;
 +
 +	struct {
-+		struct vbus_shm            *shm;
-+		struct shm_signal          *signal;
-+		struct shm_signal_notifier  notifier;
-+	} config;
++		struct net_device           *dev;
++		struct net_device_stats      stats;
++		struct {
++			struct sk_buff_head  list;
++			size_t               len;
++			int                  irqdepth;
++		} txq;
++		int                          enabled:1;
++		int                          link:1;
++	} netif;
 +
-+	int running:1;
++	struct {
++		struct vbus_device           dev;
++		struct vbus_device_interface intf;
++		struct vbus_connection       conn;
++		struct vbus_memctx          *ctx;
++		struct venettap_queue        rxq;
++		struct venettap_queue        txq;
++		wait_queue_head_t            rx_empty;
++		int                          connected:1;
++		int                          opened:1;
++		int                          link:1;
++	} vbus;
 +};
 +
-+struct _virtio_queue {
-+	int                         index;
-+	int                         num;
-+	struct _virtio_connection  *_vconn;
-+	struct virtqueue           *vq;
-+
-+	struct vbus_shm            *shm;
-+	struct shm_signal          *signal;
-+	struct shm_signal_notifier  notifier;
-+
-+	struct list_head            node;
-+};
-+
-+static struct _virtio_device_interface *
-+to_vintf(struct vbus_device_interface *intf)
++static int
++venettap_queue_init(struct venettap_queue *q,
++		    struct vbus_shm *shm,
++		    struct shm_signal *signal,
++		    void (*func)(struct ioq_notifier *))
 +{
-+	return container_of(intf, struct _virtio_device_interface, intf);
-+}
++	struct ioq *ioq;
++	int ret;
 +
-+static struct _virtio_connection *
-+to_vconn(struct vbus_connection *conn)
-+{
-+	return container_of(conn, struct _virtio_connection, conn);
-+}
++	if (q->queue)
++		return -EEXIST;
 +
-+int virtio_connection_config_get(struct virtio_connection *vconn,
-+				 int offset, void *buf, size_t len)
-+{
-+	struct _virtio_connection *_vconn = to_vconn(vconn->parent);
-+	char *data;
++	/* FIXME: make maxcount a tunable */
++	ret = vbus_shm_ioq_attach(shm, signal, maxcount, &ioq);
++	if (ret < 0)
++		return ret;
 +
-+	if (!_vconn->config.shm)
-+		return -EINVAL;
++	q->queue = ioq;
 +
-+	if (offset + len > _vconn->config.shm->len)
-+		return -EINVAL;
-+
-+	data = _vconn->config.shm->ptr;
-+
-+	memcpy(buf, &data[offset], len);
++	if (func) {
++		q->notifier.signal = func;
++		q->queue->notifier = &q->notifier;
++	}
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(virtio_connection_config_get);
 +
-+int virtio_connection_config_set(struct virtio_connection *vconn,
-+				 int offset, void *buf, size_t len)
++static void
++venettap_queue_release(struct venettap_queue *q)
 +{
-+	struct _virtio_connection *_vconn = to_vconn(vconn->parent);
-+	char *data;
++	if (!q->queue)
++		return;
 +
-+	if (!_vconn->config.shm)
-+		return -EINVAL;
++	ioq_put(q->queue);
++	q->queue = NULL;
++}
 +
-+	if (offset + len > _vconn->config.shm->len)
-+		return -EINVAL;
++/* Assumes priv->lock is held */
++static void
++venettap_txq_notify_inc(struct venettap *priv)
++{
++	priv->netif.txq.irqdepth++;
++	if (priv->netif.txq.irqdepth == 1 && priv->vbus.link)
++		ioq_notify_enable(priv->vbus.txq.queue, 0);
++}
 +
-+	data = _vconn->config.shm->ptr;
++/* Assumes priv->lock is held */
++static void
++venettap_txq_notify_dec(struct venettap *priv)
++{
++	BUG_ON(!priv->netif.txq.irqdepth);
++	priv->netif.txq.irqdepth--;
++	if (!priv->netif.txq.irqdepth && priv->vbus.link)
++		ioq_notify_disable(priv->vbus.txq.queue, 0);
++}
 +
-+	memcpy(&data[offset], buf, len);
++/*
++ *----------------------------------------------------------------------
++ * netif link
++ *----------------------------------------------------------------------
++ */
 +
-+	if (_vconn->config.signal)
-+		shm_signal_inject(_vconn->config.signal, 0);
++static struct venettap *conn_to_priv(struct vbus_connection *conn)
++{
++	return container_of(conn, struct venettap, vbus.conn);
++}
++
++static struct venettap *intf_to_priv(struct vbus_device_interface *intf)
++{
++	return container_of(intf, struct venettap, vbus.intf);
++}
++
++static struct venettap *vdev_to_priv(struct vbus_device *vdev)
++{
++	return container_of(vdev, struct venettap, vbus.dev);
++}
++
++static int
++venettap_netdev_open(struct net_device *dev)
++{
++	struct venettap *priv = netdev_priv(dev);
++	unsigned long flags;
++
++	BUG_ON(priv->netif.link);
++
++	/*
++	 * We need rx-polling to be done in process context, and we want
++	 * ingress processing to occur independent of the producer thread
++	 * to maximize multi-core distribution.  Since the built in NAPI uses a
++	 * softirq, we cannot guarantee this wont call us back in interrupt
++	 * context, so we cant use it.  And both a work-queue or softirq
++	 * solution would tend to process requests on the same CPU as the
++	 * producer.  Therefore, we create a special thread to handle ingress.
++	 *
++	 * The downside to this type of approach is that we may still need to
++	 * ctx-switch to the NAPI polling thread (presumably running on the same
++	 * core as the rx-thread) by virtue of the netif_rx() backlog mechanism.
++	 * However, this can be mitigated by the use of netif_rx_ni().
++	 */
++	priv->rxthread = kthread_create(venettap_rx_thread, priv,
++					"%s-rx", priv->netif.dev->name);
++
++	priv->txthread = kthread_create(venettap_tx_thread, priv,
++					"%s-tx", priv->netif.dev->name);
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	priv->netif.link = true;
++
++	if (!priv->vbus.link)
++		netif_carrier_off(dev);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(virtio_connection_config_set);
++
++static int
++venettap_netdev_stop(struct net_device *dev)
++{
++	struct venettap *priv = netdev_priv(dev);
++	unsigned long flags;
++	int needs_stop = false;
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (priv->netif.link) {
++		needs_stop = true;
++		priv->netif.link = false;
++	}
++
++	/* FIXME: free priv->netif.txq */
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	if (needs_stop) {
++		kthread_stop(priv->rxthread);
++		priv->rxthread = NULL;
++
++		kthread_stop(priv->txthread);
++		priv->txthread = NULL;
++	}
++
++	return 0;
++}
++
++/*
++ * Configuration changes (passed on by ifconfig)
++ */
++static int
++venettap_netdev_config(struct net_device *dev, struct ifmap *map)
++{
++	if (dev->flags & IFF_UP) /* can't act on a running interface */
++		return -EBUSY;
++
++	/* Don't allow changing the I/O address */
++	if (map->base_addr != dev->base_addr) {
++		printk(KERN_WARNING "venettap: Can't change I/O address\n");
++		return -EOPNOTSUPP;
++	}
++
++	/* ignore other fields */
++	return 0;
++}
++
++static int
++venettap_change_mtu(struct net_device *dev, int new_mtu)
++{
++	dev->mtu = new_mtu;
++
++	return 0;
++}
++
++/*
++ * The poll implementation.
++ */
++static int
++venettap_rx(struct venettap *priv)
++{
++	struct ioq                 *ioq;
++	struct vbus_memctx         *ctx;
++	int                         npackets = 0;
++	int                         dirty = 0;
++	struct ioq_iterator         iter;
++	int                         ret;
++	unsigned long               flags;
++	struct vbus_connection     *conn;
++
++	PDEBUG("polling...\n");
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (!priv->vbus.link) {
++		spin_unlock_irqrestore(&priv->lock, flags);
++		return 0;
++	}
++
++	/*
++	 * We take a reference to the connection object to ensure that the
++	 * ioq/ctx references do not disappear out from under us.  We could
++	 * acommplish the same thing more directly by acquiring a reference
++	 * to the ioq and ctx explictly, but this would require an extra
++	 * atomic_inc+dec pair, for no additional benefit
++	 */
++	conn = &priv->vbus.conn;
++	vbus_connection_get(conn);
++
++	ioq = priv->vbus.rxq.queue;
++	ctx = priv->vbus.ctx;
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	/* We want to iterate on the head of the in-use index */
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_inuse, 0);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * The EOM is indicated by finding a packet that is still owned by
++	 * the north side
++	 */
++	while (iter.desc->sown) {
++		size_t len = iter.desc->len;
++		size_t maxlen = priv->netif.dev->mtu + ETH_HLEN;
++		struct sk_buff *skb = NULL;
++
++		if (unlikely(len > maxlen)) {
++			priv->netif.stats.rx_errors++;
++			priv->netif.stats.rx_length_errors++;
++			goto next;
++		}
++
++		skb = dev_alloc_skb(len+2);
++		if (unlikely(!skb)) {
++			printk(KERN_INFO "VENETTAP: skb alloc failed:"	\
++			       " memory squeeze.\n");
++			priv->netif.stats.rx_errors++;
++			priv->netif.stats.rx_dropped++;
++			goto next;
++		}
++
++		/* align IP on 16B boundary */
++		skb_reserve(skb, 2);
++
++		ret = ctx->ops->copy_from(ctx, skb->data,
++					 (void *)iter.desc->ptr,
++					 len);
++		if (unlikely(ret)) {
++			priv->netif.stats.rx_errors++;
++			goto next;
++		}
++
++		/* Maintain stats */
++		npackets++;
++		priv->netif.stats.rx_packets++;
++		priv->netif.stats.rx_bytes += len;
++
++		/* Pass the buffer up to the stack */
++		skb->dev      = priv->netif.dev;
++		skb->protocol = eth_type_trans(skb, priv->netif.dev);
++
++		netif_rx_ni(skb);
++next:
++		dirty = 1;
++
++		/* Advance the in-use head */
++		ret = ioq_iter_pop(&iter, 0);
++		BUG_ON(ret < 0);
++
++		/* send up to N packets before sending tx-complete */
++		if (!(npackets % 10)) {
++			ioq_signal(ioq, 0);
++			dirty = 0;
++		}
++
++	}
++
++	PDEBUG("poll: %d packets received\n", npackets);
++
++	if (dirty)
++		ioq_signal(ioq, 0);
++
++	/*
++	 * If we processed all packets we're done, so reenable ints
++	 */
++	if (ioq_empty(ioq, ioq_idxtype_inuse)) {
++		clear_bit(RX_SCHED, &priv->flags);
++		ioq_notify_enable(ioq, 0);
++		wake_up(&priv->vbus.rx_empty);
++	}
++
++	vbus_connection_put(conn);
++
++	return 0;
++}
++
++static int venettap_rx_thread(void *__priv)
++{
++	struct venettap *priv = __priv;
++
++	for (;;) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (!freezing(current) &&
++		    !kthread_should_stop() &&
++		    !test_bit(RX_SCHED, &priv->flags))
++			schedule();
++		set_current_state(TASK_RUNNING);
++
++		try_to_freeze();
++
++		if (kthread_should_stop())
++			break;
++
++		venettap_rx(priv);
++	}
++
++	return 0;
++}
++
++/* assumes priv->lock is held */
++static void
++venettap_check_netif_congestion(struct venettap *priv)
++{
++	struct ioq *ioq = priv->vbus.txq.queue;
++
++	if (priv->vbus.link
++	    && priv->netif.txq.len < ioq_remain(ioq, ioq_idxtype_inuse)
++	    && test_and_clear_bit(TX_NETIF_CONGESTED, &priv->flags)) {
++		PDEBUG("NETIF congestion cleared\n");
++		venettap_txq_notify_dec(priv);
++
++		if (priv->netif.link)
++			netif_wake_queue(priv->netif.dev);
++	}
++}
++
++static int
++venettap_tx(struct venettap *priv)
++{
++	struct sk_buff             *skb;
++	struct ioq_iterator         iter;
++	struct ioq                 *ioq = NULL;
++	struct vbus_memctx         *ctx;
++	int                         ret;
++	int                         npackets = 0;
++	unsigned long               flags;
++	struct vbus_connection     *conn;
++
++	PDEBUG("tx-thread\n");
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (unlikely(!priv->vbus.link)) {
++		spin_unlock_irqrestore(&priv->lock, flags);
++		return 0;
++	}
++
++	/*
++	 * We take a reference to the connection object to ensure that the
++	 * ioq/ctx references do not disappear out from under us.  We could
++	 * acommplish the same thing more directly by acquiring a reference
++	 * to the ioq and ctx explictly, but this would require an extra
++	 * atomic_inc+dec pair, for no additional benefit
++	 */
++	conn = &priv->vbus.conn;
++	vbus_connection_get(conn);
++
++	ioq = priv->vbus.txq.queue;
++	ctx = priv->vbus.ctx;
++
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_inuse, IOQ_ITER_AUTOUPDATE);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
++	BUG_ON(ret < 0);
++
++	while (priv->vbus.link && iter.desc->sown && priv->netif.txq.len) {
++
++		skb = __skb_dequeue(&priv->netif.txq.list);
++		if (!skb)
++			break;
++
++		spin_unlock_irqrestore(&priv->lock, flags);
++
++		PDEBUG("tx-thread: sending %d bytes\n", skb->len);
++
++		if (skb->len <= iter.desc->len) {
++			ret = ctx->ops->copy_to(ctx, (void *)iter.desc->ptr,
++					       skb->data, skb->len);
++			BUG_ON(ret);
++
++			iter.desc->len = skb->len;
++
++			npackets++;
++			priv->netif.stats.tx_packets++;
++			priv->netif.stats.tx_bytes += skb->len;
++
++			ret = ioq_iter_push(&iter, 0);
++			BUG_ON(ret < 0);
++		} else {
++			printk(KERN_WARNING				\
++			       "VENETTAP: discarding packet: buf too small " \
++			       "(%d > %lld)\n", skb->len, iter.desc->len);
++			priv->netif.stats.tx_errors++;
++		}
++
++		dev_kfree_skb(skb);
++		priv->netif.dev->trans_start = jiffies; /* save the timestamp */
++
++		spin_lock_irqsave(&priv->lock, flags);
++
++		priv->netif.txq.len--;
++	}
++
++	PDEBUG("send complete\n");
++
++	if (!priv->vbus.link || !priv->netif.txq.len) {
++		PDEBUG("descheduling TX: link=%d, len=%d\n",
++		       priv->vbus.link, priv->netif.txq.len);
++		clear_bit(TX_SCHED, &priv->flags);
++	} else if (!test_and_set_bit(TX_IOQ_CONGESTED, &priv->flags)) {
++		PDEBUG("congested with %d packets still queued\n",
++		       priv->netif.txq.len);
++		venettap_txq_notify_inc(priv);
++	}
++
++	venettap_check_netif_congestion(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	vbus_connection_put(conn);
++
++	return npackets;
++}
++
++static int venettap_tx_thread(void *__priv)
++{
++	struct venettap *priv = __priv;
++
++	for (;;) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (!freezing(current) &&
++		    !kthread_should_stop() &&
++		    (test_bit(TX_IOQ_CONGESTED, &priv->flags) ||
++		     !test_bit(TX_SCHED, &priv->flags)))
++			schedule();
++		set_current_state(TASK_RUNNING);
++
++		PDEBUG("tx wakeup: %s%s%s\n",
++		       test_bit(TX_SCHED, &priv->flags) ? "s" : "-",
++		       test_bit(TX_IOQ_CONGESTED, &priv->flags) ? "c" : "-",
++		       test_bit(TX_NETIF_CONGESTED, &priv->flags) ? "b" : "-"
++			);
++
++		try_to_freeze();
++
++		if (kthread_should_stop())
++			break;
++
++		venettap_tx(priv);
++	}
++
++	return 0;
++}
++
++static void
++venettap_deferred_tx(struct venettap *priv)
++{
++	PDEBUG("wake up txthread\n");
++	wake_up_process(priv->txthread);
++}
++
++/* assumes priv->lock is held */
++static void
++venettap_apply_backpressure(struct venettap *priv)
++{
++	PDEBUG("backpressure\n");
++
++	if (!test_and_set_bit(TX_NETIF_CONGESTED, &priv->flags)) {
++		/*
++		 * We must flow-control the kernel by disabling the queue
++		 */
++		netif_stop_queue(priv->netif.dev);
++		venettap_txq_notify_inc(priv);
++	}
++}
++
++/*
++ * Transmit a packet (called by the kernel)
++ *
++ * We want to perform ctx->copy_to() operations from a sleepable process
++ * context, so we defer the actual tx operations to a thread.
++ * However, we want to be careful that we do not double-buffer the
++ * queue, so we create a buffer whose space dynamically grows and
++ * shrinks with the availability of the actual IOQ.  This means that
++ * the netif flow control is still managed by the actual consumer,
++ * thereby avoiding the creation of an extra servo-loop to the equation.
++ */
++static int
++venettap_netdev_tx(struct sk_buff *skb, struct net_device *dev)
++{
++	struct venettap *priv = netdev_priv(dev);
++	struct ioq      *ioq = NULL;
++	unsigned long    flags;
++
++	PDEBUG("queuing %d bytes\n", skb->len);
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	ioq = priv->vbus.txq.queue;
++
++	BUG_ON(test_bit(TX_NETIF_CONGESTED, &priv->flags));
++
++	if (!priv->vbus.link) {
++		/*
++		 * We have a link-down condition
++		 */
++		printk(KERN_ERR "VENETTAP: tx on link down\n");
++		goto flowcontrol;
++	}
++
++	__skb_queue_tail(&priv->netif.txq.list, skb);
++	priv->netif.txq.len++;
++	set_bit(TX_SCHED, &priv->flags);
++
++	if (priv->netif.txq.len >= ioq_remain(ioq, ioq_idxtype_inuse))
++		venettap_apply_backpressure(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	venettap_deferred_tx(priv);
++
++	return NETDEV_TX_OK;
++
++flowcontrol:
++	venettap_apply_backpressure(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return NETDEV_TX_BUSY;
++}
++
++/*
++ * Ioctl commands
++ */
++static int
++venettap_netdev_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
++{
++	PDEBUG("ioctl\n");
++	return 0;
++}
++
++/*
++ * Return statistics to the caller
++ */
++struct net_device_stats *
++venettap_netdev_stats(struct net_device *dev)
++{
++	struct venettap *priv = netdev_priv(dev);
++	return &priv->netif.stats;
++}
++
++static void
++venettap_netdev_unregister(struct venettap *priv)
++{
++	if (priv->netif.enabled) {
++		venettap_netdev_stop(priv->netif.dev);
++		unregister_netdev(priv->netif.dev);
++	}
++}
++
++/*
++ * Assumes priv->lock held
++ */
++static void
++venettap_rx_schedule(struct venettap *priv)
++{
++	if (!priv->vbus.link)
++		return;
++
++	if (priv->netif.link
++	    && !ioq_empty(priv->vbus.rxq.queue, ioq_idxtype_inuse)) {
++		ioq_notify_disable(priv->vbus.rxq.queue, 0);
++
++		if (!test_and_set_bit(RX_SCHED, &priv->flags))
++			wake_up_process(priv->rxthread);
++	}
++}
++
++/*
++ * receive interrupt-service-routine - called whenever the vbus-driver signals
++ * our IOQ to indicate more inbound packets are ready.
++ */
++static void
++venettap_rx_isr(struct ioq_notifier *notifier)
++{
++	struct venettap *priv;
++	unsigned long flags;
++
++	priv = container_of(notifier, struct venettap, vbus.rxq.notifier);
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	/* Disable future interrupts and schedule our napi-poll */
++	venettap_rx_schedule(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
++
++/*
++ * transmit interrupt-service-routine - called whenever the vbus-driver signals
++ * our IOQ to indicate there is more room in the TX queue
++ */
++static void
++venettap_tx_isr(struct ioq_notifier *notifier)
++{
++	struct venettap *priv;
++	unsigned long flags;
++
++	priv = container_of(notifier, struct venettap, vbus.txq.notifier);
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (priv->vbus.link
++	    && !ioq_full(priv->vbus.txq.queue, ioq_idxtype_inuse)
++	    && test_and_clear_bit(TX_IOQ_CONGESTED, &priv->flags)) {
++		PDEBUG("IOQ congestion cleared\n");
++		venettap_txq_notify_dec(priv);
++
++		if (priv->netif.link)
++			wake_up_process(priv->txthread);
++	}
++
++	venettap_check_netif_congestion(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
++
++static int
++venettap_vlink_up(struct venettap *priv)
++{
++	int ret = 0;
++	unsigned long flags;
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (priv->vbus.link) {
++		ret = -EEXIST;
++		goto out;
++	}
++
++	if (!priv->vbus.rxq.queue || !priv->vbus.txq.queue) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	priv->vbus.link = 1;
++
++	if (priv->netif.link)
++		netif_carrier_on(priv->netif.dev);
++
++	venettap_check_netif_congestion(priv);
++
++	ioq_notify_enable(priv->vbus.rxq.queue, 0);
++
++out:
++	spin_unlock_irqrestore(&priv->lock, flags);
++	return ret;
++}
++
++/* Assumes priv->lock held */
++static int
++_venettap_vlink_down(struct venettap *priv)
++{
++	struct sk_buff *skb;
++
++	if (!priv->vbus.link)
++		return -ENOENT;
++
++	priv->vbus.link = 0;
++
++	if (priv->netif.link)
++		netif_carrier_off(priv->netif.dev);
++
++	/* just trash whatever might have been pending */
++	while ((skb = __skb_dequeue(&priv->netif.txq.list)))
++		dev_kfree_skb(skb);
++
++	priv->netif.txq.len = 0;
++
++	/* And deschedule any pending processing */
++	clear_bit(RX_SCHED, &priv->flags);
++	clear_bit(TX_SCHED, &priv->flags);
++
++	ioq_notify_disable(priv->vbus.rxq.queue, 0);
++
++	return 0;
++}
++
++static int
++venettap_vlink_down(struct venettap *priv)
++{
++	unsigned long flags;
++	int ret;
++
++	spin_lock_irqsave(&priv->lock, flags);
++	ret = _venettap_vlink_down(priv);
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return ret;
++}
++
++static int
++venettap_macquery(struct venettap *priv, void *data, unsigned long len)
++{
++	struct vbus_memctx *ctx = priv->vbus.ctx;
++	int ret;
++
++	if (len != ETH_ALEN)
++		return -EINVAL;
++
++	ret = ctx->ops->copy_to(ctx, data, priv->cmac, ETH_ALEN);
++	if (ret)
++		return -EFAULT;
++
++	return 0;
++}
 +
 +/*
 + * Negotiate Capabilities - This function is provided so that the
@@ -929,497 +957,562 @@ index 0000000..b2fe002
 + * ascertain the lowest-common-denominator of features to enable
 + */
 +static int
-+_virtio_connection_negcap(struct _virtio_connection *_vconn,
-+			  void *data, unsigned long len)
++venettap_negcap(struct venettap *priv, void *data, unsigned long len)
 +{
-+	struct vbus_memctx *ctx = _vconn->ctx;
-+	u64 features;
++	struct vbus_memctx *ctx = priv->vbus.ctx;
++	struct venet_capabilities caps;
 +	int ret;
 +
-+	if (len != sizeof(features))
++	if (len != sizeof(caps))
 +		return -EINVAL;
 +
-+	if (_vconn->running)
++	if (priv->vbus.link)
 +		return -EINVAL;
 +
-+#ifdef NOTYET
-+	ret = ctx->ops->copy_from(ctx, &features, data, sizeof(features));
-+	if (ret)
-+		return -EFAULT;
-+#endif
-+
-+	/*
-+	 * right now we dont support any advanced features, so just clear all
-+	 * bits
-+	 */
-+	features = 0;
-+
-+	ret = ctx->ops->copy_to(ctx, data, &features, sizeof(features));
++	ret = ctx->ops->copy_from(ctx, &caps, data, sizeof(caps));
 +	if (ret)
 +		return -EFAULT;
 +
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_getid(struct _virtio_connection *_vconn,
-+			 void *data, unsigned long len)
-+{
-+	struct vbus_memctx *ctx = _vconn->ctx;
-+	struct virtio_vbus_id *id = &_vconn->_vintf->vintf->id;
-+	int ret;
-+
-+	if (len != sizeof(*id))
-+		return -EINVAL;
-+
-+	ret = ctx->ops->copy_to(ctx, data, id, sizeof(*id));
-+	if (ret)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_getstatus(struct _virtio_connection *_vconn,
-+			     void *data, unsigned long len)
-+{
-+	struct virtio_connection *vconn = _vconn->vconn;
-+	struct vbus_memctx *ctx = _vconn->ctx;
-+	u8 val = 0;
-+	int ret;
-+
-+	if (len != sizeof(val))
-+		return -EINVAL;
-+
-+	if (vconn->ops->get_status)
-+		val = vconn->ops->get_status(vconn);
-+
-+	ret = ctx->ops->copy_to(ctx, data, &val, sizeof(val));
-+	if (ret)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_setstatus(struct _virtio_connection *_vconn,
-+			     void *data, unsigned long len)
-+{
-+	struct virtio_connection *vconn = _vconn->vconn;
-+	struct vbus_memctx *ctx = _vconn->ctx;
-+	u8 val;
-+	int ret;
-+
-+	if (len != sizeof(val))
-+		return -EINVAL;
-+
-+	if (!vconn->ops->set_status)
-+		return 0;
-+
-+	ret = ctx->ops->copy_from(ctx, &val, data, sizeof(val));
-+	if (ret)
-+		return -EFAULT;
-+
-+	vconn->ops->set_status(vconn, val);
-+
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_getfeatures(struct _virtio_connection *_vconn,
-+			       void *data, unsigned long len)
-+{
-+	struct virtio_connection *vconn = _vconn->vconn;
-+	struct vbus_memctx *ctx = _vconn->ctx;
-+	u32 val = 0;
-+	int ret;
-+
-+	if (len != sizeof(val))
-+		return -EINVAL;
-+
-+	if (vconn->ops->get_features)
-+		val = vconn->ops->get_features(vconn);
-+
-+	ret = ctx->ops->copy_to(ctx, data, &val, sizeof(val));
-+	if (ret)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_finalizefeatures(struct _virtio_connection *_vconn)
-+{
-+	struct virtio_connection *vconn = _vconn->vconn;
-+
-+	if (vconn->ops->finalize_features)
-+		vconn->ops->finalize_features(vconn);
-+
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_reset(struct _virtio_connection *_vconn)
-+{
-+	struct virtio_connection *vconn = _vconn->vconn;
-+
-+	if (vconn->ops->reset)
-+		vconn->ops->reset(vconn);
-+
-+	return 0;
-+}
-+
-+static struct _virtio_queue *
-+_virtio_find_queue(struct _virtio_connection *_vconn, int index)
-+{
-+	struct _virtio_queue *vq;
-+
-+	list_for_each_entry(vq, &_vconn->queues, node) {
-+		if (vq->index == index)
-+			return vq;
++	switch (caps.gid) {
++	default:
++		caps.bits = 0;
++		break;
 +	}
 +
-+	return NULL;
-+}
-+
-+static int
-+_virtio_connection_queryqueue(struct _virtio_connection *_vconn,
-+			      void *data, unsigned long len)
-+{
-+	struct vbus_memctx *ctx = _vconn->ctx;
-+	struct virtio_vbus_queryqueue val;
-+	struct _virtio_queue *vq;
-+	int ret;
-+
-+	if (len != sizeof(val))
-+		return -EINVAL;
-+
-+	ret = ctx->ops->copy_from(ctx, &val, data, sizeof(val));
-+	if (ret)
-+		return -EFAULT;
-+
-+	vq = _virtio_find_queue(_vconn, val.index);
-+
-+	if (!vq)
-+		return -EINVAL;
-+
-+	if (vq->shm)
-+		return -EEXIST;
-+
-+	val.num = vq->num;
-+
-+	ret = ctx->ops->copy_to(ctx, data, &val, sizeof(val));
++	ret = ctx->ops->copy_to(ctx, data, &caps, sizeof(caps));
 +	if (ret)
 +		return -EFAULT;
 +
 +	return 0;
 +}
 +
++/*
++ * Walk through and flush each remaining descriptor by returning
++ * a zero length packet.
++ *
++ * This is useful, for instance, when the driver is changing the MTU
++ * and wants to reclaim all the existing buffers outstanding which
++ * are a different size than the new MTU
++ */
 +static int
-+_virtio_connection_call(struct vbus_connection *conn,
++venettap_flushrx(struct venettap *priv)
++{
++	struct ioq_iterator         iter;
++	struct ioq                 *ioq = NULL;
++	int                         ret;
++	unsigned long               flags;
++
++	PDEBUG("flushrx\n");
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	if (unlikely(!priv->vbus.link)) {
++		spin_unlock_irqrestore(&priv->lock, flags);
++		return -EINVAL;
++	}
++
++	ioq = priv->vbus.txq.queue;
++
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_inuse, 0);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
++	BUG_ON(ret < 0);
++
++	while (iter.desc->sown) {
++		iter.desc->len = 0;
++		ret = ioq_iter_push(&iter, 0);
++		if (ret < 0)
++			SHM_SIGNAL_FAULT(ioq->signal, "could not flushrx");
++	}
++
++	PDEBUG("flushrx complete\n");
++
++	if (!test_and_set_bit(TX_IOQ_CONGESTED, &priv->flags)) {
++		PDEBUG("congested with %d packets still queued\n",
++		       priv->netif.txq.len);
++		venettap_txq_notify_inc(priv);
++	}
++
++	/*
++	 * we purposely do not ioq_signal() the other side here.  Since
++	 * this function was invoked by the client, they can take care
++	 * of explcitly calling any reclaim code if they like.  This also
++	 * avoids a potential deadlock in case turning around and injecting
++	 * a signal while we are in a call() is problematic to the
++	 * connector design
++	 */
++
++	venettap_check_netif_congestion(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return 0;
++}
++
++/*
++ * This is called whenever a driver wants to perform a synchronous
++ * "function call" to our device.  It is similar to the notion of
++ * an ioctl().  The parameters are part of the ABI between the device
++ * and driver.
++ */
++static int
++venettap_vlink_call(struct vbus_connection *conn,
 +		    unsigned long func,
 +		    void *data,
 +		    unsigned long len,
 +		    unsigned long flags)
 +{
-+	struct _virtio_connection *_vconn = to_vconn(conn);
-+	int ret = 0;
++	struct venettap *priv = conn_to_priv(conn);
 +
 +	PDEBUG("call -> %d with %p/%d\n", func, data, len);
 +
 +	switch (func) {
-+	case VIRTIO_VBUS_FUNC_NEG_CAP:
-+		ret = _virtio_connection_negcap(_vconn, data, len);
-+		break;
-+	case VIRTIO_VBUS_FUNC_GET_ID:
-+		ret = _virtio_connection_getid(_vconn, data, len);
-+		break;
-+	case VIRTIO_VBUS_FUNC_GET_FEATURES:
-+		ret = _virtio_connection_getfeatures(_vconn, data, len);
-+		break;
-+	case VIRTIO_VBUS_FUNC_FINALIZE_FEATURES:
-+		_virtio_connection_finalizefeatures(_vconn);
-+		break;
-+	case VIRTIO_VBUS_FUNC_GET_STATUS:
-+		ret = _virtio_connection_getstatus(_vconn, data, len);
-+		break;
-+	case VIRTIO_VBUS_FUNC_SET_STATUS:
-+		ret = _virtio_connection_setstatus(_vconn, data, len);
-+		break;
-+	case VIRTIO_VBUS_FUNC_RESET:
-+		_virtio_connection_reset(_vconn);
-+		break;
-+	case VIRTIO_VBUS_FUNC_QUERY_QUEUE:
-+		ret = _virtio_connection_queryqueue(_vconn, data, len);
-+		break;
-+	case VIRTIO_VBUS_FUNC_DEL_QUEUE:
-+		break;
++	case VENET_FUNC_LINKUP:
++		return venettap_vlink_up(priv);
++	case VENET_FUNC_LINKDOWN:
++		return venettap_vlink_down(priv);
++	case VENET_FUNC_MACQUERY:
++		return venettap_macquery(priv, data, len);
++	case VENET_FUNC_NEGCAP:
++		return venettap_negcap(priv, data, len);
++	case VENET_FUNC_FLUSHRX:
++		return venettap_flushrx(priv);
 +	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static void _virtio_config_isr(struct shm_signal_notifier *notifier)
-+{
-+	struct _virtio_connection *_vconn;
-+	struct virtio_connection *vconn;
-+
-+	_vconn = container_of(notifier, struct _virtio_connection,
-+			      config.notifier);
-+
-+	vconn = _vconn->vconn;
-+
-+	if (vconn->ops->config_changed)
-+		vconn->ops->config_changed(vconn);
-+}
-+
-+static int
-+_virtio_connection_open(struct _virtio_connection *_vconn)
-+
-+{
-+	struct virtio_device_interface *vintf = _vconn->_vintf->vintf;
-+	struct virtio_connection *vconn;
-+	struct virtio_queue_def *def = vintf->queues;
-+	int ret;
-+
-+	ret = vintf->ops->open(vintf, _vconn->ctx, &vconn);
-+	if (ret < 0)
-+		return ret;
-+
-+	while (def && def->index != -1) {
-+		struct _virtio_queue *vq;
-+
-+		vq = kzalloc(sizeof(*vq), GFP_KERNEL);
-+		if (!vq)
-+			return -ENOMEM;
-+
-+		vq->index  = def->index;
-+		vq->num    = def->entries;
-+		vq->_vconn = _vconn;
-+
-+		list_add_tail(&vq->node, &_vconn->queues);
-+
-+		def++;
-+	}
-+
-+	_vconn->vconn  = vconn;
-+	vconn->parent  = &_vconn->conn;
-+
-+	return 0;
-+}
-+
-+static int
-+_virtio_connection_initconfig(struct _virtio_connection *_vconn,
-+			      struct vbus_shm *shm,
-+			      struct shm_signal *signal)
-+{
-+	int ret;
-+
-+	if (_vconn->running)
 +		return -EINVAL;
-+
-+	_vconn->config.signal = signal;
-+	_vconn->config.shm = shm;
-+	_vconn->config.notifier.signal = &_virtio_config_isr;
-+	signal->notifier = &_vconn->config.notifier;
-+
-+	shm_signal_enable(signal, 0);
-+
-+	ret = _virtio_connection_open(_vconn);
-+	if (ret < 0)
-+		return ret;
-+
-+	_vconn->running = 1;
-+
-+	return 0;
++	}
 +}
 +
-+static void _vq_isr(struct shm_signal_notifier *notifier)
-+{
-+	struct _virtio_queue *vq;
-+
-+	vq = container_of(notifier, struct _virtio_queue, notifier);
-+
-+	vring_interrupt(0, vq->vq);
-+}
-+
-+static void _vq_notify(struct virtqueue *vq)
-+{
-+	struct _virtio_queue *_vq = vq->priv;
-+
-+	shm_signal_inject(_vq->signal, 0);
-+}
-+
-+static void _vq_callback(struct virtqueue *vq)
-+{
-+	struct _virtio_queue *_vq = vq->priv;
-+	struct virtio_connection *vconn = _vq->_vconn->vconn;
-+
-+	vconn->ops->notify_vq(vconn, _vq->index);
-+}
-+
++/*
++ * This is called whenever a driver wants to open a new IOQ between itself
++ * and our device.  The "id" field is meant to convey meaning to the device
++ * as to what the intended use of this IOQ is.  For instance, for venet "id=0"
++ * means "rx" and "id=1" = "tx".  That namespace is managed by the device
++ * and should be understood by the driver as part of its ABI agreement.
++ *
++ * The device should take a reference to the IOQ via ioq_get() and hold it
++ * until the connection is released.
++ */
 +static int
-+_virtio_connection_shm(struct vbus_connection *conn,
++venettap_vlink_shm(struct vbus_connection *conn,
 +		   unsigned long id,
 +		   struct vbus_shm *shm,
 +		   struct shm_signal *signal,
 +		   unsigned long flags)
 +{
-+	struct _virtio_connection *_vconn = to_vconn(conn);
-+	struct virtio_connection *vconn = _vconn->vconn;
-+	struct _virtio_queue *vq;
-+	struct virtio_vbus_shm *_shm = shm->ptr;
++	struct venettap *priv = conn_to_priv(conn);
 +
-+	/* All shm connections that we support require a signal */
-+	if (!signal)
++	PDEBUG("queue -> %p/%d attached\n", ioq, id);
++
++	switch (id) {
++	case VENET_QUEUE_RX:
++		return venettap_queue_init(&priv->vbus.txq, shm, signal,
++					   venettap_tx_isr);
++	case VENET_QUEUE_TX:
++		return venettap_queue_init(&priv->vbus.rxq, shm, signal,
++					   venettap_rx_isr);
++	default:
 +		return -EINVAL;
-+
-+	if (!id)
-+		return _virtio_connection_initconfig(_vconn, shm, signal);
-+
-+	vq = _virtio_find_queue(_vconn, id - VIRTIO_VBUS_RING_OFFSET);
-+	if (!vq)
-+		return -EINVAL;
-+
-+	if (vq->shm)
-+		return -EEXIST;
-+
-+	vq->shm = shm;
-+	vq->signal = signal;
-+
-+	vq->notifier.signal = &_vq_isr;
-+	signal->notifier = &vq->notifier;
-+
-+	shm_signal_enable(signal, 0);
-+
-+	vq->vq = vring_new_virtqueue(vq->num, PAGE_SIZE, NULL,
-+				     &_shm->data[0],
-+				     _vq_notify, _vq_callback);
-+
-+	vq->vq->priv = vq;
-+
-+	vconn->ops->add_vq(vconn, vq->index, vq->vq);
-+
-+	return 0;
-+}
-+
-+static void
-+_virtio_connection_release(struct vbus_connection *conn)
-+{
-+	struct _virtio_connection *_vconn = to_vconn(conn);
-+	struct virtio_connection *vconn = _vconn->vconn;
-+	struct _virtio_queue *vq, *tmp;
-+
-+	vconn->ops->release(vconn);
-+
-+	list_for_each_entry_safe(vq, tmp, &_vconn->queues, node) {
-+		if (vq->vq)
-+			vring_del_virtqueue(vq->vq);
-+
-+		if (vq->shm)
-+			vbus_shm_put(vq->shm);
-+
-+		if (vq->signal)
-+			shm_signal_put(vq->signal);
-+
-+		list_del(&vq->node);
-+		kfree(vq);
 +	}
 +
-+	if (_vconn->config.signal)
-+		shm_signal_put(_vconn->config.signal);
-+
-+	if (_vconn->config.shm)
-+		vbus_shm_put(_vconn->config.shm);
-+
-+	kobject_put(&_vconn->_vintf->intf.kobj);
-+	vbus_memctx_put(_vconn->ctx);
-+
-+	kfree(_vconn);
++	return 0;
 +}
 +
-+static struct vbus_connection_ops _virtio_connection_ops = {
-+	.call    = _virtio_connection_call,
-+	.shm     = _virtio_connection_shm,
-+	.release = _virtio_connection_release,
++static void
++venettap_vlink_close(struct vbus_connection *conn)
++{
++	struct venettap *priv = conn_to_priv(conn);
++	DEFINE_WAIT(wait);
++	unsigned long flags;
++
++	PDEBUG("connection closed\n");
++
++	/* Block until all posted packets from the client have been processed */
++	prepare_to_wait(&priv->vbus.rx_empty, &wait, TASK_UNINTERRUPTIBLE);
++
++	while (test_bit(RX_SCHED, &priv->flags))
++		schedule();
++
++	finish_wait(&priv->vbus.rx_empty, &wait);
++
++	spin_lock_irqsave(&priv->lock, flags);
++
++	priv->vbus.opened = false;
++	_venettap_vlink_down(priv);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
++
++/*
++ * This is called whenever the driver closes all references to our device
++ */
++static void
++venettap_vlink_release(struct vbus_connection *conn)
++{
++	struct venettap *priv = conn_to_priv(conn);
++
++	PDEBUG("connection released\n");
++
++	venettap_queue_release(&priv->vbus.rxq);
++	venettap_queue_release(&priv->vbus.txq);
++	vbus_memctx_put(priv->vbus.ctx);
++
++	kobject_put(priv->vbus.dev.kobj);
++}
++
++static struct vbus_connection_ops venettap_vbus_link_ops = {
++	.call    = venettap_vlink_call,
++	.shm     = venettap_vlink_shm,
++	.close   = venettap_vlink_close,
++	.release = venettap_vlink_release,
 +};
 +
++/*
++ * This is called whenever a driver wants to open our device_interface
++ * for communication.  The connection is represented by a
++ * vbus_connection object.  It is up to the implementation to decide
++ * if it allows more than one connection at a time.  This simple example
++ * does not.
++ */
 +static int
-+_virtio_intf_open(struct vbus_device_interface *intf,
-+		  struct vbus_memctx *ctx,
-+		  int version,
-+		  struct vbus_connection **conn)
++venettap_intf_open(struct vbus_device_interface *intf,
++		   struct vbus_memctx *ctx,
++		   int version,
++		   struct vbus_connection **conn)
 +{
-+	struct _virtio_device_interface *_vintf = to_vintf(intf);
-+	struct _virtio_connection *_vconn;
++	struct venettap *priv = intf_to_priv(intf);
++	unsigned long flags;
 +
-+	if (version != VIRTIO_VBUS_ABI_VERSION)
++	PDEBUG("open\n");
++
++	if (version != VENET_VERSION)
 +		return -EINVAL;
 +
-+	_vconn = kzalloc(sizeof(*_vconn), GFP_KERNEL);
-+	if (!_vconn)
-+		return -ENOMEM;
++	spin_lock_irqsave(&priv->lock, flags);
 +
-+	vbus_connection_init(&_vconn->conn, &_virtio_connection_ops);
-+	_vconn->_vintf = _vintf;
-+	_vconn->ctx    = ctx;
-+	INIT_LIST_HEAD(&_vconn->queues);
++	/*
++	 * We only allow one connection to this device
++	 */
++	if (priv->vbus.opened) {
++		spin_unlock_irqrestore(&priv->lock, flags);
++		return -EBUSY;
++	}
++
++	kobject_get(intf->dev->kobj);
++
++	vbus_connection_init(&priv->vbus.conn, &venettap_vbus_link_ops);
++
++	priv->vbus.opened = true;
++	priv->vbus.ctx = ctx;
 +
 +	vbus_memctx_get(ctx);
-+	kobject_get(&intf->kobj);
 +
-+	*conn         = &_vconn->conn;
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	*conn = &priv->vbus.conn;
 +
 +	return 0;
 +}
 +
 +static void
-+_virtio_intf_release(struct vbus_device_interface *intf)
++venettap_intf_release(struct vbus_device_interface *intf)
 +{
-+	struct _virtio_device_interface *_vintf = to_vintf(intf);
-+	struct virtio_device_interface *vintf = _vintf->vintf;
-+
-+	if (vintf && vintf->ops->release)
-+		vintf->ops->release(vintf);
-+	kfree(_vintf);
++	kobject_put(intf->dev->kobj);
 +}
 +
-+static struct vbus_device_interface_ops _virtio_device_interface_ops = {
-+	.open    = _virtio_intf_open,
-+	.release = _virtio_intf_release,
++static struct vbus_device_interface_ops venettap_device_interface_ops = {
++	.open = venettap_intf_open,
++	.release = venettap_intf_release,
 +};
 +
-+int
-+virtio_device_interface_register(struct vbus_device *dev,
-+				 struct vbus *vbus,
-+				 struct virtio_device_interface *vintf)
++/*
++ * This is called whenever the admin creates a symbolic link between
++ * a bus in /config/vbus/buses and our device.  It represents a bus
++ * connection.  Your device can chose to allow more than one bus to
++ * connect, or it can restrict it to one bus.  It can also choose to
++ * register one or more device_interfaces on each bus that it
++ * successfully connects to.
++ *
++ * This example device only registers a single interface
++ */
++static int
++venettap_device_bus_connect(struct vbus_device *dev, struct vbus *vbus)
 +{
-+	struct _virtio_device_interface *_vintf;
-+	struct vbus_device_interface *intf;
++	struct venettap *priv = vdev_to_priv(dev);
++	struct vbus_device_interface *intf = &priv->vbus.intf;
 +
-+	_vintf = kzalloc(sizeof(*_vintf), GFP_KERNEL);
-+	if (!_vintf)
-+		return -ENOMEM;
++	/* We only allow one bus to connect */
++	if (priv->vbus.connected)
++		return -EBUSY;
 +
-+	_vintf->vintf = vintf;
++	kobject_get(dev->kobj);
 +
-+	intf = &_vintf->intf;
++	intf->name = "0";
++	intf->type = VENET_TYPE;
++	intf->ops = &venettap_device_interface_ops;
 +
-+	intf->name = "0"; /* FIXME */
-+	intf->type = "virtio";
-+	intf->ops  = &_virtio_device_interface_ops;
++	priv->vbus.connected = true;
 +
++	/*
++	 * Our example only registers one interface.  If you need
++	 * more, simply call interface_register() multiple times
++	 */
 +	return vbus_device_interface_register(dev, vbus, intf);
 +}
-+EXPORT_SYMBOL_GPL(virtio_device_interface_register);
 +
-+int
-+virtio_device_interface_unregister(struct virtio_device_interface *intf)
++/*
++ * This is called whenever the admin removes the symbolic link between
++ * a bus in /config/vbus/buses and our device.
++ */
++static int
++venettap_device_bus_disconnect(struct vbus_device *dev, struct vbus *vbus)
 +{
-+	return vbus_device_interface_unregister(intf->parent);
++	struct venettap *priv = vdev_to_priv(dev);
++	struct vbus_device_interface *intf = &priv->vbus.intf;
++
++	if (!priv->vbus.connected)
++		return -EINVAL;
++
++	vbus_device_interface_unregister(intf);
++
++	priv->vbus.connected = false;
++	kobject_put(dev->kobj);
++
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(virtio_device_interface_unregister);
++
++static void
++venettap_device_release(struct vbus_device *dev)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++
++	venettap_netdev_unregister(priv);
++	free_netdev(priv->netif.dev);
++	module_put(THIS_MODULE);
++}
++
++
++static struct vbus_device_ops venettap_device_ops = {
++	.bus_connect = venettap_device_bus_connect,
++	.bus_disconnect = venettap_device_bus_disconnect,
++	.release = venettap_device_release,
++};
++
++#define VENETTAP_TYPE "venet-tap"
++
++/*
++ * Interface attributes show up as files under
++ * /sys/vbus/devices/$devid
++ */
++static ssize_t
++host_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
++	 char *buf)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++
++	return sysfs_format_mac(buf, priv->hmac, ETH_ALEN);
++}
++
++static struct vbus_device_attribute attr_hmac =
++	__ATTR_RO(host_mac);
++
++static ssize_t
++client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
++	 char *buf)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++
++	return sysfs_format_mac(buf, priv->cmac, ETH_ALEN);
++}
++
++static struct vbus_device_attribute attr_cmac =
++	__ATTR_RO(client_mac);
++
++static ssize_t
++enabled_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
++	 char *buf)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", priv->netif.enabled);
++}
++
++static ssize_t
++enabled_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
++	      const char *buf, size_t count)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++	int enabled = -1;
++	int ret = 0;
++
++	if (count > 0)
++		sscanf(buf, "%d", &enabled);
++
++	if (enabled != 0 && enabled != 1)
++		return -EINVAL;
++
++	if (enabled && !priv->netif.enabled)
++		ret = register_netdev(priv->netif.dev);
++
++	if (!enabled && priv->netif.enabled)
++		venettap_netdev_unregister(priv);
++
++	if (ret < 0)
++		return ret;
++
++	priv->netif.enabled = enabled;
++
++	return count;
++}
++
++static struct vbus_device_attribute attr_enabled =
++	__ATTR(enabled, S_IRUGO | S_IWUSR, enabled_show, enabled_store);
++
++static ssize_t
++ifname_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
++	   char *buf)
++{
++	struct venettap *priv = vdev_to_priv(dev);
++
++	if (!priv->netif.enabled)
++		return sprintf(buf, "<disabled>\n");
++
++	return snprintf(buf, PAGE_SIZE, "%s\n", priv->netif.dev->name);
++}
++
++static struct vbus_device_attribute attr_ifname =
++	__ATTR_RO(ifname);
++
++static struct attribute *attrs[] = {
++	&attr_hmac.attr,
++	&attr_cmac.attr,
++	&attr_enabled.attr,
++	&attr_ifname.attr,
++	NULL,
++};
++
++static struct attribute_group venettap_attr_group = {
++	.attrs = attrs,
++};
++
++static struct net_device_ops venettap_netdev_ops = {
++	.ndo_open        = venettap_netdev_open,
++	.ndo_stop        = venettap_netdev_stop,
++	.ndo_set_config  = venettap_netdev_config,
++	.ndo_change_mtu  = venettap_change_mtu,
++	.ndo_start_xmit  = venettap_netdev_tx,
++	.ndo_do_ioctl    = venettap_netdev_ioctl,
++	.ndo_get_stats   = venettap_netdev_stats,
++};
++
++/*
++ * This is called whenever the admin instantiates our devclass via
++ * "mkdir /config/vbus/devices/$(inst)/venet-tap"
++ */
++static int
++venettap_device_create(struct vbus_devclass *dc,
++		       struct vbus_device **vdev)
++{
++	struct net_device *dev;
++	struct venettap *priv;
++	struct vbus_device *_vdev;
++
++	dev = alloc_etherdev(sizeof(struct venettap));
++	if (!dev)
++		return -ENOMEM;
++
++	priv = netdev_priv(dev);
++	memset(priv, 0, sizeof(*priv));
++
++	spin_lock_init(&priv->lock);
++	random_ether_addr(priv->hmac);
++	random_ether_addr(priv->cmac);
++
++	/*
++	 * vbus init
++	 */
++	_vdev = &priv->vbus.dev;
++
++	_vdev->type            = VENETTAP_TYPE;
++	_vdev->ops             = &venettap_device_ops;
++	_vdev->attrs           = &venettap_attr_group;
++
++	init_waitqueue_head(&priv->vbus.rx_empty);
++
++	/*
++	 * netif init
++	 */
++	skb_queue_head_init(&priv->netif.txq.list);
++	priv->netif.txq.len = 0;
++
++	priv->netif.dev = dev;
++
++	ether_setup(dev); /* assign some of the fields */
++
++	dev->netdev_ops = &venettap_netdev_ops;
++	memcpy(dev->dev_addr, priv->hmac, ETH_ALEN);
++
++	dev->features |= NETIF_F_HIGHDMA;
++
++	*vdev = _vdev;
++
++	/*
++	 * We don't need a try_get because the reference is held by the
++	 * infrastructure during a create() operation
++	 */
++	__module_get(THIS_MODULE);
++
++	return 0;
++}
++
++static struct vbus_devclass_ops venettap_devclass_ops = {
++	.create = venettap_device_create,
++};
++
++static struct vbus_devclass venettap_devclass = {
++	.name = VENETTAP_TYPE,
++	.ops = &venettap_devclass_ops,
++	.owner = THIS_MODULE,
++};
++
++static int __init venettap_init(void)
++{
++	return vbus_devclass_register(&venettap_devclass);
++}
++
++static void __exit venettap_cleanup(void)
++{
++	vbus_devclass_unregister(&venettap_devclass);
++}
++
++module_init(venettap_init);
++module_exit(venettap_cleanup);
+diff --git a/kernel/vbus/Kconfig b/kernel/vbus/Kconfig
+index 71acd6f..3ce0adc 100644
+--- a/kernel/vbus/Kconfig
++++ b/kernel/vbus/Kconfig
+@@ -14,6 +14,17 @@ config VBUS
+ 
+ 	If unsure, say N
+ 
++config VBUS_DEVICES
++       bool "Virtual-Bus Devices"
++       depends on VBUS
++       default n
++       help
++         Provides device-class modules for instantiation on a virtual-bus
++
++	 If unsure, say N
++
++source "drivers/vbus/devices/Kconfig"
++
+ config VBUS_DRIVERS
+        tristate "VBUS Driver support"
+        select IOQ
+@@ -23,3 +34,5 @@ config VBUS_DRIVERS
+ 
+ 	If unsure, say N
+ 
++
++
 
