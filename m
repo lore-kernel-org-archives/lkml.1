@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZDUPY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZDUPco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753161AbZDUPY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 11:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZDUPYr
+	id S1754286AbZDUPco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 11:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZDUPce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 11:24:47 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:36001 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbZDUPYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 11:24:46 -0400
-Date: Tue, 21 Apr 2009 16:24:42 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 24/25] Re-sort GFP flags and fix whitespace alignment
-	for easier reading.
-Message-ID: <20090421152442.GB29083@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-25-git-send-email-mel@csn.ul.ie> <1240301043.771.56.camel@penberg-laptop> <20090421085229.GH12713@csn.ul.ie> <alpine.DEB.1.10.0904211107250.19969@qirst.com>
+	Tue, 21 Apr 2009 11:32:34 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:53421 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbZDUPcd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 11:32:33 -0400
+Date: Tue, 21 Apr 2009 21:01:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>, randy.dunlap@oracle.com, axboe@kernel.dk,
+       dradford@bluehost.com, akpm@linux-foundation.org, ngupta@google.com,
+       fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, roberto@unbit.it,
+       agk@sourceware.org, matt@bluehost.com,
+       containers@lists.linux-foundation.org, menage@google.com,
+       subrata@linux.vnet.ibm.com, eric.rannaud@gmail.com
+Subject: Re: [PATCH 3/9] bio-cgroup controller
+Message-ID: <20090421153137.GL19637@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-4-git-send-email-righi.andrea@gmail.com> <20090417102214.GC3896@balbir.in.ibm.com> <20090420.203540.104031006.ryov@valinux.co.jp> <20090420145658.GB13307@linux>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904211107250.19969@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090420145658.GB13307@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 11:08:46AM -0400, Christoph Lameter wrote:
-> On Tue, 21 Apr 2009, Mel Gorman wrote:
-> 
-> > Hmm, doh. This resorted when another patch existed that no longer exists
-> > due to difficulties. This patch only fixes whitespace now but I didn't fix
-> > the changelog.  I can either move it to the next set altogether where it
-> > does resort things or drop it on the grounds whitespace patches just muck
-> > with changelogs. I'm leaning towards the latter.
-> 
-> Where were we with that other patch? I vaguely recalling reworking the
-> other patch (gfp_zone I believe) to be calculated at compile time. Did I
-> drop this?
-> 
+* Andrea Righi <righi.andrea@gmail.com> [2009-04-20 16:56:59]:
 
-No, you didn't. I have a version still that's promising but doesn't currently
-work nor has been tested to show it really helps. It's on the long finger
-till pass 2 where it'll be high on the list to sort out.
+> On Mon, Apr 20, 2009 at 08:35:40PM +0900, Ryo Tsuruta wrote:
+> > > > +/*
+> > > > + * Assign "page" the same owner as "opage."
+> > > > + */
+> > > > +void bio_cgroup_copy_owner(struct page *npage, struct page *opage)
+> > > > +{
+> > > > +	struct page_cgroup *npc, *opc;
+> > > > +
+> > > > +	if (bio_cgroup_disabled())
+> > > > +		return;
+> > > > +	npc = lookup_page_cgroup(npage);
+> > > > +	if (unlikely(!npc))
+> > > > +		return;
+> > > > +	opc = lookup_page_cgroup(opage);
+> > > > +	if (unlikely(!opc))
+> > > > +		return;
+> > > > +
+> > > > +	/*
+> > > > +	 * Do this without any locks. The reason is the same as
+> > > > +	 * bio_cgroup_reset_owner().
+> > > > +	 */
+> > > > +	npc->bio_cgroup_id = opc->bio_cgroup_id;
+> > > 
+> > > What protects npc and opc?
+> > 
+> > As the same reason mentioned above, bio_cgroup_id can be updated
+> > without any locks, and npc and opc always point to page_cgroups.
+> > An integer variable can be set a new value at once on a system which
+> > can use RCU lock.
+> 
+> mmmh... I'm not sure about this. Actually you read opc->bio_cgroup_id
+> first and then write to npc->bio_cgroup_id, so it is not atomic at all.
+> So, you can read or set a wrong ID, but at least it should be always
+> consistent (the single read or write itself is atomic).
+
+Quick concern here, how long does it take for the data to become
+consistent? Can we have a group misuse the bandwidth during that time?
+What about conditions where you have a wrong ID, but the group
+associated with the wrong ID is gone?
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Balbir
