@@ -1,136 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZDUKbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbZDUKb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZDUKbK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 06:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZDUKay
+	id S1756991AbZDUKb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 06:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbZDUKbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 06:30:54 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47268 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753036AbZDUKax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 06:30:53 -0400
-Date: Tue, 21 Apr 2009 11:30:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 09/25] Calculate the migratetype for allocation only
-	once
-Message-ID: <20090421103048.GQ12713@csn.ul.ie>
-References: <20090421160729.F136.A69D9226@jp.fujitsu.com> <20090421083513.GC12713@csn.ul.ie> <20090421191344.F162.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 06:31:37 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:49933 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757077AbZDUKbf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 06:31:35 -0400
+Message-ID: <49EDA040.5040600@cosmosbay.com>
+Date: Tue, 21 Apr 2009 12:30:24 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090421191344.F162.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Amos Kong <jianjun@zeuux.org>
+CC: David Miller <davem@davemloft.net>, jon.lin@vatics.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.29.1 1/1] 8139too: fix HW initial flow
+References: <0E04AEADD178614A86F3017CC5FA693B4959924809@MS.vivotek.tw> <20090421.015235.23457775.davem@davemloft.net> <20090421094825.GA6752@ubuntu>
+In-Reply-To: <20090421094825.GA6752@ubuntu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 21 Apr 2009 12:30:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 07:19:00PM +0900, KOSAKI Motohiro wrote:
-> > On Tue, Apr 21, 2009 at 04:37:28PM +0900, KOSAKI Motohiro wrote:
-> > > > GFP mask is converted into a migratetype when deciding which pagelist to
-> > > > take a page from. However, it is happening multiple times per
-> > > > allocation, at least once per zone traversed. Calculate it once.
-> > > > 
-> > > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > > ---
-> > > >  mm/page_alloc.c |   43 ++++++++++++++++++++++++++-----------------
-> > > >  1 files changed, 26 insertions(+), 17 deletions(-)
-> > > > 
-> > > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > > index b27bcde..f960cf5 100644
-> > > > --- a/mm/page_alloc.c
-> > > > +++ b/mm/page_alloc.c
-> > > > @@ -1065,13 +1065,13 @@ void split_page(struct page *page, unsigned int order)
-> > > >   * or two.
-> > > >   */
-> > > >  static struct page *buffered_rmqueue(struct zone *preferred_zone,
-> > > > -			struct zone *zone, int order, gfp_t gfp_flags)
-> > > > +			struct zone *zone, int order, gfp_t gfp_flags,
-> > > > +			int migratetype)
-> > > >  {
-> > > >  	unsigned long flags;
-> > > >  	struct page *page;
-> > > >  	int cold = !!(gfp_flags & __GFP_COLD);
-> > > >  	int cpu;
-> > > > -	int migratetype = allocflags_to_migratetype(gfp_flags);
-> > > 
-> > > hmmm....
-> > > 
-> > > allocflags_to_migratetype() is very cheap function and buffered_rmqueue()
-> > > and other non-inline static function isn't guranteed inlined.
-> > > 
-> > 
-> > A later patch makes them inlined due to the fact there is only one call
-> > site.
+Amos Kong a écrit :
+> ...
+>>> Unfortunately, this address is used by Linux kernel. So kernel panics.
+>>> This patch fix it by setting up DMA buffer address before RX enabled and everything is fine even under broadcast packets attack.
+>>>
+>>> Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+>> This patch does not apply, it was corrupted by your email client.
+>>
+>> I even think it has MS-DOS style newlines in it :-(
 > 
-> Oh, I see.
-> I drop my claim. thanks.
-> 
-> > > -------------------------------------------------------------------
-> > > /* Convert GFP flags to their corresponding migrate type */
-> > > static inline int allocflags_to_migratetype(gfp_t gfp_flags)
-> > > {
-> > >         WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
-> > > 
-> > >         if (unlikely(page_group_by_mobility_disabled))
-> > >                 return MIGRATE_UNMOVABLE;
-> > > 
-> > >         /* Group based on mobility */
-> > >         return (((gfp_flags & __GFP_MOVABLE) != 0) << 1) |
-> > >                 ((gfp_flags & __GFP_RECLAIMABLE) != 0);
-> > > }
-> > > -------------------------------------------------------------------
-> > > 
-> > > s/WARN_ON/VM_BUG_ON/ is better?
-> > > 
-> > 
-> > I wanted to catch out-of-tree drivers but it's been a while so maybe VM_BUG_ON
-> > wouldn't hurt. I can add a patch that does that a pass 2 of improving the
-> > allocator or would you prefer to see it now?
-> 
-> no. another patch is better :)
+> Another new patch :)
 > 
 > 
-> > > GFP_MOVABLE_MASK makes 3. 3 mean MIGRATE_RESERVE. it seems obviously bug.
-> > > 
-> > 
-> > Short answer;
-> > No, GFP flags that result in MIGRATE_RESERVE is a bug. The caller should
-> > never want to be allocating from there.
-> > 
-> > Longer answer;
-> > The size of the MIGRATE_RESERVE depends on the number of free pages that
-> > must be kept in the zone. Because GFP flags never result in here, the
-> > area is only used when the alternative is to fail the allocation and the
-> > watermarks are still met. The intention is that high-order atomic
-> > allocations that were short lived may be allocated from here. This was
-> > to preserve a behaviour in the allocator before MIGRATE_RESERVE was
-> > introduced. It makes no sense for a caller to allocate directly out of
-> > here and in fact the fallback list for MIGRATE_RESERVE are useless
+>  While ifconfig eth0 up kernel calls open() of 8139 driver(8139too.c).
+>  In rtl8139_hw_start() of rtl8139_open(), 8139 driver enable RX before setting up the DMA
+>  buffer address. In this interval where RX was enabled and DMA buffer address is not yet set
+>  up, any incoming broadcast packet would be send to a strange physical address:
+>  0x003e8800 which is the default value of DMA buffer address.
+>  Unfortunately, this address is used by Linux kernel. So kernel panics.
+>  This patch fix it by setting up DMA buffer address before RX enabled and everything is fine
+>  even under broadcast packets attack.
 > 
-> Yeah.
-> My past mail is too poor. I agree it is caller's bug.
-> I mean VM_BUG_ON is better because
->   - obviously caller bug 
->   - VM_BUG_ON is no runtime impact when VM_DEBUG is off.
-> 
+> Signed-off-by: Jonathan Lin <jon.lin@vatics.com>
+> Signed-off-by: Amos Kong <jianjun@zeuux.org>
 
-Ah, I misread what you were saying. This is certainly a caller bug and I
-think it's safe to change it to a VM_BUG_ON() at this stage. I've taken
-note to do a patch to that effect in a later patch series.
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Thanks
+Thanks Amos and Jonathan
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> 
+> ---
+>  drivers/net/8139too.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+> index 29df398..1fc4543 100644
+> --- a/drivers/net/8139too.c
+> +++ b/drivers/net/8139too.c
+> @@ -1383,6 +1383,11 @@ static void rtl8139_hw_start (struct net_device *dev)
+>  	RTL_W32_F (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
+>  	RTL_W32_F (MAC0 + 4, le16_to_cpu (*(__le16 *) (dev->dev_addr + 4)));
+>  
+> +	tp->cur_rx = 0;
+> +
+> +	/* init Rx ring buffer DMA address */
+> +	RTL_W32_F (RxBuf, tp->rx_ring_dma);
+> +
+>  	/* Must enable Tx/Rx before setting transfer thresholds! */
+>  	RTL_W8 (ChipCmd, CmdRxEnb | CmdTxEnb);
+>  
+> @@ -1390,8 +1395,6 @@ static void rtl8139_hw_start (struct net_device *dev)
+>  	RTL_W32 (RxConfig, tp->rx_config);
+>  	RTL_W32 (TxConfig, rtl8139_tx_config);
+>  
+> -	tp->cur_rx = 0;
+> -
+>  	rtl_check_media (dev, 1);
+>  
+>  	if (tp->chipset >= CH_8139B) {
+> @@ -1406,9 +1409,6 @@ static void rtl8139_hw_start (struct net_device *dev)
+>  	/* Lock Config[01234] and BMCR register writes */
+>  	RTL_W8 (Cfg9346, Cfg9346_Lock);
+>  
+> -	/* init Rx ring buffer DMA address */
+> -	RTL_W32_F (RxBuf, tp->rx_ring_dma);
+> -
+>  	/* init Tx buffer DMA addresses */
+>  	for (i = 0; i < NUM_TX_DESC; i++)
+>  		RTL_W32_F (TxAddr0 + (i * 4), tp->tx_bufs_dma + (tp->tx_buf[i] - tp->tx_bufs));
+
+
