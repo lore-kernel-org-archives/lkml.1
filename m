@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZDUR4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZDUR7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbZDUR4S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 13:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZDUR4F
+	id S1754604AbZDUR7b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 13:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbZDUR7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 13:56:05 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46483 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750970AbZDUR4D (ORCPT
+	Tue, 21 Apr 2009 13:59:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37313 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZDUR7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 13:56:03 -0400
-Date: Tue, 21 Apr 2009 13:51:48 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Anders Kaseorg <andersk@MIT.EDU>, Jeffrey B Arnold <jbarnold@MIT.EDU>
-Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
-In-Reply-To: <200904192055.04213.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.1.10.0904191437250.31802@vinegar-pot.mit.edu>
-References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 21 Apr 2009 13:59:21 -0400
+Date: Tue, 21 Apr 2009 13:59:19 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: [PATCH 09/14] block: clean up request completion API
+Message-ID: <20090421175919.GA11671@infradead.org>
+References: <1240331881-28218-1-git-send-email-tj@kernel.org> <1240331881-28218-10-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240331881-28218-10-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Apr 2009, Rusty Russell wrote:
+>  /**
+> + * __blk_end_io - Generic end_io function to complete a request.
+>   * @rq:           the request being processed
+>   * @error:        %0 for success, < %0 for error
+>   * @nr_bytes:     number of bytes to complete @rq
+>   * @bidi_bytes:   number of bytes to complete @rq->next_rq
+> + * @locked:	  whether rq->q->queue_lock is held on entry
+>   *
+>   * Description:
+>   *     Ends I/O on a number of bytes attached to @rq and @rq->next_rq.
+>   *     If @rq has leftover, sets it up for the next range of segments.
+>   *
+>   * Return:
+> + *     %false - we are done with this request
+> + *     %true  - this request is not freed yet, it still has pending buffers.
+>   **/
+> +bool __blk_end_io(struct request *rq, int error, unsigned int nr_bytes,
+> +		  unsigned int bidi_bytes, bool locked)
+>  {
+>  	struct request_queue *q = rq->q;
+>  	unsigned long flags = 0UL;
+>  
+> +	if (blk_update_request(rq, error, nr_bytes))
+> +		return true;
+>  
+> +	/* Bidi request must be completed as a whole */
+> +	if (unlikely(blk_bidi_rq(rq)) &&
+> +	    blk_update_request(rq->next_rq, error, bidi_bytes))
+> +		return true;
+>  
+>  	add_disk_randomness(rq->rq_disk);
+>  
+> +	if (!locked) {
+> +		spin_lock_irqsave(q->queue_lock, flags);
+> +		finish_request(rq, error);
+> +		spin_unlock_irqrestore(q->queue_lock, flags);
+> +	} else
+> +		finish_request(rq, error);
+>  
+> +	return false;
+>  }
+> +EXPORT_SYMBOL_GPL(__blk_end_io);
 
-> I think you need to do something else in general.  Share the module_mutex for
-> the ftrace code?  The ksplice guys have a similar issue, so maybe we should
-> generalize this into a "kernel_text" mutex?
+That's really ugly code due to the locked argument.  Just make a helper
+for all code down to add_disk_randomness, and have two different
+functions call that and finish_request +/- the locking.
 
-Yes, a kernel_text mutex is on my list of things to propose once Ksplice 
-gets merged.
-
-There are at present several systems that modify the kernel text after a 
-machine is booted (e.g. dynamic ftrace and toggling of smp_locks when 
-hotplugging a cpu).  Currently, they avoid stepping on each other by only 
-making changes inside stop_machine.
-
-However, Ksplice does its run-pre matching checks outside stop_machine, 
-and Ksplice needs a way to prevent e.g. dynamic ftrace from changing the 
-code out from under it between those checks and actually applying the 
-patches [1].  A kernel_text mutex would be a reasonable solution to this 
-problem.
-
-	-Tim Abbott
-
-[1] At present this isn't a real problem because Ksplice and ftrace 
-conflict with each other for unrelated reasons.
