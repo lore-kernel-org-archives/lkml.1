@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbZDUXRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZDUXTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752484AbZDUXRv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 19:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZDUXRj
+	id S1756620AbZDUXTI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 19:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZDUXSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 19:17:39 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:27012 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932AbZDUXRh (ORCPT
+	Tue, 21 Apr 2009 19:18:50 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:41066 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbZDUXSs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 19:17:37 -0400
-X-IronPort-AV: E=Sophos;i="4.40,226,1238976000"; 
-   d="scan'208";a="157417744"
-Date: Tue, 21 Apr 2009 16:17:28 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 21 Apr 2009 19:18:48 -0400
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Ming Lei <tom.leiming@gmail.com>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Wed, 22 Apr 2009 01:21:10 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28; KDE/4.2.2; x86_64; ; )
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       David Brownell <david-b@pacbell.net>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421231728.GB29555@cuplxvomd02.corp.sa.net>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net> <20090421064346.GB8020@elte.hu> <200904210013.48551.david-b@pacbell.net> <1240333871.3632.70.camel@macbook.infradead.org> <alpine.LFD.2.00.0904211016190.2199@localhost.localdomain> <20090421202501.26a44f9d@lxorguk.ukuu.org.uk>
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       video4linux-list@redhat.com, mchehab@infradead.org
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <200904202208.23899.laurent.pinchart@skynet.be> <d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
+In-Reply-To: <d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090421202501.26a44f9d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Message-Id: <200904220121.12002.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 08:25:01PM +0100, Alan Cox wrote:
-> > Anybody want to try it? Just make it ignore any IO if there are no 
-> > registered consoles. The patch shouldn't even be all that big, I suspect.
-> 
-> It will work, but on its own it won't actually fix the problem people
-> have, which is wanting to wait for a real console to appear. Extending it
-> to sleep (if not O_NDELAY) and loop back through the list when the list
-> changes would however do the trick, that or a tty device that buffers
-> then spews into the real device when it appears.
-> 
-> Definitely the right path, and we almost have every tty device in
-> existance containing a struct tty_port, at which point it gets even
-> cleaner.
-> 
-> The printk() console needs to buffer up data and replay it but we already
-> pretty much do what is needed even for vt consoles because the fb isn't
-> ready before the first printk.
+Hi,
 
-We're already good on printk, the size of log_buf is configurable and log_buf
-is dumped to each console as it gets registered. Even then, printk output is
-not an especially big issue since you have dmesg to get to anything you
-might have missed.
+On Tuesday 21 April 2009 03:47:34 Ming Lei wrote:
+> 2009/4/21 Laurent Pinchart <laurent.pinchart@skynet.be>:
+> > On Saturday 18 April 2009 06:51:11 leiming wrote:
+> >> On Fri, 17 Apr 2009 19:55:29 -0700 (PDT)
+> >>
+> >> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >> > > @@ -742,7 +742,7 @@ static int uvc_alloc_urb_buffers(struct
+> >> > > uvc_video_device *video,
+> >> > >   /* Buffers are already allocated, bail out. */
+> >> > >   if (video->urb_size)
+> >> > > -         return 0;
+> >> > > +         return DIV_ROUND_UP(video->urb_size, psize);
+> >> >
+> >> > I don't think this is right. It should round _down_.
+> >> >
+> >> > It's supposed to return 'npackets', but if you pass it a different
+> >> > packet size than it was passed originally, it can now return a
+> >> > potentially bigger number than the already allocated buffer, no?
+> >> >
+> >> > So I think it should round down (ie use a regular divide). No?
+> >>
+> >> Yes,you are correct, please ignore my last reply, and following is
+> >> the fixed patch.
+> >
+> > psize and video->urb_size shouldn't have changed before and after resume,
+> > otherwise we'll get into trouble anyway. A regular divide and a round-up
+> > divide should then return the same result. I'll take the regular divide,
+> > as it will be more efficient.
+>
+> Yes.
+>
+> >> Thanks.
+> >>
+> >> From a3b3d72cdd57a0699fb643b41b78eb7beb211ff5 Mon Sep 17 00:00:00 2001
+> >> From: Ming Lei <tom.leiming@gmail.com>
+> >> Date: Wed, 15 Apr 2009 22:32:51 +0800
+> >> Subject: [PATCH] V4L/DVB:usbvideo:fix uvc resume failed(v2)
+> >>
+> >> Now urb buffers is not freed before suspend, so uvc_alloc_urb_buffers
+> >> should return packet counts allocated originally during uvc resume
+> >> , instead of zero.
+> >>
+> >> This version uses round down to return packet counts on Linus's
+> >> suggestions, or else may lead to buffer destructed if packet size
+> >> is changed before calling uvc_alloc_urb_buffers() in this kind of
+> >> case.
+> >
+> > The comment is misleading. If the packet size changes we need to
+> > reallocate the buffers anyway. Have you checked if the packet size (which
+> > depends on the endpoint being selected) can be changed between suspend
+> > and resume, either by the uvcvideo driver (I don't think it can) or the
+> > USB core ?
+>
+> The packet size does not change between suspend and resume.  I mean
+> uvc_alloc_urb_buffers() still can be used in other cases if buffers was not
+> freed and is reuesed in future. It seems there is no such cases in uvcvideo
+> now, but uvc_alloc_urb_buffers() really __can__ work in such case, isn't it?
+>
+> IMHO It is only used to allocate or reserve UVC_URBS usb buffers, which size
+> is video->urb_size, and npackets can be shortened or enlarged if psize is
+> changed, after all.
 
-Other the other hand, userspace output is not buffered and has the potential
-to be much larger. Any approach that buffers it risks either truncation or
-gobbling up memory. There is also the human factors issue that users will
-pretty much ignore printk output because they don't particularly understand
-it. They understand, and expect to see, the output they generate. I'm pretty
-sure they won't like for it to go missing under mysterious circumstances.
+You're right. Patch applied, thanks.
 
-David VomLehn
+Best regards,
+
+Laurent Pinchart
+
