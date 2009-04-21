@@ -1,490 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbZDUQnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbZDUQoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbZDUQnY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 12:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZDUQj5
+	id S1757649AbZDUQoh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 12:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757839AbZDUQn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 12:39:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38852 "EHLO hera.kernel.org"
+	Tue, 21 Apr 2009 12:43:59 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:58976 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756922AbZDUQjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 12:39:54 -0400
-From: Tejun Heo <tj@kernel.org>
-To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
-Cc: Tejun Heo <tj@kernel.org>, Russell King <rmk@arm.linux.org.uk>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Mike Miller <mike.miller@hp.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Alex Dubov <oakad@yahoo.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 11/14] block: implement and use [__]blk_end_request_all()
-Date: Wed, 22 Apr 2009 01:37:58 +0900
-Message-Id: <1240331881-28218-12-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1240331881-28218-1-git-send-email-tj@kernel.org>
-References: <1240331881-28218-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Apr 2009 16:38:15 +0000 (UTC)
+	id S1757825AbZDUQn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 12:43:57 -0400
+Date: Tue, 21 Apr 2009 09:43:50 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       jeff.chua.linux@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+Message-ID: <20090421094350.1e00207a@nehalam>
+In-Reply-To: <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>
+References: <alpine.LFD.2.00.0904151705120.4042@localhost.localdomain>
+	<49E72E83.50702@trash.net>
+	<20090416.153354.170676392.davem@davemloft.net>
+	<20090416234955.GL6924@linux.vnet.ibm.com>
+	<20090417012812.GA25534@linux.vnet.ibm.com>
+	<20090418094001.GA2369@ioremap.net>
+	<20090418141455.GA7082@linux.vnet.ibm.com>
+	<20090420103414.1b4c490f@nehalam>
+	<49ECBE0A.7010303@cosmosbay.com>
+	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>
+	<20090420215827.GK6822@linux.vnet.ibm.com>
+	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>
+	<20090420160121.268a8226@nehalam>
+	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are many [__]blk_end_request() call sites which call it with
-full request length and expect full completion.  Many of them ensure
-that the request actually completes by doing BUG_ON() the return
-value, which is awkward and error-prone.
+On Tue, 21 Apr 2009 09:13:52 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-This patch adds [__]blk_end_request_all() which takes @rq and @error
-and fully completes the request.  BUG_ON() is added to to ensure that
-this actually happens.
+> 
+> Ok, so others already pointed out how dangerous/buggy this looks, but I'd 
+> like to strengthen that a bit more:
+> 
+> On Mon, 20 Apr 2009, Stephen Hemminger wrote:
+> > +
+> > +/**
+> > + * xt_table_info_rdlock_bh - recursive read lock for xt table info
+> > + *
+> > + * Table processing calls this to hold off any changes to table
+> > + * (on current CPU). Always leaves with bottom half disabled.
+> > + * If called recursively, then assumes bh/preempt already disabled.
+> > + */
+> > +void xt_info_rdlock_bh(void)
+> > +{
+> > +	struct xt_info_lock *lock;
+> > +
+> > +	preempt_disable();
+> > +	lock = &__get_cpu_var(xt_info_locks);
+> > +	if (likely(++lock->depth == 0))
+> > +		spin_lock_bh(&lock->lock);
+> > +	preempt_enable_no_resched();
+> > +}
+> > +EXPORT_SYMBOL_GPL(xt_info_rdlock_bh);
+> 
+> This function is FUCKED UP.
+> 
+> It's total crap for several reasons"
+> 
+>  - the already-mentioned race with bottom half locking.
+> 
+>    If bottom halfs aren't already disabled, then if a bottom half comes in 
+>    after the "++lock->depth" and before the spin_lock_bh(), then you will 
+>    have no locking AT ALL for the processing of that bottom half - it will 
+>    just increment the lock depth again, and nobody will have locked 
+>    anything at all.
+> 
+>    And if for some reason, you can prove that bottom half processing is 
+>    already disabled, then ALL THAT OTHER CRAP is just that - CRAP. The 
+>    whole preemption disabling, the whole "_bh()" thing, everything.
+> 
+>    So either it's horribly buggy, or it's horribly broken and pointless. 
+>    Take your pick.
+> 
+>  - the total lack of comments. Why does that "count" protect anything? 
+>    It's not a recursive lock, since there is no ownership (two 
+>    independent accessors could call this and both "get" the lock), so you 
+>    had damn well better create some big-ass comments about why it's ok in 
+>    this case, and what the rules are that make it ok.
+> 
+>    So DON'T GO AROUND CALLING IT A RECURSIVE LOCK! Don't write comments 
+>    that are TOTAL AND UTTER SH*T! Just DON'T!
+> 
+>    It's a "reader lock". It's not "recursive".  It never was recursive, it 
+>    never will be, and calling it that is just a sign that whoever wrote 
+>    the function is a moron and doesn't know what he is doing. STOP DOING THIS!
+> 
+>  - that _idiotic_ "preempt_enable_no_resched()". F*ck me, but the comment 
+>    already says that preemption is disabled when exiting, so why does it 
+>    even bother to enable it? Why play those mindless games with preemption 
+>    counts, knowing that they are bogus?
+> 
+>    Do it readably. Disable preemption first, and just re-enable it at 
+>    UNLOCK time. No odd pseudo-reenables anywhere.
+> 
+> Oh, I know very well that the spli-locking will disable preemption, so 
+> it's "correct" to play those games, but the point is, it's just damn 
+> stupid and annoying. It just makes the source code actively _misleading_ 
+> to see crap like that - it looks like you enabled preemption, when in fact 
+> the code very much on purpose does _not_ enable preemption at all. 
+> 
+> In other words, I really REALLY hate that patch. I think it looks slightly 
+> better than Eric Dumazet's original patch (at least the locking subtlety 
+> is now in a function of its own and _could_ be commented upon sanely and 
+> if it wasn't broken it might be acceptable), but quite frankly, I'd still 
+> horribly disgusted with the crap.
+> 
+> Why are you doing this insane thing? If you want a read-lock, just use the 
+> damned read-write locks already! Ad far as I can tell, this lock is in 
+> _no_ way better than just using those counting reader-writer locks, except 
+> it is open-coded and looks buggy.
+> 
+> There is basically _never_ a good reason to re-implement locking 
+> primitives: you'll just introduce bugs. As proven very ably by the amount 
+> of crap above in what is supposed to be a very simple function.
+> 
+> If you want a counting read-lock (in _order_ to allow recursion, but not 
+> because the lock itself is somehow recursive!), then that function should 
+> look like this:
+> 
+> 	void xt_info_rdlock_bh(void)
+> 	{
+> 		struct xt_info_lock *lock
+> 
+> 		local_bh_disable();
+> 		lock = &__get_cpu_var(xt_info_locks);
+> 		read_lock(&lock->lock);
+> 	}
+> 
+> And then the "unlock" should be the reverse. No games, no crap, and 
+> hopefully then no bugs. And if you do it that way, you don't even need the 
+> comments, although quite frankly, it probably makes a lot of sense to talk 
+> about the interaction between "local_bh_disable()" and the preempt count, 
+> and why you're not using "read_lock_bh()".
+> 
+> And if you don't want a read-lock, then fine - don't use a read-lock, do 
+> something else. But then don't just re-implement it (badly) either and 
+> call it something else!
+> 
+> 			Linus
+> 
+> PS: Ingo, why do the *_bh() functions in kernel/spinlock.c do _both_ a 
+> "local_bh_disable()" and a "preempt_disable()"? BH disable should disable 
+> preemption too, no? Or am I confused? In which case we need that in 
+> the above rdlock_bh too.
 
-Most conversions are simple but there are a few noteworthy ones.
-
-* cdrom/viocd: viocd_end_request() replaced with direct calls to
-  __blk_end_request_all().
-
-* s390/block/dasd: dasd_end_request() replaced with direct calls to
-  __blk_end_request_all().
-
-* s390/char/tape_block: tapeblock_end_request() replaced with direct
-  calls to blk_end_request_all().
-
-[ Impact: cleanup ]
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Mike Miller <mike.miller@hp.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Alex Dubov <oakad@yahoo.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- arch/arm/plat-omap/mailbox.c        |   11 +++--------
- block/blk-barrier.c                 |    9 ++-------
- block/blk-core.c                    |    2 +-
- block/elevator.c                    |    2 +-
- drivers/block/cpqarray.c            |    3 +--
- drivers/block/sx8.c                 |    3 +--
- drivers/block/virtio_blk.c          |    2 +-
- drivers/block/xen-blkfront.c        |    4 +---
- drivers/cdrom/gdrom.c               |    2 +-
- drivers/cdrom/viocd.c               |   25 ++++---------------------
- drivers/memstick/core/mspro_block.c |    2 +-
- drivers/s390/block/dasd.c           |   17 ++++-------------
- drivers/s390/char/tape_block.c      |   15 ++++-----------
- drivers/scsi/scsi_lib.c             |    2 +-
- include/linux/blkdev.h              |   32 ++++++++++++++++++++++++++++++++
- 15 files changed, 58 insertions(+), 73 deletions(-)
-
-diff --git a/arch/arm/plat-omap/mailbox.c b/arch/arm/plat-omap/mailbox.c
-index 0abfbaa..cf81bad 100644
---- a/arch/arm/plat-omap/mailbox.c
-+++ b/arch/arm/plat-omap/mailbox.c
-@@ -192,8 +192,7 @@ static void mbox_tx_work(struct work_struct *work)
- 		}
- 
- 		spin_lock(q->queue_lock);
--		if (__blk_end_request(rq, 0, 0))
--			BUG();
-+		__blk_end_request_all(rq, 0);
- 		spin_unlock(q->queue_lock);
- 	}
- }
-@@ -224,10 +223,7 @@ static void mbox_rx_work(struct work_struct *work)
- 			break;
- 
- 		msg = (mbox_msg_t) rq->data;
--
--		if (blk_end_request(rq, 0, 0))
--			BUG();
--
-+		blk_end_request_all(rq, 0);
- 		mbox->rxq->callback((void *)msg);
- 	}
- }
-@@ -337,8 +333,7 @@ omap_mbox_read(struct device *dev, struct device_attribute *attr, char *buf)
- 
- 		*p = (mbox_msg_t) rq->data;
- 
--		if (blk_end_request(rq, 0, 0))
--			BUG();
-+		blk_end_request_all(rq, 0);
- 
- 		if (unlikely(mbox_seq_test(mbox, *p))) {
- 			pr_info("mbox: Illegal seq bit!(%08x) ignored\n", *p);
-diff --git a/block/blk-barrier.c b/block/blk-barrier.c
-index 20b4111..c8d0876 100644
---- a/block/blk-barrier.c
-+++ b/block/blk-barrier.c
-@@ -106,10 +106,7 @@ bool blk_ordered_complete_seq(struct request_queue *q, unsigned seq, int error)
- 	 */
- 	q->ordseq = 0;
- 	rq = q->orig_bar_rq;
--
--	if (__blk_end_request(rq, q->orderr, blk_rq_bytes(rq)))
--		BUG();
--
-+	__blk_end_request_all(rq, q->orderr);
- 	return true;
- }
- 
-@@ -252,9 +249,7 @@ bool blk_do_ordered(struct request_queue *q, struct request **rqp)
- 			 * with prejudice.
- 			 */
- 			elv_dequeue_request(q, rq);
--			if (__blk_end_request(rq, -EOPNOTSUPP,
--					      blk_rq_bytes(rq)))
--				BUG();
-+			__blk_end_request_all(rq, -EOPNOTSUPP);
- 			*rqp = NULL;
- 			return false;
- 		}
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 4b39e9e..b7c9464 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1778,7 +1778,7 @@ struct request *elv_next_request(struct request_queue *q)
- 			break;
- 		} else if (ret == BLKPREP_KILL) {
- 			rq->cmd_flags |= REQ_QUIET;
--			__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
-+			__blk_end_request_all(rq, -EIO);
- 		} else {
- 			printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
- 			break;
-diff --git a/block/elevator.c b/block/elevator.c
-index b03b875..1af5d9f 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -810,7 +810,7 @@ void elv_abort_queue(struct request_queue *q)
- 		rq = list_entry_rq(q->queue_head.next);
- 		rq->cmd_flags |= REQ_QUIET;
- 		trace_block_rq_abort(q, rq);
--		__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
-+		__blk_end_request_all(rq, -EIO);
- 	}
- }
- EXPORT_SYMBOL(elv_abort_queue);
-diff --git a/drivers/block/cpqarray.c b/drivers/block/cpqarray.c
-index ca268ca..488a8f4 100644
---- a/drivers/block/cpqarray.c
-+++ b/drivers/block/cpqarray.c
-@@ -1024,8 +1024,7 @@ static inline void complete_command(cmdlist_t *cmd, int timeout)
- 				cmd->req.sg[i].size, ddir);
- 
- 	DBGPX(printk("Done with %p\n", rq););
--	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
--		BUG();
-+	__blk_end_request_all(rq, error);
- }
- 
- /*
-diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
-index ff0448e..60e85bb 100644
---- a/drivers/block/sx8.c
-+++ b/drivers/block/sx8.c
-@@ -749,8 +749,7 @@ static inline void carm_end_request_queued(struct carm_host *host,
- 	struct request *req = crq->rq;
- 	int rc;
- 
--	rc = __blk_end_request(req, error, blk_rq_bytes(req));
--	assert(rc == 0);
-+	__blk_end_request_all(req, error);
- 
- 	rc = carm_put_request(host, crq);
- 	assert(rc == 0);
-diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-index 5d34764..50745e6 100644
---- a/drivers/block/virtio_blk.c
-+++ b/drivers/block/virtio_blk.c
-@@ -62,7 +62,7 @@ static void blk_done(struct virtqueue *vq)
- 			break;
- 		}
- 
--		__blk_end_request(vbr->req, error, blk_rq_bytes(vbr->req));
-+		__blk_end_request_all(vbr->req, error);
- 		list_del(&vbr->list);
- 		mempool_free(vbr, vblk->pool);
- 	}
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-index 8f90508..cd6cfe3 100644
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -551,7 +551,6 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
- 
- 	for (i = info->ring.rsp_cons; i != rp; i++) {
- 		unsigned long id;
--		int ret;
- 
- 		bret = RING_GET_RESPONSE(&info->ring, i);
- 		id   = bret->id;
-@@ -578,8 +577,7 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
- 				dev_dbg(&info->xbdev->dev, "Bad return from blkdev data "
- 					"request: %x\n", bret->status);
- 
--			ret = __blk_end_request(req, error, blk_rq_bytes(req));
--			BUG_ON(ret);
-+			__blk_end_request_all(req, error);
- 			break;
- 		default:
- 			BUG();
-diff --git a/drivers/cdrom/gdrom.c b/drivers/cdrom/gdrom.c
-index 2eecb77..fee9a9e 100644
---- a/drivers/cdrom/gdrom.c
-+++ b/drivers/cdrom/gdrom.c
-@@ -632,7 +632,7 @@ static void gdrom_readdisk_dma(struct work_struct *work)
- 		* before handling ending the request */
- 		spin_lock(&gdrom_lock);
- 		list_del_init(&req->queuelist);
--		__blk_end_request(req, err, blk_rq_bytes(req));
-+		__blk_end_request_all(req, err);
- 	}
- 	spin_unlock(&gdrom_lock);
- 	kfree(read_command);
-diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
-index 1392935..cc3efa0 100644
---- a/drivers/cdrom/viocd.c
-+++ b/drivers/cdrom/viocd.c
-@@ -291,23 +291,6 @@ static int send_request(struct request *req)
- 	return 0;
- }
- 
--static void viocd_end_request(struct request *req, int error)
--{
--	int nsectors = req->hard_nr_sectors;
--
--	/*
--	 * Make sure it's fully ended, and ensure that we process
--	 * at least one sector.
--	 */
--	if (blk_pc_request(req))
--		nsectors = (req->data_len + 511) >> 9;
--	if (!nsectors)
--		nsectors = 1;
--
--	if (__blk_end_request(req, error, nsectors << 9))
--		BUG();
--}
--
- static int rwreq;
- 
- static void do_viocd_request(struct request_queue *q)
-@@ -316,11 +299,11 @@ static void do_viocd_request(struct request_queue *q)
- 
- 	while ((rwreq == 0) && ((req = elv_next_request(q)) != NULL)) {
- 		if (!blk_fs_request(req))
--			viocd_end_request(req, -EIO);
-+			__blk_end_request_all(req, -EIO);
- 		else if (send_request(req) < 0) {
- 			printk(VIOCD_KERN_WARNING
- 					"unable to send message to OS/400!");
--			viocd_end_request(req, -EIO);
-+			__blk_end_request_all(req, -EIO);
- 		} else
- 			rwreq++;
- 	}
-@@ -531,9 +514,9 @@ return_complete:
- 					"with rc %d:0x%04X: %s\n",
- 					req, event->xRc,
- 					bevent->sub_result, err->msg);
--			viocd_end_request(req, -EIO);
-+			__blk_end_request_all(req, -EIO);
- 		} else
--			viocd_end_request(req, 0);
-+			__blk_end_request_all(req, 0);
- 
- 		/* restart handling of incoming requests */
- 		spin_unlock_irqrestore(&viocd_reqlock, flags);
-diff --git a/drivers/memstick/core/mspro_block.c b/drivers/memstick/core/mspro_block.c
-index de143de..a416346 100644
---- a/drivers/memstick/core/mspro_block.c
-+++ b/drivers/memstick/core/mspro_block.c
-@@ -826,7 +826,7 @@ static void mspro_block_submit_req(struct request_queue *q)
- 
- 	if (msb->eject) {
- 		while ((req = elv_next_request(q)) != NULL)
--			__blk_end_request(req, -ENODEV, blk_rq_bytes(req));
-+			__blk_end_request_all(req, -ENODEV);
- 
- 		return;
- 	}
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index d181527..fabec95 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -1614,15 +1614,6 @@ void dasd_block_clear_timer(struct dasd_block *block)
- }
- 
- /*
-- * posts the buffer_cache about a finalized request
-- */
--static inline void dasd_end_request(struct request *req, int error)
--{
--	if (__blk_end_request(req, error, blk_rq_bytes(req)))
--		BUG();
--}
--
--/*
-  * Process finished error recovery ccw.
-  */
- static inline void __dasd_block_process_erp(struct dasd_block *block,
-@@ -1676,7 +1667,7 @@ static void __dasd_process_request_queue(struct dasd_block *block)
- 				      "Rejecting write request %p",
- 				      req);
- 			blkdev_dequeue_request(req);
--			dasd_end_request(req, -EIO);
-+			__blk_end_request_all(req, -EIO);
- 			continue;
- 		}
- 		cqr = basedev->discipline->build_cp(basedev, block, req);
-@@ -1705,7 +1696,7 @@ static void __dasd_process_request_queue(struct dasd_block *block)
- 				      "on request %p",
- 				      PTR_ERR(cqr), req);
- 			blkdev_dequeue_request(req);
--			dasd_end_request(req, -EIO);
-+			__blk_end_request_all(req, -EIO);
- 			continue;
- 		}
- 		/*
-@@ -1731,7 +1722,7 @@ static void __dasd_cleanup_cqr(struct dasd_ccw_req *cqr)
- 	status = cqr->block->base->discipline->free_cp(cqr, req);
- 	if (status <= 0)
- 		error = status ? status : -EIO;
--	dasd_end_request(req, error);
-+	__blk_end_request_all(req, error);
- }
- 
- /*
-@@ -2040,7 +2031,7 @@ static void dasd_flush_request_queue(struct dasd_block *block)
- 	spin_lock_irq(&block->request_queue_lock);
- 	while ((req = elv_next_request(block->request_queue))) {
- 		blkdev_dequeue_request(req);
--		dasd_end_request(req, -EIO);
-+		__blk_end_request_all(req, -EIO);
- 	}
- 	spin_unlock_irq(&block->request_queue_lock);
- }
-diff --git a/drivers/s390/char/tape_block.c b/drivers/s390/char/tape_block.c
-index f32e89e..86596d3 100644
---- a/drivers/s390/char/tape_block.c
-+++ b/drivers/s390/char/tape_block.c
-@@ -74,13 +74,6 @@ tapeblock_trigger_requeue(struct tape_device *device)
-  * Post finished request.
-  */
- static void
--tapeblock_end_request(struct request *req, int error)
--{
--	if (blk_end_request(req, error, blk_rq_bytes(req)))
--		BUG();
--}
--
--static void
- __tapeblock_end_request(struct tape_request *ccw_req, void *data)
- {
- 	struct tape_device *device;
-@@ -90,7 +83,7 @@ __tapeblock_end_request(struct tape_request *ccw_req, void *data)
- 
- 	device = ccw_req->device;
- 	req = (struct request *) data;
--	tapeblock_end_request(req, (ccw_req->rc == 0) ? 0 : -EIO);
-+	blk_end_request_all(req, (ccw_req->rc == 0) ? 0 : -EIO);
- 	if (ccw_req->rc == 0)
- 		/* Update position. */
- 		device->blk_data.block_position =
-@@ -118,7 +111,7 @@ tapeblock_start_request(struct tape_device *device, struct request *req)
- 	ccw_req = device->discipline->bread(device, req);
- 	if (IS_ERR(ccw_req)) {
- 		DBF_EVENT(1, "TBLOCK: bread failed\n");
--		tapeblock_end_request(req, -EIO);
-+		blk_end_request_all(req, -EIO);
- 		return PTR_ERR(ccw_req);
- 	}
- 	ccw_req->callback = __tapeblock_end_request;
-@@ -131,7 +124,7 @@ tapeblock_start_request(struct tape_device *device, struct request *req)
- 		 * Start/enqueueing failed. No retries in
- 		 * this case.
- 		 */
--		tapeblock_end_request(req, -EIO);
-+		blk_end_request_all(req, -EIO);
- 		device->discipline->free_bread(ccw_req);
- 	}
- 
-@@ -177,7 +170,7 @@ tapeblock_requeue(struct work_struct *work) {
- 			DBF_EVENT(1, "TBLOCK: Rejecting write request\n");
- 			blkdev_dequeue_request(req);
- 			spin_unlock_irq(&device->blk_data.request_queue_lock);
--			tapeblock_end_request(req, -EIO);
-+			blk_end_request_all(req, -EIO);
- 			spin_lock_irq(&device->blk_data.request_queue_lock);
- 			continue;
- 		}
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index d1cb64a..756ac7c 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -922,7 +922,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- 			if (driver_byte(result) & DRIVER_SENSE)
- 				scsi_print_sense("", cmd);
- 		}
--		blk_end_request(req, -EIO, blk_rq_bytes(req));
-+		blk_end_request_all(req, -EIO);
- 		scsi_next_command(cmd);
- 		break;
- 	case ACTION_REPREP:
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 0d94ad6..0a5f383 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -879,6 +879,22 @@ static inline bool blk_end_request(struct request *rq, int error,
- }
- 
- /**
-+ * blk_end_request_all - Helper function for drives to finish the request.
-+ * @rq: the request to finish
-+ * @err: %0 for success, < %0 for error
-+ *
-+ * Description:
-+ *     Completely finish @rq.
-+ */
-+static inline void blk_end_request_all(struct request *rq, int error)
-+{
-+	bool pending;
-+
-+	pending = blk_end_request(rq, error, blk_rq_bytes(rq));
-+	BUG_ON(pending);
-+}
-+
-+/**
-  * __blk_end_request - Helper function for drivers to complete the request.
-  * @rq:       the request being processed
-  * @error:    %0 for success, < %0 for error
-@@ -898,6 +914,22 @@ static inline bool __blk_end_request(struct request *rq, int error,
- }
- 
- /**
-+ * __blk_end_request_all - Helper function for drives to finish the request.
-+ * @rq: the request to finish
-+ * @err: %0 for success, < %0 for error
-+ *
-+ * Description:
-+ *     Completely finish @rq.  Must be called with queue lock held.
-+ */
-+static inline void __blk_end_request_all(struct request *rq, int error)
-+{
-+	bool pending;
-+
-+	pending = __blk_end_request(rq, error, blk_rq_bytes(rq));
-+	BUG_ON(pending);
-+}
-+
-+/**
-  * blk_end_bidi_request - Helper function for drivers to complete bidi request.
-  * @rq:         the bidi request being processed
-  * @error:      %0 for success, < %0 for error
--- 
-1.6.0.2
+Ah a nice day, with Linus giving constructive feedback. Too bad he has
+to channel it out of the dark side.
 
