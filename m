@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZDUIXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZDUIYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbZDUIXf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZDUIXS
+	id S1754302AbZDUIYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZDUIXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:23:18 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:34652 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZDUIXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:23:17 -0400
-Date: Tue, 21 Apr 2009 10:25:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Simek <michal.simek@petalogix.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-arch@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Microblaze noMMU/MMU merge
-Message-ID: <20090421082523.GA19864@uranus.ravnborg.org>
-References: <49ED79AB.10004@petalogix.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 21 Apr 2009 04:23:24 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42096 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753248AbZDUIXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 04:23:22 -0400
+Date: Tue, 21 Apr 2009 09:23:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 08/25] Calculate the preferred zone for allocation only
+	once
+Message-ID: <20090421082318.GA12713@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-9-git-send-email-mel@csn.ul.ie> <20090421155256.F133.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <49ED79AB.10004@petalogix.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090421155256.F133.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 09:45:47AM +0200, Michal Simek wrote:
-> Hi All,
+On Tue, Apr 21, 2009 at 04:03:59PM +0900, KOSAKI Motohiro wrote:
+> > get_page_from_freelist() can be called multiple times for an allocation.
+> > Part of this calculates the preferred_zone which is the first usable
+> > zone in the zonelist. This patch calculates preferred_zone once.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 > 
-> I would like to say your opinion about putting together Microblaze MMU
-> arch to noMMU version.
+> I'm not sure this patch improve performance largely or not.
+> but I don't find the bug.
 > 
-> In C code will be #ifdef CONFIG_MMU ... #endif  or #ifndef.
-> 
-> Here is proposal for headers. The similar style is used in m68k but I
-> would like to have the same code
-> for both archs in main file.
-> 
-> #ifndef _ASM_MICROBLAZE_PAGE_H
-> #define _ASM_MICROBLAZE_PAGE_H
-> 
-> code for noMMU and MMU which is the same for both.
-> 
-> #ifdef __uClinux__
-> #include "page_no.h" -> noMMU specific
-> #else
-> #include "page_mm.h"-> MMU specific
-> #endif
-> #endif /* _ASM_MICROBLAZE_PAGE_H */
 
-Use dedicated header files for nommu / mmu only when it is really necessary.
+It's pretty small. In most cases, the preferred zone is going to be the
+first one but in cases where it's not, this avoids walking the beginning
+of the zonelist multiple times. How much time saved depends on the
+number of times get_page_from_freelist() is called. It would be twice
+for most of the systems early lifetime as the slower paths are not
+entered but cost more when the system is lower on memory.
 
-In headers that are _NOT_ exported you can use CONFIG_MMU to test
-if you are building for MMU or not - which is more readable.
- 
-The reason why you cannot use CONFIG_MMU in exported headers
-are that CONFIG_MMU is not valid in the userspace headers (not set/unset).
+> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
 
-In the optimal case you have no conditionals in the exported haders
-and then just use CONFIG_MMU all over.
+Thanks very much for these reviews.
 
-	Sam
+> 
+> 
+> 
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
