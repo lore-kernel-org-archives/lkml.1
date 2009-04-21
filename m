@@ -1,53 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbZDUUhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZDUUk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbZDUUhJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 16:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZDUUg4
+	id S1756007AbZDUUk0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 16:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZDUUkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 16:36:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:52642 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbZDUUgz (ORCPT
+	Tue, 21 Apr 2009 16:40:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56170 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752660AbZDUUkJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 16:36:55 -0400
-Subject: Re: [PATCH 12/14] block: replace end_request() with
-	[__]blk_end_request_cur()
-From: Laurent Vivier <Laurent@lvivier.info>
-To: Tejun Heo <tj@kernel.org>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       Joerg Dorchain <joerg@dorchain.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, Tim Waugh <tim@cyberelk.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Markus Lidel <Markus.Lidel@shadowconnect.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Pete Zaitcev <zaitcev@redhat.com>, unsik Kim <donari75@gmail.com>
-In-Reply-To: <1240331881-28218-13-git-send-email-tj@kernel.org>
-References: <1240331881-28218-1-git-send-email-tj@kernel.org>
-	 <1240331881-28218-13-git-send-email-tj@kernel.org>
-Content-Type: text/plain
-Date: Tue, 21 Apr 2009 22:35:33 +0200
-Message-Id: <1240346133.6812.2.camel@Quad>
+	Tue, 21 Apr 2009 16:40:09 -0400
+Date: Tue, 21 Apr 2009 13:42:06 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk,
+       torvalds@linux-foundation.org, greg@kroah.com
+Subject: driver synchronization: make scsi_wait_scan more advanced
+Message-ID: <20090421134206.07b8ee7e@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/Ie9lYhyw0fYEsuK+I/zM1yERvCX/NcoGM5y7
- OSVgmoFXNHDGBfpPKOnnkACbNsQbDgLhXst8A/spD3VxJlQaTm
- C7TuwshorBCJGrZ6z2UG1Aa1B6CNcga
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-...
-> Cc: Laurent Vivier <Laurent@lvivier.info>
-...
-> drivers/block/swim.c            |   14 +++++-----
+(CC'ing linux-scsi as well since this touches a file in drivers/scsi)
 
-Acked-by: Laurent Vivier <Laurent@lvivier.info>
 
-Regards,
-Laurent
+>From 546fdda8b4124a7473f32decf4a2981984f287db Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Tue, 21 Apr 2009 13:32:54 -0700
+Subject: [PATCH] driver synchronization: make scsi_wait_scan more advanced
 
+
+There is currently only one way for userspace to say "wait for my storage
+device to get ready for the modules I just loaded": to load the
+scsi_wait_scan module. Expectations of userspace are that once this
+module is loaded, all the (storage) devices for which the drivers
+were loaded before the module load are present.
+
+Now, there are some issues with the implementation, and the async
+stuff got caught in the middle of this: The existing code only
+waits for the scsy async probing to finish, but it did not take
+into account at all that probing might not have begun yet.
+(Russell ran into this problem on his computer and the fix works for him)
+
+This patch fixes this more thoroughly than the previous "fix", which
+had some bad side effects (namely, for kernel code that wanted to wait for
+the scsi scan it would also do an async sync, which would deadlock if you did
+it from async context already.. there's a report about that on lkml):
+The patch makes the module first wait for all device driver probes, and then it
+will wait for the scsi parallel scan to finish.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/base/dd.c             |    1 +
+ drivers/scsi/scsi_scan.c      |    2 --
+ drivers/scsi/scsi_wait_scan.c |   11 +++++++++++
+ include/linux/device.h        |    1 +
+ 4 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index f17c326..742cbe6 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -179,6 +179,7 @@ void wait_for_device_probe(void)
+ 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
+ 	async_synchronize_full();
+ }
++EXPORT_SYMBOL_GPL(wait_for_device_probe);
+ 
+ /**
+  * driver_probe_device - attempt to bind device & driver together
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index a14d245..6f51ca4 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -180,8 +180,6 @@ int scsi_complete_async_scans(void)
+ 	spin_unlock(&async_scan_lock);
+ 
+ 	kfree(data);
+-	/* Synchronize async operations globally */
+-	async_synchronize_full();
+ 	return 0;
+ }
+ 
+diff --git a/drivers/scsi/scsi_wait_scan.c b/drivers/scsi/scsi_wait_scan.c
+index 2f21af2..74708fc 100644
+--- a/drivers/scsi/scsi_wait_scan.c
++++ b/drivers/scsi/scsi_wait_scan.c
+@@ -11,10 +11,21 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/device.h>
+ #include <scsi/scsi_scan.h>
+ 
+ static int __init wait_scan_init(void)
+ {
++	/*
++	 * First we need to wait for device probing to finish;
++	 * the drivers we just loaded might just still be probing
++	 * and might not yet have reached the scsi async scanning
++	 */
++	wait_for_device_probe();
++	/*
++	 * and then we wait for the actual asynchronous scsi scan
++	 * to finish.
++	 */
+ 	scsi_complete_async_scans();
+ 	return 0;
+ }
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 2918c0e..6a69caa 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -551,6 +551,7 @@ extern int (*platform_notify_remove)(struct device *dev);
+ extern struct device *get_device(struct device *dev);
+ extern void put_device(struct device *dev);
+ 
++extern void wait_for_device_probe(void);
+ 
+ /* drivers/base/power/shutdown.c */
+ extern void device_shutdown(void);
+-- 
+1.6.0.6
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
