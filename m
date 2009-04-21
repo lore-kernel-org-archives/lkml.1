@@ -1,125 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbZDUIh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZDUIjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbZDUIh2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 04:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZDUIhL
+	id S1754405AbZDUIjk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 04:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZDUIjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 04:37:11 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:45659 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbZDUIhJ (ORCPT
+	Tue, 21 Apr 2009 04:39:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46735 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbZDUIja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 04:37:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OTcHG64K6Mx2q4gG3F1/04Jgwm0w3LF0CmEy5gocbkn7ALJ+Nqqdm7VwyecabXi97B
-         Wf768FSIUVHmZjz8+0QBy0MxRhAuZ0tBZZg5pKBfkKx02Nvxhi776pm3tpsUUOjGf7Ph
-         X0WtEgoFsLd7pKs/yfpgFcEpn0Jg+3raFkWp4=
-Date: Tue, 21 Apr 2009 10:37:03 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Theodore Tso <tytso@mit.edu>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] io-throttle documentation
-Message-ID: <20090421083702.GC8441@linux>
-References: <1239740480-28125-1-git-send-email-righi.andrea@gmail.com> <1239740480-28125-2-git-send-email-righi.andrea@gmail.com> <20090417173955.GF29086@redhat.com> <20090417231244.GB6972@linux> <20090419134201.GF8493@redhat.com> <20090419154717.GB5514@linux> <20090420212827.GA9080@redhat.com> <20090420220511.GA8740@linux> <20090421010846.GA15850@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090421010846.GA15850@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Apr 2009 04:39:30 -0400
+Subject: [PATCH] x86: unify noexec handling
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Date: Tue, 21 Apr 2009 11:39:27 +0300
+Message-Id: <1240303167.771.69.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 09:08:46PM -0400, Vivek Goyal wrote:
-> On Tue, Apr 21, 2009 at 12:05:12AM +0200, Andrea Righi wrote:
-> 
-> [..]
-> > > > > Are we not already controlling submission of request (at crude level).
-> > > > > If application is doing writeout at high rate, then it hits vm_dirty_ratio
-> > > > > hits and this application is forced to do write out and hence it is slowed
-> > > > > down and is not allowed to submit writes at high rate.
-> > > > > 
-> > > > > Just that it is not a very fair scheme right now as during right out
-> > > > > a high prio/high weight cgroup application can start writing out some
-> > > > > other cgroups' pages.
-> > > > > 
-> > > > > For this we probably need to have some combination of solutions like
-> > > > > per cgroup upper limit on dirty pages. Secondly probably if an application
-> > > > > is slowed down because of hitting vm_drity_ratio, it should try to
-> > > > > write out the inode it is dirtying first instead of picking any random
-> > > > > inode and associated pages. This will ensure that a high weight
-> > > > > application can quickly get through the write outs and see higher
-> > > > > throughput from the disk.
-> > > > 
-> > > > For the first, I submitted a patchset some months ago to provide this
-> > > > feature in the memory controller:
-> > > > 
-> > > > https://lists.linux-foundation.org/pipermail/containers/2008-September/013140.html
-> > > > 
-> > > > We focused on the best interface to use for setting the dirty pages
-> > > > limit, but we didn't finalize it. I can rework on that and repost an
-> > > > updated version. Now that we have the dirty_ratio/dirty_bytes to set the
-> > > > global limit I think we can use the same interface and the same semantic
-> > > > within the cgroup fs, something like:
-> > > > 
-> > > >   memory.dirty_ratio
-> > > >   memory.dirty_bytes
-> > > > 
-> > > > For the second point something like this should be enough to force tasks
-> > > > to write out only the inode they're actually dirtying when they hit the
-> > > > vm_dirty_ratio limit. But it should be tested carefully and may cause
-> > > > heavy performance regressions.
-> > > > 
-> > > > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> > > > ---
-> > > >  mm/page-writeback.c |    2 +-
-> > > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > > 
-> > > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > > > index 2630937..1e07c9d 100644
-> > > > --- a/mm/page-writeback.c
-> > > > +++ b/mm/page-writeback.c
-> > > > @@ -543,7 +543,7 @@ static void balance_dirty_pages(struct address_space *mapping)
-> > > >  		 * been flushed to permanent storage.
-> > > >  		 */
-> > > >  		if (bdi_nr_reclaimable) {
-> > > > -			writeback_inodes(&wbc);
-> > > > +			sync_inode(mapping->host, &wbc);
-> > > >  			pages_written += write_chunk - wbc.nr_to_write;
-> > > >  			get_dirty_limits(&background_thresh, &dirty_thresh,
-> > > >  				       &bdi_thresh, bdi);
-> > > 
-> > > This patch seems to be helping me a bit in getting more service
-> > > differentiation between two writer dd of different weights. But strangely
-> > > it is helping only for ext3 and not ext4. Debugging is on.
-> > 
-> > Are you explicitly mounting ext3 with data=ordered?
-> 
-> Yes. Still using 29-rc8 and data=ordered was the default then.
-> 
-> I got two partitions on same disk and created one ext3 filesystem on each
-> partition (just to take journaling intereference out of two dd threads 
-> for the time being).
-> 
-> Two dd threads doing writes to each partition. 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-...and if you're using data=writeback with ext4 sync_inode() should sync
-the metadata only. If this is the case, could you check data=ordered
-also for ext4?
+This patch unifies noexec handling on 32-bit and 64-bit.
 
--Andrea
+[ Impact: cleanup ]
+[ mingo@elte.hu: build fix ]
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/x86/include/asm/pgtable_types.h |    1 -
+ arch/x86/mm/init.c                   |   67 ++++++++++++++++++++++++++++++++--
+ arch/x86/mm/init_32.c                |   52 --------------------------
+ arch/x86/mm/init_64.c                |   33 -----------------
+ 4 files changed, 63 insertions(+), 90 deletions(-)
+
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index b8238dc..4d258ad 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -273,7 +273,6 @@ typedef struct page *pgtable_t;
+ 
+ extern pteval_t __supported_pte_mask;
+ extern int nx_enabled;
+-extern void set_nx(void);
+ 
+ #define pgprot_writecombine	pgprot_writecombine
+ extern pgprot_t pgprot_writecombine(pgprot_t prot);
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index fd3da1d..fedde53 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -22,6 +22,69 @@ int direct_gbpages
+ #endif
+ ;
+ 
++int nx_enabled;
++
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++static int disable_nx __cpuinitdata;
++
++/*
++ * noexec = on|off
++ *
++ * Control non-executable mappings for processes.
++ *
++ * on      Enable
++ * off     Disable
++ */
++static int __init noexec_setup(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	if (!strncmp(str, "on", 2)) {
++		__supported_pte_mask |= _PAGE_NX;
++		disable_nx = 0;
++	} else if (!strncmp(str, "off", 3)) {
++		disable_nx = 1;
++		__supported_pte_mask &= ~_PAGE_NX;
++	}
++	return 0;
++}
++early_param("noexec", noexec_setup);
++#endif
++
++#ifdef CONFIG_X86_PAE
++static void __init set_nx(void)
++{
++	unsigned int v[4], l, h;
++
++	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
++		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
++
++		if ((v[3] & (1 << 20)) && !disable_nx) {
++			rdmsr(MSR_EFER, l, h);
++			l |= EFER_NX;
++			wrmsr(MSR_EFER, l, h);
++			nx_enabled = 1;
++			__supported_pte_mask |= _PAGE_NX;
++		}
++	}
++}
++#else
++static inline void set_nx(void)
++{
++}
++#endif
++
++#ifdef CONFIG_X86_64
++void __cpuinit check_efer(void)
++{
++	unsigned long efer;
++
++	rdmsrl(MSR_EFER, efer);
++	if (!(efer & EFER_NX) || disable_nx)
++		__supported_pte_mask &= ~_PAGE_NX;
++}
++#endif
++
+ static void __init find_early_table_space(unsigned long end, int use_pse,
+ 					  int use_gbpages)
+ {
+@@ -158,12 +221,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	use_gbpages = direct_gbpages;
+ #endif
+ 
+-#ifdef CONFIG_X86_32
+-#ifdef CONFIG_X86_PAE
+ 	set_nx();
+ 	if (nx_enabled)
+ 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+-#endif
+ 
+ 	/* Enable PSE if available */
+ 	if (cpu_has_pse)
+@@ -174,7 +234,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		set_in_cr4(X86_CR4_PGE);
+ 		__supported_pte_mask |= _PAGE_GLOBAL;
+ 	}
+-#endif
+ 
+ 	if (use_gbpages)
+ 		page_size_mask |= 1 << PG_LEVEL_1G;
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 749559e..2b27120 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -587,61 +587,9 @@ void zap_low_mappings(void)
+ 	flush_tlb_all();
+ }
+ 
+-int nx_enabled;
+-
+ pteval_t __supported_pte_mask __read_mostly = ~(_PAGE_NX | _PAGE_GLOBAL | _PAGE_IOMAP);
+ EXPORT_SYMBOL_GPL(__supported_pte_mask);
+ 
+-#ifdef CONFIG_X86_PAE
+-
+-static int disable_nx __initdata;
+-
+-/*
+- * noexec = on|off
+- *
+- * Control non executable mappings.
+- *
+- * on      Enable
+- * off     Disable
+- */
+-static int __init noexec_setup(char *str)
+-{
+-	if (!str || !strcmp(str, "on")) {
+-		if (cpu_has_nx) {
+-			__supported_pte_mask |= _PAGE_NX;
+-			disable_nx = 0;
+-		}
+-	} else {
+-		if (!strcmp(str, "off")) {
+-			disable_nx = 1;
+-			__supported_pte_mask &= ~_PAGE_NX;
+-		} else {
+-			return -EINVAL;
+-		}
+-	}
+-
+-	return 0;
+-}
+-early_param("noexec", noexec_setup);
+-
+-void __init set_nx(void)
+-{
+-	unsigned int v[4], l, h;
+-
+-	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
+-		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
+-
+-		if ((v[3] & (1 << 20)) && !disable_nx) {
+-			rdmsr(MSR_EFER, l, h);
+-			l |= EFER_NX;
+-			wrmsr(MSR_EFER, l, h);
+-			nx_enabled = 1;
+-			__supported_pte_mask |= _PAGE_NX;
+-		}
+-	}
+-}
+-#endif
+-
+ /* user-defined highmem size */
+ static unsigned int highmem_pages = -1;
+ 
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 1753e80..a4e7846 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -85,39 +85,6 @@ early_param("gbpages", parse_direct_gbpages_on);
+ pteval_t __supported_pte_mask __read_mostly = ~_PAGE_IOMAP;
+ EXPORT_SYMBOL_GPL(__supported_pte_mask);
+ 
+-static int disable_nx __cpuinitdata;
+-
+-/*
+- * noexec=on|off
+- * Control non-executable mappings for 64-bit processes.
+- *
+- * on	Enable (default)
+- * off	Disable
+- */
+-static int __init nonx_setup(char *str)
+-{
+-	if (!str)
+-		return -EINVAL;
+-	if (!strncmp(str, "on", 2)) {
+-		__supported_pte_mask |= _PAGE_NX;
+-		disable_nx = 0;
+-	} else if (!strncmp(str, "off", 3)) {
+-		disable_nx = 1;
+-		__supported_pte_mask &= ~_PAGE_NX;
+-	}
+-	return 0;
+-}
+-early_param("noexec", nonx_setup);
+-
+-void __cpuinit check_efer(void)
+-{
+-	unsigned long efer;
+-
+-	rdmsrl(MSR_EFER, efer);
+-	if (!(efer & EFER_NX) || disable_nx)
+-		__supported_pte_mask &= ~_PAGE_NX;
+-}
+-
+ int force_personality32;
+ 
+ /*
+-- 
+1.5.6.3
+
+
+
