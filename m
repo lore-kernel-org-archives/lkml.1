@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZDUOni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZDUOoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZDUOni (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 10:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZDUOn3
+	id S1756042AbZDUOoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 10:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZDUOoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 10:43:29 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:46751 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbZDUOn2 (ORCPT
+	Tue, 21 Apr 2009 10:44:00 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:33673 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbZDUOn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 10:43:28 -0400
-Message-ID: <49EDDB8E.5020200@canonical.com>
-Date: Tue, 21 Apr 2009 16:43:26 +0200
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Tue, 21 Apr 2009 10:43:58 -0400
+Date: Tue, 21 Apr 2009 10:35:57 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: "Luck, Tony" <tony.luck@intel.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, randy.dunlap_ocs10g@oracle.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next ia64 build problems in slqb
+In-Reply-To: <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0904211034550.19969@qirst.com>
+References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com> <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Uwe Geuder <ubuntuLp-ugeuder@sneakemail.com>
-Subject: [PATCH] vgacon: Return the upper half of 512 character fonts
-Content-Type: multipart/mixed;
- boundary="------------040508070000040108020402"
+Content-Type: MULTIPART/MIXED; BOUNDARY="-716562517-337908754-1240324557=:19969"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040508070000040108020402
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Not sure who would be considered maintainer for vgacon, so spreading slightly. 
-There is a bug in returning the font data for 512 character fonts which seems 
-to have evaded all detection. Unlikely to be important enough for stable as it 
-won't cause any mayhem.
+---716562517-337908754-1240324557=:19969
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Regards,
-Stefan
+On Tue, 21 Apr 2009, Pekka Enberg wrote:
 
+> On Tue, Apr 21, 2009 at 1:08 AM, Luck, Tony <tony.luck@intel.com> wrote:
+> > The ia64 "allnoconfig" build ends up with the (possibly dubious) combin=
+ation
+> > of .config options:
+> >
+> > =A0 =A0 =A0 =A0CONFIG_SMP=3Dn
+> > =A0 =A0 =A0 =A0CONFIG_NUMA=3Dy
+>
+> Yeah, I don't think the combination makes much sense and x86 doesn't
+> allow it. Can we fix that in ia64 Kconfig? That said, this seems to
+> come up with every architecture except x86, so if someone is kind
+> enough to send me a tested fix for slqb, I'll just go ahead and apply
+> it.
 
-
---------------040508070000040108020402
-Content-Type: text/x-diff;
- name="0001-vgacon-Return-the-upper-half-of-512-character-fonts.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-vgacon-Return-the-upper-half-of-512-character-fonts.pat";
- filename*1="ch"
-
->From e7aa277f2e8d76c4d93991b345a80ef80f461f89 Mon Sep 17 00:00:00 2001
-From: Stefan Bader <stefan.bader@canonical.com>
-Date: Fri, 17 Apr 2009 23:21:05 +0200
-Subject: [PATCH] vgacon: Return the upper half of 512 character fonts
-
-Bug: #355057
-
-Uwe Geuder noted that he gets random bitmaps on a text console if he tried
-to type extended characters (like the e acute). For him everything above
-unicode 0xa0 was corrupted.
-
-After some digging there seems to be a little culprit in vgacon since the
-beginning of ages (well git). The function vgacon_font_get will store the
-number of characters correctly in font->charcount but then calls to
-vgacon_do_font_op(..., 0, 0). Which means only the lower 256 characters are
-actually stored to the fontdata. The rest is left untouched. So the next time
-that saved data is used, the garbled font appears. This happens on every
-switch between text consoles.
-
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Tested-by: Uwe Geuder <ubuntuLp-ugeuder@sneakemail.com>
----
- drivers/video/console/vgacon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index d012edd..38e86b8 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -1282,7 +1282,7 @@ static int vgacon_font_get(struct vc_data *c, struct console_font *font)
- 	font->charcount = vga_512_chars ? 512 : 256;
- 	if (!font->data)
- 		return 0;
--	return vgacon_do_font_op(&state, font->data, 0, 0);
-+	return vgacon_do_font_op(&state, font->data, 0, vga_512_chars);
- }
- 
- #else
--- 
-1.5.4.3
+Tony runs tests with this configuration. This is an established
+configuration and has been historically supported.
 
 
---------------040508070000040108020402--
+---716562517-337908754-1240324557=:19969--
