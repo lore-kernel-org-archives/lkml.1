@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZDUNfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZDUNjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZDUNfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 09:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZDUNfM
+	id S1755046AbZDUNjh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 09:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZDUNj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 09:35:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44113 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZDUNfL (ORCPT
+	Tue, 21 Apr 2009 09:39:26 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:38578 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750975AbZDUNjZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 09:35:11 -0400
-Date: Tue, 21 Apr 2009 06:35:49 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David VomLehn <dvomlehn@cisco.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090421063549.3b71881d@infradead.org>
-In-Reply-To: <20090421064346.GB8020@elte.hu>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>
-	<20090421064346.GB8020@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 21 Apr 2009 09:39:25 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: =?utf-8?q?Mar=C3=B3y_=C3=81kos?= <akos@maroy.hu>
+Subject: Re: cdc-acm driver hangs on poll() call - 2.6.27, works on 2.6.24
+Date: Tue, 21 Apr 2009 15:39:23 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.29-9-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <49EDC44D.90106@maroy.hu> <200904211526.34199.oliver@neukum.org> <49EDCB0F.3040802@maroy.hu>
+In-Reply-To: <49EDCB0F.3040802@maroy.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904211539.23671.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 08:43:46 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Am Dienstag 21 April 2009 15:33:03 schrieb Maróy Ákos:
+> Oliver,
+>
+> > Does it happen with 2.6.29?
+>
+> haven't tried yet. I'm just upgrading to ubuntu 9.04, which has 2.6.28
+> built in.
+>
+> I also see cdc-acm fixes in the 2.6.28 Changelog, like:
+>
+> USB: gadget: cdc-acm deadlock fix
 
-> The proper approach would be to use one of the async_synchronize*() 
-> facilities in kernel/async.c to properly order the opening of the 
-> console with device init.
+That's gadget code. Your problem is on the host's side.
 
-Unfortunately this is not the answer.
+>
+> > Could you get dmesg of 2.6.2(7/9) with CONFIG_USB_DEBUG and debug
+> > activated in drivers/usb/class/cdc-acm.c ?
+>
+> ok, let me upgrade to 2.6.28 first, and if the proplem still persists,
+> I'll compile 2.6.29 with the above settings manually.
 
-First of all, USB does not use the async_* infrastructure, so it does
-not do anything.
-But more importantly... USB *CANNOT* do this fundamental operation.
-USB does not have the capability to know when you have seen all devices
-that are connected. Devices just show up a random amount of time after
-you turn the power on for the bus.... there's no "and now we've seen
-all" operation.
+Thanks.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Regards
+		Oliver
+
