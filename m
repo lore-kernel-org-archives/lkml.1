@@ -1,107 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbZDVDLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZDVDOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753775AbZDVDLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 23:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZDVDLF
+	id S1754832AbZDVDOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 23:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZDVDOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 23:11:05 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:27832 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbZDVDLD convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 23:14:44 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:45318 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751874AbZDVDOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 23:11:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=HroNd5lWfjyJFUZ0p70Glx0Efb74YQCHdeEnnMaN9oO4C4urNDWBKohq5xN6LYcvS
-	ZCUcGI4G26QoxUZY6aZ8w==
-MIME-Version: 1.0
-In-Reply-To: <49EE895A.1060101@cn.fujitsu.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
-	 <49DF1256.7080403@cn.fujitsu.com> <20090413130958.GB18007@redhat.com>
-	 <49EE895A.1060101@cn.fujitsu.com>
-Date: Tue, 21 Apr 2009 20:10:56 -0700
-Message-ID: <e98e18940904212010m5b2e00f9xda32cb2c9594ca29@mail.gmail.com>
-Subject: Re: [RFC] IO Controller
-From: Nauman Rafique <nauman@google.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Tue, 21 Apr 2009 23:14:44 -0400
+Date: Wed, 22 Apr 2009 12:14:43 +0900 (JST)
+Message-Id: <20090422.121443.104042516.ryov@valinux.co.jp>
+To: dm-devel@redhat.com, vgoyal@redhat.com
+Cc: snitzer@redhat.com, fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
+       jmoyer@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       agk@redhat.com, balbir@linux.vnet.ibm.com
+Subject: Re: [dm-devel] Re: dm-ioband: Test results.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090421141607.GA22619@redhat.com>
+References: <20090421.211051.183023683.ryov@valinux.co.jp>
+	<20090421135723.GA13953@redhat.com>
+	<20090421141607.GA22619@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 8:04 PM, Gui Jianfeng
-<guijianfeng@cn.fujitsu.com> wrote:
-> Vivek Goyal wrote:
->> On Fri, Apr 10, 2009 at 05:33:10PM +0800, Gui Jianfeng wrote:
->>> Vivek Goyal wrote:
->>>> Hi All,
->>>>
->>>> Here is another posting for IO controller patches. Last time I had posted
->>>> RFC patches for an IO controller which did bio control per cgroup.
->>>   Hi Vivek,
->>>
->>>   I got the following OOPS when testing, can't reproduce again :(
->>>
->>
->> Hi Gui,
->>
->> Thanks for the report. Will look into it and see if I can reproduce it.
->
->  Hi Vivek,
->
->  The following script can reproduce the bug in my box.
->
-> #!/bin/sh
->
-> mkdir /cgroup
-> mount -t cgroup -o io io /cgroup
-> mkdir /cgroup/test1
-> mkdir /cgroup/test2
->
-> echo cfq > /sys/block/sda/queue/scheduler
-> echo 7 > /cgroup/test1/io.ioprio
-> echo 1 > /cgroup/test2/io.ioprio
-> echo 1 > /proc/sys/vm/drop_caches
-> dd if=1000M.1 of=/dev/null &
-> pid1=$!
-> echo $pid1
-> echo $pid1 > /cgroup/test1/tasks
-> dd if=1000M.2 of=/dev/null
-> pid2=$!
-> echo $pid2
-> echo $pid2 > /cgroup/test2/tasks
->
->
-> rmdir /cgroup/test1
-> rmdir /cgroup/test2
-> umount /cgroup
-> rmdir /cgroup
+Hi,
 
-Yes, this bug happens when we move a task from a cgroup to another
-one, and delete the cgroup. Since the actual move to the new cgroup is
-performed in a delayed fashion, if the cgroup is removed before
-another request from the task is seen (and the actual move is
-performed) , it results in a hit on BUG_ON. I am working on a patch
-that will solve this problem and a few others; basically it would do
-ref counting  for io_group structure. I am having a few problems with
-it at the moment; will post the patch as soon as I can get it to work.
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: [dm-devel] Re: dm-ioband: Test results.
+Date: Tue, 21 Apr 2009 10:16:07 -0400
 
+> On Tue, Apr 21, 2009 at 09:57:23AM -0400, Mike Snitzer wrote:
+> > On Tue, Apr 21 2009 at  8:10am -0400,
+> > Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+> > 
+> > > Hi Nauman,
+> > > 
+> > > > > The real question is, once you create a version of dm-ioband that
+> > > > > co-operates with CFQ scheduler, how that solution would compare with
+> > > > > the patch set Vivek has posted? In my opinion, we need to converge to
+> > > > > one solution as soon as possible, so that we can work on it together
+> > > > > to refine and test it.
+> > > > 
+> > > > I think I can do some help for your work. but I want to continue the
+> > > > development of dm-ioband, because dm-ioband actually works well and
+> > > > I think it has some advantages against other IO controllers.
+> > > >   - It can use without cgroup.
+> > > >   - It can control bandwidth on a per partition basis.
+> > > >   - The driver module can be replaced without stopping the system.
+> > > 
+> > > In addition, dm-ioband can run on the RHEL5.
+> > 
+> > RHEL5 compatibility does not matter relative to merging an I/O bandwidth
+> > controller upstream.  So both the "can [be] use without cgroup" and "can
+> > run on RHEL5" features do not help your cause of getting dm-ioband
+> > merged upstream.  In fact these features serve as distractions.
 >
+> Exactly. I don't think that "it can be used without cgroup" is a feature
+> or advantage. To me it is a disadvantage and should be fixed. cgroup is
+> standard mechanism to group tasks arbitrarily and we should use that to make
+> things working instead of coming up with own ways of grouping things and
+> terming it as advantage.
+> 
+> What do you mean by "The driver module can be replaced without stopping
+> the system"? I guess you mean that one does not have to reboot the system
+> to remove ioband device? So if one decides to not use the cgroup, then
+> one shall have to remove the ioband devices, remount the filesystems and
+> restart the application?
+
+Device-mapper has a feature that can replace an intermediate module
+without unmount the device like the following.
+
+      ---------------------        ---------------------
+     |         /mnt        |      |        /mnt         |
+     |---------------------|      |---------------------|
+     | /dev/mapper/ioband1 |      | /dev/mapper/ioband1 |
+     |---------------------|      |---------------------|
+     |      dm-ioband      | <==> |      dm-linear      |
+     |---------------------|      |---------------------|
+     |      /dev/sda1      |      |      /dev/sda1      |
+      ---------------------        ---------------------
+
+So we can safely unload the dm-ioband module and update it.
+
+> With cgroup approach, if one does not want things to be classified, a user
+> can simply move all the tasks to root group and things will be fine. No
+> remounting, no application stopping etc. So this also does not look like
+> an advantage instead sounds like an disadvantage.
+> 
+> Thanks
+> Vivek
+> 
 > --
-> Regards
-> Gui Jianfeng
->
->
->
->
+> dm-devel mailing list
+> dm-devel@redhat.com
+> https://www.redhat.com/mailman/listinfo/dm-devel
