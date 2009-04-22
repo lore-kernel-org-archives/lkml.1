@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZDVP6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZDVQA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZDVP6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZDVP6c
+	id S1756047AbZDVQA5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 12:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZDVQAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:58:32 -0400
-Received: from mga06.intel.com ([134.134.136.21]:58505 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753430AbZDVP6b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:58:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,231,1239001200"; 
-   d="scan'208";a="405769569"
-Message-ID: <49EF3EA2.1000505@linux.intel.com>
-Date: Wed, 22 Apr 2009 17:58:26 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 22 Apr 2009 12:00:48 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60409 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbZDVQAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 12:00:47 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: michael <michael@evidence.eu.com>
+Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+Date: Wed, 22 Apr 2009 18:00:41 +0200
+User-Agent: KMail/1.9.9
+Cc: Roland Dreier <rdreier@cisco.com>, fenkes@de.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-EWG" <ewg@lists.openfabrics.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+       alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com> <200904221602.29028.ossrosch@linux.vnet.ibm.com> <49EF254A.6020106@evidence.eu.com>
+In-Reply-To: <49EF254A.6020106@evidence.eu.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com> <20090422092259.GC18226@elte.hu> <49EEFD88.1030604@linux.intel.com> <49EF3DE2.6000201@zytor.com>
-In-Reply-To: <49EF3DE2.6000201@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904221800.41399.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Andi Kleen wrote:
->> And then restart here? Add 32bit workarounds, add hook
->> to initialize p5/winchip, make 64bit code 32bit clean.
->> That can come straight from my patchkit. I can do that
->> if there is interest.
->>
+On Wednesday 22 April 2009 04:10:18 pm michael wrote:
+> Hi,
 > 
-> Could you come up with a tree we can look at?
 
-Will do. I'll probably need a day or so.
+> I don't take the point, if it is not import use the vmalloc. Why you try 
+> with a kmalloc
+> alloc first? and why do not use kzalloc?
 
--Andi
+Because kmalloc() is faster than vmalloc() causing a huge performance win
+when someone allocates a large number of queue pairs. We fall back to
+vmalloc() only if kmalloc() can't deliver the memory chunk.
+We don't need kzalloc because we fill the list right after the alloc.
 
+regards Stefan
 
