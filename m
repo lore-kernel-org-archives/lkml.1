@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbZDVT5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZDVT7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbZDVT5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZDVT47
+	id S1755094AbZDVT7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZDVT66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:56:59 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3545 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289AbZDVT46 (ORCPT
+	Wed, 22 Apr 2009 15:58:58 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:39998 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbZDVT65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:56:58 -0400
-Subject: Re: [git pull] IDE fixes
-From: Joe Perches <joe@perches.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200904222143.47220.bzolnier@gmail.com>
-References: <200904222048.15556.bzolnier@gmail.com>
-	 <1240427207.21848.81.camel@localhost>
-	 <200904222143.47220.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Wed, 22 Apr 2009 12:55:03 -0700
-Message-Id: <1240430103.21848.101.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Apr 2009 15:58:57 -0400
+To: teheo@suse.de
+CC: linux-kernel@vger.kernel.org, greg@kroah.com, miklos@szeredi.hu,
+       tiwai@suse.de, fuse-devel@lists.sourceforge.net
+In-reply-to: <49E3F91E.4000801@suse.de> (message from Tejun Heo on Tue, 14 Apr
+	2009 11:46:54 +0900)
+Subject: Re: [ANNOUNCE] OSS Proxy 1.2 using CUSE
+References: <48B6F711.1040604@kernel.org> <49E3F91E.4000801@suse.de>
+Message-Id: <E1Lwian-0004pq-8P@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 22 Apr 2009 21:58:49 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-22 at 21:43 +0200, Bartlomiej Zolnierkiewicz wrote:
-> IMO we should just remove extra commas and add some whitespaces.
-
-Your choice.
-Ignore, reject, accept, improve, fine by me.
-
-> I have also more general (process oriented) comment:
+On Tue, 14 Apr 2009, Tejun Heo wrote:
+> OSSP 1.2 available.  It now can do mmap for both playback and
+> recording.  All my quakes and dooms run and sound fine.  :-)
 > 
-> All patches have been posted to linux-kernel or linux-ide for review before
-> and it is _much_ more efficient to raise issues (including CodingStyle ones)
-> during "review phase" instead of during "push to Linus" phase.
+>   http://userweb.kernel.org/~tj/ossp/
 
-Maybe for you, but I'm an intermittent
-and random reader.
+Xmms with the OSS output plugin doesn't really work.  It plays like 10
+times too fast and the output is not really recognizable.
 
-If you accept an idea at all, queue it
-up at your convenience.
+This is the debug output of osspd:
 
-cheers, Joe
+osspd: OSS Proxy v1.2 (C) 2008-2009 by Tejun Heo <teheo@suse.de>
+osspd: Creating dsp (14:3), adsp (14:12), mixer (14:0)
+osspd DBG0: CREATE mixer(12799)
+osspd DBG0: S[1/16744] CREATE slave=16745 /store/git/ossp/ossp-padsp
+osspd DBG0: S[1/16744]   client=16744 cmd=7:8 notify=9:10
+ossp-padsp[mszeredi:16745] DBG0: requested frag_size (4096) is smaller than mini
+mum (4412)
+ossp-padsp[mszeredi:16745] DBG0: CREATE PLAY s16le 2ch 44100Hz fsz=4412:25
+ossp-padsp[mszeredi:16745] DBG0:   tlen=131072:743 max=139896:793 pre=8192:46
+ossp-padsp[mszeredi:16745] DBG0:   u_sd=0 u_fsz=4096:23 u_maxf=32
+osspd DBG0: S[1/16744] volume set=-1/-1:-1/-1 get=63/63:0/0
+ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+[...message repeated zillion times]
 
+I guess this has something to do with the too small frag size, but
+couldn't figure out how all this works in prepare_streams() and
+padsp_write().
+
+Thanks,
+Miklos
