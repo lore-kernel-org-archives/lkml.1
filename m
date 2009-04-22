@@ -1,86 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZDVDbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZDVDor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbZDVDbj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 23:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZDVDba
+	id S1755267AbZDVDor (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 23:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDVDoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 23:31:30 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:56048 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbZDVDb3 (ORCPT
+	Tue, 21 Apr 2009 23:44:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752668AbZDVDoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 23:31:29 -0400
-Date: Wed, 22 Apr 2009 09:00:32 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Theodore Tso <tytso@mit.edu>, Andrea Righi <righi.andrea@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
-Message-ID: <20090422033032.GR19637@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090417143903.GA30365@linux> <20090421001822.GB19186@mit.edu> <20090421083001.GA8441@linux> <20090421140631.GF19186@mit.edu> <20090421143130.GA22626@linux> <20090421163537.GI19186@mit.edu> <20090421172317.GM19637@balbir.in.ibm.com> <20090421174620.GD15541@mit.edu> <20090421181429.GO19637@balbir.in.ibm.com> <20090421191401.GF15541@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090421191401.GF15541@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Apr 2009 23:44:38 -0400
+Date: Tue, 21 Apr 2009 20:41:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH] memcg: remove trylock_page_cgroup
+Message-Id: <20090421204104.faf9fc56.akpm@linux-foundation.org>
+In-Reply-To: <20090422121641.eb84a07e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090416120316.GG7082@balbir.in.ibm.com>
+	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417014042.GB18558@balbir.in.ibm.com>
+	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417034539.GD18558@balbir.in.ibm.com>
+	<20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417045623.GA3896@balbir.in.ibm.com>
+	<20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417064726.GB3896@balbir.in.ibm.com>
+	<20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417141837.GD3896@balbir.in.ibm.com>
+	<20090421132551.38e9960a.akpm@linux-foundation.org>
+	<20090422090218.6d451a08.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422121641.eb84a07e.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Theodore Tso <tytso@mit.edu> [2009-04-21 15:14:01]:
+On Wed, 22 Apr 2009 12:16:41 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> On Tue, Apr 21, 2009 at 11:44:29PM +0530, Balbir Singh wrote:
-> > 
-> > That would be true in general, but only the process writing to the
-> > file will dirty it. So dirty already accounts for the read/write
-> > split. I'd assume that the cost is only for the dirty page, since we
-> > do IO only on write in this case, unless I am missing something very
-> > obvious.
+> How about this ? worth to be tested, I think.
+> -Kame
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> Maybe I'm missing something, but the (in development) patches I saw
-> seemed to use the existing infrastructure designed for RSS cost
-> tracking (which is also not yet in mainline, unless I'm mistaken ---
-> but I didn't see page_get_page_cgroup() in the mainline tree yet).
+> Before synchronized-LRU patch, mem cgroup had its own LRU lock.
+> And there was a code which does
+> # assume mz as per zone struct of memcg. 
 > 
-> Right?  So if process A in cgroup A reads touches the file first by
-> reading from it, then the pages read by process A will be assigned as
-> being "owned" by cgroup A.   Then when the patch described at
+>    spin_lock mz->lru_lock
+> 	lock_page_cgroup(pc).
+>    and
+>    lock_page_cgroup(pc)
+> 	spin_lock mz->lru_lock
 > 
->       http://lkml.org/lkml/2008/9/9/245
+> because we cannot locate "mz" until we see pc->page_cgroup, we used
+> trylock(). But now, we don't have mz->lru_lock. All cgroup
+> uses zone->lru_lock for handling list. Moreover, manipulation of
+> LRU depends on global LRU now and we can isolate page from LRU by
+> very generic way.(isolate_lru_page()).
+> So, this kind of trylock is not necessary now.
+> 
+> I thought I removed all trylock in synchronized-LRU patch but there
+> is still one. This patch removes trylock used in memcontrol.c and
+> its definition. If someone needs, he should add this again with enough
+> reason.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/page_cgroup.h |    5 -----
+>  mm/memcontrol.c             |    3 +--
+>  2 files changed, 1 insertion(+), 7 deletions(-)
+> 
+> Index: mmotm-2.6.30-Apr21/include/linux/page_cgroup.h
+> ===================================================================
+> --- mmotm-2.6.30-Apr21.orig/include/linux/page_cgroup.h
+> +++ mmotm-2.6.30-Apr21/include/linux/page_cgroup.h
+> @@ -61,11 +61,6 @@ static inline void lock_page_cgroup(stru
+>  	bit_spin_lock(PCG_LOCK, &pc->flags);
+>  }
+>  
+> -static inline int trylock_page_cgroup(struct page_cgroup *pc)
+> -{
+> -	return bit_spin_trylock(PCG_LOCK, &pc->flags);
+> -}
+> -
+>  static inline void unlock_page_cgroup(struct page_cgroup *pc)
+>  {
+>  	bit_spin_unlock(PCG_LOCK, &pc->flags);
+> Index: mmotm-2.6.30-Apr21/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.30-Apr21.orig/mm/memcontrol.c
+> +++ mmotm-2.6.30-Apr21/mm/memcontrol.c
+> @@ -1148,8 +1148,7 @@ static int mem_cgroup_move_account(struc
+>  	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
+>  	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
+>  
+> -	if (!trylock_page_cgroup(pc))
+> -		return ret;
+> +	lock_page_cgroup(pc);
+>  
+>  	if (!PageCgroupUsed(pc))
+>  		goto out;
 
-That is correct, but on reclaim (hitting the limit) a page that is frequently
-used by B and not A, can get reclaimed from A and move to B if B is
-heavily using it.
+But we can't remove that nasty `while (loop--)' thing?
 
-> 
-> ... tries to charge a write done by process B in cgroup B, the code
-> will call page_get_page_cgroup(), see that it is "owned" by cgroup A,
-> and charge the dirty page to cgroup A.  If process A and all of the
-> other processes in cgroup A only access this file read-only, and
-> process B is updating this file very heavily --- and it is a large
-> file --- then cgroup B will get a completely free pass as far as
-> dirtying pages to this file, since it will be all charged 100% to
-> cgroup A, incorrectly.
-> 
-> So what am I missing?
+I expect that it will reliably fail if the caller is running as
+SCHED_FIFO and the machine is single-CPU, or if we're trying to yield
+to a SCHED_OTHER task which is pinned to this CPU, etc.  The cond_resched()
+won't work.
 
-You are right. As long as A is not exceeding its limit, B will get a
-free pass at the page. The page will be inactive on A's LRU and active
-on the global LRU though from the memory controller perspective. We'll
-need to find a way to fix this, if this is a very common scenario for
-the IO controller.
-
--- 
-	Balbir
