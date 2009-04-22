@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZDVQFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZDVQNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610AbZDVQFR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 12:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZDVQFE
+	id S1754631AbZDVQNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 12:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZDVQNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 12:05:04 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:54935 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbZDVQFD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 12:05:03 -0400
-MIME-Version: 1.0
-In-Reply-To: <1240331881-28218-13-git-send-email-tj@kernel.org>
-References: <1240331881-28218-1-git-send-email-tj@kernel.org> 
-	<1240331881-28218-13-git-send-email-tj@kernel.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 22 Apr 2009 10:04:47 -0600
-Message-ID: <fa686aa40904220904x1691da53n86fdd49bdb600553@mail.gmail.com>
-Subject: Re: [PATCH 12/14] block: replace end_request() with 
-	[__]blk_end_request_cur()
-To: Tejun Heo <tj@kernel.org>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       Joerg Dorchain <joerg@dorchain.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, Tim Waugh <tim@cyberelk.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Markus Lidel <Markus.Lidel@shadowconnect.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Pete Zaitcev <zaitcev@redhat.com>,
-       Laurent Vivier <Laurent@lvivier.info>, unsik Kim <donari75@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 22 Apr 2009 12:13:31 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:37388 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751281AbZDVQNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 12:13:30 -0400
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 09:13:11 -0700
+Message-Id: <1240416791.10627.78.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 10:37 AM, Tejun Heo <tj@kernel.org> wrote:
-> end_request() has been kept around for backward compatibility;
-> however, it's about time for it to go away.
-[...]
->  drivers/block/xsysace.c         |    4 +-
+On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
+> No user of the allocator API should be passing in an order >= MAX_ORDER
+> but we check for it on each and every allocation. Delete this check and
+> make it a VM_BUG_ON check further down the call path.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Should we get the check re-added to some of the upper-level functions,
+then?  Perhaps __get_free_pages() or things like alloc_pages_exact()? 
+
+I'm selfishly thinking of what I did in profile_init().  Can I slab
+alloc it?  Nope.  Page allocator?  Nope.  Oh, well, try vmalloc():
+
+        prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
+        if (prof_buffer)
+                return 0;
+
+        prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
+        if (prof_buffer)
+                return 0;
+
+        prof_buffer = vmalloc(buffer_bytes);
+        if (prof_buffer)
+                return 0;
+
+        free_cpumask_var(prof_cpu_mask);
+        return -ENOMEM;
+
+Same thing in __kmalloc_section_memmap():
+
+        page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
+        if (page)
+                goto got_map_page;
+
+        ret = vmalloc(memmap_size);
+        if (ret)
+                goto got_map_ptr;
+
+I depend on the allocator to tell me when I've fed it too high of an
+order.  If we really need this, perhaps we should do an audit and then
+add a WARN_ON() for a few releases to catch the stragglers.
+
+-- Dave
+
