@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbZDVOA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbZDVOBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbZDVOA5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbZDVNxr
+	id S1757033AbZDVOBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbZDVNxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:53:47 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43823 "EHLO gir.skynet.ie"
+	Wed, 22 Apr 2009 09:53:49 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43853 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753956AbZDVNxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:53:43 -0400
+	id S1755291AbZDVNxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:53:45 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 20/22] Get the pageblock migratetype without disabling interrupts
-Date: Wed, 22 Apr 2009 14:53:25 +0100
-Message-Id: <1240408407-21848-21-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 22/22] slab: Use nr_online_nodes to check for a NUMA platform
+Date: Wed, 22 Apr 2009 14:53:27 +0100
+Message-Id: <1240408407-21848-23-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
 References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
@@ -31,39 +31,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Local interrupts are disabled when freeing pages to the PCP list. Part of
-that free checks what the migratetype of the pageblock the page is in but it
-checks this with interrupts disabled and interupts should never be disabled
-longer than necessary. This patch checks the pagetype with interrupts
-enabled with the impact that it is possible a page is freed to the wrong
-list when a pageblock changes type. As that block is now already considered
-mixed from an anti-fragmentation perspective, it's not of vital importance.
+SLAB currently avoids checking a bitmap repeatedly by checking once and
+storing a flag. When the addition of nr_online_nodes as a cheaper version
+of num_online_nodes(), this check can be replaced by nr_online_nodes.
 
+(Christoph did a patch that this is lifted almost verbatim from, hence the
+first Signed-off-by. Christoph, can you confirm you're ok with that?)
+
+Signed-off-by: Christoph Lameter <cl@linux.com>
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- mm/page_alloc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ mm/slab.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 6494e13..ba41551 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1034,6 +1034,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 	kernel_map_pages(page, 1, 0);
+diff --git a/mm/slab.c b/mm/slab.c
+index 1c680e8..4d38dc2 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -892,7 +892,6 @@ static void __slab_error(const char *function, struct kmem_cache *cachep,
+   */
  
- 	pcp = &zone_pcp(zone, get_cpu())->pcp;
-+	set_page_private(page, get_pageblock_migratetype(page));
- 	local_irq_save(flags);
- 	if (unlikely(clearMlocked))
- 		free_page_mlock(page);
-@@ -1043,7 +1044,6 @@ static void free_hot_cold_page(struct page *page, int cold)
- 		list_add_tail(&page->lru, &pcp->list);
- 	else
- 		list_add(&page->lru, &pcp->list);
--	set_page_private(page, get_pageblock_migratetype(page));
- 	pcp->count++;
- 	if (pcp->count >= pcp->high) {
- 		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
+ static int use_alien_caches __read_mostly = 1;
+-static int numa_platform __read_mostly = 1;
+ static int __init noaliencache_setup(char *s)
+ {
+ 	use_alien_caches = 0;
+@@ -1453,10 +1452,8 @@ void __init kmem_cache_init(void)
+ 	int order;
+ 	int node;
+ 
+-	if (num_possible_nodes() == 1) {
++	if (num_possible_nodes() == 1)
+ 		use_alien_caches = 0;
+-		numa_platform = 0;
+-	}
+ 
+ 	for (i = 0; i < NUM_INIT_LISTS; i++) {
+ 		kmem_list3_init(&initkmem_list3[i]);
+@@ -3579,7 +3576,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+ 	 * variable to skip the call, which is mostly likely to be present in
+ 	 * the cache.
+ 	 */
+-	if (numa_platform && cache_free_alien(cachep, objp))
++	if (nr_online_nodes > 1 && cache_free_alien(cachep, objp))
+ 		return;
+ 
+ 	if (likely(ac->avail < ac->limit)) {
 -- 
 1.5.6.5
 
