@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZDVRML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZDVRM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZDVRML (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 13:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZDVRL4
+	id S1755954AbZDVRM1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 13:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZDVRMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 13:11:56 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43838 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751543AbZDVRLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 13:11:55 -0400
-Date: Wed, 22 Apr 2009 18:11:51 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
+	Wed, 22 Apr 2009 13:12:00 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:57360 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753961AbZDVRL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 13:11:59 -0400
+Subject: Re: [PATCH 18/22] Use allocation flags as an index to the zone
+	watermark
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
 Cc: Linux Memory Management List <linux-mm@kvack.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Christoph Lameter <cl@linux-foundation.org>,
@@ -22,91 +24,41 @@ Cc: Linux Memory Management List <linux-mm@kvack.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
-Message-ID: <20090422171151.GF15367@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-3-git-send-email-mel@csn.ul.ie> <1240416791.10627.78.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1240416791.10627.78.camel@nimitz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1240408407-21848-19-git-send-email-mel@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-19-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 10:11:53 -0700
+Message-Id: <1240420313.10627.85.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 09:13:11AM -0700, Dave Hansen wrote:
-> On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
-> > No user of the allocator API should be passing in an order >= MAX_ORDER
-> > but we check for it on each and every allocation. Delete this check and
-> > make it a VM_BUG_ON check further down the call path.
-> 
-> Should we get the check re-added to some of the upper-level functions,
-> then?  Perhaps __get_free_pages() or things like alloc_pages_exact()? 
-> 
+On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
+>  struct zone {
+>         /* Fields commonly accessed by the page allocator */
+> -       unsigned long           pages_min, pages_low, pages_high;
+> +       union {
+> +               struct {
+> +                       unsigned long   pages_min, pages_low, pages_high;
+> +               };
+> +               unsigned long pages_mark[3];
+> +       };
 
-I don't think so, no. It just moves the source of the text bloat and
-for the few callers that are asking for something that will never
-succeed.
+Why the union?  It's a bit obfuscated for me.  Why not just have a
+couple of these:
 
-> I'm selfishly thinking of what I did in profile_init().  Can I slab
-> alloc it?  Nope.  Page allocator?  Nope.  Oh, well, try vmalloc():
-> 
->         prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
->         if (prof_buffer)
->                 return 0;
-> 
->         prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
->         if (prof_buffer)
->                 return 0;
-> 
->         prof_buffer = vmalloc(buffer_bytes);
->         if (prof_buffer)
->                 return 0;
-> 
->         free_cpumask_var(prof_cpu_mask);
->         return -ENOMEM;
-> 
+static inline unsigned long zone_pages_min(struct zone *zone)
+{
+	return zone->pages_mark[ALLOC_WMARK_MIN];
+}
 
-Can this ever actually be asking for an order larger than MAX_ORDER
-though? If so, you're condemning it to always behave poorly.
+and s/zone->pages_min/zone_pages_min(zone)/
 
-> Same thing in __kmalloc_section_memmap():
-> 
->         page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
->         if (page)
->                 goto got_map_page;
-> 
->         ret = vmalloc(memmap_size);
->         if (ret)
->                 goto got_map_ptr;
-> 
+?
 
-If I'm reading that right, the order will never be a stupid order. It can fail
-for higher orders in which case it falls back to vmalloc() .  For example,
-to hit that limit, the section size for a 4K kernel, maximum usable order
-of 10, the section size would need to be 256MB (assuming struct page size
-of 64 bytes). I don't think it's ever that size and if so, it'll always be
-sub-optimal which is a poor choice to make.
+-- Dave
 
-> I depend on the allocator to tell me when I've fed it too high of an
-> order.  If we really need this, perhaps we should do an audit and then
-> add a WARN_ON() for a few releases to catch the stragglers.
-> 
-
-I consider it buggy to ask for something so large that you always end up
-with the worst option - vmalloc(). How about leaving it as a VM_BUG_ON
-to get as many reports as possible on who is depending on this odd
-behaviour?
-
-If there are users with good reasons, then we could convert this to WARN_ON
-to fix up the callers. I suspect that the allocator can already cope with
-recieving a stupid order silently but slowly. It should go all the way to the
-bottom and just never find anything useful and return NULL.  zone_watermark_ok
-is the most dangerous looking part but even it should never get to MAX_ORDER
-because it should always find there are not enough free pages and return
-before it overruns.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
