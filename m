@@ -1,140 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZDVWkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbZDVWmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbZDVWkZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 18:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZDVWkH
+	id S1753013AbZDVWmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 18:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZDVWl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 18:40:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54379 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751575AbZDVWkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 18:40:05 -0400
-Message-ID: <49EF9C4A.7030806@kernel.org>
-Date: Wed, 22 Apr 2009 15:38:02 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 22 Apr 2009 18:41:57 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:7973 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbZDVWl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 18:41:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=B0OEs3IrK7w/HAkr8ty1dRVzSyvE4JKjOn1j9EoxjbxrPt/5gcx+vMiuOM9cNUgqIg
+         2M7F8LDvrNZknDMhsXh8QDeDGGM5pL2C1ZNpLRcUQriYLizCH8DA1mLVEKNemu9POec/
+         5eJjHOIrKn1MtuZkpbhcpUZx2kn6lDWb5TAPw=
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: [RFC PATCH 2/2] pci: try to assign res for device under transparent
- bridges
-References: <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <49E99054.6050208@kernel.org> <alpine.LFD.2.00.0904181142530.4042@localhost.localdomain> <49EA57C4.1000603@kernel.org> <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain> <alpine.LFD.2.00.0904182149240.2199@localhost.localdomain> <20090419090208.GA30211@elte.hu> <20090419090615.GA30631@elte.hu> <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org>
-In-Reply-To: <49EF9C10.6090107@kernel.org>
+In-Reply-To: <49EE25FB.9050503@gmail.com>
+References: <alpine.DEB.2.00.0904211202590.10241@p34.internal.lan>
+	 <49EE25FB.9050503@gmail.com>
+Date: Wed, 22 Apr 2009 15:41:55 -0700
+Message-ID: <4807377b0904221541j7e2c4c0bh50d76d494b3cb306@mail.gmail.com>
+Subject: Re: 2.6.29.1: Pid: 2831, comm: nfsd Not tainted 2.6.29.1 #4
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+To: Aioanei Rares <krnl.list@gmail.com>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 21, 2009 at 1:00 PM, Aioanei Rares <krnl.list@gmail.com> wrote:
+> Justin Piszcz wrote:
+>> This has been happening with 2.6.28.(x) and now 2.6.29.(x), can anyone
+>> suggest the possible root cause of this problem, re: the nfsd page
+>> allocation
+>> failures:
 
-try to get resource on parent bus if bridge is transparent...
+> Yes, it happened to me too on a Debian unstable machine with more than one
+> kernel, starting with 2.6.28 until now. I have a feeling it's a
+> Debian-specific problem rather than a kernel one.
 
-[ Impact: second try to get resource for unassigned resource with transparent bridges ]
+you may both want to try
+echo 16384 > /proc/sys/vm/min_free_kbytes
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
- 
----
- drivers/pci/setup-bus.c |    1 
- drivers/pci/setup-res.c |   49 +++++++++++++++++++++++++++++++++++-------------
- 2 files changed, 36 insertions(+), 14 deletions(-)
-
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -58,7 +58,6 @@ static void pbus_assign_resources_sorted
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
--			/* FIXME: get rid of this */
- 			res->start = 0;
- 			res->end = 0;
- 			res->flags = 0;
-Index: linux-2.6/drivers/pci/setup-res.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-res.c
-+++ linux-2.6/drivers/pci/setup-res.c
-@@ -135,23 +135,16 @@ void pci_disable_bridge_window(struct pc
- }
- #endif	/* CONFIG_PCI_QUIRKS */
- 
--int pci_assign_resource(struct pci_dev *dev, int resno)
-+static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
-+				 int resno)
- {
--	struct pci_bus *bus = dev->bus;
- 	struct resource *res = dev->resource + resno;
- 	resource_size_t size, min, align;
- 	int ret;
- 
- 	size = resource_size(res);
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
--
- 	align = resource_alignment(res);
--	if (!align) {
--		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
--			"alignment) %pR flags %#lx\n",
--			resno, res, res->flags);
--		return -EINVAL;
--	}
- 
- 	/* First, try exact prefetching match.. */
- 	ret = pci_bus_alloc_resource(bus, res, size, align, min,
-@@ -169,10 +162,7 @@ int pci_assign_resource(struct pci_dev *
- 					     pcibios_align_resource, dev);
- 	}
- 
--	if (ret) {
--		dev_info(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
--			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
--	} else {
-+	if (!ret) {
- 		res->flags &= ~IORESOURCE_STARTALIGN;
- 		if (resno < PCI_BRIDGE_RESOURCES)
- 			pci_update_resource(dev, resno);
-@@ -180,6 +170,39 @@ int pci_assign_resource(struct pci_dev *
- 
- 	return ret;
- }
-+
-+int pci_assign_resource(struct pci_dev *dev, int resno)
-+{
-+	struct resource *res = dev->resource + resno;
-+	resource_size_t align;
-+	struct pci_bus *bus;
-+	int ret;
-+
-+	align = resource_alignment(res);
-+	if (!align) {
-+		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
-+			"alignment) %pR flags %#lx\n",
-+			resno, res, res->flags);
-+		return -EINVAL;
-+	}
-+
-+	bus = dev->bus;
-+	while ((ret = __pci_assign_resource(bus, dev, resno))) {
-+		if (bus->self->transparent)
-+			bus = bus->parent;
-+		else
-+			bus = NULL;
-+		if (bus)
-+			continue;
-+		break;
-+	}
-+
-+	if (ret)
-+		dev_info(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
-+			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
-+
-+	return ret;
-+}
- 
- #if 0
- int pci_assign_resource_fixed(struct pci_dev *dev, int resno)
+or some other value depending on your amount of ram.  This change will
+increase the minimum amount of memory available for network memory
+allocations, which are called from softirq context to refill the NIC's
+receive buffers.
