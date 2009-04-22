@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZDVF3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZDVFaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZDVF3s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 01:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZDVF3j
+	id S1754186AbZDVFaH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 01:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZDVF3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 01:29:39 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36008 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbZDVF3i (ORCPT
+	Wed, 22 Apr 2009 01:29:43 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:42412 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbZDVF3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 01:29:38 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Subject: Re: [PATCH, RFC] check for frozen filesystems in the mmap path
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <49EEA4BE.6000207@redhat.com>
-References: <20090422132451.62A4.A69D9226@jp.fujitsu.com> <49EEA4BE.6000207@redhat.com>
-Message-Id: <20090422141250.62A7.A69D9226@jp.fujitsu.com>
+	Wed, 22 Apr 2009 01:29:42 -0400
+Message-ID: <49EEAB43.5010908@canonical.com>
+Date: Wed, 22 Apr 2009 07:29:39 +0200
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, jkosina@suse.cz,
+       ubuntuLp-ugeuder@sneakemail.com
+Subject: Re: [PATCH] vgacon: Return the upper half of 512 character fonts
+References: <49EDDB8E.5020200@canonical.com> <20090421135454.6ac430fb.akpm@linux-foundation.org>
+In-Reply-To: <20090421135454.6ac430fb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 22 Apr 2009 14:29:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> KOSAKI Motohiro wrote:
-> >>> 2. this logic kill multi thread application.
-> >>>
-> >>> this logic mean mmap_sem grabbing until unfreeze.
-> >>> it mean othrer thread in the same process can't page-fault although
-> >>> it don't touch frozen-sb.
-> >>> it seems strange.
-> >> Hm, I hadn't thought about this ... On the one hand, ->page_mkwrite can
-> >> already sleep, though a userspace freeze/unfreeze could potentially take
-> >> much much longer.  freeze/unfreeze *should* happen very quickly, but
-> >> nothing enforces that.
-> >>
-> >> Do you have any suggestions?
-> > 
-> > One more comment.
-> > 
-> > I read ioctl_fsfreeze() and freeze_bdev(), it call __fsync_super().
-> > Oh, I don't think __fsync_suepr is very quick.
+Andrew Morton wrote:
+> On Tue, 21 Apr 2009 16:43:26 +0200
+> Stefan Bader <stefan.bader@canonical.com> wrote:
 > 
-> Well, what I mean is that the filesystem is not intended to be frozen
-> for long periods of time.  But it's not enforced by any method.
+>> From: Stefan Bader <stefan.bader@canonical.com>
+>> Date: Fri, 17 Apr 2009 23:21:05 +0200
+>> Subject: [PATCH] vgacon: Return the upper half of 512 character fonts
+>>
+>> Bug: #355057
 > 
-> > So, page-fault have one unique characteristics.
-> > if page-fault return 0 without pte change, page-fault is occur again soon.
-> > then, if you need long time waiting, I think you can use following technique.
-> > 
-> > 	unlock mmap_sem
-> > 	wait long-time
-> > 	lock mmap_sem
-> > 	goto out;
-> > 
-> > 
-> > it cause page-fault counter increment twice unintesionally.
-> > but no problem. fs-freeze is not freqently event.
-> > 
-> > Am I missing anything?
+> I think it's OK (and often good) to include the bug references in the
+> changelog.  But nobody will have any clue which bug tracking system
+> this refers to!
 > 
-> Hm, I'll have to think about that.  This is not my best area.  :)  So do
-> you mean that if a wait needs to happen for the frozen fs, we can
-> unlock, do that wait for unfreeze, relock, return early, and come back
-> again when it is not frozen?
+> A full URL would be appropriate.
+> 
+> <googles for a while>
+> 
+> The form I use is
+> 
+> 	Addresses https://bugs.launchpad.net/ubuntu/+source/linux/+bug/355057
+> 
+True, the current form is used here to generate changelog and either should not 
+go outside or, even better, I should make it a default to add another tag with 
+the complete link which then helps all.
 
-Yes.
+Stefan
 
+-- 
 
-> One other thing that I think I just discovered is that nothing is
-> actually stopping mmap IO even on a frozen filesystem, as long as no
-> metadata updates are required for the IO... I'm seeing this on xfs
-> anyway (ext4 tries to update mtime, so that gets stopped on the frozen fs).
-
-I don't understand this issue. oh sorry, I'm not fs expert ;)
-
-
+When all other means of communication fail, try words!
 
 
