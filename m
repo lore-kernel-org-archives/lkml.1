@@ -1,84 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZDVHDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZDVHHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbZDVHDf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZDVHD0
+	id S1754604AbZDVHHr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZDVHHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:03:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42178 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZDVHDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:03:25 -0400
-Date: Wed, 22 Apr 2009 09:01:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org
-Subject: Re: New x86 warning
-Message-ID: <20090422070157.GA28438@elte.hu>
-References: <49EEBD3C.3060009@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EEBD3C.3060009@garzik.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 22 Apr 2009 03:07:37 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:43924 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbZDVHHg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 03:07:36 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 2/6] Char: cyclades, cache HW version
+Date: Wed, 22 Apr 2009 09:06:39 +0200
+Message-Id: <1240384003-25499-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1240384003-25499-1-git-send-email-jirislaby@gmail.com>
+References: <1240384003-25499-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Store HW version locally to not read it all the time in interrupts
+and alike.
 
-* Jeff Garzik <jeff@garzik.org> wrote:
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/char/cyclades.c  |   32 +++++++++++---------------------
+ include/linux/cyclades.h |    1 +
+ 2 files changed, 12 insertions(+), 21 deletions(-)
 
-> On x86-32, this warning now appears for me in 2.6.30-rc3, and did 
-> not appear in 2.6.29.
->
-> drivers/acpi/acpica/tbfadt.c: In function 'acpi_tb_create_local_fadt':
-> /spare/repo/linux-2.6/arch/x86/include/asm/string_32.h:75: warning:  
-> array subscript is above array bounds
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index 2cbf741..cf191cc 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -668,8 +668,7 @@ static void cy_send_xchar(struct tty_struct *tty, char ch);
+ #define Z_FPGA_CHECK(card) \
+ 	((readl(&(card).ctl_addr.p9060->init_ctrl) & (1<<17)) != 0)
+ 
+-#define ISZLOADED(card)	(((ZO_V1 == readl(&(card).ctl_addr.p9060->mail_box_0)) \
+-			|| Z_FPGA_CHECK(card)) && \
++#define ISZLOADED(card)	((ZO_V1 == (card).hw_ver || Z_FPGA_CHECK(card)) && \
+ 			(ZFIRM_ID == readl(&((struct FIRM_ID __iomem *) \
+ 			((card).base_addr+ID_ADDRESS))->signature)))
+ 
+@@ -1393,8 +1392,6 @@ cyz_fetch_msg(struct cyclades_card *cinfo,
+ 	unsigned long loc_doorbell;
+ 
+ 	firm_id = cinfo->base_addr + ID_ADDRESS;
+-	if (!ISZLOADED(*cinfo))
+-		return -1;
+ 	zfw_ctrl = cinfo->base_addr + (readl(&firm_id->zfwctrl_addr) & 0xfffff);
+ 	board_ctrl = &zfw_ctrl->board_ctrl;
+ 
+@@ -1619,10 +1616,8 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
+ 	static struct BOARD_CTRL __iomem *board_ctrl;
+ 	static struct CH_CTRL __iomem *ch_ctrl;
+ 	static struct BUF_CTRL __iomem *buf_ctrl;
+-	__u32 channel;
++	__u32 channel, param, fw_ver;
+ 	__u8 cmd;
+-	__u32 param;
+-	__u32 hw_ver, fw_ver;
+ 	int special_count;
+ 	int delta_count;
+ 
+@@ -1630,7 +1625,6 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
+ 	zfw_ctrl = cinfo->base_addr + (readl(&firm_id->zfwctrl_addr) & 0xfffff);
+ 	board_ctrl = &zfw_ctrl->board_ctrl;
+ 	fw_ver = readl(&board_ctrl->fw_version);
+-	hw_ver = readl(&cinfo->ctl_addr.p9060->mail_box_0);
+ 
+ 	while (cyz_fetch_msg(cinfo, &channel, &cmd, &param) == 1) {
+ 		special_count = 0;
+@@ -2388,11 +2382,9 @@ static int cy_open(struct tty_struct *tty, struct file *filp)
+ 		struct FIRM_ID __iomem *firm_id = cinfo->base_addr + ID_ADDRESS;
+ 
+ 		if (!ISZLOADED(*cinfo)) {
+-			if (((ZE_V1 == readl(&cinfo->ctl_addr.p9060->
+-							mail_box_0)) &&
+-					Z_FPGA_CHECK(*cinfo)) &&
+-					(ZFIRM_HLT == readl(
+-						&firm_id->signature))) {
++			if (cinfo->hw_ver == ZE_V1 && Z_FPGA_CHECK(*cinfo) &&
++					readl(&firm_id->signature) ==
++					ZFIRM_HLT) {
+ 				printk(KERN_ERR "cyc:Cyclades-Z Error: you "
+ 					"need an external power supply for "
+ 					"this number of ports.\nFirmware "
+@@ -4336,7 +4328,6 @@ static void cy_hangup(struct tty_struct *tty)
+ static int __devinit cy_init_card(struct cyclades_card *cinfo)
+ {
+ 	struct cyclades_port *info;
+-	u32 uninitialized_var(mailbox);
+ 	unsigned int nports, port;
+ 	unsigned short chip_number;
+ 	int uninitialized_var(index);
+@@ -4344,8 +4335,7 @@ static int __devinit cy_init_card(struct cyclades_card *cinfo)
+ 	spin_lock_init(&cinfo->card_lock);
+ 
+ 	if (IS_CYC_Z(*cinfo)) {	/* Cyclades-Z */
+-		mailbox = readl(&cinfo->ctl_addr.p9060->mail_box_0);
+-		nports = (mailbox == ZE_V1) ? ZE_V1_NPORTS : 8;
++		nports = (cinfo->hw_ver == ZE_V1) ? ZE_V1_NPORTS : 8;
+ 		cinfo->intr_enabled = 0;
+ 		cinfo->nports = 0;	/* Will be correctly set later, after
+ 					   Z FW is loaded */
+@@ -4377,7 +4367,7 @@ static int __devinit cy_init_card(struct cyclades_card *cinfo)
+ 
+ 		if (IS_CYC_Z(*cinfo)) {
+ 			info->type = PORT_STARTECH;
+-			if (mailbox == ZO_V1)
++			if (cinfo->hw_ver == ZO_V1)
+ 				info->xmit_fifo_size = CYZ_FIFO_SIZE;
+ 			else
+ 				info->xmit_fifo_size = 4 * CYZ_FIFO_SIZE;
+@@ -4932,7 +4922,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ {
+ 	void __iomem *addr0 = NULL, *addr2 = NULL;
+ 	char *card_name = NULL;
+-	u32 mailbox;
++	u32 uninitialized_var(mailbox);
+ 	unsigned int device_id, nchan = 0, card_no, i;
+ 	unsigned char plx_ver;
+ 	int retval, irq;
+@@ -5014,7 +5004,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 
+ 		plx_init(pdev, irq, addr0);
+ 
+-		mailbox = (u32)readl(&ctl_addr->mail_box_0);
++		mailbox = readl(&ctl_addr->mail_box_0);
+ 
+ 		addr2 = ioremap_nocache(pci_resource_start(pdev, 2),
+ 				mailbox == ZE_V1 ? CyPCI_Ze_win : CyPCI_Zwin);
+@@ -5026,7 +5016,6 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 		if (mailbox == ZE_V1) {
+ 			card_name = "Cyclades-Ze";
+ 
+-			readl(&ctl_addr->mail_box_0);
+ 			nchan = ZE_V1_NPORTS;
+ 		} else {
+ 			card_name = "Cyclades-8Zo";
+@@ -5089,6 +5078,8 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 		}
+ 		cy_card[card_no].num_chips = nchan / 4;
+ 	} else {
++		cy_card[card_no].hw_ver = mailbox;
++		cy_card[card_no].num_chips = (unsigned int)-1;
+ #ifdef CONFIG_CYZ_INTR
+ 		/* allocate IRQ only if board has an IRQ */
+ 		if (irq != 0 && irq != 255) {
+@@ -5101,7 +5092,6 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 			}
+ 		}
+ #endif				/* CONFIG_CYZ_INTR */
+-		cy_card[card_no].num_chips = (unsigned int)-1;
+ 	}
+ 
+ 	/* set cy_card */
+diff --git a/include/linux/cyclades.h b/include/linux/cyclades.h
+index 9ae03d5..a14fe30 100644
+--- a/include/linux/cyclades.h
++++ b/include/linux/cyclades.h
+@@ -518,6 +518,7 @@ struct cyclades_card {
+ 	unsigned int nports;	/* Number of ports in the card */
+ 	int bus_index;		/* address shift - 0 for ISA, 1 for PCI */
+ 	int intr_enabled;		/* FW Interrupt flag - 0 disabled, 1 enabled */
++	u32 hw_ver;
+ 	spinlock_t card_lock;
+ 	struct cyclades_port *ports;
+ };
+-- 
+1.6.2.3
 
-Last i checked it was a GCC bounds check bogosity. All attempts to 
-work it around or annotate it sanely (without changing the assembly 
-code) failed. (new ideas welcome)
-
-The closest i came was the hacklet below to the assembly code. [with 
-an intentionally corrupted patch header to make it harder to apply 
-accidentally.]
-
-The hacklet writes the fifth byte by writing two bytes from byte 
-position 3.
-
-> lspci, dmesg and .config attached.
->
-> 	Jeff
->
-> P.S.  It is unclear in MAINTAINERS whether x86@kernel.org should 
-> be CC'd in addition to the other addresses listed, or as a 
-> replacement for individual emails.
-
-at your option. Cc:-ing maintainers directly can get faster 
-treatment occasionally. Using the alias is shorter.
-
-	Ingo
-
-NOT-Signed-off-by-me:
-
-+++ linux/arch/x86/include/asm/string_32.h
-@@ -72,7 +72,7 @@ static __always_inline void *__constant_
- 		return to;
- 	case 5:
- 		*(int *)to = *(int *)from;
--		*((char *)to + 4) = *((char *)from + 4);
-+		*((short *)(char *)(to + 3)) = *((short *)(char *)(from + 3));
- 		return to;
- 	case 6:
- 		*(int *)to = *(int *)from;
