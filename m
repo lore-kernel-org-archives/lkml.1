@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZDVRia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZDVRk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZDVRia (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 13:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZDVRiV
+	id S1754643AbZDVRk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 13:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZDVRkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 13:38:21 -0400
-Received: from kazi.fit.vutbr.cz ([147.229.8.12]:49721 "EHLO kazi.fit.vutbr.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbZDVRiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 13:38:20 -0400
-X-Greylist: delayed 672 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Apr 2009 13:38:20 EDT
-Date: Wed, 22 Apr 2009 19:27:07 +0200
-From: Kasparek Tomas <kasparek@fit.vutbr.cz>
-To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: NFS client packet storm on 2.6.27.x
-Message-ID: <20090422172707.GC57877@fit.vutbr.cz>
-References: <1231782009.7322.12.camel@heimdal.trondhjem.org> <1231809446.7322.17.camel@heimdal.trondhjem.org> <20090113152201.GD47559@fit.vutbr.cz> <20090116104802.GF47559@fit.vutbr.cz> <20090118130835.GH47559@fit.vutbr.cz> <20090120150301.GG47559@fit.vutbr.cz> <1232465547.7055.3.camel@heimdal.trondhjem.org> <20090303120848.GV89843@fit.vutbr.cz> <1236089767.9631.4.camel@heimdal.trondhjem.org> <20090418051739.GL64731@fit.vutbr.cz>
+	Wed, 22 Apr 2009 13:40:10 -0400
+Received: from exprod6og101.obsmtp.com ([64.18.1.181]:43854 "HELO
+	exprod6og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753006AbZDVRkJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 13:40:09 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090418051739.GL64731@fit.vutbr.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] usb/host/ohci-hcd.c: fix sparse warnings
+Date: Wed, 22 Apr 2009 13:39:34 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090165EFC3@mi8nycmail19.Mi8.com>
+In-Reply-To: <20090422055327.GF9009@kroah.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] usb/host/ohci-hcd.c: fix sparse warnings
+Thread-Index: AcnDENFtp0u4Z33eQsCciGnRvkfIJAAXzjSA
+References: <BD79186B4FD85F4B8E60E381CAEE1909015F8DFC@mi8nycmail19.Mi8.com> <20090422055327.GF9009@kroah.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Greg KH" <greg@kroah.com>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 22 Apr 2009 17:40:06.0939 (UTC) FILETIME=[603226B0:01C9C371]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 07:17:39AM +0200, Kasparek Tomas wrote:
-> On Tue, Mar 03, 2009 at 09:16:07AM -0500, Trond Myklebust wrote:
-> > On Tue, 2009-03-03 at 13:08 +0100, Kasparek Tomas wrote:
-> > > On Tue, Jan 20, 2009 at 10:32:27AM -0500, Trond Myklebust wrote:
-> > > > A binary wireshark dump of the traffic between one such client and the
-> > > > server would help.
-> > > 
-> > > I was able to finally got the tcpdump. I got it from 2.6.27.19 client but
-> > > after several weeks without problems. I include the file and place it on
-> > > http://merlin.fit.vutbr.cz/tmp/nfs/dump_kas2_mat.dump_small (have over 1GB
-> > > of dump, but it's all the time the same SYN+RST packets). The packet rate
-> > > maxed at 260000pps from two clients.
-> > > 
-> > > This dump is taken from server after reset (the server does not respond
-> > > even to keybord) before clients are disconnected/rebooted. To remind it - all
-> > > clients seems to work well with reversed
-> > > e06799f958bf7f9f8fae15f0c6f519953fb0257c
-> > 
-> > Yes. I saw that behaviour when testing at Connectathon last week. When
-> > one of the servers I was testing against crashed and later came up
-> > again, the patched client went into that same SYN+RST frenzy. I'm
-> > planning to look at this now that I'm back at home.
+On Tuesday, April 21, 2009 10:53 PM, Greg KH wrote:
+> On Wed, Apr 15, 2009 at 10:04:17PM -0400, H Hartley Sweeten wrote:
+> Fix sparse warnings in drivers/usb/host/ohci-hcd.c.
+>> 
+>> 	warning: symbol 'temp' shadows an earlier one
+>> 
+>> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+>
+> I'm not seeing this sparse warning either.
+>
+> And you didn't fix the two sparse warnings I am seeing in this file,
+> so I'm going to think this patch doesn't really do anything :(
+
+Following are the sparse warnings I am seeing when building for an
+EP93xx ARM platform:
+
+  CHECK   drivers/usb/host/ohci-hcd.c
+drivers/usb/host/ohci-hcd.c:626:2: warning: symbol 'temp' shadows an
+earlier one
+drivers/usb/host/ohci-hcd.c:574:14: originally declared here
+drivers/usb/host/ohci-hcd.c:634:4: warning: symbol 'temp' shadows an
+earlier one
+drivers/usb/host/ohci-hcd.c:574:14: originally declared here
+drivers/usb/host/ohci-hcd.c:676:3: warning: symbol 'temp' shadows an
+earlier one
+drivers/usb/host/ohci-hcd.c:574:14: originally declared here
+drivers/usb/host/ohci-hcd.c:724:2: warning: symbol 'temp' shadows an
+earlier one
+drivers/usb/host/ohci-hcd.c:574:14: originally declared here
+drivers/usb/host/ohci-q.c:69:2: warning: context imbalance in
+'finish_urb': __context__ statement expected different context
+drivers/usb/host/ohci-q.c:69:2:    context '<noident>': wanted >= 0, got
+-1
+drivers/usb/host/ohci-q.c:991:15: warning: context problem in
+'finish_unlinks': 'finish_urb' expected different context
+drivers/usb/host/ohci-q.c:991:15:    context 'lock': wanted >= 1, got 0
+drivers/usb/host/ohci-q.c:1082:13: warning: context problem in
+'takeback_td': 'finish_urb' expected different context
+drivers/usb/host/ohci-q.c:1082:13:    context 'lock': wanted >= 1, got 0
+drivers/usb/host/ohci-hcd.c:298:14: warning: context problem in
+'ohci_urb_dequeue': 'finish_urb' expected different context
+drivers/usb/host/ohci-hcd.c:298:14:    context 'lock': wanted >= 1, got
+0
+
+All the 'temp' shadows warnings appear to be caused by the
+raw_local_irq_disable() macro in arch/arm/include/asm/irqflags.h.
+
+I have no idea how to fix the context imbalance warnings so I left
+those alone. The functions seem to be tagged correctly with __releases()
+and __acquires() as needed. Could those be a problem with sparse?
+
+> thanks,
 > 
-> Hi, got a bit more data today as I get to the client early before it become
-> unresponsible. 
-> 
-> 
-> The lockup may be becouse I disconnected the cable from that client to stop
-> the packet storm, but still the backtrace may be usefull.
-> 
-> Is there anything else I can do, that will help with this problem?
+> greg k-h
 
-Hi,
-
-(I changed the SUBJ to be more descriptive for current problem)
-
-I got another client lockup today. It was a desktop so I have some more
-dmesg warnings about soft lockup caused probably by network cable unplug
-(but hopefully still showing what happens in rpciod) on
-
-http://merlin.fit.vutbr.cz/tmp/nfs/pckas-dmesg
-
-I can check with top, that rpciod was using 100% cpu. I limited the flow
-from client to server with firewall so I was able to save the server and
-get some tcpdump -s0 data (actually RPC null with ERR response from server)
-
-Just to remind, the client is 2.6.27.21 (i386), the server is 2.6.16.62
-(x86_64).
-
-Please let me know if I can do anything more, this is really paintfull for
-me.
-
---   
-
-  Tomas Kasparek, PhD student  E-mail: kasparek@fit.vutbr.cz
-  CVT FIT VUT Brno, L127       Web:    http://www.fit.vutbr.cz/~kasparek
-  Bozetechova 1, 612 66        Fax:    +420 54114-1270
-  Brno, Czech Republic         Phone:  +420 54114-1220
-
-  jabber: tomas.kasparek@jabber.cz
-  GPG: 2F1E 1AAF FD3B CFA3 1537  63BD DCBE 18FF A035 53BC
-
+Regards,
+Hartley
