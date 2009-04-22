@@ -1,44 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbZDVI3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZDVIdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754267AbZDVI3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 04:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZDVI3F
+	id S1754186AbZDVIdv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 04:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZDVIdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 04:29:05 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61727 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbZDVI3D (ORCPT
+	Wed, 22 Apr 2009 04:33:40 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:57912 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbZDVIdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 04:29:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dLReyZMDl+c8VuprIw8YCwdqeMHyXf3pS5PwJ2vgyuenkQlHZQD769nAHhjwQMR18y
-         3+X2DelMWJfKaJOzef13j4XxDO/UYJZrh8Wp9MOiM/YAT2/iY+TTwHPmMHpWEWaKQV8h
-         J6l8/dUUqPQ58nd2VCZPSYE2uxjJN+5mlHhqI=
+	Wed, 22 Apr 2009 04:33:38 -0400
+Message-ID: <49EED645.3090208@suse.de>
+Date: Wed, 22 Apr 2009 14:03:09 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <22462.1240272112@death.nxdomain.ibm.com>
-References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com>
-	 <49ECBBF0.80202@cosmosbay.com>
-	 <30257.1240252651@death.nxdomain.ibm.com>
-	 <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com>
-	 <7609.1240259780@death.nxdomain.ibm.com>
-	 <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com>
-	 <13606.1240262581@death.nxdomain.ibm.com>
-	 <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com>
-	 <22462.1240272112@death.nxdomain.ibm.com>
-Date: Wed, 22 Apr 2009 10:29:00 +0200
-Message-ID: <1ef444010904220129l24a74f07q8f32edfabe603436@mail.gmail.com>
-Subject: Re: bond interface arp, vlan and trunk / network question
-From: stefan novak <lms.brubaker@gmail.com>
-To: Jay Vosburgh <fubar@us.ibm.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Masahiro Tamori <masahiro.tamori@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org
+Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
+References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>	 <49D45E42.3050502@suse.de>	 <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>	 <49EC0A83.8060802@suse.de> <1240230224.8073.6.camel@heimdal.trondhjem.org>	 <49EC6CB3.8080800@suse.de> <1240237274.13636.9.camel@heimdal.trondhjem.org>	 <49EC990B.1030007@suse.de>  <20090421144810.GA7036@infradead.org> <1240335302.5390.20.camel@heimdal.trondhjem.org>
+In-Reply-To: <1240335302.5390.20.camel@heimdal.trondhjem.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so its a bug in kernel?
+Trond Myklebust wrote:
+> On Tue, 2009-04-21 at 10:48 -0400, Christoph Hellwig wrote:
+>> On Mon, Apr 20, 2009 at 09:17:23PM +0530, Suresh Jayaraman wrote:
+>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+>>> +				     struct file *filp, loff_t *ppos,
+>>> +				     size_t count, unsigned int flags)
+>>> +{
+>>> +	struct dentry *dentry = filp->f_path.dentry;
+>>> +
+>>> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+>>> +		dentry->d_parent->d_name.name, dentry->d_name.name,
+>>> +		(unsigned long) count, (unsigned long long) *ppos);
+>>> +
+>>> +	return generic_file_splice_write(pipe, filp, ppos, count, flags);
+>>> +}
+>>> +
+>> You need all calls from nfs_file_write, too:
+>>
+>>  - most importantly the nfs_revalidate_file_size for O_APPEND
+> 
+> Isn't O_APPEND illegal for splice_write()? It looks like it is from a
+> quick perusal of do_splice_from().
+
+Yes, I would also think so and also from upstream commit
+efc968d450e013049a662d22727cf132618dcb2f.
+I've added a little comment to make his clear.
+
+>>  - the nfs_do_fsync for sync writes
+> 
+> generic_file_splice_write() calls generic_osync_inode(), which should
+> ensure sync writes even with NFS.
+> The one thing it won't do is propagate NFS write errors back to the
+> caller. If we do care about this, then we should certainly test for
+> nfs_need_sync_write() and then call nfs_do_fsync() (see
+> nfs_file_write()).
+
+I think it makes sense to propagate NFS write errors back.
+
+>>  - probably the stats increment
+> 
+> We should talk to Chuck about this.
+> 
+
+Have added it to NORMALBYTESWRITTEN based on Chuck's suggestion.
+
+Here is the updated patch. Does this look OK?
+
+Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+---
+ fs/nfs/file.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
+
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 5a97bcf..6f2cd67 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -48,6 +48,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+ 					size_t count, unsigned int flags);
+ static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+ 				unsigned long nr_segs, loff_t pos);
++static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
++					struct file *filp, loff_t *ppos,
++					size_t count, unsigned int flags);
+ static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+ 				unsigned long nr_segs, loff_t pos);
+ static int  nfs_file_flush(struct file *, fl_owner_t id);
+@@ -73,6 +76,7 @@ const struct file_operations nfs_file_operations = {
+ 	.lock		= nfs_lock,
+ 	.flock		= nfs_flock,
+ 	.splice_read	= nfs_file_splice_read,
++	.splice_write	= nfs_file_splice_write,
+ 	.check_flags	= nfs_check_flags,
+ 	.setlease	= nfs_setlease,
+ };
+@@ -587,6 +591,34 @@ out_swapfile:
+ 	goto out;
+ }
+ 
++static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
++				     struct file *filp, loff_t *ppos,
++				     size_t count, unsigned int flags)
++{
++	struct dentry *dentry = filp->f_path.dentry;
++	struct inode *inode = dentry->d_inode;
++	ssize_t ret;
++
++	dprintk("NFS splice_write(%s/%s, %lu@%llu)\n",
++		dentry->d_parent->d_name.name, dentry->d_name.name,
++		(unsigned long) count, (unsigned long long) *ppos);
++
++	/*
++	 * We don't need to worry about O_APPEND as the combination of splice
++	 * and an O_APPEND destination is disallowed.
++	 */
++
++	nfs_add_stats(inode, NFSIOS_NORMALWRITTENBYTES, count);
++
++	ret = generic_file_splice_write(pipe, filp, ppos, count, flags);
++	if (ret >= 0 && nfs_need_sync_write(filp, inode)) {
++		int err = nfs_do_fsync(nfs_file_open_context(filp), inode);
++		if (err < 0)
++			ret = err;
++	}
++	return ret;
++}
++
+ static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
+ {
+ 	struct inode *inode = filp->f_mapping->host;
