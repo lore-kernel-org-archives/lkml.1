@@ -1,102 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbZDVHce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZDVHeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbZDVHce (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZDVHcV
+	id S1755002AbZDVHeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZDVHeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:32:21 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:64641 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbZDVHcU convert rfc822-to-8bit (ORCPT
+	Wed, 22 Apr 2009 03:34:23 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:21404 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750870AbZDVHeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:32:20 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [BUILD FAILURE 11/12] Next April 21 : PPC64 randconfig [drivers/usb/host/ohci-hcd.o]
-Date: Wed, 22 Apr 2009 09:30:00 +0200
-User-Agent: KMail/1.9.9
-Cc: David Brownell <david-b@pacbell.net>,
-       Kumar Gala <galak@kernel.crashing.org>, subrata@linux.vnet.ibm.com,
-       linux-usb@vger.kernel.org, Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next <linux-next@vger.kernel.org>,
-       sachinp <sachinp@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>, samr <sam@ravnborg.org>
-References: <1240340081.9110.144.camel@subratamodak.linux.ibm.com> <200904211919.38104.david-b@pacbell.net> <49EE8855.1080306@oracle.com>
-In-Reply-To: <49EE8855.1080306@oracle.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 22 Apr 2009 03:34:22 -0400
+Message-ID: <49EEC82B.5040603@panasas.com>
+Date: Wed, 22 Apr 2009 10:32:59 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904220930.01735.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/gbSfm9RBrG1UigGBiobc3mhkRR/M/+CSkyuS
- edi/uqrzf7NK1qiJ72h0LOQnHiXEhc21ec9T+mm7Jst4erBif9
- wwQvhhkcZJYnvLiaRaUOQ==
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       mdharm-usb@one-eyed-alien.net, linux-usb <linux-usb@vger.kernel.org>,
+       usb-storage@lists.one-eyed-alien.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH v2] fix sign extension with 1.5TB usb-storage LBD=y
+References: <1240347174.10627.20.camel@nimitz>	 <20090421211858.GA1926@parisc-linux.org> <1240351210.10627.30.camel@nimitz>
+In-Reply-To: <1240351210.10627.30.camel@nimitz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2009 07:33:05.0693 (UTC) FILETIME=[93710CD0:01C9C31C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 April 2009, Randy Dunlap wrote:
-> > Is there maybe a way to force Kconfig to just reject
-> > such illegal configs -- neither option set -- rather
-> > than trying some how to fix it?
+On 04/22/2009 01:00 AM, Dave Hansen wrote:
+> Here's a patch implementing Al's suggestion.  Not quite as trivial as
+> Matthew's, but even nicer aesthetically.  (Description stolen from
+> Matthew's patch).  I have verified that this fixes my issue.
 > 
-> Not that I know of.  cc-ing Sam.
+> --
+> 
+> Shifting an unsigned char implicitly casts it to a signed int.  This
+> caused 'lba' to sign-extend and Linux would then try READ CAPACITY 16
+> which was not supported by at least one drive.  Using the
+> get_unaligned_be*() helpers keeps us from having to worry about how the
+> extension might occur.
+> 
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> 
+> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+> index 3fcb64b..c50142b 100644
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -50,6 +50,7 @@
+>  #include <linux/string_helpers.h>
+>  #include <linux/async.h>
+>  #include <asm/uaccess.h>
+> +#include <asm/unaligned.h>
+>  
+>  #include <scsi/scsi.h>
+>  #include <scsi/scsi_cmnd.h>
+> @@ -1344,12 +1345,8 @@ static int read_capacity_16(struct scsi_disk *sdkp, struct scsi_device *sdp,
+>  		return -EINVAL;
+>  	}
+>  
+> -	sector_size =	(buffer[8] << 24) | (buffer[9] << 16) |
+> -			(buffer[10] << 8) | buffer[11];
+> -	lba =  (((u64)buffer[0] << 56) | ((u64)buffer[1] << 48) |
+> -		((u64)buffer[2] << 40) | ((u64)buffer[3] << 32) |
+> -		((u64)buffer[4] << 24) | ((u64)buffer[5] << 16) |
+> -		((u64)buffer[6] << 8) | (u64)buffer[7]);
+> +	sector_size = get_unaligned_be32(&buffer[8]);
+> +	lba =  get_unaligned_be64(&buffer[0]);
 
-We could just make the USB_OHCI_HCD_PPC_OF option implicit
-and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
-and USB_OHCI_HCD_PPC_OF_LE are set.
+These are actually aligned access it might be worth sacrificing a cast
+to be32/64 for sake of speed.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>  
+>  	sd_read_protection_type(sdkp, buffer);
+>  
+> @@ -1400,10 +1397,8 @@ static int read_capacity_10(struct scsi_disk *sdkp, struct scsi_device *sdp,
+>  		return -EINVAL;
+>  	}
+>  
+> -	sector_size =	(buffer[4] << 24) | (buffer[5] << 16) |
+> -			(buffer[6] << 8) | buffer[7];
+> -	lba =	(buffer[0] << 24) | (buffer[1] << 16) |
+> -		(buffer[2] << 8) | buffer[3];
+> +	sector_size = get_unaligned_be32(&buffer[4]);
+> +	lba = get_unaligned_be32(&buffer[0]);
+>  
 
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index 845479f..07e3e25 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -161,26 +161,26 @@ config USB_OHCI_HCD_PPC_SOC
- 	  Enables support for the USB controller on the MPC52xx or
- 	  STB03xxx processor chip.  If unsure, say Y.
- 
--config USB_OHCI_HCD_PPC_OF
--	bool "OHCI support for PPC USB controller on OF platform bus"
--	depends on USB_OHCI_HCD && PPC_OF
--	default y
--	---help---
--	  Enables support for the USB controller PowerPC present on the
--	  OpenFirmware platform bus.
--
- config USB_OHCI_HCD_PPC_OF_BE
--	bool "Support big endian HC"
--	depends on USB_OHCI_HCD_PPC_OF
--	default y
-+	bool "OHCI support for OF platform bus (big endian)"
-+	depends on USB_OHCI_HCD && PPC_OF
- 	select USB_OHCI_BIG_ENDIAN_DESC
- 	select USB_OHCI_BIG_ENDIAN_MMIO
-+	---help---
-+	  Enables support for big-endian USB controllers present on the
-+	  OpenFirmware platform bus.
- 
- config USB_OHCI_HCD_PPC_OF_LE
--	bool "Support little endian HC"
--	depends on USB_OHCI_HCD_PPC_OF
--	default n
-+	bool "OHCI support for OF platform bus (little endian)"
-+	depends on USB_OHCI_HCD && PPC_OF
- 	select USB_OHCI_LITTLE_ENDIAN
-+	---help---
-+	  Enables support for little-endian USB controllers present on the
-+	  OpenFirmware platform bus.
-+
-+config USB_OHCI_HCD_PPC_OF
-+	bool
-+	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
- 
- config USB_OHCI_HCD_PCI
- 	bool "OHCI support for PCI-bus USB controllers"
+Here too, both are actually aligned.
+
+>  	if ((sizeof(sdkp->capacity) == 4) && (lba == 0xffffffff)) {
+>  		sd_printk(KERN_ERR, sdkp, "Too big for this kernel. Use a "
+> 
+> 
+> -- Dave
+> 
+
+I'm not 100% convinced just a thought.
+Boaz
