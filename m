@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZDVVis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbZDVVjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbZDVVis (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 17:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZDVVih
+	id S1756429AbZDVVjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 17:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZDVVjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 17:38:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:46383 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbZDVVig (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 17:38:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=BzKiGSfUuf5FQzdMjFH60VjC363ToWFiY4h8t0wTFEFvXKHsS/OM76HEPkjJeZA71f
-         Zim5USruh8a35qJ26aGRkO2fGpwxRhQ+WhQlEvV7p3zuLrnEF31V6UmlUf8zinke6L2c
-         wFWdJVkYqE5Rb9cwdlIJ5o+g9KMCZBy4D+e68=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [git pull] IDE fixes
-Date: Wed, 22 Apr 2009 23:41:37 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200904222048.15556.bzolnier@gmail.com> <200904222143.47220.bzolnier@gmail.com> <1240430103.21848.101.camel@localhost>
-In-Reply-To: <1240430103.21848.101.camel@localhost>
+	Wed, 22 Apr 2009 17:39:31 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53701 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752176AbZDVVja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 17:39:30 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX19lAvg8r7NldjXWlCu3OBZi4mI42V+aTSSFtXMQcH
+	5JDIBpAhvjpZNU
+Message-ID: <49EF8E8E.10104@gmx.de>
+Date: Wed, 22 Apr 2009 23:39:26 +0200
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904222341.37846.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: coly.li@suse.de, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-parisc <linux-parisc@vger.kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 6/7] parisc: add parameter to read_cr16()
+References: <49EF6AAE.5000207@suse.de>
+In-Reply-To: <49EF6AAE.5000207@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 April 2009 21:55:03 Joe Perches wrote:
-> On Wed, 2009-04-22 at 21:43 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > IMO we should just remove extra commas and add some whitespaces.
+Coly Li wrote:
+> This patch modifies parameter of au1x_counter1_read() from 'void' to 'struct
+> clocksource *cs', which fixes compile warning for incompatible parameter type.
 > 
-> Your choice.
-> Ignore, reject, accept, improve, fine by me.
+> Signed-off-by: Coly Li <coly.li@suse.de>
+> Cc: Helge Deller <deller@gmx.de>
+
+Patch is good.
+Thanks!
+
+Acked-by: Helge Deller <deller@gmx.de>
+
+
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/parisc/kernel/time.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> > I have also more general (process oriented) comment:
-> > 
-> > All patches have been posted to linux-kernel or linux-ide for review before
-> > and it is _much_ more efficient to raise issues (including CodingStyle ones)
-> > during "review phase" instead of during "push to Linus" phase.
+> diff --git a/arch/parisc/kernel/time.c b/arch/parisc/kernel/time.c
+> index d4dd056..d97d07f 100644
+> --- a/arch/parisc/kernel/time.c
+> +++ b/arch/parisc/kernel/time.c
+> @@ -173,7 +173,7 @@ EXPORT_SYMBOL(profile_pc);
 > 
-> Maybe for you, but I'm an intermittent
-> and random reader.
+>  /* clock source code */
+> 
+> -static cycle_t read_cr16(void)
+> +static cycle_t read_cr16(struct clocksource *cs)
+>  {
+>  	return get_cycles();
+>  }
+> 
 
-For everybody involved in the process -- this includes you.
-
-I'm not the original author of many patches so I simply cannot be
-correcting every single issue because:
-
-a) it is physically impossible
-
-b) it doesn't really educate people
-
-Thanks,
-Bart
