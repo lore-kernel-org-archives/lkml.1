@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZDVOdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZDVOhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753124AbZDVOdY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZDVOdM
+	id S1753376AbZDVOhu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZDVOhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:33:12 -0400
-Received: from intcomgrp.com ([216.54.13.120]:44573 "EHLO beta.intcomgrp.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbZDVOdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:33:11 -0400
-Message-ID: <49EF2A3C.2050107@support.intcomgrp.com>
-Date: Wed, 22 Apr 2009 10:31:24 -0400
-From: James Kosin <jkosin@beta.intcomgrp.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 22 Apr 2009 10:37:40 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:55764 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbZDVOhj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 10:37:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZpElngXPH3NWXqJnZ0kUzmNvn5QPzUEj+TZstnofhqdNy13EjfWhuYnLKVRA7Ymd3s
+         BdmvL0zyX4GGKBdZ+XiJJL54z0zEFk9oNHk8MrHf94szJ2kx8MMvBBtU4xqdbXB3pMfU
+         Mmaeom1Swjcdb5KgYyc9POjtk1gbty8+28wN0=
 MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [RFD] voltage/current regulator consumer interface
-References: <ct38K-3Fq-11@gated-at.bofh.it> <ct38K-3Fq-9@gated-at.bofh.it> <ctmXD-1yA-3@gated-at.bofh.it> <ctnK4-2zP-11@gated-at.bofh.it> <ctoG9-458-7@gated-at.bofh.it> <ctoG9-458-5@gated-at.bofh.it> <ctoPK-4y5-5@gated-at.bofh.it> <ctoZv-4KN-23@gated-at.bofh.it> <ctFxn-5OC-11@gated-at.bofh.it> <ctG0r-6HL-31@gated-at.bofh.it>
-In-Reply-To: <ctG0r-6HL-31@gated-at.bofh.it>
+In-Reply-To: <1240408407-21848-23-git-send-email-mel@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-23-git-send-email-mel@csn.ul.ie>
+Date: Wed, 22 Apr 2009 17:37:38 +0300
+X-Google-Sender-Auth: 615cf53c0e95c90a
+Message-ID: <84144f020904220737t3657ac01j4edf86cf61ef15e0@mail.gmail.com>
+Subject: Re: [PATCH 22/22] slab: Use nr_online_nodes to check for a NUMA 
+	platform
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Wed, Apr 22, 2009 at 10:57:37AM +0300, Mike Rapoport wrote:
-> 
->> What about "line-supply"?
-> 
-> In power management line normally refers to the core, unregulated power
-> bus for the system and a line supply would normally be something like a
-> wall wart that supplies this directly when it's connected.
+On Wed, Apr 22, 2009 at 4:53 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> SLAB currently avoids checking a bitmap repeatedly by checking once and
+> storing a flag. When the addition of nr_online_nodes as a cheaper version
+> of num_online_nodes(), this check can be replaced by nr_online_nodes.
+>
+> (Christoph did a patch that this is lifted almost verbatim from, hence the
+> first Signed-off-by. Christoph, can you confirm you're ok with that?)
+>
+> Signed-off-by: Christoph Lameter <cl@linux.com>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Can I suggest:
-"supply-switch" or "regulator-switch" may make more sense for the moment.
-
-James
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
