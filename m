@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZDVCJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZDVCTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbZDVCJx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 22:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZDVCJn
+	id S1754688AbZDVCTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 22:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZDVCTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 22:09:43 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:48622 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbZDVCJm convert rfc822-to-8bit (ORCPT
+	Tue, 21 Apr 2009 22:19:42 -0400
+Received: from n23b.bullet.mail.mud.yahoo.com ([68.142.206.142]:27817 "HELO
+	n23b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751281AbZDVCTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 22:09:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=MNfJGycS/WNqhU1IEy4dOxyFRJP+hzDDGWlX2+satn/SmTu+iAYV22eaztbFXLaBWK
-         9EZetoo8O6DCWc1CLKNq4rkoMAjTCoPHRLhYZwMitZ2LfQ7WPzVaNNl/ukQRpx3EPKv0
-         I0L0ipnylj6YQnlq3bVyvH/AIh2USKYog6gdM=
+	Tue, 21 Apr 2009 22:19:41 -0400
+X-Yahoo-Newman-Id: 200550.55241.bm@omp415.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WVQkjd3UnsUCxv7Fdt7Ym6bRNB8OaHmzGZf5wB51CG6YDlAAx7Mrzfm/hmZU/hbiRvKEka0zI/5+tISouCS3Cv6pkvuZGQbNcaol4biFopai1Ax42Es1Rmpo/Pgup5t6Iw2X6OcnI9xld5z9Q+VFvoQPyWBVmovVZMmIneqAAJU=  ;
+X-YMail-OSG: svFh6ScVM1k3FOgu37aCVRCWz5IKpEvKbOxDXqlOZCDTXI.EzLrm9ljhyHl6OEsgURGdwHli7CNtt7GQdcmJqqYRBbMpTyM_TTSsszES6xojCWZHFgU1S6fifn3NenT52zqKhBFQhgPDyPuoLtXc4V0j39E4ZGOU3Iw3rQAI7h2SGdbijESOlFzb0tC0m.Rei60cDyADg6pPxPjNfM5FIWXU3oIEIHnAvIHw6qjZHCz1kKgssiLtp_5GLYg8Sc7rskUp1jROlYQRRz1W
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [BUILD FAILURE 11/12] Next April 21 : PPC64 randconfig [drivers/usb/host/ohci-hcd.o]
+Date: Tue, 21 Apr 2009 19:19:37 -0700
+User-Agent: KMail/1.9.10
+Cc: Kumar Gala <galak@kernel.crashing.org>, subrata@linux.vnet.ibm.com,
+       linux-usb@vger.kernel.org, "Linuxppc-dev" <Linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next" <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+References: <1240340081.9110.144.camel@subratamodak.linux.ibm.com> <5A202317-5104-4784-845B-B8C46E0A3C48@kernel.crashing.org> <49EE4341.50701@oracle.com>
+In-Reply-To: <49EE4341.50701@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <200904200952.34656.david-b@pacbell.net>
-References: <49EC06A6.4040506@samsung.com> <200904200952.34656.david-b@pacbell.net>
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Wed, 22 Apr 2009 11:09:27 +0900
-Message-ID: <4d34a0a70904211909o430a4db3t61b7997a4124c3a1@mail.gmail.com>
-Subject: Re: Suggestion on GPIO sysfs interface (gpio_export)
-To: David Brownell <david-b@pacbell.net>
-Cc: Kim Kyuwon <q1.kim@samsung.com>, LKML <linux-kernel@vger.kernel.org>,
-       kyungmin.park@samsung.com, =?EUC-KR?B?uc66tMij?= <bhmin@samsung.com>
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200904211919.38104.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 1:52 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Sunday 19 April 2009, Kim Kyuwon wrote:
->> Can I ask you opinion about this idea?
->
-> First issue:  labels aren't required to be unique, so
-> there's a certain level of unpredictability you're
-> introducing.  Exports using this new flag would fail
-> sometimes depending on what *other* exports did.
-> (That's part of the reason "gpio%d" names got used
-> in the first place!)
->
-> Another layer of unpredicatability comes from the
-> way those strings are only available given debugfs.
->
->
-> Second:
->
->> -extern int gpio_export(unsigned gpio, bool direction_may_change);
->> +extern int gpio_export(unsigned gpio, bool direction_may_change,
->> +                                                       bool label_may_show);
->
-> It's generally confusing to add more parameters of the same type
-> like that; there's no fundamental reason for people to remember
-> which one means what, and the compiler can't help at all when (!)
-> they get confused.
+On Tuesday 21 April 2009, Randy Dunlap wrote:
+> 
+> > Since its feasible to say 'n' to both we get the compile error.  How do
+> > we enforce having at least one set?
+> 
+> Looks like using "choice" without "optional" would do it.
+> See Documentation/kbuild/kconfig-language.txt and various examples
+> in Kconfig* files.
 
-Thank you for pointing out problems :)
+That won't quite work ... "at least one" includes "two"
+(i.e. a PCI card in little-endian, a native controller
+in big-endian).  Real-world systems need such configs,
+or so I'm told, and that's why their supported.
 
-> Have you thought much about other options?  Like for example
-> adding a new call.  With each MMC card slot, for one example,
-> there would often be two GPIOs:  card_detect, write_protect.
-> With two such slots, the "label" wouldn't be much help unless
-> it were specifically made unique.
->
-> Instead of exporting the GPIOs in a "flat" namespace, maybe
-> something like
->
->  gpio_export_dev(struct device *dev, const char *tag,
->                unsigned gpio, bool direction_may_change);
->
-> would be more useful.  It could gpio_export() the standard
-> way, then set up a symlink using "tag" to set up a symlink
-> from /sys/.../dev/tag to /sys/class/gpio/gpioN node.  Easy
-> to see how that would work for those MMC examples.
->
-> I can imagine there would be times when the GPIO doesn't
-> have a logical coupling to any device, of course.  So maybe
-> that doesn't address your particular issue.
+Is there maybe a way to force Kconfig to just reject
+such illegal configs -- neither option set -- rather
+than trying some how to fix it?
 
-Yes, we have a few devices which can be controlled by only 1 GPIOs. I
-thought it is too small to make new drivers for these devices. So I
-just tried to use gpio_export() function.
-hmm.. I have to make do with new platform drivers for 1-GPIO controlled devices.
-Anyway, thank you for your tip!
+Or maybe ... if neither one is set, have the header
+force both on, and issue a warning.
 
-> - Dave
->
 
--- 
-Kyuwon (±Ô¿ø)
