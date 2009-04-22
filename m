@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZDVAUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbZDVA0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZDVAUx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 20:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZDVAUo
+	id S1752806AbZDVA0L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 20:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZDVAZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 20:20:44 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60634 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbZDVAUn (ORCPT
+	Tue, 21 Apr 2009 20:25:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56997
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751352AbZDVAZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 20:20:43 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 20/25] Do not check for compound pages during the page allocator sanity checks
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1240266011-11140-21-git-send-email-mel@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-21-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090422091456.626E.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 21 Apr 2009 20:25:55 -0400
+Date: Tue, 21 Apr 2009 17:25:47 -0700 (PDT)
+Message-Id: <20090421.172547.85702227.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: hpa@zytor.com, h.mitake@gmail.com, mingo@elte.hu, tglx@linutronix.de,
+       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
+Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adamyaavst5.fsf@cisco.com>
+References: <a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>
+	<49EDE9E9.8090905@zytor.com>
+	<adamyaavst5.fsf@cisco.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 22 Apr 2009 09:20:40 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> A number of sanity checks are made on each page allocation and free
-> including that the page count is zero. page_count() checks for
-> compound pages and checks the count of the head page if true. However,
-> in these paths, we do not care if the page is compound or not as the
-> count of each tail page should also be zero.
-> 
-> This patch makes two changes to the use of page_count() in the free path. It
-> converts one check of page_count() to a VM_BUG_ON() as the count should
-> have been unconditionally checked earlier in the free path. It also avoids
-> checking for compound pages.
-> 
-> [mel@csn.ul.ie: Wrote changelog]
-> Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
-> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> ---
->  mm/page_alloc.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index ec01d8f..376d848 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -425,7 +425,7 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
->  		return 0;
->  
->  	if (PageBuddy(buddy) && page_order(buddy) == order) {
-> -		BUG_ON(page_count(buddy) != 0);
-> +		VM_BUG_ON(page_count(buddy) != 0);
->  		return 1;
->  	}
->  	return 0;
->
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 21 Apr 2009 10:07:50 -0700
 
-Looks good.
+> This only makes sense if we define a 32-bit fallback for
+> readq()/writeq() for all 32-bit architectures -- in fact it would be
+> good to do it in asm-generic so that there can be a single
+> implementation that guarantees that non-atomic versions always do, say,
+> low 32 bits then high 32 bits.  (So eg niu can use the generic version)
+> And then drivers like drivers/infiniband/hw/mthca can be switched to
+> "#ifndef writeq_atomic <...hardware specific fallback...>"
 
+I think if you want to do this right you have to provide two versions
+of the 32-bit implementations, when the cpu cannot generate full
+64-bit transactions.  Especially for readq().
 
-> @@ -501,7 +501,7 @@ static inline int free_pages_check(struct page *page)
->  {
->  	if (unlikely(page_mapcount(page) |
->  		(page->mapping != NULL)  |
-> -		(page_count(page) != 0)  |
-> +		(atomic_read(&page->_count) != 0) |
->  		(page->flags & PAGE_FLAGS_CHECK_AT_FREE))) {
->  		bad_page(page);
->  		return 1;
-> @@ -646,7 +646,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
->  {
->  	if (unlikely(page_mapcount(page) |
->  		(page->mapping != NULL)  |
-> -		(page_count(page) != 0)  |
-> +		(atomic_read(&page->_count) != 0)  |
->  		(page->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
->  		bad_page(page);
->  		return 1;
+Some devices clear the status bits of a 64-bit register when read, so
+it might matter deeply whether the top-half or the bottom-half 32-bits
+are read first.
 
+The following are ugly names, but something like "readq_hifirst()"
+and "readq_lofirst()" and they just get defined to play "readq()"
+in situations where a full 64-bit transaction can be generated by
+the cpu.
 
-inserting VM_BUG_ON(PageTail(page)) is better?
+The driver author has to figure out which is appropriate.
 
-
-
-
-
+And I'm pretty sure similar high-first/low-first issues can exist
+for writeq() as well.
