@@ -1,110 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZDVBJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZDVBXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZDVBJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 21:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZDVBJj
+	id S1753380AbZDVBXx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 21:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZDVBXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 21:09:39 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59983 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752084AbZDVBJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 21:09:38 -0400
-Message-ID: <49EE6E3C.8050409@cn.fujitsu.com>
-Date: Wed, 22 Apr 2009 09:09:16 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] cgroup: io-throttle controller (v14)
-References: <1240090636-898-1-git-send-email-righi.andrea@gmail.com> <49EC34C1.6010709@cn.fujitsu.com> <20090420144816.GA13307@linux> <49ED1E66.6030604@cn.fujitsu.com> <20090421095848.GB13699@linux>
-In-Reply-To: <20090421095848.GB13699@linux>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 21 Apr 2009 21:23:43 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35211 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZDVBXm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 21:23:42 -0400
+Date: Wed, 22 Apr 2009 10:21:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>, randy.dunlap@oracle.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
+       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
+       agk@sourceware.org, subrata@linux.vnet.ibm.com,
+       Paul Menage <menage@google.com>, Theodore Tso <tytso@mit.edu>,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       matt@bluehost.com, roberto@unbit.it, ngupta@google.com
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-Id: <20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090417143903.GA30365@linux>
+	<20090421001822.GB19186@mit.edu>
+	<20090421083001.GA8441@linux>
+	<20090421140631.GF19186@mit.edu>
+	<20090421143130.GA22626@linux>
+	<20090421163537.GI19186@mit.edu>
+	<20090421172317.GM19637@balbir.in.ibm.com>
+	<20090421174620.GD15541@mit.edu>
+	<20090421181429.GO19637@balbir.in.ibm.com>
+	<20090421191401.GF15541@mit.edu>
+	<20090421204905.GA5573@linux>
+	<20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> On Tue, Apr 21, 2009 at 09:16:22AM +0800, Gui Jianfeng wrote:
->> Andrea Righi wrote:
->>> On Mon, Apr 20, 2009 at 04:39:29PM +0800, Gui Jianfeng wrote:
->>>> Andrea Righi wrote:
->>>> ...
->>>>> Implementation
->>>>> ~~~~~~~~~~~~~~
->>>>> Patchset against latest Linus' git:
->>>>>
->>>>>   [PATCH 0/7] cgroup: block device IO controller (v14)
->>>>>   [PATCH 1/7] io-throttle documentation
->>>>>   [PATCH 2/7] res_counter: introduce ratelimiting attributes
->>>>>   [PATCH 3/7] page_cgroup: provide a generic page tracking infrastructure
->>>>>   [PATCH 4/7] io-throttle controller infrastructure
->>>>>   [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
->>>>>   [PATCH 6/7] io-throttle instrumentation
->>>>>   [PATCH 7/7] export per-task io-throttle statistics to userspace
->>>>   Hi Andrea,
->>>>
->>>>   I'd like to have a try this patchset, would you tell what's the kernel version
->>>>   and bio-cgroup version based on?
->>>>
->>> Latest Linus' git is the kernel and bio-cgroup v7 (from
->>> http://people.valinux.co.jp/~ryov/bio-cgroup/).
->>   Sorry, I still can't apply it...
->>
->> [root@localhost linux-2.6.30-rc1]# patch -p1 --dry-run < ../cgroup-io-throttle-v14.patch                                                                                         patching file Documentation/cgroups/io-throttle.txt
->> patching file block/Makefile
->> patching file block/blk-core.c
->> patching file block/blk-io-throttle.c
->> patching file block/kiothrottled.c
->> patching file fs/aio.c
->> patching file fs/buffer.c
->> Hunk #1 FAILED at 36.
->> Hunk #2 FAILED at 669.
->> 2 out of 2 hunks FAILED -- saving rejects to file fs/buffer.c.rej
->> patching file fs/proc/base.c
->> patching file include/linux/blk-io-throttle.h
->> patching file include/linux/cgroup_subsys.h
->> Hunk #1 succeeded at 49 (offset 6 lines).
->> patching file include/linux/memcontrol.h
->> Reversed (or previously applied) patch detected!  Assume -R? [n] n
->> Apply anyway? [n] n
->> Skipping patch.
->> 2 out of 2 hunks ignored -- saving rejects to file include/linux/memcontrol.h.rej
->> patching file include/linux/mmzone.h
->> Hunk #1 FAILED at 607.
->> Hunk #2 FAILED at 958.
->> ...
-> 
-> Could you checkout the latest Linus' git?
-> 
-> $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
-> 
-> Or at least try with 2.6.30-rc2. It should apply cleanly also to this
-> version.
+On Wed, 22 Apr 2009 09:33:49 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-  Yes, I tried them all, but didn't work. :(
-  Would you try "cgroup-io-throttle-v14.patch" too?
 
+> > And this should be probably strictly connected to the IO controller. If
+> > we throttle or delay the dispatching/submission of some IO requests
+> > without throttling the dirty pages rate a cgroup could completely waste
+> > its own available memory with dirty (hard and slow to reclaim) pages.
+> > 
+> > That is in part the approach I used in io-throttle v12, adding a hook in
+> > balance_dirty_pages_ratelimited_nr() to throttle the current task when
+> > cgroup's IO limit are exceeded. Argh!
+> > 
+> > So, another proposal could be to re-add in io-throttle v14 the old hook
+> > also in balance_dirty_pages_ratelimited_nr().
+> > 
+> > In this way io-throttle would:
+> > 
+> > - use page_cgroup infrastructure and page_cgroup->flags to encode the
+> >   cgroup id that firstly dirtied a generic page
+> > - account and opportunely throttle sync and writeback IO requests in
+> >   submit_bio()
+> > - at the same time throttle the tasks in
+> >   balance_dirty_pages_ratelimited_nr() if the cgroup they belong has
+> >   exhausted the IO BW (or quota, share, etc. in case of proportional BW
+> >   limit)
+> > 
 > 
-> -Andrea
+> IMHO, io-controller should just work as I/O subsystem as bdi. Now, per-bdi dirty_ratio
+> is suppoted and it seems to work well.  
 > 
+> Can't we write a function like  bdi_writeout_fraction() ?;
+> It will be a simple choice.
 > 
-> 
+One more thing, if you want dirty_ratio for throttoling I/O not for supporing page reclaim,
+Something like task_dirty_limit() will be apporpriate.
 
--- 
-Regards
-Gui Jianfeng
+Thanks,
+-Kame
 
