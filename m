@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZDVQ1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZDVQam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbZDVQ1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 12:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZDVQ1V
+	id S1755120AbZDVQam (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 12:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZDVQad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 12:27:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44262 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751345AbZDVQ1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 12:27:20 -0400
-Date: Wed, 22 Apr 2009 17:27:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Daniela Engert <dani@ngrt.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-Message-ID: <20090422172710.0d9fcc6c@lxorguk.ukuu.org.uk>
-In-Reply-To: <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
-References: <20090422090929.GA14928@havoc.gtf.org>
-	<49EEE225.3010700@garzik.org>
-	<49EF0A92.1070400@panasas.com>
-	<49EF337F.1030804@ngrt.de>
-	<20090422161856.1251f8a0@lxorguk.ukuu.org.uk>
-	<1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Apr 2009 12:30:33 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:36423 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752150AbZDVQad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 12:30:33 -0400
+Date: Wed, 22 Apr 2009 18:30:32 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Wolfram Strepp <wstrepp@gmx.de>
+Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
+Message-ID: <20090422163032.GV4593@kernel.dk>
+References: <20090421184223.GP19637@balbir.in.ibm.com> <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF2C32.4030409@opengridcomputing.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > It's a long time ago since I tested it but my 5 CD changer was correctly
-> > supported by libata (or more accurately by sr...).
-> 
-> Well, sr supports the discovered CD/DVD; ch is the actual changer
-> manager.  Usually ch attaches to one LUN and sr attaches to another.
+On Wed, Apr 22 2009, Steve Wise wrote:
+>
+>>>
+>>> No there are a few patches applied that are heading upstream, but one 
+>>> is in the NFS RDMA server which isn't loaded yet and the rest are in  
+>>> iw_cxgb3 (iwarp driver) which also hasn't loaded at the time we  
+>>> crash. NOTE:  Out of 4 power cycles, one booted up ok, 3 hit the 
+>>> crash.
+>>>
+>>>
+>>>
+>>
+>> By the way, this one looks different from the last one I saw.  So its  
+>> not consistently crashing in the same spot.  The one I hit yesterday  
+>> (which I don't have the OOPs dump for was in rb_erase().
+>>
+>> Steve.
+>
+> I'll start bisecting to isolate this.
 
-I get 5 LUNS and the hardware looks after the rest - no changer manager
-needed. Early versions of the gnome folks CD probing stuff did give it a
-bit of a fit as the firmware clearly didn't cache all the state that the
-cd mangler asked for.
+Don't bother, I see what the bug is now. It's caused by commit
+a36e71f996e25d6213f57951f7ae1874086ec57e and it's due to ->ioprio being
+changed without the prio rb root being adjusted.
+
+I'll provide a fix shortly.
+
+-- 
+Jens Axboe
 
