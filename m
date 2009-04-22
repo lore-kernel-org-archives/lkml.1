@@ -1,100 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZDVTVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZDVTW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZDVTVX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZDVTUw
+	id S1757148AbZDVTW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZDVTWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:20:52 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:38437 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753709AbZDVTUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:20:51 -0400
-Message-ID: <49EF68F1.8010301@unsolicited.net>
-Date: Wed, 22 Apr 2009 19:58:57 +0100
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 22 Apr 2009 15:22:18 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:32893 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753384AbZDVTWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 15:22:17 -0400
+Date: Wed, 22 Apr 2009 21:22:16 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Wolfram Strepp <wstrepp@gmx.de>
+Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
+Message-ID: <20090422192216.GE4593@kernel.dk>
+References: <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.30-rc3: Warning during boot (ReiserFS)
-References: <49EF685E.7040004@unsolicited.net>
-In-Reply-To: <49EF685E.7040004@unsolicited.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------080103070703050801060707"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF6929.9020600@opengridcomputing.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080103070703050801060707
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-David wrote:
-> I'm seeing the following warning in my log during boot with rc3 /
-> ReiserFS. System seems OK afterward.
+On Wed, Apr 22 2009, Steve Wise wrote:
 >
-> (Quad Core AMD Phenom)
+>> Odd... Can you try this variant?
+>>
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index 7e13f04..3a97c18 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -154,6 +154,7 @@ struct cfq_queue {
+>>  	unsigned long rb_key;
+>>  	/* prio tree member */
+>>  	struct rb_node p_node;
+>> +	struct rb_root *p_root;
+>>  	/* sorted list of pending requests */
+>>  	struct rb_root sort_list;
+>>  	/* if fifo isn't expired, next request to serve */
+>> @@ -594,22 +595,25 @@ cfq_prio_tree_lookup(struct cfq_data *cfqd, int ioprio, sector_t sector,
+>>   static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue 
+>> *cfqq)
+>>  {
+>> -	struct rb_root *root = &cfqd->prio_trees[cfqq->ioprio];
+>> +	struct rb_root *root = &cfqd->prio_trees[cfqq->org_ioprio];
+>>  	struct rb_node **p, *parent;
+>>  	struct cfq_queue *__cfqq;
+>>  -	if (!RB_EMPTY_NODE(&cfqq->p_node))
+>> -		rb_erase_init(&cfqq->p_node, root);
+>> +	if (cfqq->p_root) {
+>> +		rb_erase_init(&cfqq->p_node, cfqq->p_root);
+>> +		cfqq->p_root = NULL;
+>> +	}
+>>   	if (cfq_class_idle(cfqq))
+>>  		return;
+>>  	if (!cfqq->next_rq)
+>>  		return;
+>>  -	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->ioprio, 
+>> cfqq->next_rq->sector,
+>> -					 &parent, &p);
+>> +	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->org_ioprio,
+>> +					cfqq->next_rq->sector, &parent, &p);
+>>  	BUG_ON(__cfqq);
+>>  +	cfqq->p_root = root;
+>>  	rb_link_node(&cfqq->p_node, parent, p);
+>>  	rb_insert_color(&cfqq->p_node, root);
+>>  }
+>> @@ -656,8 +660,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>>   	if (!RB_EMPTY_NODE(&cfqq->rb_node))
+>>  		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
+>> -	if (!RB_EMPTY_NODE(&cfqq->p_node))
+>> -		rb_erase_init(&cfqq->p_node, &cfqd->prio_trees[cfqq->ioprio]);
+>> +	if (cfqq->p_root) {
+>> +		rb_erase_init(&cfqq->p_node, cfqq->p_root);
+>> +		cfqq->p_root = NULL;
+>> +	}
+>>   	BUG_ON(!cfqd->busy_queues);
+>>  	cfqd->busy_queues--;
+>> @@ -976,7 +982,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+>>  	 * First, if we find a request starting at the end of the last
+>>  	 * request, choose it.
+>>  	 */
+>> -	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->ioprio,
+>> +	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->org_ioprio,
+>>  				      sector, &parent, NULL);
+>>  	if (__cfqq)
+>>  		return __cfqq;
+>>
+>>   
 >
-> Cheers
-> David
->
->   
+> Still crashes with this variant:
 
-Sorry about the line wrapping issues. Trying an attachment instead.
+OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
+and see if that works?
 
-David
+Or, better yet, please try and revert
+55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
+try the above revert.
 
---------------080103070703050801060707
-Content-Type: text/plain;
- name="Rwarn.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="Rwarn.txt"
+-- 
+Jens Axboe
 
-Apr 22 19:47:59 david-desktop kernel: [    2.006218] REISERFS (device md1): found reiserfs format "3.6" with standard journal
-Apr 22 19:47:59 david-desktop kernel: [    2.010191] REISERFS (device md1): using ordered data mode
-Apr 22 19:47:59 david-desktop kernel: [    2.030555] REISERFS (device md1): journal params: device md1, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-Apr 22 19:47:59 david-desktop kernel: [    2.039448] REISERFS (device md1): checking transaction log (md1)
-Apr 22 19:47:59 david-desktop kernel: [    2.148512] REISERFS (device md1): Using r5 hash to sort names
-Apr 22 19:47:59 david-desktop kernel: [    2.152669] ------------[ cut here ]------------
-Apr 22 19:47:59 david-desktop kernel: [    2.156809] WARNING: at fs/namei.c:1251 lookup_one_len+0xa9/0xc0()
-Apr 22 19:47:59 david-desktop kernel: [    2.161017] Hardware name: GA-MA790X-DS4
-Apr 22 19:47:59 david-desktop kernel: [    2.165166] Modules linked in:
-Apr 22 19:47:59 david-desktop kernel: [    2.169227] Pid: 1, comm: swapper Not tainted 2.6.30-rc3 #3
-Apr 22 19:47:59 david-desktop kernel: [    2.173339] Call Trace:
-Apr 22 19:47:59 david-desktop kernel: [    2.177401]  [<ffffffff8023dfec>] warn_slowpath+0xdc/0x110
-Apr 22 19:47:59 david-desktop kernel: [    2.181536]  [<ffffffff8023ef97>] ? printk+0x67/0x70
-Apr 22 19:47:59 david-desktop kernel: [    2.181540]  [<ffffffff80330844>] ? prepare_error_buf+0x144/0x660
-Apr 22 19:47:59 david-desktop kernel: [    2.181544]  [<ffffffff802b5d61>] ? new_slab+0x1e1/0x300
-Apr 22 19:47:59 david-desktop kernel: [    2.181546]  [<ffffffff80330e68>] ? reiserfs_info+0x88/0xc0
-Apr 22 19:47:59 david-desktop kernel: [    2.181549]  [<ffffffff802c8289>] lookup_one_len+0xa9/0xc0
-Apr 22 19:47:59 david-desktop kernel: [    2.181553]  [<ffffffff802eb29a>] ? inotify_d_instantiate+0x1a/0x50
-Apr 22 19:47:59 david-desktop kernel: [    2.181556]  [<ffffffff80342d6d>] reiserfs_xattr_init+0xed/0x230
-Apr 22 19:47:59 david-desktop kernel: [    2.181558]  [<ffffffff8032f47f>] reiserfs_fill_super+0x62f/0xdc0
-Apr 22 19:47:59 david-desktop kernel: [    2.181561]  [<ffffffff8037f49e>] ? vsnprintf+0x1be/0x500
-Apr 22 19:47:59 david-desktop kernel: [    2.181564]  [<ffffffff80316fcf>] ? sysv68_partition+0x5f/0x180
-Apr 22 19:47:59 david-desktop kernel: [    2.181567]  [<ffffffff8037f949>] ? snprintf+0x59/0x60
-Apr 22 19:47:59 david-desktop kernel: [    2.181570]  [<ffffffff80519187>] ? __down_write_nested+0x17/0xb0
-Apr 22 19:47:59 david-desktop kernel: [    2.181574]  [<ffffffff8037d03f>] ? strlcpy+0x4f/0x70
-Apr 22 19:47:59 david-desktop kernel: [    2.181576]  [<ffffffff802bf1d0>] ? test_bdev_super+0x0/0x20
-Apr 22 19:47:59 david-desktop kernel: [    2.181578]  [<ffffffff802bfa3f>] ? sget+0x3df/0x480
-Apr 22 19:47:59 david-desktop kernel: [    2.181580]  [<ffffffff802c07e0>] get_sb_bdev+0x150/0x190
-Apr 22 19:47:59 david-desktop kernel: [    2.181583]  [<ffffffff8032ee50>] ? reiserfs_fill_super+0x0/0xdc0
-Apr 22 19:47:59 david-desktop kernel: [    2.181586]  [<ffffffff8029a176>] ? kstrdup+0x56/0x110
-Apr 22 19:47:59 david-desktop kernel: [    2.181589]  [<ffffffff8032c353>] get_super_block+0x13/0x20
-Apr 22 19:47:59 david-desktop kernel: [    2.181591]  [<ffffffff802c0065>] vfs_kern_mount+0x75/0x160
-Apr 22 19:47:59 david-desktop kernel: [    2.181594]  [<ffffffff802c01be>] do_kern_mount+0x4e/0x100
-Apr 22 19:47:59 david-desktop kernel: [    2.181596]  [<ffffffff802d668a>] do_mount+0x53a/0x7f0
-Apr 22 19:47:59 david-desktop kernel: [    2.181599]  [<ffffffff802d69d4>] sys_mount+0x94/0xf0
-Apr 22 19:47:59 david-desktop kernel: [    2.181602]  [<ffffffff80724078>] mount_block_root+0x98/0x2c0
-Apr 22 19:47:59 david-desktop kernel: [    2.181605]  [<ffffffff807242f6>] mount_root+0x56/0x60
-Apr 22 19:47:59 david-desktop kernel: [    2.181607]  [<ffffffff80724351>] prepare_namespace+0x51/0x1c0
-Apr 22 19:47:59 david-desktop kernel: [    2.181609]  [<ffffffff80723a47>] kernel_init+0x187/0x1b0
-Apr 22 19:47:59 david-desktop kernel: [    2.181613]  [<ffffffff8020cd3a>] child_rip+0xa/0x20
-Apr 22 19:47:59 david-desktop kernel: [    2.181615]  [<ffffffff807238c0>] ? kernel_init+0x0/0x1b0
-Apr 22 19:47:59 david-desktop kernel: [    2.181618]  [<ffffffff8020cd30>] ? child_rip+0x0/0x20
-Apr 22 19:47:59 david-desktop kernel: [    2.181620] ---[ end trace 005d9a9fced3a16a ]---
-
---------------080103070703050801060707--
