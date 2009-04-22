@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZDVL1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbZDVLbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZDVL1x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 07:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZDVL1l
+	id S1753568AbZDVLbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 07:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZDVLau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 07:27:41 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:30164 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751409AbZDVL1k (ORCPT
+	Wed, 22 Apr 2009 07:30:50 -0400
+Received: from mga10.intel.com ([192.55.52.92]:55417 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751511AbZDVLat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 07:27:40 -0400
-Message-ID: <49EEFF10.3050306@panasas.com>
-Date: Wed, 22 Apr 2009 14:27:12 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 22 Apr 2009 07:30:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,230,1239001200"; 
+   d="scan'208";a="450262316"
+Message-ID: <49EEFFDE.3030105@linux.intel.com>
+Date: Wed, 22 Apr 2009 13:30:38 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       mdharm-usb@one-eyed-alien.net, linux-usb <linux-usb@vger.kernel.org>,
-       usb-storage@lists.one-eyed-alien.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH v2] fix sign extension with 1.5TB usb-storage LBD=y
-References: <1240347174.10627.20.camel@nimitz> <20090421211858.GA1926@parisc-linux.org> <1240351210.10627.30.camel@nimitz> <49EEC82B.5040603@panasas.com> <20090422110921.GE1926@parisc-linux.org>
-In-Reply-To: <20090422110921.GE1926@parisc-linux.org>
-Content-Type: text/plain; charset=UTF-8
+To: Robert Richter <robert.richter@amd.com>
+CC: Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com> <20090422092259.GC18226@elte.hu> <20090422101600.GL3226@erda.amd.com>
+In-Reply-To: <20090422101600.GL3226@erda.amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2009 11:27:38.0104 (UTC) FILETIME=[57408F80:01C9C33D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22/2009 02:09 PM, Matthew Wilcox wrote:
-> On Wed, Apr 22, 2009 at 10:32:59AM +0300, Boaz Harrosh wrote:
->> These are actually aligned access it might be worth sacrificing a cast
->> to be32/64 for sake of speed.
-> 
-> "for sake of speed"?  How often do you think we ask a device how large
-> it is?  
 
-OK, that was the wrong choice of words, on my part. I meant for sake of
-"nobleness". I calculated as a programmer that these are aligned do I make
-the extra effort of stating that in code, or I get lazy because it does
-not matter?
+> You may also want to consider to use the in-kernel ring_buffer api
+> (include/linux/ring_buffer.h).
 
-> How much overhead do you think is incurred by the unaligned code
-> if the data happens to be aligned?
-> 
+Its semantics don't map very well to the machine check requirements.
 
-Well for BE systems we are already order of magnitude faster by just
-using the accessors, so I guess we are already well in the "plus" ;)
+I did an analysis of that in http://thread.gmane.org/gmane.linux.kernel/772928/focus=773452
+AFAIK the reasons stated there are all still valid.
 
-This is such a small matter, sorry to bother you about it.
-Just that it's a programming style I'm constantly debating with myself,
-feel free to ignore it.
+-Andi
 
-The patch looks very good to me as it is.
-
-Thanks
-Boaz
