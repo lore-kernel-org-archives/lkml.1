@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZDVMRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZDVMSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbZDVMRX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 08:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZDVMRL
+	id S1754476AbZDVMSI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 08:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZDVMRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 08:17:11 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:64219 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbZDVMRJ (ORCPT
+	Wed, 22 Apr 2009 08:17:52 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:2348 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752315AbZDVMRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 08:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Faj/0/49cIGyZ+eqY1pLv/qefRjP+y/ghJ7XAcnGOy5FI8OkqBIxjdUP5oQjKO+xAQ
-         tHSVgZwceuejxqN1S6WU2uCAc8GHfVK9nPy9LNMOjdbG63Lr3nzTRKMW/yEluPIK7S0E
-         MqVQd9OycWgtYd4UkQRjfRDpEAwSKTKshjtcs=
-Message-ID: <49EF0ABD.2080801@tuffmail.co.uk>
-Date: Wed, 22 Apr 2009 13:17:01 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 22 Apr 2009 08:17:51 -0400
+Message-ID: <49EF0A92.1070400@panasas.com>
+Date: Wed, 22 Apr 2009 15:16:18 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [FIXED] EEE PC hangs when booting off battery
-References: <49E065CF.6040408@tuffmail.co.uk> <200904140859.02188.bjorn.helgaas@hp.com> <20090414081728.10de978a@infradead.org> <200904140948.37633.bjorn.helgaas@hp.com> <49E5F01B.2060201@tuffmail.co.uk>
-In-Reply-To: <49E5F01B.2060201@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+References: <20090422090929.GA14928@havoc.gtf.org> <49EEE225.3010700@garzik.org>
+In-Reply-To: <49EEE225.3010700@garzik.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2009 12:16:29.0504 (UTC) FILETIME=[2A80B400:01C9C344]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Bjorn Helgaas wrote:
->   
->> On Tuesday 14 April 2009 09:17:28 am Arjan van de Ven wrote:
->>   
->>     
->>> On Tue, 14 Apr 2009 08:59:01 -0600
->>> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
->>>
->>>     
->>>       
->>>> I can't help with the real problem of why the asynchronous battery
->>>> init causes the hang.
->>>>       
->>>>         
->>> that got fixed already for the module case.
->>>     
->>>       
->> But apparently still broken for the builtin case?  I think Alan is
->> running pretty new bits -- he said "latest git" on April 11.
->>   
->>     
->
-> It's now fixed, in 2.6.30-rc2.  My battery is modular btw.  I suspect
->
-> 5d38258ec026921a7b266f4047ebeaa75db358e5 "ACPI battery: fix async boot
-> oops" [removal of __init]
->
-> was not sufficient to fix my problem, but it was solved by the "real" fix,
->
-> d6de2c80e9d758d2e36c21699117db6178c0f517 "async: Fix module loading
-> async-work regression" [module loading waits on async work]
->
->
-> I would argue there's still a question over why the asynchronous battery
-> init (_with_ the oops fix) should cause a hang in the idle routine.  But
-> since the regression is fixed, it's not exactly an urgent question.
->   
+On 04/22/2009 12:23 PM, Jeff Garzik wrote:
+> Jeff Garzik wrote:
+>> Currently, libata creates a Scsi_Host per port.  This was originally
+>> done to leverage SCSI's infrastructure to arbitrate among master/slave
+>> devices, but is not needed for most modern SATA controllers.   And I
+>> _think_ it is not needed for master/slave if done properly, either.
+> 
+> BTW note the above, with regards to the libata SCSI->block conversion. 
+> libata currently relies on SCSI for some amount of generic device 
+> arbitration, in several situations (see ->qc_defer, 
+> SCSI_MLQUEUE_.*_BUSY).  libata expects SCSI to be intelligent and not 
+> starve devices, etc.
+> 
+> 
+>> I was able to successfully boot the following patch on
+>> AHCI/x86-64/Fedora.
+>>
+>> It may work with other controllers -- TRY AT YOUR OWN RISK.  It will
+>> probably fail for master/slave configurations, and SAS & PMP also
+>> need looking at.  It yielded this lsscsi output on my AHCI box:
+>>
+>> [0:0:0:0]    disk    ATA      ST3500320AS      SD15  /dev/sda
+>> [0:2:0:0]    disk    ATA      G.SKILL 128GB SS 02.1  /dev/sdb
+>> [0:5:0:0]    cd/dvd  PIONEER  BD-ROM  BDC-202  1.04  /dev/sr0
+> 
+> For comparison, here is unmodified 2.6.30-rc3:
+> 
+> [jgarzik@bd ~]$ lsscsi
+> [0:0:0:0]    disk    ATA      ST3500320AS      SD15  /dev/sda
+> [2:0:0:0]    disk    ATA      G.SKILL 128GB SS 02.1  /dev/sdb
+> [5:0:0:0]    cd/dvd  PIONEER  BD-ROM  BDC-202  1.04  /dev/sr0
+> 
 
-Ugh.  Recently I tried building the battery driver into the kernel, to
-benefit from the async work.  Later, I tried booting from the battery
-and it hung again.
+Could the master/slave be simply solved by emulating a SCSI LUN
+for example below is my machine today:
+[]$ lsscsi
+[0:0:0:0]    disk    ATA      ST3160023A       3.01  /dev/sda
+[1:0:0:0]    cd/dvd  _NEC     DVD_RW ND-3550A  1.05  /dev/sr0
+[4:0:0:0]    disk    ATA      WDC WD1600JS-60M 10.0  /dev/sdb
 
-This time, the kernel did not even respond to SysRq.  I tried
-nmi_watchdog=1 and waiting 2 minutes, but the watchdog didn't trigger
-either.  As before, it doesn't happen with acpi=off.
+the /dev/sda and /dev/sr0 share a master/slave wide cable (sdb is sata)
 
-I checked that this still happened in todays rc3, and it doesn't happen
-if I revert
+it could be made to scan as:
+[]$ lsscsi
+[0:0:0:0]    disk    ATA      ST3160023A       3.01  /dev/sda
+[0:0:0:1]    cd/dvd  _NEC     DVD_RW ND-3550A  1.05  /dev/sr0
+[1:0:0:0]    disk    ATA      WDC WD1600JS-60M 10.0  /dev/sdb
 
-0f66af530116e9f4dd97f328d91718b56a6fc5a4 "ACPI: battery: asynchronous init"
+So we need to emulate the REPORT_LUN (or what ever else) to return
+two LUNs. Or do you want to report a separate target for the master/slave?
 
-Regards
-Alan
+Thanks
+Boaz
