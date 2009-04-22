@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZDVSgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZDVSj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbZDVSgq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 14:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZDVSgd
+	id S1754799AbZDVSj0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 14:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZDVSjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 14:36:33 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52742 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbZDVSgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 14:36:32 -0400
-Message-ID: <49EF63A6.8040103@garzik.org>
-Date: Wed, 22 Apr 2009 14:36:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 22 Apr 2009 14:39:18 -0400
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:37055 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751576AbZDVSjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 14:39:16 -0400
+Date: Wed, 22 Apr 2009 19:32:23 +0100
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Ben Hutchings <ben@decadent.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 1/3] crc-itu-t: add bit-reversed calculation
+Message-ID: <50558A33EC%linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <20090422165633.GD19524@kroah.com>
+References: <1239590017.18110.120.camel@deadeye.i.decadent.org.uk> 
+ <20090422165633.GD19524@kroah.com>
+Mail-Followup-To: Greg KH <greg@kroah.com>, Ben Hutchings <ben@decadent.org.uk>, 
+ Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, David 
+ Woodhouse <dwmw2@infradead.org>, Darren Salt <linux@youmustbejoking.demon.co.uk>
+User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
+X-NuLabour-Date: Wed, 8909 Dec 1984 19:32:23 +0100
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniela Engert <dani@ngrt.de>,
-       Boaz Harrosh <bharrosh@panasas.com>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-References: <20090422090929.GA14928@havoc.gtf.org>	 <49EEE225.3010700@garzik.org> <49EF0A92.1070400@panasas.com>	 <49EF337F.1030804@ngrt.de>  <20090422161856.1251f8a0@lxorguk.ukuu.org.uk> <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 192.168.0.5
+X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
+X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Wed, 2009-04-22 at 16:18 +0100, Alan Cox wrote:
->>> Don't forget, there are ATAPI devices (some Sony CD burners and old 
->>> phase-changers come into mind) which *do* have multiple LUNs sitting 
->>> beyond the PATA port. I don't know if libata supports such setups (my 
->>> old OS/2 driver does) but one shouldn't hijack LUNs to emulate targets.
->> It's a long time ago since I tested it but my 5 CD changer was correctly
->> supported by libata (or more accurately by sr...).
-> 
-> Well, sr supports the discovered CD/DVD; ch is the actual changer
-> manager.  Usually ch attaches to one LUN and sr attaches to another.
+I demand that Greg KH may or may not have written...
 
-Like Alan's, if I understand him correctly, my PATA ATAPI CD changer 
-simply presents a bunch of addressible LUNs.  I never loaded, nor seemed 
-to need, ch.
+> On Mon, Apr 13, 2009 at 03:33:37AM +0100, Ben Hutchings wrote:
+>> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
-I should boot a current libata and see how it behaves...
+> Who wrote this patch, you or Darren?
 
-	Jeff
+I did.
+ 
+[snip]
+-- 
+| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
+| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
+|   Let's keep the pound sterling
 
-
-
+He hath eaten me out of house and home.
