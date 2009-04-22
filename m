@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbZDVVEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZDVVG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbZDVVEZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 17:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZDVVEQ
+	id S1755540AbZDVVG1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 17:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZDVVGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 17:04:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37660 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754416AbZDVVEP (ORCPT
+	Wed, 22 Apr 2009 17:06:17 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:37357 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbZDVVGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 17:04:15 -0400
-Date: Wed, 22 Apr 2009 13:56:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re:
- New x86 warning
-In-Reply-To: <8763gxoz50.fsf_-_@basil.nowhere.org>
-Message-ID: <alpine.LFD.2.00.0904221354320.3101@localhost.localdomain>
-References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu> <8763gxoz50.fsf_-_@basil.nowhere.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 22 Apr 2009 17:06:16 -0400
+Date: Wed, 22 Apr 2009 18:06:11 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, linux-input@vger.kernel.org,
+       kay.sievers@vrfy.org
+Subject: Re: [PATCH 0/4] fix some improper uses of dev_set_name
+Message-ID: <20090422210610.GL4691@vespa.holoscopio.com>
+References: <1240273036-5995-1-git-send-email-cascardo@holoscopio.com> <20090422054531.GD9009@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="oplxJGu+Ee5xywIT"
+Content-Disposition: inline
+In-Reply-To: <20090422054531.GD9009@kroah.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--oplxJGu+Ee5xywIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 22 Apr 2009, Andi Kleen wrote:
-> 
-> Modern gcc (and that is all that is supported now) should be able to
-> generate this code on its own already.  So if you call __builtin_* it
-> will  just work (that is what 64bit does) without that explicit code.
+On Tue, Apr 21, 2009 at 10:45:31PM -0700, Greg KH wrote:
+> On Mon, Apr 20, 2009 at 09:17:12PM -0300, Thadeu Lima de Souza Cascardo w=
+rote:
+> > dev_set_name expects a format string. Many of its uses, however, blindly
+> > call it with a string variable that comes from some external, perhaps
+> > unreliable source. Some of those uses are safe, like those in the third
+> > patch in the series and most of those not fixed by any of them. Some few
+> > remaining uses may require some more attention to decide if a patch is
+> > really required. Perhaps converting all of them for safeness is a good
+> > compromise.
+> >=20
+> > Thadeu Lima de Souza Cascardo (4):
+> >   driver core: use string format when name is another device's name
+> >   driver core: use string format when name is given to an exported
+> >     function
+>=20
+> These two patches were a bit more than just the "driver core".  Care to
+> split them up into the subsystem-proper sections and send them to the
+> different subsystem maintainers?
+>=20
+> I don't see anything here that can come from a user supplied string, do
+> you?  So it's a pretty low priority.
+>=20
+> thanks,
+>=20
+> greg k-h
 
-Last time we tried that, it wasn't true. Gcc wouldn't inline even trivial 
-cases of constant sizes.
+OK. I will do the split by subsystem and send each one separately to the
+maintainer and lkml.
 
-I do not recall what gcc version that was all about, and maybe the 
-versions we now require are all modern enough that it isn't an issue, but 
-I'd want somebody to actually _verify_ that the oldest version we support 
-does an ok job, and doesn't do stupid things for constant-sized memcpy's.
+Besides the fourth patch, I think. I will do some more check and,
+perhaps, even send it to stable.
 
-> IMHO it's long overdue to do this for 32bit too.
+The third one will be sent to input subsystem and it is pretty much
+2.6.31 material.
 
-With actual testing, I'll happily merge this.
+For the other two, I've separated them (and joined them) because the
+situation is pretty much the same as well as the decision about applying
+them into stable, rc, next or not at all.
 
-		Linus
+The first one is when you set a device name using another device's name,
+like this:
+
+	dev_set_name(&idkp->dev, dev_name(&drive->gendev));
+
+I've never seen a device name with a '%', but there's currently nothing
+stopping any driver of doing that. Perhaps, it is a case-by-case thing,
+as gendev may never be named like that. But we may as well decide that
+no device may be named like that ever and document this properly or put
+the code there that will prohibit that. Then, this patch is useless.
+
+The second one is the case when the function is exported and an
+out-of-tree driver may use it giving a name that contains a '%'. If we
+don't care about out-of-tree drivers, I may even check every in-tree
+user and fix the user instead of/besides the callee. If we DO care about
+out-of-tree drivers TOO much, this may even be stable material.
+
+Since I am not sure what the position/decision is about each one, I
+would like some input while I work into splitting them into subsystems.
+
+Regards,
+Cascardo.
+
+After this message, I think linux-input and Kay may be left out of the
+loop.
+
+--oplxJGu+Ee5xywIT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknvhsIACgkQyTpryRcqtS1tUACggKmDN8Y5d+GnNkfGIH+IIofE
+GSQAn2SLq7399+Ke6kMSHf//MYjyyy53
+=rvQi
+-----END PGP SIGNATURE-----
+
+--oplxJGu+Ee5xywIT--
