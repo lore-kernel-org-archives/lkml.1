@@ -1,240 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZDVO6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbZDVPBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbZDVO6u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZDVO6g
+	id S1753892AbZDVPBy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZDVPBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:58:36 -0400
-Received: from mga01.intel.com ([192.55.52.88]:6044 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754112AbZDVO6e convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:58:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,231,1239001200"; 
-   d="scan'208";a="683897963"
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: "Williams, Dan J" <dan.j.williams@intel.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 22 Apr 2009 15:58:35 +0100
-Subject: RE: 2.6.30-rc1: ioatdma: DMA-API: device driver frees DMA memory
- with 	wrong function
-Thread-Topic: 2.6.30-rc1: ioatdma: DMA-API: device driver frees DMA memory
- with 	wrong function
-Thread-Index: Acm/VDTR3czGEvQiRQ+XkJLZbvdVjgEBdSiw
-Message-ID: <129600E5E5FB004392DDC3FB599660D79A252C69@irsmsx504.ger.corp.intel.com>
-References: <a4423d670904090536j71be609csf2c32be3ed9cfe1e@mail.gmail.com>
-	 <a4423d670904150539w1a4fe05ake75ce2aea4538eab@mail.gmail.com>
-	 <e9c3a7c20904151027xdf617fbh64fcb5618e195a71@mail.gmail.com>
-	 <129600E5E5FB004392DDC3FB599660D792A39C27@irsmsx504.ger.corp.intel.com>
- <a4423d670904170501l7cf935a6mf8dbe69e166b8099@mail.gmail.com>
-In-Reply-To: <a4423d670904170501l7cf935a6mf8dbe69e166b8099@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	Wed, 22 Apr 2009 11:01:46 -0400
+Received: from intcomgrp.com ([216.54.13.120]:44588 "EHLO beta.intcomgrp.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752244AbZDVPBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 11:01:45 -0400
+Message-ID: <49EF30F5.7030108@beta.intcomgrp.com>
+Date: Wed, 22 Apr 2009 11:00:05 -0400
+From: James Kosin <jkosin@beta.intcomgrp.com>
+Organization: International Communications Group, Inc.
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Mark Brown <broonie@sirena.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [RFD] voltage/current regulator consumer interface
+References: <ct38K-3Fq-11@gated-at.bofh.it>	<ct38K-3Fq-9@gated-at.bofh.it>	<ctmXD-1yA-3@gated-at.bofh.it>	<ctnK4-2zP-11@gated-at.bofh.it>	<ctoG9-458-7@gated-at.bofh.it>	<ctoG9-458-5@gated-at.bofh.it>	<ctoPK-4y5-5@gated-at.bofh.it>	<ctoZv-4KN-23@gated-at.bofh.it>	<ctFxn-5OC-11@gated-at.bofh.it>	<ctG0r-6HL-31@gated-at.bofh.it>	<49EF2A3C.2050107@support.intcomgrp.com> <20090422154920.0dda2380@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090422154920.0dda2380@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=7BB59129
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2EA888F2C77F5D9D815BEDCC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> 2009/4/17 Sosnowski, Maciej <maciej.sosnowski@intel.com>:
->> Dan Williams wrote:
->>> On Wed, Apr 15, 2009 at 5:39 AM, Alexander Beregalov
->>> <a.beregalov@gmail.com> wrote:
->>>> 2009/4/9 Alexander Beregalov <a.beregalov@gmail.com>:
->>>>> ioatdma 0000:00:08.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
->>>>> ioatdma 0000:00:08.0: setting latency timer to 64
->>>>> ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine found, 4 channels,
->>>>> device version 0x12, driver version 3.64
->>>>>  alloc irq_desc for 33 on cpu 0 node 0
->>>>>  alloc kstat_irqs on cpu 0 node 0
->>>>> ioatdma 0000:00:08.0: irq 33 for MSI/MSI-X
->>>>> ------------[ cut here ]------------
->>>>> WARNING: at lib/dma-debug.c:565 check_unmap+0x2f6/0x6a0()
->>>>> Hardware name: PowerEdge 1950
->>>>> ioatdma 0000:00:08.0: DMA-API: device driver frees DMA memory with
->>>>> wrong function [device address=0x000000007f76f800] [size=2000 bytes] [map
->>>>> ped as single] [unmapped as page]
->>>> 
->>>> The problem still persists.
->>> 
->>> Thanks for the report Alexander.  Maciej and I are looking into a fix.
->>> 
->>> Regards,
->>> Dan
->> 
->> Hi Alexander,
->> 
->> Could you check if the following patch helps?
-> 
-> Hi Maciej.
-> 
-> No, unfortunately it does not help. The same warning message.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2EA888F2C77F5D9D815BEDCC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ok, I have missed to cover self_test case.
-How about this one instead?
+Alan Cox wrote:
+>>> In power management line normally refers to the core, unregulated pow=
+er
+>>> bus for the system and a line supply would normally be something like=
+ a
+>>> wall wart that supplies this directly when it's connected.
+>> Can I suggest:
+>> "supply-switch" or "regulator-switch" may make more sense for the mome=
+nt.
+>=20
+> Can I suggest they don't. The naming should reflect the naming actually=
 
-Thanks,
-Maciej
+> used in the field by people working on the technology otherwise arbitar=
+y
+> renaming just creates confusion
+>=20
+> The supply switch is the big switch on the back
+>=20
+> Alan
+>=20
+Ok, "supply-switch" may have been a bad idea, I wasn't thinking yet.
+The coffee hasn't kicked in yet and I'm feeling a bit down.
 
----
+James
 
- drivers/dma/dmaengine.c   |   17 +++++++++++------
- drivers/dma/ioat_dma.c    |   45 ++++++++++++++++++++++++++++-----------------
- include/linux/dmaengine.h |    6 ++++++
- 3 files changed, 45 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 92438e9..5a87384 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -804,11 +804,14 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
- 	int cpu;
-+	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
- 	dma_dest = dma_map_single(dev->dev, dest, len, DMA_FROM_DEVICE);
--	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
--					 DMA_CTRL_ACK);
-+	flags = DMA_CTRL_ACK |
-+		DMA_COMPL_SRC_UNMAP_SINGLE |
-+		DMA_COMPL_DEST_UNMAP_SINGLE;
-+	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
- 
- 	if (!tx) {
- 		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
-@@ -850,11 +853,12 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
- 	int cpu;
-+	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
- 	dma_dest = dma_map_page(dev->dev, page, offset, len, DMA_FROM_DEVICE);
--	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
--					 DMA_CTRL_ACK);
-+	flags = DMA_CTRL_ACK | DMA_COMPL_SRC_UNMAP_SINGLE;
-+	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
- 
- 	if (!tx) {
- 		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
-@@ -898,12 +902,13 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
- 	int cpu;
-+	unsigned long flags;
- 
- 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
- 	dma_dest = dma_map_page(dev->dev, dest_pg, dest_off, len,
- 				DMA_FROM_DEVICE);
--	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
--					 DMA_CTRL_ACK);
-+	flags = DMA_CTRL_ACK;
-+	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
- 
- 	if (!tx) {
- 		dma_unmap_page(dev->dev, dma_src, len, DMA_TO_DEVICE);
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index e4fc33c..1955ee8 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -1063,22 +1063,31 @@ static void ioat_dma_cleanup_tasklet(uns
- static void
- ioat_dma_unmap(struct ioat_dma_chan *ioat_chan, struct ioat_desc_sw *desc)
- {
--	/*
--	 * yes we are unmapping both _page and _single
--	 * alloc'd regions with unmap_page. Is this
--	 * *really* that bad?
--	 */
--	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_DEST_UNMAP))
--		pci_unmap_page(ioat_chan->device->pdev,
--				pci_unmap_addr(desc, dst),
--				pci_unmap_len(desc, len),
--				PCI_DMA_FROMDEVICE);
--
--	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_SRC_UNMAP))
--		pci_unmap_page(ioat_chan->device->pdev,
--				pci_unmap_addr(desc, src),
--				pci_unmap_len(desc, len),
--				PCI_DMA_TODEVICE);
-+	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
-+		if (desc->async_tx.flags & DMA_COMPL_DEST_UNMAP_SINGLE)
-+			pci_unmap_single(ioat_chan->device->pdev,
-+					 pci_unmap_addr(desc, dst),
-+					 pci_unmap_len(desc, len),
-+					 PCI_DMA_FROMDEVICE);
-+		else
-+			pci_unmap_page(ioat_chan->device->pdev,
-+				       pci_unmap_addr(desc, dst),
-+				       pci_unmap_len(desc, len),
-+				       PCI_DMA_FROMDEVICE);
-+	}
-+
-+	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
-+		if (desc->async_tx.flags & DMA_COMPL_SRC_UNMAP_SINGLE)
-+			pci_unmap_single(ioat_chan->device->pdev,
-+					 pci_unmap_addr(desc, src),
-+					 pci_unmap_len(desc, len),
-+					 PCI_DMA_TODEVICE);
-+		else
-+			pci_unmap_page(ioat_chan->device->pdev,
-+				       pci_unmap_addr(desc, src),
-+				       pci_unmap_len(desc, len),
-+				       PCI_DMA_TODEVICE);
-+	}
- }
- 
- /**
-@@ -1363,6 +1372,7 @@ static int ioat_dma_self_test(struct ioa
- 	int err = 0;
- 	struct completion cmp;
- 	unsigned long tmo;
-+	unsigned long flags;
- 
- 	src = kzalloc(sizeof(u8) * IOAT_TEST_SIZE, GFP_KERNEL);
- 	if (!src)
-@@ -1392,8 +1402,9 @@ static int ioat_dma_self_test(struct ioa
- 				 DMA_TO_DEVICE);
- 	dma_dest = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
- 				  DMA_FROM_DEVICE);
-+	flags = DMA_COMPL_SRC_UNMAP_SINGLE | DMA_COMPL_DEST_UNMAP_SINGLE;
- 	tx = device->common.device_prep_dma_memcpy(dma_chan, dma_dest, dma_src,
--						   IOAT_TEST_SIZE, 0);
-+						   IOAT_TEST_SIZE, flags);
- 	if (!tx) {
- 		dev_err(&device->pdev->dev,
- 			"Self-test prep failed, disabling\n");
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 2e2aa3d..dc3235a 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -78,12 +78,18 @@ #define DMA_TX_TYPE_END (DMA_SLAVE + 1)
-  * 	dependency chains
-  * @DMA_COMPL_SKIP_SRC_UNMAP - set to disable dma-unmapping the source buffer(s)
-  * @DMA_COMPL_SKIP_DEST_UNMAP - set to disable dma-unmapping the destination(s)
-+ * @DMA_COMPL_SRC_UNMAP_SINGLE - set to do the source dma-unmapping as single
-+ * 	(if not set, do the source dma-unmapping as page)
-+ * @DMA_COMPL_DEST_UNMAP_SINGLE - set to do the destination dma-unmapping as single
-+ *      (if not set, do the destination dma-unmapping as page)
-  */
- enum dma_ctrl_flags {
- 	DMA_PREP_INTERRUPT = (1 << 0),
- 	DMA_CTRL_ACK = (1 << 1),
- 	DMA_COMPL_SKIP_SRC_UNMAP = (1 << 2),
- 	DMA_COMPL_SKIP_DEST_UNMAP = (1 << 3),
-+	DMA_COMPL_SRC_UNMAP_SINGLE = (1 << 4),
-+	DMA_COMPL_DEST_UNMAP_SINGLE = (1 << 5),
- };
- 
- /**
+--------------enig2EA888F2C77F5D9D815BEDCC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknvMPkACgkQkNLDmnu1kSl3yACeMKZQOxUJUKwSlRL4tuIaOStq
+QNkAnRwnQkNAeJZusurGaU6UCH20W0rg
+=1yjB
+-----END PGP SIGNATURE-----
+
+--------------enig2EA888F2C77F5D9D815BEDCC--
