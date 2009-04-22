@@ -1,107 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZDVTW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZDVTXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbZDVTW2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZDVTWS
+	id S1754955AbZDVTXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbZDVTXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:22:18 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:32893 "EHLO kernel.dk"
+	Wed, 22 Apr 2009 15:23:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34094 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753384AbZDVTWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:22:17 -0400
-Date: Wed, 22 Apr 2009 21:22:16 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-Message-ID: <20090422192216.GE4593@kernel.dk>
-References: <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EF6929.9020600@opengridcomputing.com>
+	id S1753992AbZDVTXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 15:23:03 -0400
+Subject: Re: [Patch] mm tracepoints update - use case.
+From: Larry Woodman <lwoodman@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, riel@redhat.com, rostedt@goodmis.org
+In-Reply-To: <1240402037.4682.3.camel@dhcp47-138.lab.bos.redhat.com>
+References: <1240353915.11613.39.camel@dhcp-100-19-198.bos.redhat.com>
+	 <20090422095916.627A.A69D9226@jp.fujitsu.com>
+	 <20090422095727.GG18226@elte.hu>
+	 <1240402037.4682.3.camel@dhcp47-138.lab.bos.redhat.com>
+Content-Type: multipart/mixed; boundary="=-MVabRF+eP4gEAZxPAegl"
+Date: Wed, 22 Apr 2009 15:22:31 -0400
+Message-Id: <1240428151.11613.46.camel@dhcp-100-19-198.bos.redhat.com>
+Mime-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22 2009, Steve Wise wrote:
->
->> Odd... Can you try this variant?
->>
->> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> index 7e13f04..3a97c18 100644
->> --- a/block/cfq-iosched.c
->> +++ b/block/cfq-iosched.c
->> @@ -154,6 +154,7 @@ struct cfq_queue {
->>  	unsigned long rb_key;
->>  	/* prio tree member */
->>  	struct rb_node p_node;
->> +	struct rb_root *p_root;
->>  	/* sorted list of pending requests */
->>  	struct rb_root sort_list;
->>  	/* if fifo isn't expired, next request to serve */
->> @@ -594,22 +595,25 @@ cfq_prio_tree_lookup(struct cfq_data *cfqd, int ioprio, sector_t sector,
->>   static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue 
->> *cfqq)
->>  {
->> -	struct rb_root *root = &cfqd->prio_trees[cfqq->ioprio];
->> +	struct rb_root *root = &cfqd->prio_trees[cfqq->org_ioprio];
->>  	struct rb_node **p, *parent;
->>  	struct cfq_queue *__cfqq;
->>  -	if (!RB_EMPTY_NODE(&cfqq->p_node))
->> -		rb_erase_init(&cfqq->p_node, root);
->> +	if (cfqq->p_root) {
->> +		rb_erase_init(&cfqq->p_node, cfqq->p_root);
->> +		cfqq->p_root = NULL;
->> +	}
->>   	if (cfq_class_idle(cfqq))
->>  		return;
->>  	if (!cfqq->next_rq)
->>  		return;
->>  -	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->ioprio, 
->> cfqq->next_rq->sector,
->> -					 &parent, &p);
->> +	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->org_ioprio,
->> +					cfqq->next_rq->sector, &parent, &p);
->>  	BUG_ON(__cfqq);
->>  +	cfqq->p_root = root;
->>  	rb_link_node(&cfqq->p_node, parent, p);
->>  	rb_insert_color(&cfqq->p_node, root);
->>  }
->> @@ -656,8 +660,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->>   	if (!RB_EMPTY_NODE(&cfqq->rb_node))
->>  		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
->> -	if (!RB_EMPTY_NODE(&cfqq->p_node))
->> -		rb_erase_init(&cfqq->p_node, &cfqd->prio_trees[cfqq->ioprio]);
->> +	if (cfqq->p_root) {
->> +		rb_erase_init(&cfqq->p_node, cfqq->p_root);
->> +		cfqq->p_root = NULL;
->> +	}
->>   	BUG_ON(!cfqd->busy_queues);
->>  	cfqd->busy_queues--;
->> @@ -976,7 +982,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
->>  	 * First, if we find a request starting at the end of the last
->>  	 * request, choose it.
->>  	 */
->> -	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->ioprio,
->> +	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->org_ioprio,
->>  				      sector, &parent, NULL);
->>  	if (__cfqq)
->>  		return __cfqq;
->>
->>   
->
-> Still crashes with this variant:
 
-OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
-and see if that works?
+--=-MVabRF+eP4gEAZxPAegl
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Or, better yet, please try and revert
-55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
-try the above revert.
+On Wed, 2009-04-22 at 08:07 -0400, Larry Woodman wrote:
+> On Wed, 2009-04-22 at 11:57 +0200, Ingo Molnar wrote:
+> > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
--- 
-Jens Axboe
+> > > In past thread, Andrew pointed out bare page tracer isn't useful. 
+> > 
+> > (do you have a link to that mail?)
+> > 
+> > > Can you make good consumer?
+> 
+> I will work up some good examples of what these are useful for.  I use
+> the mm tracepoint data in the debugfs trace buffer to locate customer
+> performance problems associated with memory allocation, deallocation,
+> paging and swapping frequently, especially on large systems.
+> 
+> Larry
+
+Attached is an example of what the mm tracepoints can be used for:
+
+
+
+--=-MVabRF+eP4gEAZxPAegl
+Content-Disposition: attachment; filename=usecase
+Content-Type: text/plain; name=usecase; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+
+At Red Hat I use these mm tracepoints in an older kernel version(2.6.18).
+The following steps illustrate how the mm tracepoints were used to debug 
+and ultimately fix a problem. 
+
+1.) We had customer complaints about large NUMA systems burning up 100% of
+a CPU in system mode when running memory applications that require at least
+half but not all of the of the memory.
+
+---------- top output -------------------------------------------------------
+Tasks: 212 total,   2 running, 210 sleeping,   0 stopped,   0 zombie
+Cpu0  :  0.0%us,  0.3%sy,  0.0%ni, 99.7%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu2  :  0.0%us,  0.3%sy,  0.0%ni, 99.7%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu4  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu5  :  0.0%us,100.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu6  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu7  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:  16334996k total,  8979320k used,  7355676k free,     3280k buffers
+Swap:  2031608k total,   129572k used,  1902036k free,   353220k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+10723 root      20   0 16.0g 8.0g  376 R  100 51.4   0:17.78 mem
+10724 root      20   0 12880 1224  872 R    1  0.0   0:00.06 top
+ 7822 root      20   0 10868  348  272 S    0  0.0   0:06.00 irqbalance
+-----------------------------------------------------------------------------
+
+2.) Using the mm tracepoints I could immediately see that __zone_reclaim() is 
+being called directly out of the memory allocator indicating that 
+zone_reclaim_mode is non-zero(1).  In addition I could see that the priority
+was decremented to zero and that 12342 pages had been reclaimed rather than
+just enough to satisfy the page allocation request.
+
+-----------------------------------------------------------------------------
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+<mem>-10723 [005]  6976.285610: mm_directreclaim_reclaimzone: reclaimed=12342, priority=0
+-----------------------------------------------------------------------------
+
+3.) zone_reclaim_mode is set to 1 in build_zonelists() on NUMA systems with 
+sufficient distance between the nodes:
+
+                /*
+                 * If another node is sufficiently far away then it is better
+                 * to reclaim pages in a zone before going off node.
+                 */
+                if (distance > RECLAIM_DISTANCE)
+                        zone_reclaim_mode = 1;
+
+
+4.) To verify zone_reclaim_mode was involved I disabled it by:
+"echo 0 > /proc/sys/vm/zone_reclaim_mode" and sure enough the problem went
+away.
+
+5.) Next, after a reboot using the mm tracepoints I could see several calls 
+were made to shrink_zone() and it had reclaimed many more pages than it 
+should have:
+
+-----------------------------------------------------------------------------
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+           <mem>-10723 [005]   282.776271: mm_pagereclaim_shrinkzone: reclaimed=12342
+           <mem>-10723 [005]   282.781209: mm_pagereclaim_shrinkzone: reclaimed=3540
+           <mem>-10723 [005]   282.801194: mm_pagereclaim_shrinkzone: reclaimed=7528
+-----------------------------------------------------------------------------
+
+6.) In between the shrink_zone() runs, shrink_active_list() and 
+shrink_inactive_list() had run several times, each time fulfilling the memory
+request from the pagecache.
+
+-----------------------------------------------------------------------------
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+           <mem>-10723 [005]   282.755691: mm_pagereclaim_shrinkinactive: scanned=32, pagecache, priority=4
+           <mem>-10723 [005]   282.755766: mm_pagereclaim_shrinkinactive: scanned=32, pagecache, priority=4
+           <mem>-10723 [005]   282.755795: mm_pagereclaim_shrinkinactive: scanned=32, pagecache, priority=4
+ ...
+           <mem>-10723 [005]   282.755845: mm_pagereclaim_shrinkactive: scanned=32, pagecache, priority=4
+           <mem>-10723 [005]   282.755882: mm_pagereclaim_shrinkactive: scanned=32, pagecache, priority=4
+           <mem>-10723 [005]   282.755938: mm_pagereclaim_shrinkactive: scanned=32, pagecache, priority=4
+-----------------------------------------------------------------------------
+
+7.) This indicates that the direct memory reclaim code path called directly 
+from the memory allocator when zone_reclaim_mode is non-zero could reclaim 
+far more than SWAP_CLUSTER_MAX pages and consume significant CPU time doing 
+it:
+
+-----------------------------------------------------------------------------
+get_page_from_freelist(..)
+
+                if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+                        unsigned long mark;
+                        if (alloc_flags & ALLOC_WMARK_MIN)
+                                mark = (*z)->pages_min;
+                        else if (alloc_flags & ALLOC_WMARK_LOW)
+                                mark = (*z)->pages_low;
+                        else
+                                mark = (*z)->pages_high;
+                        if (!zone_watermark_ok(*z, order, mark,
+                                    classzone_idx, alloc_flags))
+                                if (!zone_reclaim_mode ||
+                                    !zone_reclaim(*z, gfp_mask, order))
+                                        continue;
+                }
+
+-----------------------------------------------------------------------------
+
+8.) On further investigation I found that the 2.6.18 shrink_zone() was missing
+an upstream patch that bails out as soon as SWAP_CLUSTER_MAX pages have been 
+reclaimed.
+
+-----------------------------------------------------------------------------
+shrink_zone(...)
+
++               /*
++                * On large memory systems, scan >> priority can become
++                * really large. This is fine for the starting priority;
++                * we want to put equal scanning pressure on each zone.
++                * However, if the VM has a harder time of freeing pages,
++                * with multiple processes reclaiming pages, the total
++                * freeing target can get unreasonably large.
++                */
++               if (nr_reclaimed > swap_cluster_max &&
++                       priority < DEF_PRIORITY && !current_is_kswapd())
++                       break; 
+-----------------------------------------------------------------------------
+
+9.) Including this patch in shrink_zone() fixed the problem by terminating
+one enough memory is reclaimed to satisfy the __alloc_pages() request on the
+local node.
+
+
+This example is realitively simple and does not illustrate the use of
+every one of the proposed mm tracepoints,   It show how they can be used to
+quickly drill down into performance and other problems without several
+itterations of rebuilding the kernel adding debug code.  
+
+
+--=-MVabRF+eP4gEAZxPAegl--
 
