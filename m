@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZDVJMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbZDVJMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZDVJMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 05:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZDVJMJ
+	id S1756294AbZDVJMl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 05:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbZDVJM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 05:12:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60874 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753013AbZDVJMH (ORCPT
+	Wed, 22 Apr 2009 05:12:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52226
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754021AbZDVJM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 05:12:07 -0400
-Date: Wed, 22 Apr 2009 10:11:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       David Brownell <david-b@pacbell.net>, Ingo Molnar <mingo@elte.hu>,
-       David VomLehn <dvomlehn@cisco.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux USB Mailing List <linux-usb@vger.kernel.org>,
-       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wait for console to become available, v3.2
-Message-ID: <20090422101109.7beee3ee@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090422082547.GB31246@shareable.org>
-References: <20090420234006.GA1958@cuplxvomd02.corp.sa.net>
-	<20090421064346.GB8020@elte.hu>
-	<200904210013.48551.david-b@pacbell.net>
-	<1240333871.3632.70.camel@macbook.infradead.org>
-	<alpine.LFD.2.00.0904211016190.2199@localhost.localdomain>
-	<20090422082547.GB31246@shareable.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 22 Apr 2009 05:12:26 -0400
+Date: Wed, 22 Apr 2009 02:12:18 -0700 (PDT)
+Message-Id: <20090422.021218.92737677.davem@davemloft.net>
+To: olof@lixom.net
+Cc: subrata@linux.vnet.ibm.com, netdev@vger.kernel.org,
+       geoffrey.levand@am.sony.com, Linuxppc-dev@ozlabs.org,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       sachinp@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       themann@de.ibm.com
+Subject: Re: INET_LRO as tristate and use from modules
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090421193319.GB20237@lixom.net>
+References: <1240339984.9110.141.camel@subratamodak.linux.ibm.com>
+	<20090421193319.GB20237@lixom.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It would be a sensible though boring cleanup to change all the "VC"
-> (virtual console) stuff to use the name "VT" (virtual terminal)
-> consistently.
+From: Olof Johansson <olof@lixom.net>
+Date: Tue, 21 Apr 2009 14:33:19 -0500
 
-Then we would have two completely different meanings for virtual terminal
-in the kernel.
+> On Wed, Apr 22, 2009 at 12:23:03AM +0530, Subrata Modak wrote:
+>>   MODPOST 338 modules
+>> ERROR: ".lro_receive_skb" [drivers/net/pasemi_mac_driver.ko] undefined!
+>> ERROR: ".lro_flush_all" [drivers/net/pasemi_mac_driver.ko] undefined!
+>> WARNING: modpost: Found 1 section mismatch(es).
+>> To see full details build your kernel with:
+>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>> make[1]: *** [__modpost] Error 1
+>> make: *** [modules] Error 2
+> 
+> This seems to be a problem with all tristate-capable drivers that use
+> LRO (and uses select INET_LRO in their Kconfig): INET_LRO is a tristate
+> and can thus be a module. Looks like it needs to be a bool instead?
 
-Alan
+Yes, making this a bool would be the easiest fix.
+
+By why don't we get the same problem for PHYLIB?  It's also
+tristate and "select"'d by a whole slew of networking drivers.
