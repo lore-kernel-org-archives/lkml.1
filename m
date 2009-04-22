@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZDVPVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZDVPXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304AbZDVPVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZDVPVc
+	id S1754623AbZDVPXE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:23:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZDVPWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:21:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45710 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbZDVPVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:21:30 -0400
-Message-ID: <49EF3614.1050806@suse.de>
-Date: Wed, 22 Apr 2009 23:21:56 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 22 Apr 2009 11:22:52 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:51519 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbZDVPWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 11:22:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=eDkYW/VpqcEKocs2GfMQO7p/4t4w7VWEZJ989e83UWY8YDhy7k19uawwxACzPG88vs
+         mqC10omtodlmy6Blem7IHm0FvSTIQiUqEwyGEev+vlUVcaKEZvJehBXyqtwj2tIVMe34
+         aUYMZfg5j627qL176umM4u6tz2AUg5ztdAkCo=
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Dimitri Sivanich <sivanich@sgi.com>
-Subject: [PATCH] uv_time: add parameter to uv_read_rtc()
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090422161257.2743ea33@lxorguk.ukuu.org.uk>
+References: <f44001920904220712ye1644c9y90d637bf4ac3bbe@mail.gmail.com>
+	 <871vrkpyae.fsf@basil.nowhere.org>
+	 <f44001920904220732h2d6d18cfwef53af31bb218b87@mail.gmail.com>
+	 <f44001920904220746k356550abk6783b8cae003685d@mail.gmail.com>
+	 <20090422161257.2743ea33@lxorguk.ukuu.org.uk>
+Date: Wed, 22 Apr 2009 19:22:49 +0400
+Message-ID: <f44001920904220822k672def82t7e9ba646bdde5fe8@mail.gmail.com>
+Subject: Re: Idea: Feature information / extensions dispatcher syscall.
+From: Igor Zhbanov <izh1979@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-uv_read_rtc() is referenced by read member of struct clocksource clocksource_uv.
-In include/linux/clocksource.h, read of struct clocksource is declared as:
-cycle_t (*read)(struct clocksource *cs)
+2009/4/22 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+>> But in some cases syscalls are more convenient than reading/writing/ioctling
+>> in /proc, /sys or /dev.
+>
+> A syscall and an ioctl are the same thing except that you need a file
+> handle for one of them.
+>
+>> And I suggest to regulate syscalls usage and reserve a set of numbers
+>> "home" modules used in some organizations only.
+>
+> We have file system naming so you can open device or sysfs and the like
+> files to do that job. That avoids the problem of trying to keep numbering
+> sane.
 
-This patch adds a dummy parameter (struct clocksource type) to uv_read_rtc() to
-fix the incompatible reference in clocksource_uv, and add a NULL parameter in
-all places where uv_read_rtc() gets called.
-
-Signed-off-by: Coly Li <coly.li@suse.de>
-Cc: Dimitri Sivanich <sivanich@sgi.com>
----
- arch/x86/kernel/uv_time.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
-index 2ffb6c5..583f11d 100644
---- a/arch/x86/kernel/uv_time.c
-+++ b/arch/x86/kernel/uv_time.c
-@@ -29,7 +29,7 @@
-
- #define RTC_NAME		"sgi_rtc"
-
--static cycle_t uv_read_rtc(void);
-+static cycle_t uv_read_rtc(struct clocksource *cs);
- static int uv_rtc_next_event(unsigned long, struct clock_event_device *);
- static void uv_rtc_timer_setup(enum clock_event_mode,
- 				struct clock_event_device *);
-@@ -123,7 +123,7 @@ static int uv_setup_intr(int cpu, u64 expires)
- 	/* Initialize comparator value */
- 	uv_write_global_mmr64(pnode, UVH_INT_CMPB, expires);
-
--	return (expires < uv_read_rtc() && !uv_intr_pending(pnode));
-+	return (expires < uv_read_rtc(NULL) && !uv_intr_pending(pnode));
- }
-
- /*
-@@ -256,7 +256,7 @@ static int uv_rtc_unset_timer(int cpu)
-
- 	spin_lock_irqsave(&head->lock, flags);
-
--	if (head->next_cpu == bcpu && uv_read_rtc() >= *t)
-+	if (head->next_cpu == bcpu && uv_read_rtc(NULL) >= *t)
- 		rc = 1;
-
- 	*t = ULLONG_MAX;
-@@ -278,7 +278,7 @@ static int uv_rtc_unset_timer(int cpu)
- /*
-  * Read the RTC.
-  */
--static cycle_t uv_read_rtc(void)
-+static cycle_t uv_read_rtc(struct clocksource *cs)
- {
- 	return (cycle_t)uv_read_local_mmr(UVH_RTC);
- }
-@@ -291,7 +291,7 @@ static int uv_rtc_next_event(unsigned long delta,
- {
- 	int ced_cpu = cpumask_first(ced->cpumask);
-
--	return uv_rtc_set_timer(ced_cpu, delta + uv_read_rtc());
-+	return uv_rtc_set_timer(ced_cpu, delta + uv_read_rtc(NULL));
- }
-
- /*
-
--- 
-Coly Li
-SuSE Labs
+Yes, you need a file handle. To open device each time you need to make ioctl
+is expensive and keeping device opened may prevent unmounting /proc
+that could be a problem in some installations if that application is used
+at a boot time.
