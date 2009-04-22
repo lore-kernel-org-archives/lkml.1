@@ -1,188 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbZDVOBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbZDVOB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752328AbZDVOBY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZDVNxs
+	id S1756984AbZDVOB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZDVNyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:53:48 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43842 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755525AbZDVNxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:53:44 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 21/22] Use a pre-calculated value instead of num_online_nodes() in fast paths
-Date: Wed, 22 Apr 2009 14:53:26 +0100
-Message-Id: <1240408407-21848-22-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	Wed, 22 Apr 2009 09:54:25 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:44316 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755840AbZDVNyX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:54:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=iWvgmrgcmLM4LKkDcFvHVU9AemNYV5dzeTVdkZKDQpQv6bYDKr2x02JomG1U74uMhL
+         VV4x8B7g1GNkfJkn75b62BxTeIEBM5FW/QUpmKdFKTowOaUpQj/SQUeI07reXQpy5lH6
+         tyQ2OOhDdqJJLA17xUcp/EgCh76oLmsHmZxb4=
+MIME-Version: 1.0
+Date: Wed, 22 Apr 2009 17:54:21 +0400
+Message-ID: <f44001920904220654u40338ad1sd291926067a00913@mail.gmail.com>
+Subject: Why module_exit() is void and not int? What about can_unload()?
+From: Igor Zhbanov <izh1979@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <cl@linux-foundation.org>
+Hello!
 
-num_online_nodes() is called in a number of places but most often by the
-page allocator when deciding whether the zonelist needs to be filtered based
-on cpusets or the zonelist cache. This is actually a heavy function and
-touches a number of cache lines.
+Sometimes module doesn't want to be unloaded. But now the only way to prevent
+unloading (except hanging in module_exit()) is incrementing of module
+usage count.
 
-This patch stores the number of online nodes at boot time and updates the
-value when nodes get onlined and offlined. The value is then used in a
-number of important paths in place of num_online_nodes().
+But sometimes module couldn't know whether it is a good time for unload,
+and can check a condition only in module_exit() handler. But it is impossible
+to return error (something like EAGAIN), since module_exit() is void.
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- include/linux/nodemask.h |   15 ++++++++++++++-
- mm/hugetlb.c             |    4 ++--
- mm/page_alloc.c          |   10 ++++++----
- mm/slub.c                |    2 +-
- net/sunrpc/svc.c         |    2 +-
- 5 files changed, 24 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
-index 848025c..474e73e 100644
---- a/include/linux/nodemask.h
-+++ b/include/linux/nodemask.h
-@@ -408,6 +408,19 @@ static inline int num_node_state(enum node_states state)
- #define next_online_node(nid)	next_node((nid), node_states[N_ONLINE])
- 
- extern int nr_node_ids;
-+extern int nr_online_nodes;
-+
-+static inline void node_set_online(int nid)
-+{
-+	node_set_state(nid, N_ONLINE);
-+	nr_online_nodes = num_node_state(N_ONLINE);
-+}
-+
-+static inline void node_set_offline(int nid)
-+{
-+	node_clear_state(nid, N_ONLINE);
-+	nr_online_nodes = num_node_state(N_ONLINE);
-+}
- #else
- 
- static inline int node_state(int node, enum node_states state)
-@@ -434,7 +447,7 @@ static inline int num_node_state(enum node_states state)
- #define first_online_node	0
- #define next_online_node(nid)	(MAX_NUMNODES)
- #define nr_node_ids		1
--
-+#define nr_online_nodes		1
- #endif
- 
- #define node_online_map 	node_states[N_ONLINE]
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 1234486..c9a404c 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -875,7 +875,7 @@ static void return_unused_surplus_pages(struct hstate *h,
- 	 * can no longer free unreserved surplus pages. This occurs when
- 	 * the nodes with surplus pages have no free pages.
- 	 */
--	unsigned long remaining_iterations = num_online_nodes();
-+	unsigned long remaining_iterations = nr_online_nodes;
- 
- 	/* Uncommit the reservation */
- 	h->resv_huge_pages -= unused_resv_pages;
-@@ -904,7 +904,7 @@ static void return_unused_surplus_pages(struct hstate *h,
- 			h->surplus_huge_pages--;
- 			h->surplus_huge_pages_node[nid]--;
- 			nr_pages--;
--			remaining_iterations = num_online_nodes();
-+			remaining_iterations = nr_online_nodes;
- 		}
- 	}
- }
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ba41551..1464aca 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -165,7 +165,9 @@ static unsigned long __meminitdata dma_reserve;
- 
- #if MAX_NUMNODES > 1
- int nr_node_ids __read_mostly = MAX_NUMNODES;
-+int nr_online_nodes __read_mostly = 1;
- EXPORT_SYMBOL(nr_node_ids);
-+EXPORT_SYMBOL(nr_online_nodes);
- #endif
- 
- int page_group_by_mobility_disabled __read_mostly;
-@@ -1467,7 +1469,7 @@ this_zone_full:
- 		if (NUMA_BUILD)
- 			zlc_mark_zone_full(zonelist, z);
- try_next_zone:
--		if (NUMA_BUILD && !did_zlc_setup && num_online_nodes() > 1) {
-+		if (NUMA_BUILD && !did_zlc_setup && nr_online_nodes > 1) {
- 			/*
- 			 * we do zlc_setup after the first zone is tried but only
- 			 * if there are multiple nodes make it worthwhile
-@@ -2267,7 +2269,7 @@ int numa_zonelist_order_handler(ctl_table *table, int write,
- }
- 
- 
--#define MAX_NODE_LOAD (num_online_nodes())
-+#define MAX_NODE_LOAD (nr_online_nodes)
- static int node_load[MAX_NUMNODES];
- 
- /**
-@@ -2476,7 +2478,7 @@ static void build_zonelists(pg_data_t *pgdat)
- 
- 	/* NUMA-aware ordering of nodes */
- 	local_node = pgdat->node_id;
--	load = num_online_nodes();
-+	load = nr_online_nodes;
- 	prev_node = local_node;
- 	nodes_clear(used_mask);
- 
-@@ -2627,7 +2629,7 @@ void build_all_zonelists(void)
- 
- 	printk("Built %i zonelists in %s order, mobility grouping %s.  "
- 		"Total pages: %ld\n",
--			num_online_nodes(),
-+			nr_online_nodes,
- 			zonelist_order_name[current_zonelist_order],
- 			page_group_by_mobility_disabled ? "off" : "on",
- 			vm_total_pages);
-diff --git a/mm/slub.c b/mm/slub.c
-index 93f5fb0..8e181e2 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -3714,7 +3714,7 @@ static int list_locations(struct kmem_cache *s, char *buf,
- 						 to_cpumask(l->cpus));
- 		}
- 
--		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
-+		if (nr_online_nodes > 1 && !nodes_empty(l->nodes) &&
- 				len < PAGE_SIZE - 60) {
- 			len += sprintf(buf + len, " nodes=");
- 			len += nodelist_scnprintf(buf + len, PAGE_SIZE - len - 50,
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 8847add..5ed8931 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -124,7 +124,7 @@ svc_pool_map_choose_mode(void)
- {
- 	unsigned int node;
- 
--	if (num_online_nodes() > 1) {
-+	if (nr_online_nodes > 1) {
- 		/*
- 		 * Actually have multiple NUMA nodes,
- 		 * so split pools on NUMA node boundaries
--- 
-1.5.6.5
-
+Why not to have int module_exit()? Or some other way to tell the kernel
+at module_exit() time that module cannot be unloaded?
