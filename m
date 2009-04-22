@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbZDVQxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZDVQx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754454AbZDVQxA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 12:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZDVQwp
+	id S1755345AbZDVQx2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 12:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZDVQwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 12:52:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39108 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbZDVQwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 12:52:43 -0400
-Message-ID: <49EF4B58.8000204@garzik.org>
-Date: Wed, 22 Apr 2009 12:52:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-References: <20090422090929.GA14928@havoc.gtf.org> <49EF16F5.5080909@rtr.ca>
-In-Reply-To: <49EF16F5.5080909@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Wed, 22 Apr 2009 12:52:54 -0400
+Received: from mailout01.t-online.de ([194.25.134.80]:52567 "EHLO
+	mailout01.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbZDVQwx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 12:52:53 -0400
+Message-Id: <f094d823a0fc52e010f99aec720c9144d454c2fa.1240410708.git.keil@b1-systems.de>
+In-Reply-To: <cover.1240410708.git.keil@b1-systems.de>
+References: <cover.1240410708.git.keil@b1-systems.de>
+From: "Karsten Keil" <Karsten-Keil@t-online.de>
+Date: Wed, 22 Apr 2009 16:31:48 +0200
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] Add reference to CAPI 2.0 standard
+Cc: Randy Dunlap <rdunlap@xenotime.net>, David Miller <davem@davemloft.net>,
+       tilman@imap.cc, isdn4linux@listserv.isdn4linux.de,
+       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org
+X-ID: rIVJSTZlrh1+znM3HKBQlLlMQX8CpZmlvL7v1nDSjFJ36prz+L43mmsu+fbjZGbgns
+X-TOI-MSGID: 447eeaa1-d59f-4344-8e23-5f0964b15e25
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Jeff Garzik wrote:
->> Currently, libata creates a Scsi_Host per port.  This was originally
->> done to leverage SCSI's infrastructure to arbitrate among master/slave
->> devices, but is not needed for most modern SATA controllers.   And I
->> _think_ it is not needed for master/slave if done properly, either.
->>
->> The patch below converts libata such that there is now a 1:1
->> correspondence between struct Scsi_Host and struct ata_host.  ATA ports
->> are represented as SCSI layer 'channels', which is more natural.
->>
->> This patch is an experiment, and not meant for upstream anytime soon.
-> ..
-> 
-> Could you perhaps explain how error handling would behave in this scheme?
-> 
-> Currently, one SATA port can have failures without any impact whatsoever
-> on concurrent operation of other ports, in part because each port is 
-> treated
-> as a completely independent SCSI host.
-> 
-> I wonder if that changes with the new (better) scheme proposed here?
+Move the entry about CAPI 2.0 to the beginning and add a URL.
+Incorporate changes suggested by Randy Dunlap, thanks for proofreading.
 
-It changes, yes, most definitely.  We just have to pay close attention, 
-and make sure to indicate which EH actions are host-wide, channel-wide 
-(== per port, in ATA parlance) or per-device.
+Signed-off-by: Karsten Keil <keil@b1-systems.de>
+---
+ Documentation/isdn/INTERFACE.CAPI |   20 +++++++++++++-------
+ 1 files changed, 13 insertions(+), 7 deletions(-)
 
-SCSI handles all these cases, because e.g. you might not want to disrupt 
-all 1,000 SAN devices actively talking to a single SCSI host in Linux.
-
-So...  error handling should behave how it needs to behave ;-)
-
-There might be an issue with concurrent error handling, because of 
-potential sharing of EH threads (== one port's EH must wait for 
-another's, I think)....but not with concurrent and independent 
-operation.  You should be able to reset an AHCI port without affecting 
-data xfer on the other ports.
-
-	Jeff
-
-
+diff --git a/Documentation/isdn/INTERFACE.CAPI b/Documentation/isdn/INTERFACE.CAPI
+index 8947ffc..4d802ee 100644
+--- a/Documentation/isdn/INTERFACE.CAPI
++++ b/Documentation/isdn/INTERFACE.CAPI
+@@ -3,6 +3,11 @@ Kernel CAPI Interface to Hardware Drivers
+ 
+ 1. Overview
+ 
++From the CAPI 2.0 spezification:
++COMMON-ISDN-API (CAPI) is an application programming interface standard used
++to access ISDN equipment connected to basic rate interfaces (BRI) and primary
++rate interfaces (PRI).
++
+ Kernel CAPI operates as a dispatching layer between CAPI applications and CAPI
+ hardware drivers. Hardware drivers register ISDN devices (controllers, in CAPI
+ lingo) with Kernel CAPI to indicate their readiness to provide their service
+@@ -12,6 +17,9 @@ application registration to an available device, forwarding it to the
+ corresponding hardware driver. Kernel CAPI then forwards CAPI messages in both
+ directions between the application and the hardware driver.
+ 
++Format and semantics of CAPI messages are specified in the CAPI 2.0 standard.
++This standard is freely available from http://www.capi.org.
++
+ 
+ 2. Driver and Device Registration
+ 
+@@ -53,12 +61,10 @@ open() operation on regular files or character devices.
+ After a successful return from register_appl(), CAPI messages from the
+ application may be passed to the driver for the device via calls to the
+ send_message() callback function. The CAPI message to send is stored in the
+-data portion of a skb. Conversely, the driver may call Kernel CAPI's
++data portion of an skb. Conversely, the driver may call Kernel CAPI's
+ capi_ctr_handle_message() function to pass a received CAPI message to Kernel
+ CAPI for forwarding to an application, specifying its ApplID.
+ 
+-Format and semantics of CAPI messages are specified in the CAPI 2.0 standard.
+-
+ Deregistration requests (CAPI operation CAPI_RELEASE) from applications are
+ forwarded as calls to the release_appl() callback function, passing the same
+ ApplID as with register_appl(). After return from release_appl(), no CAPI
+@@ -75,9 +81,9 @@ the following non-private fields, all to be set by the driver before calling
+ register_capi_driver():
+ 
+ char name[32]
+-	the name of the driver, as a zero terminated ASCII string
++	the name of the driver, as a zero-terminated ASCII string
+ char revision[32]
+-	the revision number of the driver, as a zero terminated ASCII string
++	the revision number of the driver, as a zero-terminated ASCII string
+ int (*add_card)(struct capi_driver *driver, capicardparams *data)
+ 	a callback function pointer (may be NULL)
+ 
+@@ -100,10 +106,10 @@ void *driverdata
+ 	an opaque pointer to driver specific data, not touched by Kernel CAPI
+ 
+ char name[32]
+-	the name of the controller, as a zero terminated ASCII string
++	the name of the controller, as a zero-terminated ASCII string
+ 
+ char *driver_name
+-	the name of the driver, as a zero terminated ASCII string
++	the name of the driver, as a zero-terminated ASCII string
+ 
+ int (*load_firmware)(struct capi_ctr *ctrlr, capiloaddata *ldata)
+ 	(optional) pointer to a callback function for sending firmware and
+-- 
+1.6.0.2
 
