@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZDVN6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbZDVN6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbZDVN6U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZDVNxn
+	id S1753941AbZDVN6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZDVNxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 22 Apr 2009 09:53:43 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43853 "EHLO gir.skynet.ie"
+Received: from gir.skynet.ie ([193.1.99.77]:43823 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755253AbZDVNxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:53:38 -0400
+	id S1755329AbZDVNxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:53:40 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 13/22] Inline __rmqueue_fallback()
-Date: Wed, 22 Apr 2009 14:53:18 +0100
-Message-Id: <1240408407-21848-14-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 14/22] Do not call get_pageblock_migratetype() more than necessary
+Date: Wed, 22 Apr 2009 14:53:19 +0100
+Message-Id: <1240408407-21848-15-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
 References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
@@ -31,32 +31,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__rmqueue_fallback() is in the slow path but has only one call site. Because
-there is only one call-site, this function can then be inlined without
-causing text bloat. On an x86-based config, it made no difference as the
-savings were padded out by NOP instructions. Milage varies but text will
-either decrease in size or remain static.
+get_pageblock_migratetype() is potentially called twice for every page
+free. Once, when being freed to the pcp lists and once when being freed
+back to buddy. When freeing from the pcp lists, it is known what the
+pageblock type was at the time of free so use it rather than rechecking.
+In low memory situations under memory pressure, this might skew
+anti-fragmentation slightly but the interference is minimal and
+decisions that are fragmenting memory are being made anyway.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- mm/page_alloc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index cb57382..e0e9e67 100644
+index e0e9e67..67cafd0 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -775,8 +775,8 @@ static int move_freepages_block(struct zone *zone, struct page *page,
+@@ -456,16 +456,18 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
+  */
+ 
+ static inline void __free_one_page(struct page *page,
+-		struct zone *zone, unsigned int order)
++		struct zone *zone, unsigned int order,
++		int migratetype)
+ {
+ 	unsigned long page_idx;
+ 	int order_size = 1 << order;
+-	int migratetype = get_pageblock_migratetype(page);
+ 
+ 	if (unlikely(PageCompound(page)))
+ 		if (unlikely(destroy_compound_page(page, order)))
+ 			return;
+ 
++	VM_BUG_ON(migratetype == -1);
++
+ 	page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);
+ 
+ 	VM_BUG_ON(page_idx & (order_size - 1));
+@@ -534,17 +536,18 @@ static void free_pages_bulk(struct zone *zone, int count,
+ 		page = list_entry(list->prev, struct page, lru);
+ 		/* have to delete it as __free_one_page list manipulates */
+ 		list_del(&page->lru);
+-		__free_one_page(page, zone, order);
++		__free_one_page(page, zone, order, page_private(page));
+ 	}
+ 	spin_unlock(&zone->lock);
  }
  
- /* Remove an element from the buddy allocator from the fallback list */
--static struct page *__rmqueue_fallback(struct zone *zone, int order,
--						int start_migratetype)
-+static inline struct page *
-+__rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+-static void free_one_page(struct zone *zone, struct page *page, int order)
++static void free_one_page(struct zone *zone, struct page *page, int order,
++				int migratetype)
  {
- 	struct free_area * area;
- 	int current_order;
+ 	spin_lock(&zone->lock);
+ 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+ 	zone->pages_scanned = 0;
+-	__free_one_page(page, zone, order);
++	__free_one_page(page, zone, order, migratetype);
+ 	spin_unlock(&zone->lock);
+ }
+ 
+@@ -569,7 +572,8 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+ 
+ 	local_irq_save(flags);
+ 	__count_vm_events(PGFREE, 1 << order);
+-	free_one_page(page_zone(page), page, order);
++	free_one_page(page_zone(page), page, order,
++					get_pageblock_migratetype(page));
+ 	local_irq_restore(flags);
+ }
+ 
 -- 
 1.5.6.5
 
