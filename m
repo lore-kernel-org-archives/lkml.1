@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZDVFaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZDVFfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbZDVFaH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 01:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZDVF3n
+	id S1753489AbZDVFfs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 01:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZDVFfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 01:29:43 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:42412 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbZDVF3m (ORCPT
+	Wed, 22 Apr 2009 01:35:34 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:24528 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZDVFfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 01:29:42 -0400
-Message-ID: <49EEAB43.5010908@canonical.com>
-Date: Wed, 22 Apr 2009 07:29:39 +0200
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Wed, 22 Apr 2009 01:35:33 -0400
+X-IronPort-AV: E=Sophos;i="4.40,229,1238976000"; 
+   d="scan'208";a="175035202"
+Date: Tue, 21 Apr 2009 22:35:18 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jamie Lokier <jamie@shareable.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090422053518.GA11055@cuplxvomd02.corp.sa.net>
+References: <20090421165214.GB8251@cuplxvomd02.corp.sa.net> <Pine.LNX.4.44L0.0904211457150.3986-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, jkosina@suse.cz,
-       ubuntuLp-ugeuder@sneakemail.com
-Subject: Re: [PATCH] vgacon: Return the upper half of 512 character fonts
-References: <49EDDB8E.5020200@canonical.com> <20090421135454.6ac430fb.akpm@linux-foundation.org>
-In-Reply-To: <20090421135454.6ac430fb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0904211457150.3986-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 21 Apr 2009 16:43:26 +0200
-> Stefan Bader <stefan.bader@canonical.com> wrote:
-> 
->> From: Stefan Bader <stefan.bader@canonical.com>
->> Date: Fri, 17 Apr 2009 23:21:05 +0200
->> Subject: [PATCH] vgacon: Return the upper half of 512 character fonts
->>
->> Bug: #355057
-> 
-> I think it's OK (and often good) to include the bug references in the
-> changelog.  But nobody will have any clue which bug tracking system
-> this refers to!
-> 
-> A full URL would be appropriate.
-> 
-> <googles for a while>
-> 
-> The form I use is
-> 
-> 	Addresses https://bugs.launchpad.net/ubuntu/+source/linux/+bug/355057
-> 
-True, the current form is used here to generate changelog and either should not 
-go outside or, even better, I should make it a default to add another tag with 
-the complete link which then helps all.
+By now, pretty much everone is probably up to speed on what the USB folks are
+telling us:
 
-Stefan
+	There is no way to avoid using some sort of timeout to decide
+	whether the console is ever going to appear.
 
--- 
+So:
+1.	We want the minimum timeout possible so that headless systems will
+	not be delayed any more than is necessary to detect that no console
+	is available.
+2.	As I understand it, USB devices don't generally come with any
+	guarantee what the maximum time to initialize will be.
 
-When all other means of communication fail, try words!
+Therefore, as far as I can see, this means that we can't empirically
+determine an appropriate timeout until we know what USB devices are
+connected to a particular system. This, in turn, means that any default
+timeout we might choose will have to have a command line parameter to
+override it.
 
+Naturally, we want to help a user determine as easily as possible just how
+long it took to detect whatever serial device they may want to use so that
+they can set the timeout so the system will boot as quickly as possible when
+being used in a headless mode. This probably means picking a stable point
+from which to start measuring the timeout, as well as printing how long it
+took to detect the console, if there was one.
 
+An open question is whether we want to wait for all possible consoles or
+whether we can proceed with as few as one.
+
+David VomLehn
