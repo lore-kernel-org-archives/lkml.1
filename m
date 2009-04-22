@@ -1,53 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZDVB6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZDVB7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZDVB6a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 21:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDVB6V
+	id S1754804AbZDVB7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 21:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDVB7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 21:58:21 -0400
-Received: from ozlabs.org ([203.10.76.45]:56474 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbZDVB6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 21:58:21 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-Date: Wed, 22 Apr 2009 11:28:12 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>
-References: <200904140159.n3E1x1K1014705@hera.kernel.org> <200904201744.22572.rusty@rustcorp.com.au> <20090421133701.5b1cd303@bike.lwn.net>
-In-Reply-To: <20090421133701.5b1cd303@bike.lwn.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 21 Apr 2009 21:59:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45992 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752211AbZDVB7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 21:59:12 -0400
+Date: Tue, 21 Apr 2009 18:53:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Izik Eidus <ieidus@redhat.com>
+Subject: Re: mmotm 2009-04-21-15-00 uploaded
+Message-Id: <20090421185313.06bec1cc.akpm@linux-foundation.org>
+In-Reply-To: <49EE7351.6080802@oracle.com>
+References: <200904212219.n3LMJ2O7007301@imap1.linux-foundation.org>
+	<49EE7351.6080802@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904221128.13534.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 05:07:01 am Jonathan Corbet wrote:
-> On Mon, 20 Apr 2009 17:44:21 +0930
-> Rusty Russell <rusty@rustcorp.com.au> wrote:
+On Tue, 21 Apr 2009 18:30:57 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-04-21-15-00 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > It contains the following patches against 2.6.30-rc2:
 > 
-> > There are several readers: someone reviewing the patch, someone looking
-> > for a specific bug, someone backporting, someone dealing with an API change,
-> > someone bisecting. 
 > 
-> With this in mind, I've tried to make a relatively concise addition to
-> the development process document.  How does the following look?
+> 2 of 10 i386 builds ended like:
+> 
+> 
+>   CC      arch/x86/kernel/asm-offsets.s
+> In file included from include/linux/suspend.h:8,
+>                  from arch/x86/kernel/asm-offsets_32.c:11,
+>                  from arch/x86/kernel/asm-offsets.c:2:
+> include/linux/mm.h: In function 'get_pte':
+> include/linux/mm.h:907: error: implicit declaration of function 'kmap_atomic_pte'
+> make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
+> make[1]: *** [prepare0] Error 2
+> make: *** [sub-make] Error 2
+> 
+> 
+> 
+> config attached.
 
-I like it, but will it help?
+Caused by ksm-add-get_pte-helper-function-fetching-pte-for-va.patch.
 
-Fresh from an epic battle with printk, grep, debugging race conditions and
-subtly confusing code, who among us can resist providing a blow-by-blow
-account?  Leave the heroics unsung in a dry summary of the final patch?
+hm, this will end badly.  Let's uninline it.
 
-Of course, you never see *me* use flowery prose!
-Rusty.
+--- a/include/linux/mm.h~ksm-add-get_pte-helper-function-fetching-pte-for-va-fix
++++ a/include/linux/mm.h
+@@ -883,30 +883,7 @@ extern void unregister_shrinker(struct s
+ int vma_wants_writenotify(struct vm_area_struct *vma);
+ 
+ extern pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl);
+-
+-static inline pte_t *get_pte(struct mm_struct *mm, unsigned long addr)
+-{
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *ptep = NULL;
+-
+-	pgd = pgd_offset(mm, addr);
+-	if (!pgd_present(*pgd))
+-		goto out;
+-
+-	pud = pud_offset(pgd, addr);
+-	if (!pud_present(*pud))
+-		goto out;
+-
+-	pmd = pmd_offset(pud, addr);
+-	if (!pmd_present(*pmd))
+-		goto out;
+-
+-	ptep = pte_offset_map(pmd, addr);
+-out:
+-	return ptep;
+-}
++extern pte_t *get_pte(struct mm_struct *mm, unsigned long addr);
+ 
+ #ifdef __PAGETABLE_PUD_FOLDED
+ static inline int __pud_alloc(struct mm_struct *mm, pgd_t *pgd,
+diff -puN mm/util.c~ksm-add-get_pte-helper-function-fetching-pte-for-va-fix mm/util.c
+--- a/mm/util.c~ksm-add-get_pte-helper-function-fetching-pte-for-va-fix
++++ a/mm/util.c
+@@ -1,4 +1,5 @@
+ #include <linux/mm.h>
++#include <linux/highmem.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/module.h>
+@@ -264,6 +265,31 @@ int __attribute__((weak)) get_user_pages
+ }
+ EXPORT_SYMBOL_GPL(get_user_pages_fast);
+ 
++pte_t *get_pte(struct mm_struct *mm, unsigned long addr)
++{
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *ptep = NULL;
++
++	pgd = pgd_offset(mm, addr);
++	if (!pgd_present(*pgd))
++		goto out;
++
++	pud = pud_offset(pgd, addr);
++	if (!pud_present(*pud))
++		goto out;
++
++	pmd = pmd_offset(pud, addr);
++	if (!pmd_present(*pmd))
++		goto out;
++
++	ptep = pte_offset_map(pmd, addr);
++out:
++	return ptep;
++}
++EXPORT_SYMBOL_GPL(get_pte);
++
+ /* Tracepoints definitions. */
+ EXPORT_TRACEPOINT_SYMBOL(kmalloc);
+ EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc);
+_
+
