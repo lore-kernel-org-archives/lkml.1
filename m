@@ -1,112 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZDVLQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZDVLTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbZDVLQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 07:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbZDVLQE
+	id S1753208AbZDVLTZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 07:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZDVLTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 07:16:04 -0400
-Received: from khc.piap.pl ([195.187.100.11]:37268 "EHLO khc.piap.pl"
+	Wed, 22 Apr 2009 07:19:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43682 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750743AbZDVLQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 07:16:01 -0400
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Char: cyclades, plx9060 casts cleanup
-References: <1240384003-25499-1-git-send-email-jirislaby@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 22 Apr 2009 13:15:58 +0200
-In-Reply-To: <1240384003-25499-1-git-send-email-jirislaby@gmail.com> (Jiri Slaby's message of "Wed\, 22 Apr 2009 09\:06\:38 +0200")
-Message-ID: <m3mya9ey6p.fsf@intrepid.localdomain>
+	id S1751383AbZDVLTB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 07:19:01 -0400
+Date: Wed, 22 Apr 2009 13:18:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+Message-ID: <20090422111817.GA21190@elte.hu>
+References: <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <49EE2293.4090201@cosmosbay.com> <20090422073524.GA31835@elte.hu> <49EEDAF0.2010507@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EEDAF0.2010507@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
 
-> Remove ugly all-over-the-code casts of ctl_addr to 9060 space.
-> Add an union to the cyclades_card structure, which contains
-> a pointer to both 9050 and 9060 spaces.
->
-> The 9050 space layout is unknown, so let it still as a void
-> __iomem pointer.
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-FYI: 9050 and 9060 certainly refer to PLXtech's PCI9050 and PCI9060
-bridges. Those are PCI-to-local-bus bridges, 9050 being a simpler
-target-only device and 9060 also featuring programmable DMA controller
-(= bus master on both PCI and local bus) and local-bus-target -> PCI
-bus master operation (for a CPU or FPGA on the local bus).
+> netfilter in 2.6.2[0-9] used :
+> 
+> CPU 1
+> 
+> sofirq handles one packet from a NIC
+> 
+> ipt_do_table() /* to handle INPUT table for example, or FORWARD */
+> read_lock_bh(&a_central_and_damn_rwlock)
+> ... parse rules
+>     -> calling some netfilter sub-function
+>        re-entering network IP stack to send some packet (say a RST packet)
+>        ...
+>        ipt_do_table() /* to handle OUPUT table rules for example */
+>        read_lock_bh() ; /* WE RECURSE here, but once in a while (if ever) */
+> 
+> This is one of the case, but other can happens with virtual 
+> networks, tunnels, ... and so on. (Stephen had some cases with KVM 
+> if I remember well)
+> 
+> If this could be done without recursion, I am pretty sure 
+> netfilter and network guys would have done it. I found Linus 
+> reaction quite shocking IMHO, considering hard work done by all 
+> people on this.
 
-The 9050 register space is well known, e.g. struct plx9050 in
-drivers/net/wan/pc300too.c (later). IIRC the registers can be accessed
-as MMIO (region 0) or IO (region 1) on the PCI bus. There are up to 4
-additional regions, used for PCI->local bus transfers (the configuration
-is in a small external EEPROM).
+Again ... i dont know this code well, but you yourself describe it 
+as "a_central_and_damn_rwlock" above.
 
-These bridges (especially 9050 and its newer versions) are quite
-popular. Perhaps we should move the definitions to some common header
-files, shared by the drivers?
+"Central and damn" locks of any type, anywhere tend to cause such 
+trouble.
 
-struct {
-        u32 loc_addr_range[4];  /* 00-0Ch : Local Address Ranges */
-        u32 loc_rom_range;      /* 10h : Local ROM Range */
-        u32 loc_addr_base[4];   /* 14-20h : Local Address Base Addrs */
-        u32 loc_rom_base;       /* 24h : Local ROM Base */
-        u32 loc_bus_descr[4];   /* 28-34h : Local Bus Descriptors */
-        u32 rom_bus_descr;      /* 38h : ROM Bus Descriptor */
-        u32 cs_base[4];         /* 3C-48h : Chip Select Base Addrs */
-        u32 intr_ctrl_stat;     /* 4Ch : Interrupt Control/Status */
-        u32 init_ctrl;          /* 50h : EEPROM ctrl, Init Ctrl, etc */
-}plx9050;
+Often they are mini-BKL's in the making. Here's some historic 
+patterns:
 
+ 1- First there's a convenient lock around a popular and useful 
+    piece of data and code.
 
-OTOH 9060 struct in cyclades.h is a bit simplified version, in reality
+ 2- As popularity (and reach of code) grows, and some non-trivial 
+    interaction ensues, a little bit of self-recursion is added to 
+    the mix (this is often easier to do than to fix the root cause 
+    of the problem) - making critical sections even easier to grow 
+    in size.
 
-struct RUNTIME_9060 {
-        __u32   loc_addr_range; /* 00h - Local Address Range */
-        __u32   loc_addr_base;  /* 04h - Local Address Base */
-        __u32   loc_arbitr;     /* 08h - Local Arbitration */
-        __u32   endian_descr;   /* 0Ch - Big/Little Endian Descriptor */
+ 3- Then attempts are made to make it scale all (it's a popular 
+    piece of code), it's extended along a per-cpu axis, but 
+    complexity of locking explode by taking a ton of locks all at 
+    once. The solution: yell at the lock validator for not allowing
+    this (or for exploding due to the sheer mathematically 
+    large complexity of the locking rules). Frequent requests for
+    an exclusion from those pesky validations are made, and various
+    hacks are done to work it around. It's all the fault of the lock
+    validator, of course.
 
-Interestingly registers 8 and 0x0C are "reserved" in my book (v1.2,
-1995, I don't think there is newer version).
+ 4- At this point it's rarely a clean, tidy data lock anymore - it 
+    tends to grow into a code lock nobody really knows how it works, 
+    except that it better be taken more often than not, badness may
+    ensue otherwise. Nobody really knows when to take it, only that 
+    it should be taken widely enough, that it should be recursive 
+    enough to call even _more_ code from under it. Efforts to reduce 
+    critical section length are rebuffed with: "this adds unlocking
+    and relocking overhead". And it should then all scale as well.
 
-        __u32   loc_rom_range;  /* 10h - Local ROM Range */
-        __u32   loc_rom_base;   /* 14h - Local ROM Base */
-        __u32   loc_bus_descr;  /* 18h - Local Bus descriptor */
-        __u32   loc_range_mst;  /* 1Ch - Local Range for Master to PCI */
-        __u32   loc_base_mst;   /* 20h - Local Base for Master PCI */
-        __u32   loc_range_io;   /* 24h - Local Range for Master IO */
-        __u32   pci_base_mst;   /* 28h - PCI Base for Master PCI */
-        __u32   pci_conf_io;    /* 2Ch - PCI configuration for Master IO */
-        __u32   filler1;        /* 30h */
-        __u32   filler2;        /* 34h */
-        __u32   filler3;        /* 38h */
-        __u32   filler4;        /* 3Ch */
-        __u32   mail_box_0;     /* 40h - Mail Box 0 */
-        __u32   mail_box_1;     /* 44h - Mail Box 1 */
-        __u32   mail_box_2;     /* 48h - Mail Box 2 */
-        __u32   mail_box_3;     /* 4Ch - Mail Box 3 */
-        __u32   filler5;        /* 50h */
-        __u32   filler6;        /* 54h */
-        __u32   filler7;        /* 58h */
-        __u32   filler8;        /* 5Ch */
+ 5- In the end it's a lock everyone curses but nobody is able to fix 
+    anymore. "If it was easy to fix we'd have fixed it long ago 
+    already" kind of fatalist thinking becomes widespread.
 
-filler5-8 are actually mail_box_4 to 7 (probably not used by Cyclades'
-firmware).
+We saw many examples of this in the past: beyond the BKL (which is a 
+bit special as its more of an UP legacy - but which hurt us the 
+most), we had the tasklist_lock which was problematic for a long 
+time, then there's also the reiser3 locking which was extremely 
+monolithic. [ i'm only naming safe examples here, where nobody will 
+flame me =B-) ]
 
-        __u32   pci_doorbell;   /* 60h - PCI to Local Doorbell */
-        __u32   loc_doorbell;   /* 64h - Local to PCI Doorbell */
-        __u32   intr_ctrl_stat; /* 68h - Interrupt Control/Status */
-        __u32   init_ctrl;      /* 6Ch - EEPROM control, Init Control, etc */
-};
+Whether this particular case applies is up to you. I see certain 
+matches up to phase 3 or so - but i also see certain dissimilarities 
+as well. Nor do i claim that it's easy to fix or improve.
 
-And there are 13 additional registers at 0x100 for the DMA controller.
-Probably only accessed from the local bus by Cyclades's firmware, or not
-used.
-
-Just in case someone needs the details.
--- 
-Krzysztof Halasa
+	Ingo
