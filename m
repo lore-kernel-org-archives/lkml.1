@@ -1,126 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZDVRas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbZDVRbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZDVRas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 13:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZDVRaX
+	id S1756257AbZDVRbP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 13:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbZDVRaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 13:30:23 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38308 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754847AbZDVRaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 13:30:21 -0400
-Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090422171151.GF15367@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
-	 <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
-	 <1240416791.10627.78.camel@nimitz>  <20090422171151.GF15367@csn.ul.ie>
-Content-Type: text/plain
-Date: Wed, 22 Apr 2009 10:30:15 -0700
-Message-Id: <1240421415.10627.93.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Apr 2009 13:30:55 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:56196 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754437AbZDVRay (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 13:30:54 -0400
+Date: Wed, 22 Apr 2009 13:28:05 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       jussi.kivilinna@mbnet.fi
+Subject: Re: linux-next: Tree for April 22 (rndis_wlan)
+Message-ID: <20090422172804.GE3288@tuxdriver.com>
+References: <20090422154247.dbffd285.sfr@canb.auug.org.au> <49EF4B73.2050702@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF4B73.2050702@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-22 at 18:11 +0100, Mel Gorman wrote:
-> On Wed, Apr 22, 2009 at 09:13:11AM -0700, Dave Hansen wrote:
-> > On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
-> > > No user of the allocator API should be passing in an order >= MAX_ORDER
-> > > but we check for it on each and every allocation. Delete this check and
-> > > make it a VM_BUG_ON check further down the call path.
+On Wed, Apr 22, 2009 at 09:53:07AM -0700, Randy Dunlap wrote:
+> Stephen Rothwell wrote:
+> > Hi all,
 > > 
-> > Should we get the check re-added to some of the upper-level functions,
-> > then?  Perhaps __get_free_pages() or things like alloc_pages_exact()? 
+> > Changes since 20090421:
+> > 
+> > For those who care about the order of trees, I have moved the merging of
+> > all the fs trees together and nearer the start of the process.
+> > 
+> > This tree will not build a powerpc allyesconfig.
+> > 
+> > The net tree lost its conflict.
+> > 
+> > The wireless tree gained a conflict against eahc of the v4l-dvb and
+> > wireless-current trees and a build failure due to an interaction with the
+> > acpi tree for which I reverted a commit.
 > 
-> I don't think so, no. It just moves the source of the text bloat and
-> for the few callers that are asking for something that will never
-> succeed.
+> ERROR: "wiphy_free" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_wext_siwscan" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_wext_siwmode" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "__ieee80211_get_channel" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "wiphy_unregister" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_inform_bss" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "wiphy_new" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "wiphy_register" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_wext_giwrange" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_wext_giwmode" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_wext_giwname" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_wext_giwscan" [drivers/net/wireless/rndis_wlan.ko] undefined!
+> ERROR: "cfg80211_scan_done" [drivers/net/wireless/rndis_wlan.ko] undefined!
 
-Well, it's a matter of figuring out when it can succeed.  Some of this
-stuff, we can figure out at compile-time.  Others are a bit harder.
+> # CONFIG_CFG80211 is not set
 
-> > I'm selfishly thinking of what I did in profile_init().  Can I slab
-> > alloc it?  Nope.  Page allocator?  Nope.  Oh, well, try vmalloc():
-> > 
-> >         prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
-> >         if (prof_buffer)
-> >                 return 0;
-> > 
-> >         prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
-> >         if (prof_buffer)
-> >                 return 0;
-> > 
-> >         prof_buffer = vmalloc(buffer_bytes);
-> >         if (prof_buffer)
-> >                 return 0;
-> > 
-> >         free_cpumask_var(prof_cpu_mask);
-> >         return -ENOMEM;
-> > 
-> 
-> Can this ever actually be asking for an order larger than MAX_ORDER
-> though? If so, you're condemning it to always behave poorly.
+No doubt this is the problem...
 
-Yeah.  It is based on text size.  Smaller kernels with trimmed configs
-and no modules have no problem fitting under MAX_ORDER, as do kernels
-with larger base page sizes.  
+---
 
-> > Same thing in __kmalloc_section_memmap():
-> > 
-> >         page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
-> >         if (page)
-> >                 goto got_map_page;
-> > 
-> >         ret = vmalloc(memmap_size);
-> >         if (ret)
-> >                 goto got_map_ptr;
-> > 
-> 
-> If I'm reading that right, the order will never be a stupid order. It can fail
-> for higher orders in which case it falls back to vmalloc() .  For example,
-> to hit that limit, the section size for a 4K kernel, maximum usable order
-> of 10, the section size would need to be 256MB (assuming struct page size
-> of 64 bytes). I don't think it's ever that size and if so, it'll always be
-> sub-optimal which is a poor choice to make.
+>From bce85c97aeeb9c34098951e9ef3de425c6830b63 Mon Sep 17 00:00:00 2001
+From: John W. Linville <linville@tuxdriver.com>
+Date: Wed, 22 Apr 2009 13:27:08 -0400
+Subject: [PATCH] rndis_wlan: select CFG80211 in Kconfig
 
-I think the section size default used to be 512M on x86 because we
-concentrate on removing whole DIMMs.  
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+---
+ drivers/net/wireless/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> > I depend on the allocator to tell me when I've fed it too high of an
-> > order.  If we really need this, perhaps we should do an audit and then
-> > add a WARN_ON() for a few releases to catch the stragglers.
-> 
-> I consider it buggy to ask for something so large that you always end up
-> with the worst option - vmalloc(). How about leaving it as a VM_BUG_ON
-> to get as many reports as possible on who is depending on this odd
-> behaviour?
-> 
-> If there are users with good reasons, then we could convert this to WARN_ON
-> to fix up the callers. I suspect that the allocator can already cope with
-> recieving a stupid order silently but slowly. It should go all the way to the
-> bottom and just never find anything useful and return NULL.  zone_watermark_ok
-> is the most dangerous looking part but even it should never get to MAX_ORDER
-> because it should always find there are not enough free pages and return
-> before it overruns.
+diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+index 11c2481..2d8434f 100644
+--- a/drivers/net/wireless/Kconfig
++++ b/drivers/net/wireless/Kconfig
+@@ -337,6 +337,7 @@ config USB_NET_RNDIS_WLAN
+ 	select USB_NET_CDCETHER
+ 	select USB_NET_RNDIS_HOST
+ 	select WIRELESS_EXT
++	select CFG80211
+ 	---help---
+ 	  This is a driver for wireless RNDIS devices.
+ 	  These are USB based adapters found in devices such as:
+-- 
+1.6.0.6
 
-Whatever we do, I'd agree that it's fine that this is a degenerate case
-that gets handled very slowly and as far out of hot paths as possible.
-Anybody who can fall back to a vmalloc is not doing these things very
-often.
-
--- Dave
-
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
