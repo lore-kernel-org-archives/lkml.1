@@ -1,80 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZDVTht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbZDVTkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZDVTht (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZDVThh
+	id S1755433AbZDVTkd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZDVTkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:37:37 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:35190 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbZDVThg (ORCPT
+	Wed, 22 Apr 2009 15:40:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:56053 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbZDVTkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:37:36 -0400
-Date: Wed, 22 Apr 2009 16:37:29 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [PATCH v2 fixed] e100: do not go D3 in shutdown unless system
-	is powering off
-Message-ID: <20090422193728.GI4691@vespa.holoscopio.com>
-References: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com> <200904202114.01932.rjw@sisk.pl> <20090421215248.GF6147@vespa.holoscopio.com> <200904220017.19670.rjw@sisk.pl> <20090422043828.GB3979@vespa.holoscopio.com> <9929d2390904212246n4817b25r4db653cd7e6a24c1@mail.gmail.com>
+	Wed, 22 Apr 2009 15:40:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=dS00yIZLYBBN/DWj28k+yD0p4VoOg+lJPzVlQ7Mulxx0DI0q3iPmM4vSlTw29PLBef
+         pdDhXdoi6XKAdYcgcCTKwRtSNnCdtkgmukoVnm/YZb9EY0y9H3q4RhHax683kF8222rM
+         23U+oKjxJoVEgbSSqjppi5syb5tFHbNACDco0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [git pull] IDE fixes
+Date: Wed, 22 Apr 2009 21:43:46 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200904222048.15556.bzolnier@gmail.com> <1240427207.21848.81.camel@localhost>
+In-Reply-To: <1240427207.21848.81.camel@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="B8ONY/mu/bqBak9m"
 Content-Disposition: inline
-In-Reply-To: <9929d2390904212246n4817b25r4db653cd7e6a24c1@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200904222143.47220.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 22 April 2009 21:06:47 Joe Perches wrote:
+> On Wed, 2009-04-22 at 20:48 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> > index 3aec19d..3d4e099 100644
+> > --- a/drivers/ide/ide-cd.c
+> > +++ b/drivers/ide/ide-cd.c
+> > @@ -609,7 +609,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+> >  	struct request *rq = hwif->rq;
+> >  	ide_expiry_t *expiry = NULL;
+> >  	int dma_error = 0, dma, thislen, uptodate = 0;
+> > -	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc, nsectors;
+> > +	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc = 0, nsectors;
+> >  	int sense = blk_sense_request(rq);
+> >  	unsigned int timeout;
+> >  	u16 len;
+> 
+> I think ide is the only subsystem to use the
+> initialization style of "?:," with additional
+> declarations.
 
---B8ONY/mu/bqBak9m
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well, nothing wrong with it per se.
 
-On Tue, Apr 21, 2009 at 10:46:19PM -0700, Jeff Kirsher wrote:
-> On Tue, Apr 21, 2009 at 9:38 PM, Thadeu Lima de Souza Cascardo
-> <cascardo@holoscopio.com> wrote:
-> > After experimenting with kexec with the last merges after 2.6.29, I've
-> > had some problems when probing e100. It would not read the eeprom. After
-> > some bisects, I realized this has been like that since forever (at least
-> > 2.6.18). The problem is that shutdown is doing the same thing that
-> > suspend does and puts the device in D3 state. I couldn't find a way to
-> > get the device back to a sane state in the probe function. So, based on
-> > some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
-> > I wrote this one for e100.
-> >
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > ---
->=20
-> Thanks, I will add it to my queue of patches for e100.
->=20
-> Also, just FYI, Auke is no longer a maintainer for
-> e100/e1000/e1000e/igb/ixgb/ixgbe devices, so I have removed him from
-> the thread.
->=20
-> --=20
-> Cheers,
-> Jeff
+> Would it be better to use a more standard style?
+> 
+> maybe:
+> 	int dma_error = 0, dma, thislen, uptodate = 0, rc = 0, nsectors;
+> 	int write = ((rq_data_dir(rq) == WRITE) ? 1 : 0;
 
-Perhaps, Rafael should be mentioned in a Reviewed-by? As well as you if
-you did review it? I guess a Tested-by and Reported-by me is overkill,
-right? :-)
+Personally I would prefer:
 
---B8ONY/mu/bqBak9m
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+	int write = !!(rq_data_dir(rq) == WRITE);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+However the old code is also fine with me.
 
-iEYEARECAAYFAknvcfgACgkQyTpryRcqtS3ANACfUvn/zTDz/Mk8MlleZZT1f948
-zDMAnRimUtGoQLo9ueLJxJZAb/IXF/uG
-=LUbo
------END PGP SIGNATURE-----
+> > diff --git a/drivers/ide/palm_bk3710.c b/drivers/ide/palm_bk3710.c
+> > index c7acca0..d1513b4 100644
+> > --- a/drivers/ide/palm_bk3710.c
+> > +++ b/drivers/ide/palm_bk3710.c
+> []
+> > @@ -75,13 +67,19 @@ struct palm_bk3710_udmatiming {
+> >  
+> >  static unsigned ideclk_period; /* in nanoseconds */
+> >  
+> > +struct palm_bk3710_udmatiming {
+> > +	unsigned int rptime;	/* tRP -- Ready to pause time (nsec) */
+> > +	unsigned int cycletime;	/* tCYCTYP2/2 -- avg Cycle Time (nsec) */
+> > +				/* tENV is always a minimum of 20 nsec */
+> > +};
+> > +
+> >  static const struct palm_bk3710_udmatiming palm_bk3710_udmatimings[6] = {
+> > -	{160, 240},		/* UDMA Mode 0 */
+> > -	{125, 160},		/* UDMA Mode 1 */
+> > -	{100, 120},		/* UDMA Mode 2 */
+> > -	{100, 90},		/* UDMA Mode 3 */
+> > -	{100, 60},		/* UDMA Mode 4 */
+> > -	{85,  40},		/* UDMA Mode 5 */
+> > +	{160, 240 / 2,},	/* UDMA Mode 0 */
+> > +	{125, 160 / 2,},	/* UDMA Mode 1 */
+> > +	{100, 120 / 2,},	/* UDMA Mode 2 */
+> > +	{100, 90 / 2,},		/* UDMA Mode 3 */
+> > +	{100, 60 / 2,},		/* UDMA Mode 4 */
+> > +	{85,  40 / 2,},		/* UDMA Mode 5 */
+> >  };
+> >  
+> >  static void palm_bk3710_setudmamode(void __iomem *base, unsigned int dev,
+> 
+> Odd looking commas.
+> 
+> Maybe:
+> 
+> 	{.rptime = 160, .cycletime = 240 / 2 },	/* UDMA Mode 0 */
+> etc.
 
---B8ONY/mu/bqBak9m--
+I really don't consider this an improvement from readability perspective
+and I also don't like the added code duplication...
+
+IMO we should just remove extra commas and add some whitespaces.
+
+I have also more general (process oriented) comment:
+
+All patches have been posted to linux-kernel or linux-ide for review before
+and it is _much_ more efficient to raise issues (including CodingStyle ones)
+during "review phase" instead of during "push to Linus" phase.
+
+Thanks,
+Bart
