@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZDVUq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZDVUr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbZDVUq7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZDVUqu
+	id S1756341AbZDVUr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbZDVUqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:46:50 -0400
-Received: from 1wt.eu ([62.212.114.60]:3530 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbZDVUqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:46:50 -0400
-Date: Wed, 22 Apr 2009 22:46:33 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] __ffs64()
-Message-ID: <20090422204633.GE570@1wt.eu>
-References: <1240415192.29604.90.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1240415192.29604.90.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+	Wed, 22 Apr 2009 16:46:55 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:49536 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755239AbZDVUqy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 16:46:54 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Mark WM8350 mask revision as readable to match silicon
+Date: Wed, 22 Apr 2009 21:46:51 +0100
+Message-Id: <1240433211-29915-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+No impact unless someone has written additional kernel code.
 
-On Wed, Apr 22, 2009 at 04:46:32PM +0100, Steven Whitehouse wrote:
-> Hi,
-> 
-> I'd like to add a new bitop, __ffs64() which I need in order to fix a
-> bug in GFS2. The question is, where should it go?
-> 
-> On 64 bit arches, __ffs64() would be a synonym for __ffs(), but on 32
-> bit arches it degenerates to a conditional plus a call to __ffs(). I'm
-> assuming that there would not be a lot of point in optimising this
-> operation on 32 bit arches even if such an instruction was available, so
-> that I should do something like the below patch.
-> 
-> Does that seem reasonable, or should I give it a separate header file
-> under asm-generic/bitops/ like some of the similar operations? It looks
-> like I'd have to touch a lot of other files if I were to go that route,
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-regmap.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-While I have no reply to your questions above, I have one minor comment :
-
-> +/**
-> + * __ffs64 - find first set bit in a 64 bit word
-> + * @word: The 64 bit word
-> + *
-> + * On 64 bit arches this is a synomyn for __ffs
-> + */
-
-IMHO you should remind here that the result is undefined when word==0
-and the caller must check against it first.
-
-> +static inline unsigned long __ffs64(u64 word)
-> +{
-> +#if BITS_PER_LONG == 32
-> +	if (((u32)word) == 0UL)
-> +		return __ffs((u32)(word >> 32)) + 32;
-> +#elif BITS_PER_LONG != 64
-> +#error BITS_PER_LONG not 32 or 64
-> +#endif
-> +	return __ffs((unsigned long)word);
-> +}
-> +
->  #ifdef __KERNEL__
->  #ifdef CONFIG_GENERIC_FIND_FIRST_BIT
-
-Regards,
-Willy
+diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+index 9a4cc95..97d6aad 100644
+--- a/drivers/mfd/wm8350-regmap.c
++++ b/drivers/mfd/wm8350-regmap.c
+@@ -3186,7 +3186,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
+ 	/*  read    write volatile */
+ 	{ 0xFFFF, 0xFFFF, 0xFFFF }, /* R0   - Reset/ID */
+ 	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
+-	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
++	{ 0x007F, 0x0000, 0x0000 }, /* R2   - ROM Mask ID */
+ 	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
+ 	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+ 	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
+-- 
+1.6.2.4
 
