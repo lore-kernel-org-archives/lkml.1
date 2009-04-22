@@ -1,58 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZDWVJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZDWVM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbZDWVJZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZDWVJR
+	id S1757278AbZDWVM4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZDWVMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:09:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38816 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753114AbZDWVJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 17:09:16 -0400
-Date: Thu, 23 Apr 2009 16:59:40 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Peter Lojkin <ia6432@inbox.ru>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 057/100] posix-timers: fix RLIMIT_CPU && fork()
-Message-ID: <20090423165940.622c8ad8@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090423072700.322939119@sous-sol.org>
-References: <20090423072020.428683652@sous-sol.org>
-	<20090423072700.322939119@sous-sol.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 17:12:44 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:42589 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751764AbZDWVMn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 17:12:43 -0400
+Date: Wed, 22 Apr 2009 15:32:42 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: e1000-devel@lists.sourceforge.net, linux-pci@vger.kernel.org,
+       netdev@vger.kernel.org, rjw@sisk.pl
+Subject: e100 shutdown breaks e100 probing when using kexec
+Message-ID: <20090422183242.GH4691@vespa.holoscopio.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="hUH5gZbnpyIv7Mn4"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009 00:21:17 -0700
-Chris Wright <chrisw@sous-sol.org> wrote:
 
-> -stable review patch.  If anyone has any objections, please let us know.
-> ---------------------
-> 
-> From: Oleg Nesterov <oleg@redhat.com>
-> 
-> upstream commit: 6279a751fe096a21dc7704e918d570d3ff06e769
-> 
+--hUH5gZbnpyIv7Mn4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The following commit was also submitted:
+Hello, folks.
 
-   37bebc70d7ad4144c571d74500db3bb26ec0c0eb
-   posix timers: fix RLIMIT_CPU && fork()
+As seen recently, I've sent a bugfix for the e100 shutdown in the same
+lines as the patches proposed by RWJ to e1000, e1000e and some other
+network devices.
 
-Did it get dropped because it has the exact same title?
+I would like to get some light about the need to disable wake when
+suspending if there is no WOL support, if most, if not all, resume and
+probe code already do it. If it is really needed, perhaps, an utility
+helper function could be written and most drivers migrated to it.
+
+But another issue is that, in some particular cases, although the device
+was put in D3 state with wake enabled, I could get it back working even
+when using kexec. In particular, when the system resumes, it can get it
+back working anyway. So there should be something we could do while
+probing to wake up these devices. This would allow people running old
+systems to kexec into new ones. If there's little or no drawback in the
+approach, I think added robustness for probing a PCI device is a plus
+anyway.
+
+So, I will tell what I've done while looking for the problem so there is
+some hidden hint in there. If I am in a wild-goose chase here or there's
+no use or interest in something like this, please tell me so and I'll
+stop bothering you all. :-)
+
+Since the PCI code already sets the power state to D0 and disable wake
+before calling probe function, there was no use doing the following in
+probe.
+
+        pci_set_power_state(pdev, PCI_D0);
+        pci_enable_wake(pdev, 0, 0);
+
+I've tested it and it did not work.
+
+Doing pci_restore_state, which should not work at all, in probe, seemed
+to work, but perhaps it was because of some of the other reasons below.
+Don't trust this information. It's stupid anyway.
+
+Most configurations with earlier releases like 2.6.29 did work. I had
+problems when some commits were introduced that I've found out while
+bisecting. In particular, one patch changing how uevent_helper is called
+and configuring the helper to empty did activate the bug in earlier
+releases.
+
+kobject: don't block for each kobject_uevent
+[ upstream commit: f520360d93cdc37de5d972dac4bf3bdef6a7f6a7 ]
+
+This commit is the one that seemed to start it all. It has already been
+reverted in v2.6.30-rc2, AFAIK.
+
+CONFIG_UEVENT_HELPER_PATH=""
+
+This configuration also had an effect. With that, I could hit the bug
+with releases earlier than v2.6.29. This all with a minimal, almost
+allnoconfig. When adding some things, like initramfs or other drivers,
+the probe went well and the device at least registered.
+
+I thought this could be related to some delay or some race condition.
+I've used some msleep or udelay (this is UP) in the probe, but with no
+success.
+
+I've also noticed my e100 device is after a bridge. Since I didn't know
+much about PCI PM, I thought this could be related, but could find
+nothing about it.
+
+Any thoughts on that?
+
+Best Regards,
+Cascardo.
+
+--hUH5gZbnpyIv7Mn4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknvYsoACgkQyTpryRcqtS0JUQCeOFKLy70vjZzbpwFPmd2DGW8T
+bIsAn3b5hiLS7ZyrSWjD+URRi0vGIRbm
+=8gEP
+-----END PGP SIGNATURE-----
+
+--hUH5gZbnpyIv7Mn4--
