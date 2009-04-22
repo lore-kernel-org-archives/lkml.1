@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZDVAlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZDVAmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964AbZDVAlW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 20:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZDVAlJ
+	id S1753170AbZDVAmT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 20:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDVAmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 20:41:09 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:47518 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752300AbZDVAlI (ORCPT
+	Tue, 21 Apr 2009 20:42:05 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:15723 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbZDVAmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 20:41:08 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Apr 2009 20:41:06 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=sRYOoZaIPIQDIAdiijk1/IQW3vvzr9mJiZ90RMZkZFhugd6U0u7fcsXQmfU5qy7M4u
-         3urusKtVVf1X/32Dk7xjJmaCjVQ+dTo70bAfOB2+u7XtjYfW3dOkzEKcqD/451sFpTPD
-         yuBCFhwA7HSitNcx1vf7RnZMW4e5LKjRPT64M=
-Message-ID: <49EE660E.7040907@gmail.com>
-Date: Tue, 21 Apr 2009 18:34:22 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 21 Apr 2009 20:42:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Z6Exd0NvClOtawZIzFLzbgP2y/AbO7nEl5IYISiERYaGhAONUbe7D3aIjifjiXZu2
+	/8oNzIHAkM7YuYwi12NMA==
+Date: Tue, 21 Apr 2009 17:41:53 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 21/25] Use allocation flags as an index to the zone
+ watermark
+In-Reply-To: <20090422092429.6271.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0904211739520.31232@chino.kir.corp.google.com>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-22-git-send-email-mel@csn.ul.ie> <20090422092429.6271.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: =?UTF-8?B?Um9nw6lyaW8gQnJpdG8=?= <rbrito@ime.usp.br>
-CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [2.6.30-rc2] usb reset during big file transfer and ext3 error
-References: <20090421111015.GA30260@ime.usp.br>
-In-Reply-To: <20090421111015.GA30260@ime.usp.br>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(ccing linux-usb)
+On Wed, 22 Apr 2009, KOSAKI Motohiro wrote:
 
-Rogério Brito wrote:
-> Hi there.
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 376d848..e61867e 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1157,10 +1157,13 @@ failed:
+> >  	return NULL;
+> >  }
+> >  
+> > -#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
+> > -#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
+> > -#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
+> > -#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
+> > +/* The WMARK bits are used as an index zone->pages_mark */
+> > +#define ALLOC_WMARK_MIN		0x00 /* use pages_min watermark */
+> > +#define ALLOC_WMARK_LOW		0x01 /* use pages_low watermark */
+> > +#define ALLOC_WMARK_HIGH	0x02 /* use pages_high watermark */
+> > +#define ALLOC_NO_WATERMARKS	0x08 /* don't check watermarks at all */
+> > +#define ALLOC_WMARK_MASK	0x07 /* Mask to get the watermark bits */
 > 
-> I have an amd64 system running Debian's sid distribution and I installed
-> Linux 2.6.30-rc2 on it, as a way to get improvements for the i915
-> subsystem.
+> the mask only use two bit. but mask definition is three bit (0x07), why?
 > 
-> Unfortunately, when I was transferring the contents of 2 DVDs from the
-> main IDE HD to a USB external HD, I got errors from the USB host, the
-> writes on the external HD become failures and the ext3 filesystem there
-> enters into error mode, going read-only.
-> 
-> I eventually lose the access to the device (i.e., the /dev/sd??? device
-> isn't there anymore) and I then have to re-run fsck on the given
-> filesystem.
-> 
-> This has already happened 2 or 3 times already and I observed that it
-> only occurs when there is high traffic---if I am, say, compiling the
-> kernel on that external HD, I don't see any problems.
-> 
-> Attached is part of the dmesg log that shows the problem. I put the
-> whole dmesg at <http://rb.doesntexist.org/linux/>.
-> 
-> As always, if any further information is needed, please let me know.
 
-You're seeing these:
+I think it would probably be better to simply use
 
-[103051.265045] ehci_hcd 0000:00:1d.7: detected XactErr len 1536/4096 
-retry 1
-[103051.265156] ehci_hcd 0000:00:1d.7: detected XactErr len 1536/4096 
-retry 2
-[103051.265281] ehci_hcd 0000:00:1d.7: detected XactErr len 1536/4096 
-retry 3
-[103051.265406] ehci_hcd 0000:00:1d.7: detected XactErr len 1536/4096 
-retry 4
+	#define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS - 1)
 
-According to the EHCI spec, XactErr is "Set to a one by the Host 
-Controller during status update in the case where the host did not 
-receive a valid response from the device (Timeout, CRC, Bad PID, etc.)"
-
-Quite likely this is some kind of hardware problem - maybe the USB port 
-doesn't quite provide enough power for the drive, etc. A lot of these 
-USB enclosure devices are also rather poor quality in general..
+here and define ALLOC_NO_WATERMARKS to be 0x04.
