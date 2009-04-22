@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbZDVLkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbZDVLnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058AbZDVLkF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 07:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZDVLjx
+	id S1754402AbZDVLnv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 07:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZDVLnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 07:39:53 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51438 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbZDVLjw (ORCPT
+	Wed, 22 Apr 2009 07:43:40 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:37344 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZDVLnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 07:39:52 -0400
-To: tj@kernel.org
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu
-In-reply-to: <1239674094-30894-1-git-send-email-tj@kernel.org> (message from
-	Tejun Heo on Tue, 14 Apr 2009 10:54:48 +0900)
-Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
-References: <1239674094-30894-1-git-send-email-tj@kernel.org>
-Message-Id: <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 22 Apr 2009 13:39:47 +0200
+	Wed, 22 Apr 2009 07:43:39 -0400
+Date: Wed, 22 Apr 2009 13:45:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Karsten Keil <isdn@linux-pingi.de>, Randy Dunlap <rdunlap@xenotime.net>
+Cc: David Miller <davem@davemloft.net>, tilman@imap.cc,
+       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v2] Documentation/isdn/INTERFACE.CAPI
+Message-ID: <20090422114545.GA31312@uranus.ravnborg.org>
+References: <49E4E9CA.8000802@imap.cc> <20090421091852.9C31C111815@xenon.ts.pxnet.com> <20090422.023142.222186658.davem@davemloft.net> <200904221216.22740.isdn@linux-pingi.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904221216.22740.isdn@linux-pingi.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tejun,
+On Wed, Apr 22, 2009 at 12:16:22PM +0200, Karsten Keil wrote:
+> On Mittwoch, 22. April 2009 11:31:42 David Miller wrote:
+> > From: Tilman Schmidt <tilman@imap.cc>
+> > Date: Tue, 21 Apr 2009 11:18:52 +0200 (CEST)
+> >
+> > > @@ -8,6 +8,8 @@ INTERFACE
+> > >  	- description of isdn4linux Link Level and Hardware Level interfaces.
+> > >  INTERFACE.fax
+> > >  	- description of the fax subinterface of isdn4linux.
+> > > +INTERFACE.CAPI
+> > > +	- description of kernel CAPI Link Level to Hardware Level interface.
+> > >  README
+> > >  	- general info on what you need and what to do for Linux ISDN.
+> > >  README.FAQ
+> >
+> > There is no INTERFACE.fax entry in this file in the current
+> > tree.
+> 
+> Seems the file was never updated from the old CVS version.
+> 
+> >
+> > I wanted to apply this, but aparently your patch is against
+> > something other than Linus's tree or net-2.6
+> I will send a new signed patch after review in few hours.
+> 
+> Thanks to Tilman for this work.
 
-Sorry for the delay, I was busy reimplementing some of the stuff in
-your patchset.  The current state is here:
+Try copying Randy on the patch - he is good at reviewing documentation.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/fuse.git cuse-test
-
-  http://git.kernel.org/?p=linux/kernel/git/mszeredi/fuse.git;a=shortlog;h=cuse-test
-
-What I changed (IIRC):
-
- - Don't store pointer to struct inode, struct fuse_inode, and struct
-   file in struct fuse_file.  Instead store nodeid in struct
-   fuse_file, no worries about object lifetimes this way.
-
- - Don't implement fsync and flush in CUSE, they don't really make
-   sense on character devices.  At least I can't think of any use for
-   them.
-
- - release() in CUSE can be synchronous.  Asynchronous release causes
-   many headaches in fuse, but is necessary due to the possible DoS
-   that an unprivileged filesystem could do with an unrelated process.
-   Since CUSE servers are always privileged, this should not be an
-   issue.
-
- - Other cleanups.
-
-I still think that the INIT sequence in CUSE is way too complicated
-and that the kernel thread is unnecessary.  How about doing the init
-with a single CUSE_INIT message which embeds the fuse_init_in and
-fuse_init_out structures.  I also don't see the purpose of the
-CUSE_INIT_DONE message.  Isn't it enough not to send any other
-messages while the initialization is not complete?  This is what fuse
-does.
-
-I'm currently testing with ossp and some things do work, but I'm also
-having issues with some apps.  But that's a topic for another mail...
-
-Thanks,
-Miklos
+	Sam
