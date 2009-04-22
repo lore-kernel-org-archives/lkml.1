@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZDVFVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZDVF3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbZDVFVw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 01:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZDVFVm
+	id S1752879AbZDVF3s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 01:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZDVF3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 01:21:42 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:65280 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbZDVFVm (ORCPT
+	Wed, 22 Apr 2009 01:29:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36008 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZDVF3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 01:21:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rTZt39mfnXSGjmpu4oWanSKP7zS0rlrElpLVTCWxUTz1mOIEImqHY3ERhY6c8eqpqy
-         8sOHZe4m+wu2z/ZtJR4t0kLSSI38SQbIMeJiVZBQYIS7kPKs+BTCdRr/37qkbvIpl0Jp
-         q9AS9r8EQJ9zg8zRcQKTN5vFqHieV1N5nzmn0=
-Subject: Re: [PATCH 3/3] tracing/filters: disallow newline as delimeter
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090421101619.GA19660@elte.hu>
-References: <49ED8DD2.2070700@cn.fujitsu.com>
-	 <49ED8DFD.9070909@cn.fujitsu.com> <20090421095705.GA15448@elte.hu>
-	 <49ED9AC2.9000507@cn.fujitsu.com> <20090421100722.GA18486@elte.hu>
-	 <49ED9C91.4070201@cn.fujitsu.com>  <20090421101619.GA19660@elte.hu>
-Content-Type: text/plain
-Date: Wed, 22 Apr 2009 00:21:38 -0500
-Message-Id: <1240377698.6711.61.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 22 Apr 2009 01:29:38 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Subject: Re: [PATCH, RFC] check for frozen filesystems in the mmap path
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <49EEA4BE.6000207@redhat.com>
+References: <20090422132451.62A4.A69D9226@jp.fujitsu.com> <49EEA4BE.6000207@redhat.com>
+Message-Id: <20090422141250.62A7.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 22 Apr 2009 14:29:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-21 at 12:16 +0200, Ingo Molnar wrote:
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > Ingo Molnar wrote:
-> > > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > 
-> > >> Ingo Molnar wrote:
-> > >>> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > >>>
-> > >>>> I guess because user input is often ended with '\n' (like "echo 
-> > >>>> xxx"), thus '\n' is used as a delimeter besides ' ', but we can 
-> > >>>> just strip tailing spaces.
-> > >>> Hm, how about:
-> > >>>
-> > >>> ( echo 'x'
-> > >>>   echo '|| y' ) > filter
-> > >>>
-> > >>> type of scripts? Shouldnt the parser be permissive in general?
-> > >>>
-> > >> This patch doesn't forbid this usage: ;)
-> > >>
-> > >> ( echo 'parent_comm == a'
-> > >>   echo '|| parent_comm == b' ) > filter
-> > >>
-> > >> This patch does forbid this usage:
-> > >>
-> > >> ( echo 'parent_comm'
-> > >>   echo '=='
-> > >>   echo 'a' ) > filter
-> > > 
-> > > Same argument though, no?
-> > > 
+> KOSAKI Motohiro wrote:
+> >>> 2. this logic kill multi thread application.
+> >>>
+> >>> this logic mean mmap_sem grabbing until unfreeze.
+> >>> it mean othrer thread in the same process can't page-fault although
+> >>> it don't touch frozen-sb.
+> >>> it seems strange.
+> >> Hm, I hadn't thought about this ... On the one hand, ->page_mkwrite can
+> >> already sleep, though a userspace freeze/unfreeze could potentially take
+> >> much much longer.  freeze/unfreeze *should* happen very quickly, but
+> >> nothing enforces that.
+> >>
+> >> Do you have any suggestions?
 > > 
-> > Then I have no strong opinion on this. I'm fine to drop this patch.
+> > One more comment.
+> > 
+> > I read ioctl_fsfreeze() and freeze_bdev(), it call __fsync_super().
+> > Oh, I don't think __fsync_suepr is very quick.
 > 
-> I've applied the other two - no strong opinion either about this 
-> patch. Tom, what do you think? (there's also some new parser in the 
-> works i suspect)
-
-I think it works ok as it is, so dropping this patch would be fine with
-me.
-
-I am working on a new parser; I'd hoped to have it finished by now, but
-I seem to be continually distracted lately. :-(  At this point I have a
-parser that basically works; the main thing it still needs and what I'm
-working on now is a way to allow it to be easily extended to support
-special-case handling for special types e.g. if a predicate field refers
-to something that's a dev_t, the user should be able to specify 'device
-== /dev/sda' or 'device == sda' or 'device == (8,1)' or 'device == 8:1',
-so it should be relatively easy to add that kind of support to the
-parser when there's a need for it.
-
-Once that's done, I'll hook it all up and post it as soon as I can, at
-the end of the week hopefully...
-
-Tom
-
+> Well, what I mean is that the filesystem is not intended to be frozen
+> for long periods of time.  But it's not enforced by any method.
 > 
-> 	Ingo
+> > So, page-fault have one unique characteristics.
+> > if page-fault return 0 without pte change, page-fault is occur again soon.
+> > then, if you need long time waiting, I think you can use following technique.
+> > 
+> > 	unlock mmap_sem
+> > 	wait long-time
+> > 	lock mmap_sem
+> > 	goto out;
+> > 
+> > 
+> > it cause page-fault counter increment twice unintesionally.
+> > but no problem. fs-freeze is not freqently event.
+> > 
+> > Am I missing anything?
+> 
+> Hm, I'll have to think about that.  This is not my best area.  :)  So do
+> you mean that if a wait needs to happen for the frozen fs, we can
+> unlock, do that wait for unfreeze, relock, return early, and come back
+> again when it is not frozen?
+
+Yes.
+
+
+> One other thing that I think I just discovered is that nothing is
+> actually stopping mmap IO even on a frozen filesystem, as long as no
+> metadata updates are required for the IO... I'm seeing this on xfs
+> anyway (ext4 tries to update mtime, so that gets stopped on the frozen fs).
+
+I don't understand this issue. oh sorry, I'm not fs expert ;)
+
+
+
 
