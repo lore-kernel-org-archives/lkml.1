@@ -1,88 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZDVO6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZDVO6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbZDVO6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZDVO6U
+	id S1755169AbZDVO6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZDVO6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:58:20 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:51029 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZDVO6T convert rfc822-to-8bit (ORCPT
+	Wed, 22 Apr 2009 10:58:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:6044 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754112AbZDVO6e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:58:19 -0400
-Message-ID: <49EF303E.9070009@cosmosbay.com>
-Date: Wed, 22 Apr 2009 16:57:02 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v13)
-References: <20090418094001.GA2369@ioremap.net>	<20090418141455.GA7082@linux.vnet.ibm.com>	<20090420103414.1b4c490f@nehalam>	<49ECBE0A.7010303@cosmosbay.com>	<18924.59347.375292.102385@cargo.ozlabs.ibm.com>	<20090420215827.GK6822@linux.vnet.ibm.com>	<18924.64032.103954.171918@cargo.ozlabs.ibm.com>	<20090420160121.268a8226@nehalam>	<alpine.LFD.2.00.0904210831560.2199@localhost.localdomain>	<20090421111541.228e977a@nehalam>	<20090421193924.GA24404@elte.hu> <20090421143927.52d7d89d@nehalam>
-In-Reply-To: <20090421143927.52d7d89d@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Apr 2009 10:58:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,231,1239001200"; 
+   d="scan'208";a="683897963"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 22 Apr 2009 15:58:35 +0100
+Subject: RE: 2.6.30-rc1: ioatdma: DMA-API: device driver frees DMA memory
+ with 	wrong function
+Thread-Topic: 2.6.30-rc1: ioatdma: DMA-API: device driver frees DMA memory
+ with 	wrong function
+Thread-Index: Acm/VDTR3czGEvQiRQ+XkJLZbvdVjgEBdSiw
+Message-ID: <129600E5E5FB004392DDC3FB599660D79A252C69@irsmsx504.ger.corp.intel.com>
+References: <a4423d670904090536j71be609csf2c32be3ed9cfe1e@mail.gmail.com>
+	 <a4423d670904150539w1a4fe05ake75ce2aea4538eab@mail.gmail.com>
+	 <e9c3a7c20904151027xdf617fbh64fcb5618e195a71@mail.gmail.com>
+	 <129600E5E5FB004392DDC3FB599660D792A39C27@irsmsx504.ger.corp.intel.com>
+ <a4423d670904170501l7cf935a6mf8dbe69e166b8099@mail.gmail.com>
+In-Reply-To: <a4423d670904170501l7cf935a6mf8dbe69e166b8099@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-2"
 Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 22 Apr 2009 16:57:03 +0200 (CEST)
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger a écrit :
-> This version of x_tables (ip/ip6/arp) locking uses a per-cpu
-> recursive lock that can be nested.
+Alexander Beregalov wrote:
+> 2009/4/17 Sosnowski, Maciej <maciej.sosnowski@intel.com>:
+>> Dan Williams wrote:
+>>> On Wed, Apr 15, 2009 at 5:39 AM, Alexander Beregalov
+>>> <a.beregalov@gmail.com> wrote:
+>>>> 2009/4/9 Alexander Beregalov <a.beregalov@gmail.com>:
+>>>>> ioatdma 0000:00:08.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+>>>>> ioatdma 0000:00:08.0: setting latency timer to 64
+>>>>> ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine found, 4 channels,
+>>>>> device version 0x12, driver version 3.64
+>>>>>  alloc irq_desc for 33 on cpu 0 node 0
+>>>>>  alloc kstat_irqs on cpu 0 node 0
+>>>>> ioatdma 0000:00:08.0: irq 33 for MSI/MSI-X
+>>>>> ------------[ cut here ]------------
+>>>>> WARNING: at lib/dma-debug.c:565 check_unmap+0x2f6/0x6a0()
+>>>>> Hardware name: PowerEdge 1950
+>>>>> ioatdma 0000:00:08.0: DMA-API: device driver frees DMA memory with
+>>>>> wrong function [device address=0x000000007f76f800] [size=2000 bytes] [map
+>>>>> ped as single] [unmapped as page]
+>>>> 
+>>>> The problem still persists.
+>>> 
+>>> Thanks for the report Alexander.  Maciej and I are looking into a fix.
+>>> 
+>>> Regards,
+>>> Dan
+>> 
+>> Hi Alexander,
+>> 
+>> Could you check if the following patch helps?
 > 
-> The idea for this came from an earlier version done by Eric Dumazet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  This reduces the contention of a
-> single reader lock (in 2.6.29) without the delay of synchronize_net()
-> (in 2.6.30-rc2). 
+> Hi Maciej.
 > 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com
+> No, unfortunately it does not help. The same warning message.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Ok, I have missed to cover self_test case.
+How about this one instead?
 
-Tested today on various machines and no problem so far
-tbench/oprofile results, 3.7236% cpu spent in ipt_do_table, and 0.84% used
-on read_lock/read_unlock
+Thanks,
+Maciej
 
-c04a5c30 <ipt_do_table>: /* ipt_do_table total: 217134  3.7236 */
-...
-   349  0.0060 :c04a5ccc:   call   c04ce380 <_read_lock>
- 23914  0.4101 :c04a5cd1:   mov    0xc(%edi),%eax
-...
-               :c04a5ecb:   call   c04ce5f0 <_read_unlock_bh>
- 25279  0.4335 :c04a5ed0:   cmpb   $0x0,-0xd(%ebp)
+---
 
-"iptables -L" fetches its data very fast too.
-150 us on a 8 cpus machine, small firewall rules.
-400-700 us on same machine, 1000 fw rules set (160000 bytes per cpu)
- depending on network trafic (from light to flood)
+ drivers/dma/dmaengine.c   |   17 +++++++++++------
+ drivers/dma/ioat_dma.c    |   45 ++++++++++++++++++++++++++++-----------------
+ include/linux/dmaengine.h |    6 ++++++
+ 3 files changed, 45 insertions(+), 23 deletions(-)
 
-
-Thanks
-
-> 
-> ---
-> CHANGES 
->   - reader and write now inline
->   - only acquire one cpu write lock at a time
->   - write lock pushed down into get_counters
-> 
->  include/linux/netfilter/x_tables.h |   50 +++++++++++++--
->  net/ipv4/netfilter/arp_tables.c    |  121 ++++++++++---------------------------
->  net/ipv4/netfilter/ip_tables.c     |  120 +++++++++---------------------------
->  net/ipv6/netfilter/ip6_tables.c    |  120 ++++++++++--------------------------
->  net/netfilter/x_tables.c           |   55 +++++++++-------
->  5 files changed, 174 insertions(+), 292 deletions(-)
-> 
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 92438e9..5a87384 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -804,11 +804,14 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
++	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
+ 	dma_dest = dma_map_single(dev->dev, dest, len, DMA_FROM_DEVICE);
+-	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
+-					 DMA_CTRL_ACK);
++	flags = DMA_CTRL_ACK |
++		DMA_COMPL_SRC_UNMAP_SINGLE |
++		DMA_COMPL_DEST_UNMAP_SINGLE;
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
+ 
+ 	if (!tx) {
+ 		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
+@@ -850,11 +853,12 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
++	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
+ 	dma_dest = dma_map_page(dev->dev, page, offset, len, DMA_FROM_DEVICE);
+-	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
+-					 DMA_CTRL_ACK);
++	flags = DMA_CTRL_ACK | DMA_COMPL_SRC_UNMAP_SINGLE;
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
+ 
+ 	if (!tx) {
+ 		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
+@@ -898,12 +902,13 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
++	unsigned long flags;
+ 
+ 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
+ 	dma_dest = dma_map_page(dev->dev, dest_pg, dest_off, len,
+ 				DMA_FROM_DEVICE);
+-	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
+-					 DMA_CTRL_ACK);
++	flags = DMA_CTRL_ACK;
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
+ 
+ 	if (!tx) {
+ 		dma_unmap_page(dev->dev, dma_src, len, DMA_TO_DEVICE);
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index e4fc33c..1955ee8 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -1063,22 +1063,31 @@ static void ioat_dma_cleanup_tasklet(uns
+ static void
+ ioat_dma_unmap(struct ioat_dma_chan *ioat_chan, struct ioat_desc_sw *desc)
+ {
+-	/*
+-	 * yes we are unmapping both _page and _single
+-	 * alloc'd regions with unmap_page. Is this
+-	 * *really* that bad?
+-	 */
+-	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_DEST_UNMAP))
+-		pci_unmap_page(ioat_chan->device->pdev,
+-				pci_unmap_addr(desc, dst),
+-				pci_unmap_len(desc, len),
+-				PCI_DMA_FROMDEVICE);
+-
+-	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_SRC_UNMAP))
+-		pci_unmap_page(ioat_chan->device->pdev,
+-				pci_unmap_addr(desc, src),
+-				pci_unmap_len(desc, len),
+-				PCI_DMA_TODEVICE);
++	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
++		if (desc->async_tx.flags & DMA_COMPL_DEST_UNMAP_SINGLE)
++			pci_unmap_single(ioat_chan->device->pdev,
++					 pci_unmap_addr(desc, dst),
++					 pci_unmap_len(desc, len),
++					 PCI_DMA_FROMDEVICE);
++		else
++			pci_unmap_page(ioat_chan->device->pdev,
++				       pci_unmap_addr(desc, dst),
++				       pci_unmap_len(desc, len),
++				       PCI_DMA_FROMDEVICE);
++	}
++
++	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
++		if (desc->async_tx.flags & DMA_COMPL_SRC_UNMAP_SINGLE)
++			pci_unmap_single(ioat_chan->device->pdev,
++					 pci_unmap_addr(desc, src),
++					 pci_unmap_len(desc, len),
++					 PCI_DMA_TODEVICE);
++		else
++			pci_unmap_page(ioat_chan->device->pdev,
++				       pci_unmap_addr(desc, src),
++				       pci_unmap_len(desc, len),
++				       PCI_DMA_TODEVICE);
++	}
+ }
+ 
+ /**
+@@ -1363,6 +1372,7 @@ static int ioat_dma_self_test(struct ioa
+ 	int err = 0;
+ 	struct completion cmp;
+ 	unsigned long tmo;
++	unsigned long flags;
+ 
+ 	src = kzalloc(sizeof(u8) * IOAT_TEST_SIZE, GFP_KERNEL);
+ 	if (!src)
+@@ -1392,8 +1402,9 @@ static int ioat_dma_self_test(struct ioa
+ 				 DMA_TO_DEVICE);
+ 	dma_dest = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
+ 				  DMA_FROM_DEVICE);
++	flags = DMA_COMPL_SRC_UNMAP_SINGLE | DMA_COMPL_DEST_UNMAP_SINGLE;
+ 	tx = device->common.device_prep_dma_memcpy(dma_chan, dma_dest, dma_src,
+-						   IOAT_TEST_SIZE, 0);
++						   IOAT_TEST_SIZE, flags);
+ 	if (!tx) {
+ 		dev_err(&device->pdev->dev,
+ 			"Self-test prep failed, disabling\n");
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 2e2aa3d..dc3235a 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -78,12 +78,18 @@ #define DMA_TX_TYPE_END (DMA_SLAVE + 1)
+  * 	dependency chains
+  * @DMA_COMPL_SKIP_SRC_UNMAP - set to disable dma-unmapping the source buffer(s)
+  * @DMA_COMPL_SKIP_DEST_UNMAP - set to disable dma-unmapping the destination(s)
++ * @DMA_COMPL_SRC_UNMAP_SINGLE - set to do the source dma-unmapping as single
++ * 	(if not set, do the source dma-unmapping as page)
++ * @DMA_COMPL_DEST_UNMAP_SINGLE - set to do the destination dma-unmapping as single
++ *      (if not set, do the destination dma-unmapping as page)
+  */
+ enum dma_ctrl_flags {
+ 	DMA_PREP_INTERRUPT = (1 << 0),
+ 	DMA_CTRL_ACK = (1 << 1),
+ 	DMA_COMPL_SKIP_SRC_UNMAP = (1 << 2),
+ 	DMA_COMPL_SKIP_DEST_UNMAP = (1 << 3),
++	DMA_COMPL_SRC_UNMAP_SINGLE = (1 << 4),
++	DMA_COMPL_DEST_UNMAP_SINGLE = (1 << 5),
+ };
+ 
+ /**
 
