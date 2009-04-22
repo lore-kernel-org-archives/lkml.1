@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZDVUM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbZDVUMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbZDVUM0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZDVUMI
+	id S1754968AbZDVUMJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZDVULw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:12:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36175 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754835AbZDVUMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:12:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Bug #13058] First hibernation attempt fails
-Date: Wed, 22 Apr 2009 22:11:17 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, alan-jenkins@tuffmail.co.uk,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090420163734.b8e24fc9.akpm@linux-foundation.org> <20090422130705.GA16186@elf.ucw.cz>
-In-Reply-To: <20090422130705.GA16186@elf.ucw.cz>
+	Wed, 22 Apr 2009 16:11:52 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:36982 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbZDVULu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 16:11:50 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Ke8/3GmFYHMNhPNqj+mfUzBy2XTOmuCAMs9//sHIojy7qQ/laGJLEy8O1qvwjUXNg
+	XYAtNhi5onCqex+/KCXSA==
+Date: Wed, 22 Apr 2009 13:11:44 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+In-Reply-To: <20090422171151.GF15367@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0904221244030.14558@chino.kir.corp.google.com>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-3-git-send-email-mel@csn.ul.ie> <1240416791.10627.78.camel@nimitz> <20090422171151.GF15367@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904222211.18221.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 April 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > Of course, this will protect the calling task from getting oom-killed. 
-> > But it doesn't protect other tasks from getting oom-killed due to the
-> > activity of _this_ task.
-> > 
-> > But I think that problem already exists, and that this proposal doesn't
-> > worsen anything, yes?
-> > 
-> > Or is it the case that all other tasks are safely stuck in the freezer
-> > at this time, so they won't be allocating any memory anyway?
-> 
-> That is the idea, yes. ... but we now have more threads that are not
-> freezable... so they may allocate the memory.
-> 
-> Is it non-feasible to free memory without really going and allocating
-> everything?
+On Wed, 22 Apr 2009, Mel Gorman wrote:
 
-The question is whether there is a point.  In principle we can just go and
-allocate as much as we need upfront.  It shouldn't change anything, because
-we resume and suspend devices after creating the image anyway.
+> If there are users with good reasons, then we could convert this to WARN_ON
+> to fix up the callers. I suspect that the allocator can already cope with
+> recieving a stupid order silently but slowly. It should go all the way to the
+> bottom and just never find anything useful and return NULL.  zone_watermark_ok
+> is the most dangerous looking part but even it should never get to MAX_ORDER
+> because it should always find there are not enough free pages and return
+> before it overruns.
+> 
 
-I think we could try to disable the OOM killer before suspend and just
-allocate the memory for the image right before devices are suspended for the
-first time.
+slub: enforce MAX_ORDER
 
-Thanks,
-Rafael
+slub_max_order may not be equal to or greater than MAX_ORDER.
+
+Additionally, if a single object cannot be placed in a slab of
+slub_max_order, it still must allocate slabs below MAX_ORDER.
+
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/slub.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1909,7 +1909,7 @@ static inline int calculate_order(int size)
+ 	 * Doh this slab cannot be placed using slub_max_order.
+ 	 */
+ 	order = slab_order(size, 1, MAX_ORDER, 1);
+-	if (order <= MAX_ORDER)
++	if (order < MAX_ORDER)
+ 		return order;
+ 	return -ENOSYS;
+ }
+@@ -2522,6 +2522,7 @@ __setup("slub_min_order=", setup_slub_min_order);
+ static int __init setup_slub_max_order(char *str)
+ {
+ 	get_option(&str, &slub_max_order);
++	slub_max_order = min(slub_max_order, MAX_ORDER - 1);
+ 
+ 	return 1;
+ }
