@@ -1,106 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZDVCx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZDVC4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbZDVCx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 22:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZDVCxr
+	id S1754736AbZDVC4r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 22:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZDVC4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 22:53:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44569 "EHLO mx2.redhat.com"
+	Tue, 21 Apr 2009 22:56:38 -0400
+Received: from mga11.intel.com ([192.55.52.93]:42050 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751260AbZDVCxq convert rfc822-to-8bit (ORCPT
+	id S1751260AbZDVC4h convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 22:53:46 -0400
-Date: Wed, 22 Apr 2009 05:45:16 +0300
-From: Izik Eidus <ieidus@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-04-21-15-00 uploaded
-Message-ID: <20090422054516.122ac635@woof.tlv.redhat.com>
-In-Reply-To: <20090421185313.06bec1cc.akpm@linux-foundation.org>
-References: <200904212219.n3LMJ2O7007301@imap1.linux-foundation.org>
-	<49EE7351.6080802@oracle.com>
-	<20090421185313.06bec1cc.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Apr 2009 22:56:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,228,1239001200"; 
+   d="scan'208";a="450140280"
+From: "Han, Weidong" <weidong.han@intel.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+CC: "hpa@zytor.com" <hpa@zytor.com>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>
+Date: Wed, 22 Apr 2009 10:55:23 +0800
+Subject: RE: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
+Thread-Topic: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
+Thread-Index: AcnCrqMDfPQiZFCDTVe4ekk5ryYwEQARqj1Q
+Message-ID: <715D42877B251141A38726ABF5CABF2C01A6B7FC31@pdsmsx503.ccr.corp.intel.com>
+References: <20090420200450.128993000@linux-os.sc.intel.com>
+	 <20090420200450.552359000@linux-os.sc.intel.com>
+	 <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com>
+	 <20090421070130.GC22937@elte.hu>
+ <1240338284.27006.8519.camel@localhost.localdomain>
+In-Reply-To: <1240338284.27006.8519.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 18:53:13 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 21 Apr 2009 18:30:57 -0700 Randy Dunlap
-> <randy.dunlap@oracle.com> wrote:
+Siddha, Suresh B wrote:
+> On Tue, 2009-04-21 at 00:01 -0700, Ingo Molnar wrote:
+>> * Han, Weidong <weidong.han@intel.com> wrote:
+>> 
+>>> Siddha, Suresh B wrote:
+>>>> When interrupt-remapping is enabled, We are relying on
+>>>> setup_IO_APIC_irqs() to configure remapped entries in the IO-APIC,
+>>>> which comes little bit later after enabling interrupt-remapping.
+>>>> 
+>>>> Meanwhile, Restore of old io-apic entries after enabling
+>>>> interrupt-remapping will not make the interrupts through io-apic
+>>>> functional anyway. 
+>>>> 
+>>>> So remove unnecessary reinit_intr_remapped_IO_APIC().
+>>>> 
+>>>> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>>>> Cc: Weidong Han <weidong.han@intel.com>
+>>>> ---
+>>>> 
+>>>> Index: tip/arch/x86/include/asm/io_apic.h
+>>>> ===================================================================
+>>>> --- tip.orig/arch/x86/include/asm/io_apic.h
+>>>> +++ tip/arch/x86/include/asm/io_apic.h
+>>>> @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
+>>>>  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
+>>>>  **ioapic_entries); extern void mask_IO_APIC_setup(struct
+>>>>  IO_APIC_route_entry **ioapic_entries); extern int
+>>>> restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries);
+>>>> -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
+>>>> -	struct IO_APIC_route_entry **ioapic_entries);
+>>>> 
+>>>>  extern void probe_nr_irqs_gsi(void);
+>>>> 
+>>>> Index: tip/arch/x86/kernel/apic/apic.c
+>>>> ===================================================================
+>>>> --- tip.orig/arch/x86/kernel/apic/apic.c
+>>>> +++ tip/arch/x86/kernel/apic/apic.c
+>>>> @@ -1416,8 +1416,6 @@ end_restore:
+>>>>  		 * IR enabling failed
+>>>>  		 */
+>>>>  		restore_IO_APIC_setup(ioapic_entries);
+>>>> -	else
+>>>> -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
+>>> 
+>>> Whether IR enabling succeeds or fails, it always needs to restore
+>>> old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC
+>>> here, it needs to also remove the "if (ret)" before
+>>> restore_IO_APIC_setup(ioapic_entries);
+>> 
+>> Ok - i skipped this patch for now.
 > 
-> > akpm@linux-foundation.org wrote:
-> > > The mm-of-the-moment snapshot 2009-04-21-15-00 has been uploaded
-> > > to
-> > > 
-> > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > 
-> > > and will soon be available at
-> > > 
-> > >    git://git.zen-sources.org/zen/mmotm.git
-> > > 
-> > > It contains the following patches against 2.6.30-rc2:
-> > 
-> > 
-> > 2 of 10 i386 builds ended like:
-> > 
-> > 
-> >   CC      arch/x86/kernel/asm-offsets.s
-> > In file included from include/linux/suspend.h:8,
-> >                  from arch/x86/kernel/asm-offsets_32.c:11,
-> >                  from arch/x86/kernel/asm-offsets.c:2:
-> > include/linux/mm.h: In function 'get_pte':
-> > include/linux/mm.h:907: error: implicit declaration of function
-> > 'kmap_atomic_pte' make[2]: *** [arch/x86/kernel/asm-offsets.s]
-> > Error 1 make[1]: *** [prepare0] Error 2
-> > make: *** [sub-make] Error 2
-> > 
-> > 
-> > 
-> > config attached.
+> Let me clarify what I am doing in this patch:
 > 
-> Caused by ksm-add-get_pte-helper-function-fetching-pte-for-va.patch.
+> When interrupt-remapping is enabled, IO-APIC entries need to be setup
+> in the re-mappable format (pointing to interrupt-remapping table
+> entries setup by the OS). This remapping configuration is happening
+> in the same place where we traditionally configure IO-APIC (i.e., in
+> setup_IO_APIC_irqs()).
 > 
-> hm, this will end badly.  Let's uninline it.
+> So when we enable interrupt-remapping successfully, there is no need
+> to restore old io-apic RTE entries before we actually do a complete
+> configuration shortly in setup_IO_APIC_irqs(). Old IO-APIC RTE's may
+> be in traditional format (non re-mappable) or in re-mappable format
+> pointing to interrupt-remapping table entries setup by BIOS. Restoring
+> both of these will not make IO-APIC functional. We have to rely on
+> setup_IO_APIC_irqs() for proper configuration by OS.
+> 
+> So I am removing this unnecessary and broken step.
+> 
+> When enabling interrupt-remapping is not successful, we are doing
+> plain restore of old RTE's (which will still work as we went back to
+> original no-remapping state). Complete IO-APIC configuration will be
+> done shortly in setup_IO_APIC_irqs().
 > 
 
-Yes, anyway let include this patch that remove the usage of
-asm\types.h, we sure dont need this header.
-(it doesnt look risky as linux\types.h by itself will include it, but
-i have bad feeling about it)
+Clear explanation. I misunderstood it. This patch is fine.
 
-Thanks.
+Regards,
+Weidong
 
->From fc71a2c22019b1f0389b249e5987b0b2a208764f Mon Sep 17 00:00:00 2001
-From: Izik Eidus <ieidus@redhat.com>
-Date: Wed, 22 Apr 2009 05:24:03 +0300
-Subject: [PATCH] ksm: ksm.h remove the asm\types.h header usage
-
-We surely dont need it, as we include linux\types.h above, that will
-include that anyway.
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- include/linux/ksm.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/ksm.h b/include/linux/ksm.h
-index 2c11e9a..c0849c7 100644
---- a/include/linux/ksm.h
-+++ b/include/linux/ksm.h
-@@ -8,8 +8,6 @@
- #include <linux/types.h>
- #include <linux/ioctl.h>
- 
--#include <asm/types.h>
--
- #define KSM_API_VERSION 1
- 
- #define ksm_control_flags_run 1
--- 
-1.5.6.5
+> thanks,
+> suresh
 
