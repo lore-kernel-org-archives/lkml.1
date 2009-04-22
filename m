@@ -1,170 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZDVNkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZDVNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZDVNkg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZDVNk0
+	id S1755308AbZDVNmU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZDVNmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:40:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37297 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbZDVNkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:40:25 -0400
-Date: Wed, 22 Apr 2009 09:40:23 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tzanussi@gmail.com, lizf@cn.fujitsu.com,
-       tglx@linutronix.de, mingo@elte.hu
-cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] tracing/events: make struct trace_entry->type
- to be int type
-In-Reply-To: <tip-7a4f453b6d7379a7c380825949977c5a838aa012@git.kernel.org>
-Message-ID: <alpine.DEB.2.00.0904220924000.24310@gandalf.stny.rr.com>
-References: <49EEDB0E.5070207@cn.fujitsu.com> <tip-7a4f453b6d7379a7c380825949977c5a838aa012@git.kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 22 Apr 2009 09:42:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42520 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752976AbZDVNmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:42:04 -0400
+Message-ID: <49EF1E99.7070503@suse.com>
+Date: Wed, 22 Apr 2009 09:41:45 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Jan Kiszka <jan.kiszka@web.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] IO-APIC + timer doesn't work!
+References: <49E89D1B.7060800@suse.com> <49E9904A.5030201@web.de> <49EA2F81.7030302@suse.com> <20090418200623.GA27294@elte.hu> <49EA373A.8060105@web.de> <20090418203227.GC30144@elte.hu> <49EA3C28.9010209@web.de> <20090422101950.GA32009@alberich.amd.com>
+In-Reply-To: <20090422101950.GA32009@alberich.amd.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ingo,
+Andreas Herrmann wrote:
+> On Sat, Apr 18, 2009 at 10:46:32PM +0200, Jan Kiszka wrote:
+>> Ingo Molnar wrote:
+>>> * Jan Kiszka <jan.kiszka@web.de> wrote:
+>>>
+>>>> Ingo Molnar wrote:
+>>>>> * Jeff Mahoney <jeffm@suse.com> wrote:
+>>>>>
+>>>>>>> Hmmmmm. That somehow reminds me of what I thought I had to fix in the
+>>>>>>> HPET emulation of QEMU just recently [1] - because of 2.6.30-rc's behavior.
+>>>>>>>
+>>>>>>> Could you try if writing 'delta' a second time makes any difference on
+>>>>>>> that box?
+>>>>>>>
+>>>>>>> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+>>>>>>> index 648b3a2..523d72b 100644
+>>>>>>> --- a/arch/x86/kernel/hpet.c
+>>>>>>> +++ b/arch/x86/kernel/hpet.c
+>>>>>>> @@ -324,6 +324,7 @@ static void hpet_set_mode(enum clock_event_mode mode,
+>>>>>>>  		       HPET_TN_SETVAL | HPET_TN_32BIT;
+>>>>>>>  		hpet_writel(cfg, HPET_Tn_CFG(timer));
+>>>>>>>  		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>>>>>>> +		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>>>>>>>  		hpet_start_counter();
+>>>>>>>  		hpet_print_config();
+>>>>>>>  		break;
+>>>>>>>
+>>>>>> Thanks, Jan.
+>>>>>>
+>>>>>> That fixed it for me.
+>>>>> I've queued it up (and i've got a test-system that might be affected 
+>>>>> by a similar problem - it shows a similar crash very rarely), but it 
+>>>>> would be nice to know why this duplicate writeout makes a 
+>>>>> difference. Jan?
+>>>>>
+>>>>> 	Ingo
+>>>> Well, if you look at the HPET spec [1], you first find the explanation
+>>>> of the Tn_VAL_SET_CNF bit (HPET_TN_SETVAL):
+>>>>
+>>>> "[...] By writing this bit to a 1, the software is then allowed to
+>>>> directly set a periodic timer's accumulator."
+>>>>
+>>>> That may sound like "you write to the comparator register if 0, and if
+>>>> 1, you set the accumulator". That's also how HPET was emulated in QEMU
+>>>> so far.
+>>>>
+>>>> But then you read on about changing the period of a running timer:
+>>>>
+>>>> "If the software resets the main counter, the value in the comparator’s
+>>>> value register needs to reset as well. This can be done by setting the
+>>>> Tn_VAL_SET_CNF bit. Again, to avoid race conditions, this should be
+>>>> done with the main counter halted. The following usage model is expected:
+>>>> 1) Software clears the GLOBAL_ENABLE_CNF bit to prevent any interrupts
+>>>> 2) Software Clears the main counter by writing a value of 00000000h to it.
+>>>> 3) Software sets the TIMER0_VAL_SET_CNF bit.
+>>>> 4) Software writes the new value in the TIMER0_COMPARATOR_VAL register
+>>>> 5) Software sets the GLOBAL_ENABLE_CNF bit to enable interrupts."
+>>>>
+>>>> And that somehow sounds like you only need to write the new period once,
+>>>> with Tn_VAL_SET_CNF = 1.
+>>>>
+>>>> I bet now that both interpretations are implemented in silicon somewhere
+>>>> out there - but I'm all ears to learn the right one (and potentially
+>>>> re-fix QEMU).
+>>>>
+>>>> Jan
+>>>>
+>>>> [1] http://www.intel.com/hardwaredesign/hpetspec_1.pdf
+>>> i might be a bit slow today, but how does the above transform into:
+>>>
+>>>   		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>>> 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>>>
+>>> ? It sets the same register twice.
+>> No, sorry, I missed to cite also this from the Tn_SET_VAL_CFG
+>> explanation: "Software does NOT have to write this bit back to 0 (it
+>> automatically clears)." So the second write will already take place
+>> without it.
+>>
+>>> I'm totally happy if it does transform into that under some quirky 
+>>> interpretation. Since it solved the problem for Jeff, we'll likely 
+>>> add it even if there's no actual explanation ;-) But it would be 
+>>> nice to somehow come up with a line of reasoning that ends with:
+>>>
+>>>  ... and for that reason, we set the value twice:
+>>>
+>>>   		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>>> 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+>>>
+>>> right?
+>>>
+>>> 	Ingo
+>> I'd like to give someone from AMD or Intel or whoever already
+>> implemented such a logic a chance to comment on it. If this doesn't
+>> happen, you may add:
+> 
+> I didn't implement logic but checked the AMD 81xx documentation.  And
+> this exactly describes that depending on HPET_TN_SETVAL either
+> accumulator or comparator is set. That is the reason why my last HPET
+> patch broke HPET on that chipset. I've provided a patch to partially
+> revert that commit. See
+> 
+> http://marc.info/?l=linux-kernel&m=124033700530097
+> 
+> The patch was successfully verified for bugzilla
+> http://bugzilla.kernel.org/show_bug.cgi?id=12961
+> 
+> IMHO it should be applied asap to tip tree.
 
-We need to make type 2 bytes not 4.
+Just to chime in here, my system works with this patch as well.
 
-I sent out a patch to do this change last month
+- -Jeff
 
- http://patchwork.kernel.org/patch/14573/
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
--- Steve
-
-
-On Wed, 22 Apr 2009, tip-bot for Li Zefan wrote:
-
-> Commit-ID:  7a4f453b6d7379a7c380825949977c5a838aa012
-> Gitweb:     http://git.kernel.org/tip/7a4f453b6d7379a7c380825949977c5a838aa012
-> Author:     Li Zefan <lizf@cn.fujitsu.com>
-> AuthorDate: Wed, 22 Apr 2009 16:53:34 +0800
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 22 Apr 2009 11:36:38 +0200
-> 
-> tracing/events: make struct trace_entry->type to be int type
-> 
-> struct trace_entry->type is unsigned char, while trace event's id is
-> int type, thus for a event with id >= 256, it's entry->type is cast
-> to (id % 256), and then we can't see the trace output of this event.
-> 
->  # insmod trace-events-sample.ko
->  # echo foo_bar > /mnt/tracing/set_event
->  # cat /debug/tracing/events/trace-events-sample/foo_bar/id
->  256
->  # cat /mnt/tracing/trace_pipe
->            <...>-3548  [001]   215.091142: Unknown type 0
->            <...>-3548  [001]   216.089207: Unknown type 0
->            <...>-3548  [001]   217.087271: Unknown type 0
->            <...>-3548  [001]   218.085332: Unknown type 0
-> 
-> [ Impact: fix output for trace events with id >= 256 ]
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Tom Zanussi <tzanussi@gmail.com>
-> LKML-Reference: <49EEDB0E.5070207@cn.fujitsu.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  include/linux/ftrace_event.h |    4 ++--
->  include/trace/ftrace.h       |    2 +-
->  kernel/trace/trace.c         |    4 ++--
->  kernel/trace/trace.h         |    2 +-
->  kernel/trace/trace_events.c  |    2 +-
->  5 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 75f3ac0..2a4a407 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -16,7 +16,7 @@ struct dentry;
->   *     bash-15816 [01]   235.197585: idle_cpu <- irq_enter
->   */
->  struct trace_entry {
-> -	unsigned char		type;
-> +	int			type;
->  	unsigned char		flags;
->  	unsigned char		preempt_count;
->  	int			pid;
-> @@ -73,7 +73,7 @@ enum print_line_t {
->  
->  
->  struct ring_buffer_event *
-> -trace_current_buffer_lock_reserve(unsigned char type, unsigned long len,
-> +trace_current_buffer_lock_reserve(int type, unsigned long len,
->  				  unsigned long flags, int pc);
->  void trace_current_buffer_unlock_commit(struct ring_buffer_event *event,
->  					unsigned long flags, int pc);
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 39a3351..15ef08d 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -198,7 +198,7 @@ ftrace_define_fields_##call(void)					\
->  	struct ftrace_event_call *event_call = &event_##call;		\
->  	int ret;							\
->  									\
-> -	__common_field(unsigned char, type);				\
-> +	__common_field(int, type);					\
->  	__common_field(unsigned char, flags);				\
->  	__common_field(unsigned char, preempt_count);			\
->  	__common_field(int, pid);					\
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index b9a3adc..b6183bc 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -838,7 +838,7 @@ tracing_generic_entry_update(struct trace_entry *entry, unsigned long flags,
->  }
->  
->  struct ring_buffer_event *trace_buffer_lock_reserve(struct trace_array *tr,
-> -						    unsigned char type,
-> +						    int type,
->  						    unsigned long len,
->  						    unsigned long flags, int pc)
->  {
-> @@ -881,7 +881,7 @@ void trace_buffer_unlock_commit(struct trace_array *tr,
->  }
->  
->  struct ring_buffer_event *
-> -trace_current_buffer_lock_reserve(unsigned char type, unsigned long len,
-> +trace_current_buffer_lock_reserve(int type, unsigned long len,
->  				  unsigned long flags, int pc)
->  {
->  	return trace_buffer_lock_reserve(&global_trace,
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 247948e..7d55bcf 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -422,7 +422,7 @@ void init_tracer_sysprof_debugfs(struct dentry *d_tracer);
->  struct ring_buffer_event;
->  
->  struct ring_buffer_event *trace_buffer_lock_reserve(struct trace_array *tr,
-> -						    unsigned char type,
-> +						    int type,
->  						    unsigned long len,
->  						    unsigned long flags,
->  						    int pc);
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 9ea55a7..5d6e879 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -398,7 +398,7 @@ static int trace_write_header(struct trace_seq *s)
->  				"\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n"
->  				"\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n"
->  				"\n",
-> -				FIELD(unsigned char, type),
-> +				FIELD(int, type),
->  				FIELD(unsigned char, flags),
->  				FIELD(unsigned char, preempt_count),
->  				FIELD(int, pid),
-> 
+iEYEARECAAYFAknvHpkACgkQLPWxlyuTD7IrOACgjzfCJ2XkFNJCRFOpbEg/Vv5v
+VtgAnAnXuZETej+f5z4WjGosm7RcGIcW
+=5f/F
+-----END PGP SIGNATURE-----
