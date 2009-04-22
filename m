@@ -1,116 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZDVDor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbZDVD7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZDVDor (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 23:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDVDoi
+	id S1755181AbZDVD7t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 23:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZDVD7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 23:44:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55300 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752668AbZDVDoi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 23:44:38 -0400
-Date: Tue, 21 Apr 2009 20:41:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH] memcg: remove trylock_page_cgroup
-Message-Id: <20090421204104.faf9fc56.akpm@linux-foundation.org>
-In-Reply-To: <20090422121641.eb84a07e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090416120316.GG7082@balbir.in.ibm.com>
-	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417014042.GB18558@balbir.in.ibm.com>
-	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417034539.GD18558@balbir.in.ibm.com>
-	<20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417045623.GA3896@balbir.in.ibm.com>
-	<20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417064726.GB3896@balbir.in.ibm.com>
-	<20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090417141837.GD3896@balbir.in.ibm.com>
-	<20090421132551.38e9960a.akpm@linux-foundation.org>
-	<20090422090218.6d451a08.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090422121641.eb84a07e.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Apr 2009 23:59:39 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50191 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752665AbZDVD7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 23:59:38 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18926.38431.910952.630575@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Apr 2009 13:59:27 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: subrata@linux.vnet.ibm.com, "Linuxppc-dev" <Linuxppc-dev@ozlabs.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Stefan Bader <stefan.bader@canonical.com>,
+       Marcelo Tosatti <marcelo@conectiva.com.br>,
+       Adrian Bunk <bunk@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next" <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [BUILD FAILURE 05/12] Next April 21 : PPC64 randconfig [drivers/macintosh/mediabay.o]
+In-Reply-To: <200904212104.14665.bzolnier@gmail.com>
+References: <1240339875.9110.137.camel@subratamodak.linux.ibm.com>
+	<200904212104.14665.bzolnier@gmail.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 12:16:41 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Bartlomiej Zolnierkiewicz writes:
 
-> How about this ? worth to be tested, I think.
-> -Kame
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Before synchronized-LRU patch, mem cgroup had its own LRU lock.
-> And there was a code which does
-> # assume mz as per zone struct of memcg. 
-> 
->    spin_lock mz->lru_lock
-> 	lock_page_cgroup(pc).
->    and
->    lock_page_cgroup(pc)
-> 	spin_lock mz->lru_lock
-> 
-> because we cannot locate "mz" until we see pc->page_cgroup, we used
-> trylock(). But now, we don't have mz->lru_lock. All cgroup
-> uses zone->lru_lock for handling list. Moreover, manipulation of
-> LRU depends on global LRU now and we can isolate page from LRU by
-> very generic way.(isolate_lru_page()).
-> So, this kind of trylock is not necessary now.
-> 
-> I thought I removed all trylock in synchronized-LRU patch but there
-> is still one. This patch removes trylock used in memcontrol.c and
-> its definition. If someone needs, he should add this again with enough
-> reason.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/page_cgroup.h |    5 -----
->  mm/memcontrol.c             |    3 +--
->  2 files changed, 1 insertion(+), 7 deletions(-)
-> 
-> Index: mmotm-2.6.30-Apr21/include/linux/page_cgroup.h
-> ===================================================================
-> --- mmotm-2.6.30-Apr21.orig/include/linux/page_cgroup.h
-> +++ mmotm-2.6.30-Apr21/include/linux/page_cgroup.h
-> @@ -61,11 +61,6 @@ static inline void lock_page_cgroup(stru
->  	bit_spin_lock(PCG_LOCK, &pc->flags);
->  }
->  
-> -static inline int trylock_page_cgroup(struct page_cgroup *pc)
-> -{
-> -	return bit_spin_trylock(PCG_LOCK, &pc->flags);
-> -}
-> -
->  static inline void unlock_page_cgroup(struct page_cgroup *pc)
->  {
->  	bit_spin_unlock(PCG_LOCK, &pc->flags);
-> Index: mmotm-2.6.30-Apr21/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.30-Apr21.orig/mm/memcontrol.c
-> +++ mmotm-2.6.30-Apr21/mm/memcontrol.c
-> @@ -1148,8 +1148,7 @@ static int mem_cgroup_move_account(struc
->  	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
->  	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
->  
-> -	if (!trylock_page_cgroup(pc))
-> -		return ret;
-> +	lock_page_cgroup(pc);
->  
->  	if (!PageCgroupUsed(pc))
->  		goto out;
+> mediabay shouldn't include <linux/ide.h> unconditionally so
+> remove the superfluous include from mediabay.c (<asm/mediabay.h>
+> will pull <linux/ide.h> in for CONFIG_BLK_DEV_IDE_PMAC=y).
 
-But we can't remove that nasty `while (loop--)' thing?
+I don't like relying on second-hand imports like that.  I prefer the
+previous patch, that made mediabay depend on CONFIG_BLOCK.
 
-I expect that it will reliably fail if the caller is running as
-SCHED_FIFO and the machine is single-CPU, or if we're trying to yield
-to a SCHED_OTHER task which is pinned to this CPU, etc.  The cond_resched()
-won't work.
+BTW, if including <linux/ide.h> causes an error when CONFIG_BLOCK=n,
+then there is a bug in <linux/ide.h>, IMO.
 
+Paul.
