@@ -1,43 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZDVPcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZDVPcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbZDVPcn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZDVPcb
+	id S1755616AbZDVPcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbZDVPcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:32:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47905 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753313AbZDVPca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:32:30 -0400
-Date: Wed, 22 Apr 2009 16:33:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Igor Zhbanov <izh1979@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Idea: Feature information / extensions dispatcher syscall.
-Message-ID: <20090422163336.2054409b@lxorguk.ukuu.org.uk>
-In-Reply-To: <f44001920904220822k672def82t7e9ba646bdde5fe8@mail.gmail.com>
-References: <f44001920904220712ye1644c9y90d637bf4ac3bbe@mail.gmail.com>
-	<871vrkpyae.fsf@basil.nowhere.org>
-	<f44001920904220732h2d6d18cfwef53af31bb218b87@mail.gmail.com>
-	<f44001920904220746k356550abk6783b8cae003685d@mail.gmail.com>
-	<20090422161257.2743ea33@lxorguk.ukuu.org.uk>
-	<f44001920904220822k672def82t7e9ba646bdde5fe8@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Apr 2009 11:32:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54266 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752269AbZDVPcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 11:32:08 -0400
+Date: Wed, 22 Apr 2009 11:18:06 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: dm-devel@redhat.com, vgoyal@redhat.com, fernando@oss.ntt.co.jp,
+       linux-kernel@vger.kernel.org, jmoyer@redhat.com, jens.axboe@oracle.com,
+       nauman@google.com, agk@redhat.com, balbir@linux.vnet.ibm.com
+Subject: Re: dm-ioband: Test results.
+Message-ID: <20090422151805.GC32602@redhat.com>
+References: <20090421.211051.183023683.ryov@valinux.co.jp> <20090421135723.GA13953@redhat.com> <20090421141607.GA22619@redhat.com> <20090422.121443.104042516.ryov@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422.121443.104042516.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, you need a file handle. To open device each time you need to make ioctl
-> is expensive and keeping device opened may prevent unmounting /proc
-> that could be a problem in some installations if that application is used
-> at a boot time.
+On Tue, Apr 21 2009 at 11:14pm -0400,
+Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 
-- Nobody in the real world unmounts /proc.
-- You don't need to use /proc anyway
-- You don't need to open the device each ioctl
-- Even if you did open is extremely quick
+> Hi,
+> 
+> From: Vivek Goyal <vgoyal@redhat.com>
+> Subject: [dm-devel] Re: dm-ioband: Test results.
+> Date: Tue, 21 Apr 2009 10:16:07 -0400
+> 
+> > On Tue, Apr 21, 2009 at 09:57:23AM -0400, Mike Snitzer wrote:
+> > > On Tue, Apr 21 2009 at  8:10am -0400,
+> > > Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+> > > 
+> > > > Hi Nauman,
+> > > > 
+> > > > > > The real question is, once you create a version of dm-ioband that
+> > > > > > co-operates with CFQ scheduler, how that solution would compare with
+> > > > > > the patch set Vivek has posted? In my opinion, we need to converge to
+> > > > > > one solution as soon as possible, so that we can work on it together
+> > > > > > to refine and test it.
+> > > > > 
+> > > > > I think I can do some help for your work. but I want to continue the
+> > > > > development of dm-ioband, because dm-ioband actually works well and
+> > > > > I think it has some advantages against other IO controllers.
+> > > > >   - It can use without cgroup.
+> > > > >   - It can control bandwidth on a per partition basis.
+> > > > >   - The driver module can be replaced without stopping the system.
+> > > > 
+> > > > In addition, dm-ioband can run on the RHEL5.
+> > > 
+> > > RHEL5 compatibility does not matter relative to merging an I/O bandwidth
+> > > controller upstream.  So both the "can [be] use without cgroup" and "can
+> > > run on RHEL5" features do not help your cause of getting dm-ioband
+> > > merged upstream.  In fact these features serve as distractions.
+> >
+> > Exactly. I don't think that "it can be used without cgroup" is a feature
+> > or advantage. To me it is a disadvantage and should be fixed. cgroup is
+> > standard mechanism to group tasks arbitrarily and we should use that to make
+> > things working instead of coming up with own ways of grouping things and
+> > terming it as advantage.
+> > 
+> > What do you mean by "The driver module can be replaced without stopping
+> > the system"? I guess you mean that one does not have to reboot the system
+> > to remove ioband device? So if one decides to not use the cgroup, then
+> > one shall have to remove the ioband devices, remount the filesystems and
+> > restart the application?
+> 
+> Device-mapper has a feature that can replace an intermediate module
+> without unmount the device like the following.
+> 
+>       ---------------------        ---------------------
+>      |         /mnt        |      |        /mnt         |
+>      |---------------------|      |---------------------|
+>      | /dev/mapper/ioband1 |      | /dev/mapper/ioband1 |
+>      |---------------------|      |---------------------|
+>      |      dm-ioband      | <==> |      dm-linear      |
+>      |---------------------|      |---------------------|
+>      |      /dev/sda1      |      |      /dev/sda1      |
+>       ---------------------        ---------------------
+> 
+> So we can safely unload the dm-ioband module and update it.
+> 
+> > With cgroup approach, if one does not want things to be classified, a user
+> > can simply move all the tasks to root group and things will be fine. No
+> > remounting, no application stopping etc. So this also does not look like
+> > an advantage instead sounds like an disadvantage.
+> > 
+> > Thanks
+> > Vivek
 
+Ryo,
+
+Why is it that you repeatedly ignore concern/discussion about your
+determination to continue using a custom grouping mechanism?  It is this
+type of excess layering that serves no purpose other than to facilitate
+out-of-tree use-cases.  dm-ioband would take a big step closer to being
+merged upstream if you took others' feedback and showed more willingness
+to work through the outstanding issues.
+
+Mike
