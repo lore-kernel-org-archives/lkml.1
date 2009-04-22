@@ -1,113 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbZDVIBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZDVIDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbZDVIBY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 04:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbZDVIBJ
+	id S1754656AbZDVIDm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 04:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZDVIDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 04:01:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33256 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbZDVIBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 04:01:08 -0400
-Date: Wed, 22 Apr 2009 10:00:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Eric Dumazet <dada1@cosmosbay.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       David Miller <davem@davemloft.net>, kaber@trash.net,
-       jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090422080024.GB31835@elte.hu>
-References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <20090421140446.0c45d9a0@nehalam>
+	Wed, 22 Apr 2009 04:03:23 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:59289 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752464AbZDVIDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 04:03:20 -0400
+Date: Wed, 22 Apr 2009 10:03:17 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc2 to -rc1 regression on arm
+Message-ID: <20090422080317.GB21747@pengutronix.de>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+	kernel list <linux-kernel@vger.kernel.org>
+References: <20090422075817.GA10992@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421140446.0c45d9a0@nehalam>
+In-Reply-To: <20090422075817.GA10992@elf.ucw.cz>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 10:02:43 up 62 days, 23:56, 26 users,  load average: 4.73, 2.39,
+	0.97
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Provags-ID: V01U2FsdGVkX18SDs9vmta0ARmhC5wnFY4hmUTLPxI4bjh4/a7C
+	lInicJOSAY5wDDQ+3IpT/DIxr8DCBP5YsCQToSfI5yYapfUw19
+	bpTuem+l8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stephen Hemminger <shemminger@vyatta.com> wrote:
-
-> > That way there's no global cacheline bouncing (just the 
-> > _reading_ of a global cacheline - which will be nicely localized 
-> > - on NUMA too) - and we will hold at most 1-2 locks at once!
-> > 
-> > Something like:
-> > 
-> > 	__cacheline_aligned DEFINE_RWLOCK(global_wrlock);
-> > 
-> > 	DEFINE_PER_CPU(rwlock_t local_lock);
-> > 
-> > 
-> > 	void local_read_lock(void)
-> > 	{
-> > 	again:
-> > 		read_lock(&per_cpu(local_lock, this_cpu));
-> > 
-> > 		if (unlikely(!read_can_lock(&global_wrlock))) {
-> > 			read_unlock(&per_cpu(local_lock, this_cpu));
-> > 			/*
-> > 			 * Just wait for any global write activity:
-> > 			 */
-> > 			read_unlock_wait(&global_wrlock);
-> > 			goto again;
-> > 		}
-> > 	}
+On Wed, Apr 22, 2009 at 09:58:17AM +0200, Pavel Machek wrote:
 > 
-> Quit trying to be so damn f*cking cool. [...]
+> ...it now fails to compile in arch/arm/kernel/sys_oabi-compat.c ,
+> complaining about missing prototypes for kmalloc/kfree.
+> 
+> I guess it should be easy to fix.
 
-You make it quite hard to give reasonable feedback to your code :-/
-First you attack me personally here, then - 30 minutes later - in 
-the next iteration of your patch, you do:
+This is already fixed in post rc2:
 
-+       /* wait for each other cpu to see new table */
-+       for_each_possible_cpu(i)
-+               if (i != smp_processor_id()) {
-+                       xt_info_wrlock(i);
-+                       xt_info_wrunlock(i);
-+               }
+commit cbb55092a674bcfd9774637a06d0f1511763aa2c
+Author: eric miao <eric.y.miao@gmail.com>
+Date:   Thu Apr 16 09:55:23 2009 +0100
 
-... which i have not seen in your previous patch and which looks 
-awfully similar to the write_lock_wait() based primitive i 
-suggested.
+    [ARM] 5453/1: fix building breakage of sys_oabi-compat.c due to missing kmalloc/kfree
 
-( Just open-coded in an ugly fashion and slower than a real, proper
-  wait-unlock would be, because it dirties all those locks 
-  needlessly. )
+    It seems that declarations of kmalloc/kfree are missed, explicitly
+    include it.
 
-So you must have agreed with me to a certain degree - i just dont 
-see that in any of the discussion. (you seem to totally disagree 
-with me to the level of ridiculing me.) Which makes it hard to 
-discuss this on a rational basis.
+    Signed-off-by: Eric Miao <eric.miao@marvell.com>
+    Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-> Your version fails for the case of nested local rules. [...]
-
-Yes, as Eric pointed it out, more than an hour before your reply. I 
-find the nesting uninteresting (in fact i find it harmful - see my 
-reply to Eric). If you were only interested in nesting then a plain 
-old-fashioned rwlock would have done the job.
-
-The detail that is interesting here is how to avoid the global 
-rwlock cacheline bounce - not the recursion. (the same-CPU recursion 
-is avoidable via proper design or workaround-able via a counter in 
-so many ways)
-
-Anyway, i'm back into lurker mode.
-
-	Ingo
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
