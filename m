@@ -1,187 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZDVHgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbZDVHiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbZDVHgY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZDVHgJ
+	id S1753731AbZDVHiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZDVHil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:36:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51298 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbZDVHgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:36:05 -0400
-Date: Wed, 22 Apr 2009 09:35:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090422073524.GA31835@elte.hu>
-References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <49EE2293.4090201@cosmosbay.com>
+	Wed, 22 Apr 2009 03:38:41 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:34842 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZDVHik (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 03:38:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=kzA7Tvr/ugcvf+6tzF7cwbr89pAvYKEGXF3U5R23Jt7+CGAPLCwRNlcZTKIfsyvgeL
+         h7/oVqKGlH9A8ni8Vi/qg/RjXU20hYJmMN7lNhTt5GZkd9HY9zp4GMhJnDNc1Dh/LCF2
+         h+910OLTHa7nEOZ8O8eoCxJ0K//29lmIMx5pA=
+Date: Wed, 22 Apr 2009 09:38:33 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.30_rc1] powernow-k8: oops during initialization
+Message-ID: <20090422073833.GA23936@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>,
+	linux-kernel@vger.kernel.org
+References: <49E7175D.6060808@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <49EE2293.4090201@cosmosbay.com>
+In-Reply-To: <49E7175D.6060808@pardus.org.tr>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Thu, Apr 16, 2009 at 02:32:45PM +0300, Ozan Çağlayan wrote:
 
-> Ingo Molnar a �crit :
-> > 
-> > Why not use the obvious solution: a _single_ wrlock for global 
-> > access and read_can_lock() plus per cpu locks in the fastpath?
-> 
-> Obvious is not the qualifier I would use :)
-> 
-> Brilliant yes :)
+> [    4.085400] powernow-k8: Found 1 AMD Athlon(tm) 64 X2 Dual Core Processor 4800+ processors (2 cpu cores) (version 2.20.00)
+> [    4.103978] ------------[ cut here ]------------
+> [    4.122674] WARNING: at arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1257 powernowk8_cpu_init+0x487/0x994()
+> [    4.142059] Hardware name: Unknow
 
-thanks :)
+> [    4.161164] [Firmware Bug]: powernow-k8: Your BIOS does not provide ACPI _PSS objects in a way that Linux understands. Please report this to the Linux ACPI maintainers and complain to your BIOS vendor.
 
-> > That way there's no global cacheline bouncing (just the 
-> > _reading_ of a global cacheline - which will be nicely localized 
-> > - on NUMA too) - and we will hold at most 1-2 locks at once!
-> > 
-> > Something like:
-> > 
-> > 	__cacheline_aligned DEFINE_RWLOCK(global_wrlock);
-> > 
-> > 	DEFINE_PER_CPU(rwlock_t local_lock);
-> > 
-> > 
-> > 	void local_read_lock(void)
-> > 	{
-> > 	again:
-> > 		read_lock(&per_cpu(local_lock, this_cpu));
-> 
-> Hmm... here we can see global_wrlock locked by on writer, while 
-> this cpu already called local_read_lock(), and calls again this 
-> function -> Deadlock, because we hold our local_lock locked.
+Just read what the message says: it is not a kernel bug but simply your
+BIOS is missing the _PSS objects on which powernow-k8 relies. I'm pretty
+sure you had similar message in earlier kernels but it was a simple
+warning then.
 
-Yeah, indeed.
+Is it possible to upgrade your BIOS? If you're lucky, it might've been
+fixed :).
 
-I wasnt really concentrating on the nested case, i was concentrating 
-on the scalability and lock nesting angle. I think the code 
-submitted here looks rather incestous in that regard.
-
-Allowing nested locking _on the same CPU_ is asking for trouble. Use 
-short critical sections and if there's any exclusion needed, use an 
-irq-safe lock or a softirq-safe lock. Problem solved.
-
-> Very interesting and could be changed to use spinlock + depth per 
-> cpu.
-> 
-> -> we can detect recursion and avoid the deadlock, and we only use 
-> one atomic operation per lock/unlock pair in fastpath (this was 
-> the reason we tried hard to use a percpu spinlock during this 
-> thread)
-> 
-> 
-> __cacheline_aligned DEFINE_RWLOCK(global_wrlock);
-> 
-> struct ingo_local_lock {
-> 	spinlock_t lock;
-> 	int depth;
-> };
-> DEFINE_PER_CPU(struct ingo_local_lock local_lock);
-> 
-> 
-> void local_read_lock(void)
-> {
-> 	struct ingo_local_lock *lck;
-> 
-> 	local_bh_and_preempt_disable();
-> 	lck = &get_cpu_var(local_lock);
-> 	if (++lck->depth > 0) /* already locked */
-> 		return;
-> again:
-> 	spin_lock(&lck->lock);
-> 
-> 	if (unlikely(!read_can_lock(&global_wrlock))) {
-> 		spin_unlock(&lck->lock);
-> 		/*
-> 		 * Just wait for any global write activity:
-> 		 */
-> 		read_unlock_wait(&global_wrlock);
-> 		goto again;
-> 	}
-> }
-> 
-> void global_write_lock(void)
-> {
-> 	write_lock(&global_wrlock);
-> 
-> 	for_each_possible_cpu(i)
-> 		spin_unlock_wait(&per_cpu(local_lock, i));
-> }
-> 
-> Hmm ?
-
-Yeah, this looks IRQ-nesting safe. But i really have to ask: why 
-does this code try so hard to allow same-CPU nesting?
-
-Nesting on the same CPU is _bad_ for several reasons:
-
-1) Performance: it rips apart critical sections cache-wise. Instead 
-   of a nice:
-
-       C1 ... C2 ... C3 ... C4
-
-   serial sequence of critical sections, we get:
- 
-       C1A ... ( C2 ) ... C1B ... C3 ... C4
-
-   Note that C1 got "ripped apart" into C1A and C1B with C2 injected 
-   - reducing cache locality between C1A and C1B. We have to execute
-   C1B no matter what, so we didnt actually win anything in terms of 
-   total work to do, by processing C2 out of order.
-
-   [ Preemption of work (which this kind of nesting is really about)
-     is _the anti-thesis of performance_, and we try to delay it as
-     much as possible and we try to batch up as much as possible. 
-     For example the CPU scheduler will try _real_ hard to not 
-     preempt a typical workload, as long as external latency 
-     boundaries allow that. ]
-
-2) Locking complexity and robustness. Nested locking is rank #1 in
-   terms of introducing regressions into the kernel.
-
-3) Instrumentation/checking complexity. Checking locking 
-   dependencies is good and catches a boatload of bugs before they 
-   hit upstream, and nested locks are supported but cause an 
-   exponential explosion in terms of dependencies to check.
-
-   Also, whenever instrumentation explodes is typically the sign of 
-   some true, physical complexity that has been introduced into the 
-   code. So it often is a canary for a misdesign at a fundamental 
-   level, not a failure in the instrumentation framework.
-
-In the past i saw lock nesting often used as a wrong solution when 
-the critical sections were too long (causing too long latencies for 
-critical work - e.g. delaying hardirq completion processing 
-unreasonably), or just plain out of confusion about the items above.
-
-I dont know whether that's the case here - it could be one of the 
-rare exceptions calling for a new locking primitive (which should 
-then be introduced at the core kernel level IMHO) - i dont know the 
-code that well.
-
-	Ingo
+-- 
+Regards/Gruss,
+    Boris.
