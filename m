@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZDVUrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZDVUr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbZDVUrn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZDVUrJ
+	id S1755168AbZDVUr7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZDVUrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:47:09 -0400
-Received: from mga11.intel.com ([192.55.52.93]:28790 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755214AbZDVUrF convert rfc822-to-8bit (ORCPT
+	Wed, 22 Apr 2009 16:47:20 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57341 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755113AbZDVUrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:47:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,232,1239001200"; 
-   d="scan'208";a="684021112"
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
-Date: Wed, 22 Apr 2009 13:47:02 -0700
-Subject: RE: [RFC v2][PATCH 1/1] intel_txt: Intel(R) TXT and tboot kernel
- support
-Thread-Topic: [RFC v2][PATCH 1/1] intel_txt: Intel(R) TXT and tboot kernel
- support
-Thread-Index: AcnDihciW+6teuK6TFStG3ZU1OqrfgAARdOQ
-Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D998812BA7@orsmsx506.amr.corp.intel.com>
-References: <49D1A6AB.5090808@intel.com> <87d4baqnxy.fsf@basil.nowhere.org>
- <49EF7E85.7040104@goop.org> <20090422204028.GC13896@one.firstfloor.org>
-In-Reply-To: <20090422204028.GC13896@one.firstfloor.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 22 Apr 2009 16:47:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HOF1FZBIbmvkYlv3nKM727YwS+49+BXFgLrhwaWSJZd379Dzr/Mfdn7hewjnDF9GSM
+         PUB3PKdez8TLpWRCArTuEDzxJK6qXhZakkwLMGdYHo8VdIso5QKaCnDgjV5bIpbPklWL
+         SRoYQ9vP3/R5pimIYSu3yN+Lds3RSkd5MPRNI=
+Message-ID: <49EF8214.20406@gmail.com>
+Date: Wed, 22 Apr 2009 22:46:12 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <49EE2293.4090201@cosmosbay.com> <20090422073524.GA31835@elte.hu> <49EEDAF0.2010507@cosmosbay.com> <alpine.LFD.2.00.0904220806320.3101@localhost.localdomain> <49EF4C75.6060604@cosmosbay.com> <alpine.LFD.2.00.0904221001270.3101@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904221001270.3101@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Andi Kleen [mailto:andi@firstfloor.org]
-> Sent: Wednesday, April 22, 2009 1:40 PM
->
-> On Wed, Apr 22, 2009 at 01:31:01PM -0700, Jeremy Fitzhardinge wrote:
-> > Andi Kleen wrote:
-> > >This means it explodes with paravirt, right? Do you have a check early
-> > >for that?
-> > >
-> >
-> > The tboot stuff should only be run on bare hardware; if there's
-> > virtualization under the kernel, then TXT should be happening at that level.
->
-> Yes I know, but still this should be enforced.
+Linus Torvalds wrote, On 04/22/2009 07:18 PM:
 
-This code will only be executed if the tboot_shared page is found, which should not be the case if the kernel is running paravirtualized.  But I'm planning to change it to just write_cr3() to be more consistent with other cases where we don't try to specifically exclude paravirt hooks.
+...
+> My problem today (apart from the relatively minor issue of also wanting to 
+> get the commit log fixed up) is just that I see emails from you finding my 
+> reaction shocking and from Jarek Poplawski that seem to still think that 
+> I'm a troll.
+> 
+> Just because I pointed out real technical problems? Is that shocking or 
+> trolling?
 
-Joe
+Very funny! For newbies only: http://en.wikipedia.org/wiki/Troll_(Internet)
+
+
+Actually, I admit you could be the best "Ozzy" Osbourne imposter instead.
+(At least at netdev.) Stephen's words seem to fit very well:
+> Ah a nice day, with Linus giving constructive feedback. Too bad he has
+> to channel it out of the dark side.
+
+Jarek P.
