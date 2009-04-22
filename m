@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZDVPNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZDVPNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbZDVPNA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZDVPMs
+	id S1754969AbZDVPNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZDVPNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:12:48 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55303 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753146AbZDVPMr (ORCPT
+	Wed, 22 Apr 2009 11:13:06 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:60041 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754325AbZDVPNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:12:47 -0400
-Message-ID: <49EF33BC.6060905@zytor.com>
-Date: Wed, 22 Apr 2009 08:11:56 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 22 Apr 2009 11:13:05 -0400
+Message-ID: <49EF336B.5070807@oracle.com>
+Date: Wed, 22 Apr 2009 08:10:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Goswin von Brederlow <goswin-v-b@web.de>
-CC: Bill Davidsen <davidsen@tmr.com>, Matti Aarnio <matti.aarnio@zmailer.org>,
-       Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
-       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, neilb@suse.de
-Subject: Re: Proposal: make RAID6 code optional
-References: <200904180946.27722.prakash@punnoor.de>	<49E98AD2.8060601@msgid.tls.msk.ru>	<200904181117.03418.prakash@punnoor.de>	<alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>	<20090418145850.GD28512@mea-ext.zmailer.org>	<49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <87ljptm59f.fsf@frosties.localdomain>
-In-Reply-To: <87ljptm59f.fsf@frosties.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Michael Ellerman <michael@ellerman.id.au>, subrata@linux.vnet.ibm.com,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+       "David A. Schleef" <ds@schleef.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [BUILD FAILURE 09/12] Next April 21 : PPC64 randconfig [drivers/staging/comedi/drivers.o]
+References: <1240340029.9110.142.camel@subratamodak.linux.ibm.com> <1240358910.6571.6.camel@localhost> <alpine.LRH.2.00.0904220942430.6852@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0904220942430.6852@vixen.sonytel.be>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
+X-Source-IP: acsinet15.oracle.com [141.146.126.227]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.49EF333D.004D:SCFMA922111,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Goswin von Brederlow wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
+Geert Uytterhoeven wrote:
+> On Wed, 22 Apr 2009, Michael Ellerman wrote:
+>> On Wed, 2009-04-22 at 00:23 +0530, Subrata Modak wrote:
+>>> Reported this error on 14th April:
+>>> http://lkml.org/lkml/2009/4/14/488,
+>>>
+>>> CC [M]  drivers/staging/comedi/drivers.o 
+>>> drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
+>>> drivers/staging/comedi/drivers.c:496: error: ‘PAGE_KERNEL_NOCACHE’
+>>> undeclared (first use in this function)
+>>> drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier
+>>> is reported only once
+>>> drivers/staging/comedi/drivers.c:496: error: for each function it
+>>> appears in.)
+>>> make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
+>>> make[2]: *** [drivers/staging/comedi] Error 2
+>>> make[1]: *** [drivers/staging] Error 2
+>>> make: *** [drivers] Error 2
+>> Subrata, unless someone says otherwise, please do not send randconfig
+>> failures for drivers in staging - those drivers have bigger problems
+>> than randconfig failures.
 > 
->> Bill Davidsen wrote:
->>> It would seem that that space could be allocated and populated when
->>> raid6 was first used, as part of the initialization. I haven't looked at
->>> that code since it was new, so I might be optimistic about doing it that
->>> way.
->> We could use vmalloc() and generate the tables at initialization time.
->> However, having a separate module which exports the raid6 declaration
->> and uses the raid5 module as a subroutine library seems easier.
+> Indeed, in particular this one http://lkml.org/lkml/2009/3/9/349.
+> 
+>> To avoid them, do this:
 >>
->> 	-hpa
-> 
-> Combine the two.
-> 
-> The raid6 module initializes the tables for raid6 and uses the raid5
-> module as subroutine library.
-> 
+>> # make randconfig
+>> # sed -i -e 's/^\(CONFIG_STAGING\)=y/# \1 is not set/' .config
+>                                        ^^^^^^^^^^^^^^^
+> Recently I discovered that `n' actually works, too!
 
-It really doesn't make sense at all.  It's easier at that point to
-retain the static tables.
+Yes, I've been using =n for quite awhile to disable a config symbol.
 
-	-hpa
+>> # make oldconfig
 
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+~Randy
