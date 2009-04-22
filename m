@@ -1,86 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZDVPtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZDVPuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZDVPtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbZDVPs4
+	id S1756606AbZDVPuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZDVPuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:48:56 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:42865 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753380AbZDVPsz convert rfc822-to-8bit (ORCPT
+	Wed, 22 Apr 2009 11:50:06 -0400
+Received: from bc.sympatico.ca ([209.226.175.184]:61251 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750988AbZDVPuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:48:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DSuP+JSWpBHnyGi5peCJdsmRPdIFei/ZRrO06d4kK/h2fOpimpBNqvEtLZaHsjijiS
-         xAPNHI/zm9FYjePsIXP/aorzm9Pi9J5Rbf+UOX7ngHI+uxhZfAjVr9RTupkWdpBpFlnm
-         Cxxz5mQyFjlOUg03eVMeaJjToHhYeVfX2S1WU=
-MIME-Version: 1.0
-In-Reply-To: <129600E5E5FB004392DDC3FB599660D79A252C69@irsmsx504.ger.corp.intel.com>
-References: <a4423d670904090536j71be609csf2c32be3ed9cfe1e@mail.gmail.com>
-	 <a4423d670904150539w1a4fe05ake75ce2aea4538eab@mail.gmail.com>
-	 <e9c3a7c20904151027xdf617fbh64fcb5618e195a71@mail.gmail.com>
-	 <129600E5E5FB004392DDC3FB599660D792A39C27@irsmsx504.ger.corp.intel.com>
-	 <a4423d670904170501l7cf935a6mf8dbe69e166b8099@mail.gmail.com>
-	 <129600E5E5FB004392DDC3FB599660D79A252C69@irsmsx504.ger.corp.intel.com>
-Date: Wed, 22 Apr 2009 19:48:53 +0400
-Message-ID: <a4423d670904220848g3725e6a3ya113d9051e2fc734@mail.gmail.com>
-Subject: Re: 2.6.30-rc1: ioatdma: DMA-API: device driver frees DMA memory with 
-	wrong function
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 22 Apr 2009 11:50:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkQFAOfT7klMQW1W/2dsb2JhbACBT9Bog3QG
+Date: Wed, 22 Apr 2009 11:49:54 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, kaber@trash.net,
+       torvalds@linux-foundation.org, shemminger@vyatta.com,
+       dada1@cosmosbay.com, jeff.chua.linux@gmail.com, paulus@samba.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org
+Subject: Re: [RFC PATCH] v3 RCU implementation with fast grace periods
+Message-ID: <20090422154954.GB9604@Krystal>
+References: <20090421045931.GA9953@linux.vnet.ibm.com> <20090421151034.GA3792@Krystal> <20090421165151.GJ6642@linux.vnet.ibm.com> <20090421211158.GD15045@Krystal> <20090421230759.GO6642@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090421230759.GO6642@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:45:18 up 53 days, 12:11,  1 user,  load average: 0.59, 0.30,
+	0.29
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/22 Sosnowski, Maciej <maciej.sosnowski@intel.com>:
-> Alexander Beregalov wrote:
->> 2009/4/17 Sosnowski, Maciej <maciej.sosnowski@intel.com>:
->>> Dan Williams wrote:
->>>> On Wed, Apr 15, 2009 at 5:39 AM, Alexander Beregalov
->>>> <a.beregalov@gmail.com> wrote:
->>>>> 2009/4/9 Alexander Beregalov <a.beregalov@gmail.com>:
->>>>>> ioatdma 0000:00:08.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
->>>>>> ioatdma 0000:00:08.0: setting latency timer to 64
->>>>>> ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine found, 4 channels,
->>>>>> device version 0x12, driver version 3.64
->>>>>>  alloc irq_desc for 33 on cpu 0 node 0
->>>>>>  alloc kstat_irqs on cpu 0 node 0
->>>>>> ioatdma 0000:00:08.0: irq 33 for MSI/MSI-X
->>>>>> ------------[ cut here ]------------
->>>>>> WARNING: at lib/dma-debug.c:565 check_unmap+0x2f6/0x6a0()
->>>>>> Hardware name: PowerEdge 1950
->>>>>> ioatdma 0000:00:08.0: DMA-API: device driver frees DMA memory with
->>>>>> wrong function [device address=0x000000007f76f800] [size=2000 bytes] [map
->>>>>> ped as single] [unmapped as page]
->>>>>
->>>>> The problem still persists.
->>>>
->>>> Thanks for the report Alexander.  Maciej and I are looking into a fix.
->>>>
->>>> Regards,
->>>> Dan
->>>
->>> Hi Alexander,
->>>
->>> Could you check if the following patch helps?
->>
->> Hi Maciej.
->>
->> No, unfortunately it does not help. The same warning message.
->
-> Ok, I have missed to cover self_test case.
-> How about this one instead?
->
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Tue, Apr 21, 2009 at 05:11:58PM -0400, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Tue, Apr 21, 2009 at 11:10:35AM -0400, Mathieu Desnoyers wrote:
+> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > 
+> > > [ . . . ]
+> > > 
+> > > > > +void synchronize_rcu_fgp(void)
+> > > > > +{
+> > > > > +	mutex_lock(&rcu_fgp_mutex);
+> > > > > +	
+> > > > > +	/* CPUs must see earlier change before parity flip. */
+> > > > > +	smp_call_function(rcu_fgp_do_mb, NULL, 1);
+> > > > > +
+> > > > 
+> > > > Hrm, my original comment about missing smp_mb() here still applies, I
+> > > > don't think we have come to an agreement yet.
+> > > 
+> > > My argument is that smp_call_function() must necessarily contain a
+> > > full memory barrier, otherwise it cannot function properly.  ;-)
+> > > 
+> > 
+> > Looking at :
+> > 
+> > kernel/smp.c
+> > 
+> > smp_call_function_many() indeed has a smp_mb(). It is called by
+> > smp_call_function(). I wonder if it could eventually be turned into a
+> > smp_wmb() instead ? If this is even a remote possibility, then the fact
+> > that
+> > 
+> > - The rcu_fgp code does not document that it expects smp_call_function()
+> >   to have a smp_mb().
+> > - The fact that smp_call_function_many() comments do not state that this
+> >   function provides the guarantee to run a smp_mb().
+> > 
+> > are both asking for an eventual bug to creep into the kernel.
+> 
+> Many bugs -- I believe that a number of users of smp_call_function()
+> assume that it maintains ordering between the calling code and all
+> invocations of the function passed to smp_call_function().
+> 
+> > So your assumption seems OK, but I think it needs to be explicitly
+> > documented.
+> 
+> That might well be a good thing.
+> 
+> 							Thanx, Paul
 
-It works! Thanks.
+And while we are at it : you should probably add lockdep annotation to
+this new lock.
 
-Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
-Tested-by: Alexander Beregalov <a.beregalov@gmail.com>
+I never thought I would say this, but following the discussion going on
+about netfilter locking, I am starting to think that the RCU approach
+might be more simple and elegant that the nestable per-cpu rwlock
+approches proposed so far. ;)
+
+Plus, there is much fewer name calling involved in the making. :)
+
+Cheers,
+
+Mathieu
+
+> 
+> > Mathieu
+> > 
+> > > > > +	/*
+> > > > > +	 * We must flip twice to correctly handle tasks that stall
+> > > > > +	 * in rcu_read_lock_fgp() between the time that they fetch
+> > > > > +	 * rcu_fgp_ctr and the time that the store to their CPU's
+> > > > > +	 * rcu_fgp_active_readers.  No matter when they resume
+> > > > > +	 * execution, we will wait for them to get to the corresponding
+> > > > > +	 * rcu_read_unlock_fgp().
+> > > > > +	 */
+> > > > > +	ACCESS_ONCE(rcu_fgp_ctr) ^= RCU_FGP_PARITY;  /* flip parity 0 -> 1 */
+> > > > > +	rcu_fgp_wait_for_quiescent_state();	     /* wait for old readers */
+> > > > > +	ACCESS_ONCE(rcu_fgp_ctr) ^= RCU_FGP_PARITY;  /* flip parity 1 -> 0 */
+> > > > > +	rcu_fgp_wait_for_quiescent_state();	     /* wait for old readers */
+> > > > > +
+> > > > > +	/* Prevent CPUs from reordering out of prior RCU critical sections. */
+> > > > > +	smp_call_function(rcu_fgp_do_mb, NULL, 1);
+> > > > > +
+> > > > 
+> > > > Same here.
+> > > > 
+> > > > So we would need to either add a smp_mb() at both of these locations, or
+> > > > use on_each_cpu() rather than smp_call_function. Note that this is to
+> > > > ensure that the "updater" thread executes these memory barriers.
+> > > 
+> > > Or rely on the barriers that must be part of smp_call_function.  ;-)
+> > > 
+> > > 						Thanx, Paul
+> > > 
+> > > > Mathieu
+> > > > 
+> > > > 
+> > > > > +	rcu_fgp_completed++;
+> > > > > +	mutex_unlock(&rcu_fgp_mutex);
+> > > > > +}
+> > > > > +EXPORT_SYMBOL_GPL(synchronize_rcu_fgp);
+> > > > > +
+> > > > > +/**
+> > > > > + * rcu_fgp_batches_completed - return batches completed.
+> > > > > + * @sp: srcu_struct on which to report batch completion.
+> > > > > + *
+> > > > > + * Report the number of batches, correlated with, but not necessarily
+> > > > > + * precisely the same as, the number of grace periods that have elapsed.
+> > > > > + */
+> > > > > +long rcu_fgp_batches_completed(void)
+> > > > > +{
+> > > > > +	return rcu_fgp_completed;
+> > > > > +}
+> > > > > +EXPORT_SYMBOL_GPL(rcu_fgp_batches_completed);
+> > > > 
+> > > > -- 
+> > > > Mathieu Desnoyers
+> > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe netfilter-devel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
