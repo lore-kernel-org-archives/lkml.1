@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZDVT0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZDVT1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbZDVT0a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZDVT0V
+	id S1756945AbZDVT1k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZDVT12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:26:21 -0400
-Received: from kroah.org ([198.145.64.141]:42663 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752577AbZDVT0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:26:21 -0400
-Date: Wed, 22 Apr 2009 12:23:16 -0700
-From: Greg KH <greg@kroah.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb/host/ohci-hcd.c: fix sparse warnings
-Message-ID: <20090422192316.GA19411@kroah.com>
-References: <BD79186B4FD85F4B8E60E381CAEE1909015F8DFC@mi8nycmail19.Mi8.com> <20090422055327.GF9009@kroah.com> <BD79186B4FD85F4B8E60E381CAEE19090165EFC3@mi8nycmail19.Mi8.com> <20090422174212.GA18564@kroah.com> <BD79186B4FD85F4B8E60E381CAEE19090165EFC9@mi8nycmail19.Mi8.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090165EFC9@mi8nycmail19.Mi8.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 22 Apr 2009 15:27:28 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:58310 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753981AbZDVT11 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 15:27:27 -0400
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniela Engert <dani@ngrt.de>,
+       Boaz Harrosh <bharrosh@panasas.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>
+In-Reply-To: <49EF63A6.8040103@garzik.org>
+References: <20090422090929.GA14928@havoc.gtf.org>
+	 <49EEE225.3010700@garzik.org> <49EF0A92.1070400@panasas.com>
+	 <49EF337F.1030804@ngrt.de>  <20090422161856.1251f8a0@lxorguk.ukuu.org.uk>
+	 <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
+	 <49EF63A6.8040103@garzik.org>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 19:27:25 +0000
+Message-Id: <1240428445.3431.22.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 01:50:56PM -0400, H Hartley Sweeten wrote:
-> On Wednesday, April 22, 2009 10:42 AM, Greg KH wrote:
-> > On Wed, Apr 22, 2009 at 01:39:34PM -0400, H Hartley Sweeten wrote:
-> >> On Tuesday, April 21, 2009 10:53 PM, Greg KH wrote:
-> >>> On Wed, Apr 15, 2009 at 10:04:17PM -0400, H Hartley Sweeten wrote:
-> >>> Fix sparse warnings in drivers/usb/host/ohci-hcd.c.
-> >>>> 
-> >>>> 	warning: symbol 'temp' shadows an earlier one
-> >>>> 
-> >>>> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> >>>
-> >>> I'm not seeing this sparse warning either.
-> >>>
-> >>> And you didn't fix the two sparse warnings I am seeing in this file,
-> >>> so I'm going to think this patch doesn't really do anything :(
-> >> 
-> >> Following are the sparse warnings I am seeing when building for an
-> >> EP93xx ARM platform:
-> >
-> > Ah, on ARM, sorry, I was building on x86.
-> >
-> > Care to respin this one, and your other one without the whitespace
-> > changes and line-wraps and resend them?
+On Wed, 2009-04-22 at 14:36 -0400, Jeff Garzik wrote:
+> James Bottomley wrote:
+> > On Wed, 2009-04-22 at 16:18 +0100, Alan Cox wrote:
+> >>> Don't forget, there are ATAPI devices (some Sony CD burners and old 
+> >>> phase-changers come into mind) which *do* have multiple LUNs sitting 
+> >>> beyond the PATA port. I don't know if libata supports such setups (my 
+> >>> old OS/2 driver does) but one shouldn't hijack LUNs to emulate targets.
+> >> It's a long time ago since I tested it but my 5 CD changer was correctly
+> >> supported by libata (or more accurately by sr...).
+> > 
+> > Well, sr supports the discovered CD/DVD; ch is the actual changer
+> > manager.  Usually ch attaches to one LUN and sr attaches to another.
 > 
-> Not a problem. I will have to attach the patches to avoid the
-> line-warps.
-> It appears that the wrapping is occurring when my emails be bounced thru
-> one of my ISP's servers. I'm still trying to resolve that.
-> 
-> Question: How do you do a git diff and keep the whitespace changes out?
+> Like Alan's, if I understand him correctly, my PATA ATAPI CD changer 
+> simply presents a bunch of addressible LUNs.  I never loaded, nor seemed 
+> to need, ch.
 
-Don't do the whitespace changes in the first place :)
+Yes, they both seem to be non standard changer implementations that just
+present as many CDs as they could chage to.
 
-thanks,
+The ch is actually a driver for devices which conform to the SCSI Media
+Changer standard, which tends to present  LUN zero as the smc device and
+LUN1 as the selected CD/DVD
 
-greg k-h
+> I should boot a current libata and see how it behaves...
+
+Might be fun.
+
+James
+
+
