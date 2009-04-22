@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbZDVULa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZDVUM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbZDVULa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZDVULU
+	id S1756244AbZDVUM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZDVUMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:11:20 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:56543 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbZDVULU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:11:20 -0400
-Date: Wed, 22 Apr 2009 21:11:15 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Tim Gardner <timg@tpi.com>
-Cc: malattia@linux.it, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Sony laptop: Some Sony Vaia laptops do not enable wwan power by default.
-Message-ID: <20090422201115.GA783@srcf.ucam.org>
-References: <20090422185351.AB41AF88CE@sepang.rtg.net> <20090422195034.GA32375@srcf.ucam.org> <49EF78F2.7040203@tpi.com>
+	Wed, 22 Apr 2009 16:12:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36175 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754835AbZDVUMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 16:12:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Bug #13058] First hibernation attempt fails
+Date: Wed, 22 Apr 2009 22:11:17 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc2-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, alan-jenkins@tuffmail.co.uk,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090420163734.b8e24fc9.akpm@linux-foundation.org> <20090422130705.GA16186@elf.ucw.cz>
+In-Reply-To: <20090422130705.GA16186@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49EF78F2.7040203@tpi.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Message-Id: <200904222211.18221.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 02:07:14PM -0600, Tim Gardner wrote:
+On Wednesday 22 April 2009, Pavel Machek wrote:
+> Hi!
+> 
+> > Of course, this will protect the calling task from getting oom-killed. 
+> > But it doesn't protect other tasks from getting oom-killed due to the
+> > activity of _this_ task.
+> > 
+> > But I think that problem already exists, and that this proposal doesn't
+> > worsen anything, yes?
+> > 
+> > Or is it the case that all other tasks are safely stuck in the freezer
+> > at this time, so they won't be allocating any memory anyway?
+> 
+> That is the idea, yes. ... but we now have more threads that are not
+> freezable... so they may allocate the memory.
+> 
+> Is it non-feasible to free memory without really going and allocating
+> everything?
 
-> The laptop model that doesn't power up wwan on cold boot contains a
-> "Sony Programmable IO Control Driver" ("VGN-" according to the DMI
-> info). It appears that only laptops with a "Sony Notebook Control
-> Driver" enjoy rfkill goodness. I don't know for sure if those models
-> fail to power up wwan when rfkill is disabled.
+The question is whether there is a point.  In principle we can just go and
+allocate as much as we need upfront.  It shouldn't change anything, because
+we resume and suspend devices after creating the image anyway.
 
-Right. It'd need porting to the rfkill infrastructure, rather than just 
-being a sysfs attribute.
+I think we could try to disable the OOM killer before suspend and just
+allocate the memory for the image right before devices are suspended for the
+first time.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks,
+Rafael
