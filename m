@@ -1,159 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZDVKUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZDVKVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZDVKUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 06:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZDVKUR
+	id S1756291AbZDVKVd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 06:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZDVKVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 06:20:17 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:34322 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753544AbZDVKUO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 06:20:14 -0400
-X-BigFish: VPS-35(z971J3dc9i6f5iz1432R98dR4015M1805M179dR936fKzz1202hzz5eeeT3198u327alz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KIHZDC-01-ORV-01
-Date: Wed, 22 Apr 2009 12:19:50 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Jan Kiszka <jan.kiszka@web.de>
-CC: Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] IO-APIC + timer doesn't work!
-Message-ID: <20090422101950.GA32009@alberich.amd.com>
-References: <49E89D1B.7060800@suse.com> <49E9904A.5030201@web.de> <49EA2F81.7030302@suse.com> <20090418200623.GA27294@elte.hu> <49EA373A.8060105@web.de> <20090418203227.GC30144@elte.hu> <49EA3C28.9010209@web.de>
+	Wed, 22 Apr 2009 06:21:23 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37154 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751025AbZDVKVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 06:21:22 -0400
+Date: Wed, 22 Apr 2009 11:21:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 21/25] Use allocation flags as an index to the zone
+	watermark
+Message-ID: <20090422102117.GC10380@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-22-git-send-email-mel@csn.ul.ie> <20090422092429.6271.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <49EA3C28.9010209@web.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Apr 2009 10:20:01.0577 (UTC) FILETIME=[E55FA990:01C9C333]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090422092429.6271.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 18, 2009 at 10:46:32PM +0200, Jan Kiszka wrote:
-> Ingo Molnar wrote:
-> > * Jan Kiszka <jan.kiszka@web.de> wrote:
+On Wed, Apr 22, 2009 at 09:26:10AM +0900, KOSAKI Motohiro wrote:
+> > ALLOC_WMARK_MIN, ALLOC_WMARK_LOW and ALLOC_WMARK_HIGH determin whether
+> > pages_min, pages_low or pages_high is used as the zone watermark when
+> > allocating the pages. Two branches in the allocator hotpath determine which
+> > watermark to use. This patch uses the flags as an array index and places
+> > the three watermarks in a union with an array so it can be offset. This
+> > means the flags can be used as an array index and reduces the branches
+> > taken.
 > > 
-> >> Ingo Molnar wrote:
-> >>> * Jeff Mahoney <jeffm@suse.com> wrote:
-> >>>
-> >>>>> Hmmmmm. That somehow reminds me of what I thought I had to fix in the
-> >>>>> HPET emulation of QEMU just recently [1] - because of 2.6.30-rc's behavior.
-> >>>>>
-> >>>>> Could you try if writing 'delta' a second time makes any difference on
-> >>>>> that box?
-> >>>>>
-> >>>>> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-> >>>>> index 648b3a2..523d72b 100644
-> >>>>> --- a/arch/x86/kernel/hpet.c
-> >>>>> +++ b/arch/x86/kernel/hpet.c
-> >>>>> @@ -324,6 +324,7 @@ static void hpet_set_mode(enum clock_event_mode mode,
-> >>>>>  		       HPET_TN_SETVAL | HPET_TN_32BIT;
-> >>>>>  		hpet_writel(cfg, HPET_Tn_CFG(timer));
-> >>>>>  		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-> >>>>> +		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-> >>>>>  		hpet_start_counter();
-> >>>>>  		hpet_print_config();
-> >>>>>  		break;
-> >>>>>
-> >>>> Thanks, Jan.
-> >>>>
-> >>>> That fixed it for me.
-> >>> I've queued it up (and i've got a test-system that might be affected 
-> >>> by a similar problem - it shows a similar crash very rarely), but it 
-> >>> would be nice to know why this duplicate writeout makes a 
-> >>> difference. Jan?
-> >>>
-> >>> 	Ingo
-> >> Well, if you look at the HPET spec [1], you first find the explanation
-> >> of the Tn_VAL_SET_CNF bit (HPET_TN_SETVAL):
-> >>
-> >> "[...] By writing this bit to a 1, the software is then allowed to
-> >> directly set a periodic timer's accumulator."
-> >>
-> >> That may sound like "you write to the comparator register if 0, and if
-> >> 1, you set the accumulator". That's also how HPET was emulated in QEMU
-> >> so far.
-> >>
-> >> But then you read on about changing the period of a running timer:
-> >>
-> >> "If the software resets the main counter, the value in the comparator’s
-> >> value register needs to reset as well. This can be done by setting the
-> >> Tn_VAL_SET_CNF bit. Again, to avoid race conditions, this should be
-> >> done with the main counter halted. The following usage model is expected:
-> >> 1) Software clears the GLOBAL_ENABLE_CNF bit to prevent any interrupts
-> >> 2) Software Clears the main counter by writing a value of 00000000h to it.
-> >> 3) Software sets the TIMER0_VAL_SET_CNF bit.
-> >> 4) Software writes the new value in the TIMER0_COMPARATOR_VAL register
-> >> 5) Software sets the GLOBAL_ENABLE_CNF bit to enable interrupts."
-> >>
-> >> And that somehow sounds like you only need to write the new period once,
-> >> with Tn_VAL_SET_CNF = 1.
-> >>
-> >> I bet now that both interpretations are implemented in silicon somewhere
-> >> out there - but I'm all ears to learn the right one (and potentially
-> >> re-fix QEMU).
-> >>
-> >> Jan
-> >>
-> >> [1] http://www.intel.com/hardwaredesign/hpetspec_1.pdf
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> > ---
+> >  include/linux/mmzone.h |    8 +++++++-
+> >  mm/page_alloc.c        |   18 ++++++++----------
+> >  2 files changed, 15 insertions(+), 11 deletions(-)
 > > 
-> > i might be a bit slow today, but how does the above transform into:
-> > 
-> >   		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-> > 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-> > 
-> > ? It sets the same register twice.
+> > diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> > index f82bdba..c1fa208 100644
+> > --- a/include/linux/mmzone.h
+> > +++ b/include/linux/mmzone.h
+> > @@ -275,7 +275,13 @@ struct zone_reclaim_stat {
+> >  
+> >  struct zone {
+> >  	/* Fields commonly accessed by the page allocator */
+> > -	unsigned long		pages_min, pages_low, pages_high;
+> > +	union {
+> > +		struct {
+> > +			unsigned long	pages_min, pages_low, pages_high;
+> > +		};
+> > +		unsigned long pages_mark[3];
+> > +	};
+> > +
 > 
-> No, sorry, I missed to cite also this from the Tn_SET_VAL_CFG
-> explanation: "Software does NOT have to write this bit back to 0 (it
-> automatically clears)." So the second write will already take place
-> without it.
+> hmmm... I don't like union hack. 
+> Why can't we change all caller to use page_mark?
 > 
-> > 
-> > I'm totally happy if it does transform into that under some quirky 
-> > interpretation. Since it solved the problem for Jeff, we'll likely 
-> > add it even if there's no actual explanation ;-) But it would be 
-> > nice to somehow come up with a line of reasoning that ends with:
-> > 
-> >  ... and for that reason, we set the value twice:
-> > 
-> >   		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-> > 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-> > 
-> > right?
-> > 
-> > 	Ingo
+
+Because pages_min, pages_low and pages_high are such well understood concepts
+and their current use is easy to userstand. It could all be changed to getters
+and setters with a patch to update all call sites or having symbolic names
+for the index and forcing the use of the array but when I started doing that,
+the code looked worse to my eye, not better.  The union is a relatively
+small hack but well contained within the one place that cares.
+
+> >  	/*
+> >  	 * We don't know if the memory that we're going to allocate will be freeable
+> >  	 * or/and it will be released eventually, so to avoid totally wasting several
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 376d848..e61867e 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1157,10 +1157,13 @@ failed:
+> >  	return NULL;
+> >  }
+> >  
+> > -#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
+> > -#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
+> > -#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
+> > -#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
+> > +/* The WMARK bits are used as an index zone->pages_mark */
+> > +#define ALLOC_WMARK_MIN		0x00 /* use pages_min watermark */
+> > +#define ALLOC_WMARK_LOW		0x01 /* use pages_low watermark */
+> > +#define ALLOC_WMARK_HIGH	0x02 /* use pages_high watermark */
+> > +#define ALLOC_NO_WATERMARKS	0x08 /* don't check watermarks at all */
+> > +#define ALLOC_WMARK_MASK	0x07 /* Mask to get the watermark bits */
 > 
-> I'd like to give someone from AMD or Intel or whoever already
-> implemented such a logic a chance to comment on it. If this doesn't
-> happen, you may add:
+> the mask only use two bit. but mask definition is three bit (0x07), why?
+> 
 
-I didn't implement logic but checked the AMD 81xx documentation.  And
-this exactly describes that depending on HPET_TN_SETVAL either
-accumulator or comparator is set. That is the reason why my last HPET
-patch broke HPET on that chipset. I've provided a patch to partially
-revert that commit. See
+I was thinking ALLOC_NO_WATERMARKS-1 and that all the lower bits must be
+cleared and left the value of 0x08 to occupy same number of bits even though
+that wasn't necessary. As suggested I'll change this to
 
-http://marc.info/?l=linux-kernel&m=124033700530097
+ALLOC_NO_WATERMARKS	0x04
+WMARK_MASK		(1-ALLOC_NO_WATERMARKS)
 
-The patch was successfully verified for bugzilla
-http://bugzilla.kernel.org/show_bug.cgi?id=12961
-
-IMHO it should be applied asap to tip tree.
-
-
-Regards,
-
-Andreas
+> 
+> > +
+> >  #define ALLOC_HARDER		0x10 /* try to alloc harder */
+> >  #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
+> >  #ifdef CONFIG_CPUSETS
+> > @@ -1463,12 +1466,7 @@ zonelist_scan:
+> >  
+> >  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+> >  			unsigned long mark;
+> > -			if (alloc_flags & ALLOC_WMARK_MIN)
+> > -				mark = zone->pages_min;
+> > -			else if (alloc_flags & ALLOC_WMARK_LOW)
+> > -				mark = zone->pages_low;
+> > -			else
+> > -				mark = zone->pages_high;
+> > +			mark = zone->pages_mark[alloc_flags & ALLOC_WMARK_MASK];
+> >  			if (!zone_watermark_ok(zone, order, mark,
+> >  				    classzone_idx, alloc_flags)) {
+> >  				if (!zone_reclaim_mode ||
+> > -- 
+> > 1.5.6.5
+> > 
+> 
+> 
+> 
 
 -- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
