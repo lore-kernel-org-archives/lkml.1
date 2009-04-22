@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZDVAmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZDVAt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbZDVAmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 20:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDVAmF
+	id S1753590AbZDVAt3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 20:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZDVAtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 20:42:05 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:15723 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752811AbZDVAmD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 20:42:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Z6Exd0NvClOtawZIzFLzbgP2y/AbO7nEl5IYISiERYaGhAONUbe7D3aIjifjiXZu2
-	/8oNzIHAkM7YuYwi12NMA==
-Date: Tue, 21 Apr 2009 17:41:53 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 21/25] Use allocation flags as an index to the zone
- watermark
-In-Reply-To: <20090422092429.6271.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0904211739520.31232@chino.kir.corp.google.com>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-22-git-send-email-mel@csn.ul.ie> <20090422092429.6271.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 21 Apr 2009 20:49:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50704 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752417AbZDVAtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 20:49:20 -0400
+Message-ID: <49EE69C2.9030908@cn.fujitsu.com>
+Date: Wed, 22 Apr 2009 08:50:10 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Mike Snitzer <snitzer@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>, nauman@google.com,
+       fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org, jmoyer@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, balbir@linux.vnet.ibm.com
+Subject: Re: dm-ioband: Test results.
+References: <20090420.172959.193682665.ryov@valinux.co.jp> <e98e18940904200207y62eca680t7cf938049375f4b3@mail.gmail.com> <20090421.210614.112619728.ryov@valinux.co.jp> <20090421.211051.183023683.ryov@valinux.co.jp> <20090421135723.GA13953@redhat.com> <20090421141607.GA22619@redhat.com>
+In-Reply-To: <20090421141607.GA22619@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009, KOSAKI Motohiro wrote:
-
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 376d848..e61867e 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1157,10 +1157,13 @@ failed:
-> >  	return NULL;
-> >  }
-> >  
-> > -#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
-> > -#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
-> > -#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
-> > -#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
-> > +/* The WMARK bits are used as an index zone->pages_mark */
-> > +#define ALLOC_WMARK_MIN		0x00 /* use pages_min watermark */
-> > +#define ALLOC_WMARK_LOW		0x01 /* use pages_low watermark */
-> > +#define ALLOC_WMARK_HIGH	0x02 /* use pages_high watermark */
-> > +#define ALLOC_NO_WATERMARKS	0x08 /* don't check watermarks at all */
-> > +#define ALLOC_WMARK_MASK	0x07 /* Mask to get the watermark bits */
+Vivek Goyal wrote:
+> On Tue, Apr 21, 2009 at 09:57:23AM -0400, Mike Snitzer wrote:
+>> On Tue, Apr 21 2009 at  8:10am -0400,
+>> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+>>
+>>> Hi Nauman,
+>>>
+>>>>> The real question is, once you create a version of dm-ioband that
+>>>>> co-operates with CFQ scheduler, how that solution would compare with
+>>>>> the patch set Vivek has posted? In my opinion, we need to converge to
+>>>>> one solution as soon as possible, so that we can work on it together
+>>>>> to refine and test it.
+>>>> I think I can do some help for your work. but I want to continue the
+>>>> development of dm-ioband, because dm-ioband actually works well and
+>>>> I think it has some advantages against other IO controllers.
+>>>>   - It can use without cgroup.
+>>>>   - It can control bandwidth on a per partition basis.
+>>>>   - The driver module can be replaced without stopping the system.
+>>> In addition, dm-ioband can run on the RHEL5.
+>> RHEL5 compatibility does not matter relative to merging an I/O bandwidth
+>> controller upstream.  So both the "can [be] use without cgroup" and "can
+>> run on RHEL5" features do not help your cause of getting dm-ioband
+>> merged upstream.  In fact these features serve as distractions.
 > 
-> the mask only use two bit. but mask definition is three bit (0x07), why?
+> Exactly. I don't think that "it can be used without cgroup" is a feature
+> or advantage. To me it is a disadvantage and should be fixed. cgroup is
+> standard mechanism to group tasks arbitrarily and we should use that to make
+> things working instead of coming up with own ways of grouping things and
+> terming it as advantage.
 > 
 
-I think it would probably be better to simply use
+I agree. And for the case of cpu scheduler, there are user group scheduler
+and cgroup group scheduler, but Peter said he would like to see user group
+scheduler to be removed.
 
-	#define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS - 1)
-
-here and define ALLOC_NO_WATERMARKS to be 0x04.
+> What do you mean by "The driver module can be replaced without stopping
+> the system"? I guess you mean that one does not have to reboot the system
+> to remove ioband device? So if one decides to not use the cgroup, then
+> one shall have to remove the ioband devices, remount the filesystems and
+> restart the application?
+> 
+> With cgroup approach, if one does not want things to be classified, a user
+> can simply move all the tasks to root group and things will be fine. No
+> remounting, no application stopping etc. So this also does not look like
+> an advantage instead sounds like an disadvantage.
+> 
+> Thanks
+> Vivek
