@@ -1,917 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750946AbZDVERf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbZDVETJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750946AbZDVERf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 00:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbZDVERV
+	id S1752157AbZDVETJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 00:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZDVESz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 00:17:21 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:47146 "EHLO e4.ny.us.ibm.com"
+	Wed, 22 Apr 2009 00:18:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:35670 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbZDVERR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 00:17:17 -0400
-Date: Tue, 21 Apr 2009 21:17:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
+	id S1750732AbZDVESy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 00:18:54 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+Date: Wed, 22 Apr 2009 13:48:40 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Jonathan Corbet <corbet@lwn.net>, "H. Peter Anvin" <hpa@zytor.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v13)
-Message-ID: <20090422041712.GA8032@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421193924.GA24404@elte.hu> <20090421143927.52d7d89d@nehalam>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <200904201744.22572.rusty@rustcorp.com.au> <20090420103805.GA29891@elte.hu>
+In-Reply-To: <20090420103805.GA29891@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090421143927.52d7d89d@nehalam>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200904221348.42677.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 02:39:27PM -0700, Stephen Hemminger wrote:
-> This version of x_tables (ip/ip6/arp) locking uses a per-cpu
-> recursive lock that can be nested.
+On Mon, 20 Apr 2009 08:08:05 pm Ingo Molnar wrote:
+> Can you integrate these two into a single summary line? The obvious 
+> solution would be to append them:
 > 
-> The idea for this came from an earlier version done by Eric Dumazet.
-> Locking is done per-cpu, the fast path locks on the current cpu
-> and updates counters.  This reduces the contention of a
-> single reader lock (in 2.6.29) without the delay of synchronize_net()
-> (in 2.6.30-rc2). 
+>      tracing/ring-buffer: add unlock recursion protection on discard to fix spurious warning triggering tracing shutdown
 > 
-> The mutex that was added for 2.6.30 in xt_table is unnecessary since
-> there already is a mutex for xt[af].mutex that is held.
+> but 121 characters width is _way_ too long for a summary.
 
-Looks good from a concurrency viewpoint!
+No, if I'm reading this commit correctly, the commit message is well written,
+just really bad.
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+    tracing/ring-buffer: Add unlock recursion protection on discard
 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com
-> 
-> ---
-> CHANGES 
->   - reader and write now inline
->   - only acquire one cpu write lock at a time
+-- This helps the patch reviewer, but noone else.  And the patch reviewer
+   should be reading the entire thing anyway.  This is a fix, but you have
+   to read to the bottom to know that.
 
-This is very good -- gets rid of problems with preemption nesting
-depth limitations and lockdep limitations.  In addition, it gets rid of
-the period of time during which all packet processing might otherwise
-be blocked.  Not a big deal on a small machine, but could be a real
-problem on a large one.
+    The pair of helpers trace_recursive_lock() and trace_recursive_unlock()
+    have been introduced recently to provide generic tracing recursion
+    protection.
 
-Very cool!!!
+    They are used in a symetric way:
 
->   - write lock pushed down into get_counters
-> 
->  include/linux/netfilter/x_tables.h |   50 +++++++++++++--
->  net/ipv4/netfilter/arp_tables.c    |  121 ++++++++++---------------------------
->  net/ipv4/netfilter/ip_tables.c     |  120 +++++++++---------------------------
->  net/ipv6/netfilter/ip6_tables.c    |  120 ++++++++++--------------------------
->  net/netfilter/x_tables.c           |   55 +++++++++-------
->  5 files changed, 174 insertions(+), 292 deletions(-)
-> 
-> --- a/include/linux/netfilter/x_tables.h	2009-04-21 07:57:06.668582345 -0700
-> +++ b/include/linux/netfilter/x_tables.h	2009-04-21 14:24:03.295299154 -0700
-> @@ -354,9 +354,6 @@ struct xt_table
->  	/* What hooks you will enter on */
->  	unsigned int valid_hooks;
-> 
-> -	/* Lock for the curtain */
-> -	struct mutex lock;
-> -
->  	/* Man behind the curtain... */
->  	struct xt_table_info *private;
-> 
-> @@ -434,8 +431,51 @@ extern void xt_proto_fini(struct net *ne
-> 
->  extern struct xt_table_info *xt_alloc_table_info(unsigned int size);
->  extern void xt_free_table_info(struct xt_table_info *info);
-> -extern void xt_table_entry_swap_rcu(struct xt_table_info *old,
-> -				    struct xt_table_info *new);
-> +
-> +
-> +/*
-> + * Per-CPU read/write lock. This makes reader locking fast since
-> + * there is no shared variable to cause cache ping-pong; but adds an
-> + * additional write-side penalty since write must iterate over all
-> + * possible CPU's. Readers read lock their per-cpu lock, and writers
-> + * write lock on all CPU's.
-> + *
-> + * Read lock is used by ip/arp/ip6 tables rule processing which runs per-cpu.
-> + * It needs to ensure that the rules are not being changed while packet
-> + * is being processed.
-> + *
-> + * Write lock is used in two cases:
-> + *    1. reading counter values
-> + *       all readers need to be stopped and the per-CPU values are summed.
-> + *
-> + *    2. replacing rules
-> + *       all packets in flight have to be processed before rules are swapped,
-> + *       then counters are read from the old (stale) info.
-> + *
-> + */
-> +DECLARE_PER_CPU(rwlock_t, xt_info_locks);
-> +
-> +static inline void xt_info_rdlock_bh(void)
-> +{
-> +	local_bh_disable();
-> +	read_lock(&__get_cpu_var(xt_info_locks));
+     - trace_recursive_lock() on buffer reserve
+     - trace_recursive_unlock() on buffer commit
 
-Good, you do indeed need to prevent migration before you acquire this
-CPU's lock.  Otherwise, you could have more than one CPU attempting to
-update the same counter.
+-- Err, why is this verbiage in this patch at all?
 
-> +}
-> +
-> +static inline void xt_info_rdunlock_bh(void)
-> +{
-> +	read_unlock_bh(&__get_cpu_var(xt_info_locks));
-> +}
-> +
-> +static inline void xt_info_wrlock(unsigned int cpu)
-> +{
-> +	write_lock(&per_cpu(xt_info_locks, cpu));
-> +}
-> +
-> +static inline void xt_info_wrunlock(unsigned int cpu)
-> +{
-> +
-> +	write_unlock(&per_cpu(xt_info_locks, cpu));
-> +}
-> 
->  /*
->   * This helper is performance critical and must be inlined
-> --- a/net/ipv4/netfilter/ip_tables.c	2009-04-21 07:57:06.649549203 -0700
-> +++ b/net/ipv4/netfilter/ip_tables.c	2009-04-21 14:33:29.842423044 -0700
-> @@ -338,10 +338,9 @@ ipt_do_table(struct sk_buff *skb,
->  	tgpar.hooknum = hook;
-> 
->  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
-> -
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	xt_info_rdlock_bh();
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
-> 
->  	e = get_entry(table_base, private->hook_entry[hook]);
-> 
-> @@ -436,8 +435,7 @@ ipt_do_table(struct sk_buff *skb,
->  			e = (void *)e + e->next_offset;
->  		}
->  	} while (!hotdrop);
-> -
-> -	rcu_read_unlock_bh();
-> +	xt_info_rdunlock_bh();
-> 
->  #ifdef DEBUG_ALLOW_ALL
->  	return NF_ACCEPT;
-> @@ -897,89 +895,39 @@ get_counters(const struct xt_table_info 
->  	/* Instead of clearing (by a previous call to memset())
->  	 * the counters and using adds, we set the counters
->  	 * with data used by 'current' CPU
-> -	 * We dont care about preemption here.
+    However sometimes, we don't commit but discard on entry
+    to the buffer, ie: in case of filter checking.
 
-Good.  Of course, the reason we care about preemption here is that
-otherwise some other task could mess up this CPU's counters.
+    Then we must also unlock the recursion protection on discard time,
+    otherwise the tracing gets definitely deactivated and a warning
+    is raised spuriously, such as:
 
-Bad for real-time response, but then again, what the heck are you
-doing updating netfilter rules while a system is running a real-time
-workload?
+-- So, the problem is that tracing gets deactivated permanently?  Also a
+   warning is raised (in which case is it really spurious?).   Since I have
+   no idea what this code does, is it common?  When was this problem
+   introduced?  
 
->  	 */
-> -	curcpu = raw_smp_processor_id();
-> +	local_bh_disable();
-> +	curcpu = smp_processor_id();
-> 
->  	i = 0;
-> +	xt_info_wrlock(curcpu);
->  	IPT_ENTRY_ITERATE(t->entries[curcpu],
->  			  t->size,
->  			  set_entry_to_counter,
->  			  counters,
->  			  &i);
-> +	xt_info_wrunlock(curcpu);
-> 
->  	for_each_possible_cpu(cpu) {
->  		if (cpu == curcpu)
->  			continue;
->  		i = 0;
-> +		xt_info_wrlock(cpu);
->  		IPT_ENTRY_ITERATE(t->entries[cpu],
->  				  t->size,
->  				  add_entry_to_counter,
->  				  counters,
->  				  &i);
-> +		xt_info_wrunlock(cpu);
->  	}
-> -
-> -}
-> -
-> -/* We're lazy, and add to the first CPU; overflow works its fey magic
-> - * and everything is OK. */
-> -static int
-> -add_counter_to_entry(struct ipt_entry *e,
-> -		     const struct xt_counters addme[],
-> -		     unsigned int *i)
-> -{
-> -	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> -
-> -	(*i)++;
-> -	return 0;
-> -}
-> -
-> -/* Take values from counters and add them back onto the current cpu */
-> -static void put_counters(struct xt_table_info *t,
-> -			 const struct xt_counters counters[])
-> -{
-> -	unsigned int i, cpu;
-> -
-> -	local_bh_disable();
-> -	cpu = smp_processor_id();
-> -	i = 0;
-> -	IPT_ENTRY_ITERATE(t->entries[cpu],
-> -			  t->size,
-> -			  add_counter_to_entry,
-> -			  counters,
-> -			  &i);
->  	local_bh_enable();
->  }
-> 
-> -
-> -static inline int
-> -zero_entry_counter(struct ipt_entry *e, void *arg)
-> -{
-> -	e->counters.bcnt = 0;
-> -	e->counters.pcnt = 0;
-> -	return 0;
-> -}
-> -
-> -static void
-> -clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
-> -{
-> -	unsigned int cpu;
-> -	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
-> -
-> -	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
-> -	for_each_possible_cpu(cpu) {
-> -		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
-> -		IPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
-> -				  zero_entry_counter, NULL);
-> -	}
-> -}
-> -
->  static struct xt_counters * alloc_counters(struct xt_table *table)
->  {
->  	unsigned int countersize;
->  	struct xt_counters *counters;
->  	struct xt_table_info *private = table->private;
-> -	struct xt_table_info *info;
-> 
->  	/* We need atomic snapshot of counters: rest doesn't change
->  	   (other than comefrom, which userspace doesn't care
-> @@ -988,30 +936,11 @@ static struct xt_counters * alloc_counte
->  	counters = vmalloc_node(countersize, numa_node_id());
-> 
->  	if (counters == NULL)
-> -		goto nomem;
-> +		return ERR_PTR(-ENOMEM);
-> 
-> -	info = xt_alloc_table_info(private->size);
-> -	if (!info)
-> -		goto free_counters;
-> -
-> -	clone_counters(info, private);
-> -
-> -	mutex_lock(&table->lock);
-> -	xt_table_entry_swap_rcu(private, info);
-> -	synchronize_net();	/* Wait until smoke has cleared */
-> -
-> -	get_counters(info, counters);
-> -	put_counters(private, counters);
-> -	mutex_unlock(&table->lock);
-> -
-> -	xt_free_table_info(info);
-> +	get_counters(private, counters);
-> 
->  	return counters;
-> -
-> - free_counters:
-> -	vfree(counters);
-> - nomem:
-> -	return ERR_PTR(-ENOMEM);
->  }
-> 
->  static int
-> @@ -1377,11 +1306,23 @@ do_replace(struct net *net, void __user 
->  	return ret;
->  }
-> 
-> +/* We're lazy, and add to the first CPU; overflow works its fey magic
-> + * and everything is OK. */
-> +static int
-> +add_counter_to_entry(struct ipt_entry *e,
-> +		     const struct xt_counters addme[],
-> +		     unsigned int *i)
-> +{
-> +	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> +
-> +	(*i)++;
-> +	return 0;
-> +}
-> 
->  static int
->  do_add_counters(struct net *net, void __user *user, unsigned int len, int compat)
->  {
-> -	unsigned int i;
-> +	unsigned int i, curcpu;
->  	struct xt_counters_info tmp;
->  	struct xt_counters *paddc;
->  	unsigned int num_counters;
-> @@ -1437,25 +1378,26 @@ do_add_counters(struct net *net, void __
->  		goto free;
->  	}
-> 
-> -	mutex_lock(&t->lock);
-> +	local_bh_disable();
->  	private = t->private;
->  	if (private->number != num_counters) {
->  		ret = -EINVAL;
->  		goto unlock_up_free;
->  	}
-> 
-> -	preempt_disable();
->  	i = 0;
->  	/* Choose the copy that is on our node */
-> -	loc_cpu_entry = private->entries[raw_smp_processor_id()];
-> +	curcpu = smp_processor_id();
-> +	loc_cpu_entry = private->entries[curcpu];
-> +	xt_info_wrlock(curcpu);
->  	IPT_ENTRY_ITERATE(loc_cpu_entry,
->  			  private->size,
->  			  add_counter_to_entry,
->  			  paddc,
->  			  &i);
-> -	preempt_enable();
-> +	xt_info_wrunlock(curcpu);
->   unlock_up_free:
-> -	mutex_unlock(&t->lock);
-> +	local_bh_enable();
->  	xt_table_unlock(t);
->  	module_put(t->me);
->   free:
-> --- a/net/netfilter/x_tables.c	2009-04-21 07:57:06.605264365 -0700
-> +++ b/net/netfilter/x_tables.c	2009-04-21 14:33:50.177486967 -0700
-> @@ -625,20 +625,6 @@ void xt_free_table_info(struct xt_table_
->  }
->  EXPORT_SYMBOL(xt_free_table_info);
-> 
-> -void xt_table_entry_swap_rcu(struct xt_table_info *oldinfo,
-> -			     struct xt_table_info *newinfo)
-> -{
-> -	unsigned int cpu;
-> -
-> -	for_each_possible_cpu(cpu) {
-> -		void *p = oldinfo->entries[cpu];
-> -		rcu_assign_pointer(oldinfo->entries[cpu], newinfo->entries[cpu]);
-> -		newinfo->entries[cpu] = p;
-> -	}
-> -
-> -}
-> -EXPORT_SYMBOL_GPL(xt_table_entry_swap_rcu);
-> -
->  /* Find table by name, grabs mutex & ref.  Returns ERR_PTR() on error. */
->  struct xt_table *xt_find_table_lock(struct net *net, u_int8_t af,
->  				    const char *name)
-> @@ -676,32 +662,43 @@ void xt_compat_unlock(u_int8_t af)
->  EXPORT_SYMBOL_GPL(xt_compat_unlock);
->  #endif
-> 
-> +DEFINE_PER_CPU(rwlock_t, xt_info_locks);
-> +EXPORT_PER_CPU_SYMBOL_GPL(xt_info_locks);
+    111.119821] ------------[ cut here ]------------
+    [  111.119829] WARNING: at kernel/trace/ring_buffer.c:1498 ring_buffer_lock_reserve+0x1b7/0x1d0()
+    [  111.119835] Hardware name: AMILO Li 2727
+    [  111.119839] Modules linked in:
+    [  111.119846] Pid: 5731, comm: Xorg Tainted: G        W  2.6.30-rc1 #69
+    [  111.119851] Call Trace:
+    [  111.119863]  [<ffffffff8025ce68>] warn_slowpath+0xd8/0x130
+    [  111.119873]  [<ffffffff8028a30f>] ? __lock_acquire+0x19f/0x1ae0
+    [  111.119882]  [<ffffffff8028a30f>] ? __lock_acquire+0x19f/0x1ae0
+    ...
 
-Hmmm...  Not sure I want to know what module uses this.
+-- Good, a backtrace is nice.
 
-Ah, that is right -- a bunch of the comms stack can be built as a module.
+   [ Impact: fix spurious warning triggering tracing shutdown ]
 
-> +
-> +
->  struct xt_table_info *
->  xt_replace_table(struct xt_table *table,
->  	      unsigned int num_counters,
->  	      struct xt_table_info *newinfo,
->  	      int *error)
->  {
-> -	struct xt_table_info *oldinfo, *private;
-> +	unsigned int i;
-> +	struct xt_table_info *private;
-> 
->  	/* Do the substitution. */
-> -	mutex_lock(&table->lock);
-> +	local_bh_disable();
+-- Hidden away here, I don't think I like this.  Not an improvement.
 
-Good, disabling preemption prevents other readers from messing with this
-CPU's local state.
+    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
->  	private = table->private;
->  	/* Check inside lock: is the old number correct? */
->  	if (num_counters != private->number) {
->  		duprintf("num_counters != table->private->number (%u/%u)\n",
->  			 num_counters, private->number);
-> -		mutex_unlock(&table->lock);
-> +		local_bh_enable();
->  		*error = -EAGAIN;
->  		return NULL;
->  	}
-> -	oldinfo = private;
-> -	rcu_assign_pointer(table->private, newinfo);
-> -	newinfo->initial_entries = oldinfo->initial_entries;
-> -	mutex_unlock(&table->lock);
-> 
-> -	synchronize_net();
-> -	return oldinfo;
-> +	table->private = newinfo;
-> +	newinfo->initial_entries = private->initial_entries;
-> +
-> +	/* wait for each other cpu to see new table */
-> +	for_each_possible_cpu(i)
-> +		if (i != smp_processor_id()) {
-> +			xt_info_wrlock(i);
-> +			xt_info_wrunlock(i);
-> +		}
+The patch itself basically adds trace_recursive_unlock() to event discard.
+Seems like it should always have done that, and it's a simple bug that it
+didn't.  But I had to work hard to figure that out.
 
-And the above loop acts sort of like a lock-based synchronize_rcu().
-
-> +	local_bh_enable();
-> +
-> +	return private;
->  }
->  EXPORT_SYMBOL_GPL(xt_replace_table);
-> 
-> @@ -734,7 +731,6 @@ struct xt_table *xt_register_table(struc
-> 
->  	/* Simplifies replace_table code. */
->  	table->private = bootstrap;
-> -	mutex_init(&table->lock);
-> 
->  	if (!xt_replace_table(table, 0, newinfo, &ret))
->  		goto unlock;
-> @@ -1147,7 +1143,16 @@ static struct pernet_operations xt_net_o
-> 
->  static int __init xt_init(void)
->  {
-> -	int i, rv;
-> +	unsigned int i;
-> +	int rv;
-> +	static struct lock_class_key xt_lock_key[NR_CPUS];
-> +
-> +	for_each_possible_cpu(i) {
-> +		rwlock_t *lock = &per_cpu(xt_info_locks, i);
-> +
-> +		rwlock_init(lock);
-> +		lockdep_set_class(lock, xt_lock_key+i);
-> +	}
-> 
->  	xt = kmalloc(sizeof(struct xt_af) * NFPROTO_NUMPROTO, GFP_KERNEL);
->  	if (!xt)
-> --- a/net/ipv6/netfilter/ip6_tables.c	2009-04-21 07:57:06.621260619 -0700
-> +++ b/net/ipv6/netfilter/ip6_tables.c	2009-04-21 14:29:57.312236004 -0700
-> @@ -365,9 +365,9 @@ ip6t_do_table(struct sk_buff *skb,
-> 
->  	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
-> 
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	xt_info_rdlock_bh();
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
-> 
->  	e = get_entry(table_base, private->hook_entry[hook]);
-> 
-> @@ -466,7 +466,7 @@ ip6t_do_table(struct sk_buff *skb,
->  #ifdef CONFIG_NETFILTER_DEBUG
->  	((struct ip6t_entry *)table_base)->comefrom = NETFILTER_LINK_POISON;
->  #endif
-> -	rcu_read_unlock_bh();
-> +	xt_info_rdunlock_bh();
-> 
->  #ifdef DEBUG_ALLOW_ALL
->  	return NF_ACCEPT;
-> @@ -926,87 +926,40 @@ get_counters(const struct xt_table_info 
->  	/* Instead of clearing (by a previous call to memset())
->  	 * the counters and using adds, we set the counters
->  	 * with data used by 'current' CPU
-> -	 * We dont care about preemption here.
->  	 */
-> -	curcpu = raw_smp_processor_id();
-> +	local_bh_disable();
-> +	curcpu = smp_processor_id();
-
-Same story, but for IPv6.
-
->  	i = 0;
-> +	xt_info_wrlock(curcpu);
->  	IP6T_ENTRY_ITERATE(t->entries[curcpu],
->  			   t->size,
->  			   set_entry_to_counter,
->  			   counters,
->  			   &i);
-> +	xt_info_wrunlock(curcpu);
-> +
-> 
->  	for_each_possible_cpu(cpu) {
->  		if (cpu == curcpu)
->  			continue;
->  		i = 0;
-> +		xt_info_wrlock(cpu);
->  		IP6T_ENTRY_ITERATE(t->entries[cpu],
->  				  t->size,
->  				  add_entry_to_counter,
->  				  counters,
->  				  &i);
-> +		xt_info_wrunlock(cpu);
->  	}
-> -}
-> -
-> -/* We're lazy, and add to the first CPU; overflow works its fey magic
-> - * and everything is OK. */
-> -static int
-> -add_counter_to_entry(struct ip6t_entry *e,
-> -		     const struct xt_counters addme[],
-> -		     unsigned int *i)
-> -{
-> -	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> -
-> -	(*i)++;
-> -	return 0;
-> -}
-> -
-> -/* Take values from counters and add them back onto the current cpu */
-> -static void put_counters(struct xt_table_info *t,
-> -			 const struct xt_counters counters[])
-> -{
-> -	unsigned int i, cpu;
-> -
-> -	local_bh_disable();
-> -	cpu = smp_processor_id();
-> -	i = 0;
-> -	IP6T_ENTRY_ITERATE(t->entries[cpu],
-> -			   t->size,
-> -			   add_counter_to_entry,
-> -			   counters,
-> -			   &i);
->  	local_bh_enable();
->  }
-> 
-> -static inline int
-> -zero_entry_counter(struct ip6t_entry *e, void *arg)
-> -{
-> -	e->counters.bcnt = 0;
-> -	e->counters.pcnt = 0;
-> -	return 0;
-> -}
-> -
-> -static void
-> -clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
-> -{
-> -	unsigned int cpu;
-> -	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
-> -
-> -	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
-> -	for_each_possible_cpu(cpu) {
-> -		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
-> -		IP6T_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
-> -				   zero_entry_counter, NULL);
-> -	}
-> -}
-> -
->  static struct xt_counters *alloc_counters(struct xt_table *table)
->  {
->  	unsigned int countersize;
->  	struct xt_counters *counters;
->  	struct xt_table_info *private = table->private;
-> -	struct xt_table_info *info;
-> 
->  	/* We need atomic snapshot of counters: rest doesn't change
->  	   (other than comefrom, which userspace doesn't care
-> @@ -1015,30 +968,11 @@ static struct xt_counters *alloc_counter
->  	counters = vmalloc_node(countersize, numa_node_id());
-> 
->  	if (counters == NULL)
-> -		goto nomem;
-> -
-> -	info = xt_alloc_table_info(private->size);
-> -	if (!info)
-> -		goto free_counters;
-> -
-> -	clone_counters(info, private);
-> +		return ERR_PTR(-ENOMEM);
-> 
-> -	mutex_lock(&table->lock);
-> -	xt_table_entry_swap_rcu(private, info);
-> -	synchronize_net();	/* Wait until smoke has cleared */
-> -
-> -	get_counters(info, counters);
-> -	put_counters(private, counters);
-> -	mutex_unlock(&table->lock);
-> -
-> -	xt_free_table_info(info);
-> +	get_counters(private, counters);
-> 
->  	return counters;
-> -
-> - free_counters:
-> -	vfree(counters);
-> - nomem:
-> -	return ERR_PTR(-ENOMEM);
->  }
-> 
->  static int
-> @@ -1405,11 +1339,24 @@ do_replace(struct net *net, void __user 
->  	return ret;
->  }
-> 
-> +/* We're lazy, and add to the first CPU; overflow works its fey magic
-> + * and everything is OK. */
-> +static int
-> +add_counter_to_entry(struct ip6t_entry *e,
-> +		     const struct xt_counters addme[],
-> +		     unsigned int *i)
-> +{
-> +	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> +
-> +	(*i)++;
-> +	return 0;
-> +}
-> +
->  static int
->  do_add_counters(struct net *net, void __user *user, unsigned int len,
->  		int compat)
->  {
-> -	unsigned int i;
-> +	unsigned int i, curcpu;
->  	struct xt_counters_info tmp;
->  	struct xt_counters *paddc;
->  	unsigned int num_counters;
-> @@ -1465,25 +1412,28 @@ do_add_counters(struct net *net, void __
->  		goto free;
->  	}
-> 
-> -	mutex_lock(&t->lock);
-> +
-> +	local_bh_disable();
->  	private = t->private;
->  	if (private->number != num_counters) {
->  		ret = -EINVAL;
->  		goto unlock_up_free;
->  	}
-> 
-> -	preempt_disable();
->  	i = 0;
->  	/* Choose the copy that is on our node */
-> -	loc_cpu_entry = private->entries[raw_smp_processor_id()];
-> +	curcpu = smp_processor_id();
-> +	xt_info_wrlock(curcpu);
-> +	loc_cpu_entry = private->entries[curcpu];
->  	IP6T_ENTRY_ITERATE(loc_cpu_entry,
->  			  private->size,
->  			  add_counter_to_entry,
->  			  paddc,
->  			  &i);
-> -	preempt_enable();
-> +	xt_info_wrunlock(curcpu);
-> +
->   unlock_up_free:
-> -	mutex_unlock(&t->lock);
-> +	local_bh_enable();
->  	xt_table_unlock(t);
->  	module_put(t->me);
->   free:
-> --- a/net/ipv4/netfilter/arp_tables.c	2009-04-21 07:57:06.633261308 -0700
-> +++ b/net/ipv4/netfilter/arp_tables.c	2009-04-21 14:34:39.026255677 -0700
-> @@ -253,9 +253,9 @@ unsigned int arpt_do_table(struct sk_buf
->  	indev = in ? in->name : nulldevname;
->  	outdev = out ? out->name : nulldevname;
-> 
-> -	rcu_read_lock_bh();
-> -	private = rcu_dereference(table->private);
-> -	table_base = rcu_dereference(private->entries[smp_processor_id()]);
-> +	xt_info_rdlock_bh();
-> +	private = table->private;
-> +	table_base = private->entries[smp_processor_id()];
-> 
->  	e = get_entry(table_base, private->hook_entry[hook]);
->  	back = get_entry(table_base, private->underflow[hook]);
-> @@ -273,6 +273,7 @@ unsigned int arpt_do_table(struct sk_buf
-> 
->  			hdr_len = sizeof(*arp) + (2 * sizeof(struct in_addr)) +
->  				(2 * skb->dev->addr_len);
-> +
->  			ADD_COUNTER(e->counters, hdr_len, 1);
-> 
->  			t = arpt_get_target(e);
-> @@ -328,8 +329,7 @@ unsigned int arpt_do_table(struct sk_buf
->  			e = (void *)e + e->next_offset;
->  		}
->  	} while (!hotdrop);
-> -
-> -	rcu_read_unlock_bh();
-> +	xt_info_rdunlock_bh();
-> 
->  	if (hotdrop)
->  		return NF_DROP;
-> @@ -711,88 +711,39 @@ static void get_counters(const struct xt
->  	/* Instead of clearing (by a previous call to memset())
->  	 * the counters and using adds, we set the counters
->  	 * with data used by 'current' CPU
-> -	 * We dont care about preemption here.
->  	 */
-> -	curcpu = raw_smp_processor_id();
-> +	local_bh_disable();
-
-Same story, but for ARP.
-
-> +	curcpu = smp_processor_id();
-> 
->  	i = 0;
-> +	xt_info_wrlock(curcpu);
->  	ARPT_ENTRY_ITERATE(t->entries[curcpu],
->  			   t->size,
->  			   set_entry_to_counter,
->  			   counters,
->  			   &i);
-> +	xt_info_wrunlock(curcpu);
-> 
->  	for_each_possible_cpu(cpu) {
->  		if (cpu == curcpu)
->  			continue;
->  		i = 0;
-> +		xt_info_wrlock(cpu);
->  		ARPT_ENTRY_ITERATE(t->entries[cpu],
->  				   t->size,
->  				   add_entry_to_counter,
->  				   counters,
->  				   &i);
-> +		xt_info_wrunlock(cpu);
->  	}
-> -}
-> -
-> -
-> -/* We're lazy, and add to the first CPU; overflow works its fey magic
-> - * and everything is OK. */
-> -static int
-> -add_counter_to_entry(struct arpt_entry *e,
-> -		     const struct xt_counters addme[],
-> -		     unsigned int *i)
-> -{
-> -	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> -
-> -	(*i)++;
-> -	return 0;
-> -}
-> -
-> -/* Take values from counters and add them back onto the current cpu */
-> -static void put_counters(struct xt_table_info *t,
-> -			 const struct xt_counters counters[])
-> -{
-> -	unsigned int i, cpu;
-> -
-> -	local_bh_disable();
-> -	cpu = smp_processor_id();
-> -	i = 0;
-> -	ARPT_ENTRY_ITERATE(t->entries[cpu],
-> -			  t->size,
-> -			  add_counter_to_entry,
-> -			  counters,
-> -			  &i);
->  	local_bh_enable();
->  }
-> 
-> -static inline int
-> -zero_entry_counter(struct arpt_entry *e, void *arg)
-> -{
-> -	e->counters.bcnt = 0;
-> -	e->counters.pcnt = 0;
-> -	return 0;
-> -}
-> -
-> -static void
-> -clone_counters(struct xt_table_info *newinfo, const struct xt_table_info *info)
-> -{
-> -	unsigned int cpu;
-> -	const void *loc_cpu_entry = info->entries[raw_smp_processor_id()];
-> -
-> -	memcpy(newinfo, info, offsetof(struct xt_table_info, entries));
-> -	for_each_possible_cpu(cpu) {
-> -		memcpy(newinfo->entries[cpu], loc_cpu_entry, info->size);
-> -		ARPT_ENTRY_ITERATE(newinfo->entries[cpu], newinfo->size,
-> -				  zero_entry_counter, NULL);
-> -	}
-> -}
-> -
->  static struct xt_counters *alloc_counters(struct xt_table *table)
->  {
->  	unsigned int countersize;
->  	struct xt_counters *counters;
->  	struct xt_table_info *private = table->private;
-> -	struct xt_table_info *info;
-> 
->  	/* We need atomic snapshot of counters: rest doesn't change
->  	 * (other than comefrom, which userspace doesn't care
-> @@ -802,30 +753,11 @@ static struct xt_counters *alloc_counter
->  	counters = vmalloc_node(countersize, numa_node_id());
-> 
->  	if (counters == NULL)
-> -		goto nomem;
-> -
-> -	info = xt_alloc_table_info(private->size);
-> -	if (!info)
-> -		goto free_counters;
-> -
-> -	clone_counters(info, private);
-> +		return ERR_PTR(-ENOMEM);
-> 
-> -	mutex_lock(&table->lock);
-> -	xt_table_entry_swap_rcu(private, info);
-> -	synchronize_net();	/* Wait until smoke has cleared */
-> -
-> -	get_counters(info, counters);
-> -	put_counters(private, counters);
-> -	mutex_unlock(&table->lock);
-> -
-> -	xt_free_table_info(info);
-> +	get_counters(private, counters);
-> 
->  	return counters;
-> -
-> - free_counters:
-> -	vfree(counters);
-> - nomem:
-> -	return ERR_PTR(-ENOMEM);
->  }
-> 
->  static int copy_entries_to_user(unsigned int total_size,
-> @@ -1165,10 +1097,23 @@ static int do_replace(struct net *net, v
->  	return ret;
->  }
-> 
-> +/* We're lazy, and add to the first CPU; overflow works its fey magic
-> + * and everything is OK. */
-> +static int
-> +add_counter_to_entry(struct arpt_entry *e,
-> +		     const struct xt_counters addme[],
-> +		     unsigned int *i)
-> +{
-> +	ADD_COUNTER(e->counters, addme[*i].bcnt, addme[*i].pcnt);
-> +
-> +	(*i)++;
-> +	return 0;
-> +}
-> +
->  static int do_add_counters(struct net *net, void __user *user, unsigned int len,
->  			   int compat)
->  {
-> -	unsigned int i;
-> +	unsigned int i, curcpu;
->  	struct xt_counters_info tmp;
->  	struct xt_counters *paddc;
->  	unsigned int num_counters;
-> @@ -1224,26 +1169,26 @@ static int do_add_counters(struct net *n
->  		goto free;
->  	}
-> 
-> -	mutex_lock(&t->lock);
-> +	local_bh_disable();
->  	private = t->private;
->  	if (private->number != num_counters) {
->  		ret = -EINVAL;
->  		goto unlock_up_free;
->  	}
-> 
-> -	preempt_disable();
->  	i = 0;
->  	/* Choose the copy that is on our node */
-> -	loc_cpu_entry = private->entries[smp_processor_id()];
-> +	curcpu = smp_processor_id();
-> +	loc_cpu_entry = private->entries[curcpu];
-> +	xt_info_wrlock(curcpu);
->  	ARPT_ENTRY_ITERATE(loc_cpu_entry,
->  			   private->size,
->  			   add_counter_to_entry,
->  			   paddc,
->  			   &i);
-> -	preempt_enable();
-> +	xt_info_wrunlock(curcpu);
->   unlock_up_free:
-> -	mutex_unlock(&t->lock);
-> -
-> +	local_bh_enable();
->  	xt_table_unlock(t);
->  	module_put(t->me);
->   free:
+Rusty.
