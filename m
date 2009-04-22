@@ -1,120 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZDVTHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbZDVTJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZDVTHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbZDVTG1
+	id S1756085AbZDVTJE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZDVTIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:06:27 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:53708 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756754AbZDVTGY (ORCPT
+	Wed, 22 Apr 2009 15:08:45 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3468 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZDVTIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:06:24 -0400
-Message-ID: <49EF6AA5.80500@interlog.com>
-Date: Wed, 22 Apr 2009 15:06:13 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Vladislav Bolkhovitin <vst@vlnb.net>, Tejun Heo <tj@kernel.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Christoph Hellwig <hch@lst.de>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional legacy	scsi_execute_async()
- usage for Linux/SCSI passthrough
-References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org> <49EB036B.8090607@panasas.com> <49EDB8EF.7040503@vlnb.net> <49EF1A88.1040105@panasas.com>
-In-Reply-To: <49EF1A88.1040105@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 22 Apr 2009 15:08:44 -0400
+Subject: Re: [git pull] IDE fixes
+From: Joe Perches <joe@perches.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200904222048.15556.bzolnier@gmail.com>
+References: <200904222048.15556.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 12:06:47 -0700
+Message-Id: <1240427207.21848.81.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> On 04/21/2009 03:15 PM, Vladislav Bolkhovitin wrote:
->> Boaz Harrosh, on 04/19/2009 02:56 PM wrote:
->>> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
->> [..]
->>
->>> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
->>>
->>> I'm not sure what would be the best alternative for you. I would say
->>> a bio, but it is still being debated. Your current options are:
->>>
->>> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
->>>    (Which block people don't like)
->>> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
->>>    struct rq_map_data mode. (not possible with all kind of sglists)
->>> 2. sglist => iovec translation and blk_rq_map_user_iov()
->>>    (Very very ugly mapping of pages to virtual pointers)
->>>
->>> I have a similar situation with my OSD code.
->> Do you have somewhere in it a need to run an arbitrary CDB with data 
->> pages stored in an sglist? Is that code accepted in the mainline?
->>
-> 
-> No, I have a direct bio which comes from two sources.
-> 1. A bio prepared by a filesystem to describe a write/read to a file (osd object)
-> 2. A cloned bio that comes from a stacking block-device over osd-object.
-> 
-> So I do not have an sglist at all, anywhere in code.
-> 
->> If yes, why not to resurrect the necessary bits of scsi_execute_async() 
->> (option (1) above)? It was deleted, because in 2.6.30 there are no users 
->> of it left, but if there are users (OSD), then why not to return it? 
->> Seems nothing better for the sg->bio case can be invented.
->>
-> 
-> I hate scsi_execute_async() for lots of reasons, 
-> 1. The cover-up of an historical abuse of sglists by sg/sr
-> 2. Override of use_sg/data-pointer crap
+On Wed, 2009-04-22 at 20:48 +0200, Bartlomiej Zolnierkiewicz wrote:
+> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> index 3aec19d..3d4e099 100644
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -609,7 +609,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+>  	struct request *rq = hwif->rq;
+>  	ide_expiry_t *expiry = NULL;
+>  	int dma_error = 0, dma, thislen, uptodate = 0;
+> -	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc, nsectors;
+> +	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc = 0, nsectors;
+>  	int sense = blk_sense_request(rq);
+>  	unsigned int timeout;
+>  	u16 len;
 
-Hate, abuse, crap??
-[I believe the author of scsi_execute_async() is cc-ed on
-your post.]
+I think ide is the only subsystem to use the
+initialization style of "?:," with additional
+declarations.
 
-It served a purpose when the block layer was taking over
-sglist handling and was synchronous. Block error handling
-was non-existent or poor at the time. The block layer
-wanted to disown the sg and st drivers because they didn't
-fit its crude model. So scsi_execute_async() was our
-"get out of the !@#$ing block system" card.
+Would it be better to use a more standard style?
 
-Happily the block system has evolved to being able to
-provide the async handling and error processing that
-it, sg and st need. It is now a non-block system.
+maybe:
+	int dma_error = 0, dma, thislen, uptodate = 0, rc = 0, nsectors;
+	int write = ((rq_data_dir(rq) == WRITE) ? 1 : 0;
 
-So scsi_execute_async() has become superfluous.
+> diff --git a/drivers/ide/palm_bk3710.c b/drivers/ide/palm_bk3710.c
+> index c7acca0..d1513b4 100644
+> --- a/drivers/ide/palm_bk3710.c
+> +++ b/drivers/ide/palm_bk3710.c
+[]
+> @@ -75,13 +67,19 @@ struct palm_bk3710_udmatiming {
+>  
+>  static unsigned ideclk_period; /* in nanoseconds */
+>  
+> +struct palm_bk3710_udmatiming {
+> +	unsigned int rptime;	/* tRP -- Ready to pause time (nsec) */
+> +	unsigned int cycletime;	/* tCYCTYP2/2 -- avg Cycle Time (nsec) */
+> +				/* tENV is always a minimum of 20 nsec */
+> +};
+> +
+>  static const struct palm_bk3710_udmatiming palm_bk3710_udmatimings[6] = {
+> -	{160, 240},		/* UDMA Mode 0 */
+> -	{125, 160},		/* UDMA Mode 1 */
+> -	{100, 120},		/* UDMA Mode 2 */
+> -	{100, 90},		/* UDMA Mode 3 */
+> -	{100, 60},		/* UDMA Mode 4 */
+> -	{85,  40},		/* UDMA Mode 5 */
+> +	{160, 240 / 2,},	/* UDMA Mode 0 */
+> +	{125, 160 / 2,},	/* UDMA Mode 1 */
+> +	{100, 120 / 2,},	/* UDMA Mode 2 */
+> +	{100, 90 / 2,},		/* UDMA Mode 3 */
+> +	{100, 60 / 2,},		/* UDMA Mode 4 */
+> +	{85,  40 / 2,},		/* UDMA Mode 5 */
+>  };
+>  
+>  static void palm_bk3710_setudmamode(void __iomem *base, unsigned int dev,
 
-> 3. What is data-format got to do with sync/async execution
+Odd looking commas.
 
-A fair bit in async. For example I'd like to know when data-out
-buffers can be re-used and data-in buffers are ready. If it was
-really clever it could alert me when thresholds were met in
-the data-in buffer.
+Maybe:
 
-Doug Gilbert
-
-> 4. the need of all that scsi_io_context and the re-invention
->    of async_done API.
-> 5. ...
-> Good riddence
-> 
-> But you might be looking into an API introduced by an RFC by
-> Tejun Heo in the form of blk_rq_map_kern_sgl() which should
-> be a more appropriate general API for your use.
-> (And is not directly usable for me in OSD)
-> 
->> Vlad
-> 
-> Boaz
-> 
+	{.rptime = 160, .cycletime = 240 / 2 },	/* UDMA Mode 0 */
+etc.
 
