@@ -1,137 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZDVO0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZDVOcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbZDVO0V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZDVO0L
+	id S1753123AbZDVOcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZDVOcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:26:11 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:53518 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750806AbZDVO0L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:26:11 -0400
-Message-ID: <49EF293F.4030504@opengridcomputing.com>
-Date: Wed, 22 Apr 2009 09:27:11 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 22 Apr 2009 10:32:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37395 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbZDVOcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 10:32:06 -0400
+Date: Wed, 22 Apr 2009 15:32:01 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [PATCH] low order lumpy reclaim also should use
+	PAGEOUT_IO_SYNC.
+Message-ID: <20090422143201.GE15367@csn.ul.ie>
+References: <20090421142056.F127.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-References: <20090421184223.GP19637@balbir.in.ibm.com> <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com>
-In-Reply-To: <49EF2882.1020306@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090421142056.F127.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 21, 2009 at 02:22:27PM +0900, KOSAKI Motohiro wrote:
+> Subject: [PATCH] low order lumpy reclaim also should use PAGEOUT_IO_SYNC.
+> 
+> commit 33c120ed2843090e2bd316de1588b8bf8b96cbde (more aggressively use lumpy reclaim)
+> change lumpy reclaim using condition. but it isn't enough change.
+> 
+> lumpy reclaim don't only mean isolate neighber page, but also do pageout as synchronous.
+> this patch does it.
+> 
+> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> Cc: Andy Whitcroft <apw@shadowen.org>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Rik van Riel <riel@redhat.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Steve Wise wrote:
-> Jens Axboe wrote:
->> On Tue, Apr 21 2009, Steve Wise wrote:
->>  
->>> Balbir Singh wrote:
->>>    
->>>> Hi, Andrew,
->>>>
->>>> I did a quick check on lkml to see if someone reported this issue
->>>> already, I could not find any reports. I am beginning to see several
->>>> of these on my machine. I saw recent refactoring of rbtrees, I've
->>>> cc'ed Wolfram Strepp.
->>>>
->>>>         
->>> I see a similar crash (null ptr deref in rb_erase()) booting up  
->>> 2.6.30-rc2/x86_64/centos 5.3 distro.
->>>     
->>
->> Plain 2.6.30-rc2? Please also post the oops, thanks!
->>
->>   
->
-> No there are a few patches applied that are heading upstream, but one 
-> is in the NFS RDMA server which isn't loaded yet and the rest are in 
-> iw_cxgb3 (iwarp driver) which also hasn't loaded at the time we crash. 
-> NOTE:  Out of 4 power cycles, one booted up ok, 3 hit the crash.
->
->
->
+Seems fair although the changelog could be better. Maybe something like?
 
-By the way, this one looks different from the last one I saw.  So its 
-not consistently crashing in the same spot.  The one I hit yesterday 
-(which I don't have the OOPs dump for was in rb_erase().
+====
 
-Steve.
+Commit 33c120ed2843090e2bd316de1588b8bf8b96cbde increased how aggressive
+lumpy reclaim was by isolating both active and inactive pages for asynchronous
+lumpy reclaim on costly-high-order pages and for cheap-high-order when memory
+pressure is high. However, if the system is under heavy pressure and there
+are dirty pages, asynchronous IO may not be sufficient to reclaim a suitable
+page in time.
 
-> Here's the OOPS:
->
-> Starting udev: BUG: unable to handle kernel NULL pointer dereference 
-> at 0000000000000010
-> IP: [<ffffffff80341faf>] __rb_rotate_left+0x7/0x5b
-> PGD 12c4f6067 PUD 12c486067 PMD 0
-> Oops: 0000 [#1] SMP
-> last sysfs file: /sys/class/sound/controlC0/dev
-> CPU 0
-> Modules linked in: snd_hda_codec_intelhdmi snd_hda_codec_realtek 
-> snd_hda_intel snd_hda_codec snd_seq_dummy snd_seq_oss 
-> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss 
-> snd_pcm snd_timer snd button sr_mod cdrom i2c_i801 rtc_cmos serio_raw 
-> rtc_core cxgb3 sg r8169 floppy soundcore mii shpchp i2c_core rtc_lib 
-> snd_page_alloc pcspkr dm_snapshot dm_zero dm_mirror dm_region_hash 
-> dm_log dm_mod ata_piix libata sd_mod scsi_mod ext3 jbd uhci_hcd 
-> ohci_hcd ehci_hcd
-> Pid: 2364, comm: vol_id Not tainted 2.6.30-rc2-stevo #1 P5E-VM HDMI
-> RIP: 0010:[<ffffffff80341faf>]  [<ffffffff80341faf>] 
-> __rb_rotate_left+0x7/0x5b
-> RSP: 0018:ffff88012bdb9990  EFLAGS: 00010086
-> RAX: ffff88012b663ac0 RBX: ffff88012b663ac0 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: ffff88012d479a30 RDI: ffff88012b663ac0
-> RBP: ffff88012b663ac0 R08: ffff88012b663ac0 R09: 0000000000000000
-> R10: ffff88012d547808 R11: 0000000000000200 R12: ffff88012b663ac0
-> R13: 0000000000000000 R14: ffff88012d479a30 R15: 0000000000000000
-> FS:  00000000006e3880(0063) GS:ffff88002804b000(0000) 
-> knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000000000000010 CR3: 000000012acd8000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process vol_id (pid: 2364, threadinfo ffff88012bdb8000, task 
-> ffff88012e102240)
-> Stack:
-> ffffffff80342110 ffff88012b663a90 ffff88012b663ac0 ffff88012d479a00
-> ffff88012d479a30 ffff88012d53c158 ffffffff8033a676 ffff88012d479a00
-> ffff88012b663ac0 ffff88012b663c10 0000000000000000 ffff88012b663a90
-> Call Trace:
-> [<ffffffff80342110>] ? rb_insert_color+0xb2/0xda
-> [<ffffffff8033a676>] ? cfq_prio_tree_add+0x9d/0xa8
-> [<ffffffff8033b668>] ? cfq_add_rq_rb+0xcb/0xde
-> [<ffffffff8033b716>] ? cfq_insert_request+0x5b/0x390
-> [<ffffffff8032fb2c>] ? elv_insert+0x112/0x1c0
-> [<ffffffff80332790>] ? __make_request+0x3cf/0x40b
-> [<ffffffff80331036>] ? generic_make_request+0x277/0x311
-> [<ffffffff803323ba>] ? submit_bio+0xae/0xb5
-> [<ffffffff802c2c2f>] ? submit_bh+0xd9/0xf9
-> [<ffffffff802c579c>] ? block_read_full_page+0x247/0x264
-> [<ffffffff802c8c99>] ? blkdev_get_block+0x0/0x47
-> [<ffffffff80281447>] ? __do_page_cache_readahead+0x144/0x178
-> [<ffffffff80281638>] ? ondemand_readahead+0x13a/0x149
-> [<ffffffff8027b2d8>] ? generic_file_aio_read+0x219/0x539
-> [<ffffffff802a6986>] ? do_sync_read+0xc9/0x10c
-> [<ffffffff8024a4ae>] ? autoremove_wake_function+0x0/0x2e
-> [<ffffffff8028ca6c>] ? handle_mm_fault+0x32f/0x6f1
-> [<ffffffff802a70a9>] ? vfs_read+0xaa/0x133
-> [<ffffffff802a742a>] ? sys_read+0x45/0x6e
-> [<ffffffff8020b96b>] ? system_call_fastpath+0x16/0x1b
-> Code: 00 31 c0 eb 19 ff c0 48 89 ee 48 c7 c7 88 a5 cd 80 89 43 08 e8 
-> 29 66 17 00 b8 01 00 00 00 5a 5b 5d c3 90 90 48 8b 4f 08 4c 8b 07 <48> 
-> 8b 51 10 49 83 e0 fc 48 85 d2 48 89 57 08 74 0c 48 8b 02 83
-> RIP  [<ffffffff80341faf>] __rb_rotate_left+0x7/0x5b
-> RSP <ffff88012bdb9990>
-> CR2: 0000000000000010
-> ---[ end trace c900f92beb0e53d4 ]---
->
->
->
+This patch causes the caller to enter synchronous lumpy reclaim for
+costly-high-order pages and for cheap-high-order pages when under memory
+pressure.
+====
 
+Whether the changelog is updated or not though;
+
+Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+
+> ---
+>  mm/vmscan.c |   29 +++++++++++++++--------------
+>  1 file changed, 15 insertions(+), 14 deletions(-)
+> 
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1049,6 +1049,19 @@ static unsigned long shrink_inactive_lis
+>  	unsigned long nr_scanned = 0;
+>  	unsigned long nr_reclaimed = 0;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> +	int lumpy_reclaim = 0;
+> +
+> +	/*
+> +	 * If we need a large contiguous chunk of memory, or have
+> +	 * trouble getting a small set of contiguous pages, we
+> +	 * will reclaim both active and inactive pages.
+> +	 *
+> +	 * We use the same threshold as pageout congestion_wait below.
+> +	 */
+> +	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
+> +		lumpy_reclaim = 1;
+> +	else if (sc->order && priority < DEF_PRIORITY - 2)
+> +		lumpy_reclaim = 1;
+>  
+>  	pagevec_init(&pvec, 1);
+>  
+> @@ -1061,19 +1074,7 @@ static unsigned long shrink_inactive_lis
+>  		unsigned long nr_freed;
+>  		unsigned long nr_active;
+>  		unsigned int count[NR_LRU_LISTS] = { 0, };
+> -		int mode = ISOLATE_INACTIVE;
+> -
+> -		/*
+> -		 * If we need a large contiguous chunk of memory, or have
+> -		 * trouble getting a small set of contiguous pages, we
+> -		 * will reclaim both active and inactive pages.
+> -		 *
+> -		 * We use the same threshold as pageout congestion_wait below.
+> -		 */
+> -		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
+> -			mode = ISOLATE_BOTH;
+> -		else if (sc->order && priority < DEF_PRIORITY - 2)
+> -			mode = ISOLATE_BOTH;
+> +		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
+>  
+>  		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+>  			     &page_list, &nr_scan, sc->order, mode,
+> @@ -1110,7 +1111,7 @@ static unsigned long shrink_inactive_lis
+>  		 * but that should be acceptable to the caller
+>  		 */
+>  		if (nr_freed < nr_taken && !current_is_kswapd() &&
+> -					sc->order > PAGE_ALLOC_COSTLY_ORDER) {
+> +		    lumpy_reclaim) {
+>  			congestion_wait(WRITE, HZ/10);
+>  
+>  			/*
+> 
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
