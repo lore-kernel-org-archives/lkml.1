@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZDVQam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZDVQcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZDVQam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 12:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZDVQad
+	id S1755764AbZDVQcA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 12:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZDVQbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 12:30:33 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36423 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbZDVQad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 12:30:33 -0400
-Date: Wed, 22 Apr 2009 18:30:32 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-Message-ID: <20090422163032.GV4593@kernel.dk>
-References: <20090421184223.GP19637@balbir.in.ibm.com> <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com>
+	Wed, 22 Apr 2009 12:31:51 -0400
+Received: from static-88-194-224-77.ipcom.comunitel.net ([77.224.194.88]:39794
+	"EHLO panicking.kicks-ass.org" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752930AbZDVQbu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 12:31:50 -0400
+Message-ID: <49EF254A.6020106@evidence.eu.com>
+Date: Wed, 22 Apr 2009 16:10:18 +0200
+From: michael <michael@evidence.eu.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EF2C32.4030409@opengridcomputing.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+CC: Roland Dreier <rdreier@cisco.com>, fenkes@de.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+       alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>	<adaws9dvrkp.fsf@cisco.com> <200904221602.29028.ossrosch@linux.vnet.ibm.com>
+In-Reply-To: <200904221602.29028.ossrosch@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22 2009, Steve Wise wrote:
+Hi,
+
+Stefan Roscher wrote:
+> In case of large queue pairs there is the possibillity of allocation failures 
+> due to memory fragmentationo with kmalloc().To ensure the memory is allocated even
+> if kmalloc() can not find chunks which are big enough, we try to allocate the memory
+> with vmalloc().
 >
->>>
->>> No there are a few patches applied that are heading upstream, but one 
->>> is in the NFS RDMA server which isn't loaded yet and the rest are in  
->>> iw_cxgb3 (iwarp driver) which also hasn't loaded at the time we  
->>> crash. NOTE:  Out of 4 power cycles, one booted up ok, 3 hit the 
->>> crash.
->>>
->>>
->>>
->>
->> By the way, this one looks different from the last one I saw.  So its  
->> not consistently crashing in the same spot.  The one I hit yesterday  
->> (which I don't have the OOPs dump for was in rb_erase().
->>
->> Steve.
+> Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+> ---
 >
-> I'll start bisecting to isolate this.
+> On Tuesday 21 April 2009 07:34:30 pm Roland Dreier wrote:
+>   
+>>  > +	queue->queue_pages = kmalloc(nr_of_pages * sizeof(void *), GFP_KERNEL);
+>>
+>> How big might this buffer be?  Any chance of allocation failure due to
+>> memory fragmentation?
+>>
+>>  - R.
+>>     
+> Hey Roland, 
+> yes you are right and here is the patch to circumvent the described problem.
+> It will apply on top of the patchset.
+> regards Stefan
+>
+>   
+I don't take the point, if it is not import use the vmalloc. Why you try 
+with a kmalloc
+alloc first? and why do not use kzalloc?
+>  
+>  drivers/infiniband/hw/ehca/ipz_pt_fn.c |   17 +++++++++++++----
+>  1 files changed, 13 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+> index a260559..1227c59 100644
+> --- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+> +++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+> @@ -222,8 +222,11 @@ int ipz_queue_ctor(struct ehca_pd *pd, struct ipz_queue *queue,
+>  	/* allocate queue page pointers */
+>  	queue->queue_pages = kmalloc(nr_of_pages * sizeof(void *), GFP_KERNEL);
+>  	if (!queue->queue_pages) {
+> -		ehca_gen_err("Couldn't allocate queue page list");
+> -		return 0;
+> +		queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
+> +		if (!queue->queue_pages) {
+> +			ehca_gen_err("Couldn't allocate queue page list");
+> +			return 0;
+> +		}
+>  	}
+>  	memset(queue->queue_pages, 0, nr_of_pages * sizeof(void *));
+>  
+> @@ -240,7 +243,10 @@ int ipz_queue_ctor(struct ehca_pd *pd, struct ipz_queue *queue,
+>  ipz_queue_ctor_exit0:
+>  	ehca_gen_err("Couldn't alloc pages queue=%p "
+>  		 "nr_of_pages=%x",  queue, nr_of_pages);
+> -	kfree(queue->queue_pages);
+> +	if (is_vmalloc_addr(queue->queue_pages))
+> +		vfree(queue->queue_pages);
+> +	else
+> +		kfree(queue->queue_pages);
+>  
+>  	return 0;
+>  }
+> @@ -262,7 +268,10 @@ int ipz_queue_dtor(struct ehca_pd *pd, struct ipz_queue *queue)
+>  			free_page((unsigned long)queue->queue_pages[i]);
+>  	}
+>  
+> -	kfree(queue->queue_pages);
+> +	if (is_vmalloc_addr(queue->queue_pages))
+> +		vfree(queue->queue_pages);
+> +	else
+> +		kfree(queue->queue_pages);
+>  
+>  	return 1;
+>  }
+>   
 
-Don't bother, I see what the bug is now. It's caused by commit
-a36e71f996e25d6213f57951f7ae1874086ec57e and it's due to ->ioprio being
-changed without the prio rb root being adjusted.
-
-I'll provide a fix shortly.
-
--- 
-Jens Axboe
-
+Regards Michael
