@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZDVOhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZDVOiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbZDVOhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZDVOhk
+	id S1753980AbZDVOiy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZDVOiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:37:40 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:55764 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZDVOhj (ORCPT
+	Wed, 22 Apr 2009 10:38:46 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:60567 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751264AbZDVOip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:37:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZpElngXPH3NWXqJnZ0kUzmNvn5QPzUEj+TZstnofhqdNy13EjfWhuYnLKVRA7Ymd3s
-         BdmvL0zyX4GGKBdZ+XiJJL54z0zEFk9oNHk8MrHf94szJ2kx8MMvBBtU4xqdbXB3pMfU
-         Mmaeom1Swjcdb5KgYyc9POjtk1gbty8+28wN0=
+	Wed, 22 Apr 2009 10:38:45 -0400
+Message-ID: <49EF2C32.4030409@opengridcomputing.com>
+Date: Wed, 22 Apr 2009 09:39:46 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-In-Reply-To: <1240408407-21848-23-git-send-email-mel@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
-	 <1240408407-21848-23-git-send-email-mel@csn.ul.ie>
-Date: Wed, 22 Apr 2009 17:37:38 +0300
-X-Google-Sender-Auth: 615cf53c0e95c90a
-Message-ID: <84144f020904220737t3657ac01j4edf86cf61ef15e0@mail.gmail.com>
-Subject: Re: [PATCH 22/22] slab: Use nr_online_nodes to check for a NUMA 
-	platform
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Wolfram Strepp <wstrepp@gmx.de>
+Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
+References: <20090421184223.GP19637@balbir.in.ibm.com> <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com>
+In-Reply-To: <49EF293F.4030504@opengridcomputing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 4:53 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> SLAB currently avoids checking a bitmap repeatedly by checking once and
-> storing a flag. When the addition of nr_online_nodes as a cheaper version
-> of num_online_nodes(), this check can be replaced by nr_online_nodes.
->
-> (Christoph did a patch that this is lifted almost verbatim from, hence the
-> first Signed-off-by. Christoph, can you confirm you're ok with that?)
->
-> Signed-off-by: Christoph Lameter <cl@linux.com>
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>>
+>> No there are a few patches applied that are heading upstream, but one 
+>> is in the NFS RDMA server which isn't loaded yet and the rest are in 
+>> iw_cxgb3 (iwarp driver) which also hasn't loaded at the time we 
+>> crash. NOTE:  Out of 4 power cycles, one booted up ok, 3 hit the crash.
+>>
+>>
+>>
+>
+> By the way, this one looks different from the last one I saw.  So its 
+> not consistently crashing in the same spot.  The one I hit yesterday 
+> (which I don't have the OOPs dump for was in rb_erase().
+>
+> Steve.
+
+I'll start bisecting to isolate this.
+
+Steve.
