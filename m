@@ -1,135 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZDVDUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZDVDZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZDVDUm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 23:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDVDUd
+	id S1753602AbZDVDZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 23:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDVDZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 23:20:33 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:51969 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbZDVDUc (ORCPT
+	Tue, 21 Apr 2009 23:25:34 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40054 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbZDVDZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 23:20:32 -0400
-Date: Wed, 22 Apr 2009 08:49:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add file based RSS accounting for memory resource
-	controller (v3)
-Message-ID: <20090422031939.GQ19637@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com> <20090417034539.GD18558@balbir.in.ibm.com> <20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com> <20090417045623.GA3896@balbir.in.ibm.com> <20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com> <20090417064726.GB3896@balbir.in.ibm.com> <20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com> <20090417141837.GD3896@balbir.in.ibm.com> <20090421132551.38e9960a.akpm@linux-foundation.org> <20090422090218.6d451a08.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 21 Apr 2009 23:25:33 -0400
+Message-ID: <49EE8E10.9060400@jp.fujitsu.com>
+Date: Wed, 22 Apr 2009 12:25:04 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090422090218.6d451a08.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] x86, mce: Add options for corrected errors (no_cmci/dont_log_ce/ignore_ce)
+References: <49EBCDB0.7000505@jp.fujitsu.com>	<49EBCF87.4090608@jp.fujitsu.com> <87myabpyrn.fsf@basil.nowhere.org> <49EC3AC0.8070109@jp.fujitsu.com>
+In-Reply-To: <49EC3AC0.8070109@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-22 09:02:18]:
+Here is the updated one.
+Thanks in advance!
 
-> On Tue, 21 Apr 2009 13:25:51 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Fri, 17 Apr 2009 19:48:38 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > >
-> > > ...
-> > >
-> > > We currently don't track file RSS, the RSS we report is actually anon RSS.
-> > > All the file mapped pages, come in through the page cache and get accounted
-> > > there. This patch adds support for accounting file RSS pages. It should
-> > > 
-> > > 1. Help improve the metrics reported by the memory resource controller
-> > > 2. Will form the basis for a future shared memory accounting heuristic
-> > >    that has been proposed by Kamezawa.
-> > > 
-> > > Unfortunately, we cannot rename the existing "rss" keyword used in memory.stat
-> > > to "anon_rss". We however, add "mapped_file" data and hope to educate the end
-> > > user through documentation.
-> > > 
-> > > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > >
-> > > ...
-> > >
-> > > @@ -1096,6 +1135,10 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
-> > >  	struct mem_cgroup_per_zone *from_mz, *to_mz;
-> > >  	int nid, zid;
-> > >  	int ret = -EBUSY;
-> > > +	struct page *page;
-> > > +	int cpu;
-> > > +	struct mem_cgroup_stat *stat;
-> > > +	struct mem_cgroup_stat_cpu *cpustat;
-> > >  
-> > >  	VM_BUG_ON(from == to);
-> > >  	VM_BUG_ON(PageLRU(pc->page));
-> > > @@ -1116,6 +1159,23 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
-> > >  
-> > >  	res_counter_uncharge(&from->res, PAGE_SIZE);
-> > >  	mem_cgroup_charge_statistics(from, pc, false);
-> > > +
-> > > +	page = pc->page;
-> > > +	if (page_is_file_cache(page) && page_mapped(page)) {
-> > > +		cpu = smp_processor_id();
-> > > +		/* Update mapped_file data for mem_cgroup "from" */
-> > > +		stat = &from->stat;
-> > > +		cpustat = &stat->cpustat[cpu];
-> > > +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
-> > > +						-1);
-> > > +
-> > > +		/* Update mapped_file data for mem_cgroup "to" */
-> > > +		stat = &to->stat;
-> > > +		cpustat = &stat->cpustat[cpu];
-> > > +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_MAPPED_FILE,
-> > > +						1);
-> > > +	}
-> > 
-> > This function (mem_cgroup_move_account()) does a trylock_page_cgroup()
-> > and if that fails it will bale out, and the newly-added code will not
-> > be executed.
-> yes. and returns -EBUSY.
-> 
-> > 
-> > What are the implications of this?  Does the missed accounting later get
-> > performed somewhere, or does the error remain in place?
-> > 
-> no error just -BUSY. the caller (now, only force_empty is the caller) will do retry.
-> 
-> > That trylock_page_cgroup() really sucks - trylocks usually do.  Could
-> > someone please raise a patch which completely documents the reasons for
-> > its presence, and for any other uncommented/unobvious trylocks?
-> > 
-> > Where appropriate, the comment should explain why the trylock isn't
-> > simply a bug - why it is safe and correct to omit the operations which
-> > we wished to perform.
-> > 
-> > Thanks.
-> > 
-> Hmm...maybe we can replace trylock with lock, here.
-> 
-> IIRC, this has been trylock because the old routine uses other locks
-> (mem_cgroup' zone mz->lru_lock) before calling this.
->    mz->lru_lock
->      lock_page_cgroup()
-> And there was other routine which calls lock_page_cgroup()->mz->lru_lock.
->    lock_page_cgroup()
->         -> mz->lru_lock.
-> 
-> So, I used trylock here. But now, the lock(mz->lru_lock) is removed.
-> I should check this.
-> 
-> Thank you for pointing out.
->
+H.Seto
 
-This is definitely worth looking into. Since we run force_empty() in a
-while loop with some margin, we've probably avoided the problem. I
-think this code needs a second look and refactoring.
 
+This patch introduces three boot options to control handling
+for corrected errors.
+
+The "mce=no_cmci" boot option disables cmci feature.
+Since cmci is a new feature so having boot controls to disable
+it will be a help if the hardware is misbehaving.
+
+The "mce=dont_log_ce" boot option disables logging for corrected
+errors.  All reported corrected errors will be cleared silently.
+This option will be useful if you never care corrected errors.
+
+The "mce=ignore_ce" boot option disables features for corrected
+errors, i.e. polling timer and cmci.  All corrected events are
+not cleared and kept in bank MSRs.  Usually this disablement
+is not recommended, however it will be a help if there are some
+conflict with the BIOS or hardware monitoring applications etc.,
+that clears corrected events in banks instead of OS.
+
+And trivial cleanup (space -> tab) for doc is included.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ Documentation/x86/x86_64/boot-options.txt |   36 ++++++++++++++++++++++++-----
+ arch/x86/include/asm/mce.h                |    2 +
+ arch/x86/kernel/cpu/mcheck/mce_64.c       |   20 ++++++++++++++-
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    3 ++
+ 4 files changed, 53 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
+index 34c1304..04834ad 100644
+--- a/Documentation/x86/x86_64/boot-options.txt
++++ b/Documentation/x86/x86_64/boot-options.txt
+@@ -5,12 +5,36 @@ only the AMD64 specific ones are listed here.
  
-
+ Machine check
+ 
+-   mce=off disable machine check
+-   mce=bootlog Enable logging of machine checks left over from booting.
+-               Disabled by default on AMD because some BIOS leave bogus ones.
+-               If your BIOS doesn't do that it's a good idea to enable though
+-               to make sure you log even machine check events that result
+-               in a reboot. On Intel systems it is enabled by default.
++   mce=off
++		Disable machine check
++   mce=no_cmci
++		Disable CMCI(Corrected Machine Check Interrupt) that
++		Intel processor supports.  Usually this disablement is
++		not recommended, but it might be handy if your hardware
++		is misbehaving.
++		Note that you'll get more problems without CMCI than with
++		due to the shared banks, i.e. you might get duplicated
++		error logs.
++   mce=dont_log_ce
++		Don't make logs for corrected errors.  All events reported
++		as corrected are silently cleared by OS.
++		This option will be useful if you have no interest in any
++		of corrected errors.
++   mce=ignore_ce
++		Disable features for corrected errors, e.g. polling timer
++		and CMCI.  All events reported as corrected are not cleared
++		by OS and remained in its error banks.
++		Usually this disablement is not recommended, however if
++		there is an agent checking/clearing corrected errors
++		(e.g. BIOS or hardware monitoring applications), conflicting
++		with OS's error handling, and you cannot deactivate the agent,
++		then this option will be a help.
++   mce=bootlog
++		Enable logging of machine checks left over from booting.
++		Disabled by default on AMD because some BIOS leave bogus ones.
++		If your BIOS doesn't do that it's a good idea to enable though
++		to make sure you log even machine check events that result
++		in a reboot. On Intel systems it is enabled by default.
+    mce=nobootlog
+ 		Disable boot machine check logging.
+    mce=tolerancelevel (number)
+diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
+index 563933e..a8a6cd5 100644
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -104,6 +104,8 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
+ #define MAX_NR_BANKS (MCE_EXTENDED_BANK - 1)
+ 
+ #ifdef CONFIG_X86_MCE_INTEL
++extern int mce_cmci_disabled;
++extern int mce_ignore_ce;
+ void mce_intel_feature_init(struct cpuinfo_x86 *c);
+ void cmci_clear(void);
+ void cmci_reenable(void);
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index 33d612e..6abefe3 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -41,6 +41,9 @@
+ atomic_t mce_entry;
+ 
+ static int mce_dont_init;
++static int mce_dont_log_ce;
++int mce_cmci_disabled;
++int mce_ignore_ce;
+ 
+ /*
+  * Tolerant levels:
+@@ -240,7 +243,8 @@ void machine_check_poll(enum mcp_flags flags, mce_banks_t *b)
+ 		 * have anything to do with the actual error location.
+ 		 */
+ 
+-		mce_log(&m);
++		if (!mce_dont_log_ce)
++			mce_log(&m);
+ 		add_taint(TAINT_MACHINE_CHECK);
+ 
+ 		/*
+@@ -633,6 +637,9 @@ static void mce_init_timer(void)
+ {
+ 	struct timer_list *t = &__get_cpu_var(mce_timer);
+ 
++	if (mce_ignore_ce)
++		return;
++
+ 	/* data race harmless because everyone sets to the same value */
+ 	if (!next_interval)
+ 		next_interval = check_interval * HZ;
+@@ -841,7 +848,10 @@ static int __init mcheck_disable(char *str)
+ __setup("nomce", mcheck_disable);
+ 
+ /*
+- * mce=off disables machine check
++ * mce=off Disables machine check
++ * mce=no_cmci Disables CMCI
++ * mce=dont_log_ce Clears corrected events silently, no log created for CEs.
++ * mce=ignore_ce Disables polling and CMCI, corrected events are not cleared.
+  * mce=TOLERANCELEVEL (number, see above)
+  * mce=bootlog Log MCEs from before booting. Disabled by default on AMD.
+  * mce=nobootlog Don't log MCEs from before booting.
+@@ -850,6 +860,12 @@ static int __init mcheck_enable(char *str)
+ {
+ 	if (!strcmp(str, "off"))
+ 		mce_dont_init = 1;
++	else if (!strcmp(str, "no_cmci"))
++		mce_cmci_disabled = 1;
++	else if (!strcmp(str, "dont_log_ce"))
++		mce_dont_log_ce = 1;
++	else if (!strcmp(str, "ignore_ce"))
++		mce_ignore_ce = 1;
+ 	else if (!strcmp(str, "bootlog") || !strcmp(str, "nobootlog"))
+ 		mce_bootlog = (str[0] == 'b');
+ 	else if (isdigit(str[0]))
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+index d6b72df..a88bad9 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+@@ -109,6 +109,9 @@ static int cmci_supported(int *banks)
+ {
+ 	u64 cap;
+ 
++	if (mce_cmci_disabled || mce_ignore_ce)
++		return 0;
++
+ 	/*
+ 	 * Vendor check is not strictly needed, but the initial
+ 	 * initialization is vendor keyed and this
 -- 
-	Balbir
+1.6.2.2
+
+
