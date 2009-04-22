@@ -1,51 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZDVUQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZDVURS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZDVUQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZDVUQF
+	id S1755054AbZDVURS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZDVURE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:16:05 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:49577 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751790AbZDVUQE (ORCPT
+	Wed, 22 Apr 2009 16:17:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55089 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751524AbZDVURC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:16:04 -0400
-Message-ID: <49EF7B40.9050505@opengridcomputing.com>
-Date: Wed, 22 Apr 2009 15:17:04 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-References: <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com> <20090422192216.GE4593@kernel.dk>
-In-Reply-To: <20090422192216.GE4593@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 22 Apr 2009 16:17:02 -0400
+Date: Wed, 22 Apr 2009 13:14:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, achiang@hp.com, gregkh@suse.de,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH 01/10] sysfs: don't use global workqueue in
+ sysfs_schedule_callback()
+Message-Id: <20090422131402.b35a76bc.akpm@linux-foundation.org>
+In-Reply-To: <1239995074-4065-1-git-send-email-gregkh@suse.de>
+References: <20090417190144.GB3548@kroah.com>
+	<1239995074-4065-1-git-send-email-gregkh@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
+On Fri, 17 Apr 2009 12:04:25 -0700
+Greg Kroah-Hartman <gregkh@suse.de> wrote:
 
-  
+> From: Alex Chiang <achiang@hp.com>
+> 
+> A sysfs attribute using sysfs_schedule_callback() to commit suicide
+> may end up calling device_unregister(), which will eventually call
+> a driver's ->remove function.
+> 
+> Drivers may call flush_scheduled_work() in their shutdown routines,
+> in which case lockdep will complain with something like the following:
+> 
+>   =============================================
+>   [ INFO: possible recursive locking detected ]
+>   2.6.29-rc8-kk #1
+>   ---------------------------------------------
+>   events/4/56 is trying to acquire lock:
+>   (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
+> 
+>   but task is already holding lock:
+>   (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+> 
+>   other info that might help us debug this:
+>   3 locks held by events/4/56:
+>   #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+>   #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+>   #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c10d1>] remove_callback+0x21/0x40
+> 
+>   stack backtrace:
+>   Pid: 56, comm: events/4 Not tainted 2.6.29-rc8-kk #1
+>   Call Trace:
+>   [<ffffffff8026dfcd>] validate_chain+0xb7d/0x1260
+>   [<ffffffff8026eade>] __lock_acquire+0x42e/0xa40
+>   [<ffffffff8026f148>] lock_acquire+0x58/0x80
+>   [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+>   [<ffffffff8025800d>] flush_workqueue+0x4d/0xa0
+>   [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+>   [<ffffffff80258070>] flush_scheduled_work+0x10/0x20
+>   [<ffffffffa0144065>] e1000_remove+0x55/0xfe [e1000e]
+>   [<ffffffff8033ee30>] ? sysfs_schedule_callback_work+0x0/0x50
+>   [<ffffffff803bfeb2>] pci_device_remove+0x32/0x70
+>   [<ffffffff80441da9>] __device_release_driver+0x59/0x90
+>   [<ffffffff80441edb>] device_release_driver+0x2b/0x40
+>   [<ffffffff804419d6>] bus_remove_device+0xa6/0x120
+>   [<ffffffff8043e46b>] device_del+0x12b/0x190
+>   [<ffffffff8043e4f6>] device_unregister+0x26/0x70
+>   [<ffffffff803ba969>] pci_stop_dev+0x49/0x60
+>   [<ffffffff803baab0>] pci_remove_bus_device+0x40/0xc0
+>   [<ffffffff803c10d9>] remove_callback+0x29/0x40
+>   [<ffffffff8033ee4f>] sysfs_schedule_callback_work+0x1f/0x50
+>   [<ffffffff8025769a>] run_workqueue+0x15a/0x230
+>   [<ffffffff80257648>] ? run_workqueue+0x108/0x230
+>   [<ffffffff8025846f>] worker_thread+0x9f/0x100
+>   [<ffffffff8025bce0>] ? autoremove_wake_function+0x0/0x40
+>   [<ffffffff802583d0>] ? worker_thread+0x0/0x100
+>   [<ffffffff8025b89d>] kthread+0x4d/0x80
+>   [<ffffffff8020d4ba>] child_rip+0xa/0x20
+>   [<ffffffff8020cebc>] ? restore_args+0x0/0x30
+>   [<ffffffff8025b850>] ? kthread+0x0/0x80
+>   [<ffffffff8020d4b0>] ? child_rip+0x0/0x20
+> 
+> Although we know that the device_unregister path will never acquire
+> a lock that a driver might try to acquire in its ->remove, in general
+> we should never attempt to flush a workqueue from within the same
+> workqueue, and lockdep rightly complains.
+> 
+> So as long as sysfs attributes cannot commit suicide directly and we
+> are stuck with this callback mechanism, put the sysfs callbacks on
+> their own workqueue instead of the global one.
+> 
+> This has the side benefit that if a suicidal sysfs attribute kicks
+> off a long chain of ->remove callbacks, we no longer induce a long
+> delay on the global queue.
 
->> Still crashes with this variant:
->>     
->
-> OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
-> and see if that works?
->
-> Or, better yet, please try and revert
-> 55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
-> try the above revert.
->
->   
+I still don't know why I merged 
 
-Reverting 55a63998b8967615a15e2211ba0ff3a84a565824 did the trick.
+: commit 2355b70fd59cb5be7de2052a9edeee7afb7ff099
+: Author: Lai Jiangshan <laijs@cn.fujitsu.com>
+: Date:   Thu Apr 2 16:58:24 2009 -0700
+:
+:    workqueue: avoid recursion in run_workqueue()
 
+there was nothing wrong with permitting limited recursion into
+run_workqueue().  It never deadlocked and the three-deep-recursion
+warning never triggered.
 
-Steve.
+> +	if (sysfs_workqueue == NULL) {
+> +		sysfs_workqueue = create_workqueue("sysfsd");
+> +		if (sysfs_workqueue == NULL) {
+> +			module_put(owner);
+> +			return -ENOMEM;
+> +		}
+> +	}
+
+This will create a kernel thread per CPU.  Surely
+create_singlethread_workqueue() will suffice?
 
