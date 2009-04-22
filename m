@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZDVXNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZDVXTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbZDVXNK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 19:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZDVXMy
+	id S1753388AbZDVXTc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 19:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZDVXTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 19:12:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57357 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbZDVXMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 19:12:53 -0400
-Message-ID: <49EFA4DA.9020402@redhat.com>
-Date: Wed, 22 Apr 2009 19:14:34 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 22 Apr 2009 19:19:23 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:41855 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZDVXTW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 19:19:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=DGSrXCatyUr1A/6+Fb0SwyaFGsBdkkJwbkPsAayxmv6gUUpE8m5XScHy6hebvfr+ej
+         EWqwpyh2nMC/QGEP1kWIS87BAVV2hxH5PnRpMQ/mSrj+RDCFlXF8RXI13gjtoYjXPDRD
+         8rWALt60c8VDGWZIoFwv3FfcBIQxtUDi+t6JE=
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-CC: LKML <linux-kernel@vger.kernel.org>, ia64 <linux-ia64@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>, David Smith <dsmith@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: [PATCH][BUGFIX] utrace/ia64: Fix syscall_get_set_args_cb() to handle
- syscalls via syscall()
-X-Enigmail-Version: 0.95.7
+Date: Thu, 23 Apr 2009 09:19:21 +1000
+Message-ID: <21d7e9970904221619v7d7990bfq697cfca64a7ed6d2@mail.gmail.com>
+Subject: i2c algo bit timeout question
+From: Dave Airlie <airlied@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Jean Delvare <khali@linux-fr.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix syscall_get_set_args_cb() to decode user-stack correctly in case of
-syscall() which allocates locals in user-stack. If locals (cfm.sol) exist
-on the stack, we have to skip it for getting real systemcall arguments.
+Hi to any i2c people,
 
-And also, fix the number of getting arguments which must be less than
-(nr outputs - args->i) instead of nr outputs, because args->i is the
-indent number (this means, syscall_get_set_args_cb() get/set arguments
-from (i)th to (i+n)th.)
+So I've been debugging some EDID fetching failures and wanted to ask
+about the use of time_after_eq in the i2c bit banging code.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: David Smith <dsmith@redhat.com>
----
- arch/ia64/kernel/ptrace.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+EDID specification recommends 2ms timeout for the ack on the initial
+read, so we set the timeout in our code to usecs_to_jiffies(2200) (10%
+margin of error). On my systems this ends up as 1, and we seem to fail
+to retrieve EDID one in 10-20 times. Changing the value to 2, always
+gets me the EDID I want.
 
-Index: 2.6-rc/arch/ia64/kernel/ptrace.c
-===================================================================
---- 2.6-rc.orig/arch/ia64/kernel/ptrace.c
-+++ 2.6-rc/arch/ia64/kernel/ptrace.c
-@@ -2189,6 +2189,10 @@ struct syscall_get_set_args {
- 	int rw;
- };
+So looking at drivers/i2c/algos/i2c-algo-bit.c it appears it uses
+time_after_eq on jiffies, start + timeout value. So if we have a 10ms
+jiffie resolution and enter this at the 9ms point in the 10ms window,
+we will seem to exit the loop after 1ms instead of the minimum which I
+asked for which is 2.2ms. Should this code use time_after instead of
+time_after_eq?
 
-+#define CFM_SOF(cfm) ((cfm) & 0x7f)			/* Size of frame */
-+#define CFM_SOL(cfm) (((cfm) >> 7) & 0x7f)		/* Size of locals */
-+#define CFM_OUT(cfm) (CFM_SOF(cfm) - CFM_SOL(cfm))	/* Size of outputs */
-+
- static void syscall_get_set_args_cb(struct unw_frame_info *info, void *data)
- {
- 	struct syscall_get_set_args *args = data;
-@@ -2205,15 +2209,18 @@ static void syscall_get_set_args_cb(stru
-
- 	count = 0;
- 	if (in_syscall(pt))
--		count = min_t(int, args->n, cfm & 0x7f);
-+		/* args->i + args->n must be less equal than nr outputs */
-+		count = min_t(int, args->n, CFM_OUT(cfm) - args->i);
-
- 	for (i = 0; i < count; i++) {
-+		/* Skips dirties and locals */
- 		if (args->rw)
--			*ia64_rse_skip_regs(krbs, ndirty + i + args->i) =
-+			*ia64_rse_skip_regs(krbs,
-+				ndirty + CFM_SOL(cfm) + args->i + i) =
- 				args->args[i];
- 		else
- 			args->args[i] = *ia64_rse_skip_regs(krbs,
--				ndirty + i + args->i);
-+				ndirty + CFM_SOL(cfm) + args->i + i);
- 	}
-
- 	if (!args->rw) {
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+or am I missing something else.
+Dave.
