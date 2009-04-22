@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZDVOoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZDVOrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZDVOoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZDVOoJ
+	id S1754401AbZDVOrP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZDVOq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:44:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44798 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbZDVOoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:44:08 -0400
-Date: Wed, 22 Apr 2009 16:39:30 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Trond.Myklebust@netapp.com,
-       serue@us.ibm.com, steved@redhat.com, viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document that wake_up(), complete() and co. imply a
-	full memory barrier
-Message-ID: <20090422143930.GA1212@redhat.com>
-References: <20090415162712.342d4c07.akpm@linux-foundation.org> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <20090422135134.GA5249@elte.hu>
+	Wed, 22 Apr 2009 10:46:59 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:54771 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZDVOq6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 10:46:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=i3SSKghZEVw+QL+45s9BBOR7kW+lO5W4j4haO3zP2Vg672ORwon72zh/zHUQOIOXSy
+         BCmndnApHSmryng1m3lCe8kGcONQdU78mnRadhnq/l0pZDhvOc/NNOTCwJ8/b/SDHM6E
+         IWYEqsc/e8ad1Jfn7zG6caXRzKvw+2TLv7j6o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090422135134.GA5249@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <f44001920904220732h2d6d18cfwef53af31bb218b87@mail.gmail.com>
+References: <f44001920904220712ye1644c9y90d637bf4ac3bbe@mail.gmail.com>
+	 <871vrkpyae.fsf@basil.nowhere.org>
+	 <f44001920904220732h2d6d18cfwef53af31bb218b87@mail.gmail.com>
+Date: Wed, 22 Apr 2009 18:46:56 +0400
+Message-ID: <f44001920904220746k356550abk6783b8cae003685d@mail.gmail.com>
+Subject: Re: Re: Idea: Feature information / extensions dispatcher syscall.
+From: Igor Zhbanov <izh1979@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22, Ingo Molnar wrote:
+2009/4/22 Andi Kleen <andi@firstfloor.org>:
+> Igor Zhbanov <izh1979@gmail.com> writes:
+>>
+>> This allow to use system calls in any extension modules without need to reserve
+>> syscall number in kernel source and allow binaries to run correctly on
+>> any kernel
+>> (where that extension feature can have another syscall number).
+>>
+>> What do you think?
 >
-> * David Howells <dhowells@redhat.com> wrote:
->
-> > Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > > That's an interesting question.  Should wake_up() imply a barrier of any
-> > > > sort, I wonder.  Well, __wake_up() does impose a barrier as it uses a
-> > > > spinlock, but I wonder if that's sufficient.
-> > >
-> > > wake_up() does imply the barrier. Note the smp_wmb() in try_to_wake_up().
-> > > And in fact this wmb() implies mb(), because spin_lock() itself is STORE,
-> > > and the futher LOADs can't leak up before spin_lock().
-> > >
-> > > But afaics, this doesn't matter? prepare_to_wait() sets
-> > > task->state under wait_queue_head_t->lock and wake_up() takes
-> > > this look too, so we can't miss the event.
-> > >
-> > > Or I completely misunderstood the issue...
-> >
-> > The problem is not what wake_up() and co. do, it's what you are
-> > allowed to assume that they do.
-> >
-> > However, I think you're right, and that we can assume they imply a
-> > full memory barrier.  To this end, I've attached a patch to
-> > document this.
-> >
-> > David
-> > ---
-> > From: David Howells <dhowells@redhat.com>
-> > Subject: [PATCH] Document that wake_up(), complete() and co. imply a full memory barrier
-> >
-> > Add to the memory barriers document to note that wake_up(), complete() and
-> > co. all imply a full memory barrier.
->
-> No. They dont generally imply a full memory barrier versus any
-> arbitrary prior (or following) memory access.
->
-> try_to_wake_up() has an smp_wmb() so it is a write memory barrier
-> (but not necessarily a read memory barrier). Otherwise there are
-> spinlocks there but spinlocks are not explicit 'full memory
-> barriers'.
+> You're trying to reinvent the vfs / device nodes / ioctls
 
-Yes. But please look at the changelog in
+Perhaps.
+But in some cases syscalls are more convenient than reading/writing/ioctling
+in /proc, /sys or /dev.
 
-	 "Add memory barrier semantics to wake_up() & co"
-	 04e2f1741d235ba599037734878d72e57cb302b5
+Now as I understand creating new syscalls for "home" use is not encourahed.
+It is not guaranteed that tomorrow new syscall will not be introduced
+in mainstream kernel. So portability issues is not considered for
+"home" modules.
 
-However, I must admit, I don't understand how to document the semantics
-correctly. This wmb() before spin_lock() ensures we don't read task->state
-before previous STOREs. This is what we care about, and this is what
-I meant when I said "this wmb() implies mb()".
+And I suggest to regulate syscalls usage and reserve a set of numbers
+"home" modules used in some organizations only.
 
-So, I think that try_to_wake_up() implies that the LOADS after it can't be
-reordered with STOREs before it (and wmb() of course).
-
-Oleg.
-
+I don't think that they all will use only devices and /proc and /sys
+to communicate
+with their modules.
