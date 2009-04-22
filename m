@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZDVMfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZDVMkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbZDVMfi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 08:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZDVMf0
+	id S1753505AbZDVMkZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 08:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZDVMkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 08:35:26 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41216 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752707AbZDVMfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 08:35:25 -0400
-Message-ID: <49EF0EE7.2090208@tmr.com>
-Date: Wed, 22 Apr 2009 08:34:47 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090328 Fedora/1.1.15-3.fc9 SeaMonkey/1.1.15
+	Wed, 22 Apr 2009 08:40:11 -0400
+Received: from mailhost-q1-m2.internext.fr ([78.40.49.193]:59898 "EHLO
+	smtp-delay2.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752327AbZDVMkK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 08:40:10 -0400
+X-Greylist: delayed 457 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Apr 2009 08:40:10 EDT
+Date: Wed, 22 Apr 2009 14:31:09 +0200
+From: Damien Wyart <damien.wyart@free.fr>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] block bits for 2.6.30-rc3
+Message-ID: <20090422123109.GA22631@localhost.localdomain>
+References: <20090422120355.GD4593@kernel.dk>
 MIME-Version: 1.0
-To: Goswin von Brederlow <goswin-v-b@web.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Matti Aarnio <matti.aarnio@zmailer.org>,
-       Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
-       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, neilb@suse.de
-Subject: Re: Proposal: make RAID6 code optional
-References: <200904180946.27722.prakash@punnoor.de>	<49E98AD2.8060601@msgid.tls.msk.ru>	<200904181117.03418.prakash@punnoor.de>	<alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>	<20090418145850.GD28512@mea-ext.zmailer.org>	<49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <87ljptm59f.fsf@frosties.localdomain>
-In-Reply-To: <87ljptm59f.fsf@frosties.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422120355.GD4593@kernel.dk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Goswin von Brederlow wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
->
->   
->> Bill Davidsen wrote:
->>     
->>> It would seem that that space could be allocated and populated when
->>> raid6 was first used, as part of the initialization. I haven't looked at
->>> that code since it was new, so I might be optimistic about doing it that
->>> way.
->>>       
->> We could use vmalloc() and generate the tables at initialization time.
->> However, having a separate module which exports the raid6 declaration
->> and uses the raid5 module as a subroutine library seems easier.
->>
->> 	-hpa
->>     
->
-> Combine the two.
->
-> The raid6 module initializes the tables for raid6 and uses the raid5
-> module as subroutine library.
->   
+Hello,
 
-My thought was that by saving almost all of the increased size of the 
-raid6 capability it greatly reduces the need to have yet another module. 
-It doesn't look as if the actual added code for raid6 is all that large.
+> A collection of fixes for 2.6.30-rc3. It includes fixes for
+> regressions and bug fixes in general, along with two buglets in CFQ.
+> Please pull.
+
+What about this bug in CFQ: http://lkml.org/lkml/2009/4/20/68 ?
+
+Do you plan to have it fixed for 2.6.30 or will it wait until 2.6.31?
+
+
+Thanks,
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-
-"You are disgraced professional losers. And by the way, give us our money back."
-    - Representative Earl Pomeroy,  Democrat of North Dakota
-on the A.I.G. executives who were paid bonuses  after a federal bailout.
-
-
+Damien
