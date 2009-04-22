@@ -1,103 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZDVHeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZDVHgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZDVHeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZDVHeX
+	id S1753388AbZDVHgY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZDVHgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:34:23 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:21404 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750870AbZDVHeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:34:22 -0400
-Message-ID: <49EEC82B.5040603@panasas.com>
-Date: Wed, 22 Apr 2009 10:32:59 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 22 Apr 2009 03:36:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51298 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751512AbZDVHgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 03:36:05 -0400
+Date: Wed, 22 Apr 2009 09:35:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
+Message-ID: <20090422073524.GA31835@elte.hu>
+References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <49EE2293.4090201@cosmosbay.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       mdharm-usb@one-eyed-alien.net, linux-usb <linux-usb@vger.kernel.org>,
-       usb-storage@lists.one-eyed-alien.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH v2] fix sign extension with 1.5TB usb-storage LBD=y
-References: <1240347174.10627.20.camel@nimitz>	 <20090421211858.GA1926@parisc-linux.org> <1240351210.10627.30.camel@nimitz>
-In-Reply-To: <1240351210.10627.30.camel@nimitz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Apr 2009 07:33:05.0693 (UTC) FILETIME=[93710CD0:01C9C31C]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49EE2293.4090201@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22/2009 01:00 AM, Dave Hansen wrote:
-> Here's a patch implementing Al's suggestion.  Not quite as trivial as
-> Matthew's, but even nicer aesthetically.  (Description stolen from
-> Matthew's patch).  I have verified that this fixes my issue.
-> 
-> --
-> 
-> Shifting an unsigned char implicitly casts it to a signed int.  This
-> caused 'lba' to sign-extend and Linux would then try READ CAPACITY 16
-> which was not supported by at least one drive.  Using the
-> get_unaligned_be*() helpers keeps us from having to worry about how the
-> extension might occur.
-> 
-> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> 
-> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-> index 3fcb64b..c50142b 100644
-> --- a/drivers/scsi/sd.c
-> +++ b/drivers/scsi/sd.c
-> @@ -50,6 +50,7 @@
->  #include <linux/string_helpers.h>
->  #include <linux/async.h>
->  #include <asm/uaccess.h>
-> +#include <asm/unaligned.h>
->  
->  #include <scsi/scsi.h>
->  #include <scsi/scsi_cmnd.h>
-> @@ -1344,12 +1345,8 @@ static int read_capacity_16(struct scsi_disk *sdkp, struct scsi_device *sdp,
->  		return -EINVAL;
->  	}
->  
-> -	sector_size =	(buffer[8] << 24) | (buffer[9] << 16) |
-> -			(buffer[10] << 8) | buffer[11];
-> -	lba =  (((u64)buffer[0] << 56) | ((u64)buffer[1] << 48) |
-> -		((u64)buffer[2] << 40) | ((u64)buffer[3] << 32) |
-> -		((u64)buffer[4] << 24) | ((u64)buffer[5] << 16) |
-> -		((u64)buffer[6] << 8) | (u64)buffer[7]);
-> +	sector_size = get_unaligned_be32(&buffer[8]);
-> +	lba =  get_unaligned_be64(&buffer[0]);
 
-These are actually aligned access it might be worth sacrificing a cast
-to be32/64 for sake of speed.
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
->  
->  	sd_read_protection_type(sdkp, buffer);
->  
-> @@ -1400,10 +1397,8 @@ static int read_capacity_10(struct scsi_disk *sdkp, struct scsi_device *sdp,
->  		return -EINVAL;
->  	}
->  
-> -	sector_size =	(buffer[4] << 24) | (buffer[5] << 16) |
-> -			(buffer[6] << 8) | buffer[7];
-> -	lba =	(buffer[0] << 24) | (buffer[1] << 16) |
-> -		(buffer[2] << 8) | buffer[3];
-> +	sector_size = get_unaligned_be32(&buffer[4]);
-> +	lba = get_unaligned_be32(&buffer[0]);
->  
+> Ingo Molnar a écrit :
+> > 
+> > Why not use the obvious solution: a _single_ wrlock for global 
+> > access and read_can_lock() plus per cpu locks in the fastpath?
+> 
+> Obvious is not the qualifier I would use :)
+> 
+> Brilliant yes :)
 
-Here too, both are actually aligned.
+thanks :)
 
->  	if ((sizeof(sdkp->capacity) == 4) && (lba == 0xffffffff)) {
->  		sd_printk(KERN_ERR, sdkp, "Too big for this kernel. Use a "
+> > That way there's no global cacheline bouncing (just the 
+> > _reading_ of a global cacheline - which will be nicely localized 
+> > - on NUMA too) - and we will hold at most 1-2 locks at once!
+> > 
+> > Something like:
+> > 
+> > 	__cacheline_aligned DEFINE_RWLOCK(global_wrlock);
+> > 
+> > 	DEFINE_PER_CPU(rwlock_t local_lock);
+> > 
+> > 
+> > 	void local_read_lock(void)
+> > 	{
+> > 	again:
+> > 		read_lock(&per_cpu(local_lock, this_cpu));
+> 
+> Hmm... here we can see global_wrlock locked by on writer, while 
+> this cpu already called local_read_lock(), and calls again this 
+> function -> Deadlock, because we hold our local_lock locked.
+
+Yeah, indeed.
+
+I wasnt really concentrating on the nested case, i was concentrating 
+on the scalability and lock nesting angle. I think the code 
+submitted here looks rather incestous in that regard.
+
+Allowing nested locking _on the same CPU_ is asking for trouble. Use 
+short critical sections and if there's any exclusion needed, use an 
+irq-safe lock or a softirq-safe lock. Problem solved.
+
+> Very interesting and could be changed to use spinlock + depth per 
+> cpu.
+> 
+> -> we can detect recursion and avoid the deadlock, and we only use 
+> one atomic operation per lock/unlock pair in fastpath (this was 
+> the reason we tried hard to use a percpu spinlock during this 
+> thread)
 > 
 > 
-> -- Dave
+> __cacheline_aligned DEFINE_RWLOCK(global_wrlock);
 > 
+> struct ingo_local_lock {
+> 	spinlock_t lock;
+> 	int depth;
+> };
+> DEFINE_PER_CPU(struct ingo_local_lock local_lock);
+> 
+> 
+> void local_read_lock(void)
+> {
+> 	struct ingo_local_lock *lck;
+> 
+> 	local_bh_and_preempt_disable();
+> 	lck = &get_cpu_var(local_lock);
+> 	if (++lck->depth > 0) /* already locked */
+> 		return;
+> again:
+> 	spin_lock(&lck->lock);
+> 
+> 	if (unlikely(!read_can_lock(&global_wrlock))) {
+> 		spin_unlock(&lck->lock);
+> 		/*
+> 		 * Just wait for any global write activity:
+> 		 */
+> 		read_unlock_wait(&global_wrlock);
+> 		goto again;
+> 	}
+> }
+> 
+> void global_write_lock(void)
+> {
+> 	write_lock(&global_wrlock);
+> 
+> 	for_each_possible_cpu(i)
+> 		spin_unlock_wait(&per_cpu(local_lock, i));
+> }
+> 
+> Hmm ?
 
-I'm not 100% convinced just a thought.
-Boaz
+Yeah, this looks IRQ-nesting safe. But i really have to ask: why 
+does this code try so hard to allow same-CPU nesting?
+
+Nesting on the same CPU is _bad_ for several reasons:
+
+1) Performance: it rips apart critical sections cache-wise. Instead 
+   of a nice:
+
+       C1 ... C2 ... C3 ... C4
+
+   serial sequence of critical sections, we get:
+ 
+       C1A ... ( C2 ) ... C1B ... C3 ... C4
+
+   Note that C1 got "ripped apart" into C1A and C1B with C2 injected 
+   - reducing cache locality between C1A and C1B. We have to execute
+   C1B no matter what, so we didnt actually win anything in terms of 
+   total work to do, by processing C2 out of order.
+
+   [ Preemption of work (which this kind of nesting is really about)
+     is _the anti-thesis of performance_, and we try to delay it as
+     much as possible and we try to batch up as much as possible. 
+     For example the CPU scheduler will try _real_ hard to not 
+     preempt a typical workload, as long as external latency 
+     boundaries allow that. ]
+
+2) Locking complexity and robustness. Nested locking is rank #1 in
+   terms of introducing regressions into the kernel.
+
+3) Instrumentation/checking complexity. Checking locking 
+   dependencies is good and catches a boatload of bugs before they 
+   hit upstream, and nested locks are supported but cause an 
+   exponential explosion in terms of dependencies to check.
+
+   Also, whenever instrumentation explodes is typically the sign of 
+   some true, physical complexity that has been introduced into the 
+   code. So it often is a canary for a misdesign at a fundamental 
+   level, not a failure in the instrumentation framework.
+
+In the past i saw lock nesting often used as a wrong solution when 
+the critical sections were too long (causing too long latencies for 
+critical work - e.g. delaying hardirq completion processing 
+unreasonably), or just plain out of confusion about the items above.
+
+I dont know whether that's the case here - it could be one of the 
+rare exceptions calling for a new locking primitive (which should 
+then be introduced at the core kernel level IMHO) - i dont know the 
+code that well.
+
+	Ingo
