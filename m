@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZDVP5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZDVP6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbZDVP5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbZDVP4m
+	id S1756774AbZDVP6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZDVP6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:56:42 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3250 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756047AbZDVP4l (ORCPT
+	Wed, 22 Apr 2009 11:58:32 -0400
+Received: from mga06.intel.com ([134.134.136.21]:58505 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753430AbZDVP6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:56:41 -0400
-Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
- updates
-From: Joe Perches <joe@perches.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090407081312.GH1408@ucw.cz>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	 <1240003652.31116.44.camel@localhost>  <20090407081312.GH1408@ucw.cz>
-Content-Type: text/plain
-Date: Wed, 22 Apr 2009 08:54:49 -0700
-Message-Id: <1240415689.21848.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+	Wed, 22 Apr 2009 11:58:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,231,1239001200"; 
+   d="scan'208";a="405769569"
+Message-ID: <49EF3EA2.1000505@linux.intel.com>
+Date: Wed, 22 Apr 2009 17:58:26 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com> <20090422092259.GC18226@elte.hu> <49EEFD88.1030604@linux.intel.com> <49EF3DE2.6000201@zytor.com>
+In-Reply-To: <49EF3DE2.6000201@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 10:13 +0200, Pavel Machek wrote:
-> > On Fri, 2009-04-17 at 13:47 -0700, Randy Dunlap wrote:
-> > > I was hoping to get the patch that changed all pairs of
-> > > P:
-> > > M:
-> > > lines to one line that is suitable for pasting into email addresses. 
-> > I thought the P/M: integration was an unnecessary
-> > complication that would delay pattern acceptance.
+H. Peter Anvin wrote:
+> Andi Kleen wrote:
+>> And then restart here? Add 32bit workarounds, add hook
+>> to initialize p5/winchip, make 64bit code 32bit clean.
+>> That can come straight from my patchkit. I can do that
+>> if there is interest.
+>>
 > 
-> Well, P/M integration would help when using less/emacs to browse
-> through maintainers then copy&paste using mouse... but yes, it makes
-> sense to have it in separate patch :-).  
+> Could you come up with a tree we can look at?
 
-Is there agreement the P:/M: consolidation is useful?
-No other scripts use the current style but get_maintainer?
-If so, I'll submit it this week along with some other
-patches.
+Will do. I'll probably need a day or so.
+
+-Andi
+
 
