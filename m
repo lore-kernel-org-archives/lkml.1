@@ -1,101 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZDVLUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbZDVLWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbZDVLUz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 07:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZDVLUq
+	id S1753045AbZDVLWc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 07:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZDVLWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 07:20:46 -0400
-Received: from mga12.intel.com ([143.182.124.36]:53720 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751511AbZDVLUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 07:20:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,230,1239001200"; 
-   d="scan'208";a="134395033"
-Message-ID: <49EEFD88.1030604@linux.intel.com>
-Date: Wed, 22 Apr 2009 13:20:40 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 22 Apr 2009 07:22:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43840 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751673AbZDVLWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 07:22:21 -0400
+Date: Wed, 22 Apr 2009 11:21:31 GMT
+From: tip-bot for Andreas Herrmann <andreas.herrmann3@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, jeffm@suse.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, jeffm@suse.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090421180037.GA2763@alberich.amd.com>
+References: <20090421180037.GA2763@alberich.amd.com>
+Subject: [tip:x86/urgent] x86: hpet: fix periodic mode programming on AMD 81xx
+Message-ID: <tip-86d855f62fabe344a4f66f509def6594abef9a91@git.kernel.org>
+Git-Commit-ID: 86d855f62fabe344a4f66f509def6594abef9a91
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
-References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com> <20090422092259.GC18226@elte.hu>
-In-Reply-To: <20090422092259.GC18226@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Apr 2009 11:21:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Huang Ying <ying.huang@intel.com> wrote:
-> 
->> Re-implement MCE log ring buffer as per-CPU ring buffer for better 
->> scalability. Basic design is as follow:
-> 
-> Before changing anything substantial in the MCE code it would be 
-> necessary to clean up and then unify the 32-bit and 64-bit side of 
-> the MCE code first. (Which essentially means extending the 
-> 64-bit-only code to 32-bit)
+Commit-ID:  86d855f62fabe344a4f66f509def6594abef9a91
+Gitweb:     http://git.kernel.org/tip/86d855f62fabe344a4f66f509def6594abef9a91
+Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
+AuthorDate: Tue, 21 Apr 2009 20:00:37 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 22 Apr 2009 12:44:55 +0200
 
-I don't disagree. In fact my original patchkit had this first in 6-7 patches,
-but I dropped the 32bit unification because you complained about
-the interface. It's great that you changed your mind on that.
-Anyways if we can go forward that now fine by me.
+x86: hpet: fix periodic mode programming on AMD 81xx
 
-The big part is to make sure that the hardware workarounds in the
-32bit code get applied to 64bit.  These are essentially the quirks
-of PPro and K7.
+(See http://bugzilla.kernel.org/show_bug.cgi?id=12961)
 
-Then there's some straight forward work needed to make the 64bit
-code 32bit clean (mostly a few unsigned long -> u64)
+It partially reverts commit c23e253e67c9d8a91a0ffa33c1f571a17f0a2403
+(x86: hpet: stop HPET_COUNTER when programming periodic mode)
 
-And then there are the old non MCA handlers for p5 and winchip.
-These are best kept separate, there isn't really much code commonality
-here because they use completely different registers.
-> 
-> I've put a few cleanup patches into tip:x86/mce2 (warning: there are 
-> a few broken ones at the tail - so consider it WIP), to help make 
-> this happen:
-> 
->  dd98699: x86, mce: print number of MCE banks
->  ef319a8: x86, mce: unify
->  be0f336: x86, mce: unify, prepare for 32-bit
->  90c99b7: x86, mce: prepare unification
->  1e1d4f8: x86, mce: prepare mce.h and mce_64.c for unification
->  fd6b13f: x86, mce: clean up mce_64.c
->  f7f8e03: x86, mce: clean up mce_intel.c
->  b19c8ea: x86, mce: unify the Intel thermal interrupt code
- >  6eade5b: mce: unify Intel thermal init, prepare
+HPET on AMD 81xx chipset needs a second write (with HPET_TN_SETVAL
+cleared) to T0_CMP register to set the period in periodic mode.
 
-I don't think there's much to unify here, the 64bit code
-can be just used as is on 32bit too (only needs the 64bit
-mce_log infrastructure) and the 32bit code be dropped.
+With this patch HPET_COUNTER is still stopped but not reset when HPET
+is programmed in periodic mode. This should help to avoid races when
+HPET is programmed in periodic mode and fixes a boot time hang that
+I've observed on a machine when using 1000HZ.
 
-Would it be possible to drop these two changesets?
+[ Impact: fix boot time hang on machines with AMD 81xx chipset ]
 
->  d393769: x86, mce: clean up mce.h
->  7bb2efa: x86, mce: clean up winchip.c
->  3b94f2b: x86, mce: clean up p5.c
->  13a219b: x86, mce: clean up mce_32.c
->  e69e307: x86, mce: clean up non-fatal.c
->  3b9a5bc: x86, mce: clean up k7.c
->  79e1d29: x86, mce: clean up p6.c
->  c5fac5b: x86, mce: clean up therm_throt.c
->  788a16a: x86, mce: clean up p4.c
->  07d7726: x86, mce: clean up mce_amd_64.c
->  a6a6958: x86, mce: clean up the sysfs variables namespace
->  895f799: x86, mce: clean up the mce_64.c code
-> 
-> these are the more questionable ones in need of restructurin
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Jeff Mahoney <jeffm@suse.com>
+LKML-Reference: <20090421180037.GA2763@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-And then restart here? Add 32bit workarounds, add hook
-to initialize p5/winchip, make 64bit code 32bit clean.
-That can come straight from my patchkit. I can do that
-if there is interest.
 
--Andi
+---
+ arch/x86/kernel/hpet.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 3f0019e..81408b9 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -236,6 +236,10 @@ static void hpet_stop_counter(void)
+ 	unsigned long cfg = hpet_readl(HPET_CFG);
+ 	cfg &= ~HPET_CFG_ENABLE;
+ 	hpet_writel(cfg, HPET_CFG);
++}
++
++static void hpet_reset_counter(void)
++{
+ 	hpet_writel(0, HPET_COUNTER);
+ 	hpet_writel(0, HPET_COUNTER + 4);
+ }
+@@ -250,6 +254,7 @@ static void hpet_start_counter(void)
+ static void hpet_restart_counter(void)
+ {
+ 	hpet_stop_counter();
++	hpet_reset_counter();
+ 	hpet_start_counter();
+ }
+ 
+@@ -309,7 +314,7 @@ static int hpet_setup_msi_irq(unsigned int irq);
+ static void hpet_set_mode(enum clock_event_mode mode,
+ 			  struct clock_event_device *evt, int timer)
+ {
+-	unsigned long cfg;
++	unsigned long cfg, cmp, now;
+ 	uint64_t delta;
+ 
+ 	switch (mode) {
+@@ -317,12 +322,23 @@ static void hpet_set_mode(enum clock_event_mode mode,
+ 		hpet_stop_counter();
+ 		delta = ((uint64_t)(NSEC_PER_SEC/HZ)) * evt->mult;
+ 		delta >>= evt->shift;
++		now = hpet_readl(HPET_COUNTER);
++		cmp = now + (unsigned long) delta;
+ 		cfg = hpet_readl(HPET_Tn_CFG(timer));
+ 		/* Make sure we use edge triggered interrupts */
+ 		cfg &= ~HPET_TN_LEVEL;
+ 		cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
+ 		       HPET_TN_SETVAL | HPET_TN_32BIT;
+ 		hpet_writel(cfg, HPET_Tn_CFG(timer));
++		hpet_writel(cmp, HPET_Tn_CMP(timer));
++		udelay(1);
++		/*
++		 * HPET on AMD 81xx needs a second write (with HPET_TN_SETVAL
++		 * cleared) to T0_CMP to set the period. The HPET_TN_SETVAL
++		 * bit is automatically cleared after the first write.
++		 * (See AMD-8111 HyperTransport I/O Hub Data Sheet,
++		 * Publication # 24674)
++		 */
+ 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+ 		hpet_start_counter();
+ 		hpet_print_config();
