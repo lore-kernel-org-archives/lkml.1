@@ -1,49 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZDVOiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZDVOnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbZDVOiy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZDVOiq
+	id S1753505AbZDVOnV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZDVOnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:38:46 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:60567 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751264AbZDVOip (ORCPT
+	Wed, 22 Apr 2009 10:43:10 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:11892 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbZDVOnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:38:45 -0400
-Message-ID: <49EF2C32.4030409@opengridcomputing.com>
-Date: Wed, 22 Apr 2009 09:39:46 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-References: <20090421184223.GP19637@balbir.in.ibm.com> <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com>
-In-Reply-To: <49EF293F.4030504@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 22 Apr 2009 10:43:09 -0400
+Subject: Re: [PATCH 18/25] Do not disable interrupts in free_page_mlock()
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090422091144.626B.A69D9226@jp.fujitsu.com>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie>
+	 <1240266011-11140-19-git-send-email-mel@csn.ul.ie>
+	 <20090422091144.626B.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 22 Apr 2009 10:43:00 -0400
+Message-Id: <1240411381.6159.2.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-04-22 at 09:13 +0900, KOSAKI Motohiro wrote:
+> (cc to Lee)
+> 
+> > free_page_mlock() tests and clears PG_mlocked using locked versions of the
+> > bit operations. If set, it disables interrupts to update counters and this
+> > happens on every page free even though interrupts are disabled very shortly
+> > afterwards a second time.  This is wasteful.
+> > 
+> > This patch splits what free_page_mlock() does. The bit check is still
+> > made. However, the update of counters is delayed until the interrupts are
+> > disabled and the non-lock version for clearing the bit is used. One potential
+> > weirdness with this split is that the counters do not get updated if the
+> > bad_page() check is triggered but a system showing bad pages is getting
+> > screwed already.
+> 
+> Looks good. thanks good improvement.
+> I hope Lee also ack this.
+> 
+> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> 
+>   -kosaki
+> 
 
->>
->> No there are a few patches applied that are heading upstream, but one 
->> is in the NFS RDMA server which isn't loaded yet and the rest are in 
->> iw_cxgb3 (iwarp driver) which also hasn't loaded at the time we 
->> crash. NOTE:  Out of 4 power cycles, one booted up ok, 3 hit the crash.
->>
->>
->>
->
-> By the way, this one looks different from the last one I saw.  So its 
-> not consistently crashing in the same spot.  The one I hit yesterday 
-> (which I don't have the OOPs dump for was in rb_erase().
->
-> Steve.
+Yes, this looks OK.  If we're racing on a page that is being freed or,
+as Mel notes, some other condition triggers bad_page(), we got bigger
+problems than inaccurate statistics...
 
-I'll start bisecting to isolate this.
+	Acked-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 
-Steve.
+> 
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> > ---
+> >  mm/internal.h   |   11 +++--------
+> >  mm/page_alloc.c |    8 +++++++-
+> >  2 files changed, 10 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index 987bb03..58ec1bc 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -157,14 +157,9 @@ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
+> >   */
+> >  static inline void free_page_mlock(struct page *page)
+> >  {
+> > -	if (unlikely(TestClearPageMlocked(page))) {
+> > -		unsigned long flags;
+> > -
+> > -		local_irq_save(flags);
+> > -		__dec_zone_page_state(page, NR_MLOCK);
+> > -		__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> > -		local_irq_restore(flags);
+> > -	}
+> > +	__ClearPageMlocked(page);
+> > +	__dec_zone_page_state(page, NR_MLOCK);
+> > +	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+> >  }
+> >  
+> >  #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index a1ca038..bf4b8d9 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -499,7 +499,6 @@ static inline void __free_one_page(struct page *page,
+> >  
+> >  static inline int free_pages_check(struct page *page)
+> >  {
+> > -	free_page_mlock(page);
+> >  	if (unlikely(page_mapcount(page) |
+> >  		(page->mapping != NULL)  |
+> >  		(page_count(page) != 0)  |
+> > @@ -556,6 +555,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+> >  	unsigned long flags;
+> >  	int i;
+> >  	int bad = 0;
+> > +	int clearMlocked = PageMlocked(page);
+> >  
+> >  	for (i = 0 ; i < (1 << order) ; ++i)
+> >  		bad += free_pages_check(page + i);
+> > @@ -571,6 +571,8 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+> >  	kernel_map_pages(page, 1 << order, 0);
+> >  
+> >  	local_irq_save(flags);
+> > +	if (unlikely(clearMlocked))
+> > +		free_page_mlock(page);
+> >  	__count_vm_events(PGFREE, 1 << order);
+> >  	free_one_page(page_zone(page), page, order,
+> >  					get_pageblock_migratetype(page));
+> > @@ -1018,6 +1020,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+> >  	struct zone *zone = page_zone(page);
+> >  	struct per_cpu_pages *pcp;
+> >  	unsigned long flags;
+> > +	int clearMlocked = PageMlocked(page);
+> >  
+> >  	if (PageAnon(page))
+> >  		page->mapping = NULL;
+> > @@ -1033,7 +1036,10 @@ static void free_hot_cold_page(struct page *page, int cold)
+> >  
+> >  	pcp = &zone_pcp(zone, get_cpu())->pcp;
+> >  	local_irq_save(flags);
+> > +	if (unlikely(clearMlocked))
+> > +		free_page_mlock(page);
+> >  	__count_vm_event(PGFREE);
+> > +
+> >  	if (cold)
+> >  		list_add_tail(&page->lru, &pcp->list);
+> >  	else
+> > -- 
+> > 1.5.6.5
+> > 
+> 
+> 
+> 
+
