@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZDVXTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbZDVXW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbZDVXTc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 19:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZDVXTX
+	id S1753554AbZDVXW7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 19:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZDVXWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 19:19:23 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:41855 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZDVXTW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 19:19:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=DGSrXCatyUr1A/6+Fb0SwyaFGsBdkkJwbkPsAayxmv6gUUpE8m5XScHy6hebvfr+ej
-         EWqwpyh2nMC/QGEP1kWIS87BAVV2hxH5PnRpMQ/mSrj+RDCFlXF8RXI13gjtoYjXPDRD
-         8rWALt60c8VDGWZIoFwv3FfcBIQxtUDi+t6JE=
+	Wed, 22 Apr 2009 19:22:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57394 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750960AbZDVXWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 19:22:49 -0400
+Date: Wed, 22 Apr 2009 16:13:31 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Ben Hutchings <ben@decadent.org.uk>, linux-kernel@vger.kernel.org,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: Re: [PATCH 0/3] Fix rt28{6,7}0sta to use firmware loader
+Message-ID: <20090422231331.GB16383@suse.de>
+References: <1239589992.18110.117.camel@deadeye.i.decadent.org.uk> <20090413024445.GA12860@suse.de> <1239667961.18110.166.camel@deadeye.i.decadent.org.uk> <20090414022418.GA17760@suse.de> <1240222746.17844.35.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Date: Thu, 23 Apr 2009 09:19:21 +1000
-Message-ID: <21d7e9970904221619v7d7990bfq697cfca64a7ed6d2@mail.gmail.com>
-Subject: i2c algo bit timeout question
-From: Dave Airlie <airlied@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jean Delvare <khali@linux-fr.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240222746.17844.35.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi to any i2c people,
+On Mon, Apr 20, 2009 at 11:19:06AM +0100, David Woodhouse wrote:
+> On Mon, 2009-04-13 at 19:24 -0700, Greg KH wrote:
+> > On Tue, Apr 14, 2009 at 01:12:41AM +0100, Ben Hutchings wrote:
+> > > On Sun, 2009-04-12 at 19:44 -0700, Greg KH wrote:
+> > > > On Mon, Apr 13, 2009 at 03:33:12AM +0100, Ben Hutchings wrote:
+> > > > > Greg,
+> > > > > 
+> > > > > The Ralink drivers rt2860sta, rt2870sta and rt3070sta contain non-free
+> > > > > firmware which should be distributed separately.
+> > > > 
+> > > > Where is it now distributed?  I don't want to break people's machines
+> > > > that were working before this patch is applied.
+> > > 
+> > > The canonical source is
+> > > <http://www.ralinktech.com/ralink/Home/Support/Linux.html>
+> > 
+> > Yes, and that is where I got the code that is in the driver tree that
+> > you are objecting to now :)
+> 
+> You shouldn't have done. We stopped including firmware for new wireless
+> drivers _years_ ago. It's perfectly normal that users are expected to
+> fetch the firmware separately (or their distribution does it for them).
 
-So I've been debugging some EDID fetching failures and wanted to ask
-about the use of time_after_eq in the i2c bit banging code.
+Sorry, I should have added it to your tree in the beginning.
 
-EDID specification recommends 2ms timeout for the ack on the initial
-read, so we set the timeout in our code to usecs_to_jiffies(2200) (10%
-margin of error). On my systems this ends up as 1, and we seem to fail
-to retrieve EDID one in 10-20 times. Changing the value to 2, always
-gets me the EDID I want.
+> > > The files are now also in the Debian repository for our firmware-nonfree
+> > > package and in <http://git.decadent.org.uk/git/linux-firmware.git>.
+> > > I've asked David Woodhouse to pull from that into his linux-firmware.git
+> > > so that they get into other distros.
+> 
+> I'd be a lot happier with that having a signed-off-by from within
+> Ralink, even though the licence is unambiguous. But I've pulled it
+> anyway, this time. You can download the 'release' at
+> http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=snapshot;h=HEAD
 
-So looking at drivers/i2c/algos/i2c-algo-bit.c it appears it uses
-time_after_eq on jiffies, start + timeout value. So if we have a 10ms
-jiffie resolution and enter this at the 9ms point in the 10ms window,
-we will seem to exit the loop after 1ms instead of the minimum which I
-asked for which is 2.2ms. Should this code use time_after instead of
-time_after_eq?
+Nice, thanks for doing this.
 
-or am I missing something else.
-Dave.
+> (Still haven't really worked out what the best strategy for 'releases'
+> is, given that people should just be using the latest version from the
+> tree. Maybe an automatic git-archive from cron each day, if something's
+> change from the previous day?)
+
+Yes, that would be a good idea.  And a way to send an email to people
+who are packaging this up for distros to know and go update them would
+be good as well.
+
+I have a firmware package now in the Gentoo tree, and am working on
+making the SuSE one public (it's right now buried behind the firewall,
+but will be pushed out soon.)
+
+thanks,
+
+greg k-h
