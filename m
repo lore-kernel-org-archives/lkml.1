@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZDVUWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZDVUYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbZDVUWj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZDVUW2
+	id S1755109AbZDVUYn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZDVUYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:22:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:17034 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbZDVUW1 (ORCPT
+	Wed, 22 Apr 2009 16:24:34 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:38016 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbZDVUYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:22:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Vfb++l7F+/AYYLkg/0tEg4vpk/6FlrnmYjglgLt2ZEwMpknWadPS+CsSbh9vub7A+A
-         tSHzwdQqgaMeMQ08E0wfbQANgmloW3dnQ7USy28OzKmys6E46lDPw1acKaZPlu7urg9w
-         vjdX/vifNRixQbfMnwhaoi0jXSqmrRRpIi6eY=
+	Wed, 22 Apr 2009 16:24:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Q5icvXSDq7czsqwcNqTsyEEjKp4g3hXw6XmEzwH5yudP5ujQsQhJXnUC7fLub7D8P
+	ElzGM+31ZuL4Zgo7vPnFA==
+Date: Wed, 22 Apr 2009 13:24:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 16/22] Do not setup zonelist cache when there is only
+ one node
+In-Reply-To: <1240408407-21848-17-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0904221319120.14558@chino.kir.corp.google.com>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-17-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090422193728.GI4691@vespa.holoscopio.com>
-References: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com>
-	 <200904202114.01932.rjw@sisk.pl>
-	 <20090421215248.GF6147@vespa.holoscopio.com>
-	 <200904220017.19670.rjw@sisk.pl>
-	 <20090422043828.GB3979@vespa.holoscopio.com>
-	 <9929d2390904212246n4817b25r4db653cd7e6a24c1@mail.gmail.com>
-	 <20090422193728.GI4691@vespa.holoscopio.com>
-Date: Wed, 22 Apr 2009 13:22:25 -0700
-X-Google-Sender-Auth: aabc66bb01368972
-Message-ID: <9929d2390904221322v1c00b0c8see98efb4354cb173@mail.gmail.com>
-Subject: Re: [PATCH v2 fixed] e100: do not go D3 in shutdown unless system is 
-	powering off
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 12:37 PM, Thadeu Lima de Souza Cascardo
-<cascardo@holoscopio.com> wrote:
-> On Tue, Apr 21, 2009 at 10:46:19PM -0700, Jeff Kirsher wrote:
->> On Tue, Apr 21, 2009 at 9:38 PM, Thadeu Lima de Souza Cascardo
->> <cascardo@holoscopio.com> wrote:
->> > After experimenting with kexec with the last merges after 2.6.29, I've
->> > had some problems when probing e100. It would not read the eeprom. After
->> > some bisects, I realized this has been like that since forever (at least
->> > 2.6.18). The problem is that shutdown is doing the same thing that
->> > suspend does and puts the device in D3 state. I couldn't find a way to
->> > get the device back to a sane state in the probe function. So, based on
->> > some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
->> > I wrote this one for e100.
->> >
->> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
->> > ---
->>
->> Thanks, I will add it to my queue of patches for e100.
->>
->> Also, just FYI, Auke is no longer a maintainer for
->> e100/e1000/e1000e/igb/ixgb/ixgbe devices, so I have removed him from
->> the thread.
->>
->> --
->> Cheers,
->> Jeff
->
-> Perhaps, Rafael should be mentioned in a Reviewed-by? As well as you if
-> you did review it? I guess a Tested-by and Reported-by me is overkill,
-> right? :-)
->
+On Wed, 22 Apr 2009, Mel Gorman wrote:
 
-Correct, that would be overkill.  If Rafael wants his Ack or
-Reviewed-by added, he will let us know.
+> There is a zonelist cache which is used to track zones that are not in
+> the allowed cpuset or found to be recently full. This is to reduce cache
+> footprint on large machines. On smaller machines, it just incurs cost
+> for no gain. This patch only uses the zonelist cache when there are NUMA
+> nodes.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> ---
+>  mm/page_alloc.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 7f45de1..e59bb80 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1467,8 +1467,11 @@ this_zone_full:
+>  		if (NUMA_BUILD)
+>  			zlc_mark_zone_full(zonelist, z);
 
-Once we have done some regression testing on the patch, I will add my
-signed-off-by before sending it to Dave.
+If zonelist caching is never used for UMA machines, why should they ever 
+call zlc_mark_zone_full()?  It will always dereference 
+zonelist->zlcache_ptr and immediately return without doing anything.
 
--- 
-Cheers,
-Jeff
+Wouldn't it better to just add
+
+	if (num_online_nodes() == 1)
+		continue;
+
+right before this call to zlc_mark_zone_full()?  This should compile out 
+the remainder of the loop for !CONFIG_NUMA kernels anyway.
+
+>  try_next_zone:
+> -		if (NUMA_BUILD && !did_zlc_setup) {
+> -			/* we do zlc_setup after the first zone is tried */
+> +		if (NUMA_BUILD && !did_zlc_setup && num_online_nodes() > 1) {
+> +			/*
+> +			 * we do zlc_setup after the first zone is tried but only
+> +			 * if there are multiple nodes make it worthwhile
+> +			 */
+>  			allowednodes = zlc_setup(zonelist, alloc_flags);
+>  			zlc_active = 1;
+>  			did_zlc_setup = 1;
+> -- 
+> 1.5.6.5
