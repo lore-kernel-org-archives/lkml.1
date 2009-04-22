@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbZDVHiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZDVHnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbZDVHiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZDVHil
+	id S1754840AbZDVHnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZDVHng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:38:41 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:34842 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZDVHik (ORCPT
+	Wed, 22 Apr 2009 03:43:36 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:40296 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751512AbZDVHnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:38:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=kzA7Tvr/ugcvf+6tzF7cwbr89pAvYKEGXF3U5R23Jt7+CGAPLCwRNlcZTKIfsyvgeL
-         h7/oVqKGlH9A8ni8Vi/qg/RjXU20hYJmMN7lNhTt5GZkd9HY9zp4GMhJnDNc1Dh/LCF2
-         h+910OLTHa7nEOZ8O8eoCxJ0K//29lmIMx5pA=
-Date: Wed, 22 Apr 2009 09:38:33 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG 2.6.30_rc1] powernow-k8: oops during initialization
-Message-ID: <20090422073833.GA23936@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>,
-	linux-kernel@vger.kernel.org
-References: <49E7175D.6060808@pardus.org.tr>
+	Wed, 22 Apr 2009 03:43:35 -0400
+Date: Wed, 22 Apr 2009 09:43:31 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+cc: subrata@linux.vnet.ibm.com, sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+       "David A. Schleef" <ds@schleef.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [BUILD FAILURE 09/12] Next April 21 : PPC64 randconfig
+ [drivers/staging/comedi/drivers.o]
+In-Reply-To: <1240358910.6571.6.camel@localhost>
+Message-ID: <alpine.LRH.2.00.0904220942430.6852@vixen.sonytel.be>
+References: <1240340029.9110.142.camel@subratamodak.linux.ibm.com> <1240358910.6571.6.camel@localhost>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49E7175D.6060808@pardus.org.tr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 22 Apr 2009, Michael Ellerman wrote:
+> On Wed, 2009-04-22 at 00:23 +0530, Subrata Modak wrote:
+> > Reported this error on 14th April:
+> > http://lkml.org/lkml/2009/4/14/488,
+> > 
+> > CC [M]  drivers/staging/comedi/drivers.o 
+> > drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
+> > drivers/staging/comedi/drivers.c:496: error: ‘PAGE_KERNEL_NOCACHE’
+> > undeclared (first use in this function)
+> > drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier
+> > is reported only once
+> > drivers/staging/comedi/drivers.c:496: error: for each function it
+> > appears in.)
+> > make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
+> > make[2]: *** [drivers/staging/comedi] Error 2
+> > make[1]: *** [drivers/staging] Error 2
+> > make: *** [drivers] Error 2
+> 
+> Subrata, unless someone says otherwise, please do not send randconfig
+> failures for drivers in staging - those drivers have bigger problems
+> than randconfig failures.
 
-On Thu, Apr 16, 2009 at 02:32:45PM +0300, Ozan Çağlayan wrote:
+Indeed, in particular this one http://lkml.org/lkml/2009/3/9/349.
 
-> [    4.085400] powernow-k8: Found 1 AMD Athlon(tm) 64 X2 Dual Core Processor 4800+ processors (2 cpu cores) (version 2.20.00)
-> [    4.103978] ------------[ cut here ]------------
-> [    4.122674] WARNING: at arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1257 powernowk8_cpu_init+0x487/0x994()
-> [    4.142059] Hardware name: Unknow
+> To avoid them, do this:
+> 
+> # make randconfig
+> # sed -i -e 's/^\(CONFIG_STAGING\)=y/# \1 is not set/' .config
+                                       ^^^^^^^^^^^^^^^
+Recently I discovered that `n' actually works, too!
 
-> [    4.161164] [Firmware Bug]: powernow-k8: Your BIOS does not provide ACPI _PSS objects in a way that Linux understands. Please report this to the Linux ACPI maintainers and complain to your BIOS vendor.
+> # make oldconfig
 
-Just read what the message says: it is not a kernel bug but simply your
-BIOS is missing the _PSS objects on which powernow-k8 relies. I'm pretty
-sure you had similar message in earlier kernels but it was a simple
-warning then.
+With kind regards,
 
-Is it possible to upgrade your BIOS? If you're lucky, it might've been
-fixed :).
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
--- 
-Regards/Gruss,
-    Boris.
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
