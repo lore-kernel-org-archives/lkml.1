@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZDVUYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZDVU1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbZDVUYn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZDVUYe
+	id S1756233AbZDVU1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZDVU1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:24:34 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38016 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752420AbZDVUYd (ORCPT
+	Wed, 22 Apr 2009 16:27:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50863 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbZDVU1D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:24:33 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Q5icvXSDq7czsqwcNqTsyEEjKp4g3hXw6XmEzwH5yudP5ujQsQhJXnUC7fLub7D8P
-	ElzGM+31ZuL4Zgo7vPnFA==
-Date: Wed, 22 Apr 2009 13:24:26 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 16/22] Do not setup zonelist cache when there is only
- one node
-In-Reply-To: <1240408407-21848-17-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0904221319120.14558@chino.kir.corp.google.com>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-17-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 22 Apr 2009 16:27:03 -0400
+Date: Wed, 22 Apr 2009 22:30:05 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       randy.dunlap@oracle.com, torvalds@linux-foundation.org, akpm@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
+	updates
+Message-ID: <20090422203005.GA467@elf.ucw.cz>
+References: <1239167872-8179-1-git-send-email-joe@perches.com> <20090417134711.ba0f03e7.randy.dunlap@oracle.com> <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz> <1240415689.21848.19.camel@localhost> <20090422185916.GA3864@uranus.ravnborg.org> <20090422120510.cc17e470.akpm@linux-foundation.org> <1240430185.21848.103.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1240430185.21848.103.camel@localhost>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009, Mel Gorman wrote:
-
-> There is a zonelist cache which is used to track zones that are not in
-> the allowed cpuset or found to be recently full. This is to reduce cache
-> footprint on large machines. On smaller machines, it just incurs cost
-> for no gain. This patch only uses the zonelist cache when there are NUMA
-> nodes.
+On Wed 2009-04-22 12:56:25, Joe Perches wrote:
+> On Wed, 2009-04-22 at 12:05 -0700, Andrew Morton wrote:
+> > > It is irritating to manually copy name+email as it looks today.
+> > > I always have to do that for the Cc: lines.
+> > me2
 > 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> ---
->  mm/page_alloc.c |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
+> This seems to do a decent job of conversion:
+> I have this in my tree.  I'll submit it later.
 > 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 7f45de1..e59bb80 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1467,8 +1467,11 @@ this_zone_full:
->  		if (NUMA_BUILD)
->  			zlc_mark_zone_full(zonelist, z);
+> perl -i -e 'local $/; while(<>) { s@P:	([^\n]+)\nM:	([^\n]+)\n@M:	\1 <\2>\n@g; print; }' MAINTAINERS 
 
-If zonelist caching is never used for UMA machines, why should they ever 
-call zlc_mark_zone_full()?  It will always dereference 
-zonelist->zlcache_ptr and immediately return without doing anything.
+It did not work for here, and I don't understand perl well enough. If
+possible, it would be nice to aggregate multiple entries onto one
+line. I.e.:
 
-Wouldn't it better to just add
+P:      Len Brown
+M:      len.brown@intel.com
+P:      Pavel Machek
+M:      pavel@ucw.cz
+P:      Rafael J. Wysocki
+M:      rjw@sisk.pl
+L:      linux-pm@lists.linux-foundation.org
+S:      Supported
 
-	if (num_online_nodes() == 1)
-		continue;
+->
 
-right before this call to zlc_mark_zone_full()?  This should compile out 
-the remainder of the loop for !CONFIG_NUMA kernels anyway.
+P:      Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rafael J. Wysocki <rjw@sisk.pl>
+L:      linux-pm@lists.linux-foundation.org
+S:      Supported
 
->  try_next_zone:
-> -		if (NUMA_BUILD && !did_zlc_setup) {
-> -			/* we do zlc_setup after the first zone is tried */
-> +		if (NUMA_BUILD && !did_zlc_setup && num_online_nodes() > 1) {
-> +			/*
-> +			 * we do zlc_setup after the first zone is tried but only
-> +			 * if there are multiple nodes make it worthwhile
-> +			 */
->  			allowednodes = zlc_setup(zonelist, alloc_flags);
->  			zlc_active = 1;
->  			did_zlc_setup = 1;
-> -- 
-> 1.5.6.5
+...
+Thanks for your work!
+									Pavel
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
