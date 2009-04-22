@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZDWA5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZDWA7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbZDWA5z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 20:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZDWA5q
+	id S1753123AbZDWA7m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 20:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbZDWA7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 20:57:46 -0400
-Received: from exprod6ob114.obsmtp.com ([64.18.1.32]:34901 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751240AbZDWA5p convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 20:57:45 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 22 Apr 2009 20:59:33 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33413 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbZDWA7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 20:59:32 -0400
+Message-ID: <49EFAF4D.2090509@suse.de>
+Date: Thu, 23 Apr 2009 08:59:09 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] net/ipv6/sysctl_net_ipv6.c: fix sparse warnings
-Date: Wed, 22 Apr 2009 20:57:32 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090165F138@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net/ipv6/sysctl_net_ipv6.c: fix sparse warnings
-Thread-Index: AcnDrnukgbYn+TezRf24OJyotYZPkA==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 23 Apr 2009 00:57:43.0640 (UTC) FILETIME=[8268C580:01C9C3AE]
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, tiwai@suse.de,
+       fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy 1.2 using CUSE
+References: <48B6F711.1040604@kernel.org> <49E3F91E.4000801@suse.de> <E1Lwian-0004pq-8P@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Lwian-0004pq-8P@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix two sparse warnings in net/ipv6/sysctl_net_ipv6.c.
+Hello, Miklos.
 
-Both sparse warnings are as follows:
+Miklos Szeredi wrote:
+> Xmms with the OSS output plugin doesn't really work.  It plays like 10
+> times too fast and the output is not really recognizable.
 
-  warning: symbol 'ipv6_table' shadows an earlier one
+Hmm...
 
-ipv6_sysctl_net_init() and ipv6_sysctl_net_exit() both use the same
-symbol name for the struct ctl_table used to do the 
-{register/unregister}_net_sysctl_table().
+> This is the debug output of osspd:
+> 
+> osspd: OSS Proxy v1.2 (C) 2008-2009 by Tejun Heo <teheo@suse.de>
+> osspd: Creating dsp (14:3), adsp (14:12), mixer (14:0)
+> osspd DBG0: CREATE mixer(12799)
+> osspd DBG0: S[1/16744] CREATE slave=16745 /store/git/ossp/ossp-padsp
+> osspd DBG0: S[1/16744]   client=16744 cmd=7:8 notify=9:10
+> ossp-padsp[mszeredi:16745] DBG0: requested frag_size (4096) is smaller than mini
+> mum (4412)
+> ossp-padsp[mszeredi:16745] DBG0: CREATE PLAY s16le 2ch 44100Hz fsz=4412:25
+> ossp-padsp[mszeredi:16745] DBG0:   tlen=131072:743 max=139896:793 pre=8192:46
+> ossp-padsp[mszeredi:16745] DBG0:   u_sd=0 u_fsz=4096:23 u_maxf=32
+> osspd DBG0: S[1/16744] volume set=-1/-1:-1/-1 get=63/63:0/0
+> ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+> ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+> ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+> ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+> ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
+> ossp-padsp[mszeredi:16745] DBG0: PLAY stream underrun
 
-The static symbol is only used in ipv6_sysctl_register() for the
-struct ctl_table used to do the register_net_sysctl_rotable().
+Hmmm..
 
-Rename the static symbol to ipv6_rotable to remove the sparse warnings.
+> [...message repeated zillion times]
+> 
+> I guess this has something to do with the too small frag size, but
+> couldn't figure out how all this works in prepare_streams() and
+> padsp_write().
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Yeah, it's a bit convoluted.  I'll try xmms.
 
----
+Thanks.
 
-diff --git a/net/ipv6/sysctl_net_ipv6.c b/net/ipv6/sysctl_net_ipv6.c
-index a031034..0dc6a4e 100644
---- a/net/ipv6/sysctl_net_ipv6.c
-+++ b/net/ipv6/sysctl_net_ipv6.c
-@@ -40,7 +40,7 @@ static ctl_table ipv6_table_template[] = {
- 	{ .ctl_name = 0 }
- };
- 
--static ctl_table ipv6_table[] = {
-+static ctl_table ipv6_rotable[] = {
- 	{
- 		.ctl_name	= NET_IPV6_MLD_MAX_MSF,
- 		.procname	= "mld_max_msf",
-@@ -130,7 +130,7 @@ int ipv6_sysctl_register(void)
- {
- 	int err = -ENOMEM;
- 
--	ip6_header = register_net_sysctl_rotable(net_ipv6_ctl_path, ipv6_table);
-+	ip6_header = register_net_sysctl_rotable(net_ipv6_ctl_path, ipv6_rotable);
- 	if (ip6_header == NULL)
- 		goto out;
-  
+-- 
+tejun
