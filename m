@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZDVPKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZDVPLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZDVPKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZDVPKI
+	id S1754220AbZDVPLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZDVPK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:10:08 -0400
-Received: from ns.ariel-networks.com ([122.216.114.210]:40425 "EHLO
-	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbZDVPKH (ORCPT
+	Wed, 22 Apr 2009 11:10:57 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:60319 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZDVPKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:10:07 -0400
-X-Greylist: delayed 1155 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Apr 2009 11:10:07 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Question : internal processing of block I/O queue
-Message-Id: <20090422145050.C00333780DD@ns.ariel-networks.com>
-Date: Wed, 22 Apr 2009 23:50:50 +0900 (JST)
-From: ohyama_sec@ariel-networks.com
+	Wed, 22 Apr 2009 11:10:55 -0400
+X-Auth-Info: wD74mW/PYt1fLfwNjg/xppagjD0vIxHLb/xFf6+5k0I=
+Message-ID: <49EF337F.1030804@ngrt.de>
+Date: Wed, 22 Apr 2009 17:10:55 +0200
+From: Daniela Engert <dani@ngrt.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.21) Gecko/20090403 SeaMonkey/1.1.15 not(Firefox/3.2)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+References: <20090422090929.GA14928@havoc.gtf.org> <49EEE225.3010700@garzik.org> <49EF0A92.1070400@panasas.com>
+In-Reply-To: <49EF0A92.1070400@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroyasu OHYAMA
+Boaz Harrosh wrote:
+> On 04/22/2009 12:23 PM, Jeff Garzik wrote:
+>> Jeff Garzik wrote:
+>>> Currently, libata creates a Scsi_Host per port.  This was originally
+>>> done to leverage SCSI's infrastructure to arbitrate among master/slave
+>>> devices, but is not needed for most modern SATA controllers.   And I
+>>> _think_ it is not needed for master/slave if done properly, either.
 
-I'm a student of Japan, and I diddle the Linux for joyment.
-Could I ask you a question about block I/O.
+>>> It may work with other controllers -- TRY AT YOUR OWN RISK.  It will
+>>> probably fail for master/slave configurations, and SAS & PMP also
+>>> need looking at.  It yielded this lsscsi output on my AHCI box:
+>>>
+>>> [0:0:0:0]    disk    ATA      ST3500320AS      SD15  /dev/sda
+>>> [0:2:0:0]    disk    ATA      G.SKILL 128GB SS 02.1  /dev/sdb
+>>> [0:5:0:0]    cd/dvd  PIONEER  BD-ROM  BDC-202  1.04  /dev/sr0
+>> For comparison, here is unmodified 2.6.30-rc3:
+>>
+>> [jgarzik@bd ~]$ lsscsi
+>> [0:0:0:0]    disk    ATA      ST3500320AS      SD15  /dev/sda
+>> [2:0:0:0]    disk    ATA      G.SKILL 128GB SS 02.1  /dev/sdb
+>> [5:0:0:0]    cd/dvd  PIONEER  BD-ROM  BDC-202  1.04  /dev/sr0
+>>
+> 
+> Could the master/slave be simply solved by emulating a SCSI LUN
 
-The question is that "Does The linux block I/O processing follow a first-in first-out order"
+Don't forget, there are ATAPI devices (some Sony CD burners and old 
+phase-changers come into mind) which *do* have multiple LUNs sitting 
+beyond the PATA port. I don't know if libata supports such setups (my 
+old OS/2 driver does) but one shouldn't hijack LUNs to emulate targets.
 
-Now, I'm making layer under low level filesystem. And I wonna make it work as Cache of data like page cache.
-I could understood if I emit block I/O request with submit_bio(), the kernel delay it, and I could notice the result by .bi_end_io() method that I set.
-
-But I have something on my mind. "Does the kernel assure the order of block I/O ?"
-
-Once I issue a block I/O request to common I/O layer, the I/O processing is delayed. And the actual block I/O processing is executed by kernel thread.
-So user who commit block I/O never have to mind the sequence of delayed block I/O requests.
-But I want to know that "The block I/O processing executed first is executed earlient, or may not".
-
-If a I/O request issued back is issued earlier than before, I have to protect the target block that is issued block I/O request.
-
-Could you please give me the actuall operation of block I/O component, that is "It may happen, or not".
-
-Thank you in advance.
+Ciao,
+   Dani
