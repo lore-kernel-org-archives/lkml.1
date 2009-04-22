@@ -1,123 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZDVCm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZDVCx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbZDVCm2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 22:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbZDVCmR
+	id S1754627AbZDVCx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 22:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZDVCxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 22:42:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:65371 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbZDVCmQ (ORCPT
+	Tue, 21 Apr 2009 22:53:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44569 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751260AbZDVCxq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 22:42:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=uo5aNQlESrMnaeySkTynLvUQ9QnhLGq1/Co2qh5qZIsRGrM9LkID8X9K4/q0YalyCR
-         znEOAGoohN0L8NGk/OjRF82uncXyPqLJjLVN+oe5oGtrY59Amy/Ees+ENN70g0hkElQJ
-         wscHffOw/Ad2aOkkSuTaSqJmCNWCxHOnc6hhs=
-Message-ID: <49EE8403.3090204@gmail.com>
-Date: Tue, 21 Apr 2009 22:42:11 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Kyle Moffett <kyle@moffetthome.net>
-CC: Huang Ying <ying.huang@intel.com>, Anthony Liguori <anthony@codemonkey.ws>,
-       Avi Kivity <avi@redhat.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>	 <49E9F7BE.4090904@codemonkey.ws>	 <1240190385.6842.45.camel@yhuang-dev.sh.intel.com> <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
-In-Reply-To: <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE3F91AB170688CE1FCB5C669"
+	Tue, 21 Apr 2009 22:53:46 -0400
+Date: Wed, 22 Apr 2009 05:45:16 +0300
+From: Izik Eidus <ieidus@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-04-21-15-00 uploaded
+Message-ID: <20090422054516.122ac635@woof.tlv.redhat.com>
+In-Reply-To: <20090421185313.06bec1cc.akpm@linux-foundation.org>
+References: <200904212219.n3LMJ2O7007301@imap1.linux-foundation.org>
+	<49EE7351.6080802@oracle.com>
+	<20090421185313.06bec1cc.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE3F91AB170688CE1FCB5C669
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, 21 Apr 2009 18:53:13 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Kyle Moffett wrote:
-> On Sun, Apr 19, 2009 at 9:19 PM, Huang Ying <ying.huang@intel.com> wrot=
-e:
->  =20
->> On Sat, 2009-04-18 at 23:54 +0800, Anthony Liguori wrote:
->>    =20
->>> Huang Ying wrote:
->>>      =20
->>>> The related MSRs are emulated. MCE capability is exported via
->>>> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new=
+> On Tue, 21 Apr 2009 18:30:57 -0700 Randy Dunlap
+> <randy.dunlap@oracle.com> wrote:
+> 
+> > akpm@linux-foundation.org wrote:
+> > > The mm-of-the-moment snapshot 2009-04-21-15-00 has been uploaded
+> > > to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > and will soon be available at
+> > > 
+> > >    git://git.zen-sources.org/zen/mmotm.git
+> > > 
+> > > It contains the following patches against 2.6.30-rc2:
+> > 
+> > 
+> > 2 of 10 i386 builds ended like:
+> > 
+> > 
+> >   CC      arch/x86/kernel/asm-offsets.s
+> > In file included from include/linux/suspend.h:8,
+> >                  from arch/x86/kernel/asm-offsets_32.c:11,
+> >                  from arch/x86/kernel/asm-offsets.c:2:
+> > include/linux/mm.h: In function 'get_pte':
+> > include/linux/mm.h:907: error: implicit declaration of function
+> > 'kmap_atomic_pte' make[2]: *** [arch/x86/kernel/asm-offsets.s]
+> > Error 1 make[1]: *** [prepare0] Error 2
+> > make: *** [sub-make] Error 2
+> > 
+> > 
+> > 
+> > config attached.
+> 
+> Caused by ksm-add-get_pte-helper-function-fetching-pte-for-va.patch.
+> 
+> hm, this will end badly.  Let's uninline it.
+> 
 
->>>> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
->>>> such as the mcg_cap. MCE is injected via vcpu ioctl command
->>>> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI a=
-re
->>>> not simulated.
->>>>
->>>>        =20
->>> Maybe I'm missing something, but couldn't this be implemented entirel=
-y
->>> within userspace?  There's nothing VT/SVM specific about this.  If th=
-e
->>> issue is setting these MSRs from userspace via KVM_SET_MSRS isn't
->>> enough, perhaps we should add userspace MSR handling.
->>>
->>> Also, if you implement the MSR logic in userspace, it's pretty simple=
- to
->>> make it work in the non-TCG case which will be a requirement for
->>> upstream merging.
->>>      =20
->> There is more logic than just KVM_SET_MSRS, such as BANK reporting
->> disabling, overwriting rules, triple fault for UC MCE during MCIP.
->> Although these logic can be implemented in user space, I think put the=
-m
->> in kernel space is easy to be understood. And the code is pretty short=
-=2E
->>    =20
->
-> IMO the main reason to put this in kernel-space would be to make it
-> possible to automatically forward some MCE errors generated by the
-> real hardware (RAM ECC errors for example) down into the VM.  Right
-> now I suppose you could do that with the patches to forward RAM-based
-> hard MCEs to userspace using SIGSEGV and handling the SIGSEGV in
-> userspace, but that seems more fragile to me.
->  =20
+Yes, anyway let include this patch that remove the usage of
+asm\types.h, we sure dont need this header.
+(it doesnt look risky as linux\types.h by itself will include it, but
+i have bad feeling about it)
 
-FWIW: I would be looking for a way to generate MCE to report async vbus
-faults via my SHM_SIGNAL_FAULT() mechanism, so I am very much in favor
-of this support being in-kernel.
+Thanks.
 
--Greg
+>From fc71a2c22019b1f0389b249e5987b0b2a208764f Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Wed, 22 Apr 2009 05:24:03 +0300
+Subject: [PATCH] ksm: ksm.h remove the asm\types.h header usage
 
-> Cheers,
-> Kyle Moffett
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  =20
+We surely dont need it, as we include linux\types.h above, that will
+include that anyway.
 
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ include/linux/ksm.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/ksm.h b/include/linux/ksm.h
+index 2c11e9a..c0849c7 100644
+--- a/include/linux/ksm.h
++++ b/include/linux/ksm.h
+@@ -8,8 +8,6 @@
+ #include <linux/types.h>
+ #include <linux/ioctl.h>
+ 
+-#include <asm/types.h>
+-
+ #define KSM_API_VERSION 1
+ 
+ #define ksm_control_flags_run 1
+-- 
+1.5.6.5
 
---------------enigE3F91AB170688CE1FCB5C669
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknuhAMACgkQP5K2CMvXmqHKRwCfSda2nACyG6sW8NahZsCu/JnE
-wggAnj6Cw1PFQVhAK2B5ozweSb7lLaNh
-=fi0E
------END PGP SIGNATURE-----
-
---------------enigE3F91AB170688CE1FCB5C669--
