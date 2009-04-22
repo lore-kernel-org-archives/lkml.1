@@ -1,59 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbZDVA0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZDVA02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806AbZDVA0L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 20:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZDVAZ4
+	id S1754542AbZDVA02 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 20:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZDVA0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 20:25:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56997
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751352AbZDVAZz (ORCPT
+	Tue, 21 Apr 2009 20:26:16 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46223 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753753AbZDVA0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 20:25:55 -0400
-Date: Tue, 21 Apr 2009 17:25:47 -0700 (PDT)
-Message-Id: <20090421.172547.85702227.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: hpa@zytor.com, h.mitake@gmail.com, mingo@elte.hu, tglx@linutronix.de,
-       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Subject: Re: arch/x86/Kconfig selects invalid HAVE_READQ, HAVE_WRITEQ vars
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adamyaavst5.fsf@cisco.com>
-References: <a6b9f31a0904210133m29e68580w1fb7a8e6159b65d6@mail.gmail.com>
-	<49EDE9E9.8090905@zytor.com>
-	<adamyaavst5.fsf@cisco.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 21 Apr 2009 20:26:15 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 21/25] Use allocation flags as an index to the zone watermark
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240266011-11140-22-git-send-email-mel@csn.ul.ie>
+References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-22-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090422092429.6271.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 22 Apr 2009 09:26:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 21 Apr 2009 10:07:50 -0700
+> ALLOC_WMARK_MIN, ALLOC_WMARK_LOW and ALLOC_WMARK_HIGH determin whether
+> pages_min, pages_low or pages_high is used as the zone watermark when
+> allocating the pages. Two branches in the allocator hotpath determine which
+> watermark to use. This patch uses the flags as an array index and places
+> the three watermarks in a union with an array so it can be offset. This
+> means the flags can be used as an array index and reduces the branches
+> taken.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> ---
+>  include/linux/mmzone.h |    8 +++++++-
+>  mm/page_alloc.c        |   18 ++++++++----------
+>  2 files changed, 15 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index f82bdba..c1fa208 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -275,7 +275,13 @@ struct zone_reclaim_stat {
+>  
+>  struct zone {
+>  	/* Fields commonly accessed by the page allocator */
+> -	unsigned long		pages_min, pages_low, pages_high;
+> +	union {
+> +		struct {
+> +			unsigned long	pages_min, pages_low, pages_high;
+> +		};
+> +		unsigned long pages_mark[3];
+> +	};
+> +
 
-> This only makes sense if we define a 32-bit fallback for
-> readq()/writeq() for all 32-bit architectures -- in fact it would be
-> good to do it in asm-generic so that there can be a single
-> implementation that guarantees that non-atomic versions always do, say,
-> low 32 bits then high 32 bits.  (So eg niu can use the generic version)
-> And then drivers like drivers/infiniband/hw/mthca can be switched to
-> "#ifndef writeq_atomic <...hardware specific fallback...>"
+hmmm... I don't like union hack. 
+Why can't we change all caller to use page_mark?
 
-I think if you want to do this right you have to provide two versions
-of the 32-bit implementations, when the cpu cannot generate full
-64-bit transactions.  Especially for readq().
 
-Some devices clear the status bits of a 64-bit register when read, so
-it might matter deeply whether the top-half or the bottom-half 32-bits
-are read first.
 
-The following are ugly names, but something like "readq_hifirst()"
-and "readq_lofirst()" and they just get defined to play "readq()"
-in situations where a full 64-bit transaction can be generated by
-the cpu.
 
-The driver author has to figure out which is appropriate.
+>  	/*
+>  	 * We don't know if the memory that we're going to allocate will be freeable
+>  	 * or/and it will be released eventually, so to avoid totally wasting several
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 376d848..e61867e 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1157,10 +1157,13 @@ failed:
+>  	return NULL;
+>  }
+>  
+> -#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
+> -#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
+> -#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
+> -#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
+> +/* The WMARK bits are used as an index zone->pages_mark */
+> +#define ALLOC_WMARK_MIN		0x00 /* use pages_min watermark */
+> +#define ALLOC_WMARK_LOW		0x01 /* use pages_low watermark */
+> +#define ALLOC_WMARK_HIGH	0x02 /* use pages_high watermark */
+> +#define ALLOC_NO_WATERMARKS	0x08 /* don't check watermarks at all */
+> +#define ALLOC_WMARK_MASK	0x07 /* Mask to get the watermark bits */
 
-And I'm pretty sure similar high-first/low-first issues can exist
-for writeq() as well.
+the mask only use two bit. but mask definition is three bit (0x07), why?
+
+
+> +
+>  #define ALLOC_HARDER		0x10 /* try to alloc harder */
+>  #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
+>  #ifdef CONFIG_CPUSETS
+> @@ -1463,12 +1466,7 @@ zonelist_scan:
+>  
+>  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+>  			unsigned long mark;
+> -			if (alloc_flags & ALLOC_WMARK_MIN)
+> -				mark = zone->pages_min;
+> -			else if (alloc_flags & ALLOC_WMARK_LOW)
+> -				mark = zone->pages_low;
+> -			else
+> -				mark = zone->pages_high;
+> +			mark = zone->pages_mark[alloc_flags & ALLOC_WMARK_MASK];
+>  			if (!zone_watermark_ok(zone, order, mark,
+>  				    classzone_idx, alloc_flags)) {
+>  				if (!zone_reclaim_mode ||
+> -- 
+> 1.5.6.5
+> 
+
+
+
