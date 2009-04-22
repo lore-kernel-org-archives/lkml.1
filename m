@@ -1,909 +1,427 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZDVWYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbZDVWj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbZDVWYt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 18:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZDVWYk
+	id S1752916AbZDVWj0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 18:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZDVWjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 18:24:40 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:32913 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752513AbZDVWYi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 18:24:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YeTwpks4/cNvzexgUbsmAx/JPYc8E3c1Ujzq8WyPPpvTbrfNX5NgrW/QHlEUnNVhgl
-         lQDHI52MccaNXRWoS2gfG9fy/G0KcllRO0RBza05q5lrpsLbLS6HKRlUvgaNusMdi3Oq
-         XY/PMMNdP+2l8fF5awfA7mbV/YvXESPqJAWxc=
-Subject: Re: [PATCH] x86 microcode: work_on_cpu and cleanup of the
-	synchronization logic
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Peter Oruba <peter.oruba@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1240344440.5861.10.camel@earth>
-References: <1240258569.6195.8.camel@earth> <1240344440.5861.10.camel@earth>
-Content-Type: text/plain
-Date: Thu, 23 Apr 2009 00:24:33 +0200
-Message-Id: <1240439073.12721.23.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 22 Apr 2009 18:39:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34626 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbZDVWjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 18:39:15 -0400
+Message-ID: <49EF9C10.6090107@kernel.org>
+Date: Wed, 22 Apr 2009 15:37:04 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: [RFC PATCH 1/2] pci: don't assume pref memio are 64bit -v3
+References: <alpine.LFD.2.00.0904161540590.4042@localhost.localdomain> <49E99054.6050208@kernel.org> <alpine.LFD.2.00.0904181142530.4042@localhost.localdomain> <49EA57C4.1000603@kernel.org> <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain> <alpine.LFD.2.00.0904182149240.2199@localhost.localdomain> <20090419090208.GA30211@elte.hu> <20090419090615.GA30631@elte.hu> <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru>
+In-Reply-To: <20090421105629.GB17904@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Version 3
+one system with 4g installed ( there is 1g hole)
 
-diff with v.2
+when 4G installed.
+BIOS put ACPI etc need the hole
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009bc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e3000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 00000000bffa0000 (usable)
+[    0.000000]  BIOS-e820: 00000000bffa0000 - 00000000bffae000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000bffae000 - 00000000bfff0000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000bfff0000 - 00000000c0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffb00000 - 0000000100000000 (reserved)
+[    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+so in kernel resource will be reserved for 0xbffa0000 - 0xbfff0000 for ACPI
+0x100000 -  0xbffa0000 for RAM...
 
-- use smp_call_function_single() instead of work_on_cpu() as suggested by Ingo;
-- add 'enum ucode_state' as return value of request_microcode_{fw,user}
-- minor cleanups
+and BIOS set
+[    0.240007] pci 0000:00:01.0: bridge 64bit mmio pref: [0xbdf00000-0xddefffff]
+[    0.237102] pci 0000:01:00.0: reg 10 32bit mmio: [0xc0000000-0xcfffffff]
+that is conflict with reserved res. so it can not be reserved Kernel.
 
+then Kernel try to get range from 0x140000000 ( above the RAM, 5G and above 4g)
+and set let the bridge to use it, and ATI cards to use it.
 
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+but the problem is that ATI only support 32bit ...
 
-Subject: x86 microcode: smp_call_function_single() and cleanup of synchronization logic
+we should not assign 64bit range to pci device that only take 32bit pref
 
-* Solve an issue described in 6f66cbc63081fd70e3191b4dbb796746780e5ae1
-  in a different way, without resorting to set_cpus_allowed();
+try to set PCI_PREF_RANGE_TYPE_64 in 64bit resource of pci_device (besides in pci_bridge),
+and make the bus resource only have that bit set when all device under that do support
+64bit pref mem
+then use that flag to decide the max limit for find/request.
 
-* in fact, only collect_cpu_info and apply_microcode callbacks must run
-  on a target cpu, others will do just fine on any other.
-  smp_call_function_single() is used to run these callbacks on a target cpu.
-   
-* cleanup of synchronization logic of the 'microcode_core' part
+v2: fix b_res->flags and logic and passing result.
+v3: split iomem to iomem32, iomem64, and iomem64 will take IORESOURCE_MEM_64
 
-  The generic 'microcode_core' part guarantees that only a single cpu is being
-  updated at any particular moment of time.
-
-  In general, there is no need for any additional sync. mechanism in arch-specific parts
-  (the patch removes existing spinlocks).
-
-  See also the "Synchronization" section in microcode_core.c.
-
-* use 'enum ucode_state' as return value of request_microcode_{fw,user} to
-  gain more flexibility by distinguishing between real error cases and situations when an appropriate
-  ucode was not found (which is not an error per-se).  
-
-* some minor cleanups
-
-
- arch/x86/include/asm/microcode.h  |   19 ++-
- arch/x86/kernel/microcode_amd.c   |   58 +++-----
- arch/x86/kernel/microcode_core.c  |  261 ++++++++++++++++++++++---------------
- arch/x86/kernel/microcode_intel.c |   74 ++++-------
- 4 files changed, 220 insertions(+), 192 deletions(-)
-
-(some part of '+' is taken by comments)
+[Impact: do assign wrong range to device that doesn't support it]
 
 
+Reported-by: Yannick <yannick.roehlly@free.fr>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Andreas Herrmann <andreas.herrmann3@amd.com>
-CC: Peter Oruba <peter.oruba@amd.com>
-CC: Arjan van de Ven <arjan@infradead.org>
-CC: Hugh Dickins <hugh@veritas.com>
+---
+ drivers/pci/bus.c       |    6 +++
+ drivers/pci/probe.c     |   12 +++++--
+ drivers/pci/setup-bus.c |   41 ++++++++++++++++++-------
+ include/linux/ioport.h  |    4 ++
+ init/main.c             |    7 ++++
+ kernel/resource.c       |   76 ++++++++++++++++++++++++++++++++++++++----------
+ 6 files changed, 117 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/include/asm/microcode.h b/arch/x86/include/asm/microcode.h
-index c882664..251620b 100644
---- a/arch/x86/include/asm/microcode.h
-+++ b/arch/x86/include/asm/microcode.h
-@@ -9,14 +9,25 @@ struct cpu_signature {
+Index: linux-2.6/drivers/pci/bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/bus.c
++++ linux-2.6/drivers/pci/bus.c
+@@ -53,6 +53,12 @@ pci_bus_alloc_resource(struct pci_bus *b
+ 		if ((res->flags ^ r->flags) & type_mask)
+ 			continue;
  
- struct device;
- 
-+enum ucode_state { UCODE_ERROR, UCODE_OK, UCODE_NFOUND };
++		/* We cannot allocate a mem_32 resource
++		   from a mem_64 area */
++		if ((r->flags & IORESOURCE_MEM_64) &&
++		    !(res->flags & IORESOURCE_MEM_64))
++			continue;
 +
- struct microcode_ops {
--	int  (*request_microcode_user) (int cpu, const void __user *buf, size_t size);
--	int  (*request_microcode_fw) (int cpu, struct device *device);
-+	enum ucode_state (*request_microcode_user) (int cpu,
-+				const void __user *buf, size_t size);
- 
--	void (*apply_microcode) (int cpu);
-+	enum ucode_state (*request_microcode_fw) (int cpu,
-+				struct device *device);
- 
--	int  (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
- 	void (*microcode_fini_cpu) (int cpu);
+ 		/* We cannot allocate a non-prefetching resource
+ 		   from a pre-fetching area */
+ 		if ((r->flags & IORESOURCE_PREFETCH) &&
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c
++++ linux-2.6/drivers/pci/probe.c
+@@ -193,7 +193,7 @@ int __pci_read_base(struct pci_dev *dev,
+ 		res->flags |= pci_calc_resource_flags(l) | IORESOURCE_SIZEALIGN;
+ 		if (type == pci_bar_io) {
+ 			l &= PCI_BASE_ADDRESS_IO_MASK;
+-			mask = PCI_BASE_ADDRESS_IO_MASK & 0xffff;
++			mask = PCI_BASE_ADDRESS_IO_MASK & IO_SPACE_LIMIT;
+ 		} else {
+ 			l &= PCI_BASE_ADDRESS_MEM_MASK;
+ 			mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
+@@ -237,6 +237,8 @@ int __pci_read_base(struct pci_dev *dev,
+ 			dev_printk(KERN_DEBUG, &dev->dev,
+ 				"reg %x 64bit mmio: %pR\n", pos, res);
+ 		}
 +
-+	/* 
-+	 * The generic 'microcode_core' part guarantees that
-+	 * the callbacks below run on a target cpu when they
-+	 * are being called.
-+	 * See also the "Synchronization" section in microcode_core.c.
-+	 */
-+	int (*apply_microcode) (int cpu);
-+	int (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
- };
++		res->flags |= IORESOURCE_MEM_64;
+ 	} else {
+ 		sz = pci_size(l, sz, mask);
  
- struct ucode_cpu_info {
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 453b579..c8be20f 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -13,25 +13,13 @@
-  *  Licensed under the terms of the GNU General Public
-  *  License version 2. See file COPYING for details.
-  */
--#include <linux/platform_device.h>
--#include <linux/capability.h>
--#include <linux/miscdevice.h>
- #include <linux/firmware.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
- #include <linux/pci_ids.h>
- #include <linux/uaccess.h>
- #include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/cpu.h>
- #include <linux/pci.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
+@@ -362,7 +364,10 @@ void __devinit pci_read_bridge_bases(str
+ 		}
+ 	}
+ 	if (base <= limit) {
+-		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
++		res->flags = (mem_base_lo & PCI_PREF_RANGE_TYPE_MASK) |
++					 IORESOURCE_MEM | IORESOURCE_PREFETCH;
++		if (res->flags & PCI_PREF_RANGE_TYPE_64)
++			res->flags |= IORESOURCE_MEM_64;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+ 		dev_printk(KERN_DEBUG, &dev->dev, "bridge %sbit mmio pref: %pR\n",
+@@ -1178,7 +1183,8 @@ struct pci_bus * pci_create_bus(struct d
  
- #include <asm/microcode.h>
- #include <asm/processor.h>
-@@ -79,9 +67,6 @@ struct microcode_amd {
- #define UCODE_CONTAINER_SECTION_HDR	8
- #define UCODE_CONTAINER_HEADER_SIZE	12
+ 	b->number = b->secondary = bus;
+ 	b->resource[0] = &ioport_resource;
+-	b->resource[1] = &iomem_resource;
++	b->resource[1] = &iomem32_resource;
++	b->resource[2] = &iomem64_resource;
  
--/* serialize access to the physical write */
--static DEFINE_SPINLOCK(microcode_update_lock);
--
- static struct equiv_cpu_entry *equiv_cpu_table;
+ 	set_pci_bus_resources_arch_default(b);
  
- static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
-@@ -144,9 +129,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -143,6 +143,7 @@ static void pci_setup_bridge(struct pci_
+ 	struct pci_dev *bridge = bus->self;
+ 	struct pci_bus_region region;
+ 	u32 l, bu, lu, io_upper16;
++	int pref_mem64;
+ 
+ 	if (pci_is_enabled(bridge))
+ 		return;
+@@ -198,16 +199,22 @@ static void pci_setup_bridge(struct pci_
+ 	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, 0);
+ 
+ 	/* Set up PREF base/limit. */
++	pref_mem64 = 0;
+ 	bu = lu = 0;
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
+ 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
++		int width = 8;
+ 		l = (region.start >> 16) & 0xfff0;
+ 		l |= region.end & 0xfff00000;
+-		bu = upper_32_bits(region.start);
+-		lu = upper_32_bits(region.end);
+-		dev_info(&bridge->dev, "  PREFETCH window: %#016llx-%#016llx\n",
+-		    (unsigned long long)region.start,
+-		    (unsigned long long)region.end);
++		if (bus->resource[2]->flags & IORESOURCE_MEM_64) {
++			pref_mem64 = 1;
++			bu = upper_32_bits(region.start);
++			lu = upper_32_bits(region.end);
++			width = 16;
++		}
++		dev_info(&bridge->dev, "  PREFETCH window: %#0*llx-%#0*llx\n",
++				width, (unsigned long long)region.start,
++				width, (unsigned long long)region.end);
+ 	}
+ 	else {
+ 		l = 0x0000fff0;
+@@ -215,9 +222,11 @@ static void pci_setup_bridge(struct pci_
+ 	}
+ 	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
+ 
+-	/* Set the upper 32 bits of PREF base & limit. */
+-	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+-	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
++	if (pref_mem64) {
++		/* Set the upper 32 bits of PREF base & limit. */
++		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
++		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
++	}
+ 
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
+@@ -255,8 +264,11 @@ static void pci_bridge_check_ranges(stru
+ 		pci_read_config_dword(bridge, PCI_PREF_MEMORY_BASE, &pmem);
+ 		pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, 0x0);
+ 	}
+-	if (pmem)
++	if (pmem) {
+ 		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
++		if ((pmem & PCI_PREF_RANGE_TYPE_MASK) == PCI_PREF_RANGE_TYPE_64)
++			b_res[2].flags |= IORESOURCE_MEM_64;
++	}
+ }
+ 
+ /* Helper function for sizing routines: find first available
+@@ -272,7 +284,8 @@ static struct resource *find_free_bus_re
+ 
+ 	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+ 		r = bus->resource[i];
+-		if (r == &ioport_resource || r == &iomem_resource)
++		if (r == &ioport_resource || r == &iomem32_resource
++			|| r == &iomem64_resource)
+ 			continue;
+ 		if (r && (r->flags & type_mask) == type && !r->parent)
+ 			return r;
+@@ -336,6 +349,7 @@ static int pbus_size_mem(struct pci_bus
+ 	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
+ 	int order, max_order;
+ 	struct resource *b_res = find_free_bus_resource(bus, type);
++	unsigned int mem64_mask = 0;
+ 
+ 	if (!b_res)
+ 		return 0;
+@@ -344,9 +358,12 @@ static int pbus_size_mem(struct pci_bus
+ 	max_order = 0;
+ 	size = 0;
+ 
++	mem64_mask = b_res->flags & IORESOURCE_MEM_64;
++	b_res->flags &= ~IORESOURCE_MEM_64;
++
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		int i;
+-		
++
+ 		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+ 			struct resource *r = &dev->resource[i];
+ 			resource_size_t r_size;
+@@ -372,6 +389,7 @@ static int pbus_size_mem(struct pci_bus
+ 				aligns[order] += align;
+ 			if (order > max_order)
+ 				max_order = order;
++			mem64_mask &= r->flags & IORESOURCE_MEM_64;
+ 		}
+ 	}
+ 
+@@ -396,6 +414,7 @@ static int pbus_size_mem(struct pci_bus
+ 	b_res->start = min_align;
+ 	b_res->end = size + min_align - 1;
+ 	b_res->flags |= IORESOURCE_STARTALIGN;
++	b_res->flags |= mem64_mask;
  	return 1;
  }
  
--static void apply_microcode_amd(int cpu)
-+static int apply_microcode_amd(int cpu)
- {
--	unsigned long flags;
- 	u32 rev, dummy;
- 	int cpu_num = raw_smp_processor_id();
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu_num;
-@@ -156,25 +140,25 @@ static void apply_microcode_amd(int cpu)
- 	BUG_ON(cpu_num != cpu);
+Index: linux-2.6/include/linux/ioport.h
+===================================================================
+--- linux-2.6.orig/include/linux/ioport.h
++++ linux-2.6/include/linux/ioport.h
+@@ -49,6 +49,8 @@ struct resource_list {
+ #define IORESOURCE_SIZEALIGN	0x00020000	/* size indicates alignment */
+ #define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
  
- 	if (mc_amd == NULL)
--		return;
-+		return 0;
- 
--	spin_lock_irqsave(&microcode_update_lock, flags);
- 	wrmsrl(MSR_AMD64_PATCH_LOADER, (u64)(long)&mc_amd->hdr.data_code);
- 	/* get patch id after patching */
- 	rdmsr(MSR_AMD64_PATCH_LEVEL, rev, dummy);
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 
- 	/* check current patch id and patch's id for match */
- 	if (rev != mc_amd->hdr.patch_id) {
- 		printk(KERN_ERR "microcode: CPU%d: update failed "
- 		       "(for patch_level=0x%x)\n", cpu, mc_amd->hdr.patch_id);
--		return;
-+		return -1;
- 	}
- 
- 	printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n",
- 	       cpu, rev);
- 
- 	uci->cpu_sig.rev = rev;
++#define IORESOURCE_MEM_64	0x00100000
 +
-+	return 0;
- }
+ #define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
+ #define IORESOURCE_DISABLED	0x10000000
+ #define IORESOURCE_UNSET	0x20000000
+@@ -107,6 +109,8 @@ struct resource_list {
+ /* PC/ISA/whatever - the normal PC address spaces: IO and memory */
+ extern struct resource ioport_resource;
+ extern struct resource iomem_resource;
++extern struct resource iomem32_resource;
++extern struct resource iomem64_resource;
  
- static int get_ucode_data(void *to, const u8 *from, size_t n)
-@@ -263,7 +247,8 @@ static void free_equiv_cpu_table(void)
- 	}
- }
- 
--static int generic_load_microcode(int cpu, const u8 *data, size_t size)
-+static enum ucode_state
-+generic_load_microcode(int cpu, const u8 *data, size_t size)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	const u8 *ucode_ptr = data;
-@@ -272,12 +257,13 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover;
- 	unsigned long offset;
-+	enum ucode_state state = UCODE_OK;
- 
- 	offset = install_equiv_cpu_table(ucode_ptr);
- 	if (!offset) {
- 		printk(KERN_ERR "microcode: failed to create "
- 		       "equivalent cpu table\n");
--		return -EINVAL;
-+		return UCODE_ERROR;
- 	}
- 
- 	ucode_ptr += offset;
-@@ -312,28 +298,27 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 			pr_debug("microcode: CPU%d found a matching microcode "
- 				 "update with version 0x%x (current=0x%x)\n",
- 				 cpu, new_rev, uci->cpu_sig.rev);
--		} else
-+		} else {
- 			vfree(new_mc);
--	}
-+			state = UCODE_ERROR;
-+		}
-+	} else
-+		state = UCODE_NFOUND;
- 
- 	free_equiv_cpu_table();
- 
--	return (int)leftover;
-+	return state;
- }
- 
--static int request_microcode_fw(int cpu, struct device *device)
-+static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- {
- 	const char *fw_name = "amd-ucode/microcode_amd.bin";
- 	const struct firmware *firmware;
--	int ret;
--
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
-+	enum ucode_state ret;
- 
--	ret = request_firmware(&firmware, fw_name, device);
--	if (ret) {
-+	if (request_firmware(&firmware, fw_name, device)) {
- 		printk(KERN_ERR "microcode: failed to load file %s\n", fw_name);
--		return ret;
-+		return UCODE_NFOUND;
- 	}
- 
- 	ret = generic_load_microcode(cpu, firmware->data, firmware->size);
-@@ -343,11 +328,12 @@ static int request_microcode_fw(int cpu, struct device *device)
- 	return ret;
- }
- 
--static int request_microcode_user(int cpu, const void __user *buf, size_t size)
-+static enum ucode_state
-+request_microcode_user(int cpu, const void __user *buf, size_t size)
- {
- 	printk(KERN_INFO "microcode: AMD microcode update via "
- 	       "/dev/cpu/microcode not supported\n");
--	return -1;
-+	return UCODE_ERROR;
- }
- 
- static void microcode_fini_cpu_amd(int cpu)
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index 98c470c..f43794b 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -71,27 +71,17 @@
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
- #include <linux/platform_device.h>
--#include <linux/capability.h>
- #include <linux/miscdevice.h>
--#include <linux/firmware.h>
- #include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
--#include <linux/uaccess.h>
--#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
- #include <linux/cpu.h>
- #include <linux/fs.h>
- #include <linux/mm.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
--#include <asm/msr.h>
- 
- MODULE_DESCRIPTION("Microcode Update Driver");
- MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
-@@ -101,36 +91,110 @@ MODULE_LICENSE("GPL");
- 
- static struct microcode_ops	*microcode_ops;
- 
--/* no concurrent ->write()s are allowed on /dev/cpu/microcode */
-+/*
-+ * Synchronization.
-+ *
-+ * All non cpu-hotplug-callback call sites use:
-+ *
-+ * - microcode_mutex to synchronize with each other;
-+ * - get/put_online_cpus() to synchronize with
-+ *   the cpu-hotplug-callback call sites.
-+ *
-+ * We guarantee that only a single cpu is being
-+ * updated at any particular moment of time.
-+ */
- static DEFINE_MUTEX(microcode_mutex);
- 
- struct ucode_cpu_info		ucode_cpu_info[NR_CPUS];
- EXPORT_SYMBOL_GPL(ucode_cpu_info);
- 
-+/*
-+ * Operations that are run on a target cpu: 
-+ */
-+
-+struct cpu_info_ctx {
-+	struct cpu_signature	*cpu_sig;
-+	int			err;
-+};
-+
-+static void collect_cpu_info_local(void *arg)
-+{
-+	struct cpu_info_ctx *ctx = arg;
-+
-+	ctx->err = microcode_ops->collect_cpu_info(smp_processor_id(),
-+						   ctx->cpu_sig);
-+}
-+
-+static int collect_cpu_info_on_target(int cpu, struct cpu_signature *cpu_sig)
-+{
-+	struct cpu_info_ctx ctx = { .cpu_sig = cpu_sig, .err = 0 };
-+	int ret;
-+
-+	ret = smp_call_function_single(cpu, collect_cpu_info_local, &ctx, 1);
-+	if (!ret)
-+		ret = ctx.err;
-+
-+	return ret;
-+}
-+
-+static int collect_cpu_info(int cpu)
-+{
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	int ret;
-+
-+	memset(uci, 0, sizeof(*uci));
-+
-+	ret = collect_cpu_info_on_target(cpu, &uci->cpu_sig);
-+	if (!ret)
-+		uci->valid = 1;
-+
-+	return ret;
-+}
-+
-+struct apply_microcode_ctx {
-+	int err;
-+};
-+
-+static void apply_microcode_local(void *arg)
-+{
-+	struct apply_microcode_ctx *ctx = arg;
-+
-+	ctx->err = microcode_ops->apply_microcode(smp_processor_id());
-+}
-+
-+static int apply_microcode_on_target(int cpu)
-+{
-+	struct apply_microcode_ctx ctx = { .err = 0 };
-+	int ret;
-+
-+	ret = smp_call_function_single(cpu, apply_microcode_local, &ctx, 1);
-+	if (!ret)
-+		ret = ctx.err;
-+
-+	return ret;
-+}
-+
- #ifdef CONFIG_MICROCODE_OLD_INTERFACE
- static int do_microcode_update(const void __user *buf, size_t size)
- {
--	cpumask_t old;
- 	int error = 0;
- 	int cpu;
- 
--	old = current->cpus_allowed;
--
- 	for_each_online_cpu(cpu) {
- 		struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+		enum ucode_state ustate;
- 
- 		if (!uci->valid)
- 			continue;
- 
--		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--		error = microcode_ops->request_microcode_user(cpu, buf, size);
--		if (error < 0)
--			goto out;
--		if (!error)
--			microcode_ops->apply_microcode(cpu);
-+		ustate = microcode_ops->request_microcode_user(cpu, buf, size);
-+		if (ustate == UCODE_ERROR) {
-+			error = -1;
-+			break;
-+		} else if (ustate == UCODE_OK)
-+			apply_microcode_on_target(cpu);
- 	}
--out:
--	set_cpus_allowed_ptr(current, &old);
-+
- 	return error;
- }
- 
-@@ -205,19 +269,22 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
- /* fake device for request_firmware */
- static struct platform_device	*microcode_pdev;
- 
--static long reload_for_cpu(void *unused)
-+static int reload_for_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	int err = 0;
- 
- 	mutex_lock(&microcode_mutex);
- 	if (uci->valid) {
--		err = microcode_ops->request_microcode_fw(smp_processor_id(),
--							  &microcode_pdev->dev);
--		if (!err)
--			microcode_ops->apply_microcode(smp_processor_id());
-+		enum ucode_state ustate = microcode_ops->request_microcode_fw(cpu,
-+						&microcode_pdev->dev);
-+		if (ustate == UCODE_OK)
-+			apply_microcode_on_target(cpu);
-+		else if (ustate == UCODE_ERROR)
-+			err = -1;
- 	}
- 	mutex_unlock(&microcode_mutex);
-+
- 	return err;
- }
- 
-@@ -235,7 +302,7 @@ static ssize_t reload_store(struct sys_device *dev,
- 	if (val == 1) {
- 		get_online_cpus();
- 		if (cpu_online(cpu))
--			err = work_on_cpu(cpu, reload_for_cpu, NULL);
-+			err = reload_for_cpu(cpu);
- 		put_online_cpus();
- 	}
- 	if (err)
-@@ -275,7 +342,7 @@ static struct attribute_group mc_attr_group = {
- 	.name		= "microcode",
+ extern int request_resource(struct resource *root, struct resource *new);
+ extern int release_resource(struct resource *new);
+Index: linux-2.6/kernel/resource.c
+===================================================================
+--- linux-2.6.orig/kernel/resource.c
++++ linux-2.6/kernel/resource.c
+@@ -37,6 +37,20 @@ struct resource iomem_resource = {
  };
+ EXPORT_SYMBOL(iomem_resource);
  
--static void __microcode_fini_cpu(int cpu)
-+static void microcode_fini_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
-@@ -283,103 +350,73 @@ static void __microcode_fini_cpu(int cpu)
- 	uci->valid = 0;
- }
- 
--static void microcode_fini_cpu(int cpu)
--{
--	mutex_lock(&microcode_mutex);
--	__microcode_fini_cpu(cpu);
--	mutex_unlock(&microcode_mutex);
--}
-+enum { UCODE_UPDATE_ERR, UCODE_UPDATE_OK, UCODE_UPDATE_NAVAIL };
- 
--static void collect_cpu_info(int cpu)
-+static enum ucode_state microcode_resume_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
--	memset(uci, 0, sizeof(*uci));
--	if (!microcode_ops->collect_cpu_info(cpu, &uci->cpu_sig))
--		uci->valid = 1;
-+	if (!uci->mc)
-+		return UCODE_NFOUND;
++/* need to insert those two under iomem */
++struct resource iomem32_resource = {
++	.name	= "PCI mem 32bit",
++	.start	= 0,
++	.end	= 0xffffffff,
++	.flags	= IORESOURCE_MEM,
++};
++struct resource iomem64_resource = {
++	.name	= "PCI mem 64bit",
++	.start	= 1ULL<<32,
++	.end	= -1,
++	.flags	= IORESOURCE_MEM | IORESOURCE_MEM_64,
++};
 +
-+	pr_debug("microcode: CPU%d updated upon resume\n", cpu);
-+	apply_microcode_on_target(cpu);
-+
-+	return UCODE_OK;
- }
+ static DEFINE_RWLOCK(resource_lock);
  
--static int microcode_resume_cpu(int cpu)
-+static enum ucode_state microcode_init_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	struct cpu_signature nsig;
-+	enum ucode_state ustate;
+ static void *r_next(struct seq_file *m, void *v, loff_t *pos)
+@@ -200,7 +214,15 @@ int request_resource(struct resource *ro
+ 	struct resource *conflict;
  
--	pr_debug("microcode: CPU%d resumed\n", cpu);
--
--	if (!uci->mc)
--		return 1;
-+	if (collect_cpu_info(cpu))
-+		return UCODE_ERROR;
- 
--	/*
--	 * Let's verify that the 'cached' ucode does belong
--	 * to this cpu (a bit of paranoia):
-+	/* 
-+	 * --dimm. Review this case.
-+	 * If relevant, trigger a delayed update?
- 	 */
--	if (microcode_ops->collect_cpu_info(cpu, &nsig)) {
--		__microcode_fini_cpu(cpu);
--		printk(KERN_ERR "failed to collect_cpu_info for resuming cpu #%d\n",
--				cpu);
--		return -1;
--	}
-+	if (system_state != SYSTEM_RUNNING)
-+		return UCODE_NFOUND;
-+
-+	ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
- 
--	if ((nsig.sig != uci->cpu_sig.sig) || (nsig.pf != uci->cpu_sig.pf)) {
--		__microcode_fini_cpu(cpu);
--		printk(KERN_ERR "cached ucode doesn't match the resuming cpu #%d\n",
--				cpu);
--		/* Should we look for a new ucode here? */
--		return 1;
-+	if (ustate == UCODE_OK) {
-+		pr_debug("microcode: CPU%d updated upon init\n", cpu);
-+		apply_microcode_on_target(cpu);
- 	}
- 
--	return 0;
-+	return ustate;
- }
- 
--static long microcode_update_cpu(void *unused)
-+static enum ucode_state microcode_update_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
--	int err = 0;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	enum ucode_state ustate;
- 
--	/*
--	 * Check if the system resume is in progress (uci->valid != NULL),
--	 * otherwise just request a firmware:
--	 */
--	if (uci->valid) {
--		err = microcode_resume_cpu(smp_processor_id());
--	} else {
--		collect_cpu_info(smp_processor_id());
--		if (uci->valid && system_state == SYSTEM_RUNNING)
--			err = microcode_ops->request_microcode_fw(
--					smp_processor_id(),
--					&microcode_pdev->dev);
--	}
--	if (!err)
--		microcode_ops->apply_microcode(smp_processor_id());
--	return err;
--}
-+	if (uci->valid)
-+		ustate = microcode_resume_cpu(cpu);
-+	else
-+		ustate = microcode_init_cpu(cpu);
- 
--static int microcode_init_cpu(int cpu)
--{
--	int err;
--	mutex_lock(&microcode_mutex);
--	err = work_on_cpu(cpu, microcode_update_cpu, NULL);
--	mutex_unlock(&microcode_mutex);
--
--	return err;
-+	return ustate;
- }
- 
- static int mc_sysdev_add(struct sys_device *sys_dev)
- {
- 	int err, cpu = sys_dev->id;
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	if (!cpu_online(cpu))
- 		return 0;
- 
- 	pr_debug("microcode: CPU%d added\n", cpu);
--	memset(uci, 0, sizeof(*uci));
- 
- 	err = sysfs_create_group(&sys_dev->kobj, &mc_attr_group);
- 	if (err)
- 		return err;
- 
--	err = microcode_init_cpu(cpu);
-+	if (microcode_init_cpu(cpu) == UCODE_ERROR)
-+		err = -1;
- 
- 	return err;
- }
-@@ -400,12 +437,23 @@ static int mc_sysdev_remove(struct sys_device *sys_dev)
- static int mc_sysdev_resume(struct sys_device *dev)
- {
- 	int cpu = dev->id;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	if (!cpu_online(cpu))
- 		return 0;
- 
--	/* only CPU 0 will apply ucode here */
--	microcode_update_cpu(NULL);
-+	/*
-+	 * All non-bootup cpus are still disabled,
-+	 * so only CPU 0 will apply ucode here.
-+	 *
-+	 * Moreover, there can be no concurrent
-+	 * updates from any other places at this point.
-+	 */
-+	WARN_ON(cpu != 0);
-+
-+	if (uci->valid && uci->mc)
-+		microcode_ops->apply_microcode(cpu);
-+
- 	return 0;
- }
- 
-@@ -425,9 +473,7 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		if (microcode_init_cpu(cpu))
--			printk(KERN_ERR "microcode: failed to init CPU%d\n",
--			       cpu);
-+		microcode_update_cpu(cpu);
- 	case CPU_DOWN_FAILED:
- 	case CPU_DOWN_FAILED_FROZEN:
- 		pr_debug("microcode: CPU%d added\n", cpu);
-@@ -469,9 +515,6 @@ static int __init microcode_init(void)
- 		return -ENODEV;
- 	}
- 
--	error = microcode_dev_init();
--	if (error)
--		return error;
- 	microcode_pdev = platform_device_register_simple("microcode", -1,
- 							 NULL, 0);
- 	if (IS_ERR(microcode_pdev)) {
-@@ -480,14 +523,22 @@ static int __init microcode_init(void)
- 	}
- 
- 	get_online_cpus();
-+	mutex_lock(&microcode_mutex);
-+
- 	error = sysdev_driver_register(&cpu_sysdev_class, &mc_sysdev_driver);
-+
-+	mutex_unlock(&microcode_mutex);
- 	put_online_cpus();
-+
- 	if (error) {
--		microcode_dev_exit();
- 		platform_device_unregister(microcode_pdev);
- 		return error;
- 	}
- 
-+	error = microcode_dev_init();
-+	if (error)
-+		return error;
-+
- 	register_hotcpu_notifier(&mc_cpu_notifier);
- 
- 	printk(KERN_INFO
-@@ -505,7 +556,11 @@ static void __exit microcode_exit(void)
- 	unregister_hotcpu_notifier(&mc_cpu_notifier);
- 
- 	get_online_cpus();
-+	mutex_lock(&microcode_mutex);
-+
- 	sysdev_driver_unregister(&cpu_sysdev_class, &mc_sysdev_driver);
-+
-+	mutex_unlock(&microcode_mutex);
- 	put_online_cpus();
- 
- 	platform_device_unregister(microcode_pdev);
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 149b9ec..52256a5 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -70,24 +70,11 @@
-  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
--#include <linux/platform_device.h>
--#include <linux/capability.h>
--#include <linux/miscdevice.h>
- #include <linux/firmware.h>
--#include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
- #include <linux/uaccess.h>
--#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/cpu.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
-@@ -150,13 +137,9 @@ struct extended_sigtable {
- 
- #define exttable_size(et) ((et)->count * EXT_SIGNATURE_SIZE + EXT_HEADER_SIZE)
- 
--/* serialize access to the physical write to MSR 0x79 */
--static DEFINE_SPINLOCK(microcode_update_lock);
--
- static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu_num);
--	unsigned long flags;
- 	unsigned int val[2];
- 
- 	memset(csig, 0, sizeof(*csig));
-@@ -176,15 +159,11 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- 		csig->pf = 1 << ((val[1] >> 18) & 7);
- 	}
- 
--	/* serialize access to the physical write to MSR 0x79 */
--	spin_lock_irqsave(&microcode_update_lock, flags);
--
- 	wrmsr(MSR_IA32_UCODE_REV, 0, 0);
- 	/* see notes above for revision 1.07.  Apparent chip bug */
- 	sync_core();
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 
- 	pr_debug("microcode: collect_cpu_info : sig=0x%x, pf=0x%x, rev=0x%x\n",
- 			csig->sig, csig->pf, csig->rev);
-@@ -318,11 +297,10 @@ get_matching_microcode(struct cpu_signature *cpu_sig, void *mc, int rev)
- 	return 0;
- }
- 
--static void apply_microcode(int cpu)
-+static int apply_microcode(int cpu)
- {
- 	struct microcode_intel *mc_intel;
- 	struct ucode_cpu_info *uci;
--	unsigned long flags;
- 	unsigned int val[2];
- 	int cpu_num;
- 
-@@ -334,10 +312,7 @@ static void apply_microcode(int cpu)
- 	BUG_ON(cpu_num != cpu);
- 
- 	if (mc_intel == NULL)
--		return;
--
--	/* serialize access to the physical write to MSR 0x79 */
--	spin_lock_irqsave(&microcode_update_lock, flags);
-+		return 0;
- 
- 	/* write microcode via MSR 0x79 */
- 	wrmsr(MSR_IA32_UCODE_WRITE,
-@@ -351,12 +326,11 @@ static void apply_microcode(int cpu)
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
- 
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 	if (val[1] != mc_intel->hdr.rev) {
- 		printk(KERN_ERR "microcode: CPU%d update from revision "
- 				"0x%x to 0x%x failed\n",
- 			cpu_num, uci->cpu_sig.rev, val[1]);
--		return;
-+		return -1;
- 	}
- 	printk(KERN_INFO "microcode: CPU%d updated from revision "
- 			 "0x%x to 0x%x, date = %04x-%02x-%02x \n",
-@@ -366,15 +340,18 @@ static void apply_microcode(int cpu)
- 		(mc_intel->hdr.date >> 16) & 0xff);
- 
- 	uci->cpu_sig.rev = val[1];
-+
-+	return 0;
- }
- 
--static int generic_load_microcode(int cpu, void *data, size_t size,
--		int (*get_ucode_data)(void *, const void *, size_t))
-+static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
-+				int (*get_ucode_data)(void *, const void *, size_t))
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover = size;
-+	enum ucode_state state = UCODE_OK;
- 
- 	while (leftover) {
- 		struct microcode_header_intel mc_header;
-@@ -412,11 +389,15 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
- 		leftover  -= mc_size;
- 	}
- 
--	if (!new_mc)
-+	if (leftover) {
-+		if (new_mc)
-+			vfree(new_mc);
-+		state = UCODE_ERROR;
- 		goto out;
+ 	write_lock(&resource_lock);
+-	conflict = __request_resource(root, new);
++	if (root != &iomem_resource) {
++		conflict = __request_resource(root, new);
++	} else  {
++		/* assume no cross */
++		if (new->start >= (1ULL<<32))
++			conflict = __request_resource(&iomem64_resource, new);
++		else
++			conflict = __request_resource(&iomem32_resource, new);
 +	}
- 
--	if (leftover) {
--		vfree(new_mc);
-+	if (!new_mc) {
-+		state = UCODE_NFOUND;
- 		goto out;
- 	}
- 
-@@ -427,9 +408,8 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
- 	pr_debug("microcode: CPU%d found a matching microcode update with"
- 		 " version 0x%x (current=0x%x)\n",
- 			cpu, new_rev, uci->cpu_sig.rev);
--
-- out:
--	return (int)leftover;
-+out:
-+	return state;
+ 	write_unlock(&resource_lock);
+ 	return conflict ? -EBUSY : 0;
+ }
+@@ -437,20 +459,9 @@ int insert_resource(struct resource *par
+ 	return conflict ? -EBUSY : 0;
  }
  
- static int get_ucode_fw(void *to, const void *from, size_t n)
-@@ -438,21 +418,19 @@ static int get_ucode_fw(void *to, const void *from, size_t n)
- 	return 0;
- }
- 
--static int request_microcode_fw(int cpu, struct device *device)
-+static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+-/**
+- * insert_resource_expand_to_fit - Insert a resource into the resource tree
+- * @root: root resource descriptor
+- * @new: new resource to insert
+- *
+- * Insert a resource into the resource tree, possibly expanding it in order
+- * to make it encompass any conflicting resources.
+- */
+-void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
++static void __insert_resource_expand_to_fit(struct resource *root,
++						 struct resource *new)
  {
- 	char name[30];
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 	const struct firmware *firmware;
--	int ret;
-+	enum ucode_state ret;
+-	if (new->parent)
+-		return;
+-
+-	write_lock(&resource_lock);
+ 	for (;;) {
+ 		struct resource *conflict;
  
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
- 	sprintf(name, "intel-ucode/%02x-%02x-%02x",
- 		c->x86, c->x86_model, c->x86_mask);
--	ret = request_firmware(&firmware, name, device);
--	if (ret) {
+@@ -468,6 +479,31 @@ void insert_resource_expand_to_fit(struc
+ 
+ 		printk("Expanded resource %s due to conflict with %s\n", new->name, conflict->name);
+ 	}
++}
 +
-+	if (request_firmware(&firmware, name, device)) {
- 		pr_debug("microcode: data file %s load failed\n", name);
--		return ret;
-+		return UCODE_NFOUND;
- 	}
- 
- 	ret = generic_load_microcode(cpu, (void *)firmware->data,
-@@ -468,11 +446,9 @@ static int get_ucode_user(void *to, const void *from, size_t n)
- 	return copy_from_user(to, from, n);
++/**
++ * insert_resource_expand_to_fit - Insert a resource into the resource tree
++ * @root: root resource descriptor
++ * @new: new resource to insert
++ *
++ * Insert a resource into the resource tree, possibly expanding it in order
++ * to make it encompass any conflicting resources.
++ */
++void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
++{
++	if (new->parent)
++		return;
++
++	write_lock(&resource_lock);
++	if (root != &iomem_resource) {
++		__insert_resource_expand_to_fit(root, new);
++	} else  {
++		/* assume no cross */
++		if (new->start >= (1ULL<<32))
++			__insert_resource_expand_to_fit(&iomem64_resource, new);
++		else
++			__insert_resource_expand_to_fit(&iomem32_resource, new);
++	}
+ 	write_unlock(&resource_lock);
  }
  
--static int request_microcode_user(int cpu, const void __user *buf, size_t size)
-+static enum ucode_state
-+request_microcode_user(int cpu, const void __user *buf, size_t size)
+@@ -555,7 +591,17 @@ void __init reserve_region_with_split(st
+ 		const char *name)
  {
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
--
- 	return generic_load_microcode(cpu, (void *)buf, size, &get_ucode_user);
+ 	write_lock(&resource_lock);
+-	__reserve_region_with_split(root, start, end, name);
++	if (root != &iomem_resource) {
++		__reserve_region_with_split(root, start, end, name);
++	} else  {
++		/* assume no cross */
++		if (start >= (1ULL<<32))
++			__reserve_region_with_split(&iomem64_resource, start,
++							 end, name);
++		else
++			__reserve_region_with_split(&iomem32_resource, start,
++							 end, name);
++	}
+ 	write_unlock(&resource_lock);
  }
  
-
-
-
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -534,6 +534,12 @@ void __init __weak thread_info_cache_ini
+ {
+ }
+ 
++static void __init resource_init(void)
++{
++	insert_resource(&iomem_resource, &iomem32_resource);
++	insert_resource(&iomem_resource, &iomem64_resource);
++}
++
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+@@ -569,6 +575,7 @@ asmlinkage void __init start_kernel(void
+ 	page_address_init();
+ 	printk(KERN_NOTICE);
+ 	printk(linux_banner);
++	resource_init();
+ 	setup_arch(&command_line);
+ 	mm_init_owner(&init_mm, &init_task);
+ 	setup_command_line(command_line);
