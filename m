@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZD0ABT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZD0ALt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZD0ABT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Apr 2009 20:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZD0ABE
+	id S1754186AbZD0ALt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Apr 2009 20:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZD0ALo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Apr 2009 20:01:04 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:59111 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751855AbZD0ABB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Apr 2009 20:01:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=By0In+LH5pBDsSVcvYgTb99JBOmuMmbaVmO0hNhfYAx8ShJw7yBjO7Q1YUB1N0LTAm
-         UN2TB11gqqUTe8KgN9L9wqC/KBNsb6Ctl1GugsKm2PTMsfXS5X+YpRk3ghpHHwluX6co
-         sAei39FcT0eIIBYKRJ4N3cKa/M81Ayhl/VEWA=
-Message-ID: <49F4F5B1.4020201@gmail.com>
-Date: Mon, 27 Apr 2009 02:00:49 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
-MIME-Version: 1.0
-To: "linux.kernel" <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: 2.6.30-rc3: iwlagn probe timeouts (regression)
-Content-Type: text/plain; charset=UTF-8
+	Sun, 26 Apr 2009 20:11:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37601 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751643AbZD0ALn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Apr 2009 20:11:43 -0400
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other
+ PHY/MAC questions)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, netdev <netdev@vger.kernel.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	 <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+	 <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 10:21:16 +0200
+Message-Id: <1240388476.17445.10.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2009-04-20 at 20:10 -0400, Kyle Moffett wrote:
+> > IIRC, Ben had some issues with how phylib and the EMAC would need to
+> > interact.  Not sure if he has those written down somewhere or not.
+> > (CC'd).
+> 
+> Hmm, yeah, I'd be interested to see those.  There's enough similar
+> between phylib and the EMAC and sungem drivers that I'm considering a
+> series of somewhat-mechanical patches to make EMAC and sungem use the
+> "struct phy_device" and "struct mii_bus" from phylib, possibly
+> abstracting out some helper functions along the way.
 
-In earlier 2.6.30 (rc1 and 2) kernel tests I suffered the "beacon loss,
-sending probe request" problem, during which my connection would
-intermittently fail and reconnect. With the latest git kernel which
-seems to include a patch (ad935687dbe7307f5abd9e3f610a965a287324a9) for
-at least some of this, my card (Intel 5300AGN REV=0x24) completely fails
-to associate and I get:
+Yup, emac and sungem predate phylib.
 
-Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::radio
-Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::assoc
-Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::RX
-Apr 27 01:32:36 linux-7vph kernel: Registered led device: iwl-phy0::TX
-Apr 27 01:32:36 linux-7vph kernel: ADDRCONF(NETDEV_UP): wlan0: link is
-not ready
-Apr 27 01:32:40 linux-7vph sudo:   niella : TTY=pts/2 ; PWD=/home/niella
-; USER=root ; COMMAND=/usr/bin/tail -f /var/log/messages
-Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 1
-Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 2
-Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 3
-Apr 27 01:33:16 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e timed out
-Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 1
-Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 1
-Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 2
-Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 3
-Apr 27 01:33:29 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e timed out
-Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 1
-Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 1
-Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 2
-Apr 27 01:33:42 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e try 3
-Apr 27 01:33:43 linux-7vph kernel: wlan0: direct probe to AP
-00:1d:92:1d:1e:8e timed out
+I had a quick look at what it would take to port at least emac over, the
+main issue was that I want to be able to sleep (ie, take a mutex) in my
+mdio read/write functions, and back then, phylib wouldn't let me do that
+due to spinlock and timer/softirq usage.
 
-I do not have any similar problems with 2.6.29 or 2.6.28 at the exact
-same physical location.
+Ben.
 
-I can try to bisect in a day or two if need be.
 
-Regards,
-Niel
