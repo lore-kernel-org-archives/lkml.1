@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZDVNJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZDVNPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZDVNJY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZDVNJL
+	id S1754804AbZDVNPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZDVNOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:09:11 -0400
-Received: from rtr.ca ([76.10.145.34]:33068 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483AbZDVNJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:09:10 -0400
-Message-ID: <49EF16F5.5080909@rtr.ca>
-Date: Wed, 22 Apr 2009 09:09:09 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 22 Apr 2009 09:14:49 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:48163 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbZDVNOt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:14:49 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: =?utf-8?q?Mar=C3=B3y_=C3=81kos?= <akos@maroy.hu>
+Subject: Re: cdc-acm driver hangs on poll() call - 2.6.27, works on 2.6.24
+Date: Wed, 22 Apr 2009 15:14:34 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.29-9-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <49EDC44D.90106@maroy.hu> <200904211952.25616.oliver@neukum.org> <49EF0ED7.3060706@maroy.hu>
+In-Reply-To: <49EF0ED7.3060706@maroy.hu>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-References: <20090422090929.GA14928@havoc.gtf.org>
-In-Reply-To: <20090422090929.GA14928@havoc.gtf.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904221514.34892.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Currently, libata creates a Scsi_Host per port.  This was originally
-> done to leverage SCSI's infrastructure to arbitrate among master/slave
-> devices, but is not needed for most modern SATA controllers.   And I
-> _think_ it is not needed for master/slave if done properly, either.
-> 
-> The patch below converts libata such that there is now a 1:1
-> correspondence between struct Scsi_Host and struct ata_host.  ATA ports
-> are represented as SCSI layer 'channels', which is more natural.
-> 
-> This patch is an experiment, and not meant for upstream anytime soon.
-..
+Am Mittwoch 22 April 2009 14:34:31 schrieb Maróy Ákos:
+> what could be the problem?
 
-Could you perhaps explain how error handling would behave in this scheme?
+That's odd. I can't tell from the log. Can you make a usbmon trace?
 
-Currently, one SATA port can have failures without any impact whatsoever
-on concurrent operation of other ports, in part because each port is treated
-as a completely independent SCSI host.
-
-I wonder if that changes with the new (better) scheme proposed here?
+	Regards
+		Oliver
 
