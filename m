@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZDVBGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZDVBJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbZDVBGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 21:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZDVBGo
+	id S1753797AbZDVBJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 21:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZDVBJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 21:06:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:49453 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752084AbZDVBGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 21:06:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,227,1239001200"; 
-   d="scan'208";a="134210469"
-Subject: Re: [RFC PATCH v2 0/2] sched: Nominate a power-efficient ILB
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20090414045356.7645.33369.stgit@sofia.in.ibm.com>
-References: <20090414045356.7645.33369.stgit@sofia.in.ibm.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 21 Apr 2009 18:05:22 -0700
-Message-Id: <1240362322.27006.8548.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Tue, 21 Apr 2009 21:09:39 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59983 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752084AbZDVBJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 21:09:38 -0400
+Message-ID: <49EE6E3C.8050409@cn.fujitsu.com>
+Date: Wed, 22 Apr 2009 09:09:16 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Andrea Righi <righi.andrea@gmail.com>
+CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
+       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
+       fchecconi@gmail.com, paolo.valente@unimore.it,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] cgroup: io-throttle controller (v14)
+References: <1240090636-898-1-git-send-email-righi.andrea@gmail.com> <49EC34C1.6010709@cn.fujitsu.com> <20090420144816.GA13307@linux> <49ED1E66.6030604@cn.fujitsu.com> <20090421095848.GB13699@linux>
+In-Reply-To: <20090421095848.GB13699@linux>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-13 at 21:55 -0700, Gautham R Shenoy wrote:
-> Now, the other power-savings settings such as the sched_mc/smt_power_savings
-> and the power-aware IRQ balancer try to balance tasks/IRQs by taking
-> the system topology into consideration, with the intention of keeping
-> as many "power-domains" (cores/packages) in the low-power state.
+Andrea Righi wrote:
+> On Tue, Apr 21, 2009 at 09:16:22AM +0800, Gui Jianfeng wrote:
+>> Andrea Righi wrote:
+>>> On Mon, Apr 20, 2009 at 04:39:29PM +0800, Gui Jianfeng wrote:
+>>>> Andrea Righi wrote:
+>>>> ...
+>>>>> Implementation
+>>>>> ~~~~~~~~~~~~~~
+>>>>> Patchset against latest Linus' git:
+>>>>>
+>>>>>   [PATCH 0/7] cgroup: block device IO controller (v14)
+>>>>>   [PATCH 1/7] io-throttle documentation
+>>>>>   [PATCH 2/7] res_counter: introduce ratelimiting attributes
+>>>>>   [PATCH 3/7] page_cgroup: provide a generic page tracking infrastructure
+>>>>>   [PATCH 4/7] io-throttle controller infrastructure
+>>>>>   [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
+>>>>>   [PATCH 6/7] io-throttle instrumentation
+>>>>>   [PATCH 7/7] export per-task io-throttle statistics to userspace
+>>>>   Hi Andrea,
+>>>>
+>>>>   I'd like to have a try this patchset, would you tell what's the kernel version
+>>>>   and bio-cgroup version based on?
+>>>>
+>>> Latest Linus' git is the kernel and bio-cgroup v7 (from
+>>> http://people.valinux.co.jp/~ryov/bio-cgroup/).
+>>   Sorry, I still can't apply it...
+>>
+>> [root@localhost linux-2.6.30-rc1]# patch -p1 --dry-run < ../cgroup-io-throttle-v14.patch                                                                                         patching file Documentation/cgroups/io-throttle.txt
+>> patching file block/Makefile
+>> patching file block/blk-core.c
+>> patching file block/blk-io-throttle.c
+>> patching file block/kiothrottled.c
+>> patching file fs/aio.c
+>> patching file fs/buffer.c
+>> Hunk #1 FAILED at 36.
+>> Hunk #2 FAILED at 669.
+>> 2 out of 2 hunks FAILED -- saving rejects to file fs/buffer.c.rej
+>> patching file fs/proc/base.c
+>> patching file include/linux/blk-io-throttle.h
+>> patching file include/linux/cgroup_subsys.h
+>> Hunk #1 succeeded at 49 (offset 6 lines).
+>> patching file include/linux/memcontrol.h
+>> Reversed (or previously applied) patch detected!  Assume -R? [n] n
+>> Apply anyway? [n] n
+>> Skipping patch.
+>> 2 out of 2 hunks ignored -- saving rejects to file include/linux/memcontrol.h.rej
+>> patching file include/linux/mmzone.h
+>> Hunk #1 FAILED at 607.
+>> Hunk #2 FAILED at 958.
+>> ...
 > 
-> The current idle-load-balancer nomination does not necessarily align towards
-> this policy. For eg, we could be having tasks and interrupts largely running
-> on the first package with the intention of keeping the second package idle.
-> Hence, CPU 0 may be busy. The first_cpu in the nohz.cpu_mask happens to be CPU1,
-> which in-turn becomes nominated as the idle-load balancer. CPU1 being from
-> the 2nd package, would in turn prevent the 2nd package from going into a
-> deeper sleep state.
+> Could you checkout the latest Linus' git?
 > 
-> Instead the role of the idle-load balancer could have been assumed by an
-> idle CPU from the first package, thereby helping the second package go
-> completely idle.
+> $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
+> 
+> Or at least try with 2.6.30-rc2. It should apply cleanly also to this
+> version.
 
-Can we also do this by default? i.e., even when no power-savings policy
-is selected.
+  Yes, I tried them all, but didn't work. :(
+  Would you try "cgroup-io-throttle-v14.patch" too?
 
-I don't see anything wrong by enabling this logic for all the cases.
+> 
+> -Andrea
+> 
+> 
+> 
 
-thanks,
-suresh
+-- 
+Regards
+Gui Jianfeng
 
