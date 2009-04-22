@@ -1,195 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751576AbZDVSeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZDVSgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751576AbZDVSeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 14:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZDVSeJ
+	id S1755382AbZDVSgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 14:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZDVSgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 14:34:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37271 "EHLO kernel.dk"
+	Wed, 22 Apr 2009 14:36:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52742 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753424AbZDVSeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 14:34:08 -0400
-Date: Wed, 22 Apr 2009 20:34:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-Message-ID: <20090422183406.GA4593@kernel.dk>
-References: <20090421184223.GP19637@balbir.in.ibm.com> <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com>
+	id S1752892AbZDVSgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 14:36:32 -0400
+Message-ID: <49EF63A6.8040103@garzik.org>
+Date: Wed, 22 Apr 2009 14:36:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EF5F31.30408@opengridcomputing.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniela Engert <dani@ngrt.de>,
+       Boaz Harrosh <bharrosh@panasas.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+References: <20090422090929.GA14928@havoc.gtf.org>	 <49EEE225.3010700@garzik.org> <49EF0A92.1070400@panasas.com>	 <49EF337F.1030804@ngrt.de>  <20090422161856.1251f8a0@lxorguk.ukuu.org.uk> <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
+In-Reply-To: <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22 2009, Steve Wise wrote:
-> Jens Axboe wrote:
->>>
->>> Don't bother, I see what the bug is now. It's caused by commit
->>> a36e71f996e25d6213f57951f7ae1874086ec57e and it's due to ->ioprio being
->>> changed without the prio rb root being adjusted.
->>>
->>> I'll provide a fix shortly.
->>>     
->>
->> Quick'n dirty, I think this should fix the issue.
->>
->> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> index 7e13f04..79ebb4c 100644
->> --- a/block/cfq-iosched.c
->> +++ b/block/cfq-iosched.c
->> @@ -594,7 +594,7 @@ cfq_prio_tree_lookup(struct cfq_data *cfqd, int ioprio, sector_t sector,
->>   static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue 
->> *cfqq)
->>  {
->> -	struct rb_root *root = &cfqd->prio_trees[cfqq->ioprio];
->> +	struct rb_root *root = &cfqd->prio_trees[cfqq->org_ioprio];
->>  	struct rb_node **p, *parent;
->>  	struct cfq_queue *__cfqq;
->>  @@ -606,8 +606,8 @@ static void cfq_prio_tree_add(struct cfq_data 
->> *cfqd, struct cfq_queue *cfqq)
->>  	if (!cfqq->next_rq)
->>  		return;
->>  -	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->ioprio, 
->> cfqq->next_rq->sector,
->> -					 &parent, &p);
->> +	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->org_ioprio,
->> +					cfqq->next_rq->sector, &parent, &p);
->>  	BUG_ON(__cfqq);
->>   	rb_link_node(&cfqq->p_node, parent, p);
->> @@ -656,8 +656,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->>   	if (!RB_EMPTY_NODE(&cfqq->rb_node))
->>  		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
->> -	if (!RB_EMPTY_NODE(&cfqq->p_node))
->> -		rb_erase_init(&cfqq->p_node, &cfqd->prio_trees[cfqq->ioprio]);
->> +	if (!RB_EMPTY_NODE(&cfqq->p_node)) {
->> +		rb_erase_init(&cfqq->p_node,
->> +					&cfqd->prio_trees[cfqq->org_ioprio]);
->> +	}
->>   	BUG_ON(!cfqd->busy_queues);
->>  	cfqd->busy_queues--;
->> @@ -976,7 +978,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
->>  	 * First, if we find a request starting at the end of the last
->>  	 * request, choose it.
->>  	 */
->> -	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->ioprio,
->> +	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->org_ioprio,
->>  				      sector, &parent, NULL);
->>  	if (__cfqq)
->>  		return __cfqq;
->> @@ -1559,8 +1561,9 @@ cfq_alloc_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
->>   static void cfq_init_prio_data(struct cfq_queue *cfqq, struct 
->> io_context *ioc)
->>  {
->> +	struct cfq_data *cfqd = cfqq->cfqd;
->>  	struct task_struct *tsk = current;
->> -	int ioprio_class;
->> +	int ioprio_class, prio_readd = 0;
->>   	if (!cfq_cfqq_prio_changed(cfqq))
->>  		return;
->> @@ -1592,12 +1595,24 @@ static void cfq_init_prio_data(struct cfq_queue *cfqq, struct io_context *ioc)
->>  	}
->>   	/*
->> +	 * Remove us from the prio_tree if we are present, since we index
->> +	 * by ->org_ioprio
->> +	 */
->> +	if (!RB_EMPTY_NODE(&cfqq->p_node)) {
->> +		rb_erase(&cfqq->p_node, &cfqd->prio_trees[cfqq->org_ioprio]);
->> +		prio_readd = 1;
->> +	}
->> +
->> +	/*
->>  	 * keep track of original prio settings in case we have to temporarily
->>  	 * elevate the priority of this queue
->>  	 */
->>  	cfqq->org_ioprio = cfqq->ioprio;
->>  	cfqq->org_ioprio_class = cfqq->ioprio_class;
->>  	cfq_clear_cfqq_prio_changed(cfqq);
->> +
->> +	if (prio_readd)
->> +		cfq_prio_tree_add(cfqd, cfqq);
->>  }
->>   static void changed_ioprio(struct io_context *ioc, struct 
->> cfq_io_context *cic)
->>
->>   
->
-> Still crashes:
+James Bottomley wrote:
+> On Wed, 2009-04-22 at 16:18 +0100, Alan Cox wrote:
+>>> Don't forget, there are ATAPI devices (some Sony CD burners and old 
+>>> phase-changers come into mind) which *do* have multiple LUNs sitting 
+>>> beyond the PATA port. I don't know if libata supports such setups (my 
+>>> old OS/2 driver does) but one shouldn't hijack LUNs to emulate targets.
+>> It's a long time ago since I tested it but my 5 CD changer was correctly
+>> supported by libata (or more accurately by sr...).
+> 
+> Well, sr supports the discovered CD/DVD; ch is the actual changer
+> manager.  Usually ch attaches to one LUN and sr attaches to another.
 
-[snip]
+Like Alan's, if I understand him correctly, my PATA ATAPI CD changer 
+simply presents a bunch of addressible LUNs.  I never loaded, nor seemed 
+to need, ch.
 
-Odd... Can you try this variant?
+I should boot a current libata and see how it behaves...
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 7e13f04..3a97c18 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -154,6 +154,7 @@ struct cfq_queue {
- 	unsigned long rb_key;
- 	/* prio tree member */
- 	struct rb_node p_node;
-+	struct rb_root *p_root;
- 	/* sorted list of pending requests */
- 	struct rb_root sort_list;
- 	/* if fifo isn't expired, next request to serve */
-@@ -594,22 +595,25 @@ cfq_prio_tree_lookup(struct cfq_data *cfqd, int ioprio, sector_t sector,
- 
- static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
--	struct rb_root *root = &cfqd->prio_trees[cfqq->ioprio];
-+	struct rb_root *root = &cfqd->prio_trees[cfqq->org_ioprio];
- 	struct rb_node **p, *parent;
- 	struct cfq_queue *__cfqq;
- 
--	if (!RB_EMPTY_NODE(&cfqq->p_node))
--		rb_erase_init(&cfqq->p_node, root);
-+	if (cfqq->p_root) {
-+		rb_erase_init(&cfqq->p_node, cfqq->p_root);
-+		cfqq->p_root = NULL;
-+	}
- 
- 	if (cfq_class_idle(cfqq))
- 		return;
- 	if (!cfqq->next_rq)
- 		return;
- 
--	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->ioprio, cfqq->next_rq->sector,
--					 &parent, &p);
-+	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->org_ioprio,
-+					cfqq->next_rq->sector, &parent, &p);
- 	BUG_ON(__cfqq);
- 
-+	cfqq->p_root = root;
- 	rb_link_node(&cfqq->p_node, parent, p);
- 	rb_insert_color(&cfqq->p_node, root);
- }
-@@ -656,8 +660,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 
- 	if (!RB_EMPTY_NODE(&cfqq->rb_node))
- 		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
--	if (!RB_EMPTY_NODE(&cfqq->p_node))
--		rb_erase_init(&cfqq->p_node, &cfqd->prio_trees[cfqq->ioprio]);
-+	if (cfqq->p_root) {
-+		rb_erase_init(&cfqq->p_node, cfqq->p_root);
-+		cfqq->p_root = NULL;
-+	}
- 
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
-@@ -976,7 +982,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
- 	 * First, if we find a request starting at the end of the last
- 	 * request, choose it.
- 	 */
--	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->ioprio,
-+	__cfqq = cfq_prio_tree_lookup(cfqd, cur_cfqq->org_ioprio,
- 				      sector, &parent, NULL);
- 	if (__cfqq)
- 		return __cfqq;
+	Jeff
 
--- 
-Jens Axboe
+
 
