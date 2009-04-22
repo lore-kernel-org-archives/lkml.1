@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZDVL1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZDVL1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZDVL1A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 07:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZDVL0r
+	id S1754323AbZDVL1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 07:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZDVL1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 07:26:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48331 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbZDVL0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 07:26:46 -0400
-Date: Wed, 22 Apr 2009 13:26:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090422112612.GA3799@elte.hu>
-References: <49EEDAF0.2010507@cosmosbay.com> <20090422101318.GA6630@ff.dom.local>
+	Wed, 22 Apr 2009 07:27:41 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:30164 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751409AbZDVL1k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 07:27:40 -0400
+Message-ID: <49EEFF10.3050306@panasas.com>
+Date: Wed, 22 Apr 2009 14:27:12 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090422101318.GA6630@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       mdharm-usb@one-eyed-alien.net, linux-usb <linux-usb@vger.kernel.org>,
+       usb-storage@lists.one-eyed-alien.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH v2] fix sign extension with 1.5TB usb-storage LBD=y
+References: <1240347174.10627.20.camel@nimitz> <20090421211858.GA1926@parisc-linux.org> <1240351210.10627.30.camel@nimitz> <49EEC82B.5040603@panasas.com> <20090422110921.GE1926@parisc-linux.org>
+In-Reply-To: <20090422110921.GE1926@parisc-linux.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Apr 2009 11:27:38.0104 (UTC) FILETIME=[57408F80:01C9C33D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jarek Poplawski <jarkao2@gmail.com> wrote:
-
-> On 22-04-2009 10:53, Eric Dumazet wrote:
-> ...
-> > If this could be done without recursion, I am pretty sure 
-> > netfilter and network guys would have done it. I found Linus 
-> > reaction quite shocking IMHO, considering hard work done by all 
-> > people on this.
+On 04/22/2009 02:09 PM, Matthew Wilcox wrote:
+> On Wed, Apr 22, 2009 at 10:32:59AM +0300, Boaz Harrosh wrote:
+>> These are actually aligned access it might be worth sacrificing a cast
+>> to be32/64 for sake of speed.
 > 
-> Right, looks like 100% (Scandinavian?!) troll. I wonder where is 
-> the admin of this mess...
+> "for sake of speed"?  How often do you think we ask a device how large
+> it is?  
 
-You might disagree with me on an honest technical basis, but note 
-that this kind of childish, knee-jerk reaction against dissenting 
-people is what gives netdev its bad reputation.
+OK, that was the wrong choice of words, on my part. I meant for sake of
+"nobleness". I calculated as a programmer that these are aligned do I make
+the extra effort of stating that in code, or I get lazy because it does
+not matter?
 
-	Ingo
+> How much overhead do you think is incurred by the unaligned code
+> if the data happens to be aligned?
+> 
+
+Well for BE systems we are already order of magnitude faster by just
+using the accessors, so I guess we are already well in the "plus" ;)
+
+This is such a small matter, sorry to bother you about it.
+Just that it's a programming style I'm constantly debating with myself,
+feel free to ignore it.
+
+The patch looks very good to me as it is.
+
+Thanks
+Boaz
