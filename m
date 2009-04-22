@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZDVXCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZDVXFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZDVXCE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 19:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZDVXBx
+	id S1752740AbZDVXFK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 19:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZDVXE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 19:01:53 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:34069 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZDVXBw convert rfc822-to-8bit (ORCPT
+	Wed, 22 Apr 2009 19:04:57 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50679 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZDVXE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 19:01:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qOlwTcj2FEatwmgrQY1jUsHQWdS9MyC3/gjjlrmRGP83CEhMybXb1KjMwphqhar/JM
-         Jpj9mnH2amDm8Q37y1PSp5gPoG5YSNvUL12OgLm5rzPUUyVnGE6ct9OAa2zb1gT6sCqf
-         +DbsOoblNvjqyJdMEfx0pg7l9O/5Ww+rPTiRk=
+	Wed, 22 Apr 2009 19:04:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=M09qhDqOulMQCdE9anMkkap8RfLXoG+vrtgMc7azpIU1qKhhPfPQXSYiAoR9clwCO
+	dccy7PgHfZI+GuzaaTi+g==
+Date: Wed, 22 Apr 2009 16:04:47 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 21/22] Use a pre-calculated value instead of num_online_nodes()
+ in fast paths
+In-Reply-To: <1240408407-21848-22-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0904221602560.27097@chino.kir.corp.google.com>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-22-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090422220400.GA22755@redhat.com>
-References: <20090330185146.D525AFC3AB@magilla.sf.frob.com>
-	 <20090408203954.GA26816@redhat.com>
-	 <20090416204004.GA28013@redhat.com>
-	 <20090416232430.4DAE4FC3C6@magilla.sf.frob.com>
-	 <20090420183718.GC32527@redhat.com>
-	 <20090421011354.4B19EFC3C7@magilla.sf.frob.com>
-	 <20090421214819.GA22845@redhat.com>
-	 <20090422032205.B8D39FC3C7@magilla.sf.frob.com>
-	 <20090422220400.GA22755@redhat.com>
-Date: Wed, 22 Apr 2009 19:01:51 -0400
-Message-ID: <8bd0f97a0904221601t110b0dd4xfe1f957de0e3fff7@mail.gmail.com>
-Subject: Re: ptracee data structures cleanup
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 18:04, Oleg Nesterov wrote:
-> On 04/21, Roland McGrath wrote:
->> [We have been on fine details here that are quite purely ptrace innards for
->> a while now.  I think discussion at this level of detail about this stuff
->> quite far from utrace per se belongs on LKML.]
->
-> Agreed. s/utrace-devel/lkml/.
->
->> > > The clean-up should get rid of PT_DTRACE entirely.
->> >
->> > Agreed. But this needs another patch...
->>
->> Yes, or several.  It always gets fiddly when to get lots of little arch
->> changes merged.  The 90% that are just one-liner removal of wholly unused
->> PT_DTRACE can probably go in as a single patch to Linus instead of tiny
->> ones through each arch tree.
->
-> OK. I'd like to finally do at least something. Please look at the 4 patches
-> attached.
->
-> Unfortunately, I know nothing about these arches, so I can only rely on grep.
-> But it really looks like nobody except arch/um actually uses DTRACE.
->
-> There are also some strange defines in blackfin and m68k, PF_DTRACE_BIT and
-> PT_DTRACE_BIT, which seems to be unused too. At least I failed to find
-> anything related in asm. Perhaps I should learn how to cross compile.
+On Wed, 22 Apr 2009, Mel Gorman wrote:
 
-Blackfin was based on m68knommu, so it is most likely unused by us.
-the only ptrace consumers are gdb(server) and strace and neither use
-it afaik.
--mike
+> diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+> index 848025c..474e73e 100644
+> --- a/include/linux/nodemask.h
+> +++ b/include/linux/nodemask.h
+> @@ -408,6 +408,19 @@ static inline int num_node_state(enum node_states state)
+>  #define next_online_node(nid)	next_node((nid), node_states[N_ONLINE])
+>  
+>  extern int nr_node_ids;
+> +extern int nr_online_nodes;
+> +
+> +static inline void node_set_online(int nid)
+> +{
+> +	node_set_state(nid, N_ONLINE);
+> +	nr_online_nodes = num_node_state(N_ONLINE);
+> +}
+> +
+> +static inline void node_set_offline(int nid)
+> +{
+> +	node_clear_state(nid, N_ONLINE);
+> +	nr_online_nodes = num_node_state(N_ONLINE);
+> +}
+>  #else
+>  
+>  static inline int node_state(int node, enum node_states state)
+
+The later #define's of node_set_online() and node_set_offline() in 
+include/linux/nodemask.h should probably be removed now.
