@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZDVPXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZDVP3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbZDVPXE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZDVPWw
+	id S1753979AbZDVP3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDVP3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:22:52 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:51519 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZDVPWv (ORCPT
+	Wed, 22 Apr 2009 11:29:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47902 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751498AbZDVP3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:22:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eDkYW/VpqcEKocs2GfMQO7p/4t4w7VWEZJ989e83UWY8YDhy7k19uawwxACzPG88vs
-         mqC10omtodlmy6Blem7IHm0FvSTIQiUqEwyGEev+vlUVcaKEZvJehBXyqtwj2tIVMe34
-         aUYMZfg5j627qL176umM4u6tz2AUg5ztdAkCo=
-MIME-Version: 1.0
-In-Reply-To: <20090422161257.2743ea33@lxorguk.ukuu.org.uk>
-References: <f44001920904220712ye1644c9y90d637bf4ac3bbe@mail.gmail.com>
-	 <871vrkpyae.fsf@basil.nowhere.org>
-	 <f44001920904220732h2d6d18cfwef53af31bb218b87@mail.gmail.com>
-	 <f44001920904220746k356550abk6783b8cae003685d@mail.gmail.com>
-	 <20090422161257.2743ea33@lxorguk.ukuu.org.uk>
-Date: Wed, 22 Apr 2009 19:22:49 +0400
-Message-ID: <f44001920904220822k672def82t7e9ba646bdde5fe8@mail.gmail.com>
-Subject: Re: Idea: Feature information / extensions dispatcher syscall.
-From: Igor Zhbanov <izh1979@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Apr 2009 11:29:37 -0400
+Date: Wed, 22 Apr 2009 16:18:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniela Engert <dani@ngrt.de>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+Message-ID: <20090422161856.1251f8a0@lxorguk.ukuu.org.uk>
+In-Reply-To: <49EF337F.1030804@ngrt.de>
+References: <20090422090929.GA14928@havoc.gtf.org>
+	<49EEE225.3010700@garzik.org>
+	<49EF0A92.1070400@panasas.com>
+	<49EF337F.1030804@ngrt.de>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/22 Alan Cox <alan@lxorguk.ukuu.org.uk>:
->> But in some cases syscalls are more convenient than reading/writing/ioctling
->> in /proc, /sys or /dev.
->
-> A syscall and an ioctl are the same thing except that you need a file
-> handle for one of them.
->
->> And I suggest to regulate syscalls usage and reserve a set of numbers
->> "home" modules used in some organizations only.
->
-> We have file system naming so you can open device or sysfs and the like
-> files to do that job. That avoids the problem of trying to keep numbering
-> sane.
+> Don't forget, there are ATAPI devices (some Sony CD burners and old 
+> phase-changers come into mind) which *do* have multiple LUNs sitting 
+> beyond the PATA port. I don't know if libata supports such setups (my 
+> old OS/2 driver does) but one shouldn't hijack LUNs to emulate targets.
 
-Yes, you need a file handle. To open device each time you need to make ioctl
-is expensive and keeping device opened may prevent unmounting /proc
-that could be a problem in some installations if that application is used
-at a boot time.
+It's a long time ago since I tested it but my 5 CD changer was correctly
+supported by libata (or more accurately by sr...).
+
