@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZDVVci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZDVVis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZDVVci (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 17:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZDVVc2
+	id S1756113AbZDVVis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 17:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZDVVih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 17:32:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50871 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbZDVVc2 (ORCPT
+	Wed, 22 Apr 2009 17:38:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:46383 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752987AbZDVVig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 17:32:28 -0400
-Date: Wed, 22 Apr 2009 17:32:25 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Wed, 22 Apr 2009 17:38:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=BzKiGSfUuf5FQzdMjFH60VjC363ToWFiY4h8t0wTFEFvXKHsS/OM76HEPkjJeZA71f
+         Zim5USruh8a35qJ26aGRkO2fGpwxRhQ+WhQlEvV7p3zuLrnEF31V6UmlUf8zinke6L2c
+         wFWdJVkYqE5Rb9cwdlIJ5o+g9KMCZBy4D+e68=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [git pull] IDE fixes
+Date: Wed, 22 Apr 2009 23:41:37 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-In-Reply-To: <alpine.DEB.2.00.0904221321410.24310@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0904221731240.24310@gandalf.stny.rr.com>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <20090422114750.GA14202@nowhere> <alpine.DEB.2.00.0904220943280.24310@gandalf.stny.rr.com>
- <20090422171047.GA5975@nowhere> <49EF5138.3030408@goop.org> <alpine.DEB.2.00.0904221321410.24310@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200904222048.15556.bzolnier@gmail.com> <200904222143.47220.bzolnier@gmail.com> <1240430103.21848.101.camel@localhost>
+In-Reply-To: <1240430103.21848.101.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200904222341.37846.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 22 Apr 2009, Steven Rostedt wrote:
-
+On Wednesday 22 April 2009 21:55:03 Joe Perches wrote:
+> On Wed, 2009-04-22 at 21:43 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > IMO we should just remove extra commas and add some whitespaces.
 > 
-> On Wed, 22 Apr 2009, Jeremy Fitzhardinge wrote:
+> Your choice.
+> Ignore, reject, accept, improve, fine by me.
 > 
-> > > 
-> > >    
-> > > > Do you have CONFIG_PARAVIRT on?  When I disabled it, I have yet to
-> > > > reproduce the bug. But I've only rebooted a few times. I'm going to
-> > > > continue to reboot to see if I can trigger it.
-> > > >     
-> > > 
-> > > 
-> > > Yes it is enabled.
-> > > 
-> > > 
-> > > 
-> > >   
-> > > > I'm thinking that the paravirt alternative code may have clobbered a
-> > > > register in either the enable or disabling of interrupts. This might cause
-> > > > a strange value to go into the hardirqs_enabled flag.
-> > > >     
-> > > 
-> > > 
-> > > 
-> > > Ok I will try it without PARAVIRT and tell you if I can reproduce it.
-> > >   
+> > I have also more general (process oriented) comment:
 > > 
-> > Interesting.  What code is generated for native_irq_enable/disable?
+> > All patches have been posted to linux-kernel or linux-ide for review before
+> > and it is _much_ more efficient to raise issues (including CodingStyle ones)
+> > during "review phase" instead of during "push to Linus" phase.
 > 
-> Note, when I take my standard config and enable PARAVIRT and LOCKDEP it 
-> still boots up fine. It may be a combination of some configs :-/
-> 
-> I'm currently doing a "config bisect" to find out what configs are needed.
+> Maybe for you, but I'm an intermittent
+> and random reader.
 
-I just finished the config bisect, and it came down to 
-CONFIG_DEBUG_PAGEALLOC (set is bad, not set is good). I'm sure this is not 
-the only config that is at issue. It is probably a combination of configs 
-:-/
+For everybody involved in the process -- this includes you.
 
-I'll try others to see if things change.
+I'm not the original author of many patches so I simply cannot be
+correcting every single issue because:
 
--- Steve
+a) it is physically impossible
 
+b) it doesn't really educate people
+
+Thanks,
+Bart
