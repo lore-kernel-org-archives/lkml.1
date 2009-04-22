@@ -1,94 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZDVBfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZDVBjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbZDVBfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 21:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZDVBfW
+	id S1753544AbZDVBjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 21:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDVBit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 21:35:22 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49241 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZDVBfV (ORCPT
+	Tue, 21 Apr 2009 21:38:49 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:59486 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZDVBis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 21:35:21 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Subject: Re: [PATCH, RFC] check for frozen filesystems in the mmap path
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <49EDE319.10701@redhat.com>
-References: <20090421140045.F125.A69D9226@jp.fujitsu.com> <49EDE319.10701@redhat.com>
-Message-Id: <20090422085833.6268.A69D9226@jp.fujitsu.com>
+	Tue, 21 Apr 2009 21:38:48 -0400
+Date: Tue, 21 Apr 2009 22:38:41 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       auke-jan.h.kok@intel.com, e1000-devel@lists.sourceforge.net
+Subject: [PATCH v2] e100: do not go D3 in shutdown unless system is
+	powering off
+Message-ID: <20090422013841.GA3979@vespa.holoscopio.com>
+References: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com> <200904202114.01932.rjw@sisk.pl> <20090421215248.GF6147@vespa.holoscopio.com> <200904220017.19670.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed, 22 Apr 2009 10:35:14 +0900 (JST)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
+Content-Disposition: inline
+In-Reply-To: <200904220017.19670.rjw@sisk.pl>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> Index: linux-2.6/mm/memory.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/mm/memory.c
-> >> +++ linux-2.6/mm/memory.c
-> >> @@ -1944,6 +1944,7 @@ static int do_wp_page(struct mm_struct *
-> >>  		 * read-only shared pages can get COWed by
-> >>  		 * get_user_pages(.write=1, .force=1).
-> >>  		 */
-> >> +		vfs_check_frozen(old_page->mapping->host->i_sb, SB_FREEZE_WRITE);
-> >>  		if (vma->vm_ops && vma->vm_ops->page_mkwrite) {
-> >>  			struct vm_fault vmf;
-> >>  			int tmp;
-> > 
-> > it seems strage.
-> > 
-> > 1. it seems to have a race
-> > 
-> > 	CPU0				CPU1
-> > 	----------------------------------------------------
-> > 	do_wp_page
-> > 	 vfs_check_frozen
-> > 					ioctl_fsfreeze
-> > 					  freeze_bdev
-> > 					    __fsync_super
-> >         process touch mem
-> > 
-> > vfs_check_frozen only wait to unfreeze, but not prevent new
-> > new freeze request starting.
-> 
-> Well, I think that is ok.  I don't *think* that any IO can actually
-> happen to the filesystem even if it gets dirtied via mmap, so if a bit
-> of mmap-dirtied memory sneaks in before it's actually frozen, I'm not
-> sure that's really a problem.  The goal was to prevent massive amounts
-> of memory from getting dirtied, backed by the frozen filesystem.  This
-> would potentially lead to a situation where the un-freezing thread was
-> stuck waiting for memory to free up, stuck behind waiting for the
-> filesystem to unfreeze for writeout, and we can't unfreeze.
 
-Ah, I see.
-one another question.
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Why dirty limit don't works properly in this case?
+After experimenting with kexec with the last merges after 2.6.29, I've
+had some problems when probing e100. It would not read the eeprom. After
+some bisects, I realized this has been like that since forever (at least
+2.6.18). The problem is that shutdown is doing the same thing that
+suspend does and puts the device in D3 state. I couldn't find a way to
+get the device back to a sane state in the probe function. So, based on
+some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
+I wrote this one for e100.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/net/e100.c |   27 +++++++++++++++++++++------
+ 1 files changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index c0f8443..3db7b29 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -2728,7 +2728,7 @@ static void __devexit e100_remove(struct pci_dev *pde=
+v)
+ #define E100_82552_SMARTSPEED   0x14   /* SmartSpeed Ctrl register */
+ #define E100_82552_REV_ANEG     0x0200 /* Reverse auto-negotiation */
+ #define E100_82552_ANEG_NOW     0x0400 /* Auto-negotiate now */
+-static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
++static int __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ {
+ 	struct net_device *netdev =3D pci_get_drvdata(pdev);
+ 	struct nic *nic =3D netdev_priv(netdev);
+@@ -2749,19 +2749,31 @@ static int e100_suspend(struct pci_dev *pdev, pm_me=
+ssage_t state)
+ 			           E100_82552_SMARTSPEED, smartspeed |
+ 			           E100_82552_REV_ANEG | E100_82552_ANEG_NOW);
+ 		}
+-		if (pci_enable_wake(pdev, PCI_D3cold, true))
+-			pci_enable_wake(pdev, PCI_D3hot, true);
++		*enable_wake =3D true;
+ 	} else {
+-		pci_enable_wake(pdev, PCI_D3hot, false);
++		*enable_wake =3D false;
+ 	}
+=20
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
+=20
+ 	return 0;
+ }
+=20
++static void __e100_power_off(struct pci_dev *pdev, bool wake)
++{
++	pci_enable_wake(pdev, PCI_D3hot, wake);
++	pci_set_power_state(pdev, PCI_D3hot);
++}
++
+ #ifdef CONFIG_PM
++static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	bool wake;
++	int retval =3D __e100_shutdown(pdev, &wake);
++	__e100_power_off(pdev, wake);
++	return retval;
++}
++
+ static int e100_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev =3D pci_get_drvdata(pdev);
+@@ -2792,7 +2804,10 @@ static int e100_resume(struct pci_dev *pdev)
+=20
+ static void e100_shutdown(struct pci_dev *pdev)
+ {
+-	e100_suspend(pdev, PMSG_SUSPEND);
++	bool wake;
++	__e100_shutdown(pdev, &wake);
++	if (system_state =3D=3D SYSTEM_POWER_OFF)
++		__e100_power_off(pdev, wake);
+ }
+=20
+ /* ------------------ PCI Error Recovery infrastructure  -------------- */
+--=20
+1.6.2.3
 
 
+--MGYHOYXEY6WxJCY8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> > 2. this logic kill multi thread application.
-> > 
-> > this logic mean mmap_sem grabbing until unfreeze.
-> > it mean othrer thread in the same process can't page-fault although
-> > it don't touch frozen-sb.
-> > it seems strange.
-> 
-> Hm, I hadn't thought about this ... On the one hand, ->page_mkwrite can
-> already sleep, though a userspace freeze/unfreeze could potentially take
-> much much longer.  freeze/unfreeze *should* happen very quickly, but
-> nothing enforces that.
-> 
-> Do you have any suggestions?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAknudSAACgkQyTpryRcqtS0TigCdFy5/m8fbib9/FbT7LOlJWIFw
+JHQAmwRSmwAmNm9k7xmE741rkWW5fGsZ
+=YScK
+-----END PGP SIGNATURE-----
 
-
-
-
-
+--MGYHOYXEY6WxJCY8--
