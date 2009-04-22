@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZDVSj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZDVSk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbZDVSj0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 14:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZDVSjS
+	id S1754975AbZDVSk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 14:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZDVSkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 14:39:18 -0400
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:37055 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751576AbZDVSjQ (ORCPT
+	Wed, 22 Apr 2009 14:40:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47373 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbZDVSkJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 14:39:16 -0400
-Date: Wed, 22 Apr 2009 19:32:23 +0100
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Ben Hutchings <ben@decadent.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 1/3] crc-itu-t: add bit-reversed calculation
-Message-ID: <50558A33EC%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <20090422165633.GD19524@kroah.com>
-References: <1239590017.18110.120.camel@deadeye.i.decadent.org.uk> 
- <20090422165633.GD19524@kroah.com>
-Mail-Followup-To: Greg KH <greg@kroah.com>, Ben Hutchings <ben@decadent.org.uk>, 
- Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, David 
- Woodhouse <dwmw2@infradead.org>, Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
-X-NuLabour-Date: Wed, 8909 Dec 1984 19:32:23 +0100
+	Wed, 22 Apr 2009 14:40:09 -0400
+Message-ID: <49EF6457.90505@zytor.com>
+Date: Wed, 22 Apr 2009 11:39:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+To: Andre Noll <maan@systemlinux.org>
+CC: Bill Davidsen <davidsen@tmr.com>, Matti Aarnio <matti.aarnio@zmailer.org>,
+       Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
+       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org> <49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <20090422180051.GD13280@skl-net.de>
+In-Reply-To: <20090422180051.GD13280@skl-net.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that Greg KH may or may not have written...
+Andre Noll wrote:
+> On 10:23, H. Peter Anvin wrote:
+> 
+>> We could use vmalloc() and generate the tables at initialization time.
+>> However, having a separate module which exports the raid6 declaration
+>> and uses the raid5 module as a subroutine library seems easier.
+> 
+> Really? Easier than keeping only two 256-byte arrays for exp() and
+> log() and use these at runtime to populate the (dynamically allocated)
+> 64K GF multiplication table? That seems to be really simple and would
+> still shave off 64K of kernel memory for raid5-only users.
+> 
 
-> On Mon, Apr 13, 2009 at 03:33:37AM +0100, Ben Hutchings wrote:
->> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Yes, I believe it would be easier than having dynamically allocated 
+arrays.  Dynamically generated arrays using static memory allocations 
+(bss) is one thing, but that would only reduce size of the module on 
+disk, which I don't think anyone considers a problem.
 
-> Who wrote this patch, you or Darren?
+	-hpa
 
-I did.
- 
-[snip]
--- 
-| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
-| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
-|   Let's keep the pound sterling
-
-He hath eaten me out of house and home.
