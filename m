@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbZDVNzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750842AbZDVN4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797AbZDVNzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZDVNxh
+	id S1750842AbZDVN4V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZDVNxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:53:37 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43830 "EHLO gir.skynet.ie"
+	Wed, 22 Apr 2009 09:53:39 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43842 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753489AbZDVNxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:53:34 -0400
+	id S1753017AbZDVNxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:53:35 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 06/22] Move check for disabled anti-fragmentation out of fastpath
-Date: Wed, 22 Apr 2009 14:53:11 +0100
-Message-Id: <1240408407-21848-7-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 07/22] Calculate the preferred zone for allocation only once
+Date: Wed, 22 Apr 2009 14:53:12 +0100
+Message-Id: <1240408407-21848-8-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
 References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
@@ -31,49 +31,185 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On low-memory systems, anti-fragmentation gets disabled as there is nothing
-it can do and it would just incur overhead shuffling pages between lists
-constantly. Currently the check is made in the free page fast path for every
-page. This patch moves it to a slow path. On machines with low memory,
-there will be small amount of additional overhead as pages get shuffled
-between lists but it should quickly settle.
+get_page_from_freelist() can be called multiple times for an allocation.
+Part of this calculates the preferred_zone which is the first usable zone
+in the zonelist but the zone depends on the GFP flags specified at the
+beginning of the allocation call. This patch calculates preferred_zone
+once. It's safe to do this because if preferred_zone is NULL at the start
+of the call, no amount of direct reclaim or other actions will change the
+fact the allocation will fail.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/mmzone.h |    3 ---
- mm/page_alloc.c        |    4 ++++
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |   53 ++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 32 insertions(+), 21 deletions(-)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 186ec6a..f82bdba 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -50,9 +50,6 @@ extern int page_group_by_mobility_disabled;
- 
- static inline int get_pageblock_migratetype(struct page *page)
- {
--	if (unlikely(page_group_by_mobility_disabled))
--		return MIGRATE_UNMOVABLE;
--
- 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
- }
- 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 1e09f26..b1ae435 100644
+index b1ae435..e073fa3 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -172,6 +172,10 @@ int page_group_by_mobility_disabled __read_mostly;
- 
- static void set_pageblock_migratetype(struct page *page, int migratetype)
+@@ -1392,23 +1392,18 @@ static void zlc_mark_zone_full(struct zonelist *zonelist, struct zoneref *z)
+  */
+ static struct page *
+ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+-		struct zonelist *zonelist, int high_zoneidx, int alloc_flags)
++		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
++		struct zone *preferred_zone)
  {
+ 	struct zoneref *z;
+ 	struct page *page = NULL;
+ 	int classzone_idx;
+-	struct zone *zone, *preferred_zone;
++	struct zone *zone;
+ 	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
+ 	int zlc_active = 0;		/* set if using zonelist_cache */
+ 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
+ 
+-	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+-							&preferred_zone);
+-	if (!preferred_zone)
+-		return NULL;
+-
+ 	classzone_idx = zone_idx(preferred_zone);
+-
+ 	VM_BUG_ON(order >= MAX_ORDER);
+ 
+ zonelist_scan:
+@@ -1503,7 +1498,7 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+ static inline struct page *
+ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+-	nodemask_t *nodemask)
++	nodemask_t *nodemask, struct zone *preferred_zone)
+ {
+ 	struct page *page;
+ 
+@@ -1520,7 +1515,8 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+ 	 */
+ 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
+ 		order, zonelist, high_zoneidx,
+-		ALLOC_WMARK_HIGH|ALLOC_CPUSET);
++		ALLOC_WMARK_HIGH|ALLOC_CPUSET,
++		preferred_zone);
+ 	if (page)
+ 		goto out;
+ 
+@@ -1540,7 +1536,8 @@ out:
+ static inline struct page *
+ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+-	nodemask_t *nodemask, int alloc_flags, unsigned long *did_some_progress)
++	nodemask_t *nodemask, int alloc_flags, struct zone *preferred_zone,
++	unsigned long *did_some_progress)
+ {
+ 	struct page *page = NULL;
+ 	struct reclaim_state reclaim_state;
+@@ -1572,7 +1569,8 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+ 
+ 	if (likely(*did_some_progress))
+ 		page = get_page_from_freelist(gfp_mask, nodemask, order,
+-					zonelist, high_zoneidx, alloc_flags);
++					zonelist, high_zoneidx,
++					alloc_flags, preferred_zone);
+ 	return page;
+ }
+ 
+@@ -1592,13 +1590,14 @@ is_allocation_high_priority(struct task_struct *p, gfp_t gfp_mask)
+ static inline struct page *
+ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+-	nodemask_t *nodemask)
++	nodemask_t *nodemask, struct zone *preferred_zone)
+ {
+ 	struct page *page;
+ 
+ 	do {
+ 		page = get_page_from_freelist(gfp_mask, nodemask, order,
+-			zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
++			zonelist, high_zoneidx, ALLOC_NO_WATERMARKS,
++			preferred_zone);
+ 
+ 		if (!page && gfp_mask & __GFP_NOFAIL)
+ 			congestion_wait(WRITE, HZ/50);
+@@ -1621,7 +1620,7 @@ void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
+ static inline struct page *
+ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+-	nodemask_t *nodemask)
++	nodemask_t *nodemask, struct zone *preferred_zone)
+ {
+ 	const gfp_t wait = gfp_mask & __GFP_WAIT;
+ 	struct page *page = NULL;
+@@ -1671,7 +1670,8 @@ restart:
+ 	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+ 	 */
+ 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+-						high_zoneidx, alloc_flags);
++						high_zoneidx, alloc_flags,
++						preferred_zone);
+ 	if (page)
+ 		goto got_pg;
+ 
+@@ -1681,7 +1681,7 @@ rebalance:
+ 		/* Do not dip into emergency reserves if specified */
+ 		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+ 			page = __alloc_pages_high_priority(gfp_mask, order,
+-				zonelist, high_zoneidx, nodemask);
++				zonelist, high_zoneidx, nodemask, preferred_zone);
+ 			if (page)
+ 				goto got_pg;
+ 		}
+@@ -1698,7 +1698,8 @@ rebalance:
+ 	page = __alloc_pages_direct_reclaim(gfp_mask, order,
+ 					zonelist, high_zoneidx,
+ 					nodemask,
+-					alloc_flags, &did_some_progress);
++					alloc_flags, preferred_zone,
++					&did_some_progress);
+ 	if (page)
+ 		goto got_pg;
+ 
+@@ -1710,7 +1711,7 @@ rebalance:
+ 		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+ 			page = __alloc_pages_may_oom(gfp_mask, order,
+ 					zonelist, high_zoneidx,
+-					nodemask);
++					nodemask, preferred_zone);
+ 			if (page)
+ 				goto got_pg;
+ 
+@@ -1755,6 +1756,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 			struct zonelist *zonelist, nodemask_t *nodemask)
+ {
+ 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
++	struct zone *preferred_zone;
+ 	struct page *page;
+ 
+ 	lockdep_trace_alloc(gfp_mask);
+@@ -1772,11 +1774,20 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 	if (unlikely(!zonelist->_zonerefs->zone))
+ 		return NULL;
+ 
++	/* The preferred zone is used for statistics later */
++	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
++							&preferred_zone);
++	if (!preferred_zone)
++		return NULL;
 +
-+	if (unlikely(page_group_by_mobility_disabled))
-+		migratetype = MIGRATE_UNMOVABLE;
-+
- 	set_pageblock_flags_group(page, (unsigned long)migratetype,
- 					PB_migrate, PB_migrate_end);
++	/* First allocation attempt */
+ 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+-			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
++			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET,
++			preferred_zone);
+ 	if (unlikely(!page))
+ 		page = __alloc_pages_slowpath(gfp_mask, order,
+-				zonelist, high_zoneidx, nodemask);
++				zonelist, high_zoneidx, nodemask,
++				preferred_zone);
+ 
+ 	return page;
  }
 -- 
 1.5.6.5
