@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZDVAF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZDVAIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbZDVAF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 20:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbZDVAFT
+	id S1753290AbZDVAIo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 20:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDVAIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 20:05:19 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60296 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbZDVAFS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 20:05:18 -0400
-Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep for
- more than 2.15 seconds
-From: john stultz <johnstul@us.ibm.com>
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <49EE54B4.9020700@ti.com>
-References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>
-	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>
-Content-Type: text/plain
-Date: Tue, 21 Apr 2009 17:05:15 -0700
-Message-Id: <1240358715.6080.42.camel@localhost>
+	Tue, 21 Apr 2009 20:08:32 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43113 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752668AbZDVAIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 20:08:32 -0400
+Subject: Re: [BUILD FAILURE 09/12] Next April 21 : PPC64 randconfig
+ [drivers/staging/comedi/drivers.o]
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: subrata@linux.vnet.ibm.com
+Cc: Greg KH <greg@kroah.com>, sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "David A. Schleef" <ds@schleef.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+In-Reply-To: <1240340029.9110.142.camel@subratamodak.linux.ibm.com>
+References: <1240340029.9110.142.camel@subratamodak.linux.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-fsbRXAJSe7ZbxPhZ/EMg"
+Date: Wed, 22 Apr 2009 10:08:30 +1000
+Message-Id: <1240358910.6571.6.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-21 at 18:20 -0500, Jon Hunter wrote:
-> john stultz wrote:
-> > The concern is many clocksources wrap after a handful of seconds. The
-> > acpi_pm is the best example (its only 24 bits wide). 
-> > 
-> > I brought this issue up earlier, and provided some example code that
-> > could be used to limit the idle time appropriately for the current
-> > clocksource here:
-> > 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0901.3/02693.html
-> > 
-> > Jon: Did you see that mail, or is there a reason you didn't adapt this
-> > code into your patch? 
-> 
-> Hi John, yes I did read this email and thanks for bringing this up.
-> 
-> As I looked at this more I noticed that for 64-bit machines that the 
-> max_delta_ns would be a 64-bit integer already and so this change would 
-> only have an impact for 32-bit machines. I understand that there are 
-> more 32-bit machines that 64-bit. However, I was trying to understand 
-> how the wrapping of clocksources, such as the one you mention above, is 
-> handled today for 64-bit machines that could theoretically sleep for 
-> longer periods.
 
-One other minor comment nit, if we're really meaning that max_delta_ns
-is a 64bit value, should we not just be using s64 and be explicit
-instead of converting longs to long longs?
+--=-fsbRXAJSe7ZbxPhZ/EMg
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-thanks
--john
+On Wed, 2009-04-22 at 00:23 +0530, Subrata Modak wrote:
+> Reported this error on 14th April:
+> http://lkml.org/lkml/2009/4/14/488,
+>=20
+> CC [M]  drivers/staging/comedi/drivers.o=20
+> drivers/staging/comedi/drivers.c: In function =E2=80=98comedi_buf_alloc=
+=E2=80=99:
+> drivers/staging/comedi/drivers.c:496: error: =E2=80=98PAGE_KERNEL_NOCACHE=
+=E2=80=99
+> undeclared (first use in this function)
+> drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier
+> is reported only once
+> drivers/staging/comedi/drivers.c:496: error: for each function it
+> appears in.)
+> make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
+> make[2]: *** [drivers/staging/comedi] Error 2
+> make[1]: *** [drivers/staging] Error 2
+> make: *** [drivers] Error 2
 
+Subrata, unless someone says otherwise, please do not send randconfig
+failures for drivers in staging - those drivers have bigger problems
+than randconfig failures.
+
+To avoid them, do this:
+
+# make randconfig
+# sed -i -e 's/^\(CONFIG_STAGING\)=3Dy/# \1 is not set/' .config
+# make oldconfig
+
+
+cheers
+
+--=-fsbRXAJSe7ZbxPhZ/EMg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknuX/4ACgkQdSjSd0sB4dKu4gCfZw6nAa8ivt9INhaXkp02EzBf
+CWoAoKc5KyXSjF42dOaF0aHGWR2NDshS
+=+1dW
+-----END PGP SIGNATURE-----
+
+--=-fsbRXAJSe7ZbxPhZ/EMg--
 
