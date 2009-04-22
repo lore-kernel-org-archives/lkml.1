@@ -1,133 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZDVOcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZDVOdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbZDVOcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZDVOcI
+	id S1753124AbZDVOdY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZDVOdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 10:32:08 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37395 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbZDVOcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 10:32:06 -0400
-Date: Wed, 22 Apr 2009 15:32:01 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [PATCH] low order lumpy reclaim also should use
-	PAGEOUT_IO_SYNC.
-Message-ID: <20090422143201.GE15367@csn.ul.ie>
-References: <20090421142056.F127.A69D9226@jp.fujitsu.com>
+	Wed, 22 Apr 2009 10:33:12 -0400
+Received: from intcomgrp.com ([216.54.13.120]:44573 "EHLO beta.intcomgrp.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751113AbZDVOdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 10:33:11 -0400
+Message-ID: <49EF2A3C.2050107@support.intcomgrp.com>
+Date: Wed, 22 Apr 2009 10:31:24 -0400
+From: James Kosin <jkosin@beta.intcomgrp.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090421142056.F127.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mark Brown <broonie@sirena.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [RFD] voltage/current regulator consumer interface
+References: <ct38K-3Fq-11@gated-at.bofh.it> <ct38K-3Fq-9@gated-at.bofh.it> <ctmXD-1yA-3@gated-at.bofh.it> <ctnK4-2zP-11@gated-at.bofh.it> <ctoG9-458-7@gated-at.bofh.it> <ctoG9-458-5@gated-at.bofh.it> <ctoPK-4y5-5@gated-at.bofh.it> <ctoZv-4KN-23@gated-at.bofh.it> <ctFxn-5OC-11@gated-at.bofh.it> <ctG0r-6HL-31@gated-at.bofh.it>
+In-Reply-To: <ctG0r-6HL-31@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 02:22:27PM +0900, KOSAKI Motohiro wrote:
-> Subject: [PATCH] low order lumpy reclaim also should use PAGEOUT_IO_SYNC.
+Mark Brown wrote:
+> On Wed, Apr 22, 2009 at 10:57:37AM +0300, Mike Rapoport wrote:
 > 
-> commit 33c120ed2843090e2bd316de1588b8bf8b96cbde (more aggressively use lumpy reclaim)
-> change lumpy reclaim using condition. but it isn't enough change.
+>> What about "line-supply"?
 > 
-> lumpy reclaim don't only mean isolate neighber page, but also do pageout as synchronous.
-> this patch does it.
-> 
-> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Cc: Andy Whitcroft <apw@shadowen.org>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Rik van Riel <riel@redhat.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> In power management line normally refers to the core, unregulated power
+> bus for the system and a line supply would normally be something like a
+> wall wart that supplies this directly when it's connected.
 
-Seems fair although the changelog could be better. Maybe something like?
+Can I suggest:
+"supply-switch" or "regulator-switch" may make more sense for the moment.
 
-====
-
-Commit 33c120ed2843090e2bd316de1588b8bf8b96cbde increased how aggressive
-lumpy reclaim was by isolating both active and inactive pages for asynchronous
-lumpy reclaim on costly-high-order pages and for cheap-high-order when memory
-pressure is high. However, if the system is under heavy pressure and there
-are dirty pages, asynchronous IO may not be sufficient to reclaim a suitable
-page in time.
-
-This patch causes the caller to enter synchronous lumpy reclaim for
-costly-high-order pages and for cheap-high-order pages when under memory
-pressure.
-====
-
-Whether the changelog is updated or not though;
-
-Reviewed-by: Mel Gorman <mel@csn.ul.ie>
-
-> ---
->  mm/vmscan.c |   29 +++++++++++++++--------------
->  1 file changed, 15 insertions(+), 14 deletions(-)
-> 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1049,6 +1049,19 @@ static unsigned long shrink_inactive_lis
->  	unsigned long nr_scanned = 0;
->  	unsigned long nr_reclaimed = 0;
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> +	int lumpy_reclaim = 0;
-> +
-> +	/*
-> +	 * If we need a large contiguous chunk of memory, or have
-> +	 * trouble getting a small set of contiguous pages, we
-> +	 * will reclaim both active and inactive pages.
-> +	 *
-> +	 * We use the same threshold as pageout congestion_wait below.
-> +	 */
-> +	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
-> +		lumpy_reclaim = 1;
-> +	else if (sc->order && priority < DEF_PRIORITY - 2)
-> +		lumpy_reclaim = 1;
->  
->  	pagevec_init(&pvec, 1);
->  
-> @@ -1061,19 +1074,7 @@ static unsigned long shrink_inactive_lis
->  		unsigned long nr_freed;
->  		unsigned long nr_active;
->  		unsigned int count[NR_LRU_LISTS] = { 0, };
-> -		int mode = ISOLATE_INACTIVE;
-> -
-> -		/*
-> -		 * If we need a large contiguous chunk of memory, or have
-> -		 * trouble getting a small set of contiguous pages, we
-> -		 * will reclaim both active and inactive pages.
-> -		 *
-> -		 * We use the same threshold as pageout congestion_wait below.
-> -		 */
-> -		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
-> -			mode = ISOLATE_BOTH;
-> -		else if (sc->order && priority < DEF_PRIORITY - 2)
-> -			mode = ISOLATE_BOTH;
-> +		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
->  
->  		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
->  			     &page_list, &nr_scan, sc->order, mode,
-> @@ -1110,7 +1111,7 @@ static unsigned long shrink_inactive_lis
->  		 * but that should be acceptable to the caller
->  		 */
->  		if (nr_freed < nr_taken && !current_is_kswapd() &&
-> -					sc->order > PAGE_ALLOC_COSTLY_ORDER) {
-> +		    lumpy_reclaim) {
->  			congestion_wait(WRITE, HZ/10);
->  
->  			/*
-> 
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+James
