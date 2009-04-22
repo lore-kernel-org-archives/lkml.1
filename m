@@ -1,103 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZDVDOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZDVDSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbZDVDOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 23:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZDVDOo
+	id S1754730AbZDVDSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 23:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDVDSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 23:14:44 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:45318 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751874AbZDVDOo (ORCPT
+	Tue, 21 Apr 2009 23:18:16 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58646 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbZDVDSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 23:14:44 -0400
-Date: Wed, 22 Apr 2009 12:14:43 +0900 (JST)
-Message-Id: <20090422.121443.104042516.ryov@valinux.co.jp>
-To: dm-devel@redhat.com, vgoyal@redhat.com
-Cc: snitzer@redhat.com, fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org,
-       jmoyer@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       agk@redhat.com, balbir@linux.vnet.ibm.com
-Subject: Re: [dm-devel] Re: dm-ioband: Test results.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090421141607.GA22619@redhat.com>
-References: <20090421.211051.183023683.ryov@valinux.co.jp>
-	<20090421135723.GA13953@redhat.com>
-	<20090421141607.GA22619@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 21 Apr 2009 23:18:15 -0400
+Date: Wed, 22 Apr 2009 12:16:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH] memcg: remove trylock_page_cgroup
+Message-Id: <20090422121641.eb84a07e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090422090218.6d451a08.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090416120316.GG7082@balbir.in.ibm.com>
+	<20090417091459.dac2cc39.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417014042.GB18558@balbir.in.ibm.com>
+	<20090417110350.3144183d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417034539.GD18558@balbir.in.ibm.com>
+	<20090417124951.a8472c86.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417045623.GA3896@balbir.in.ibm.com>
+	<20090417141726.a69ebdcc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417064726.GB3896@balbir.in.ibm.com>
+	<20090417155608.eeed1f02.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090417141837.GD3896@balbir.in.ibm.com>
+	<20090421132551.38e9960a.akpm@linux-foundation.org>
+	<20090422090218.6d451a08.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+How about this ? worth to be tested, I think.
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: [dm-devel] Re: dm-ioband: Test results.
-Date: Tue, 21 Apr 2009 10:16:07 -0400
+Before synchronized-LRU patch, mem cgroup had its own LRU lock.
+And there was a code which does
+# assume mz as per zone struct of memcg. 
 
-> On Tue, Apr 21, 2009 at 09:57:23AM -0400, Mike Snitzer wrote:
-> > On Tue, Apr 21 2009 at  8:10am -0400,
-> > Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> > 
-> > > Hi Nauman,
-> > > 
-> > > > > The real question is, once you create a version of dm-ioband that
-> > > > > co-operates with CFQ scheduler, how that solution would compare with
-> > > > > the patch set Vivek has posted? In my opinion, we need to converge to
-> > > > > one solution as soon as possible, so that we can work on it together
-> > > > > to refine and test it.
-> > > > 
-> > > > I think I can do some help for your work. but I want to continue the
-> > > > development of dm-ioband, because dm-ioband actually works well and
-> > > > I think it has some advantages against other IO controllers.
-> > > >   - It can use without cgroup.
-> > > >   - It can control bandwidth on a per partition basis.
-> > > >   - The driver module can be replaced without stopping the system.
-> > > 
-> > > In addition, dm-ioband can run on the RHEL5.
-> > 
-> > RHEL5 compatibility does not matter relative to merging an I/O bandwidth
-> > controller upstream.  So both the "can [be] use without cgroup" and "can
-> > run on RHEL5" features do not help your cause of getting dm-ioband
-> > merged upstream.  In fact these features serve as distractions.
->
-> Exactly. I don't think that "it can be used without cgroup" is a feature
-> or advantage. To me it is a disadvantage and should be fixed. cgroup is
-> standard mechanism to group tasks arbitrarily and we should use that to make
-> things working instead of coming up with own ways of grouping things and
-> terming it as advantage.
-> 
-> What do you mean by "The driver module can be replaced without stopping
-> the system"? I guess you mean that one does not have to reboot the system
-> to remove ioband device? So if one decides to not use the cgroup, then
-> one shall have to remove the ioband devices, remount the filesystems and
-> restart the application?
+   spin_lock mz->lru_lock
+	lock_page_cgroup(pc).
+   and
+   lock_page_cgroup(pc)
+	spin_lock mz->lru_lock
 
-Device-mapper has a feature that can replace an intermediate module
-without unmount the device like the following.
+because we cannot locate "mz" until we see pc->page_cgroup, we used
+trylock(). But now, we don't have mz->lru_lock. All cgroup
+uses zone->lru_lock for handling list. Moreover, manipulation of
+LRU depends on global LRU now and we can isolate page from LRU by
+very generic way.(isolate_lru_page()).
+So, this kind of trylock is not necessary now.
 
-      ---------------------        ---------------------
-     |         /mnt        |      |        /mnt         |
-     |---------------------|      |---------------------|
-     | /dev/mapper/ioband1 |      | /dev/mapper/ioband1 |
-     |---------------------|      |---------------------|
-     |      dm-ioband      | <==> |      dm-linear      |
-     |---------------------|      |---------------------|
-     |      /dev/sda1      |      |      /dev/sda1      |
-      ---------------------        ---------------------
+I thought I removed all trylock in synchronized-LRU patch but there
+is still one. This patch removes trylock used in memcontrol.c and
+its definition. If someone needs, he should add this again with enough
+reason.
 
-So we can safely unload the dm-ioband module and update it.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/page_cgroup.h |    5 -----
+ mm/memcontrol.c             |    3 +--
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
-> With cgroup approach, if one does not want things to be classified, a user
-> can simply move all the tasks to root group and things will be fine. No
-> remounting, no application stopping etc. So this also does not look like
-> an advantage instead sounds like an disadvantage.
-> 
-> Thanks
-> Vivek
-> 
-> --
-> dm-devel mailing list
-> dm-devel@redhat.com
-> https://www.redhat.com/mailman/listinfo/dm-devel
+Index: mmotm-2.6.30-Apr21/include/linux/page_cgroup.h
+===================================================================
+--- mmotm-2.6.30-Apr21.orig/include/linux/page_cgroup.h
++++ mmotm-2.6.30-Apr21/include/linux/page_cgroup.h
+@@ -61,11 +61,6 @@ static inline void lock_page_cgroup(stru
+ 	bit_spin_lock(PCG_LOCK, &pc->flags);
+ }
+ 
+-static inline int trylock_page_cgroup(struct page_cgroup *pc)
+-{
+-	return bit_spin_trylock(PCG_LOCK, &pc->flags);
+-}
+-
+ static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+Index: mmotm-2.6.30-Apr21/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.30-Apr21.orig/mm/memcontrol.c
++++ mmotm-2.6.30-Apr21/mm/memcontrol.c
+@@ -1148,8 +1148,7 @@ static int mem_cgroup_move_account(struc
+ 	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
+ 	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
+ 
+-	if (!trylock_page_cgroup(pc))
+-		return ret;
++	lock_page_cgroup(pc);
+ 
+ 	if (!PageCgroupUsed(pc))
+ 		goto out;
+
