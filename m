@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZDVUdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbZDVUeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZDVUdT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZDVUdD
+	id S1756609AbZDVUeq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZDVUee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:33:03 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:36633 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755054AbZDVUdA (ORCPT
+	Wed, 22 Apr 2009 16:34:34 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:49921 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbZDVUed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:33:00 -0400
-Message-ID: <49EF7F3A.1070809@opengridcomputing.com>
-Date: Wed, 22 Apr 2009 15:34:02 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 22 Apr 2009 16:34:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=kticdTxqoKuvAhaz1tn8vOcGNEM6TZXfZwou4mH0kS6vnWvaIwXsO6D6qGJJvmksA
+	SnHx504TxdE8ohnuEg4cw==
+Date: Wed, 22 Apr 2009 13:34:27 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 16/22] Do not setup zonelist cache when there is only
+ one node
+In-Reply-To: <1240432339.22694.64.camel@lts-notebook>
+Message-ID: <alpine.DEB.2.00.0904221333040.14558@chino.kir.corp.google.com>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-17-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0904221319120.14558@chino.kir.corp.google.com> <1240432339.22694.64.camel@lts-notebook>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-References: <49EE42CC.7070002@opengridcomputing.com> <20090422131703.GO4593@kernel.dk> <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com> <20090422192216.GE4593@kernel.dk> <49EF7B40.9050505@opengridcomputing.com>
-In-Reply-To: <49EF7B40.9050505@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
-> Jens Axboe wrote:
->
->  
->
->>> Still crashes with this variant:
->>>     
->>
->> OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
->> and see if that works?
->>
->> Or, better yet, please try and revert
->> 55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
->> try the above revert.
->>
->>   
->
-> Reverting 55a63998b8967615a15e2211ba0ff3a84a565824 did the trick.
->
->
-> Steve.
->
->
+On Wed, 22 Apr 2009, Lee Schermerhorn wrote:
 
-<snipit from 55a63998b8967615a15e2211ba0ff3a84a565824>
+> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > index 7f45de1..e59bb80 100644
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -1467,8 +1467,11 @@ this_zone_full:
+> > >  		if (NUMA_BUILD)
+> > >  			zlc_mark_zone_full(zonelist, z);
+> > 
+> > If zonelist caching is never used for UMA machines, why should they ever 
+> > call zlc_mark_zone_full()?  It will always dereference 
+> > zonelist->zlcache_ptr and immediately return without doing anything.
+> > 
+> > Wouldn't it better to just add
+> > 
+> > 	if (num_online_nodes() == 1)
+> > 		continue;
+> > 
+> > right before this call to zlc_mark_zone_full()?  This should compile out 
+> > the remainder of the loop for !CONFIG_NUMA kernels anyway.
+> 
+> Shouldn't it already do that?  NUMA_BUILD is defined as 0 when
+> !CONFIG_NUMA to avoid #ifdef's in the code while still allowing compiler
+> error checking in the dead code.
+> 
 
-@@ -200,17 +197,14 @@ static void __rb_erase_color(struct rb_node *node, 
-struct rb_node *parent,
-                        {
-                                if (!other->rb_left || 
-rb_is_black(other->rb_left))
-                                {
--                                       register struct rb_node *o_right;
--                                       if ((o_right = other->rb_right))
--                                               rb_set_black(o_right);
-+                                       rb_set_black(other->rb_right);
-                                        rb_set_red(other);
-                                        __rb_rotate_left(other, root);
-                                        other = parent->rb_left;
-                                }
-                                rb_set_color(other, rb_color(parent));
-                                rb_set_black(parent);
--                               if (other->rb_left)
--                                       rb_set_black(other->rb_left);
-+                               rb_set_black(other->rb_left);
-                                __rb_rotate_right(parent, root);
-                                node = root->rb_node;
-                                break;
-
-
-I don't know this code, but isn't the 'if (other->rb_left)' really 
-needed?  Or is it always true that if '!other->rb_left' is true entering 
-this snipit, then after executing the first 'if' block, then 
-'other->rb_left' must be a valid ptr? (how's that for confusing english? :)
-
-Steve
-
-
+Yeah, but adding the check on num_online_nodes() also prevents needlessly 
+calling zlc_mark_zone_full() on CONFIG_NUMA kernels when running on an UMA 
+machine.
