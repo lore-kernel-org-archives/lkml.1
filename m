@@ -1,48 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbZDVPhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZDVPhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbZDVPhZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZDVPhJ
+	id S1756075AbZDVPhm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZDVPhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:37:09 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:57317 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750842AbZDVPhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:37:07 -0400
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Daniela Engert <dani@ngrt.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>
-In-Reply-To: <20090422161856.1251f8a0@lxorguk.ukuu.org.uk>
-References: <20090422090929.GA14928@havoc.gtf.org>
-	 <49EEE225.3010700@garzik.org> <49EF0A92.1070400@panasas.com>
-	 <49EF337F.1030804@ngrt.de>  <20090422161856.1251f8a0@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Wed, 22 Apr 2009 15:37:02 +0000
-Message-Id: <1240414622.3431.14.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Apr 2009 11:37:32 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:58866 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755498AbZDVPhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 11:37:31 -0400
+Date: Wed, 22 Apr 2009 10:37:30 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Coly Li <coly.li@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] uv_time: add parameter to uv_read_rtc()
+Message-ID: <20090422153730.GA8490@sgi.com>
+References: <49EF3614.1050806@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF3614.1050806@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-22 at 16:18 +0100, Alan Cox wrote:
-> > Don't forget, there are ATAPI devices (some Sony CD burners and old 
-> > phase-changers come into mind) which *do* have multiple LUNs sitting 
-> > beyond the PATA port. I don't know if libata supports such setups (my 
-> > old OS/2 driver does) but one shouldn't hijack LUNs to emulate targets.
+Looks like this interface has just been changed, by commit 8e19608e8b5c001e4a66ce482edc474f05fb7355.
+
+This looks OK to me.
+
+On Wed, Apr 22, 2009 at 11:21:56PM +0800, Coly Li wrote:
+> uv_read_rtc() is referenced by read member of struct clocksource clocksource_uv.
+> In include/linux/clocksource.h, read of struct clocksource is declared as:
+> cycle_t (*read)(struct clocksource *cs)
 > 
-> It's a long time ago since I tested it but my 5 CD changer was correctly
-> supported by libata (or more accurately by sr...).
-
-Well, sr supports the discovered CD/DVD; ch is the actual changer
-manager.  Usually ch attaches to one LUN and sr attaches to another.
-
-James
-
-
+> This patch adds a dummy parameter (struct clocksource type) to uv_read_rtc() to
+> fix the incompatible reference in clocksource_uv, and add a NULL parameter in
+> all places where uv_read_rtc() gets called.
+> 
+> Signed-off-by: Coly Li <coly.li@suse.de>
+> Cc: Dimitri Sivanich <sivanich@sgi.com>
+> ---
+>  arch/x86/kernel/uv_time.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
+> index 2ffb6c5..583f11d 100644
+> --- a/arch/x86/kernel/uv_time.c
+> +++ b/arch/x86/kernel/uv_time.c
+> @@ -29,7 +29,7 @@
+> 
+>  #define RTC_NAME		"sgi_rtc"
+> 
+> -static cycle_t uv_read_rtc(void);
+> +static cycle_t uv_read_rtc(struct clocksource *cs);
+>  static int uv_rtc_next_event(unsigned long, struct clock_event_device *);
+>  static void uv_rtc_timer_setup(enum clock_event_mode,
+>  				struct clock_event_device *);
+> @@ -123,7 +123,7 @@ static int uv_setup_intr(int cpu, u64 expires)
+>  	/* Initialize comparator value */
+>  	uv_write_global_mmr64(pnode, UVH_INT_CMPB, expires);
+> 
+> -	return (expires < uv_read_rtc() && !uv_intr_pending(pnode));
+> +	return (expires < uv_read_rtc(NULL) && !uv_intr_pending(pnode));
+>  }
+> 
+>  /*
+> @@ -256,7 +256,7 @@ static int uv_rtc_unset_timer(int cpu)
+> 
+>  	spin_lock_irqsave(&head->lock, flags);
+> 
+> -	if (head->next_cpu == bcpu && uv_read_rtc() >= *t)
+> +	if (head->next_cpu == bcpu && uv_read_rtc(NULL) >= *t)
+>  		rc = 1;
+> 
+>  	*t = ULLONG_MAX;
+> @@ -278,7 +278,7 @@ static int uv_rtc_unset_timer(int cpu)
+>  /*
+>   * Read the RTC.
+>   */
+> -static cycle_t uv_read_rtc(void)
+> +static cycle_t uv_read_rtc(struct clocksource *cs)
+>  {
+>  	return (cycle_t)uv_read_local_mmr(UVH_RTC);
+>  }
+> @@ -291,7 +291,7 @@ static int uv_rtc_next_event(unsigned long delta,
+>  {
+>  	int ced_cpu = cpumask_first(ced->cpumask);
+> 
+> -	return uv_rtc_set_timer(ced_cpu, delta + uv_read_rtc());
+> +	return uv_rtc_set_timer(ced_cpu, delta + uv_read_rtc(NULL));
+>  }
+> 
+>  /*
+> 
+> -- 
+> Coly Li
+> SuSE Labs
