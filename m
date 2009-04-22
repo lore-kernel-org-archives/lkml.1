@@ -1,112 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZDVKKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZDVKKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZDVKKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 06:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbZDVKKF
+	id S1756658AbZDVKKv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 06:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbZDVKKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 06:10:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46743 "EHLO gir.skynet.ie"
+	Wed, 22 Apr 2009 06:10:40 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54092 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753572AbZDVKKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 06:10:04 -0400
-Date: Wed, 22 Apr 2009 11:09:58 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 20/25] Do not check for compound pages during the page
-	allocator sanity checks
-Message-ID: <20090422100958.GB10380@csn.ul.ie>
-References: <1240266011-11140-1-git-send-email-mel@csn.ul.ie> <1240266011-11140-21-git-send-email-mel@csn.ul.ie> <20090422091456.626E.A69D9226@jp.fujitsu.com>
+	id S1755479AbZDVKKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 06:10:39 -0400
+Date: Wed, 22 Apr 2009 12:10:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: [GIT PATCH linux-2.6-block] block: cleanup patches, take#3
+Message-ID: <20090422101038.GA4593@kernel.dk>
+References: <1240331881-28218-1-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090422091456.626E.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1240331881-28218-1-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 09:20:40AM +0900, KOSAKI Motohiro wrote:
-> > A number of sanity checks are made on each page allocation and free
-> > including that the page count is zero. page_count() checks for
-> > compound pages and checks the count of the head page if true. However,
-> > in these paths, we do not care if the page is compound or not as the
-> > count of each tail page should also be zero.
-> > 
-> > This patch makes two changes to the use of page_count() in the free path. It
-> > converts one check of page_count() to a VM_BUG_ON() as the count should
-> > have been unconditionally checked earlier in the free path. It also avoids
-> > checking for compound pages.
-> > 
-> > [mel@csn.ul.ie: Wrote changelog]
-> > Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
-> > Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> > ---
-> >  mm/page_alloc.c |    6 +++---
-> >  1 files changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index ec01d8f..376d848 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -425,7 +425,7 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
-> >  		return 0;
-> >  
-> >  	if (PageBuddy(buddy) && page_order(buddy) == order) {
-> > -		BUG_ON(page_count(buddy) != 0);
-> > +		VM_BUG_ON(page_count(buddy) != 0);
-> >  		return 1;
-> >  	}
-> >  	return 0;
-> >
+On Wed, Apr 22 2009, Tejun Heo wrote:
+> Hello,
 > 
-> Looks good.
+> Upon ack, please pull from the following git tree, which pulls in
+> linux-2.6-ide#for-next into linux-2.6-block#for-next and applies this
+> patchset on top of it.
 > 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
 > 
-> > @@ -501,7 +501,7 @@ static inline int free_pages_check(struct page *page)
-> >  {
-> >  	if (unlikely(page_mapcount(page) |
-> >  		(page->mapping != NULL)  |
-> > -		(page_count(page) != 0)  |
-> > +		(atomic_read(&page->_count) != 0) |
-> >  		(page->flags & PAGE_FLAGS_CHECK_AT_FREE))) {
-> >  		bad_page(page);
-> >  		return 1;
-> > @@ -646,7 +646,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
-> >  {
-> >  	if (unlikely(page_mapcount(page) |
-> >  		(page->mapping != NULL)  |
-> > -		(page_count(page) != 0)  |
-> > +		(atomic_read(&page->_count) != 0)  |
-> >  		(page->flags & PAGE_FLAGS_CHECK_AT_PREP))) {
-> >  		bad_page(page);
-> >  		return 1;
+> This is the third take of block-cleanup-patches.  Changes from the
+> last take[L] are
 > 
+> * All ide changes including L0001-0003 are separated out and merged
+>   through linux-2.6-ide#for-next and pulled into
+>   linux-2.6-block#for-next.
 > 
-> inserting VM_BUG_ON(PageTail(page)) is better?
+> * L0015-block-kill-end_request.patch replaced with
+>   0012-block-replace-end_request-with-__-blk_end_reques.patch.
 > 
+> * L0016-ubd-simplify-block-request-completion.patch
+>   L0017-block-clean-up-unnecessary-stuff-from-block-drivers.patch are
+>   postponed to later patchset.
+> 
+> * 0013-0014 to kill rq->data added.
+> 
+> * Updated to the current #for-next.
+> 
+>  0001-block-merge-blk_invoke_request_fn-into-__blk_run_.patch
+>  0002-block-kill-blk_start_queueing.patch
+>  0003-block-don-t-set-REQ_NOMERGE-unnecessarily.patch
+>  0004-block-cleanup-REQ_SOFTBARRIER-usages.patch
+>  0005-block-clean-up-misc-stuff-after-block-layer-timeout.patch
+>  0006-block-reorder-request-completion-functions.patch
+>  0007-block-reorganize-request-fetching-functions.patch
+>  0008-block-kill-blk_end_request_callback.patch
+>  0009-block-clean-up-request-completion-API.patch
+>  0010-block-move-rq-start_time-initialization-to-blk_rq_.patch
+>  0011-block-implement-and-use-__-blk_end_request_all.patch
+>  0012-block-replace-end_request-with-__-blk_end_reques.patch
+>  0013-block-don-t-abuse-rq-data.patch
+>  0014-block-kill-data.patch
+> 
+> 0001-0011 are mostly identical to L0004-0014.  L0015 incorrectly
+> replaced end_request() with __blk_end_request_all().  0012 adds
+> [__]blk_end_request_cur() and replaces end_request() with it.
+> 
+> With ide changes pulled in, omap is the only user of rq->data, 0013
+> makes it use only rq->special and 0014 kills rq->data.
+> 
+> This patchset is on top of
+> 
+> linux-2.6-block#for-next(a95320f3ede3f028837a621715cd352e83ffe7c2)
+> + linux-2.6-ide#for-next(2ecf0a57c60dcb588f310d94412118e15c510532)
 
-We already go one further with
+Looks nice, the only real quibble I have is the one that hch also brings
+up. Using a 'locked' argument is always ugly. Otherwise, overall the
+patchset is really nice and does good cleanups. Getting rid of ->data is
+great as well.
 
-#define PAGE_FLAGS_CHECK_AT_PREP        ((1 << NR_PAGEFLAGS) - 1)
-
-...
-
-if (.... | (page->flags & PAGE_FLAGS_CHECK_AT_PREP))
-	bad_page(page);
-
-PG_tail is in PAGE_FLAGS_CHECK_AT_PREP so we're already checking for it
-and calling bad_page() if set.
+Once we get that settled, pulling into for-2.6.31 will be done.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jens Axboe
+
