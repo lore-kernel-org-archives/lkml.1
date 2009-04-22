@@ -1,229 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbZDVHIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbZDVHJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755711AbZDVHIz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZDVHHk
+	id S1755923AbZDVHJh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZDVHIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:07:40 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:43925 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbZDVHHh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:07:37 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 5/6] Char: cyclades, fix nports handling
-Date: Wed, 22 Apr 2009 09:06:42 +0200
-Message-Id: <1240384003-25499-5-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1240384003-25499-1-git-send-email-jirislaby@gmail.com>
-References: <1240384003-25499-1-git-send-email-jirislaby@gmail.com>
+	Wed, 22 Apr 2009 03:08:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46120 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755337AbZDVHIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 03:08:02 -0400
+Date: Wed, 22 Apr 2009 09:06:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Peter Osterlund <petero2@telia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] include/linux/pktcdvd.h: add mempool.h dependency
+Message-ID: <20090422070652.GB28438@elte.hu>
+References: <alpine.LFD.2.00.0904212014170.3101@localhost.localdomain> <20090422062053.GA20960@elte.hu> <20090422063833.GA23258@elte.hu> <20090422063954.GW4593@kernel.dk> <20090422065430.GA26384@elte.hu> <20090422065813.GX4593@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422065813.GX4593@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set up ports right after FW load so that we won't allocate maximal
-(64) ports when we use few.
 
-Also remove reading of nports in irq context, since we know it from
-initialisation now.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-This also fixes a tty ports unregistration on some fail paths and for
-Ze which registered 64 and unregistered real port count.
+> On Wed, Apr 22 2009, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Wed, Apr 22 2009, Ingo Molnar wrote:
+> > > > 
+> > > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > A last-minute build error slipped through:
+> > > > >
+> > > > >   In file included from fs/compat_ioctl.c:105:
+> > > > >   include/linux/pktcdvd.h:285: error: expected specifier-qualifier-list before ???mempool_t???
+> > > > 
+> > > > Caused by:
+> > > > 
+> > > >   1ba0c7d: fs/compat_ioctl: fix build when !BLOCK
+> > > > 
+> > > > fixed by the patch below. The build error itself triggers with 
+> > > > !BLOCK
+> > > 
+> > > This fix is already queued up in the block tree, it just didn't 
+> > > make -rc3.
+> > 
+> > ah, i see - it was posted two days ago:
+> > 
+> >   [PATCH 2/2] pktcdvd.h should include mempool.h
+> > 
+> > but the fix should have been queued up in the tree pushing the 
+> > compat_ioctl.c change (Viro's). Could have been avoided by 
+> > insisting on a fuller explanation in the changelog instead of 
+> > just a "Fix this build error" line.
+> 
+> I didn't realize it was a new build error, so just added both the 
+> patches to my lineup. I see that 1/2 went in through Viro's tree, 
+> not sure why he didn't pick up 2/2 as well.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/char/cyclades.c |   58 +++++++++++++---------------------------------
- 1 files changed, 17 insertions(+), 41 deletions(-)
+this happens - and isnt really a big deal here as !BLOCK is a pretty 
+special build form not affecting 99% of our testers. (I first took 
+it as something more serious because it triggered on my first build 
+iteration after the -rc3 merge.)
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index c9a503f..6adbc97 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -604,7 +604,6 @@
- 
- #define NR_PORTS	256
- 
--#define ZE_V1_NPORTS	64
- #define ZO_V1	0
- #define ZO_V2	1
- #define ZE_V1	2
-@@ -1777,7 +1776,6 @@ static void cyz_poll(unsigned long arg)
- 	struct tty_struct *tty;
- 	struct FIRM_ID __iomem *firm_id;
- 	struct ZFW_CTRL __iomem *zfw_ctrl;
--	struct BOARD_CTRL __iomem *board_ctrl;
- 	struct BUF_CTRL __iomem *buf_ctrl;
- 	unsigned long expires = jiffies + HZ;
- 	unsigned int port, card;
-@@ -1793,11 +1791,9 @@ static void cyz_poll(unsigned long arg)
- 		firm_id = cinfo->base_addr + ID_ADDRESS;
- 		zfw_ctrl = cinfo->base_addr +
- 				(readl(&firm_id->zfwctrl_addr) & 0xfffff);
--		board_ctrl = &(zfw_ctrl->board_ctrl);
- 
- 	/* Skip first polling cycle to avoid racing conditions with the FW */
- 		if (!cinfo->intr_enabled) {
--			cinfo->nports = (int)readl(&board_ctrl->n_channel);
- 			cinfo->intr_enabled = 1;
- 			continue;
- 		}
-@@ -2413,16 +2409,8 @@ static int cy_open(struct tty_struct *tty, struct file *filp)
- 		   interrupts should be enabled as soon as the first open
- 		   happens to one of its ports. */
- 			if (!cinfo->intr_enabled) {
--				struct ZFW_CTRL __iomem *zfw_ctrl;
--				struct BOARD_CTRL __iomem *board_ctrl;
- 				u16 intr;
- 
--				zfw_ctrl = cinfo->base_addr +
--					(readl(&firm_id->zfwctrl_addr) &
--					 0xfffff);
--
--				board_ctrl = &zfw_ctrl->board_ctrl;
--
- 				/* Enable interrupts on the PLX chip */
- 				intr = readw(&cinfo->ctl_addr.p9060->
- 						intr_ctrl_stat) | 0x0900;
-@@ -2435,8 +2423,6 @@ static int cy_open(struct tty_struct *tty, struct file *filp)
- 					printk(KERN_ERR "cyc:IRQ enable retval "
- 						"was %x\n", retval);
- 				}
--				cinfo->nports =
--					(int)readl(&board_ctrl->n_channel);
- 				cinfo->intr_enabled = 1;
- 			}
- 		}
-@@ -4340,30 +4326,20 @@ static void cy_hangup(struct tty_struct *tty)
- static int __devinit cy_init_card(struct cyclades_card *cinfo)
- {
- 	struct cyclades_port *info;
--	unsigned int nports, port;
-+	unsigned int port;
- 	unsigned short chip_number;
--	int uninitialized_var(index);
- 
- 	spin_lock_init(&cinfo->card_lock);
-+	cinfo->intr_enabled = 0;
- 
--	if (cy_is_Z(cinfo)) {	/* Cyclades-Z */
--		nports = (cinfo->hw_ver == ZE_V1) ? ZE_V1_NPORTS : 8;
--		cinfo->intr_enabled = 0;
--		cinfo->nports = 0;	/* Will be correctly set later, after
--					   Z FW is loaded */
--	} else {
--		index = cinfo->bus_index;
--		nports = cinfo->nports = CyPORTS_PER_CHIP * cinfo->num_chips;
--	}
--
--	cinfo->ports = kzalloc(sizeof(*cinfo->ports) * nports, GFP_KERNEL);
-+	cinfo->ports = kcalloc(cinfo->nports, sizeof(*cinfo->ports),
-+			GFP_KERNEL);
- 	if (cinfo->ports == NULL) {
- 		printk(KERN_ERR "Cyclades: cannot allocate ports\n");
--		cinfo->nports = 0;
- 		return -ENOMEM;
- 	}
- 
--	for (port = cinfo->first_line; port < cinfo->first_line + nports;
-+	for (port = cinfo->first_line; port < cinfo->first_line + cinfo->nports;
- 			port++) {
- 		info = &cinfo->ports[port - cinfo->first_line];
- 		tty_port_init(&info->port);
-@@ -4388,6 +4364,7 @@ static int __devinit cy_init_card(struct cyclades_card *cinfo)
- 				cyz_rx_restart, (unsigned long)info);
- #endif
- 		} else {
-+			int index = cinfo->bus_index;
- 			info->type = PORT_CIRRUS;
- 			info->xmit_fifo_size = CyMAX_CHAR_FIFO;
- 			info->cor1 = CyPARITY_NONE | Cy_1_STOP | Cy_8_BITS;
-@@ -4615,7 +4592,8 @@ static int __init cy_detect_isa(void)
- 		cy_card[j].irq = (int)cy_isa_irq;
- 		cy_card[j].bus_index = 0;
- 		cy_card[j].first_line = cy_next_channel;
--		cy_card[j].num_chips = cy_isa_nchan / 4;
-+		cy_card[j].num_chips = cy_isa_nchan / CyPORTS_PER_CHIP;
-+		cy_card[j].nports = cy_isa_nchan;
- 		if (cy_init_card(&cy_card[j])) {
- 			cy_card[j].base_addr = NULL;
- 			free_irq(cy_isa_irq, &cy_card[j]);
-@@ -4771,7 +4749,7 @@ static int __devinit cyz_load_fw(struct pci_dev *pdev, void __iomem *base_addr,
- 	struct CUSTOM_REG __iomem *cust = base_addr;
- 	struct ZFW_CTRL __iomem *pt_zfwctrl;
- 	void __iomem *tmp;
--	u32 mailbox, status;
-+	u32 mailbox, status, nchan;
- 	unsigned int i;
- 	int retval;
- 
-@@ -4892,11 +4870,11 @@ static int __devinit cyz_load_fw(struct pci_dev *pdev, void __iomem *base_addr,
- 			base_addr + ID_ADDRESS, readl(&fid->zfwctrl_addr),
- 			base_addr + readl(&fid->zfwctrl_addr));
- 
-+	nchan = readl(&pt_zfwctrl->board_ctrl.n_channel);
- 	dev_info(&pdev->dev, "Cyclades-Z FW loaded: version = %x, ports = %u\n",
--		readl(&pt_zfwctrl->board_ctrl.fw_version),
--		readl(&pt_zfwctrl->board_ctrl.n_channel));
-+		readl(&pt_zfwctrl->board_ctrl.fw_version), nchan);
- 
--	if (readl(&pt_zfwctrl->board_ctrl.n_channel) == 0) {
-+	if (nchan == 0) {
- 		dev_warn(&pdev->dev, "no Cyclades-Z ports were found. Please "
- 			"check the connection between the Z host card and the "
- 			"serial expanders.\n");
-@@ -4922,7 +4900,7 @@ static int __devinit cyz_load_fw(struct pci_dev *pdev, void __iomem *base_addr,
- 	cy_writel(&ctl_addr->intr_ctrl_stat, readl(&ctl_addr->intr_ctrl_stat) |
- 			0x00030800UL);
- 
--	return 0;
-+	return nchan;
- err_rel:
- 	release_firmware(fw);
- err:
-@@ -5027,12 +5005,8 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 
- 		if (mailbox == ZE_V1) {
- 			card_name = "Cyclades-Ze";
--
--			nchan = ZE_V1_NPORTS;
- 		} else {
- 			card_name = "Cyclades-8Zo";
--			nchan = 8;
--
- #ifdef CY_PCI_DEBUG
- 			if (mailbox == ZO_V1) {
- 				cy_writel(&ctl_addr->loc_addr_base, WIN_CREG);
-@@ -5057,8 +5031,9 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		}
- 
- 		retval = cyz_load_fw(pdev, addr2, addr0, irq);
--		if (retval)
-+		if (retval <= 0)
- 			goto err_unmap;
-+		nchan = retval;
- 	}
- 
- 	if ((cy_next_channel + nchan) > NR_PORTS) {
-@@ -5088,7 +5063,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 			dev_err(&pdev->dev, "could not allocate IRQ\n");
- 			goto err_unmap;
- 		}
--		cy_card[card_no].num_chips = nchan / 4;
-+		cy_card[card_no].num_chips = nchan / CyPORTS_PER_CHIP;
- 	} else {
- 		cy_card[card_no].hw_ver = mailbox;
- 		cy_card[card_no].num_chips = (unsigned int)-1;
-@@ -5112,6 +5087,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 	cy_card[card_no].irq = irq;
- 	cy_card[card_no].bus_index = 1;
- 	cy_card[card_no].first_line = cy_next_channel;
-+	cy_card[card_no].nports = nchan;
- 	retval = cy_init_card(&cy_card[card_no]);
- 	if (retval)
- 		goto err_null;
--- 
-1.6.2.3
+> I'll make sure to get it upstream today.
 
+Thanks.
+
+	Ingo
