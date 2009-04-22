@@ -1,99 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbZDVETJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbZDVEis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbZDVETJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 00:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZDVESz
+	id S1752173AbZDVEis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 00:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZDVEig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 00:18:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:35670 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbZDVESy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 00:18:54 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fix quilt merge error in acpi-cpufreq.c
-Date: Wed, 22 Apr 2009 13:48:40 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Jonathan Corbet <corbet@lwn.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-References: <200904140159.n3E1x1K1014705@hera.kernel.org> <200904201744.22572.rusty@rustcorp.com.au> <20090420103805.GA29891@elte.hu>
-In-Reply-To: <20090420103805.GA29891@elte.hu>
+	Wed, 22 Apr 2009 00:38:36 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:37982 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbZDVEif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 00:38:35 -0400
+Date: Wed, 22 Apr 2009 01:38:28 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       auke-jan.h.kok@intel.com, e1000-devel@lists.sourceforge.net
+Subject: [PATCH v2 fixed] e100: do not go D3 in shutdown unless system is
+	powering off
+Message-ID: <20090422043828.GB3979@vespa.holoscopio.com>
+References: <1240237621-11415-1-git-send-email-cascardo@holoscopio.com> <200904202114.01932.rjw@sisk.pl> <20090421215248.GF6147@vespa.holoscopio.com> <200904220017.19670.rjw@sisk.pl>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="hHWLQfXTYDoKhP50"
 Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200904221348.42677.rusty@rustcorp.com.au>
+In-Reply-To: <200904220017.19670.rjw@sisk.pl>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009 08:08:05 pm Ingo Molnar wrote:
-> Can you integrate these two into a single summary line? The obvious 
-> solution would be to append them:
-> 
->      tracing/ring-buffer: add unlock recursion protection on discard to fix spurious warning triggering tracing shutdown
-> 
-> but 121 characters width is _way_ too long for a summary.
 
-No, if I'm reading this commit correctly, the commit message is well written,
-just really bad.
+--hHWLQfXTYDoKhP50
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    tracing/ring-buffer: Add unlock recursion protection on discard
+After experimenting with kexec with the last merges after 2.6.29, I've
+had some problems when probing e100. It would not read the eeprom. After
+some bisects, I realized this has been like that since forever (at least
+2.6.18). The problem is that shutdown is doing the same thing that
+suspend does and puts the device in D3 state. I couldn't find a way to
+get the device back to a sane state in the probe function. So, based on
+some similar patches from Rafael J. Wysocki for e1000, e1000e and ixgbe,
+I wrote this one for e100.
 
--- This helps the patch reviewer, but noone else.  And the patch reviewer
-   should be reading the entire thing anyway.  This is a fix, but you have
-   to read to the bottom to know that.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/net/e100.c |   30 +++++++++++++++++++++++-------
+ 1 files changed, 23 insertions(+), 7 deletions(-)
 
-    The pair of helpers trace_recursive_lock() and trace_recursive_unlock()
-    have been introduced recently to provide generic tracing recursion
-    protection.
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index c0f8443..68e3b79 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -2728,7 +2728,7 @@ static void __devexit e100_remove(struct pci_dev *pde=
+v)
+ #define E100_82552_SMARTSPEED   0x14   /* SmartSpeed Ctrl register */
+ #define E100_82552_REV_ANEG     0x0200 /* Reverse auto-negotiation */
+ #define E100_82552_ANEG_NOW     0x0400 /* Auto-negotiate now */
+-static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
++static void __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ {
+ 	struct net_device *netdev =3D pci_get_drvdata(pdev);
+ 	struct nic *nic =3D netdev_priv(netdev);
+@@ -2749,19 +2749,32 @@ static int e100_suspend(struct pci_dev *pdev, pm_me=
+ssage_t state)
+ 			           E100_82552_SMARTSPEED, smartspeed |
+ 			           E100_82552_REV_ANEG | E100_82552_ANEG_NOW);
+ 		}
+-		if (pci_enable_wake(pdev, PCI_D3cold, true))
+-			pci_enable_wake(pdev, PCI_D3hot, true);
++		*enable_wake =3D true;
+ 	} else {
+-		pci_enable_wake(pdev, PCI_D3hot, false);
++		*enable_wake =3D false;
+ 	}
+=20
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
++}
+=20
+-	return 0;
++static int __e100_power_off(struct pci_dev *pdev, bool wake)
++{
++	if (wake) {
++		return pci_prepare_to_sleep(pdev);
++	} else {
++		pci_wake_from_d3(pdev, false);
++		return pci_set_power_state(pdev, PCI_D3hot);
++	}
+ }
+=20
+ #ifdef CONFIG_PM
++static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	bool wake;
++	__e100_shutdown(pdev, &wake);
++	return __e100_power_off(pdev, wake);
++}
++
+ static int e100_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev =3D pci_get_drvdata(pdev);
+@@ -2792,7 +2805,10 @@ static int e100_resume(struct pci_dev *pdev)
+=20
+ static void e100_shutdown(struct pci_dev *pdev)
+ {
+-	e100_suspend(pdev, PMSG_SUSPEND);
++	bool wake;
++	__e100_shutdown(pdev, &wake);
++	if (system_state =3D=3D SYSTEM_POWER_OFF)
++		__e100_power_off(pdev, wake);
+ }
+=20
+ /* ------------------ PCI Error Recovery infrastructure  -------------- */
+--=20
+1.6.2.3
 
-    They are used in a symetric way:
 
-     - trace_recursive_lock() on buffer reserve
-     - trace_recursive_unlock() on buffer commit
+--hHWLQfXTYDoKhP50
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--- Err, why is this verbiage in this patch at all?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-    However sometimes, we don't commit but discard on entry
-    to the buffer, ie: in case of filter checking.
+iEYEARECAAYFAknun0QACgkQyTpryRcqtS1zjgCfXjDpOFWGopfZQPnQkZKWQcb7
+pukAnjPGozUIYuBUF3uSuBRHSZ8QmRjo
+=lUIw
+-----END PGP SIGNATURE-----
 
-    Then we must also unlock the recursion protection on discard time,
-    otherwise the tracing gets definitely deactivated and a warning
-    is raised spuriously, such as:
-
--- So, the problem is that tracing gets deactivated permanently?  Also a
-   warning is raised (in which case is it really spurious?).   Since I have
-   no idea what this code does, is it common?  When was this problem
-   introduced?  
-
-    111.119821] ------------[ cut here ]------------
-    [  111.119829] WARNING: at kernel/trace/ring_buffer.c:1498 ring_buffer_lock_reserve+0x1b7/0x1d0()
-    [  111.119835] Hardware name: AMILO Li 2727
-    [  111.119839] Modules linked in:
-    [  111.119846] Pid: 5731, comm: Xorg Tainted: G        W  2.6.30-rc1 #69
-    [  111.119851] Call Trace:
-    [  111.119863]  [<ffffffff8025ce68>] warn_slowpath+0xd8/0x130
-    [  111.119873]  [<ffffffff8028a30f>] ? __lock_acquire+0x19f/0x1ae0
-    [  111.119882]  [<ffffffff8028a30f>] ? __lock_acquire+0x19f/0x1ae0
-    ...
-
--- Good, a backtrace is nice.
-
-   [ Impact: fix spurious warning triggering tracing shutdown ]
-
--- Hidden away here, I don't think I like this.  Not an improvement.
-
-    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-The patch itself basically adds trace_recursive_unlock() to event discard.
-Seems like it should always have done that, and it's a simple bug that it
-didn't.  But I had to work hard to figure that out.
-
-Rusty.
+--hHWLQfXTYDoKhP50--
