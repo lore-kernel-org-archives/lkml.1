@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZDVJZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZDVJas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZDVJZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 05:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZDVJZi
+	id S1756124AbZDVJas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 05:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZDVJai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 05:25:38 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58204 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754954AbZDVJZh (ORCPT
+	Wed, 22 Apr 2009 05:30:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:9292 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbZDVJag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 05:25:37 -0400
-Date: Wed, 22 Apr 2009 11:25:33 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Tejun Heo <tj@kernel.org>
-cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       Joerg Dorchain <joerg@dorchain.net>, Tim Waugh <tim@cyberelk.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Markus Lidel <Markus.Lidel@shadowconnect.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Pete Zaitcev <zaitcev@redhat.com>,
-       Laurent Vivier <Laurent@lvivier.info>, unsik Kim <donari75@gmail.com>
-Subject: Re: [PATCH 12/14] block: replace end_request() with
- [__]blk_end_request_cur()
-In-Reply-To: <1240331881-28218-13-git-send-email-tj@kernel.org>
-Message-ID: <alpine.LRH.2.00.0904221120460.21306@vixen.sonytel.be>
-References: <1240331881-28218-1-git-send-email-tj@kernel.org> <1240331881-28218-13-git-send-email-tj@kernel.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 22 Apr 2009 05:30:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=cWXk8gBcCzwKNMw6BLGa6Nvifpg1r4emqqmQBWKbcqeXpDqUUMTq83v7GJipA2ey3F
+         r5D6PNYa/L6Y4wvmdraqesUdS1G3H0LpnMwoOcu3fVqnsG7FtPO61ebuSDuLZEkL90Qg
+         dzDOEYd61CHjkbFRmwecRQFU/29A1YA9P7jQs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [BUILD FAILURE 05/12] Next April 21 : PPC64 randconfig [drivers/macintosh/mediabay.o]
+Date: Wed, 22 Apr 2009 11:34:17 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: subrata@linux.vnet.ibm.com, "Linuxppc-dev" <Linuxppc-dev@ozlabs.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Stefan Bader <stefan.bader@canonical.com>,
+       Marcelo Tosatti <marcelo@conectiva.com.br>,
+       Adrian Bunk <bunk@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next" <linux-next@vger.kernel.org>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+References: <1240339875.9110.137.camel@subratamodak.linux.ibm.com> <200904212104.14665.bzolnier@gmail.com> <18926.38431.910952.630575@cargo.ozlabs.ibm.com>
+In-Reply-To: <18926.38431.910952.630575@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904221134.18163.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009, Tejun Heo wrote:
-> end_request() has been kept around for backward compatibility;
-> however, it's about time for it to go away.
+On Wednesday 22 April 2009 05:59:27 Paul Mackerras wrote:
+> Bartlomiej Zolnierkiewicz writes:
 > 
-> * There aren't too many users left.
+> > mediabay shouldn't include <linux/ide.h> unconditionally so
+> > remove the superfluous include from mediabay.c (<asm/mediabay.h>
+> > will pull <linux/ide.h> in for CONFIG_BLK_DEV_IDE_PMAC=y).
 > 
-> * Its use of @updtodate is pretty confusing.
-> 
-> * In some cases, newer code ends up using mixture of end_request() and
->   [__]blk_end_request[_all](), which is way too confusing.
-> 
-> So, add [__]blk_end_request_cur() and replace end_request() with it.
+> I don't like relying on second-hand imports like that.  I prefer the
+> previous patch, that made mediabay depend on CONFIG_BLOCK.
 
->  drivers/block/ps3disk.c         |    6 ++--
->  drivers/block/z2ram.c           |    4 +-
+I missed it somehow...
 
-Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+OK, I found it now and it should fix the problem as well.
 
-With kind regards,
+> BTW, if including <linux/ide.h> causes an error when CONFIG_BLOCK=n,
+> then there is a bug in <linux/ide.h>, IMO.
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+<linux/ide.h> is for drivers/ide only.  mediabay lacks proper abstraction
+layer and is probably the only abuser left.
 
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Besides being a build fix my patch is a right step in cleaning this mess
+so I'm going to apply it through ide tree.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Thanks,
+Bart
