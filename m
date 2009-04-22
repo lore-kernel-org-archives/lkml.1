@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZDVSzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZDVS5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbZDVSzB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 14:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZDVSyx
+	id S1754707AbZDVS5L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 14:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZDVS45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 14:54:53 -0400
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:42869 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752802AbZDVSyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 14:54:52 -0400
-Date: Wed, 22 Apr 2009 19:54:46 +0100
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Greg KH <gregkh@suse.de>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: Re: [PATCH 1/3] crc-itu-t: add bit-reversed calculation
-Message-ID: <20090422185446.GA3051@decadent.org.uk>
-References: <1239590017.18110.120.camel@deadeye.i.decadent.org.uk> <20090422165633.GD19524@kroah.com> <50558A33EC%linux@youmustbejoking.demon.co.uk> <20090422184409.GB2872@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 22 Apr 2009 14:56:57 -0400
+Received: from systemlinux.org ([83.151.29.59]:37360 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751964AbZDVS45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 14:56:57 -0400
+Date: Wed, 22 Apr 2009 20:50:07 +0200
+From: Andre Noll <maan@systemlinux.org>
+To: Goswin von Brederlow <goswin-v-b@web.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Bill Davidsen <davidsen@tmr.com>,
+       Matti Aarnio <matti.aarnio@zmailer.org>, Jesper Juhl <jj@chaosbits.net>,
+       Prakash Punnoor <prakash@punnoor.de>, Michael Tokarev <mjt@tls.msk.ru>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+Message-ID: <20090422185007.GE13280@skl-net.de>
+References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org> <49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <20090422180051.GD13280@skl-net.de> <87vdowlevi.fsf@frosties.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Lb0e7rgc7IsuDeGj"
 Content-Disposition: inline
-In-Reply-To: <20090422184409.GB2872@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-X-SA-Exim-Scanned: No (on shadbolt.decadent.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <87vdowlevi.fsf@frosties.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 11:44:09AM -0700, Greg KH wrote:
-> On Wed, Apr 22, 2009 at 07:32:23PM +0100, Darren Salt wrote:
-> > I demand that Greg KH may or may not have written...
-> > 
-> > > On Mon, Apr 13, 2009 at 03:33:37AM +0100, Ben Hutchings wrote:
-> > >> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
-> > 
-> > > Who wrote this patch, you or Darren?
-> > 
-> > I did.
-> 
-> Thanks.
-> 
-> Then Ben should keep that authorship information properly when he
-> forwards patches onward.  You can do this by putting:
-> 	From: Darren Salt <email_address_here>
-> as the first line in the body of the email.  Our tools will properly
-> pick it up there and give the correct attribution.
-> 
-> Ben, does this make sense?
- 
-Yes, that's what I usually do with other people's patches.  It was an
-oversight in this case.
 
-Ben.
+--Lb0e7rgc7IsuDeGj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Ben Hutchings
-Reality is just a crutch for people who can't handle science fiction.
+On 20:31, Goswin von Brederlow wrote:
+> > Really? Easier than keeping only two 256-byte arrays for exp() and
+> > log() and use these at runtime to populate the (dynamically allocated)
+> > 64K GF multiplication table? That seems to be really simple and would
+> > still shave off 64K of kernel memory for raid5-only users.
+> >
+> > Andre
+>=20
+> Oh, you mean when the first raid6 device is started and not when the
+> module is loaded.
+
+Yes, that's what I was trying to say.
+
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--Lb0e7rgc7IsuDeGj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFJ72bfWto1QDEAkw8RAjbqAJ98LnuA3C5ltc+rq34W/eLSCUTiSACgiuYj
+Il/XAF5dCal5wiQGoN/ElwI=
+=TuCF
+-----END PGP SIGNATURE-----
+
+--Lb0e7rgc7IsuDeGj--
