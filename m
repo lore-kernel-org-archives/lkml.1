@@ -1,115 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZDVUH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZDVUHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZDVUH2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZDVUHN
+	id S1756473AbZDVUHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZDVUHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:07:13 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55920 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbZDVUHL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:07:11 -0400
-Date: Wed, 22 Apr 2009 20:59:06 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Johannes Weiner <hannes@cmpxchg.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 2/3][rfc] swap: try to reuse freed slots in the allocation
- area
-In-Reply-To: <1240259085-25872-2-git-send-email-hannes@cmpxchg.org>
-Message-ID: <Pine.LNX.4.64.0904222020140.18587@blonde.anvils>
-References: <1240259085-25872-1-git-send-email-hannes@cmpxchg.org>
- <1240259085-25872-2-git-send-email-hannes@cmpxchg.org>
+	Wed, 22 Apr 2009 16:07:18 -0400
+Received: from mail.tpi.com ([70.99.223.143]:4198 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754601AbZDVUHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 16:07:17 -0400
+Message-ID: <49EF78F2.7040203@tpi.com>
+Date: Wed, 22 Apr 2009 14:07:14 -0600
+From: Tim Gardner <timg@tpi.com>
+Reply-To: timg@tpi.com
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: malattia@linux.it, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Sony laptop: Some Sony Vaia laptops do not enable wwan
+ power by default.
+References: <20090422185351.AB41AF88CE@sepang.rtg.net> <20090422195034.GA32375@srcf.ucam.org>
+In-Reply-To: <20090422195034.GA32375@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009, Johannes Weiner wrote:
-
-> A swap slot for an anonymous memory page might get freed again just
-> after allocating it when further steps in the eviction process fail.
+Matthew Garrett wrote:
+> On Wed, Apr 22, 2009 at 12:53:51PM -0600, Tim Gardner wrote:
+>> Mattia,
+>>
+>> Does this patch makes sense for just the Vaio? I've had positive feedback from
+>> the tester in the bug report.
 > 
-> But the clustered slot allocation will go ahead allocating after this
-> now unused slot, leaving a hole at this position.  Holes waste space
-> and act as a boundary for optimistic swap-in.
+> It'd make more sense to change the wwan power option to use rfkill. That 
+> way it'll be powered up at appropriate times.
 > 
-> To avoid this, check if the next page to be swapped out can sensibly
-> be placed at this just freed position.  And if so, point the next
-> cluster offset to it.
-> 
-> The acceptable 'look-back' distance is the number of slots swap-in
-> clustering uses as well so that the latter continues to get related
-> context when reading surrounding swap slots optimistically.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Hugh Dickins <hugh@veritas.com>
-> Cc: Rik van Riel <riel@redhat.com>
 
-I'm glad you're looking into this area, thank you.
-I've a feeling that you're going to come up with something good
-here, but that neither of these patches (2/3 and 3/3) is yet it.
+The laptop model that doesn't power up wwan on cold boot contains a
+"Sony Programmable IO Control Driver" ("VGN-" according to the DMI
+info). It appears that only laptops with a "Sony Notebook Control
+Driver" enjoy rfkill goodness. I don't know for sure if those models
+fail to power up wwan when rfkill is disabled.
 
-This patch looks plausible, but I'm not persuaded by it.
-
-I wonder what contribution it made to the impressive figures in
-your testing - I suspect none, that it barely exercised this path.
-
-I worry that by jumping back to use the slot in this way, you're
-actually propagating the glitch: by which I mean, if the pages are
-all as nicely linear as you're supposing, then now one of them
-will get placed out of sequence, unlike with the existing code.
-
-And note that swapin's page_cluster is used in a strictly aligned
-way (unlike swap allocation's SWAPFILE_CLUSTER): if you're going
-to use page_cluster to bound this, then perhaps you should be
-aligning too.  Perhaps, perhaps not.
-
-If this patch is worthwhile, then don't you want also to be
-removing the " && vm_swap_full()" test from vmscan.c, where
-shrink_page_list() activate_locked does try_to_free_swap(page)?
-
-But bigger And/Or: you remark that "holes act as a boundary for
-optimistic swap-in".  Maybe that's more worth attacking?  I think
-that behaviour is dictated purely by the convenience of a simple
-offset:length interface between swapfile.c's valid_swaphandles()
-and swap_state.c's swapin_readahead().
-
-If swapin readahead is a good thing (I tend to be pessimistic about
-it: think it's worth reading several pages while the disk head is
-there, but hold no great hopes that the other pages will be useful -
-though when I've experimented with removing, it's certainly proved
-to be of some value), then I think you'd do better to restructure
-that interface, so as not to stop at the holes.
-
-Hugh
-
-> ---
->  mm/swapfile.c |    9 +++++++++
->  1 files changed, 9 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 312fafe..fc88278 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -484,6 +484,15 @@ static int swap_entry_free(struct swap_info_struct *p, swp_entry_t ent)
->  				p->lowest_bit = offset;
->  			if (offset > p->highest_bit)
->  				p->highest_bit = offset;
-> +			/*
-> +			 * If the next allocation is only some slots
-> +			 * ahead, reuse this now free slot instead of
-> +			 * leaving a hole.
-> +			 */
-> +			if (p->cluster_next - offset <= 1 << page_cluster) {
-> +				p->cluster_next = offset;
-> +				p->cluster_nr++;
-> +			}
->  			if (p->prio > swap_info[swap_list.next].prio)
->  				swap_list.next = p - swap_info;
->  			nr_swap_pages++;
-> -- 
-> 1.6.2.1.135.gde769
+rtg
+-- 
+Tim Gardner timg@tpi.com www.tpi.com
+OR 503-601-0234 x102 MT 406-443-5357
