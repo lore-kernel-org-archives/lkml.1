@@ -1,95 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbZDVN0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZDVNcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbZDVN0c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZDVN0W
+	id S1753789AbZDVNcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZDVNcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:26:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48156 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbZDVN0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:26:22 -0400
-Date: Wed, 22 Apr 2009 09:23:07 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Subject: Re: [RFC] IO Controller
-Message-ID: <20090422132307.GA23098@redhat.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <49DF1256.7080403@cn.fujitsu.com> <20090413130958.GB18007@redhat.com> <49EE895A.1060101@cn.fujitsu.com>
+	Wed, 22 Apr 2009 09:32:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:3090 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbZDVNcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:32:22 -0400
+Message-ID: <49EF1C5F.3070805@codemonkey.ws>
+Date: Wed, 22 Apr 2009 08:32:15 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EE895A.1060101@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>
+CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -v2] Add MCE support to KVM
+References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com> <49EDF057.9060501@codemonkey.ws> <49EDF287.9020908@redhat.com> <49EE2497.3060009@codemonkey.ws> <49EE25CB.6070709@redhat.com> <49EE27C2.3060505@codemonkey.ws> <49EE304D.5060108@redhat.com> <49EE3794.1070904@codemonkey.ws> <49EEB1BC.7020709@redhat.com>
+In-Reply-To: <49EEB1BC.7020709@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 11:04:58AM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> > On Fri, Apr 10, 2009 at 05:33:10PM +0800, Gui Jianfeng wrote:
-> >> Vivek Goyal wrote:
-> >>> Hi All,
-> >>>
-> >>> Here is another posting for IO controller patches. Last time I had posted
-> >>> RFC patches for an IO controller which did bio control per cgroup.
-> >>   Hi Vivek,
-> >>
-> >>   I got the following OOPS when testing, can't reproduce again :(
-> >>
-> > 
-> > Hi Gui,
-> > 
-> > Thanks for the report. Will look into it and see if I can reproduce it.
-> 
->   Hi Vivek,
-> 
->   The following script can reproduce the bug in my box.
-> 
-> #!/bin/sh
-> 
-> mkdir /cgroup
-> mount -t cgroup -o io io /cgroup
-> mkdir /cgroup/test1
-> mkdir /cgroup/test2
-> 
-> echo cfq > /sys/block/sda/queue/scheduler
-> echo 7 > /cgroup/test1/io.ioprio
-> echo 1 > /cgroup/test2/io.ioprio
-> echo 1 > /proc/sys/vm/drop_caches
-> dd if=1000M.1 of=/dev/null &
-> pid1=$!
-> echo $pid1
-> echo $pid1 > /cgroup/test1/tasks
-> dd if=1000M.2 of=/dev/null
-> pid2=$!
-> echo $pid2
-> echo $pid2 > /cgroup/test2/tasks
-> 
-> 
-> rmdir /cgroup/test1
-> rmdir /cgroup/test2
-> umount /cgroup
-> rmdir /cgroup
+Avi Kivity wrote:
+>
+> The refactoring, absolutely.  But if I have kernel support for zero 
+> copy tomorrow, do I wait until qemu completes refactoring the VLAN 
+> API, or do I hack something in so I can test it and get the benefit to 
+> users?
 
-Thanks Gui. We have got races with task movement and cgroup deletion. In
-the original bfq patch, Fabio had implemented the logic to migrate the
-task queue synchronously. It found the logic to be little complicated so I
-changed it to delayed movement of queue from old cgroup to new cgroup.
-Fabio later mentioned that it introduces a race where old cgroup is
-deleted before task queue has actually moved to new cgroup.
+Why can't we do this in upstream QEMU though?  Part of the point I'm 
+trying to make here is that what QEMU is can be flexible.  We can find 
+ways to include functionality that might not be ready for prime time by 
+making it conditionally compiled, only available when using KVM, etc.  
+It's all open for discussion.  So I'll be quite blunt about it, what 
+needs to change about what QEMU takes and doesn't take in order to get 
+rid of kvm-userspace?
 
-Nauman is currently implementing reference counting for io groups and that
-will solve this problem at the same time some other problems like movement
-of queue to root group during cgroup deletion and which can potentially 
-result in unfair share for some time to that queue etc.
+Experimentation is a good thing.  It's also important to do things the 
+right way as early as possible though because the longer users depend on 
+something, the harder it is to change later.  I think it's easier to 
+strike that balance in upstream QEMU than trying to port things from 
+kvm-userspace over to QEMU after the fact.
 
-Thanks
-Vivek
+>>
+>> The only reasonable things to do IMHO is for as much as humanly 
+>> possible to be deferred to QEMU or for you to comes to terms with 
+>> your role as a defacto QEMU maintainer and start pushing back more on 
+>> patch sets that don't take into consideration TCG/non-KVM 
+>> environments :-)
+>
+> I do that whenever possible -- and it most often is possible.
+>
+> But neither kvm nor tcg are not going to be supersets of the other.  
+> Of course qemu is not a subset of kvm as it has a much wider 
+> target/host variety.  But also kvm will always have features that tcg 
+> does not have.  For example AVX is easy to implement with a few lines 
+> in the kernel and qemu, but would take a massive effort in tcg.  It 
+> would have a large performance impact for AVX-enabled 
+> apps/guests/hosts combinations, not so much for tcg.
+>
+> kvm wants features for large-scale production deployment.  This means 
+> focus on performance and managebility.  qemu/tcg is more for hobbyist 
+> use or as a developer tool for developing operating system kernels.  
+> This means more focus on ease of use.
+
+We can have KVM specific features in QEMU when that makes sense.  In the 
+case of MCE, it doesn't make any sense because it's relatively simple 
+and the implementation can be common given the right interfaces.
+
+>>
+>> MCE is a perfect example of something that really has no reason to go 
+>> in via kvm-userspace since we have enough KVM support in upstream QEMU. 
+>
+> I agree.  But the requirement that everything in kvm have a 
+> counterpart in tcg is not realistic.  The primary use of MCE for 
+> example is used to allow a guest to survive bad hardware.  I don't see 
+> this as being useful in any way on qemu/tcg.  A secondary is is to 
+> debug mce handling in guests OSes; now this is useful with tcg, but 
+> I'd hesitate to call it a requirement, it's more of a nice to have.
+
+There is no requirement that everything have a counter part in TCG.
+
+Regards,
+
+Anthony Liguori
