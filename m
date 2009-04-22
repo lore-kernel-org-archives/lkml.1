@@ -1,110 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZDVRLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZDVRML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZDVRLM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 13:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZDVRK5
+	id S1755199AbZDVRML (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 13:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZDVRL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 13:10:57 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:8615 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbZDVRK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 13:10:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=S5lAGPwBEKxs8yDS1JeOk25Rg0/ggemeYF7vj3k87Rd9FgEA9BxAiYtJNgzQWdUAoo
-         9wn1a9QGz+c9DZ5BGPGOOghajoT2lPOvCFfwyMfB3Qn6l3Lb1QEjANmdmHqgX+uUj1ZL
-         lpy8CjaxqS+JQ03WYJ7F5fkv9Hrnwa0yJQTrc=
-Date: Wed, 22 Apr 2009 19:10:51 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-Message-ID: <20090422171047.GA5975@nowhere>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <20090422114750.GA14202@nowhere> <alpine.DEB.2.00.0904220943280.24310@gandalf.stny.rr.com>
+	Wed, 22 Apr 2009 13:11:56 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43838 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751543AbZDVRLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 13:11:55 -0400
+Date: Wed, 22 Apr 2009 18:11:51 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+Message-ID: <20090422171151.GF15367@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-3-git-send-email-mel@csn.ul.ie> <1240416791.10627.78.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904220943280.24310@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1240416791.10627.78.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 09:49:14AM -0400, Steven Rostedt wrote:
+On Wed, Apr 22, 2009 at 09:13:11AM -0700, Dave Hansen wrote:
+> On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
+> > No user of the allocator API should be passing in an order >= MAX_ORDER
+> > but we check for it on each and every allocation. Delete this check and
+> > make it a VM_BUG_ON check further down the call path.
 > 
-> 
-> 
-> On Wed, 22 Apr 2009, Frederic Weisbecker wrote:
-> > > 
-> > > I spent the entire day (and half the night) debugging this. I was fighting 
-> > > a case where the hardirqs_enabled flag in the task struct (lockdep flag) 
-> > > was mysteriously being set and cleared. I stepped through the entire 
-> > > kernel thread fork process (that was an exercise) and could not find 
-> > > anything wrong.
-> > > 
-> > > Sometimes it would go away with printk's sometimes it would not. This was 
-> > > driving me crazy, until I noticed that paravirt was enabled.
-> > > 
-> > > Turning off paravirtualization here (so far) makes everything run 
-> > > smoothly.
-> > > 
-> > > Thus my theory is that there's something fishy with the modifying of the 
-> > > irq enable/disable code when the system detects that it is running on bare 
-> > > hardware.
-> > > 
-> > > I'm too tired to look at this more. Ingo supplied a config to play with. 
-> > > You can disable VSMP too and it will still trigger the crash.
-> > > 
-> > > -- Steve
-> > > 
-> > 
-> > It's indeed a tricky one. I can reproduce it too, I will
-> > try to manage having an irqsoff trace at this point, hopefully I
-> > could get the source of this irq disabling...
-> 
-> It doesn't disable interrupts :-/
-> 
-> It is the hardirqs_enabled flag in the task struct that mysteriously turns 
-> off and back on. I put in printks when it is off in fork, and the next 
-> printk shows that it turns back on (between the printks!!!).
-> 
-> I printed the output of "irqs_disabled()" on each of these printks and 
-> interrupts are always enabled. It is only the hardirqs_enabled flag that 
-> is giving strange outputs.
-
-
-Oh, weird...
-
- 
-> Do you have CONFIG_PARAVIRT on?  When I disabled it, I have yet to 
-> reproduce the bug. But I've only rebooted a few times. I'm going to 
-> continue to reboot to see if I can trigger it.
-
-
-Yes it is enabled.
-
-
-
-> I'm thinking that the paravirt alternative code may have clobbered a 
-> register in either the enable or disabling of interrupts. This might cause 
-> a strange value to go into the hardirqs_enabled flag.
-
-
-
-Ok I will try it without PARAVIRT and tell you if I can reproduce it.
-
-
-
-> Thanks,
-> 
-> -- Steve
+> Should we get the check re-added to some of the upper-level functions,
+> then?  Perhaps __get_free_pages() or things like alloc_pages_exact()? 
 > 
 
+I don't think so, no. It just moves the source of the text bloat and
+for the few callers that are asking for something that will never
+succeed.
+
+> I'm selfishly thinking of what I did in profile_init().  Can I slab
+> alloc it?  Nope.  Page allocator?  Nope.  Oh, well, try vmalloc():
+> 
+>         prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
+>         if (prof_buffer)
+>                 return 0;
+> 
+>         prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
+>         if (prof_buffer)
+>                 return 0;
+> 
+>         prof_buffer = vmalloc(buffer_bytes);
+>         if (prof_buffer)
+>                 return 0;
+> 
+>         free_cpumask_var(prof_cpu_mask);
+>         return -ENOMEM;
+> 
+
+Can this ever actually be asking for an order larger than MAX_ORDER
+though? If so, you're condemning it to always behave poorly.
+
+> Same thing in __kmalloc_section_memmap():
+> 
+>         page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
+>         if (page)
+>                 goto got_map_page;
+> 
+>         ret = vmalloc(memmap_size);
+>         if (ret)
+>                 goto got_map_ptr;
+> 
+
+If I'm reading that right, the order will never be a stupid order. It can fail
+for higher orders in which case it falls back to vmalloc() .  For example,
+to hit that limit, the section size for a 4K kernel, maximum usable order
+of 10, the section size would need to be 256MB (assuming struct page size
+of 64 bytes). I don't think it's ever that size and if so, it'll always be
+sub-optimal which is a poor choice to make.
+
+> I depend on the allocator to tell me when I've fed it too high of an
+> order.  If we really need this, perhaps we should do an audit and then
+> add a WARN_ON() for a few releases to catch the stragglers.
+> 
+
+I consider it buggy to ask for something so large that you always end up
+with the worst option - vmalloc(). How about leaving it as a VM_BUG_ON
+to get as many reports as possible on who is depending on this odd
+behaviour?
+
+If there are users with good reasons, then we could convert this to WARN_ON
+to fix up the callers. I suspect that the allocator can already cope with
+recieving a stupid order silently but slowly. It should go all the way to the
+bottom and just never find anything useful and return NULL.  zone_watermark_ok
+is the most dangerous looking part but even it should never get to MAX_ORDER
+because it should always find there are not enough free pages and return
+before it overruns.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
