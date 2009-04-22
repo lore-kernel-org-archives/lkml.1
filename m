@@ -1,76 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZDVChk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZDVCm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbZDVChk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 22:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZDVCha
+	id S1754713AbZDVCm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 22:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbZDVCmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 22:37:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50889 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751874AbZDVCh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 22:37:29 -0400
-Date: Wed, 22 Apr 2009 02:36:45 GMT
-From: "tip-bot for Michael K. Johnson" <johnsonm@rpath.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnsonm@rpath.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnsonm@rpath.com, tglx@linutronix.de
-In-Reply-To: <20090422014448.GB32541@logo.rdu.rpath.com>
-References: <20090422014448.GB32541@logo.rdu.rpath.com>
-Subject: [tip:x86/urgent] x86: more than 8 32-bit CPUs requires X86_BIGSMP
-Message-ID: <tip-2a3313f494c2f3f74a27d66f0f14b38558b7dba2@git.kernel.org>
-Git-Commit-ID: 2a3313f494c2f3f74a27d66f0f14b38558b7dba2
-X-Mailer: tip-git-log-daemon
+	Tue, 21 Apr 2009 22:42:17 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:65371 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbZDVCmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 22:42:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=uo5aNQlESrMnaeySkTynLvUQ9QnhLGq1/Co2qh5qZIsRGrM9LkID8X9K4/q0YalyCR
+         znEOAGoohN0L8NGk/OjRF82uncXyPqLJjLVN+oe5oGtrY59Amy/Ees+ENN70g0hkElQJ
+         wscHffOw/Ad2aOkkSuTaSqJmCNWCxHOnc6hhs=
+Message-ID: <49EE8403.3090204@gmail.com>
+Date: Tue, 21 Apr 2009 22:42:11 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Apr 2009 02:36:48 +0000 (UTC)
+To: Kyle Moffett <kyle@moffetthome.net>
+CC: Huang Ying <ying.huang@intel.com>, Anthony Liguori <anthony@codemonkey.ws>,
+       Avi Kivity <avi@redhat.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -v2] Add MCE support to KVM
+References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com>	 <49E9F7BE.4090904@codemonkey.ws>	 <1240190385.6842.45.camel@yhuang-dev.sh.intel.com> <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
+In-Reply-To: <f73f7ab80904192057q3d918ceco81c09febb493e1c3@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE3F91AB170688CE1FCB5C669"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2a3313f494c2f3f74a27d66f0f14b38558b7dba2
-Gitweb:     http://git.kernel.org/tip/2a3313f494c2f3f74a27d66f0f14b38558b7dba2
-Author:     Michael K. Johnson <johnsonm@rpath.com>
-AuthorDate: Tue, 21 Apr 2009 21:44:48 -0400
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 21 Apr 2009 19:34:54 -0700
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE3F91AB170688CE1FCB5C669
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-x86: more than 8 32-bit CPUs requires X86_BIGSMP
+Kyle Moffett wrote:
+> On Sun, Apr 19, 2009 at 9:19 PM, Huang Ying <ying.huang@intel.com> wrot=
+e:
+>  =20
+>> On Sat, 2009-04-18 at 23:54 +0800, Anthony Liguori wrote:
+>>    =20
+>>> Huang Ying wrote:
+>>>      =20
+>>>> The related MSRs are emulated. MCE capability is exported via
+>>>> extension KVM_CAP_MCE and ioctl KVM_X86_GET_MCE_CAP_SUPPORTED. A new=
 
-$ cat x86-more-than-8-cpus-requires-bigsmp.patch
+>>>> vcpu ioctl command KVM_X86_SETUP_MCE is used to setup MCE emulation
+>>>> such as the mcg_cap. MCE is injected via vcpu ioctl command
+>>>> KVM_X86_SET_MCE. Extended machine-check state (MCG_EXT_P) and CMCI a=
+re
+>>>> not simulated.
+>>>>
+>>>>        =20
+>>> Maybe I'm missing something, but couldn't this be implemented entirel=
+y
+>>> within userspace?  There's nothing VT/SVM specific about this.  If th=
+e
+>>> issue is setting these MSRs from userspace via KVM_SET_MSRS isn't
+>>> enough, perhaps we should add userspace MSR handling.
+>>>
+>>> Also, if you implement the MSR logic in userspace, it's pretty simple=
+ to
+>>> make it work in the non-TCG case which will be a requirement for
+>>> upstream merging.
+>>>      =20
+>> There is more logic than just KVM_SET_MSRS, such as BANK reporting
+>> disabling, overwriting rules, triple fault for UC MCE during MCIP.
+>> Although these logic can be implemented in user space, I think put the=
+m
+>> in kernel space is easy to be understood. And the code is pretty short=
+=2E
+>>    =20
+>
+> IMO the main reason to put this in kernel-space would be to make it
+> possible to automatically forward some MCE errors generated by the
+> real hardware (RAM ECC errors for example) down into the VM.  Right
+> now I suppose you could do that with the patches to forward RAM-based
+> hard MCEs to userspace using SIGSEGV and handling the SIGSEGV in
+> userspace, but that seems more fragile to me.
+>  =20
 
-Enforce NR_CPUS <= 8 limitation if X86_BIGSMP not set
+FWIW: I would be looking for a way to generate MCE to report async vbus
+faults via my SHM_SIGNAL_FAULT() mechanism, so I am very much in favor
+of this support being in-kernel.
 
-Configuring more than 8 logical CPUs on 32-bit x86 requires
-X86_BIGSMP to be set in order to boot successfully, if more than 8
-logical CPUs are actually found at boot time.  The X86_BIGSMP help
-text describes that it is required to be set if more than 8 CPUs
-are configured, but this was previously not enforced.
+-Greg
 
-This configuration error has affected multiple distributions:
-    https://bugzilla.redhat.com/show_bug.cgi?id=480844
-    https://issues.rpath.com/browse/RPL-3022
-
-Signed-off-by: Michael K Johnson <johnsonm@rpath.com>
-LKML-Reference: <20090422014448.GB32541@logo.rdu.rpath.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> Cheers,
+> Kyle Moffett
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  =20
 
 
----
- arch/x86/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index c9086e6..b5cda6c 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -664,6 +664,7 @@ config MAXSMP
- 
- config NR_CPUS
- 	int "Maximum number of CPUs" if SMP && !MAXSMP
-+	range 2 8 if SMP && X86_32 && !X86_BIGSMP
- 	range 2 512 if SMP && !MAXSMP
- 	default "1" if !SMP
- 	default "4096" if MAXSMP
+--------------enigE3F91AB170688CE1FCB5C669
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknuhAMACgkQP5K2CMvXmqHKRwCfSda2nACyG6sW8NahZsCu/JnE
+wggAnj6Cw1PFQVhAK2B5ozweSb7lLaNh
+=fi0E
+-----END PGP SIGNATURE-----
+
+--------------enigE3F91AB170688CE1FCB5C669--
