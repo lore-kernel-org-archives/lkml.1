@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZDVNxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZDVNyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbZDVNxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZDVNxc
+	id S1755656AbZDVNyK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZDVNxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:53:32 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43792 "EHLO gir.skynet.ie"
+	Wed, 22 Apr 2009 09:53:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43781 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbZDVNxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752889AbZDVNxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Apr 2009 09:53:31 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
@@ -21,9 +21,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 02/22] Do not sanity check order in the fast path
-Date: Wed, 22 Apr 2009 14:53:07 +0100
-Message-Id: <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 01/22] Replace __alloc_pages_internal() with __alloc_pages_nodemask()
+Date: Wed, 22 Apr 2009 14:53:06 +0100
+Message-Id: <1240408407-21848-2-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
 References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
@@ -31,56 +31,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No user of the allocator API should be passing in an order >= MAX_ORDER
-but we check for it on each and every allocation. Delete this check and
-make it a VM_BUG_ON check further down the call path.
+__alloc_pages_internal is the core page allocator function but
+essentially it is an alias of __alloc_pages_nodemask. Naming a publicly
+available and exported function "internal" is also a big ugly. This
+patch renames __alloc_pages_internal() to __alloc_pages_nodemask() and
+deletes the old nodemask function.
+
+Warning - This patch renames an exported symbol. No kernel driver is
+affected by external drivers calling __alloc_pages_internal() should
+change the call to __alloc_pages_nodemask() without any alteration of
+parameters.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/gfp.h |    6 ------
- mm/page_alloc.c     |    2 ++
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ include/linux/gfp.h |   12 ++----------
+ mm/page_alloc.c     |    4 ++--
+ 2 files changed, 4 insertions(+), 12 deletions(-)
 
 diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 556c840..760f6c0 100644
+index 0bbc15f..556c840 100644
 --- a/include/linux/gfp.h
 +++ b/include/linux/gfp.h
-@@ -182,9 +182,6 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+@@ -169,24 +169,16 @@ static inline void arch_alloc_page(struct page *page, int order) { }
+ #endif
+ 
+ struct page *
+-__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
++__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 		       struct zonelist *zonelist, nodemask_t *nodemask);
+ 
+ static inline struct page *
+ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+ 		struct zonelist *zonelist)
+ {
+-	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
++	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
+ }
+ 
+-static inline struct page *
+-__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+-		struct zonelist *zonelist, nodemask_t *nodemask)
+-{
+-	return __alloc_pages_internal(gfp_mask, order, zonelist, nodemask);
+-}
+-
+-
  static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
  						unsigned int order)
  {
--	if (unlikely(order >= MAX_ORDER))
--		return NULL;
--
- 	/* Unknown node is current node */
- 	if (nid < 0)
- 		nid = numa_node_id();
-@@ -198,9 +195,6 @@ extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
- static inline struct page *
- alloc_pages(gfp_t gfp_mask, unsigned int order)
- {
--	if (unlikely(order >= MAX_ORDER))
--		return NULL;
--
- 	return alloc_pages_current(gfp_mask, order);
- }
- extern struct page *alloc_page_vma(gfp_t gfp_mask,
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index dcc4f05..5028f40 100644
+index e4ea469..dcc4f05 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1405,6 +1405,8 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+@@ -1462,7 +1462,7 @@ try_next_zone:
+  * This is the 'heart' of the zoned buddy allocator.
+  */
+ struct page *
+-__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
++__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 			struct zonelist *zonelist, nodemask_t *nodemask)
+ {
+ 	const gfp_t wait = gfp_mask & __GFP_WAIT;
+@@ -1671,7 +1671,7 @@ nopage:
+ got_pg:
+ 	return page;
+ }
+-EXPORT_SYMBOL(__alloc_pages_internal);
++EXPORT_SYMBOL(__alloc_pages_nodemask);
  
- 	classzone_idx = zone_idx(preferred_zone);
- 
-+	VM_BUG_ON(order >= MAX_ORDER);
-+
- zonelist_scan:
- 	/*
- 	 * Scan zonelist, looking for a zone with enough free.
+ /*
+  * Common helper functions.
 -- 
 1.5.6.5
 
