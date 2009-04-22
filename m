@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZDVAt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZDVBAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbZDVAt3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 20:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZDVAtU
+	id S1753411AbZDVBAn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 21:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZDVBAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 20:49:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50704 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752417AbZDVAtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 20:49:20 -0400
-Message-ID: <49EE69C2.9030908@cn.fujitsu.com>
-Date: Wed, 22 Apr 2009 08:50:10 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 21 Apr 2009 21:00:34 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34158 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbZDVBAd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 21:00:33 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Larry Woodman <lwoodman@redhat.com>
+Subject: Re: [Patch] mm tracepoints update
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, riel@redhat.com, mingo@elte.hu, rostedt@goodmis.org
+In-Reply-To: <1240353915.11613.39.camel@dhcp-100-19-198.bos.redhat.com>
+References: <1240353915.11613.39.camel@dhcp-100-19-198.bos.redhat.com>
+Message-Id: <20090422095916.627A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Mike Snitzer <snitzer@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>, nauman@google.com,
-       fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org, jmoyer@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, balbir@linux.vnet.ibm.com
-Subject: Re: dm-ioband: Test results.
-References: <20090420.172959.193682665.ryov@valinux.co.jp> <e98e18940904200207y62eca680t7cf938049375f4b3@mail.gmail.com> <20090421.210614.112619728.ryov@valinux.co.jp> <20090421.211051.183023683.ryov@valinux.co.jp> <20090421135723.GA13953@redhat.com> <20090421141607.GA22619@redhat.com>
-In-Reply-To: <20090421141607.GA22619@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 22 Apr 2009 10:00:30 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Tue, Apr 21, 2009 at 09:57:23AM -0400, Mike Snitzer wrote:
->> On Tue, Apr 21 2009 at  8:10am -0400,
->> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
->>
->>> Hi Nauman,
->>>
->>>>> The real question is, once you create a version of dm-ioband that
->>>>> co-operates with CFQ scheduler, how that solution would compare with
->>>>> the patch set Vivek has posted? In my opinion, we need to converge to
->>>>> one solution as soon as possible, so that we can work on it together
->>>>> to refine and test it.
->>>> I think I can do some help for your work. but I want to continue the
->>>> development of dm-ioband, because dm-ioband actually works well and
->>>> I think it has some advantages against other IO controllers.
->>>>   - It can use without cgroup.
->>>>   - It can control bandwidth on a per partition basis.
->>>>   - The driver module can be replaced without stopping the system.
->>> In addition, dm-ioband can run on the RHEL5.
->> RHEL5 compatibility does not matter relative to merging an I/O bandwidth
->> controller upstream.  So both the "can [be] use without cgroup" and "can
->> run on RHEL5" features do not help your cause of getting dm-ioband
->> merged upstream.  In fact these features serve as distractions.
 > 
-> Exactly. I don't think that "it can be used without cgroup" is a feature
-> or advantage. To me it is a disadvantage and should be fixed. cgroup is
-> standard mechanism to group tasks arbitrarily and we should use that to make
-> things working instead of coming up with own ways of grouping things and
-> terming it as advantage.
-> 
+> I've cleaned up the mm tracepoints to track page allocation and
+> freeing, various types of pagefaults and unmaps, and critical page
+> reclamation routines.  This is useful for debugging memory allocation
+> issues and system performance problems under heavy memory loads.
 
-I agree. And for the case of cpu scheduler, there are user group scheduler
-and cgroup group scheduler, but Peter said he would like to see user group
-scheduler to be removed.
+In past thread, Andrew pointed out bare page tracer isn't useful.
+Can you make good consumer?
 
-> What do you mean by "The driver module can be replaced without stopping
-> the system"? I guess you mean that one does not have to reboot the system
-> to remove ioband device? So if one decides to not use the cgroup, then
-> one shall have to remove the ioband devices, remount the filesystems and
-> restart the application?
+
 > 
-> With cgroup approach, if one does not want things to be classified, a user
-> can simply move all the tasks to root group and things will be fine. No
-> remounting, no application stopping etc. So this also does not look like
-> an advantage instead sounds like an disadvantage.
 > 
-> Thanks
-> Vivek
+> ----------------------------------------------------------------------
+> 
+> 
+> # tracer: mm
+> #
+> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> #              | |       |          |         |
+>          pdflush-624   [004]   184.293169: wb_kupdate:
+> mm_pdflush_kupdate count=3e48
+>          pdflush-624   [004]   184.293439: get_page_from_freelist:
+> mm_page_allocation pfn=447c27 zone_free=1940910
+>         events/6-33    [006]   184.962879: free_hot_cold_page:
+> mm_page_free pfn=44bba9
+>       irqbalance-8313  [001]   188.042951: unmap_vmas:
+> mm_anon_userfree mm=ffff88044a7300c0 address=7f9a2eb70000 pfn=24c29a
+>              cat-9122  [005]   191.141173: filemap_fault:
+> mm_filemap_fault primary fault: mm=ffff88024c9d8f40 address=3cea2dd000
+> pfn=44d68e
+>              cat-9122  [001]   191.143036: handle_mm_fault:
+> mm_anon_fault mm=ffff88024c8beb40 address=7fffbde99f94 pfn=24ce22
+> -------------------------------------------------------------------------
+> 
+> Signed-off-by: Larry Woodman <lwoodman@redhat.com>
+> Acked-by: Rik van Riel <riel@redhat.com>
+> 
+> 
+> The patch applies to ingo's latest tip tree:
+
+
+
