@@ -1,95 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZDVHWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZDVHXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZDVHWs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 03:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZDVHWh
+	id S1755113AbZDVHXH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 03:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZDVHWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 03:22:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57803 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbZDVHWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 03:22:37 -0400
-Date: Wed, 22 Apr 2009 09:26:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Christoph Hellwig <hch@lst.de>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@elastic.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka@firstfloor.org
-Subject: Re: [PATCH 2/8] tracing: create automated trace defines
-Message-ID: <20090422072605.GC14687@one.firstfloor.org>
-References: <49E69E76.9030608@goop.org> <20090416234410.GA20513@Krystal> <87zlebpzmk.fsf@basil.nowhere.org> <20090421155106.GE3792@Krystal> <49EDFFE6.1080401@goop.org> <alpine.DEB.2.00.0904211320440.10097@gandalf.stny.rr.com> <20090421202828.GB32179@basil> <alpine.DEB.2.00.0904211711260.10097@gandalf.stny.rr.com> <20090422060701.GB14687@one.firstfloor.org> <alpine.DEB.2.00.0904220215530.9714@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904220215530.9714@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 22 Apr 2009 03:22:47 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:52340 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754570AbZDVHWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 03:22:45 -0400
+Message-ID: <49EEC60F.2010706@pardus.org.tr>
+Date: Wed, 22 Apr 2009 10:23:59 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20071115)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: cpufreq@vger.kernel.org, mingo@redhat.com
+Subject: Re: [BUG 2.6.30_rc1] powernow-k8: oops during initialization
+References: <49E7175D.6060808@pardus.org.tr>
+In-Reply-To: <49E7175D.6060808@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 02:24:17AM -0400, Steven Rostedt wrote:
-> 
-> On Wed, 22 Apr 2009, Andi Kleen wrote:
-> 
-> > > I think it was Ingo that let out the idea, and I'm starting to like it.
-> > > 
-> > > Perhaps we should fork off gcc and ship Linux with its own compiler. This 
-> > > way we can optimize it for the kernel and not worry about any userland 
-> > > optimizations.
-> > > 
-> > > I would like to do something like:
-> > > 
-> > > 	if (unlikely(err)) {
-> > > 		__section__(".error_sect") {
-> > 
-> > 
-> > gcc already supports that, you don't need to fork anything. It's called
-> > hot/cold partitioning. Basically it splits functions into hot and cold
-> > and unlikely parts and all the cold/unlikely parts go into a separate 
-> > sections.
-> > 
-> > I think it's normally not enabled by default on x86 though, probably because
-> > it doesn't help too much.
-> > 
-> > By default (unless you specify -fno-reorder-blocks) it does the same
-> > without sections, just moving unlikely code out of line.
-> 
-> The unlikely code does not always get moved out that far. It still sits 
-> inside a function, and looking at the tracepoint code it did not move it 
-> far enough.
+Ozan Çağlayan wrote On 16-04-2009 14:32:
+> Hi,
+>
+> Just have time to try 2.6.30_rc1 and had an oops during powernow-k8
+> initialization.
+> I'm giving the config file and full dmesg output.
+>
+> The cpu is an AuthenticAMD Athlon 64 X2 Dual Core Processor 4800+,
+> family 15 model 107
+>
+>   
+I'm still having this problem with today's 2.6.30_rc3.
 
-That's because you didn't enable the hot/cold partioning as I wrote.
-These are separate options. By default it doesn't use partitions on x86,
-but it can.
+There's a patchset from "Rusty Russell: cpumask: avoid playing with
+cpus_allowed in powernow-k8"
+sent on 13/04/2009 that I suspect it may be the solution but I didn't
+have time to give it a try.
 
-> If gcc can indeed move "unlikely" code completely out of the fast path, 
-> and put it into its own sections, then I think we should go through the 
-> kernel and start removing all "likely" and "unlikely"s that are not 99% 
-> accurate. Then we can enable the separate section cold paths and perhaps 
-> see a performance benefit.
-
-iirc there wasn't much for using separate partitions with the usual
-user space benchmarks (SpecCPU etc.) on x86. It helped a bit on POWER
-apparently though.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Regards,
