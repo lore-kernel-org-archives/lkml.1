@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZDVKNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZDVKQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbZDVKNs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 06:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZDVKNe
+	id S1755291AbZDVKQc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 06:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbZDVKQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 06:13:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:56473 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbZDVKNd (ORCPT
+	Wed, 22 Apr 2009 06:16:22 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:51861
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752406AbZDVKQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 06:13:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=E2j1DTJITMP3pgm23QfiCuGxK0K2J93Wv0hVkCqMcAO/Rwhk4zxuEkFhL/pBW18TQ0
-         l2xfD/WhuoMj8KFMd/j3FR7w6MavUJ1pYu8dJwwCsNEMYt/Dgzt26hz0ZEVd7IeS8Eu3
-         ziNwTWjtA+nzwcDhV7Qsc8Hrfnubzzs2RVHaw=
-Date: Wed, 22 Apr 2009 10:13:18 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stephen Hemminger <shemminger@vyatta.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-Message-ID: <20090422101318.GA6630@ff.dom.local>
+	Wed, 22 Apr 2009 06:16:22 -0400
+X-BigFish: VPS-35(zz1432R62a3L98dR936eQ1805Mzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KIHZ6R-03-8OE-01
+Date: Wed, 22 Apr 2009 12:16:01 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       linux-kernel@vger.kernel.org,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: Re-implement MCE log ring buffer as per-CPU ring buffer
+Message-ID: <20090422101600.GL3226@erda.amd.com>
+References: <1240391484.6842.474.camel@yhuang-dev.sh.intel.com> <20090422092259.GC18226@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <49EEDAF0.2010507@cosmosbay.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090422092259.GC18226@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 22 Apr 2009 10:16:01.0846 (UTC) FILETIME=[567B9D60:01C9C333]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22-04-2009 10:53, Eric Dumazet wrote:
-...
-> If this could be done without recursion, I am pretty sure netfilter
-> and network guys would have done it. I found Linus reaction quite
-> shocking IMHO, considering hard work done by all people on this.
+On 22.04.09 11:22:59, Ingo Molnar wrote:
+> 
+> * Huang Ying <ying.huang@intel.com> wrote:
+> 
+> > Re-implement MCE log ring buffer as per-CPU ring buffer for better 
+> > scalability. Basic design is as follow:
+> 
+> Before changing anything substantial in the MCE code it would be 
+> necessary to clean up and then unify the 32-bit and 64-bit side of 
+> the MCE code first. (Which essentially means extending the 
+> 64-bit-only code to 32-bit)
 
-Right, looks like 100% (Scandinavian?!) troll. I wonder where is the
-admin of this mess...
+You may also want to consider to use the in-kernel ring_buffer api
+(include/linux/ring_buffer.h).
 
-Jarek P.
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
