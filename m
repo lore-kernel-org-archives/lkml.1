@@ -1,70 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZDVKHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZDVKHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbZDVKHT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 06:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZDVKHE
+	id S1756218AbZDVKHt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 06:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbZDVKHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 06:07:04 -0400
-Received: from langos.euedge.com ([209.190.22.130]:58273 "EHLO
-	langos.euedge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609AbZDVKHC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 06:07:02 -0400
-Message-ID: <49EEEC43.6030806@maroy.hu>
-Date: Wed, 22 Apr 2009 12:06:59 +0200
-From: =?UTF-8?B?TWFyw7N5IMOBa29z?= <akos@maroy.hu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Wed, 22 Apr 2009 06:07:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58966 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753562AbZDVKHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 06:07:32 -0400
+Date: Wed, 22 Apr 2009 10:06:46 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
+       lizf@cn.fujitsu.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49EEDB0E.5070207@cn.fujitsu.com>
+References: <49EEDB0E.5070207@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/events: make struct trace_entry->type to be int type
+Message-ID: <tip-7a4f453b6d7379a7c380825949977c5a838aa012@git.kernel.org>
+Git-Commit-ID: 7a4f453b6d7379a7c380825949977c5a838aa012
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: cdc-acm driver hangs on poll() call - 2.6.27, works on 2.6.24
-References: <49EDC44D.90106@maroy.hu> <200904211526.34199.oliver@neukum.org>
-In-Reply-To: <200904211526.34199.oliver@neukum.org>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Apr 2009 10:06:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver,
+Commit-ID:  7a4f453b6d7379a7c380825949977c5a838aa012
+Gitweb:     http://git.kernel.org/tip/7a4f453b6d7379a7c380825949977c5a838aa012
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Wed, 22 Apr 2009 16:53:34 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 22 Apr 2009 11:36:38 +0200
 
-> Does it happen with 2.6.29?
-> Could you get dmesg of 2.6.2(7/9) with CONFIG_USB_DEBUG and debug
-> activated in drivers/usb/class/cdc-acm.c ?
+tracing/events: make struct trace_entry->type to be int type
 
-interesting, the dmesg output is not that talkative:
+struct trace_entry->type is unsigned char, while trace event's id is
+int type, thus for a event with id >= 256, it's entry->type is cast
+to (id % 256), and then we can't see the trace output of this event.
 
-Apr 22 11:50:37 tomodachi kernel: [  623.236068] usb 2-1: new full speed
-USB device using uhci_hcd and address 2
-Apr 22 11:50:37 tomodachi kernel: [  623.400102] usb 2-1: New USB device
-found, idVendor=ffff, idProduct=0005
-Apr 22 11:50:37 tomodachi kernel: [  623.400107] usb 2-1: New USB device
-strings: Mfr=1, Product=2, SerialNumber=3
-Apr 22 11:50:37 tomodachi kernel: [  623.400111] usb 2-1: Product: USBSerial
-Apr 22 11:50:37 tomodachi kernel: [  623.400114] usb 2-1: Manufacturer:
-LPCUSB
-Apr 22 11:50:37 tomodachi kernel: [  623.400117] usb 2-1: SerialNumber:
-DEADC0DE
-Apr 22 11:50:37 tomodachi kernel: [  623.400654] usb 2-1: configuration
-#1 chosen from 1 choice
-Apr 22 11:50:37 tomodachi kernel: [  623.453590] cdc_acm 2-1:1.0:
-ttyACM0: USB ACM device
-Apr 22 11:50:37 tomodachi kernel: [  623.457094] usbcore: registered new
-interface driver cdc_acm
-Apr 22 11:50:37 tomodachi kernel: [  623.457100] cdc_acm: v0.26:USB
-Abstract Control Model driver for USB modems and ISDN adapters
+ # insmod trace-events-sample.ko
+ # echo foo_bar > /mnt/tracing/set_event
+ # cat /debug/tracing/events/trace-events-sample/foo_bar/id
+ 256
+ # cat /mnt/tracing/trace_pipe
+           <...>-3548  [001]   215.091142: Unknown type 0
+           <...>-3548  [001]   216.089207: Unknown type 0
+           <...>-3548  [001]   217.087271: Unknown type 0
+           <...>-3548  [001]   218.085332: Unknown type 0
 
+[ Impact: fix output for trace events with id >= 256 ]
 
-even though:
-
-$ zcat /proc/config.gz | grep CONFIG_USB_DEBUG
-CONFIG_USB_DEBUG=y
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+LKML-Reference: <49EEDB0E.5070207@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-maybe it did not recompile the cdc-acm module after I changed the
-CONFIG_USB_DEBUG setting in .config? I'll do a clean recompile..
+---
+ include/linux/ftrace_event.h |    4 ++--
+ include/trace/ftrace.h       |    2 +-
+ kernel/trace/trace.c         |    4 ++--
+ kernel/trace/trace.h         |    2 +-
+ kernel/trace/trace_events.c  |    2 +-
+ 5 files changed, 7 insertions(+), 7 deletions(-)
 
-
-Akos
-
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 75f3ac0..2a4a407 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -16,7 +16,7 @@ struct dentry;
+  *     bash-15816 [01]   235.197585: idle_cpu <- irq_enter
+  */
+ struct trace_entry {
+-	unsigned char		type;
++	int			type;
+ 	unsigned char		flags;
+ 	unsigned char		preempt_count;
+ 	int			pid;
+@@ -73,7 +73,7 @@ enum print_line_t {
+ 
+ 
+ struct ring_buffer_event *
+-trace_current_buffer_lock_reserve(unsigned char type, unsigned long len,
++trace_current_buffer_lock_reserve(int type, unsigned long len,
+ 				  unsigned long flags, int pc);
+ void trace_current_buffer_unlock_commit(struct ring_buffer_event *event,
+ 					unsigned long flags, int pc);
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 39a3351..15ef08d 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -198,7 +198,7 @@ ftrace_define_fields_##call(void)					\
+ 	struct ftrace_event_call *event_call = &event_##call;		\
+ 	int ret;							\
+ 									\
+-	__common_field(unsigned char, type);				\
++	__common_field(int, type);					\
+ 	__common_field(unsigned char, flags);				\
+ 	__common_field(unsigned char, preempt_count);			\
+ 	__common_field(int, pid);					\
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index b9a3adc..b6183bc 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -838,7 +838,7 @@ tracing_generic_entry_update(struct trace_entry *entry, unsigned long flags,
+ }
+ 
+ struct ring_buffer_event *trace_buffer_lock_reserve(struct trace_array *tr,
+-						    unsigned char type,
++						    int type,
+ 						    unsigned long len,
+ 						    unsigned long flags, int pc)
+ {
+@@ -881,7 +881,7 @@ void trace_buffer_unlock_commit(struct trace_array *tr,
+ }
+ 
+ struct ring_buffer_event *
+-trace_current_buffer_lock_reserve(unsigned char type, unsigned long len,
++trace_current_buffer_lock_reserve(int type, unsigned long len,
+ 				  unsigned long flags, int pc)
+ {
+ 	return trace_buffer_lock_reserve(&global_trace,
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 247948e..7d55bcf 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -422,7 +422,7 @@ void init_tracer_sysprof_debugfs(struct dentry *d_tracer);
+ struct ring_buffer_event;
+ 
+ struct ring_buffer_event *trace_buffer_lock_reserve(struct trace_array *tr,
+-						    unsigned char type,
++						    int type,
+ 						    unsigned long len,
+ 						    unsigned long flags,
+ 						    int pc);
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 9ea55a7..5d6e879 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -398,7 +398,7 @@ static int trace_write_header(struct trace_seq *s)
+ 				"\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n"
+ 				"\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n"
+ 				"\n",
+-				FIELD(unsigned char, type),
++				FIELD(int, type),
+ 				FIELD(unsigned char, flags),
+ 				FIELD(unsigned char, preempt_count),
+ 				FIELD(int, pid),
