@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDVKEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZDVKHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbZDVKEP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 06:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZDVKD6
+	id S1754389AbZDVKHT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 06:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZDVKHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 06:03:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43222 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbZDVKD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 06:03:57 -0400
-Date: Wed, 22 Apr 2009 12:03:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Han, Weidong" <weidong.han@intel.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>
-Subject: Re: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
-Message-ID: <20090422100335.GH18226@elte.hu>
-References: <20090420200450.128993000@linux-os.sc.intel.com> <20090420200450.552359000@linux-os.sc.intel.com> <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com> <20090421070130.GC22937@elte.hu> <1240338284.27006.8519.camel@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A6B7FC31@pdsmsx503.ccr.corp.intel.com>
+	Wed, 22 Apr 2009 06:07:04 -0400
+Received: from langos.euedge.com ([209.190.22.130]:58273 "EHLO
+	langos.euedge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751609AbZDVKHC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 06:07:02 -0400
+Message-ID: <49EEEC43.6030806@maroy.hu>
+Date: Wed, 22 Apr 2009 12:06:59 +0200
+From: =?UTF-8?B?TWFyw7N5IMOBa29z?= <akos@maroy.hu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <715D42877B251141A38726ABF5CABF2C01A6B7FC31@pdsmsx503.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: cdc-acm driver hangs on poll() call - 2.6.27, works on 2.6.24
+References: <49EDC44D.90106@maroy.hu> <200904211526.34199.oliver@neukum.org>
+In-Reply-To: <200904211526.34199.oliver@neukum.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oliver,
 
-* Han, Weidong <weidong.han@intel.com> wrote:
+> Does it happen with 2.6.29?
+> Could you get dmesg of 2.6.2(7/9) with CONFIG_USB_DEBUG and debug
+> activated in drivers/usb/class/cdc-acm.c ?
 
-> Siddha, Suresh B wrote:
-> > On Tue, 2009-04-21 at 00:01 -0700, Ingo Molnar wrote:
-> >> * Han, Weidong <weidong.han@intel.com> wrote:
-> >> 
-> >>> Siddha, Suresh B wrote:
-> >>>> When interrupt-remapping is enabled, We are relying on
-> >>>> setup_IO_APIC_irqs() to configure remapped entries in the IO-APIC,
-> >>>> which comes little bit later after enabling interrupt-remapping.
-> >>>> 
-> >>>> Meanwhile, Restore of old io-apic entries after enabling
-> >>>> interrupt-remapping will not make the interrupts through io-apic
-> >>>> functional anyway. 
-> >>>> 
-> >>>> So remove unnecessary reinit_intr_remapped_IO_APIC().
-> >>>> 
-> >>>> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> >>>> Cc: Weidong Han <weidong.han@intel.com>
-> >>>> ---
-> >>>> 
-> >>>> Index: tip/arch/x86/include/asm/io_apic.h
-> >>>> ===================================================================
-> >>>> --- tip.orig/arch/x86/include/asm/io_apic.h
-> >>>> +++ tip/arch/x86/include/asm/io_apic.h
-> >>>> @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
-> >>>>  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
-> >>>>  **ioapic_entries); extern void mask_IO_APIC_setup(struct
-> >>>>  IO_APIC_route_entry **ioapic_entries); extern int
-> >>>> restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries);
-> >>>> -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
-> >>>> -	struct IO_APIC_route_entry **ioapic_entries);
-> >>>> 
-> >>>>  extern void probe_nr_irqs_gsi(void);
-> >>>> 
-> >>>> Index: tip/arch/x86/kernel/apic/apic.c
-> >>>> ===================================================================
-> >>>> --- tip.orig/arch/x86/kernel/apic/apic.c
-> >>>> +++ tip/arch/x86/kernel/apic/apic.c
-> >>>> @@ -1416,8 +1416,6 @@ end_restore:
-> >>>>  		 * IR enabling failed
-> >>>>  		 */
-> >>>>  		restore_IO_APIC_setup(ioapic_entries);
-> >>>> -	else
-> >>>> -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
-> >>> 
-> >>> Whether IR enabling succeeds or fails, it always needs to restore
-> >>> old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC
-> >>> here, it needs to also remove the "if (ret)" before
-> >>> restore_IO_APIC_setup(ioapic_entries);
-> >> 
-> >> Ok - i skipped this patch for now.
-> > 
-> > Let me clarify what I am doing in this patch:
-> > 
-> > When interrupt-remapping is enabled, IO-APIC entries need to be setup
-> > in the re-mappable format (pointing to interrupt-remapping table
-> > entries setup by the OS). This remapping configuration is happening
-> > in the same place where we traditionally configure IO-APIC (i.e., in
-> > setup_IO_APIC_irqs()).
-> > 
-> > So when we enable interrupt-remapping successfully, there is no need
-> > to restore old io-apic RTE entries before we actually do a complete
-> > configuration shortly in setup_IO_APIC_irqs(). Old IO-APIC RTE's may
-> > be in traditional format (non re-mappable) or in re-mappable format
-> > pointing to interrupt-remapping table entries setup by BIOS. Restoring
-> > both of these will not make IO-APIC functional. We have to rely on
-> > setup_IO_APIC_irqs() for proper configuration by OS.
-> > 
-> > So I am removing this unnecessary and broken step.
-> > 
-> > When enabling interrupt-remapping is not successful, we are doing
-> > plain restore of old RTE's (which will still work as we went back to
-> > original no-remapping state). Complete IO-APIC configuration will be
-> > done shortly in setup_IO_APIC_irqs().
-> > 
-> 
-> Clear explanation. I misunderstood it. This patch is fine.
+interesting, the dmesg output is not that talkative:
 
-Applied to tip:x86/apic - thanks guys,
+Apr 22 11:50:37 tomodachi kernel: [  623.236068] usb 2-1: new full speed
+USB device using uhci_hcd and address 2
+Apr 22 11:50:37 tomodachi kernel: [  623.400102] usb 2-1: New USB device
+found, idVendor=ffff, idProduct=0005
+Apr 22 11:50:37 tomodachi kernel: [  623.400107] usb 2-1: New USB device
+strings: Mfr=1, Product=2, SerialNumber=3
+Apr 22 11:50:37 tomodachi kernel: [  623.400111] usb 2-1: Product: USBSerial
+Apr 22 11:50:37 tomodachi kernel: [  623.400114] usb 2-1: Manufacturer:
+LPCUSB
+Apr 22 11:50:37 tomodachi kernel: [  623.400117] usb 2-1: SerialNumber:
+DEADC0DE
+Apr 22 11:50:37 tomodachi kernel: [  623.400654] usb 2-1: configuration
+#1 chosen from 1 choice
+Apr 22 11:50:37 tomodachi kernel: [  623.453590] cdc_acm 2-1:1.0:
+ttyACM0: USB ACM device
+Apr 22 11:50:37 tomodachi kernel: [  623.457094] usbcore: registered new
+interface driver cdc_acm
+Apr 22 11:50:37 tomodachi kernel: [  623.457100] cdc_acm: v0.26:USB
+Abstract Control Model driver for USB modems and ISDN adapters
 
-	Ingo
+
+even though:
+
+$ zcat /proc/config.gz | grep CONFIG_USB_DEBUG
+CONFIG_USB_DEBUG=y
+
+
+maybe it did not recompile the cdc-acm module after I changed the
+CONFIG_USB_DEBUG setting in .config? I'll do a clean recompile..
+
+
+Akos
+
