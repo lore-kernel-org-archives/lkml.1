@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZDVVH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbZDVVKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbZDVVH7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 17:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZDVVHi
+	id S1756814AbZDVVKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 17:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZDVVK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 17:07:38 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:40812 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755320AbZDVVHh (ORCPT
+	Wed, 22 Apr 2009 17:10:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47358 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752596AbZDVVK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 17:07:37 -0400
-Date: Wed, 22 Apr 2009 16:59:23 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Steven Whitehouse <swhiteho@redhat.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] __ffs64()
-In-Reply-To: <1240415192.29604.90.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0904221654370.32682@qirst.com>
-References: <1240415192.29604.90.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Apr 2009 17:10:27 -0400
+Date: Wed, 22 Apr 2009 22:08:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Jamie Lokier <jamie@shareable.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Linux Embedded Mailing List <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wait for console to become available, v3.2
+Message-ID: <20090422220853.0af12ece@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090422205427.GA28435@cuplxvomd02.corp.sa.net>
+References: <20090421230849.GA29555@cuplxvomd02.corp.sa.net>
+	<Pine.LNX.4.44L0.0904221111320.3405-100000@iolanthe.rowland.org>
+	<20090422205427.GA28435@cuplxvomd02.corp.sa.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009, Steven Whitehouse wrote:
+> Alright, I know you (Alan (Stern)) know about USB. I think someone else
+> mentioned Firewire. What other hotpluggable buses do we need to worry about
+> and how can we get them interested?
 
-> I'd like to add a new bitop, __ffs64() which I need in order to fix a
-> bug in GFS2. The question is, where should it go?
+In theory any console can be hot pluggable - PCI-X hotplug video cards,
+hotplug serial ports. In fact right now bad things occur if you
+hot-unplug consoles.
 
-I think the location is right.
+> 2.	All devices have been probed
+> If we exit for reason 2, it means that no such device is present,
+> and we go on to the do the appropriate thing for that device class.
 
-> On 64 bit arches, __ffs64() would be a synonym for __ffs(), but on 32
-> bit arches it degenerates to a conditional plus a call to __ffs(). I'm
-> assuming that there would not be a lot of point in optimising this
-> operation on 32 bit arches even if such an instruction was available, so
-> that I should do something like the below patch.
->
-> Does that seem reasonable, or should I give it a separate header file
-> under asm-generic/bitops/ like some of the similar operations? It looks
-> like I'd have to touch a lot of other files if I were to go that route,
+USB has no notion of #2 really
 
-One issue may be that some 32 bit architectures have a better way of doing
-64 bit ffs.
+> Yes, I think we absolutely exclude devices plugged in after boot. I think such
+> usage, if it needs to be supported, can be handled with hot plugging. I'm a
+> little squishy on whether we might to be able to hot plug USB consoles as I
+> have a request to support this, but I think it's a separate issue from
+> supporting hot pluggable boot devices and I'm not worrying about it now.
 
+This still assumes you can tell the difference, but USB in particular is
+rather like undergraduate students - they turn up when they feel like it
+at some point after they get kicked into life.
+
+I don't think that is a big problem because our bus model is basically
+that all devices are discovered asynchronously (increasingly so with
+Arjan's speed up patches). A console model therefore has to deal with
+console addition and removal being dynamic.
