@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZDVBo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZDVB6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbZDVBo7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 21:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZDVBou
+	id S1753253AbZDVB6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 21:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDVB6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 21:44:50 -0400
-Received: from rdu-nat.rpath.com ([66.192.95.194]:50960 "EHLO
-	rdu-nat.rpath.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbZDVBot (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 21:44:49 -0400
-Date: Tue, 21 Apr 2009 21:44:48 -0400
-From: "Michael K. Johnson" <johnsonm@rpath.com>
-To: linux-kernel@vger.kernel.org
-Subject: x86: more than 8 32-bit CPUs requires X86_BIGSMP
-Message-ID: <20090422014448.GB32541@logo.rdu.rpath.com>
+	Tue, 21 Apr 2009 21:58:21 -0400
+Received: from ozlabs.org ([203.10.76.45]:56474 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbZDVB6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Apr 2009 21:58:21 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Fix quilt merge error in acpi-cpufreq.c
+Date: Wed, 22 Apr 2009 11:28:12 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>
+References: <200904140159.n3E1x1K1014705@hera.kernel.org> <200904201744.22572.rusty@rustcorp.com.au> <20090421133701.5b1cd303@bike.lwn.net>
+In-Reply-To: <20090421133701.5b1cd303@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200904221128.13534.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ cat x86-more-than-8-cpus-requires-bigsmp.patch
+On Wed, 22 Apr 2009 05:07:01 am Jonathan Corbet wrote:
+> On Mon, 20 Apr 2009 17:44:21 +0930
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > There are several readers: someone reviewing the patch, someone looking
+> > for a specific bug, someone backporting, someone dealing with an API change,
+> > someone bisecting. 
+> 
+> With this in mind, I've tried to make a relatively concise addition to
+> the development process document.  How does the following look?
 
-Enforce NR_CPUS <= 8 limitation if X86_BIGSMP not set
+I like it, but will it help?
 
-Configuring more than 8 logical CPUs on 32-bit x86 requires
-X86_BIGSMP to be set in order to boot successfully, if more than 8
-logical CPUs are actually found at boot time.  The X86_BIGSMP help
-text describes that it is required to be set if more than 8 CPUs
-are configured, but this was previously not enforced.
+Fresh from an epic battle with printk, grep, debugging race conditions and
+subtly confusing code, who among us can resist providing a blow-by-blow
+account?  Leave the heroics unsung in a dry summary of the final patch?
 
-This configuration error has affected multiple distributions:
-    https://bugzilla.redhat.com/show_bug.cgi?id=480844
-    https://issues.rpath.com/browse/RPL-3022
-
-Signed-off-by: Michael K Johnson <johnsonm@rpath.com>
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index c9086e6..cdad0d9 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -664,6 +664,7 @@ config MAXSMP
- 
- config NR_CPUS
- 	int "Maximum number of CPUs" if SMP && !MAXSMP
-+	range 2 8 if SMP && X86_32 && !X86_BIGSMP
- 	range 2 512 if SMP && !MAXSMP
- 	default "1" if !SMP
- 	default "4096" if MAXSMP
+Of course, you never see *me* use flowery prose!
+Rusty.
