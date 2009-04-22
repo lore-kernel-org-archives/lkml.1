@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZDVNt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbZDVNwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbZDVNt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 09:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZDVNtQ
+	id S1754149AbZDVNwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 09:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZDVNwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:49:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39916 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283AbZDVNtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:49:16 -0400
-Date: Wed, 22 Apr 2009 09:49:14 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-In-Reply-To: <20090422114750.GA14202@nowhere>
-Message-ID: <alpine.DEB.2.00.0904220943280.24310@gandalf.stny.rr.com>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <20090422114750.GA14202@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 22 Apr 2009 09:52:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40249 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752985AbZDVNwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:52:03 -0400
+Date: Wed, 22 Apr 2009 15:51:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Howells <dhowells@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Trond.Myklebust@netapp.com, serue@us.ibm.com, steved@redhat.com,
+       viro@zeniv.linux.org.uk,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Document that wake_up(), complete() and co. imply a
+	full memory barrier
+Message-ID: <20090422135134.GA5249@elte.hu>
+References: <20090416143351.GD6532@redhat.com> <20090415162712.342d4c07.akpm@linux-foundation.org> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21239.1240407420@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* David Howells <dhowells@redhat.com> wrote:
 
-
-On Wed, 22 Apr 2009, Frederic Weisbecker wrote:
-> > 
-> > I spent the entire day (and half the night) debugging this. I was fighting 
-> > a case where the hardirqs_enabled flag in the task struct (lockdep flag) 
-> > was mysteriously being set and cleared. I stepped through the entire 
-> > kernel thread fork process (that was an exercise) and could not find 
-> > anything wrong.
-> > 
-> > Sometimes it would go away with printk's sometimes it would not. This was 
-> > driving me crazy, until I noticed that paravirt was enabled.
-> > 
-> > Turning off paravirtualization here (so far) makes everything run 
-> > smoothly.
-> > 
-> > Thus my theory is that there's something fishy with the modifying of the 
-> > irq enable/disable code when the system detects that it is running on bare 
-> > hardware.
-> > 
-> > I'm too tired to look at this more. Ingo supplied a config to play with. 
-> > You can disable VSMP too and it will still trigger the crash.
-> > 
-> > -- Steve
-> > 
+> Oleg Nesterov <oleg@redhat.com> wrote:
 > 
-> It's indeed a tricky one. I can reproduce it too, I will
-> try to manage having an irqsoff trace at this point, hopefully I
-> could get the source of this irq disabling...
+> > > That's an interesting question.  Should wake_up() imply a barrier of any
+> > > sort, I wonder.  Well, __wake_up() does impose a barrier as it uses a
+> > > spinlock, but I wonder if that's sufficient.
+> > 
+> > wake_up() does imply the barrier. Note the smp_wmb() in try_to_wake_up().
+> > And in fact this wmb() implies mb(), because spin_lock() itself is STORE,
+> > and the futher LOADs can't leak up before spin_lock().
+> > 
+> > But afaics, this doesn't matter? prepare_to_wait() sets 
+> > task->state under wait_queue_head_t->lock and wake_up() takes 
+> > this look too, so we can't miss the event.
+> > 
+> > Or I completely misunderstood the issue...
+> 
+> The problem is not what wake_up() and co. do, it's what you are 
+> allowed to assume that they do.
+> 
+> However, I think you're right, and that we can assume they imply a 
+> full memory barrier.  To this end, I've attached a patch to 
+> document this.
+> 
+> David
+> ---
+> From: David Howells <dhowells@redhat.com>
+> Subject: [PATCH] Document that wake_up(), complete() and co. imply a full memory barrier
+> 
+> Add to the memory barriers document to note that wake_up(), complete() and
+> co. all imply a full memory barrier.
 
-It doesn't disable interrupts :-/
+No. They dont generally imply a full memory barrier versus any 
+arbitrary prior (or following) memory access.
 
-It is the hardirqs_enabled flag in the task struct that mysteriously turns 
-off and back on. I put in printks when it is off in fork, and the next 
-printk shows that it turns back on (between the printks!!!).
+try_to_wake_up() has an smp_wmb() so it is a write memory barrier 
+(but not necessarily a read memory barrier). Otherwise there are 
+spinlocks there but spinlocks are not explicit 'full memory 
+barriers'.
 
-I printed the output of "irqs_disabled()" on each of these printks and 
-interrupts are always enabled. It is only the hardirqs_enabled flag that 
-is giving strange outputs.
+Also, there's a sub-detail wrt. the wake_up() variants in that they 
+have a fastpath for the !q case - then they dont have any atomics at 
+all - they just return straight away.
 
-Do you have CONFIG_PARAVIRT on?  When I disabled it, I have yet to 
-reproduce the bug. But I've only rebooted a few times. I'm going to 
-continue to reboot to see if I can trigger it.
+Another sub-detail: wakeups using a special wakeup handler might not 
+even call try_to_wake_up() - so in their case not even a write 
+barrier can be assumed.
 
-I'm thinking that the paravirt alternative code may have clobbered a 
-register in either the enable or disabling of interrupts. This might cause 
-a strange value to go into the hardirqs_enabled flag.
+So your patch is misleading in a number of areas here.
 
-Thanks,
-
--- Steve
-
+	Ingo
