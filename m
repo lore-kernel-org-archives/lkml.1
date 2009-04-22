@@ -1,141 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZDVB7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZDVCJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbZDVB7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Apr 2009 21:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZDVB7N
+	id S1753504AbZDVCJx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Apr 2009 22:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZDVCJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Apr 2009 21:59:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45992 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752211AbZDVB7M (ORCPT
+	Tue, 21 Apr 2009 22:09:43 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:48622 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbZDVCJm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Apr 2009 21:59:12 -0400
-Date: Tue, 21 Apr 2009 18:53:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Izik Eidus <ieidus@redhat.com>
-Subject: Re: mmotm 2009-04-21-15-00 uploaded
-Message-Id: <20090421185313.06bec1cc.akpm@linux-foundation.org>
-In-Reply-To: <49EE7351.6080802@oracle.com>
-References: <200904212219.n3LMJ2O7007301@imap1.linux-foundation.org>
-	<49EE7351.6080802@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Apr 2009 22:09:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=MNfJGycS/WNqhU1IEy4dOxyFRJP+hzDDGWlX2+satn/SmTu+iAYV22eaztbFXLaBWK
+         9EZetoo8O6DCWc1CLKNq4rkoMAjTCoPHRLhYZwMitZ2LfQ7WPzVaNNl/ukQRpx3EPKv0
+         I0L0ipnylj6YQnlq3bVyvH/AIh2USKYog6gdM=
+MIME-Version: 1.0
+In-Reply-To: <200904200952.34656.david-b@pacbell.net>
+References: <49EC06A6.4040506@samsung.com> <200904200952.34656.david-b@pacbell.net>
+From: Kim Kyuwon <chammoru@gmail.com>
+Date: Wed, 22 Apr 2009 11:09:27 +0900
+Message-ID: <4d34a0a70904211909o430a4db3t61b7997a4124c3a1@mail.gmail.com>
+Subject: Re: Suggestion on GPIO sysfs interface (gpio_export)
+To: David Brownell <david-b@pacbell.net>
+Cc: Kim Kyuwon <q1.kim@samsung.com>, LKML <linux-kernel@vger.kernel.org>,
+       kyungmin.park@samsung.com, =?EUC-KR?B?uc66tMij?= <bhmin@samsung.com>
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 18:30:57 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Tue, Apr 21, 2009 at 1:52 AM, David Brownell <david-b@pacbell.net> wrote:
+> On Sunday 19 April 2009, Kim Kyuwon wrote:
+>> Can I ask you opinion about this idea?
+>
+> First issue:  labels aren't required to be unique, so
+> there's a certain level of unpredictability you're
+> introducing.  Exports using this new flag would fail
+> sometimes depending on what *other* exports did.
+> (That's part of the reason "gpio%d" names got used
+> in the first place!)
+>
+> Another layer of unpredicatability comes from the
+> way those strings are only available given debugfs.
+>
+>
+> Second:
+>
+>> -extern int gpio_export(unsigned gpio, bool direction_may_change);
+>> +extern int gpio_export(unsigned gpio, bool direction_may_change,
+>> +                                                       bool label_may_show);
+>
+> It's generally confusing to add more parameters of the same type
+> like that; there's no fundamental reason for people to remember
+> which one means what, and the compiler can't help at all when (!)
+> they get confused.
 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-04-21-15-00 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> > 
-> > It contains the following patches against 2.6.30-rc2:
-> 
-> 
-> 2 of 10 i386 builds ended like:
-> 
-> 
->   CC      arch/x86/kernel/asm-offsets.s
-> In file included from include/linux/suspend.h:8,
->                  from arch/x86/kernel/asm-offsets_32.c:11,
->                  from arch/x86/kernel/asm-offsets.c:2:
-> include/linux/mm.h: In function 'get_pte':
-> include/linux/mm.h:907: error: implicit declaration of function 'kmap_atomic_pte'
-> make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-> make[1]: *** [prepare0] Error 2
-> make: *** [sub-make] Error 2
-> 
-> 
-> 
-> config attached.
+Thank you for pointing out problems :)
 
-Caused by ksm-add-get_pte-helper-function-fetching-pte-for-va.patch.
+> Have you thought much about other options?  Like for example
+> adding a new call.  With each MMC card slot, for one example,
+> there would often be two GPIOs:  card_detect, write_protect.
+> With two such slots, the "label" wouldn't be much help unless
+> it were specifically made unique.
+>
+> Instead of exporting the GPIOs in a "flat" namespace, maybe
+> something like
+>
+>  gpio_export_dev(struct device *dev, const char *tag,
+>                unsigned gpio, bool direction_may_change);
+>
+> would be more useful.  It could gpio_export() the standard
+> way, then set up a symlink using "tag" to set up a symlink
+> from /sys/.../dev/tag to /sys/class/gpio/gpioN node.  Easy
+> to see how that would work for those MMC examples.
+>
+> I can imagine there would be times when the GPIO doesn't
+> have a logical coupling to any device, of course.  So maybe
+> that doesn't address your particular issue.
 
-hm, this will end badly.  Let's uninline it.
+Yes, we have a few devices which can be controlled by only 1 GPIOs. I
+thought it is too small to make new drivers for these devices. So I
+just tried to use gpio_export() function.
+hmm.. I have to make do with new platform drivers for 1-GPIO controlled devices.
+Anyway, thank you for your tip!
 
---- a/include/linux/mm.h~ksm-add-get_pte-helper-function-fetching-pte-for-va-fix
-+++ a/include/linux/mm.h
-@@ -883,30 +883,7 @@ extern void unregister_shrinker(struct s
- int vma_wants_writenotify(struct vm_area_struct *vma);
- 
- extern pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl);
--
--static inline pte_t *get_pte(struct mm_struct *mm, unsigned long addr)
--{
--	pgd_t *pgd;
--	pud_t *pud;
--	pmd_t *pmd;
--	pte_t *ptep = NULL;
--
--	pgd = pgd_offset(mm, addr);
--	if (!pgd_present(*pgd))
--		goto out;
--
--	pud = pud_offset(pgd, addr);
--	if (!pud_present(*pud))
--		goto out;
--
--	pmd = pmd_offset(pud, addr);
--	if (!pmd_present(*pmd))
--		goto out;
--
--	ptep = pte_offset_map(pmd, addr);
--out:
--	return ptep;
--}
-+extern pte_t *get_pte(struct mm_struct *mm, unsigned long addr);
- 
- #ifdef __PAGETABLE_PUD_FOLDED
- static inline int __pud_alloc(struct mm_struct *mm, pgd_t *pgd,
-diff -puN mm/util.c~ksm-add-get_pte-helper-function-fetching-pte-for-va-fix mm/util.c
---- a/mm/util.c~ksm-add-get_pte-helper-function-fetching-pte-for-va-fix
-+++ a/mm/util.c
-@@ -1,4 +1,5 @@
- #include <linux/mm.h>
-+#include <linux/highmem.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/module.h>
-@@ -264,6 +265,31 @@ int __attribute__((weak)) get_user_pages
- }
- EXPORT_SYMBOL_GPL(get_user_pages_fast);
- 
-+pte_t *get_pte(struct mm_struct *mm, unsigned long addr)
-+{
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *ptep = NULL;
-+
-+	pgd = pgd_offset(mm, addr);
-+	if (!pgd_present(*pgd))
-+		goto out;
-+
-+	pud = pud_offset(pgd, addr);
-+	if (!pud_present(*pud))
-+		goto out;
-+
-+	pmd = pmd_offset(pud, addr);
-+	if (!pmd_present(*pmd))
-+		goto out;
-+
-+	ptep = pte_offset_map(pmd, addr);
-+out:
-+	return ptep;
-+}
-+EXPORT_SYMBOL_GPL(get_pte);
-+
- /* Tracepoints definitions. */
- EXPORT_TRACEPOINT_SYMBOL(kmalloc);
- EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc);
-_
+> - Dave
+>
 
+-- 
+Kyuwon (±Ô¿ø)
