@@ -1,83 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbZDVOCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbZDVOC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbZDVOCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 10:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZDVN6i
+	id S1757140AbZDVOC2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 10:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbZDVNzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 09:58:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43856 "EHLO mx2.redhat.com"
+	Wed, 22 Apr 2009 09:55:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49785 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754709AbZDVN6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 09:58:37 -0400
-Message-ID: <49EF227E.4020501@redhat.com>
-Date: Wed, 22 Apr 2009 16:58:22 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1755797AbZDVNzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 09:55:17 -0400
+Date: Wed, 22 Apr 2009 13:54:30 GMT
+From: tip-bot for Andreas Herrmann <andreas.herrmann3@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, jeffm@suse.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, jeffm@suse.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090421180037.GA2763@alberich.amd.com>
+References: <20090421180037.GA2763@alberich.amd.com>
+Subject: [tip:x86/urgent] x86: hpet: fix periodic mode programming on AMD 81xx
+Message-ID: <tip-7a6f9cbb37120c745fc187083fb5c3de4dca4f97@git.kernel.org>
+Git-Commit-ID: 7a6f9cbb37120c745fc187083fb5c3de4dca4f97
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Huang Ying <ying.huang@intel.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v2] Add MCE support to KVM
-References: <1239953345.6842.3.camel@yhuang-dev.sh.intel.com> <49E9F7BE.4090904@codemonkey.ws> <49EAE334.9020803@redhat.com> <49EDF057.9060501@codemonkey.ws> <49EDF287.9020908@redhat.com> <49EE2497.3060009@codemonkey.ws> <49EE25CB.6070709@redhat.com> <49EE27C2.3060505@codemonkey.ws> <49EE304D.5060108@redhat.com> <49EE3794.1070904@codemonkey.ws> <49EEB1BC.7020709@redhat.com> <49EF1C5F.3070805@codemonkey.ws>
-In-Reply-To: <49EF1C5F.3070805@codemonkey.ws>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Apr 2009 13:54:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Avi Kivity wrote:
->>
->> The refactoring, absolutely.  But if I have kernel support for zero 
->> copy tomorrow, do I wait until qemu completes refactoring the VLAN 
->> API, or do I hack something in so I can test it and get the benefit 
->> to users?
->
-> Why can't we do this in upstream QEMU though?  Part of the point I'm 
-> trying to make here is that what QEMU is can be flexible.  
+Commit-ID:  7a6f9cbb37120c745fc187083fb5c3de4dca4f97
+Gitweb:     http://git.kernel.org/tip/7a6f9cbb37120c745fc187083fb5c3de4dca4f97
+Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
+AuthorDate: Tue, 21 Apr 2009 20:00:37 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 22 Apr 2009 15:53:40 +0200
 
-If we do it the right way, it takes time, and we serialize development 
-(for example, we don't find and fix bugs in the kernel).
-We don't want to do it the wrong way.
+x86: hpet: fix periodic mode programming on AMD 81xx
 
-> We can find ways to include functionality that might not be ready for 
-> prime time by making it conditionally compiled, only available when 
-> using KVM, etc.  It's all open for discussion.  So I'll be quite blunt 
-> about it, what needs to change about what QEMU takes and doesn't take 
-> in order to get rid of kvm-userspace?
+(See http://bugzilla.kernel.org/show_bug.cgi?id=12961)
 
-#ifdefs in master, an experimental branch, and kvm-userspace (soon, 
-qemu-kvm) are all equivalent.
+It partially reverts commit c23e253e67c9d8a91a0ffa33c1f571a17f0a2403
+(x86: hpet: stop HPET_COUNTER when programming periodic mode)
 
-There's even an option to diff(1) to generate #ifdefs instead of the 
-traditional diff markers.
+HPET on AMD 81xx chipset needs a second write (with HPET_TN_SETVAL
+cleared) to T0_CMP register to set the period in periodic mode.
 
-> Experimentation is a good thing.  It's also important to do things the 
-> right way as early as possible though because the longer users depend 
-> on something, the harder it is to change later.  I think it's easier 
-> to strike that balance in upstream QEMU than trying to port things 
-> from kvm-userspace over to QEMU after the fact.
+With this patch HPET_COUNTER is still stopped but not reset when HPET
+is programmed in periodic mode. This should help to avoid races when
+HPET is programmed in periodic mode and fixes a boot time hang that
+I've observed on a machine when using 1000HZ.
 
-Well, let's take it on a case by case basis.  I certainly prefer to see 
-everything go to qemu.git.  If we find a case where it isn't workable, 
-qemu-kvm.git can be a temporary home.
+[ Impact: fix boot time hang on machines with AMD 81xx chipset ]
 
-> We can have KVM specific features in QEMU when that makes sense.  In 
-> the case of MCE, it doesn't make any sense because it's relatively 
-> simple and the implementation can be common given the right interfaces.
+Reported-by: Jeff Mahoney <jeffm@suse.com>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Tested-by: Jeff Mahoney <jeffm@suse.com>
+LKML-Reference: <20090421180037.GA2763@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-The kvm kernel module doesn't have common implementation for qemu/tcg 
-and qemu/kvm as one of its goals.  It doesn't know anything about qemu.  
-It wants to export an interface that makes sense (is as close to the cpu 
-model as possible).
 
-The few places that we inadvertently let qemuisms slip through turned 
-out to be mistakes.
+---
+ arch/x86/kernel/hpet.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
 
-I agree that MCE is simple so it's easy to implement in both.  But the 
-other features may be different.
-
--- 
-error compiling committee.c: too many arguments to function
-
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 3f0019e..81408b9 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -236,6 +236,10 @@ static void hpet_stop_counter(void)
+ 	unsigned long cfg = hpet_readl(HPET_CFG);
+ 	cfg &= ~HPET_CFG_ENABLE;
+ 	hpet_writel(cfg, HPET_CFG);
++}
++
++static void hpet_reset_counter(void)
++{
+ 	hpet_writel(0, HPET_COUNTER);
+ 	hpet_writel(0, HPET_COUNTER + 4);
+ }
+@@ -250,6 +254,7 @@ static void hpet_start_counter(void)
+ static void hpet_restart_counter(void)
+ {
+ 	hpet_stop_counter();
++	hpet_reset_counter();
+ 	hpet_start_counter();
+ }
+ 
+@@ -309,7 +314,7 @@ static int hpet_setup_msi_irq(unsigned int irq);
+ static void hpet_set_mode(enum clock_event_mode mode,
+ 			  struct clock_event_device *evt, int timer)
+ {
+-	unsigned long cfg;
++	unsigned long cfg, cmp, now;
+ 	uint64_t delta;
+ 
+ 	switch (mode) {
+@@ -317,12 +322,23 @@ static void hpet_set_mode(enum clock_event_mode mode,
+ 		hpet_stop_counter();
+ 		delta = ((uint64_t)(NSEC_PER_SEC/HZ)) * evt->mult;
+ 		delta >>= evt->shift;
++		now = hpet_readl(HPET_COUNTER);
++		cmp = now + (unsigned long) delta;
+ 		cfg = hpet_readl(HPET_Tn_CFG(timer));
+ 		/* Make sure we use edge triggered interrupts */
+ 		cfg &= ~HPET_TN_LEVEL;
+ 		cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
+ 		       HPET_TN_SETVAL | HPET_TN_32BIT;
+ 		hpet_writel(cfg, HPET_Tn_CFG(timer));
++		hpet_writel(cmp, HPET_Tn_CMP(timer));
++		udelay(1);
++		/*
++		 * HPET on AMD 81xx needs a second write (with HPET_TN_SETVAL
++		 * cleared) to T0_CMP to set the period. The HPET_TN_SETVAL
++		 * bit is automatically cleared after the first write.
++		 * (See AMD-8111 HyperTransport I/O Hub Data Sheet,
++		 * Publication # 24674)
++		 */
+ 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
+ 		hpet_start_counter();
+ 		hpet_print_config();
