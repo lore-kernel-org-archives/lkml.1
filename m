@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZDVPM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZDVPNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbZDVPM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 11:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZDVPMR
+	id S1755457AbZDVPNA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 11:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZDVPMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 11:12:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45817 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbZDVPMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 11:12:16 -0400
-Date: Wed, 22 Apr 2009 17:07:18 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Trond.Myklebust@netapp.com,
-       serue@us.ibm.com, steved@redhat.com, viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document that wake_up(), complete() and co. imply a
-	full memory barrier
-Message-ID: <20090422150718.GA3583@redhat.com>
-References: <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <20090422135134.GA5249@elte.hu> <20090422143930.GA1212@redhat.com> <20090422145658.GA15088@elte.hu>
+	Wed, 22 Apr 2009 11:12:48 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55303 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbZDVPMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 11:12:47 -0400
+Message-ID: <49EF33BC.6060905@zytor.com>
+Date: Wed, 22 Apr 2009 08:11:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090422145658.GA15088@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Goswin von Brederlow <goswin-v-b@web.de>
+CC: Bill Davidsen <davidsen@tmr.com>, Matti Aarnio <matti.aarnio@zmailer.org>,
+       Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
+       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+References: <200904180946.27722.prakash@punnoor.de>	<49E98AD2.8060601@msgid.tls.msk.ru>	<200904181117.03418.prakash@punnoor.de>	<alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net>	<20090418145850.GD28512@mea-ext.zmailer.org>	<49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <87ljptm59f.fsf@frosties.localdomain>
+In-Reply-To: <87ljptm59f.fsf@frosties.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22, Ingo Molnar wrote:
->
-> * Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > So, I think that try_to_wake_up() implies that the LOADS after it
-> > can't be reordered with STOREs before it (and wmb() of course).
->
-> Note that the patch David sent says "full memory barrier", not "full
-> memory barrier wrt. task->state":
->
-> + (*) wake_up(), try_to_wake_up() and co. imply a full memory barrier.
-> +
-> + (*) complete() and co. imply a full memory barrier.
->
-> These statements are not true in that form, as this code does not
-> imply a full memory barrier. It does imply one on task->state
-> _alone_ (and a couple of other wq-internal variables it happens to
-> read for sure).
->
-> But even that one isnt entirely true in the two sub-cases i noted:
-> the !wq case (which can happen in object state teardown) and the
-> special ->func handler (which can happen in custom wakeup code a'la
-> eventpoll).
->
-> So adding a comment that says "this is a full memory barrier" is
-> simply not true to that extent, and is easily misunderstood. Adding
-> "this is a fully memory barrier for task->state dependent data flow"
-> would be more correct. (with a 'as long as wq is not NULL, and as
-> long as the code using this isnt overriding ->func)
->
-> Agreed?
+Goswin von Brederlow wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
+> 
+>> Bill Davidsen wrote:
+>>> It would seem that that space could be allocated and populated when
+>>> raid6 was first used, as part of the initialization. I haven't looked at
+>>> that code since it was new, so I might be optimistic about doing it that
+>>> way.
+>> We could use vmalloc() and generate the tables at initialization time.
+>> However, having a separate module which exports the raid6 declaration
+>> and uses the raid5 module as a subroutine library seems easier.
+>>
+>> 	-hpa
+> 
+> Combine the two.
+> 
+> The raid6 module initializes the tables for raid6 and uses the raid5
+> module as subroutine library.
+> 
 
-Yes sure.
+It really doesn't make sense at all.  It's easier at that point to
+retain the static tables.
 
-Except... not that it really matters, but the reading of ->state is
-not "special". I mean,
+	-hpa
 
-	STORE;
-	try_to_wake_up();
-	LOAD;
 
-in this case try_to_wake_up() acts as a barrier for STORE/LOAD. But
-probably we should not rely on this. So personally I agree with
-"for task->state dependent data flow" above.
-
-Oleg.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
