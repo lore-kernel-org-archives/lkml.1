@@ -1,63 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZDVUr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZDVUsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbZDVUr7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 16:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZDVUrU
+	id S1756345AbZDVUsl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 16:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZDVUrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 16:47:20 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:57341 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755113AbZDVUrR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 16:47:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HOF1FZBIbmvkYlv3nKM727YwS+49+BXFgLrhwaWSJZd379Dzr/Mfdn7hewjnDF9GSM
-         PUB3PKdez8TLpWRCArTuEDzxJK6qXhZakkwLMGdYHo8VdIso5QKaCnDgjV5bIpbPklWL
-         SRoYQ9vP3/R5pimIYSu3yN+Lds3RSkd5MPRNI=
-Message-ID: <49EF8214.20406@gmail.com>
-Date: Wed, 22 Apr 2009 22:46:12 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam> <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <49EE2293.4090201@cosmosbay.com> <20090422073524.GA31835@elte.hu> <49EEDAF0.2010507@cosmosbay.com> <alpine.LFD.2.00.0904220806320.3101@localhost.localdomain> <49EF4C75.6060604@cosmosbay.com> <alpine.LFD.2.00.0904221001270.3101@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904221001270.3101@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Apr 2009 16:47:42 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:51959 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756711AbZDVUrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 16:47:40 -0400
+Message-Id: <20090422202453.673946867@polymtl.ca>
+References: <20090422201852.092307236@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Wed, 22 Apr 2009 16:18:53 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+Subject: [patch 1/2] x86: cleanup alternative.h
+Content-Disposition: inline; filename=x86-cleanup-alternative.h.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 22 Apr 2009 20:46:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote, On 04/22/2009 07:18 PM:
+Alternative header duplicates assembly that could be merged in one single macro.
+Merging this into this macro also allows to directly declare ALTERNATIVE()
+statements within assembly code.
 
-...
-> My problem today (apart from the relatively minor issue of also wanting to 
-> get the commit log fixed up) is just that I see emails from you finding my 
-> reaction shocking and from Jarek Poplawski that seem to still think that 
-> I'm a troll.
-> 
-> Just because I pointed out real technical problems? Is that shocking or 
-> trolling?
+Uses a __stringify() of the feature bits rather than passing a "i" operand.
+Leave the old %0 operand as-is (set to 0), unused to stay compatible with API.
 
-Very funny! For newbies only: http://en.wikipedia.org/wiki/Troll_(Internet)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: 'Ingo Molnar' <mingo@elte.hu>
+CC: H. Peter Anvin <hpa@zytor.com>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
+ arch/x86/include/asm/alternative.h |   58 ++++++++++++++-----------------------
+ 1 file changed, 22 insertions(+), 36 deletions(-)
 
+Index: linux-2.6-lttng/arch/x86/include/asm/alternative.h
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/include/asm/alternative.h	2009-04-22 16:14:23.000000000 -0400
++++ linux-2.6-lttng/arch/x86/include/asm/alternative.h	2009-04-22 16:17:48.000000000 -0400
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/stddef.h>
++#include <linux/stringify.h>
+ #include <asm/asm.h>
+ 
+ /*
+@@ -74,6 +75,21 @@ static inline void alternatives_smp_swit
+ 
+ const unsigned char *const *find_nop_table(void);
+ 
++/* alternative assembly primitive */
++#define ALTERNATIVE(oldinstr, newinstr, feature) \
++	      "661:\n\t" oldinstr "\n662:\n"			\
++	      ".section .altinstructions,\"a\"\n"		\
++	      _ASM_ALIGN "\n"					\
++	      _ASM_PTR "661b\n"		/* label */		\
++	      _ASM_PTR "663f\n"		/* new instruction */	\
++	      "	 .byte " __stringify(feature) "\n"	/* feature bit */ \
++	      "	 .byte 662b-661b\n"	/* sourcelen */		\
++	      "	 .byte 664f-663f\n"	/* replacementlen */	\
++	      ".previous\n"					\
++	      ".section .altinstr_replacement,\"ax\"\n"		\
++	      "663:\n\t" newinstr "\n664:\n"  /* replacement */	\
++	      ".previous"
++
+ /*
+  * Alternative instructions for different CPU types or capabilities.
+  *
+@@ -87,18 +103,7 @@ const unsigned char *const *find_nop_tab
+  * without volatile and memory clobber.
+  */
+ #define alternative(oldinstr, newinstr, feature)			\
+-	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
+-		      ".section .altinstructions,\"a\"\n"		\
+-		      _ASM_ALIGN "\n"					\
+-		      _ASM_PTR "661b\n"		/* label */		\
+-		      _ASM_PTR "663f\n"		/* new instruction */	\
+-		      "	 .byte %c0\n"		/* feature bit */	\
+-		      "	 .byte 662b-661b\n"	/* sourcelen */		\
+-		      "	 .byte 664f-663f\n"	/* replacementlen */	\
+-		      ".previous\n"					\
+-		      ".section .altinstr_replacement,\"ax\"\n"		\
+-		      "663:\n\t" newinstr "\n664:\n"  /* replacement */	\
+-		      ".previous" :: "i" (feature) : "memory")
++	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
+ 
+ /*
+  * Alternative inline assembly with input.
+@@ -109,35 +114,16 @@ const unsigned char *const *find_nop_tab
+  * Best is to use constraints that are fixed size (like (%1) ... "r")
+  * If you use variable sized constraints like "m" or "g" in the
+  * replacement make sure to pad to the worst case length.
++ * Leaving an unused argument 0 to keep API compatibility.
+  */
+ #define alternative_input(oldinstr, newinstr, feature, input...)	\
+-	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
+-		      ".section .altinstructions,\"a\"\n"		\
+-		      _ASM_ALIGN "\n"					\
+-		      _ASM_PTR "661b\n"		/* label */		\
+-		      _ASM_PTR "663f\n"		/* new instruction */	\
+-		      "	 .byte %c0\n"		/* feature bit */	\
+-		      "	 .byte 662b-661b\n"	/* sourcelen */		\
+-		      "	 .byte 664f-663f\n"	/* replacementlen */	\
+-		      ".previous\n"					\
+-		      ".section .altinstr_replacement,\"ax\"\n"		\
+-		      "663:\n\t" newinstr "\n664:\n"  /* replacement */	\
+-		      ".previous" :: "i" (feature), ##input)
++	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature)		\
++		: : "i" (0), ## input)
+ 
+ /* Like alternative_input, but with a single output argument */
+ #define alternative_io(oldinstr, newinstr, feature, output, input...)	\
+-	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
+-		      ".section .altinstructions,\"a\"\n"		\
+-		      _ASM_ALIGN "\n"					\
+-		      _ASM_PTR "661b\n"		/* label */		\
+-		      _ASM_PTR "663f\n"		/* new instruction */	\
+-		      "	 .byte %c[feat]\n"	/* feature bit */	\
+-		      "	 .byte 662b-661b\n"	/* sourcelen */		\
+-		      "	 .byte 664f-663f\n"	/* replacementlen */	\
+-		      ".previous\n"					\
+-		      ".section .altinstr_replacement,\"ax\"\n"		\
+-		      "663:\n\t" newinstr "\n664:\n"  /* replacement */ \
+-		      ".previous" : output : [feat] "i" (feature), ##input)
++	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature)		\
++		: output : "i" (0), ## input)
+ 
+ /*
+  * use this macro(s) if you need more than one output parameter
 
-Actually, I admit you could be the best "Ozzy" Osbourne imposter instead.
-(At least at netdev.) Stephen's words seem to fit very well:
-> Ah a nice day, with Linus giving constructive feedback. Too bad he has
-> to channel it out of the dark side.
-
-Jarek P.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
