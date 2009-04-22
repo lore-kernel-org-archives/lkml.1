@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZDVLhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZDVLiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243AbZDVLhG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 07:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZDVLgv
+	id S1754463AbZDVLiw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 07:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZDVLin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 07:36:51 -0400
-Received: from d112a1.x-mailer.de ([212.162.53.11]:58469 "EHLO
-	d112a1.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbZDVLgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 07:36:50 -0400
-X-Greylist: delayed 4815 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Apr 2009 07:36:50 EDT
-From: Karsten Keil <isdn@linux-pingi.de>
-Reply-To: isdn@linux-pingi.de
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH RFC v2] Documentation/isdn/INTERFACE.CAPI
-Date: Wed, 22 Apr 2009 12:16:22 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.27.19-3.2-default; KDE/4.2.1; x86_64; ; )
-Cc: tilman@imap.cc, isdn4linux@listserv.isdn4linux.de,
-       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <49E4E9CA.8000802@imap.cc> <20090421091852.9C31C111815@xenon.ts.pxnet.com> <20090422.023142.222186658.davem@davemloft.net>
-In-Reply-To: <20090422.023142.222186658.davem@davemloft.net>
+	Wed, 22 Apr 2009 07:38:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56793 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751646AbZDVLim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 07:38:42 -0400
+Message-ID: <49EF01B4.6000406@redhat.com>
+Date: Wed, 22 Apr 2009 07:38:28 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904221216.22740.isdn@linux-pingi.de>
-X-Info: valid message
-X-Info: original Date
+To: Anders Kaseorg <andersk@MIT.EDU>
+CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
+       Tim Abbott <tabbott@MIT.EDU>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>
+Subject: Re: [PATCH v2 0/4] Add support for compiling with	-ffunction-sections
+ -fdata-sections
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <20090421140228.GC3303@hack> <alpine.DEB.2.00.0904211311110.7725@vinegar-pot.mit.edu>
+In-Reply-To: <alpine.DEB.2.00.0904211311110.7725@vinegar-pot.mit.edu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch, 22. April 2009 11:31:42 David Miller wrote:
-> From: Tilman Schmidt <tilman@imap.cc>
-> Date: Tue, 21 Apr 2009 11:18:52 +0200 (CEST)
->
-> > @@ -8,6 +8,8 @@ INTERFACE
-> >  	- description of isdn4linux Link Level and Hardware Level interfaces.
-> >  INTERFACE.fax
-> >  	- description of the fax subinterface of isdn4linux.
-> > +INTERFACE.CAPI
-> > +	- description of kernel CAPI Link Level to Hardware Level interface.
-> >  README
-> >  	- general info on what you need and what to do for Linux ISDN.
-> >  README.FAQ
->
-> There is no INTERFACE.fax entry in this file in the current
-> tree.
+Anders Kaseorg wrote:
+> On Tue, 21 Apr 2009, Américo Wang wrote:
+>> Nice work! But, don't -ffunction-sections and -fdata-sections have
+>> collisions with '-g' and 'gprof'? Just like what gcc(1) describes.
+> 
+> That description seems to be long obsolete.  gcc used to warn that 
+> -ffunction-sections may affect debugging, but that warning was disabled 
+> for ELF targets in 1999, presumably because ELF has always supported 
+> arbitrary section names even though some other object formats have issues.
+>   <http://gcc.gnu.org/ml/gcc-patches/2008-03/msg00975.html>
+> 
+> I know that debugging under -ffunction-sections -g works fine on at least 
+> x86, which is the only platform on which we currently propose to provide 
+> this option, and based on that message it looks like other platforms are 
+> fine too.
 
-Seems the file was never updated from the old CVS version.
+Would you know actual version of gcc from which supports the combination of
+-ffunction-sections and -g?
 
->
-> I wanted to apply this, but aparently your patch is against
-> something other than Linus's tree or net-2.6
-I will send a new signed patch after review in few hours.
+Thank you,
 
-Thanks to Tilman for this work.
+-- 
+Masami Hiramatsu
 
-Karsten
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
