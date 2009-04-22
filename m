@@ -1,44 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbZDVKDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDVKEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbZDVKDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 06:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbZDVKDM
+	id S1755950AbZDVKEP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 06:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZDVKD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 06:03:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48796 "EHLO mx2.redhat.com"
+	Wed, 22 Apr 2009 06:03:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43222 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbZDVKDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 06:03:11 -0400
-Message-ID: <49EEEB4B.80306@redhat.com>
-Date: Wed, 22 Apr 2009 12:02:51 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Huang Ying <ying.huang@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	id S1753312AbZDVKD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 06:03:57 -0400
+Date: Wed, 22 Apr 2009 12:03:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Han, Weidong" <weidong.han@intel.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: Xenner design and kvm msr handling
-References: <1239155601.6384.3.camel@yhuang-dev.sh.intel.com>	 <49DE195D.1020303@redhat.com>	 <1239332455.6384.108.camel@yhuang-dev.sh.intel.com>	 <49E08762.1010206@redhat.com> <1239590499.6384.4016.camel@yhuang-dev.sh.intel.com> <49E337D7.5050502@redhat.com> <49EA515C.9000507@codemonkey.ws> <49EAE1F6.9050205@redhat.com> <49EC29D1.8040407@redhat.com> <49EC3198.9070902@redhat.com> <49EC3987.2040001@redhat.com> <49EC3AD6.3090905@redhat.com> <49EC5B2A.9080403@redhat.com> <49EC5C3A.6020108@redhat.com> <49EC68A7.8080403@redhat.com> <49EC6DEE.4070703@redhat.com> <49EC7797.7060004@redhat.com> <49EC7C5F.2000006@redhat.com> <49ED8E6D.80005@redhat.com> <49ED9C70.5010906@redhat.com> <49EDB0E0.5060101@redhat.com> <49EDBBBF.90509@redhat.com> <49EDC050.1040700@redhat.com> <49EDCB1D.1010301@redhat.com> <49EDEDAD.20900@redhat.com> <49EDF131.9060705@redhat.com>
-In-Reply-To: <49EDF131.9060705@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       "dwmw2@infradead.org" <dwmw2@infradead.org>
+Subject: Re: [patch 4/5] x2apic, IR: remove reinit_intr_remapped_IO_APIC()
+Message-ID: <20090422100335.GH18226@elte.hu>
+References: <20090420200450.128993000@linux-os.sc.intel.com> <20090420200450.552359000@linux-os.sc.intel.com> <715D42877B251141A38726ABF5CABF2C01A6B7F9FC@pdsmsx503.ccr.corp.intel.com> <20090421070130.GC22937@elte.hu> <1240338284.27006.8519.camel@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A6B7FC31@pdsmsx503.ccr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <715D42877B251141A38726ABF5CABF2C01A6B7FC31@pdsmsx503.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/21/09 18:15, Avi Kivity wrote:
 
-> Maybe migration is cooperative,
+* Han, Weidong <weidong.han@intel.com> wrote:
 
-It is.  It has to be, for the xen pv frontend drivers migration isn't 
-transparent.
+> Siddha, Suresh B wrote:
+> > On Tue, 2009-04-21 at 00:01 -0700, Ingo Molnar wrote:
+> >> * Han, Weidong <weidong.han@intel.com> wrote:
+> >> 
+> >>> Siddha, Suresh B wrote:
+> >>>> When interrupt-remapping is enabled, We are relying on
+> >>>> setup_IO_APIC_irqs() to configure remapped entries in the IO-APIC,
+> >>>> which comes little bit later after enabling interrupt-remapping.
+> >>>> 
+> >>>> Meanwhile, Restore of old io-apic entries after enabling
+> >>>> interrupt-remapping will not make the interrupts through io-apic
+> >>>> functional anyway. 
+> >>>> 
+> >>>> So remove unnecessary reinit_intr_remapped_IO_APIC().
+> >>>> 
+> >>>> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> >>>> Cc: Weidong Han <weidong.han@intel.com>
+> >>>> ---
+> >>>> 
+> >>>> Index: tip/arch/x86/include/asm/io_apic.h
+> >>>> ===================================================================
+> >>>> --- tip.orig/arch/x86/include/asm/io_apic.h
+> >>>> +++ tip/arch/x86/include/asm/io_apic.h
+> >>>> @@ -166,8 +166,6 @@ extern void free_ioapic_entries(struct I
+> >>>>  extern int save_IO_APIC_setup(struct IO_APIC_route_entry
+> >>>>  **ioapic_entries); extern void mask_IO_APIC_setup(struct
+> >>>>  IO_APIC_route_entry **ioapic_entries); extern int
+> >>>> restore_IO_APIC_setup(struct IO_APIC_route_entry **ioapic_entries);
+> >>>> -extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
+> >>>> -	struct IO_APIC_route_entry **ioapic_entries);
+> >>>> 
+> >>>>  extern void probe_nr_irqs_gsi(void);
+> >>>> 
+> >>>> Index: tip/arch/x86/kernel/apic/apic.c
+> >>>> ===================================================================
+> >>>> --- tip.orig/arch/x86/kernel/apic/apic.c
+> >>>> +++ tip/arch/x86/kernel/apic/apic.c
+> >>>> @@ -1416,8 +1416,6 @@ end_restore:
+> >>>>  		 * IR enabling failed
+> >>>>  		 */
+> >>>>  		restore_IO_APIC_setup(ioapic_entries);
+> >>>> -	else
+> >>>> -		reinit_intr_remapped_IO_APIC(x2apic_preenabled, ioapic_entries);
+> >>> 
+> >>> Whether IR enabling succeeds or fails, it always needs to restore
+> >>> old IOAPIC entries. Due to removing reinit_intr_remapped_IO_APIC
+> >>> here, it needs to also remove the "if (ret)" before
+> >>> restore_IO_APIC_setup(ioapic_entries);
+> >> 
+> >> Ok - i skipped this patch for now.
+> > 
+> > Let me clarify what I am doing in this patch:
+> > 
+> > When interrupt-remapping is enabled, IO-APIC entries need to be setup
+> > in the re-mappable format (pointing to interrupt-remapping table
+> > entries setup by the OS). This remapping configuration is happening
+> > in the same place where we traditionally configure IO-APIC (i.e., in
+> > setup_IO_APIC_irqs()).
+> > 
+> > So when we enable interrupt-remapping successfully, there is no need
+> > to restore old io-apic RTE entries before we actually do a complete
+> > configuration shortly in setup_IO_APIC_irqs(). Old IO-APIC RTE's may
+> > be in traditional format (non re-mappable) or in re-mappable format
+> > pointing to interrupt-remapping table entries setup by BIOS. Restoring
+> > both of these will not make IO-APIC functional. We have to rely on
+> > setup_IO_APIC_irqs() for proper configuration by OS.
+> > 
+> > So I am removing this unnecessary and broken step.
+> > 
+> > When enabling interrupt-remapping is not successful, we are doing
+> > plain restore of old RTE's (which will still work as we went back to
+> > original no-remapping state). Complete IO-APIC configuration will be
+> > done shortly in setup_IO_APIC_irqs().
+> > 
+> 
+> Clear explanation. I misunderstood it. This patch is fine.
 
-> that is the host tells the guest it is
-> migrated, so it can re-register the hypercall area?
+Applied to tip:x86/apic - thanks guys,
 
-Yes, the guest re-does the wrmsr after migration.
-
-cheers,
-   Gerd
+	Ingo
