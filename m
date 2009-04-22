@@ -1,46 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbZDVXGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZDVXNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbZDVXGa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 19:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZDVXGV
+	id S1752908AbZDVXNK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 19:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZDVXMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 19:06:21 -0400
-Received: from mailout.ijneb.com ([212.13.201.26]:9368 "EHLO metheny.ijneb.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751126AbZDVXGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 19:06:21 -0400
-X-Greylist: delayed 3072 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Apr 2009 19:06:20 EDT
-Date: Wed, 22 Apr 2009 23:15:07 +0100 (BST)
-From: Mark Hills <mark@pogo.org.uk>
-To: linux-kernel@vger.kernel.org
-Subject: splice() on unix sockets
-Message-ID: <alpine.BSO.2.00.0904220913580.19956@zrgural.vwaro.pbz>
+	Wed, 22 Apr 2009 19:12:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57357 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732AbZDVXMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 19:12:53 -0400
+Message-ID: <49EFA4DA.9020402@redhat.com>
+Date: Wed, 22 Apr 2009 19:14:34 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: mark@pogo.org.uk
+To: "Luck, Tony" <tony.luck@intel.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>, ia64 <linux-ia64@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>, David Smith <dsmith@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH][BUGFIX] utrace/ia64: Fix syscall_get_set_args_cb() to handle
+ syscalls via syscall()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found that splice() can operate from a pipe to a unix socket, but from a 
-unix socket to a pipe fails with EINVAL.
+Fix syscall_get_set_args_cb() to decode user-stack correctly in case of
+syscall() which allocates locals in user-stack. If locals (cfm.sol) exist
+on the stack, we have to skip it for getting real systemcall arguments.
 
-On investigation, splicing from a pipe to a unix socket (af_unix.c) gets 
-routed through a regular unix_stream_sendmsg (via sock_no_sendpage). If my 
-understanding is correct this means it will copy memory and not 
-references, so it's not actually a splice.
+And also, fix the number of getting arguments which must be less than
+(nr outputs - args->i) instead of nr outputs, because args->i is the
+indent number (this means, syscall_get_set_args_cb() get/set arguments
+from (i)th to (i+n)th.)
 
-If so, splice() behaves inconsistently; sometimes it fails on unsupported 
-file descriptors, sometimes it falls back to a copy. The man page favours 
-the former, but the latter could also be useful -- to call splice() with 
-any pair of fds and have the kernel do the best it can.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: David Smith <dsmith@redhat.com>
+---
+ arch/ia64/kernel/ptrace.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-Splicing between unix sockets and pipes would give a useful performance 
-benefit. Is there any work in progress on this? Are there any caveats to 
-implementing it?
+Index: 2.6-rc/arch/ia64/kernel/ptrace.c
+===================================================================
+--- 2.6-rc.orig/arch/ia64/kernel/ptrace.c
++++ 2.6-rc/arch/ia64/kernel/ptrace.c
+@@ -2189,6 +2189,10 @@ struct syscall_get_set_args {
+ 	int rw;
+ };
 
-Thanks,
++#define CFM_SOF(cfm) ((cfm) & 0x7f)			/* Size of frame */
++#define CFM_SOL(cfm) (((cfm) >> 7) & 0x7f)		/* Size of locals */
++#define CFM_OUT(cfm) (CFM_SOF(cfm) - CFM_SOL(cfm))	/* Size of outputs */
++
+ static void syscall_get_set_args_cb(struct unw_frame_info *info, void *data)
+ {
+ 	struct syscall_get_set_args *args = data;
+@@ -2205,15 +2209,18 @@ static void syscall_get_set_args_cb(stru
 
+ 	count = 0;
+ 	if (in_syscall(pt))
+-		count = min_t(int, args->n, cfm & 0x7f);
++		/* args->i + args->n must be less equal than nr outputs */
++		count = min_t(int, args->n, CFM_OUT(cfm) - args->i);
+
+ 	for (i = 0; i < count; i++) {
++		/* Skips dirties and locals */
+ 		if (args->rw)
+-			*ia64_rse_skip_regs(krbs, ndirty + i + args->i) =
++			*ia64_rse_skip_regs(krbs,
++				ndirty + CFM_SOL(cfm) + args->i + i) =
+ 				args->args[i];
+ 		else
+ 			args->args[i] = *ia64_rse_skip_regs(krbs,
+-				ndirty + i + args->i);
++				ndirty + CFM_SOL(cfm) + args->i + i);
+ 	}
+
+ 	if (!args->rw) {
 -- 
-Mark
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
