@@ -1,107 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZDVRad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZDVRas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbZDVRad (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 13:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZDVRaP
+	id S1756488AbZDVRas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 13:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZDVRaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 13:30:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54377 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753424AbZDVRaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 13:30:13 -0400
-Date: Wed, 22 Apr 2009 10:18:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Ingo Molnar <mingo@elte.hu>, Stephen Hemminger <shemminger@vyatta.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, paulmck@linux.vnet.ibm.com,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       kaber@trash.net, jeff.chua.linux@gmail.com, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] netfilter: use per-cpu recursive lock (v11)
-In-Reply-To: <49EF4C75.6060604@cosmosbay.com>
-Message-ID: <alpine.LFD.2.00.0904221001270.3101@localhost.localdomain>
-References: <20090420103414.1b4c490f@nehalam> <49ECBE0A.7010303@cosmosbay.com> <18924.59347.375292.102385@cargo.ozlabs.ibm.com> <20090420215827.GK6822@linux.vnet.ibm.com> <18924.64032.103954.171918@cargo.ozlabs.ibm.com> <20090420160121.268a8226@nehalam>
- <alpine.LFD.2.00.0904210831560.2199@localhost.localdomain> <20090421111541.228e977a@nehalam> <20090421191007.GA15485@elte.hu> <49EE2293.4090201@cosmosbay.com> <20090422073524.GA31835@elte.hu> <49EEDAF0.2010507@cosmosbay.com> <alpine.LFD.2.00.0904220806320.3101@localhost.localdomain>
- <49EF4C75.6060604@cosmosbay.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Apr 2009 13:30:23 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:38308 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754847AbZDVRaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 13:30:21 -0400
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090422171151.GF15367@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+	 <1240416791.10627.78.camel@nimitz>  <20090422171151.GF15367@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 10:30:15 -0700
+Message-Id: <1240421415.10627.93.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 22 Apr 2009, Eric Dumazet wrote:
+On Wed, 2009-04-22 at 18:11 +0100, Mel Gorman wrote:
+> On Wed, Apr 22, 2009 at 09:13:11AM -0700, Dave Hansen wrote:
+> > On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
+> > > No user of the allocator API should be passing in an order >= MAX_ORDER
+> > > but we check for it on each and every allocation. Delete this check and
+> > > make it a VM_BUG_ON check further down the call path.
+> > 
+> > Should we get the check re-added to some of the upper-level functions,
+> > then?  Perhaps __get_free_pages() or things like alloc_pages_exact()? 
 > 
-> I actually sent *one* buggy patch, and you already gave your feedback 
-> and NACK.
+> I don't think so, no. It just moves the source of the text bloat and
+> for the few callers that are asking for something that will never
+> succeed.
 
-Actually, the thing is, I don't even think your original patch was even 
-buggy. The bug crept in later. I NAK'ed it not because it was buggy, but 
-because of the ad-hoc'ness and the naming. Really.
+Well, it's a matter of figuring out when it can succeed.  Some of this
+stuff, we can figure out at compile-time.  Others are a bit harder.
 
-And I actually even said so in my original rant:
-
- 'The fact that code "happens to work by mistake" (and I'm not saying that
-  your does - but it might just because of the per-cpu'ness of it [..]'
-
-because your original patch still had the
-
-	rcu_read_lock_bh();
-
-in place before the whole
-
-	rl = &__get_cpu_var(arp_tables_lock);
-	if (likely(rl->count++ == 0))
-		spin_lock(&rl->lock);
-
-and that should have protected against both BH callers and preemption.
-
-So I actually believe that your original patch probably worked fine (but 
-as I said in my reaction to it, I thought it was almost by mistake and I 
-wasn't going to review it)
-
-So the actual _bug_ crept in later, when the RCU lock was removed, and the 
-lock was cleaned up and separated into a function of its own.
-
-And in fact, that is kind of my point: "uncommented locking with ad-hoc 
-semantics is very fragile". Even _correct_ code ends up not being correct 
-in the long run, because people don't realize all the subtle issues.
-
-> I even relayed this to Stephen suggesting him not calling this a recursive lock.
-> (Note how I use 'suggesting' here)
+> > I'm selfishly thinking of what I did in profile_init().  Can I slab
+> > alloc it?  Nope.  Page allocator?  Nope.  Oh, well, try vmalloc():
+> > 
+> >         prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
+> >         if (prof_buffer)
+> >                 return 0;
+> > 
+> >         prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
+> >         if (prof_buffer)
+> >                 return 0;
+> > 
+> >         prof_buffer = vmalloc(buffer_bytes);
+> >         if (prof_buffer)
+> >                 return 0;
+> > 
+> >         free_cpumask_var(prof_cpu_mask);
+> >         return -ENOMEM;
+> > 
 > 
-> So, what do you want from me ? Should I copy 100 times :
+> Can this ever actually be asking for an order larger than MAX_ORDER
+> though? If so, you're condemning it to always behave poorly.
 
-So I consider this thread ended from a technical standpoint.
+Yeah.  It is based on text size.  Smaller kernels with trimmed configs
+and no modules have no problem fitting under MAX_ORDER, as do kernels
+with larger base page sizes.  
 
-[ That said, I will not be at all shocked to hear if people decide later 
-  that the RCU method was better after all, and that even the per-cpu
-  rwlock or spinlock is just too expensive. ]
+> > Same thing in __kmalloc_section_memmap():
+> > 
+> >         page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
+> >         if (page)
+> >                 goto got_map_page;
+> > 
+> >         ret = vmalloc(memmap_size);
+> >         if (ret)
+> >                 goto got_map_ptr;
+> > 
+> 
+> If I'm reading that right, the order will never be a stupid order. It can fail
+> for higher orders in which case it falls back to vmalloc() .  For example,
+> to hit that limit, the section size for a 4K kernel, maximum usable order
+> of 10, the section size would need to be 256MB (assuming struct page size
+> of 64 bytes). I don't think it's ever that size and if so, it'll always be
+> sub-optimal which is a poor choice to make.
 
-My problem today (apart from the relatively minor issue of also wanting to 
-get the commit log fixed up) is just that I see emails from you finding my 
-reaction shocking and from Jarek Poplawski that seem to still think that 
-I'm a troll.
+I think the section size default used to be 512M on x86 because we
+concentrate on removing whole DIMMs.  
 
-Just because I pointed out real technical problems? Is that shocking or 
-trolling?
+> > I depend on the allocator to tell me when I've fed it too high of an
+> > order.  If we really need this, perhaps we should do an audit and then
+> > add a WARN_ON() for a few releases to catch the stragglers.
+> 
+> I consider it buggy to ask for something so large that you always end up
+> with the worst option - vmalloc(). How about leaving it as a VM_BUG_ON
+> to get as many reports as possible on who is depending on this odd
+> behaviour?
+> 
+> If there are users with good reasons, then we could convert this to WARN_ON
+> to fix up the callers. I suspect that the allocator can already cope with
+> recieving a stupid order silently but slowly. It should go all the way to the
+> bottom and just never find anything useful and return NULL.  zone_watermark_ok
+> is the most dangerous looking part but even it should never get to MAX_ORDER
+> because it should always find there are not enough free pages and return
+> before it overruns.
 
-Really - please go back to my _original_ email. No, it was not polite. But 
-here's another quote from it:
+Whatever we do, I'd agree that it's fine that this is a degenerate case
+that gets handled very slowly and as far out of hot paths as possible.
+Anybody who can fall back to a vmalloc is not doing these things very
+often.
 
-  "Because even if it works today, it's just a bug waiting to happen."
+-- Dave
 
-and dammit, I sent that out _before_ the very next version of the patch 
-that actually _did_ introduce that exact bug.
-
-So dammit - what part of my email was "shocking" or "trolling"? The part 
-where I was right? Or what?
-
-			Linus
