@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZDVTLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZDVTMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbZDVTLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 15:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZDVTLJ
+	id S1757037AbZDVTMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 15:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZDVTL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 15:11:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40526 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752625AbZDVTLI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 15:11:08 -0400
-Date: Wed, 22 Apr 2009 12:05:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: joe@perches.com, pavel@ucw.cz, randy.dunlap@oracle.com,
-       torvalds@linux-foundation.org, akpm@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/10] MAINTAINERS - add script, patterns and misc
- updates
-Message-Id: <20090422120510.cc17e470.akpm@linux-foundation.org>
-In-Reply-To: <20090422185916.GA3864@uranus.ravnborg.org>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	<20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	<1240003652.31116.44.camel@localhost>
-	<20090407081312.GH1408@ucw.cz>
-	<1240415689.21848.19.camel@localhost>
-	<20090422185916.GA3864@uranus.ravnborg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Apr 2009 15:11:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54348 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751212AbZDVTL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 15:11:58 -0400
+Message-ID: <49EF6C16.9020604@suse.de>
+Date: Thu, 23 Apr 2009 03:12:22 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 7/7] xtensa: add parameter to ccount_read() 
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 20:59:16 +0200
-Sam Ravnborg <sam@ravnborg.org> wrote:
+This patch modifies parameter of au1x_counter1_read() from 'void' to 'struct
+clocksource *cs', which fixes compile warning for incompatible parameter type.
 
-> On Wed, Apr 22, 2009 at 08:54:49AM -0700, Joe Perches wrote:
-> > On Tue, 2009-04-07 at 10:13 +0200, Pavel Machek wrote:
-> > > > On Fri, 2009-04-17 at 13:47 -0700, Randy Dunlap wrote:
-> > > > > I was hoping to get the patch that changed all pairs of
-> > > > > P:
-> > > > > M:
-> > > > > lines to one line that is suitable for pasting into email addresses. 
-> > > > I thought the P/M: integration was an unnecessary
-> > > > complication that would delay pattern acceptance.
-> > > 
-> > > Well, P/M integration would help when using less/emacs to browse
-> > > through maintainers then copy&paste using mouse... but yes, it makes
-> > > sense to have it in separate patch :-).  
-> > 
-> > Is there agreement the P:/M: consolidation is useful?
-> > No other scripts use the current style but get_maintainer?
-> 
-> It is irritating to manually copy name+email as it looks today.
-> I always have to do that for the Cc: lines.
-> 
+Signed-off-by: Coly Li <coly.li@suse.de>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/xtensa/kernel/time.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-me2
+diff --git a/arch/xtensa/kernel/time.c b/arch/xtensa/kernel/time.c
+index 8848120..9638641 100644
+--- a/arch/xtensa/kernel/time.c
++++ b/arch/xtensa/kernel/time.c
+@@ -30,7 +30,7 @@ unsigned long ccount_per_jiffy;		/* per 1/HZ */
+ unsigned long nsec_per_ccount;		/* nsec per ccount increment */
+ #endif
+
+-static cycle_t ccount_read(void)
++static cycle_t ccount_read(struct clocksource *cs)
+ {
+ 	return (cycle_t)get_ccount();
+ }
+
+-- 
+Coly Li
+SuSE Labs
+
+
+
