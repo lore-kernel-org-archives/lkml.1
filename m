@@ -1,107 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbZDWPQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZDWPQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759815AbZDWPQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbZDWPPI
+	id S1759854AbZDWPQu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbZDWPPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:15:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38980 "EHLO hera.kernel.org"
+	Thu, 23 Apr 2009 11:15:15 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:42777 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759207AbZDWPPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:15:06 -0400
-Message-ID: <49F08580.9050407@kernel.org>
-Date: Thu, 23 Apr 2009 08:13:04 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1759313AbZDWPPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 11:15:12 -0400
+Date: Thu, 23 Apr 2009 08:15:09 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
+Message-ID: <20090423151509.GB6877@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090423052520.GA13036@linux.vnet.ibm.com> <49F006AE.5040104@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [RFC PATCH 1/2] pci: don't assume pref memio are 64bit -v3
-References: <20090419090208.GA30211@elte.hu> <20090419090615.GA30631@elte.hu> <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru>
-In-Reply-To: <20090423132202.GB13984@jurassic.park.msu.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49F006AE.5040104@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> On Wed, Apr 22, 2009 at 07:10:29PM -0700, Yinghai Lu wrote:
->> also on AMD system with two ht chain, or other system with pci=use_crs to get correct root default res,
->> will get anonying
->>
->> PCI: allocations above 4G disabled
->>
->> even the system does support that.
+On Thu, Apr 23, 2009 at 02:11:58PM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+
+[ . . . ]
+
+> Hi, Paul
 > 
-> Yep, but it's easy to fix (patch applies on the top of the previous one).
-
-another case: one system with 8g ram install, one device on bus 0 does get res assigned, but one res from it does support
-64bit mmio. and at that case the assign_unassigned code still could assign 64 res to it.
-but kernel will still print out that warning.
-
+> I just typed codes in email, very like these two pathes:
 > 
->> also will have problem with some calling like request_resource(&iomem_resource, ....)
+> [PATCH 1/2] sched: Introduce APIs for waiting multi events
+> http://lkml.org/lkml/2009/4/14/733
 > 
-> I don't think so. All critical resources are inserted much earlier than
-> mem64 one, and request_resource(&iomem_resource, ...) at later stages
-> would most likely fail regardless of mem64 thing.
-> Or am I missing something?
-
-at least the one in mm/memory_hotplug.c
-
-/* add this memory to iomem resource */
-static struct resource *register_memory_resource(u64 start, u64 size)
-{
-        struct resource *res;
-        res = kzalloc(sizeof(struct resource), GFP_KERNEL);
-        BUG_ON(!res);
-
-        res->name = "System RAM";
-        res->start = start;
-        res->end = start + size - 1;
-        res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-        if (request_resource(&iomem_resource, res) < 0) {
-                printk("System RAM resource %llx - %llx cannot be added\n",
-                (unsigned long long)res->start, (unsigned long long)res->end);
-                kfree(res);
-                res = NULL;
-        }
-        return res;
-}
-
-
-
+> [PATCH 2/2] rcupdate: use struct ref_completion
+> http://lkml.org/lkml/2009/4/14/734
 > 
-> Ivan.
-> 
-> diff --git a/arch/x86/pci/dac_64bit.c b/arch/x86/pci/dac_64bit.c
-> index ee03c4a..35ffee3 100644
-> --- a/arch/x86/pci/dac_64bit.c
-> +++ b/arch/x86/pci/dac_64bit.c
-> @@ -33,12 +33,16 @@ void pcibios_pci64_setup(void)
->  void pcibios_pci64_verify(void)
->  {
->  	struct pci_bus *b;
-> +	int disabled = 0;
->  
->  	if (mem64.flags & IORESOURCE_MEM64)
->  		return;		/* presumably DAC works */
->  	list_for_each_entry(b, &pci_root_buses, node) {
-> -		if (b->resource[2] == &mem64)
-> +		if (b->resource[2] == &mem64) {
->  			b->resource[2] = NULL;
-> +			disabled = 1;
-> +		}
->  	}
-> -	printk(KERN_INFO "PCI: allocations above 4G disabled\n");
-> +	if (disabled)
-> +		printk(KERN_INFO "PCI: allocations above 4G disabled\n");
->  }
+> Lai.
+> --------------
 
+Interesting approach!  This would get a second use for your multi-events
+waiting code above.  ;-)
+
+Looks like the idea is to have the task doing the
+synchronize_rcu_bh_expedited() hold a reference across the process,
+and have each rcu_bh_fast_qs() also acquire a reference, which would
+be released in the softirq handler synchronize_rcu_bh_expedited_help().
+
+One question -- does this approach correctly handle all the CPU hotplug
+scenarios?  (I think that it might, but am not completely certain.)
+
+							Thanx, Paul
+
+> #ifndef CONFIG_SMP
+> 
+> static void __init synchronize_rcu_expedited_init(void)
+> {
+> }
+> 
+> void synchronize_rcu_bh_expedited(void)
+> {
+> 	cond_resched();
+> }
+> 
+> #else /* #ifndef CONFIG_SMP */
+> 
+> static DEFINE_MUTEX(synchronize_rcu_bh_mutex);
+> static DEFINE_PER_CPU(int, call_only_once); /* is it need ? */
+> static struct ref_completion rcu_bh_expedited_completion
+> 
+> static void synchronize_rcu_bh_expedited_help(struct softirq_action *unused)
+> {
+> 	if (__get_cpu_var(call_only_once)) {
+> 		smp_mb();
+> 		ref_completion_put(&rcu_bh_expedited_completion);
+> 		__get_cpu_var(call_only_once) = 0;
+> 	}
+> }
+> 
+> static void rcu_bh_fast_qs(void *unused)
+> {
+> 	__get_cpu_var(call_only_once) = 1;
+> 	ref_completion_get(&rcu_bh_expedited_completion);
+> 	raise_softirq(RCU_EXPEDITED_SOFTIRQ);
+> }
+> 
+> static void __init synchronize_rcu_expedited_init(void)
+> {
+> 	open_softirq(RCU_EXPEDITED_SOFTIRQ, synchronize_rcu_bh_expedited_help);
+> }
+> 
+> void synchronize_rcu_bh_expedited(void)
+> {
+> 	mutex_lock(&synchronize_rcu_bh_mutex);
+> 
+> 	ref_completion_get_init(&rcu_bh_expedited_completion);
+> 
+> 	smp_call_function(rcu_bh_fast_qs, NULL, 1);
+> 
+> 	ref_completion_put_init(&rcu_bh_expedited_completion);
+> 	ref_completion_wait(&rcu_bh_expedited_completion);
+> 
+> 	mutex_unlock(&synchronize_rcu_bh_mutex);
+> }
+> 
+> #endif /* #else #ifndef CONFIG_SMP */
+> 
