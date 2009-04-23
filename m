@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbZDWQbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbZDWQcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756470AbZDWQbM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbZDWQbA
+	id S1757152AbZDWQcc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZDWQcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:31:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:36324 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbZDWQa7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:30:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MWWSrplw9HHdn1p9NbylTCMFoOpoCueu4QqdKNY3nk8KMQCl4ky7C8VPOCszVYprYD
-         3skakE4Jsk8n8jw/sOdaWgIzjrcMK/9ucytZqDjcyXNBHKueUwGSY9+j9BOb1IUhnnzo
-         pJcpY02DYhZpGp5J3FD6gSLQScBVqN2C6vwuA=
+	Thu, 23 Apr 2009 12:32:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46789 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbZDWQcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:32:22 -0400
+Date: Thu, 23 Apr 2009 16:25:43 +0000
+From: Chris Wright <chrisw@sous-sol.org>
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Cc: Greg KH <greg@kroah.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, Eugene Teo <eteo@redhat.com>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Chris Wright <chrisw@sous-sol.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Willy Tarreau <w@1wt.eu>, Michael Krufky <mkrufky@linuxtv.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Jake Edge <jake@lwn.net>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [stable] [patch 000/100] 2.6.29.2 -stable review
+Message-ID: <20090423162543.GA15523@hera.kernel.org>
+References: <20090423072020.428683652@sous-sol.org> <200904231608.42147.tvrtko.ursulin@sophos.com> <20090423154502.GA27609@kroah.com> <200904231717.25138.tvrtko.ursulin@sophos.com>
 MIME-Version: 1.0
-In-Reply-To: <20090423173728.4fa010fa@i1501.lan.towertech.it>
-References: <1239036633-10032-1-git-send-email-anemo@mba.ocn.ne.jp>
-	 <20090409153921.04b6384c.akpm@linux-foundation.org>
-	 <20090410005820.4fcfcc1f@i1501.lan.towertech.it>
-	 <20090423.235141.61509229.anemo@mba.ocn.ne.jp>
-	 <20090423170253.6b6dfd21@i1501.lan.towertech.it>
-	 <8bd0f97a0904230807q6c40436wa561d7b26db26cef@mail.gmail.com>
-	 <20090423173728.4fa010fa@i1501.lan.towertech.it>
-Date: Thu, 23 Apr 2009 12:30:58 -0400
-Message-ID: <8bd0f97a0904230930w7c9ffaa4x5110c59098ff475b@mail.gmail.com>
-Subject: Re: [rtc-linux] Re: [PATCH] rtc: Make rtc_update_irq callable with 
-	irqs enabled
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: rtc-linux@googlegroups.com
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, vapier@gentoo.org,
-       rongkai.zhan@windriver.com, balajirrao@openmoko.org,
-       david-b@pacbell.net, broonie@opensource.wolfsonmicro.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904231717.25138.tvrtko.ursulin@sophos.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 16:25:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 11:37, Alessandro Zummo wrote:
-> On Thu, 23 Apr 2009 11:07:38 -0400 Mike Frysinger wrote:
->> we just removed the shared bit from the Blackfin rtc driver because it
->> didnt really make sense for us.  i need to test something else, so is
->> the only change you need is the one posted originally ?  that makes
->> more sense to me than forcing everyone to use IRQF_DISABLED.
->
->  for the blackfin you should just check if
->  you have locking issues in your irq routine
+* Tvrtko Ursulin (tvrtko.ursulin@sophos.com) wrote:
+> OK, will keep that in mind in the future. This is the first time I am trying 
+> to get something into stable so I didn't know the right process. I assumed it 
+> is enough to copy stable@kernel.org with anything resembling a regression fix 
+> and you diligent people take care of it.
 
-the Blackfin driver calls rtc_update_irq() from its IRQ handler and
-the handler is not registered with IRQF_DISABLED.  it makes more sense
-to me to fix rtc_update_irq() than require all RTC drivers to register
-with IRQF_DISABLED.  especially in my case as the Blackfin driver
-itself doesnt need any locks.
--mike
+I like the optimism ;-)  Thanks for Cc'ing stable (I know I actually
+checked for the resolution, and at the time it simply wasn't resolved yet).
+
+thanks,
+-chris
