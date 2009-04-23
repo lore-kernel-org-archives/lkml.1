@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbZDWH26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZDWHcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbZDWH26 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZDWH1X
+	id S1756590AbZDWHcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZDWH1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:23 -0400
-Received: from sous-sol.org ([216.99.217.87]:48156 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:27:48 -0400
+Received: from sous-sol.org ([216.99.217.87]:48253 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754670AbZDWH1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:27:18 -0400
-Message-Id: <20090423072218.102318325@sous-sol.org>
+	id S1755369AbZDWH1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:27:46 -0400
+Message-Id: <20090423072153.855925852@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:33 -0700
+Date: Thu, 23 Apr 2009 00:20:29 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 013/100] ACPI: cap off P-state transition latency from buggy BIOSes
+       alan@lxorguk.ukuu.org.uk, Ivo van Doorn <ivdoorn@gmail.com>,
+       Arnaud Patard <apatard@mandriva.com>, linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Gertjan van Wingerde <gwingerde@gmail.com>,
+       Ivo van Doorn <IvDoorn@gmail.com>
+Subject: [patch 009/100] rt2x00: Fix SLAB corruption during rmmod
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=acpi-cap-off-p-state-transition-latency-from-buggy-bioses.patch
+Content-Disposition: inline; filename=rt2x00-fix-slab-corruption-during-rmmod.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,55 +39,202 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+From: Gertjan van Wingerde <gwingerde@gmail.com>
 
-upstream commit: a59d1637eb0e0a37ee0e5c92800c60abe3624e24
+At rmmod stage, the code path is the following one :
 
-Some BIOSes report very high frequency transition latency which are plainly
-wrong on CPus that can change frequency using native MSR interface.
+rt2x00lib_remove_dev
+  ->  rt2x00lib_uninitialize()
+        -> rt2x00rfkill_unregister()
+             -> rfkill_unregister()
+        -> rt2x00rfkill_free()
+             -> rfkill_free()
 
-One such system is IBM T42 (2327-8ZU) as reported by Owen Taylor and
-Rik van Riel.
+The problem is that rfkill_free should not be called after rfkill_register
+otherwise put_device(&rfkill->dev) will be called 2 times. This patch
+fixes this by only calling rt2x00rfkill_free() when rt2x00rfkill_register()
+hasn't been called or has failed.
 
-cpufreq_ondemand driver uses this transition latency to come up with a
-reasonable sampling interval to sample CPU usage and with such high
-latency value, ondemand sampling interval ends up being very high
-(0.5 sec, in this particular case), resulting in performance impact due to
-slow response to increasing frequency.
+This patch is for 2.6.29 only. The code in question has completely disappeared
+in 2.6.30 and does not contain this bug.
 
-Fix it by capping-off the transition latency to 20uS for native MSR based
-frequency transitions.
-
-mjg: We've confirmed that this also helps on the X31
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Acked-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
+Tested-by: Arnaud Patard <apatard@mandriva.com>
+Signed-off-by: Ivo van Doorn <IvDoorn@gmail.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
+ drivers/net/wireless/rt2x00/rt2x00.h       |    3 -
+ drivers/net/wireless/rt2x00/rt2x00dev.c    |    2 
+ drivers/net/wireless/rt2x00/rt2x00lib.h    |   10 ---
+ drivers/net/wireless/rt2x00/rt2x00rfkill.c |   86 +++++++++++++----------------
+ 4 files changed, 40 insertions(+), 61 deletions(-)
 
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
---- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -680,6 +680,18 @@ static int acpi_cpufreq_cpu_init(struct 
- 			    perf->states[i].transition_latency * 1000;
- 	}
+--- a/drivers/net/wireless/rt2x00/rt2x00.h
++++ b/drivers/net/wireless/rt2x00/rt2x00.h
+@@ -687,8 +687,7 @@ struct rt2x00_dev {
+ 	 */
+ #ifdef CONFIG_RT2X00_LIB_RFKILL
+ 	unsigned long rfkill_state;
+-#define RFKILL_STATE_ALLOCATED		1
+-#define RFKILL_STATE_REGISTERED		2
++#define RFKILL_STATE_REGISTERED		1
+ 	struct rfkill *rfkill;
+ 	struct delayed_work rfkill_work;
+ #endif /* CONFIG_RT2X00_LIB_RFKILL */
+--- a/drivers/net/wireless/rt2x00/rt2x00dev.c
++++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
+@@ -1105,7 +1105,6 @@ int rt2x00lib_probe_dev(struct rt2x00_de
+ 	 * Register extra components.
+ 	 */
+ 	rt2x00leds_register(rt2x00dev);
+-	rt2x00rfkill_allocate(rt2x00dev);
+ 	rt2x00debug_register(rt2x00dev);
  
-+	/* Check for high latency (>20uS) from buggy BIOSes, like on T42 */
-+	if (perf->control_register.space_id == ACPI_ADR_SPACE_FIXED_HARDWARE &&
-+	    policy->cpuinfo.transition_latency > 20 * 1000) {
-+		static int print_once;
-+		policy->cpuinfo.transition_latency = 20 * 1000;
-+		if (!print_once) {
-+			print_once = 1;
-+			printk(KERN_INFO "Capping off P-state tranision latency"
-+				" at 20 uS\n");
-+		}
+ 	set_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags);
+@@ -1137,7 +1136,6 @@ void rt2x00lib_remove_dev(struct rt2x00_
+ 	 * Free extra components
+ 	 */
+ 	rt2x00debug_deregister(rt2x00dev);
+-	rt2x00rfkill_free(rt2x00dev);
+ 	rt2x00leds_unregister(rt2x00dev);
+ 
+ 	/*
+--- a/drivers/net/wireless/rt2x00/rt2x00lib.h
++++ b/drivers/net/wireless/rt2x00/rt2x00lib.h
+@@ -260,8 +260,6 @@ static inline void rt2x00crypto_rx_inser
+ #ifdef CONFIG_RT2X00_LIB_RFKILL
+ void rt2x00rfkill_register(struct rt2x00_dev *rt2x00dev);
+ void rt2x00rfkill_unregister(struct rt2x00_dev *rt2x00dev);
+-void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev);
+-void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev);
+ #else
+ static inline void rt2x00rfkill_register(struct rt2x00_dev *rt2x00dev)
+ {
+@@ -270,14 +268,6 @@ static inline void rt2x00rfkill_register
+ static inline void rt2x00rfkill_unregister(struct rt2x00_dev *rt2x00dev)
+ {
+ }
+-
+-static inline void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
+-{
+-}
+-
+-static inline void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
+-{
+-}
+ #endif /* CONFIG_RT2X00_LIB_RFKILL */
+ 
+ /*
+--- a/drivers/net/wireless/rt2x00/rt2x00rfkill.c
++++ b/drivers/net/wireless/rt2x00/rt2x00rfkill.c
+@@ -94,14 +94,50 @@ static void rt2x00rfkill_poll(struct wor
+ 			   &rt2x00dev->rfkill_work, RFKILL_POLL_INTERVAL);
+ }
+ 
++static int rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
++{
++	struct device *dev = wiphy_dev(rt2x00dev->hw->wiphy);
++
++	rt2x00dev->rfkill = rfkill_allocate(dev, RFKILL_TYPE_WLAN);
++	if (!rt2x00dev->rfkill)
++		return -ENOMEM;
++
++	rt2x00dev->rfkill->name = rt2x00dev->ops->name;
++	rt2x00dev->rfkill->data = rt2x00dev;
++	rt2x00dev->rfkill->toggle_radio = rt2x00rfkill_toggle_radio;
++	if (test_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags)) {
++		rt2x00dev->rfkill->get_state = rt2x00rfkill_get_state;
++		rt2x00dev->rfkill->state =
++			rt2x00dev->ops->lib->rfkill_poll(rt2x00dev) ?
++			    RFKILL_STATE_SOFT_BLOCKED : RFKILL_STATE_UNBLOCKED;
++	} else {
++		rt2x00dev->rfkill->state = RFKILL_STATE_UNBLOCKED;
 +	}
 +
- 	data->max_freq = perf->states[0].core_frequency * 1000;
- 	/* table init */
- 	for (i=0; i<perf->state_count; i++) {
++	INIT_DELAYED_WORK(&rt2x00dev->rfkill_work, rt2x00rfkill_poll);
++
++	return 0;
++}
++
++static void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
++{
++	rfkill_free(rt2x00dev->rfkill);
++	rt2x00dev->rfkill = NULL;
++}
++
+ void rt2x00rfkill_register(struct rt2x00_dev *rt2x00dev)
+ {
+-	if (!test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state) ||
+-	    test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
++	if (test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
++		return;
++
++	if (rt2x00rfkill_allocate(rt2x00dev)) {
++		ERROR(rt2x00dev, "Failed to allocate rfkill handler.\n");
+ 		return;
++	}
+ 
+ 	if (rfkill_register(rt2x00dev->rfkill)) {
+ 		ERROR(rt2x00dev, "Failed to register rfkill handler.\n");
++		rt2x00rfkill_free(rt2x00dev);
+ 		return;
+ 	}
+ 
+@@ -117,8 +153,7 @@ void rt2x00rfkill_register(struct rt2x00
+ 
+ void rt2x00rfkill_unregister(struct rt2x00_dev *rt2x00dev)
+ {
+-	if (!test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state) ||
+-	    !test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
++	if (!test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
+ 		return;
+ 
+ 	cancel_delayed_work_sync(&rt2x00dev->rfkill_work);
+@@ -127,46 +162,3 @@ void rt2x00rfkill_unregister(struct rt2x
+ 
+ 	__clear_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state);
+ }
+-
+-void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
+-{
+-	struct device *dev = wiphy_dev(rt2x00dev->hw->wiphy);
+-
+-	if (test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state))
+-		return;
+-
+-	rt2x00dev->rfkill = rfkill_allocate(dev, RFKILL_TYPE_WLAN);
+-	if (!rt2x00dev->rfkill) {
+-		ERROR(rt2x00dev, "Failed to allocate rfkill handler.\n");
+-		return;
+-	}
+-
+-	__set_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state);
+-
+-	rt2x00dev->rfkill->name = rt2x00dev->ops->name;
+-	rt2x00dev->rfkill->data = rt2x00dev;
+-	rt2x00dev->rfkill->toggle_radio = rt2x00rfkill_toggle_radio;
+-	if (test_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags)) {
+-		rt2x00dev->rfkill->get_state = rt2x00rfkill_get_state;
+-		rt2x00dev->rfkill->state =
+-			rt2x00dev->ops->lib->rfkill_poll(rt2x00dev) ?
+-			    RFKILL_STATE_SOFT_BLOCKED : RFKILL_STATE_UNBLOCKED;
+-	} else {
+-		rt2x00dev->rfkill->state = RFKILL_STATE_UNBLOCKED;
+-	}
+-
+-	INIT_DELAYED_WORK(&rt2x00dev->rfkill_work, rt2x00rfkill_poll);
+-
+-	return;
+-}
+-
+-void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
+-{
+-	if (!test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state))
+-		return;
+-
+-	cancel_delayed_work_sync(&rt2x00dev->rfkill_work);
+-
+-	rfkill_free(rt2x00dev->rfkill);
+-	rt2x00dev->rfkill = NULL;
+-}
 
