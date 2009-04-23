@@ -1,102 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbZDWMeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZDWMgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757023AbZDWMeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 08:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZDWMeD
+	id S1757370AbZDWMgX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 08:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbZDWMgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 08:34:03 -0400
-Received: from fornax.pixelized.ch ([88.198.8.169]:51386 "EHLO
-	fornax.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbZDWMeC (ORCPT
+	Thu, 23 Apr 2009 08:36:12 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:49327 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752313AbZDWMgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 08:34:02 -0400
-Message-ID: <49F0602C.1060605@cateee.net>
-Date: Thu, 23 Apr 2009 14:33:48 +0200
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 23 Apr 2009 08:36:11 -0400
+Date: Thu, 23 Apr 2009 16:36:19 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [RFC PATCH 1/2] pci: don't assume pref memio are 64bit -v3
+Message-ID: <20090423123619.GA11519@jurassic.park.msu.ru>
+References: <alpine.LFD.2.00.0904181142530.4042@localhost.localdomain> <49EA57C4.1000603@kernel.org> <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain> <alpine.LFD.2.00.0904182149240.2199@localhost.localdomain> <20090419090208.GA30211@elte.hu> <20090419090615.GA30631@elte.hu> <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org>
 MIME-Version: 1.0
-To: Rafael Lotufo <rlotufo@swen.uwaterloo.ca>
-CC: linux-kernel@vger.kernel.org, Kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: Tool support for Kconfig
-References: <DC736A60-0CD8-44BA-92B6-653CF56F6DB1@gsd.uwaterloo.ca>
-In-Reply-To: <DC736A60-0CD8-44BA-92B6-653CF56F6DB1@gsd.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF9C10.6090107@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC also to kbuild list]
-
-Rafael Lotufo wrote:
-> We currently see the Linux kernel configuration options as a very rich 
-> real-world feature model,
-
-But also broken and it lack a lot of useful features.
-
-> and it has been our subject
-> of investigation since last January. Our current efforts have been to 
-> create a reasoning tool for the Kconfig options, something that
-> could help in finding recursive dependencies, configuration options that 
-> cannot be selected, and even tools that would facilitate
-> configuring the Linux kernel, like resolving dependencies for a wanted 
-> configuration option that cannot be currently selected
-> due to its dependencies. Furthermore, the reasoning tool can compute 
-> semantic diffs, intersections, unions, and slices of Kconfig
-> specifications.
+On Wed, Apr 22, 2009 at 03:37:04PM -0700, Yinghai Lu wrote:
+> one system with 4g installed ( there is 1g hole)
 > 
-> We would be interested to receive input from interested Linux kernel 
-> developers regarding their experience
-> with modifying Kconfig files. Would a tool for analyzing and comparing 
-> Kconfig files be useful?
-> What questions one typically has to answer when evolving Kconfig files? 
-> Are there any frequent problems
-> or mistakes?
-
-the Kconfig has a big real problem: linear order of dependencies,
-i.e. dependencies should be defined before use point.  This is not
-a requirement of language, but with current interfaces would be very
-impractical to find new options in past branches. But on the other hand,
-in some cases is very annoying. (Lately I configured a new machine, starting
-from distribution config. In this case I needed to go from bottom to
-top of tree, in order to remove almost every (unneded) feature.
-
-So a check that warn about such cases would be nice. This would resolve
-also the recursion problem.
-But also a better way to handle dependencies (in user interface)
-would be nice, like our package managers:
-- removing a CONFIG (showing all dependencies before confirmation)
-   [which is not yet possible]
-- adding a know CONFIG, which could be hidden.
-   Actually we can ask for dependencies with search '/' command, but
-   also allowing to select the dependencies (like in our package manager)
-   would be nice.
-
-Note: such features could make "SELECT" obsolete.
-
-Know problems?
-I don't know. Usually new driver use copy paste, so without
-big problems. The syntax is pretty simple.
-
-There was some confusion about dependency handling (logical
-operators with ternary values n/m/y)
-
-SELECT is sometime used incorrectly (style/design, not in
-semantic layer)
-
-config menu can be defined several time. This is a nice feature,
-but also a source of possible problems. I think normally it is
-OK on same file and on incompatible area (e.g. on different
-architectures). I think all other cases should be errors.
-
-Hidden (always invalid dependencies) CONFIG item are interesting.
-
-ciao
-	cate
-
+> when 4G installed.
+> BIOS put ACPI etc need the hole
+> [    0.000000] BIOS-provided physical RAM map:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
+> [    0.000000]  BIOS-e820: 000000000009bc00 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000e3000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bffa0000 (usable)
+> [    0.000000]  BIOS-e820: 00000000bffa0000 - 00000000bffae000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000bffae000 - 00000000bfff0000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000bfff0000 - 00000000c0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000ffb00000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+> so in kernel resource will be reserved for 0xbffa0000 - 0xbfff0000 for ACPI
+> 0x100000 -  0xbffa0000 for RAM...
 > 
-> We would very much appreciate any input on this subject.
+> and BIOS set
+> [    0.240007] pci 0000:00:01.0: bridge 64bit mmio pref: [0xbdf00000-0xddefffff]
+> [    0.237102] pci 0000:01:00.0: reg 10 32bit mmio: [0xc0000000-0xcfffffff]
+> that is conflict with reserved res. so it can not be reserved Kernel.
 > 
-> Thank you very much for you attention,
+> then Kernel try to get range from 0x140000000 ( above the RAM, 5G and above 4g)
+> and set let the bridge to use it, and ATI cards to use it.
 > 
+> but the problem is that ATI only support 32bit ...
 
+Yinghai, you are trying to get a quick fix for quite a complex problem
+that cannot be solved with a quick fix. Even more, there is no rush on
+a quick fix because it's not a critical bug at all. 32-bit stuff ends
+up above 4G *only* when there is no free space left on the 32-bit
+PCI bus, and it can be considered as very effective (though rather ugly)
+way of disabling the BAR that we failed to allocate.
+In this particular case it was simply a side effect of the "pci_mem_start"
+issue (which was indeed critical, but hopefully fixed now).
+
+
+> +/* need to insert those two under iomem */
+> +struct resource iomem32_resource = {
+> +	.name	= "PCI mem 32bit",
+> +	.start	= 0,
+> +	.end	= 0xffffffff,
+> +	.flags	= IORESOURCE_MEM,
+> +};
+> +struct resource iomem64_resource = {
+> +	.name	= "PCI mem 64bit",
+> +	.start	= 1ULL<<32,
+> +	.end	= -1,
+> +	.flags	= IORESOURCE_MEM | IORESOURCE_MEM_64,
+> +};
+> +
+
+This only works on x86 and similar systems with 1:1 CPU address to bus
+address mapping. There is a lot of machines with multiple 32-bit PCI
+bus spaces (4G per PCI domain).
+
+Ivan.
