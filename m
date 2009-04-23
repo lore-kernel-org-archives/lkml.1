@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZDWFeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbZDWFjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZDWFeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZDWFeJ
+	id S1753314AbZDWFjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 01:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZDWFjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:34:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:38041 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbZDWFeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:34:08 -0400
-Date: Thu, 23 Apr 2009 07:34:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Wolfram Strepp <wstrepp@gmx.de>
-Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
-Message-ID: <20090423053402.GH4593@kernel.dk>
-References: <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com> <20090422192216.GE4593@kernel.dk> <49EF7B40.9050505@opengridcomputing.com> <49EF7F3A.1070809@opengridcomputing.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EF7F3A.1070809@opengridcomputing.com>
+	Thu, 23 Apr 2009 01:39:08 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37928 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbZDWFjH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 01:39:07 -0400
+Date: Thu, 23 Apr 2009 14:37:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Andrea Righi <righi.andrea@gmail.com>,
+       randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
+       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
+       agk@sourceware.org, subrata@linux.vnet.ibm.com,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       matt@bluehost.com, roberto@unbit.it, ngupta@google.com
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-Id: <20090423143730.a289f0c1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090422215825.f83e1b27.akpm@linux-foundation.org>
+References: <20090421174620.GD15541@mit.edu>
+	<20090421181429.GO19637@balbir.in.ibm.com>
+	<20090421191401.GF15541@mit.edu>
+	<20090421204905.GA5573@linux>
+	<20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422102239.GA1935@linux>
+	<20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090423012254.GZ15541@mit.edu>
+	<20090423115419.c493266a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090423043547.GB2723@mit.edu>
+	<20090422215825.f83e1b27.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22 2009, Steve Wise wrote:
-> Steve Wise wrote:
->> Jens Axboe wrote:
->>
->>  
->>
->>>> Still crashes with this variant:
->>>>     
->>>
->>> OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
->>> and see if that works?
->>>
->>> Or, better yet, please try and revert
->>> 55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
->>> try the above revert.
->>>
->>>   
->>
->> Reverting 55a63998b8967615a15e2211ba0ff3a84a565824 did the trick.
->>
->>
->> Steve.
->>
->>
->
-> <snipit from 55a63998b8967615a15e2211ba0ff3a84a565824>
->
-> @@ -200,17 +197,14 @@ static void __rb_erase_color(struct rb_node *node,  
-> struct rb_node *parent,
->                        {
->                                if (!other->rb_left ||  
-> rb_is_black(other->rb_left))
->                                {
-> -                                       register struct rb_node *o_right;
-> -                                       if ((o_right = other->rb_right))
-> -                                               rb_set_black(o_right);
-> +                                       rb_set_black(other->rb_right);
->                                        rb_set_red(other);
->                                        __rb_rotate_left(other, root);
->                                        other = parent->rb_left;
->                                }
->                                rb_set_color(other, rb_color(parent));
->                                rb_set_black(parent);
-> -                               if (other->rb_left)
-> -                                       rb_set_black(other->rb_left);
-> +                               rb_set_black(other->rb_left);
->                                __rb_rotate_right(parent, root);
->                                node = root->rb_node;
->                                break;
->
->
-> I don't know this code, but isn't the 'if (other->rb_left)' really  
-> needed?  Or is it always true that if '!other->rb_left' is true entering  
-> this snipit, then after executing the first 'if' block, then  
-> 'other->rb_left' must be a valid ptr? (how's that for confusing english? 
-> :)
+On Wed, 22 Apr 2009 21:58:25 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> >  Or at least that *someone* is
+> > doing so and can perhaps document how all of these knobs interact.
+> > After all, if they are going to be separate, and someone turns the I/O
+> > throttling knob without bothering to turn the write throttling knob
+> > --- what's going to happen?  An OOM?  That's not going to be very safe
+> > or friendly for the sysadmin who plans to be configuring the system.
+> 
+> ... this problem.
+> 
+Considering that low-io-limit cgroup as very slow device,
+the problem itself is not far from that the current kernel has.
+If per-bdi-dirty-ratio works well, we can write per-cgroup-dirty-ratio, I think.
+(I'll do if I find time.)
 
-Heh, not sure. What is sure is that the commit in question is
-problematic. Either because it itself has a bug, or because it exposes a
-bug elsewhere in the rbtree code. So I'd suggest we just revert that
-commit ASAP.
+But yes, configuration-how-to should be documented, finally.
+I hope sysadmins will not use some acrobatic configuration ;)
 
--- 
-Jens Axboe
+
+Thanks,
+-Kame
 
