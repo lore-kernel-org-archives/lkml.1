@@ -1,106 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932267AbZDWWQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbZDWWRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932267AbZDWWQs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759492AbZDWWQi
+	id S932290AbZDWWRZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbZDWWRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:16:38 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:53232 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759158AbZDWWQi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:16:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=V3MotB0vnTv3j27brQTBBRtFFSt4L88wwAUVlCZanNG11rPO1MAczUQwKVAYTTJ84n
-         Jqefg0E7lB0zeT+kgWsNvvprsyIKjTAMyPGsq84+zwuHNHG1NQQLQZelF+qo6h9Si1Ip
-         y3aTGzdasuRva7iwFPZFlkFSM6c8lfWVGwuhU=
+	Thu, 23 Apr 2009 18:17:15 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:56239 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932096AbZDWWRO convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 18:17:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnEIAM+A8ElMQW1W/2dsb2JhbACBUJVUuRGCLoFGBQ
+Date: Thu, 23 Apr 2009 18:17:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mark.langsdorf@amd.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>
+Subject: Re: [patch 2/2] x86 amd fix cmpxchg read acquire barrier
+Message-ID: <20090423221711.GA30855@Krystal>
+References: <20090422201852.092307236@polymtl.ca> <20090423080645.GF22606@elte.hu> <20090423131941.GA11261@Krystal> <200904231541.18041.a.miskiewicz@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0904231807370.7545@blonde.anvils>
-References: <1240258569.6195.8.camel@earth> <1240344440.5861.10.camel@earth>
-	 <1240439073.12721.23.camel@earth> <20090423082704.GD599@elte.hu>
-	 <b647ffbd0904230155t61578496pf75fb79e54def3a3@mail.gmail.com>
-	 <Pine.LNX.4.64.0904231807370.7545@blonde.anvils>
-Date: Fri, 24 Apr 2009 00:16:35 +0200
-Message-ID: <b647ffbd0904231516x576c7ae4y36fedc9bc4fcf0f@mail.gmail.com>
-Subject: Re: [PATCH] x86 microcode: work_on_cpu and cleanup of the 
-	synchronization logic
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Peter Oruba <peter.oruba@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200904231541.18041.a.miskiewicz@gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:11:32 up 54 days, 18:37,  1 user,  load average: 0.07, 0.22,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/23 Hugh Dickins <hugh@veritas.com>:
-> On Thu, 23 Apr 2009, Dmitry Adamushko wrote:
->> [ ... ]
->> - change update_match_revision() in microcode_intel.c in a way that
->> allows loading of a ucode with a revision == the current revision
->> (rev. 0x57 in my case). From the POV of the microcode module it
->> nevertheless looks like an update;
->
-> My P4 Xeon and Core2s and Atom all want newer microcode from the
-> latest microcode.dat, and your version seems to work fine on them.
+* Arkadiusz Miskiewicz (a.miskiewicz@gmail.com) wrote:
+> On Thursday 23 of April 2009, Mathieu Desnoyers wrote:
+> > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > > " // Opteron Rev E has a bug in which on very rare occasions a locked
+> > > >   // instruction doesn't act as a read-acquire barrier if followed by a
+> > > >   // non-locked read-modify-write instruction.  Rev F has this bug in
+> > > >   // pre-release versions, but not in versions released to customers,
+> > > >   // so we test only for Rev E, which is family 15, model 32..63
+> > > > inclusive.
+> > >
+> > > Dunno. The fix looks a bit intrusive (emits a NOP even on good
+> > > CPUs). Also, the text above says "not in versions released to
+> > > customers".
+> > >
+> > > So unless there's an official erratum or reports in the field (not
+> > > from early prototype systems shipped to developers) i'd not rush to
+> > > apply it, just yet.
+> >
+> > Actually, Operon Rev E has this bug in the field (family 15, model
+> > 32..64). Rev F only had the bug in pre-releases.
+> >
+> > But yes, it's bad that it drags so many code additions to something as
+> > critical as cmpxchg. I start to think it might be better to just
+> > disallow bringing up more than one CPU on these machines.
+> 
+> That probably would be even worse than what we have now. This bug doesn't 
+> manifest too often in a noticeable way here (I have few such machines here, 
+> mostly 2 x dual core; once per few months mysql dies) and loosing 3 of 4 cores 
+> (or 1 cpu of 2; depends on what you mean) doesn't sound like fun.
+> 
 
-Thanks for the tests and review!
+Having silent data corruption does not sound like fun neither. Another
+alternative, when we detect those CPUs, is to printk a warning telling :
 
-> [ ... ]
->
-> That SYSTEM_RUNNING test you've flagged with "--dimm. Review this case":
-> yes, that's still necessary for when CONFIG_MICROCODE=y (and no initrd?),
-> as I have - trying to get the firmware at that point will hang.  I did
-> try changing module_init(microcode_init) to late_initcall(microcode_init),
-> but that didn't solve it.  And skipping out at that point does leave CPU0
-> not updated.  But you've not made anything worse there, and most people
-> will have CONFIG_MICROCODE=m.
+"AMD Opteron family X model Y is known to corrupt data on SMP due"
+"to incorrect cmpxchg instruction memory barriers. Please contact"
+"AMD for more information."
 
-Yeah. Then at least for the sake of consistency it makes sense to
-consider doing some kind of delayed update for CPU0 in this case. Will
-check.
+And activate the "tainted" kernel flag. This way, we won't be bothered
+trying to fix AMD bugs, and it will officially become AMD's problem.
 
->>
->> p.s. argh... just noticed that the following line is redundant in
->> microcode_core.c (forgot to remove it)
->>
->> +enum { UCODE_UPDATE_ERR, UCODE_UPDATE_OK, UCODE_UPDATE_NAVAIL };
->
-> A couple of things that worried me.
->
-> I guess your mutex Synchronization works out, but are interrupts
-> still disabled around the critical wrmsr()s, wherever they're getting
-> called from?
+Mathieu
 
-Yes, *msr() calls are only done from functions that are now being
-called via smp_call_function_single(). The later seems to always do it
-with disabled interrupts. The only exception is mc_sysdev_resume()
-calling  ->apply_microcode() directly but this one in turn is always
-called with disabled interrupts.
-
-But now that you mentioned it I wonder if we may actually need a
-spinlock there... can we have multi-threaded cpus/cores with (all |
-some) shared msr registers?
-
-
-> And you've a habit of returning -1 in error cases, which later gets
-> muddled in with errnos, so that it would amount to -EPERM, which is
-> probably not what you want.
-
-Indeed, will fix. Thanks!
-
-
->
-> Hugh
->
+> > Mathieu
+> 
+> 
+> -- 
+> Arkadiusz Miśkiewicz        PLD/Linux Team
+> arekm / maven.pl            http://ftp.pld-linux.org/
+> 
+> 
 
 -- 
-Best regards,
-Dmitry Adamushko
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
