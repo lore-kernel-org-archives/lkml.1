@@ -1,71 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZDWGtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZDWGvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbZDWGtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 02:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZDWGtN
+	id S1754682AbZDWGvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 02:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZDWGvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 02:49:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58137 "EHLO hera.kernel.org"
+	Thu, 23 Apr 2009 02:51:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39243 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753701AbZDWGtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 02:49:12 -0400
-Date: Thu, 23 Apr 2009 06:48:31 GMT
-From: tip-bot for Luis Henriques <henrix@sapo.pt>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       henrix@sapo.pt, sfr@canb.auug.org.au, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       henrix@sapo.pt, tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
-In-Reply-To: <20090401170635.GA4392@hades.domain.com>
-References: <20090401170635.GA4392@hades.domain.com>
-Subject: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq setup failed
-Message-ID: <tip-6ce51c431019310ca03371355a4366c4649fa349@git.kernel.org>
-Git-Commit-ID: 6ce51c431019310ca03371355a4366c4649fa349
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 06:48:33 +0000 (UTC)
+	id S1752040AbZDWGvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 02:51:44 -0400
+Date: Thu, 23 Apr 2009 16:51:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for April 23
+Message-Id: <20090423165136.29e7700d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__23_Apr_2009_16_51_36_+1000_/=K2b1FqfQQepeOB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6ce51c431019310ca03371355a4366c4649fa349
-Gitweb:     http://git.kernel.org/tip/6ce51c431019310ca03371355a4366c4649fa349
-Author:     Luis Henriques <henrix@sapo.pt>
-AuthorDate: Wed, 1 Apr 2009 18:06:35 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 23 Apr 2009 08:45:48 +0200
+--Signature=_Thu__23_Apr_2009_16_51_36_+1000_/=K2b1FqfQQepeOB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-genirq: do not execute DEBUG_SHIRQ when irq setup failed
+Hi all,
 
-When requesting an IRQ, the DEBUG_SHIRQ code executes a fake IRQ just to make
-sure the driver is ready to receive an IRQ immediately.  The problem was that
-this fake IRQ was being executed even if interrupt line failed to be allocated
-by __setup_irq.
+Changes since 20090422:
 
-Signed-off-by: Luis Henriques <henrix@sapo.pt>
-LKML-Reference: <20090401170635.GA4392@hades.domain.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[ fixed bug pointed out by a warning reported by Stephen Rothwell ]
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This tree will build a powerpc allyesconfig with gcc4.4.0.
 
+The ttydev tree gained 3 conflicts against the usb.current tree.
 
----
- kernel/irq/manage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The wireless and crypto trees lost their build failures.
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 1516ab7..8c68d5b 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -768,7 +768,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
- 		kfree(action);
- 
- #ifdef CONFIG_DEBUG_SHIRQ
--	if (irqflags & IRQF_SHARED) {
-+	if (!retval && (irqflags & IRQF_SHARED)) {
- 		/*
- 		 * It's a shared IRQ -- the driver ought to be prepared for it
- 		 * to happen immediately, so let's make sure....
+I added a patch for a long standing bug that gcc4.4.0 flagged in the
+powerpc code that previous compilers had not stumbled on.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 134 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging configfs/linux-next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/for-next
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/rndis_wlan.c
+CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
+CONFLICT (content): Merge conflict in net/mac80211/pm.c
+[master 4deb89c] Revert "rfkill: remove user_claim stuff"
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging cifs/master
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/cypress_m8.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/option.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/usb-serial.c
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging suspend/linux-next
+Merging quilt/driver-core
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+Applying: powerpc: fix for long standing bug noticed by gcc 4.4.0
+
+--Signature=_Thu__23_Apr_2009_16_51_36_+1000_/=K2b1FqfQQepeOB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknwD/gACgkQjjKRsyhoI8yJ4wCdHYCf7uyHva0NpbwGbxCB/ZDL
+JMIAoJkzQQoIEIDwGk0UpeZI+NiBoSIs
+=8EO7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Apr_2009_16_51_36_+1000_/=K2b1FqfQQepeOB--
