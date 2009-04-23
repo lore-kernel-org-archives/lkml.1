@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZDWKj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZDWKlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbZDWKj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZDWKjp
+	id S1757160AbZDWKlM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZDWKk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:39:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38959 "EHLO mail.dvmed.net"
+	Thu, 23 Apr 2009 06:40:57 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57450 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754571AbZDWKjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:39:44 -0400
-Message-ID: <49F0456B.2050502@garzik.org>
-Date: Thu, 23 Apr 2009 06:39:39 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1754965AbZDWKk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 06:40:56 -0400
+Date: Thu, 23 Apr 2009 12:40:55 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Wolfram Strepp <wstrepp@gmx.de>
+Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
+Message-ID: <20090423104055.GU4593@kernel.dk>
+References: <49EF2882.1020306@opengridcomputing.com> <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com> <20090422192216.GE4593@kernel.dk> <49EF7B40.9050505@opengridcomputing.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-References: <20090422090929.GA14928@havoc.gtf.org> <49EEE225.3010700@garzik.org> <20090423063542.GK4593@kernel.dk>
-In-Reply-To: <20090423063542.GK4593@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF7B40.9050505@opengridcomputing.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Apr 22 2009, Jeff Garzik wrote:
->> Jeff Garzik wrote:
->>> Currently, libata creates a Scsi_Host per port.  This was originally
->>> done to leverage SCSI's infrastructure to arbitrate among master/slave
->>> devices, but is not needed for most modern SATA controllers.   And I
->>> _think_ it is not needed for master/slave if done properly, either.
->> BTW note the above, with regards to the libata SCSI->block conversion.  
->> libata currently relies on SCSI for some amount of generic device  
->> arbitration, in several situations (see ->qc_defer,  
->> SCSI_MLQUEUE_.*_BUSY).  libata expects SCSI to be intelligent and not  
->> starve devices, etc.
-> 
-> Defer looks like internal policy, I don't see that functioning any
-> different in the block layer. SCSI_MLQUEUE_*_BUSY in SCSI is primarily
-> using the block layer functionality of BLKPREP_DEFER to begin with, so I
-> think we're pretty close to providing all that already.
+On Wed, Apr 22 2009, Steve Wise wrote:
+> Jens Axboe wrote:
+>
+>  
+>
+>>> Still crashes with this variant:
+>>>     
+>>
+>> OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
+>> and see if that works?
+>>
+>> Or, better yet, please try and revert
+>> 55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
+>> try the above revert.
+>>
+>>   
+>
+> Reverting 55a63998b8967615a15e2211ba0ff3a84a565824 did the trick.
 
-It's not quite that simple.  I am referring mainly to arbitration across 
-multiple request_queue's.  SCSI has useful code in place to deal with 
-target-busy and host-busy conditions, both of which could potentially be 
-blocking and unblocking multiple request queues.
+Steve, can you (and Balbir) try with pulling this into 2.6.30-rc3:
 
-mlqueue is much more than just a wrapper over block requeueing 
-functions.  Read scsi_next_command() and scsi_run_queue(), and grep for 
-starved_list, host_{busy,blocked}, target_{busy,blocked}, 
-device_{busy,blocked}.
+        git://git.kernel.dk/linux-2.6-block.git for-linus
 
-In our master/slave case, we must choose between queue A and queue B, 
-making sure to starve neither.  For simplex DMA, we potentially have 
-queues A, B, C and D serving requests across the "bus bottleneck," and 
-must ensure no starvation of A, B, C or D.
+It has two fixes for possible rbtree misuse in cfq. If it still crashes
+without reverting 55a63998b8967615a15e2211ba0ff3a84a565824 with that,
+then we also need to look further into the rbtree issue.
 
+Thanks!
 
-Although I have no code to back this up, my gut feeling is that a 
-"request queue group" object, with associated functions, that would be 
-the appropriate place for cross-queue or "host-wide" (as in, struct 
-Scsi_Host or struct ata_host) functionality.
-
-Whatever the solution, libata definitely makes use of SCSI's 
-cross-request_queue arbitration, so any move to block will require 
-similar functionality.
-
-	Jeff
-
-
+-- 
+Jens Axboe
 
