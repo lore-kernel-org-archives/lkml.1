@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZDWSEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbZDWSJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbZDWSEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 14:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZDWSEC
+	id S1754005AbZDWSJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 14:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZDWSJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 14:04:02 -0400
-Received: from sous-sol.org ([216.99.217.87]:57786 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753301AbZDWSEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 14:04:00 -0400
-Date: Thu, 23 Apr 2009 11:02:38 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-Message-ID: <20090423180238.GS3036@sequoia.sous-sol.org>
-References: <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <alpine.DEB.2.00.0904222200350.24310@gandalf.stny.rr.com> <20090423082031.GA599@elte.hu> <alpine.DEB.2.00.0904230935060.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com> <49F09C35.1080006@goop.org> <20090423172138.GR3036@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423172138.GR3036@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 23 Apr 2009 14:09:04 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55221 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754175AbZDWSJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 14:09:01 -0400
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Grant Grundler <grundler@google.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <da824cf30904231059v64328d47qa9e535ee194e65e@mail.gmail.com>
+References: <20090422090929.GA14928@havoc.gtf.org>
+	 <da824cf30904221208l42e41d38g5af52b1b3b5ea9a1@mail.gmail.com>
+	 <49F04A66.4080303@garzik.org>
+	 <da824cf30904231059v64328d47qa9e535ee194e65e@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 23 Apr 2009 18:09:00 +0000
+Message-Id: <1240510141.3514.22.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> > OK, the good news is that its not a callee-save calling convention  
-> > problem, which is what I feared.  But it does sound pretty awkward to  
-> > fix.  Does __native_flush_tlb_global() have to use  
-> > raw_local_irq_save/restore?
+On Thu, 2009-04-23 at 10:59 -0700, Grant Grundler wrote:
+> > As to benefits, the phrase "more natural" means the code naturally aligns
+> > with existing object topologies (ata_host becomes analagous to Scsi_Host),
+> > which always has a long list of technical benefits.
+> >
+> > - we get to remove all the ugly hacks currently in place that assume
+> > ata_port is _the_ first class object.
+> > - we get to remove all the workarounds where SCSI assumes it manipulates all
+> > devices on a controller (not true in current libata)
+> > - SCSI (soon block) host-wide busy, block etc functionality now works as
+> > expected
+> > - it makes the libata conversion from SCSI to block layer easier
+> > - it makes integration with SAS+SATA devices such as mvsas or ipr easier
+> > - the list goes on; that is just off the top of my head, before my morning
+> > Mountain Dew
 > 
-> Vaguely related...makes sense to do native_(read/write)_cr4 since it's
-> the native tlb flushing implementation, no?
+> Your initial list is good. In particular the issue around "SCSI Host-wide busy"
+> working as expected. Of all the things listed, this is the only one that *I* can
+> clearly identify as a user visible functional change.
 > 
-> looks ok from inspection, not tested yet...
+> I'm not familiar with the the "workarounds where SCSI assumes it manipulates
+> all devices on a controller" issue. The few SATA controllers I've looked at can
+> deal with each port independently - e.g.  discovery and phy reset. Anyway, this
+> seems to be closely tied with "SCSI Host-wide Busy".
+> 
+> One reason I was thinking of NOT list above: "wide port" in SAS 2.0 controllers.
+> aka "port aggregation". E.g. http://www.pmc-sierra.com/products/details/pm8005/
+> 
+> To change port aggregation on the fly requires the SCSI host controller to be
+> manageable object. This should be a change in transport and not a change
+> in devices available....and there are some other problems with implementing
+> this but this is the main one I initially see.
 
-BTW, Steve, does that fix it for you?  Sure makes the code cleaner:
+This isn't really a correct assessment.  Wide ports are a SAS only
+problem.  So sas has phys and ports ... and it's the port (essentially a
+virtual object) that communicates in the link diagram.
 
- 410:   0f 20 e2                mov    %cr4,%rdx
- 413:   48 89 d0                mov    %rdx,%rax
- 416:   24 7f                   and    $0x7f,%al
- 418:   0f 22 e0                mov    %rax,%cr4
- 41b:   0f 22 e2                mov    %rdx,%cr4
+A wide port has two or more phys in it.  You can see the handling of
+this in libsas and the sas transport class today, but it's all handled
+in a fashion completely invisible to the SCSI mid layer ... it's an
+inessential abstraction, if you will.
 
-thanks,
--chris
+James
 
-> Subject: [PATCH] x86: use native register access for native tlb flushing
-> 
-> currently these are paravirtulaized, doesn't appear any callers rely on
-> this (no pv_ops backends are using native_tlb and overriding cr3/4
-> access).
-> 
-> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> ---
->  arch/x86/include/asm/tlbflush.h |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-> index 16a5c84..a5ecc9c 100644
-> --- a/arch/x86/include/asm/tlbflush.h
-> +++ b/arch/x86/include/asm/tlbflush.h
-> @@ -17,7 +17,7 @@
->  
->  static inline void __native_flush_tlb(void)
->  {
-> -	write_cr3(read_cr3());
-> +	native_write_cr3(native_read_cr3());
->  }
->  
->  static inline void __native_flush_tlb_global(void)
-> @@ -32,11 +32,11 @@ static inline void __native_flush_tlb_global(void)
->  	 */
->  	raw_local_irq_save(flags);
->  
-> -	cr4 = read_cr4();
-> +	cr4 = native_read_cr4();
->  	/* clear PGE */
-> -	write_cr4(cr4 & ~X86_CR4_PGE);
-> +	native_write_cr4(cr4 & ~X86_CR4_PGE);
->  	/* write old PGE again and flush TLBs */
-> -	write_cr4(cr4);
-> +	native_write_cr4(cr4);
->  
->  	raw_local_irq_restore(flags);
->  }
+
