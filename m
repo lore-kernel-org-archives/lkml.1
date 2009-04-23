@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZDWTf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbZDWTjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbZDWTf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZDWTfP
+	id S1752038AbZDWTjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZDWTjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:35:15 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:43869 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbZDWTfO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:35:14 -0400
-Date: Thu, 23 Apr 2009 15:35:10 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Dave Hansen <dave@sr71.net>
-Cc: john stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.30-rc2 soft lockups: ACPI?  clock source problem?
-In-reply-to: <1240514679.10627.168.camel@nimitz>
-Message-id: <alpine.LFD.2.00.0904231532240.15830@localhost.localdomain>
-References: <1240335038.11194.11.camel@nimitz>
- <20090422204557.10c3cc37.akpm@linux-foundation.org>
- <1240511508.10627.159.camel@nimitz>
- <1240513827.7224.2.camel@localhost.localdomain>
- <1240514679.10627.168.camel@nimitz>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 23 Apr 2009 15:39:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46684 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752583AbZDWTja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 15:39:30 -0400
+Date: Thu, 23 Apr 2009 21:32:15 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+Cc: Chris Zankel <chris@zankel.net>, David Howells <dhowells@redhat.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@uclinux.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Helge Deller <deller@gmx.de>, Hirokazu Takata <takata@linux-m32r.org>,
+       Jeff Dike <jdike@addtoit.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 4/4] ptrace: remove PT_DTRACE from arch/m32r
+Message-ID: <20090423193215.GA14895@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+m32r: PTRACE_SINGLESTEP sets PT_DTRACE, it is never used except cleared
+after do_execve().
 
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-On Thu, 23 Apr 2009, Dave Hansen wrote:
+ arch/m32r/kernel/process.c |    5 -----
+ arch/m32r/kernel/ptrace.c  |    4 ----
+ 2 files changed, 9 deletions(-)
 
-> On Thu, 2009-04-23 at 12:10 -0700, john stultz wrote:
-> > On Thu, 2009-04-23 at 11:31 -0700, Dave Hansen wrote:
-> > > On Wed, 2009-04-22 at 20:45 -0700, Andrew Morton wrote:
-> > > > (Is jstultz@us.ibm.com correct?)
-> > > 
-> > > Only I want it to go to the black hole which is Lotus Notes. :)
-> > > 
-> > > > On Tue, 21 Apr 2009 10:30:38 -0700 Dave Hansen <dave@sr71.net> wrote:
-> > > > > This was during my first boot of 2.6.30-rc2.
-> > > > 
-> > > > Did it ever happen again?
-> > > 
-> > > I've seen it on three different boots, but the stack traces were a bit
-> > > different each time.  So, I assume it is a true timekeeping thing
-> > > instead of something *actually* locking up.
-> > > 
-> > > > I assume this is a post-2.6.29 regression?  (Yet another.  We've been
-> > > > extra bad this time)
-> > > 
-> > > This laptop has been quite good to me and I haven't rebooted since the
-> > > late 2.6.28 days.  It isn't anything special, though.  Just a Lenovo
-> > > T61.  I wonder if my .config is a bit different.
-> > 
-> > I've got a T61 at home, so I'll try to test it out. Dave, can you send
-> > me your .config? Also any chance you can bisect this down a tiny bit?
-> 
-> http://sr71.net/~dave/linux/config-forjohn-04-23-2009
-
-ugh, my 64-bit T61 will not like this 32-bit config:-(
-
-> I'll work on bisecting it down in a bit.
-
-start by trying the various clocksource= cmdline options.
-
-also, as -rc3 is out, please verify that still fails before bisecting -rc2
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+--- PTRACE/arch/m32r/kernel/process.c~DT_4_m32r	2009-04-06 00:03:35.000000000 +0200
++++ PTRACE/arch/m32r/kernel/process.c	2009-04-22 22:01:44.000000000 +0200
+@@ -302,11 +302,6 @@ asmlinkage int sys_execve(char __user *u
+ 		goto out;
+ 
+ 	error = do_execve(filename, uargv, uenvp, &regs);
+-	if (error == 0) {
+-		task_lock(current);
+-		current->ptrace &= ~PT_DTRACE;
+-		task_unlock(current);
+-	}
+ 	putname(filename);
+ out:
+ 	return error;
+--- PTRACE/arch/m32r/kernel/ptrace.c~DT_4_m32r	2009-04-06 00:03:35.000000000 +0200
++++ PTRACE/arch/m32r/kernel/ptrace.c	2009-04-22 22:00:13.000000000 +0200
+@@ -676,10 +676,6 @@ arch_ptrace(struct task_struct *child, l
+ 		if (!valid_signal(data))
+ 			break;
+ 		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		if ((child->ptrace & PT_DTRACE) == 0) {
+-			/* Spurious delayed TF traps may occur */
+-			child->ptrace |= PT_DTRACE;
+-		}
+ 
+ 		/* Compute next pc.  */
+ 		pc = get_stack_long(child, PT_BPC);
 
