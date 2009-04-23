@@ -1,138 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbZDWUwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZDWUws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbZDWUwI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZDWUvx
+	id S1758501AbZDWUws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZDWUwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:51:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38426 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754395AbZDWUvw (ORCPT
+	Thu, 23 Apr 2009 16:52:39 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37924 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755473AbZDWUwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:51:52 -0400
-Date: Thu, 23 Apr 2009 13:49:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anatolij Gustschin <agust@denx.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       agust@denx.de
-Subject: Re: [PATCH] Add CONFIG_FB_PRE_INIT_FB option to VT and fbcon
-Message-Id: <20090423134952.5328923a.akpm@linux-foundation.org>
-In-Reply-To: <1240348380-15674-1-git-send-email-agust@denx.de>
-References: <1240348380-15674-1-git-send-email-agust@denx.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 16:52:38 -0400
+Date: Thu, 23 Apr 2009 16:48:52 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Subject: [PATCH v3 0/3] Add support for compiling with -ffunction-sections
+ -fdata-sections
+In-Reply-To: <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu>
+References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain>
+ <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 23:13:00 +0200
-Anatolij Gustschin <agust@denx.de> wrote:
+On Mon, 20 Apr 2009, Linus Torvalds wrote:
 
-> On many embedded systems there is a requirement while
-> booting to inherit display controller configuration and
-> frame buffer contents from the state set by the bootloader
-> (e.g. splash screen). Using frame buffer console later
-> by some application should be possible too.
-> 
-> VT and fbcon code clears and also partially overwrites
-> frame buffer content after registering FB driver.
-> This patch adds CONFIG_FB_PRE_INIT_FB option to VT/fbcon
-> to prevent overwriting the frame buffer content while
-> initialization and later after blanking interval expired.
-> 
-> CONFIG_FB_PRE_INIT_FB option is used by MB862xx frame
-> buffer driver currently.
-> 
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> ---
->  drivers/char/vt.c             |   10 ++++++++++
->  drivers/video/console/fbcon.c |    7 +++++++
->  2 files changed, 17 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-> index 08151d4..dd357ff 100644
-> --- a/drivers/char/vt.c
-> +++ b/drivers/char/vt.c
-> @@ -172,7 +172,11 @@ int do_poke_blanked_console;
->  int console_blanked;
->  
->  static int vesa_blank_mode; /* 0:none 1:suspendV 2:suspendH 3:powerdown */
-> +#ifdef CONFIG_FB_PRE_INIT_FB
-> +static int blankinterval;
-> +#else
->  static int blankinterval = 10*60*HZ;
-> +#endif
->  static int vesa_off_interval;
+> I'd be ok with merging it, but I haven't really gotten a strong feeling 
+> that anybody is going to enable it or use it.
 
-What does this change do?  Puts in a magic delay?  It looks like a
-hack?  Please describe the operation here in some detail.  Once I
-understand what it does, I expect I'll be asking if it can be done in
-some more deterministic manner.
+Linus,
 
->  static DECLARE_WORK(console_work, console_callback);
-> @@ -695,8 +699,10 @@ void redraw_screen(struct vc_data *vc, int is_switch)
->  			update_attr(vc);
->  			clear_buffer_attributes(vc);
->  		}
-> +#ifndef CONFIG_FB_PRE_INIT_FB
->  		if (update && vc->vc_mode != KD_GRAPHICS)
->  			do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
-> +#endif
->  	}
->  	set_cursor(vc);
->  	if (is_switch) {
-> @@ -777,7 +783,11 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
->  		return -ENOMEM;
->  	    }
->  	    vc->vc_kmalloced = 1;
-> +#ifdef CONFIG_FB_PRE_INIT_FB
-> +	    vc_init(vc, vc->vc_rows, vc->vc_cols, 0);
-> +#else
->  	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-> +#endif
->  	    vcs_make_sysfs(currcons);
->  	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
->  	}
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 471a9a6..40c0fa1 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -1057,6 +1057,9 @@ static void fbcon_init(struct vc_data *vc, int init)
->  	if (p->userfont)
->  		charcnt = FNTCHARCNT(p->fontdata);
->  
-> +#ifdef CONFIG_FB_PRE_INIT_FB
-> +	vc->vc_deccm = 0;
-> +#endif
->  	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
->  	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
->  	if (charcnt == 256) {
-> @@ -3038,7 +3041,11 @@ static int fbcon_fb_registered(struct fb_info *info)
->  		}
->  
->  		if (info_idx != -1)
-> +#ifdef CONFIG_FB_PRE_INIT_FB
-> +			ret = fbcon_takeover(0);
-> +#else
->  			ret = fbcon_takeover(1);
-> +#endif
->  	} else {
->  		for (i = first_fb_vc; i <= last_fb_vc; i++) {
->  			if (con2fb_map_boot[i] == idx)
+Would you be willing to merge the first 3 patches in this patch series at 
+this point?  I'm resending these patches to resolve some conflicts that 
+was recently introduced.
 
-I think this change is so small that it doesn't justify the addition of
-a new Kconfig parameter.
+To summarize the discussion, there are three uses for this code that have 
+significant interest.
 
-We could do this via a new kernel boot option, and/or via a module
-parameter to fbcon.
+One is decreasing the kernel size.  Denys Vlasenko has numbers that using 
+the linker's --gc-sections option (for which these patches are a 
+prerequisite) saves 10% of the kernel size when CONFIG_MODULES=n, and 1% 
+when CONFIG_MODULES=y.  Paul Mundt thinks many embedded users would use 
+this if it were available.
 
-Or, if the MB862xx driver can get control early enough then perhaps
-the driver can inform the core code that it wants the framebuffer
-memory to be preserved.
+A related use is cleaning up a lot of ifdefs that exist only to decrease 
+the kernel size.  Several developers commented favorably on the direction 
+of using section garbage collection for dead code removal.
 
-Either way, adding yet-another-config-option is the most
-user-unfriendly way of implementing this fix and should be a last
-resort, please.
+Finally, Ksplice depends on the option added by this patch series.
 
+The first 3 patches in this patch series fix problems associated with 
+using -ffunction-sections.  As there are some architectures currently 
+using -ffunction-sections, these should ideally be merged now, especially 
+the first patch which involves scattered changes.
+
+	-Tim Abbott
