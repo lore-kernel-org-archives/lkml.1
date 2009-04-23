@@ -1,26 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZDWVHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZDWVJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbZDWVHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758458AbZDWVGw
+	id S1758528AbZDWVJZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZDWVJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:06:52 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40445 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758759AbZDWVGv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 17:06:51 -0400
-Date: Thu, 23 Apr 2009 22:06:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] Add CONFIG_FB_PRE_INIT_FB option to VT and fbcon
-Message-ID: <20090423220622.313090a1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090423134952.5328923a.akpm@linux-foundation.org>
-References: <1240348380-15674-1-git-send-email-agust@denx.de>
-	<20090423134952.5328923a.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Thu, 23 Apr 2009 17:09:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38816 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753114AbZDWVJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 17:09:16 -0400
+Date: Thu, 23 Apr 2009 16:59:40 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Peter Lojkin <ia6432@inbox.ru>,
+       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 057/100] posix-timers: fix RLIMIT_CPU && fork()
+Message-ID: <20090423165940.622c8ad8@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20090423072700.322939119@sous-sol.org>
+References: <20090423072020.428683652@sous-sol.org>
+	<20090423072700.322939119@sous-sol.org>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,10 +39,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This looks to be a complete mess. It puts a large pile of ifdefs all over
-core kernel code for a single hack specific to one environment.
+On Thu, 23 Apr 2009 00:21:17 -0700
+Chris Wright <chrisw@sous-sol.org> wrote:
 
-If you don't want the vt layer using the frame buffer then don't use the
-vt layer.
+> -stable review patch.  If anyone has any objections, please let us know.
+> ---------------------
+> 
+> From: Oleg Nesterov <oleg@redhat.com>
+> 
+> upstream commit: 6279a751fe096a21dc7704e918d570d3ff06e769
+> 
 
-Alan
+The following commit was also submitted:
+
+   37bebc70d7ad4144c571d74500db3bb26ec0c0eb
+   posix timers: fix RLIMIT_CPU && fork()
+
+Did it get dropped because it has the exact same title?
