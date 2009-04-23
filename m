@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZDWH1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZDWH2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752347AbZDWH1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZDWH1C
+	id S1755670AbZDWH2j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZDWH1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:02 -0400
-Received: from sous-sol.org ([216.99.217.87]:48069 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:27:22 -0400
+Received: from sous-sol.org ([216.99.217.87]:48153 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754097AbZDWH1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:27:00 -0400
-Message-Id: <20090423072242.771252535@sous-sol.org>
+	id S1754651AbZDWH1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:27:18 -0400
+Message-Id: <20090423072212.535803819@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:37 -0700
+Date: Thu, 23 Apr 2009 00:20:32 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
-       Zhao Yakui <yakui.zhao@intel.com>
-Subject: [patch 017/100] drm/i915: Sync crt hotplug detection with intel video driver
+       alan@lxorguk.ukuu.org.uk, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, "alex.shi" <alex.shi@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Yakui.zhao" <yakui.zhao@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [patch 012/100] acpi: fix of pmtimer overflow that make Cx states time incorrect
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=drm-i915-sync-crt-hotplug-detection-with-intel-video-driver.patch
+Content-Disposition: inline; filename=acpi-fix-of-pmtimer-overflow-that-make-cx-states-time-incorrect.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,100 +38,228 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: alex.shi <alex.shi@intel.com>
 
-upstream commit: 771cb081354161eea21534ba58e5cc1a2db94a25
+upstream commit: ff69f2bba67bd45514923aaedbf40fe351787c59
 
-This covers:
-Use long crt hotplug activation time on GM45.
+We found Cx states time abnormal in our some of machines which have 16
+LCPUs, the C0 take too many time while system is really idle when kernel
+enabled tickless and highres.  powertop output is below:
 
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Eric Anholt <eric@anholt.net>
+     PowerTOP version 1.9       (C) 2007 Intel Corporation
+
+Cn                Avg residency       P-states (frequencies)
+C0 (cpu running)        (40.5%)         2.53 Ghz     0.0%
+C1                0.0ms ( 0.0%)         2.53 Ghz     0.0%
+C2              128.8ms (59.5%)         2.40 Ghz     0.0%
+                                        1.60 Ghz   100.0%
+
+Wakeups-from-idle per second :  4.7     interval: 20.0s
+no ACPI power usage estimate available
+
+Top causes for wakeups:
+  41.4% ( 24.9)       <interrupt> : extra timer interrupt
+  20.2% ( 12.2)     <kernel core> : usb_hcd_poll_rh_status
+(rh_timer_func)
+
+After tacking detailed for this issue, Yakui and I find it is due to 24
+bit PM timer overflows when some of cpu sleep more than 4 seconds.  With
+tickless kernel, the CPU want to sleep as much as possible when system
+idle.  But the Cx sleep time are recorded by pmtimer which length is
+determined by BIOS.  The current Cx time was gotten in the following
+function from driver/acpi/processor_idle.c:
+
+static inline u32 ticks_elapsed(u32 t1, u32 t2)
+{
+       if (t2 >= t1)
+               return (t2 - t1);
+       else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
+               return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
+       else
+               return ((0xFFFFFFFF - t1) + t2);
+}
+
+If pmtimer is 24 bits and it take 5 seconds from t1 to t2, in above
+function, just about 1 seconds ticks was recorded.  So the Cx time will be
+reduced about 4 seconds.  and this is why we see above powertop output.
+
+To resolve this problem, Yakui and I use ktime_get() to record the Cx
+states time instead of PM timer as the following patch.  the patch was
+tested with i386/x86_64 modes on several platforms.
+
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Tested-by: Alex Shi <alex.shi@intel.com>
+Signed-off-by: Alex Shi <alex.shi@intel.com>
+Signed-off-by: Yakui.zhao <yakui.zhao@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/gpu/drm/i915/i915_reg.h  |   16 +++++++++++++
- drivers/gpu/drm/i915/intel_crt.c |   47 +++++++++++++++++++++++++++------------
- 2 files changed, 49 insertions(+), 14 deletions(-)
+ drivers/acpi/processor_idle.c |   63 ++++++++++++++++++------------------------
+ 1 file changed, 27 insertions(+), 36 deletions(-)
 
---- a/drivers/gpu/drm/i915/i915_reg.h
-+++ b/drivers/gpu/drm/i915/i915_reg.h
-@@ -629,6 +629,22 @@
- #define   TV_HOTPLUG_INT_EN			(1 << 18)
- #define   CRT_HOTPLUG_INT_EN			(1 << 9)
- #define   CRT_HOTPLUG_FORCE_DETECT		(1 << 3)
-+#define CRT_HOTPLUG_ACTIVATION_PERIOD_32	(0 << 8)
-+/* must use period 64 on GM45 according to docs */
-+#define CRT_HOTPLUG_ACTIVATION_PERIOD_64	(1 << 8)
-+#define CRT_HOTPLUG_DAC_ON_TIME_2M		(0 << 7)
-+#define CRT_HOTPLUG_DAC_ON_TIME_4M		(1 << 7)
-+#define CRT_HOTPLUG_VOLTAGE_COMPARE_40		(0 << 5)
-+#define CRT_HOTPLUG_VOLTAGE_COMPARE_50		(1 << 5)
-+#define CRT_HOTPLUG_VOLTAGE_COMPARE_60		(2 << 5)
-+#define CRT_HOTPLUG_VOLTAGE_COMPARE_70		(3 << 5)
-+#define CRT_HOTPLUG_VOLTAGE_COMPARE_MASK	(3 << 5)
-+#define CRT_HOTPLUG_DETECT_DELAY_1G		(0 << 4)
-+#define CRT_HOTPLUG_DETECT_DELAY_2G		(1 << 4)
-+#define CRT_HOTPLUG_DETECT_VOLTAGE_325MV	(0 << 2)
-+#define CRT_HOTPLUG_DETECT_VOLTAGE_475MV	(1 << 2)
-+#define CRT_HOTPLUG_MASK			(0x3fc) /* Bits 9-2 */
-+
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -64,7 +64,6 @@
+ #define _COMPONENT              ACPI_PROCESSOR_COMPONENT
+ ACPI_MODULE_NAME("processor_idle");
+ #define ACPI_PROCESSOR_FILE_POWER	"power"
+-#define US_TO_PM_TIMER_TICKS(t)		((t * (PM_TIMER_FREQUENCY/1000)) / 1000)
+ #define PM_TIMER_TICK_NS		(1000000000ULL/PM_TIMER_FREQUENCY)
+ #define C2_OVERHEAD			1	/* 1us */
+ #define C3_OVERHEAD			1	/* 1us */
+@@ -78,6 +77,10 @@ module_param(nocst, uint, 0000);
+ static unsigned int latency_factor __read_mostly = 2;
+ module_param(latency_factor, uint, 0644);
  
- #define PORT_HOTPLUG_STAT	0x61114
- #define   HDMIB_HOTPLUG_INT_STATUS		(1 << 29)
---- a/drivers/gpu/drm/i915/intel_crt.c
-+++ b/drivers/gpu/drm/i915/intel_crt.c
-@@ -133,20 +133,39 @@ static bool intel_crt_detect_hotplug(str
++static s64 us_to_pm_timer_ticks(s64 t)
++{
++	return div64_u64(t * PM_TIMER_FREQUENCY, 1000000);
++}
+ /*
+  * IBM ThinkPad R40e crashes mysteriously when going into C2 or C3.
+  * For now disable this. Probably a bug somewhere else.
+@@ -159,25 +162,6 @@ static struct dmi_system_id __cpuinitdat
+ 	{},
+ };
+ 
+-static inline u32 ticks_elapsed(u32 t1, u32 t2)
+-{
+-	if (t2 >= t1)
+-		return (t2 - t1);
+-	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
+-		return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
+-	else
+-		return ((0xFFFFFFFF - t1) + t2);
+-}
+-
+-static inline u32 ticks_elapsed_in_us(u32 t1, u32 t2)
+-{
+-	if (t2 >= t1)
+-		return PM_TIMER_TICKS_TO_US(t2 - t1);
+-	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
+-		return PM_TIMER_TICKS_TO_US(((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
+-	else
+-		return PM_TIMER_TICKS_TO_US((0xFFFFFFFF - t1) + t2);
+-}
+ 
+ /*
+  * Callers should disable interrupts before the call and enable
+@@ -853,7 +837,8 @@ static inline void acpi_idle_do_entry(st
+ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
+ 			      struct cpuidle_state *state)
  {
- 	struct drm_device *dev = connector->dev;
- 	struct drm_i915_private *dev_priv = dev->dev_private;
--	u32 temp;
--
--	unsigned long timeout = jiffies + msecs_to_jiffies(1000);
--
--	temp = I915_READ(PORT_HOTPLUG_EN);
--
--	I915_WRITE(PORT_HOTPLUG_EN,
--		   temp | CRT_HOTPLUG_FORCE_DETECT | (1 << 5));
--
--	do {
--		if (!(I915_READ(PORT_HOTPLUG_EN) & CRT_HOTPLUG_FORCE_DETECT))
--			break;
--		msleep(1);
--	} while (time_after(timeout, jiffies));
-+	u32 hotplug_en;
-+	int i, tries = 0;
-+	/*
-+	 * On 4 series desktop, CRT detect sequence need to be done twice
-+	 * to get a reliable result.
-+	 */
-+
-+	if (IS_G4X(dev) && !IS_GM45(dev))
-+		tries = 2;
-+	else
-+		tries = 1;
-+	hotplug_en = I915_READ(PORT_HOTPLUG_EN);
-+	hotplug_en &= ~(CRT_HOTPLUG_MASK);
-+	hotplug_en |= CRT_HOTPLUG_FORCE_DETECT;
-+
-+	if (IS_GM45(dev))
-+		hotplug_en |= CRT_HOTPLUG_ACTIVATION_PERIOD_64;
-+
-+	hotplug_en |= CRT_HOTPLUG_VOLTAGE_COMPARE_50;
-+
-+	for (i = 0; i < tries ; i++) {
-+		unsigned long timeout;
-+		/* turn on the FORCE_DETECT */
-+		I915_WRITE(PORT_HOTPLUG_EN, hotplug_en);
-+		timeout = jiffies + msecs_to_jiffies(1000);
-+		/* wait for FORCE_DETECT to go off */
-+		do {
-+			if (!(I915_READ(PORT_HOTPLUG_EN) &
-+					CRT_HOTPLUG_FORCE_DETECT))
-+				break;
-+			msleep(1);
-+		} while (time_after(timeout, jiffies));
-+	}
+-	u32 t1, t2;
++	ktime_t  kt1, kt2;
++	s64 idle_time;
+ 	struct acpi_processor *pr;
+ 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
  
- 	if ((I915_READ(PORT_HOTPLUG_STAT) & CRT_HOTPLUG_MONITOR_MASK) ==
- 	    CRT_HOTPLUG_MONITOR_COLOR)
+@@ -871,14 +856,15 @@ static int acpi_idle_enter_c1(struct cpu
+ 		return 0;
+ 	}
+ 
+-	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++	kt1 = ktime_get_real();
+ 	acpi_idle_do_entry(cx);
+-	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++	kt2 = ktime_get_real();
++	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+ 
+ 	local_irq_enable();
+ 	cx->usage++;
+ 
+-	return ticks_elapsed_in_us(t1, t2);
++	return idle_time;
+ }
+ 
+ /**
+@@ -891,8 +877,9 @@ static int acpi_idle_enter_simple(struct
+ {
+ 	struct acpi_processor *pr;
+ 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
+-	u32 t1, t2;
+-	int sleep_ticks = 0;
++	ktime_t  kt1, kt2;
++	s64 idle_time;
++	s64 sleep_ticks = 0;
+ 
+ 	pr = __get_cpu_var(processors);
+ 
+@@ -925,18 +912,19 @@ static int acpi_idle_enter_simple(struct
+ 	if (cx->type == ACPI_STATE_C3)
+ 		ACPI_FLUSH_CPU_CACHE();
+ 
+-	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++	kt1 = ktime_get_real();
+ 	/* Tell the scheduler that we are going deep-idle: */
+ 	sched_clock_idle_sleep_event();
+ 	acpi_idle_do_entry(cx);
+-	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++	kt2 = ktime_get_real();
++	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+ 
+ #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ 	/* TSC could halt in idle, so notify users */
+ 	if (tsc_halts_in_c(cx->type))
+ 		mark_tsc_unstable("TSC halts in idle");;
+ #endif
+-	sleep_ticks = ticks_elapsed(t1, t2);
++	sleep_ticks = us_to_pm_timer_ticks(idle_time);
+ 
+ 	/* Tell the scheduler how much we idled: */
+ 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
+@@ -948,7 +936,7 @@ static int acpi_idle_enter_simple(struct
+ 
+ 	acpi_state_timer_broadcast(pr, cx, 0);
+ 	cx->time += sleep_ticks;
+-	return ticks_elapsed_in_us(t1, t2);
++	return idle_time;
+ }
+ 
+ static int c3_cpu_count;
+@@ -966,8 +954,10 @@ static int acpi_idle_enter_bm(struct cpu
+ {
+ 	struct acpi_processor *pr;
+ 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
+-	u32 t1, t2;
+-	int sleep_ticks = 0;
++	ktime_t  kt1, kt2;
++	s64 idle_time;
++	s64 sleep_ticks = 0;
++
+ 
+ 	pr = __get_cpu_var(processors);
+ 
+@@ -1034,9 +1024,10 @@ static int acpi_idle_enter_bm(struct cpu
+ 		ACPI_FLUSH_CPU_CACHE();
+ 	}
+ 
+-	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++	kt1 = ktime_get_real();
+ 	acpi_idle_do_entry(cx);
+-	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++	kt2 = ktime_get_real();
++	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+ 
+ 	/* Re-enable bus master arbitration */
+ 	if (pr->flags.bm_check && pr->flags.bm_control) {
+@@ -1051,7 +1042,7 @@ static int acpi_idle_enter_bm(struct cpu
+ 	if (tsc_halts_in_c(ACPI_STATE_C3))
+ 		mark_tsc_unstable("TSC halts in idle");
+ #endif
+-	sleep_ticks = ticks_elapsed(t1, t2);
++	sleep_ticks = us_to_pm_timer_ticks(idle_time);
+ 	/* Tell the scheduler how much we idled: */
+ 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
+ 
+@@ -1062,7 +1053,7 @@ static int acpi_idle_enter_bm(struct cpu
+ 
+ 	acpi_state_timer_broadcast(pr, cx, 0);
+ 	cx->time += sleep_ticks;
+-	return ticks_elapsed_in_us(t1, t2);
++	return idle_time;
+ }
+ 
+ struct cpuidle_driver acpi_idle_driver = {
 
