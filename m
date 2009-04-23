@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZDWHfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760364AbZDWH60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbZDWHfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZDWH2d
+	id S1760364AbZDWH60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbZDWHeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:28:33 -0400
-Received: from sous-sol.org ([216.99.217.87]:48350 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:34:46 -0400
+Received: from sous-sol.org ([216.99.217.87]:51072 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754157AbZDWH2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:28:30 -0400
-Message-Id: <20090423072308.747289590@sous-sol.org>
+	id S1757446AbZDWHeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:34:44 -0400
+Message-Id: <20090423073001.419526320@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:41 -0700
+Date: Thu, 23 Apr 2009 00:21:45 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, chrisw@redhat.com
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
-       Zhenyu Wang <zhenyu.z.wang@intel.com>
-Subject: [patch 021/100] drm/i915: only set TV mode when any property changed
+       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
+       Avi Kivity <avi@redhat.com>
+Subject: [patch 085/100] KVM: Reset PIT irq injection logic when the PIT IRQ is unmasked
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=drm-i915-only-set-tv-mode-when-any-property-changed.patch
+Content-Disposition: inline; filename=kvm-reset-pit-irq-injection-logic-when-the-pit-irq-is-unmasked.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,73 +36,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+From: Avi Kivity <avi@redhat.com>
 
-upstream commit: ebcc8f2eade76946dbb5d5c545b91f8157051aa8
+upstream commit: 4780c65904f0fc4e312ee2da9383eacbe04e61ea
 
-If there's no real property change, don't need to set TV mode again.
+While the PIT is masked the guest cannot ack the irq, so the reinject logic
+will never allow the interrupt to be injected.
 
-Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-[anholt: checkpatch.pl fix]
-Signed-off-by: Eric Anholt <eric@anholt.net>
+Fix by resetting the reinjection counters on unmask.
+
+Unbreaks Xen.
+
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/gpu/drm/i915/intel_tv.c |   27 ++++++++++++++++++++-------
- 1 file changed, 20 insertions(+), 7 deletions(-)
+ arch/x86/kvm/i8254.c |   15 +++++++++++++++
+ arch/x86/kvm/i8254.h |    1 +
+ 2 files changed, 16 insertions(+)
 
---- a/drivers/gpu/drm/i915/intel_tv.c
-+++ b/drivers/gpu/drm/i915/intel_tv.c
-@@ -1559,32 +1559,45 @@ intel_tv_set_property(struct drm_connect
- 	struct intel_output *intel_output = to_intel_output(connector);
- 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
- 	int ret = 0;
-+	bool changed = false;
- 
- 	ret = drm_connector_property_set_value(connector, property, val);
- 	if (ret < 0)
- 		goto out;
- 
--	if (property == dev->mode_config.tv_left_margin_property)
-+	if (property == dev->mode_config.tv_left_margin_property &&
-+		tv_priv->margin[TV_MARGIN_LEFT] != val) {
- 		tv_priv->margin[TV_MARGIN_LEFT] = val;
--	else if (property == dev->mode_config.tv_right_margin_property)
-+		changed = true;
-+	} else if (property == dev->mode_config.tv_right_margin_property &&
-+		tv_priv->margin[TV_MARGIN_RIGHT] != val) {
- 		tv_priv->margin[TV_MARGIN_RIGHT] = val;
--	else if (property == dev->mode_config.tv_top_margin_property)
-+		changed = true;
-+	} else if (property == dev->mode_config.tv_top_margin_property &&
-+		tv_priv->margin[TV_MARGIN_TOP] != val) {
- 		tv_priv->margin[TV_MARGIN_TOP] = val;
--	else if (property == dev->mode_config.tv_bottom_margin_property)
-+		changed = true;
-+	} else if (property == dev->mode_config.tv_bottom_margin_property &&
-+		tv_priv->margin[TV_MARGIN_BOTTOM] != val) {
- 		tv_priv->margin[TV_MARGIN_BOTTOM] = val;
--	else if (property == dev->mode_config.tv_mode_property) {
-+		changed = true;
-+	} else if (property == dev->mode_config.tv_mode_property) {
- 		if (val >= NUM_TV_MODES) {
- 			ret = -EINVAL;
- 			goto out;
- 		}
-+		if (!strcmp(tv_priv->tv_format, tv_modes[val].name))
-+			goto out;
-+
- 		tv_priv->tv_format = tv_modes[val].name;
--		intel_tv_mode_set(&intel_output->enc, NULL, NULL);
-+		changed = true;
- 	} else {
- 		ret = -EINVAL;
- 		goto out;
- 	}
- 
--	intel_tv_mode_set(&intel_output->enc, NULL, NULL);
-+	if (changed)
-+		intel_tv_mode_set(&intel_output->enc, NULL, NULL);
- out:
- 	return ret;
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -536,6 +536,16 @@ void kvm_pit_reset(struct kvm_pit *pit)
+ 	pit->pit_state.irq_ack = 1;
  }
+ 
++static void pit_mask_notifer(struct kvm_irq_mask_notifier *kimn, bool mask)
++{
++	struct kvm_pit *pit = container_of(kimn, struct kvm_pit, mask_notifier);
++
++	if (!mask) {
++		atomic_set(&pit->pit_state.pit_timer.pending, 0);
++		pit->pit_state.irq_ack = 1;
++	}
++}
++
+ struct kvm_pit *kvm_create_pit(struct kvm *kvm)
+ {
+ 	struct kvm_pit *pit;
+@@ -584,6 +594,9 @@ struct kvm_pit *kvm_create_pit(struct kv
+ 
+ 	kvm_pit_reset(pit);
+ 
++	pit->mask_notifier.func = pit_mask_notifer;
++	kvm_register_irq_mask_notifier(kvm, 0, &pit->mask_notifier);
++
+ 	return pit;
+ }
+ 
+@@ -592,6 +605,8 @@ void kvm_free_pit(struct kvm *kvm)
+ 	struct hrtimer *timer;
+ 
+ 	if (kvm->arch.vpit) {
++		kvm_unregister_irq_mask_notifier(kvm, 0,
++					       &kvm->arch.vpit->mask_notifier);
+ 		mutex_lock(&kvm->arch.vpit->pit_state.lock);
+ 		timer = &kvm->arch.vpit->pit_state.pit_timer.timer;
+ 		hrtimer_cancel(timer);
+--- a/arch/x86/kvm/i8254.h
++++ b/arch/x86/kvm/i8254.h
+@@ -45,6 +45,7 @@ struct kvm_pit {
+ 	struct kvm *kvm;
+ 	struct kvm_kpit_state pit_state;
+ 	int irq_source_id;
++	struct kvm_irq_mask_notifier mask_notifier;
+ };
+ 
+ #define KVM_PIT_BASE_ADDRESS	    0x40
 
