@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZDWA4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZDWA5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbZDWA4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 20:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZDWA43
+	id S1753844AbZDWA5z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 20:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZDWA5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 20:56:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63542 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbZDWA42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 20:56:28 -0400
-Message-ID: <49EFBCE1.5030408@cn.fujitsu.com>
-Date: Thu, 23 Apr 2009 08:57:05 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 22 Apr 2009 20:57:46 -0400
+Received: from exprod6ob114.obsmtp.com ([64.18.1.32]:34901 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751240AbZDWA5p convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 20:57:45 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, tzanussi@gmail.com,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] tracing/events: make struct trace_entry->type
- to be int type
-References: <49EEDB0E.5070207@cn.fujitsu.com> <tip-7a4f453b6d7379a7c380825949977c5a838aa012@git.kernel.org> <alpine.DEB.2.00.0904220924000.24310@gandalf.stny.rr.com> <20090422135221.GB5249@elte.hu> <alpine.DEB.2.00.0904221006440.24310@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0904221006440.24310@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] net/ipv6/sysctl_net_ipv6.c: fix sparse warnings
+Date: Wed, 22 Apr 2009 20:57:32 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090165F138@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] net/ipv6/sysctl_net_ipv6.c: fix sparse warnings
+Thread-Index: AcnDrnukgbYn+TezRf24OJyotYZPkA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 23 Apr 2009 00:57:43.0640 (UTC) FILETIME=[8268C580:01C9C3AE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 22 Apr 2009, Ingo Molnar wrote:
-> 
->> * Steven Rostedt <rostedt@goodmis.org> wrote:
->>
->>> Ingo,
->>>
->>> We need to make type 2 bytes not 4.
->> yeah, saw that - it's OK with 2 bytes too.
->>
->>> I sent out a patch to do this change last month
->>>
->>>  http://patchwork.kernel.org/patch/14573/
->> Mind resending it in your next batch of patches?
-> 
-> OK,
-> 
-> Will do ;-)
-> 
+Fix two sparse warnings in net/ipv6/sysctl_net_ipv6.c.
 
-Ah, I didn't notice that patch, and I thought ushort may be too
-small for modular TRACE_EVENT.
+Both sparse warnings are as follows:
 
+  warning: symbol 'ipv6_table' shadows an earlier one
+
+ipv6_sysctl_net_init() and ipv6_sysctl_net_exit() both use the same
+symbol name for the struct ctl_table used to do the 
+{register/unregister}_net_sysctl_table().
+
+The static symbol is only used in ipv6_sysctl_register() for the
+struct ctl_table used to do the register_net_sysctl_rotable().
+
+Rename the static symbol to ipv6_rotable to remove the sparse warnings.
+
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+
+---
+
+diff --git a/net/ipv6/sysctl_net_ipv6.c b/net/ipv6/sysctl_net_ipv6.c
+index a031034..0dc6a4e 100644
+--- a/net/ipv6/sysctl_net_ipv6.c
++++ b/net/ipv6/sysctl_net_ipv6.c
+@@ -40,7 +40,7 @@ static ctl_table ipv6_table_template[] = {
+ 	{ .ctl_name = 0 }
+ };
+ 
+-static ctl_table ipv6_table[] = {
++static ctl_table ipv6_rotable[] = {
+ 	{
+ 		.ctl_name	= NET_IPV6_MLD_MAX_MSF,
+ 		.procname	= "mld_max_msf",
+@@ -130,7 +130,7 @@ int ipv6_sysctl_register(void)
+ {
+ 	int err = -ENOMEM;
+ 
+-	ip6_header = register_net_sysctl_rotable(net_ipv6_ctl_path, ipv6_table);
++	ip6_header = register_net_sysctl_rotable(net_ipv6_ctl_path, ipv6_rotable);
+ 	if (ip6_header == NULL)
+ 		goto out;
+  
