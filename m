@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbZDWH7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZDWHds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760582AbZDWH7r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757700AbZDWHg2
+	id S1755314AbZDWHds (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZDWH1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:36:28 -0400
-Received: from sous-sol.org ([216.99.217.87]:47491 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:27:52 -0400
+Received: from sous-sol.org ([216.99.217.87]:48264 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757677AbZDWHg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:36:26 -0400
-Message-Id: <20090423073055.839821637@sous-sol.org>
+	id S1755425AbZDWH1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:27:50 -0400
+Message-Id: <20090423072319.950236137@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:53 -0700
+Date: Thu, 23 Apr 2009 00:20:43 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Marcelo Tosatti <mtosatti@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 093/100] virtio: fix suspend when using virtio_balloon
+       alan@lxorguk.ukuu.org.uk,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 023/100] SCSI: sg: fix iovec bugs introduced by the block layer conversion
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=virtio-fix-suspend-when-using-virtio_balloon.patch
+Content-Disposition: inline; filename=scsi-sg-fix-iovec-bugs-introduced-by-the-block-layer-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,32 +38,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-upstream commit: 84a139a985300901dfad99bd93c7345d180af860
+upstream commit: 0fdf96b67ac2649cc1ddb29b316a0db11586c6a8
 
-Break out of wait_event_interruptible() if freezing has been requested,
-in the vballoon thread. Without this change vballoon refuses to stop and
-the system can't suspend.
+- needs to use copy_from_user for iovec before passing it to
+blk_rq_map_user_iov().
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+- before the block layer conversion, if ->dxfer_len and sum of iovec
+disagrees, the shorter one wins. However, currently sg returns
+-EINVAL. This restores the old behavior.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Douglas Gilbert <dgilbert@interlog.com>
 Cc: stable@kernel.org
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/virtio/virtio_balloon.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/scsi/sg.c |   28 ++++++++++++++++++++++++----
+ 1 file changed, 24 insertions(+), 4 deletions(-)
 
---- a/drivers/virtio/virtio_balloon.c
-+++ b/drivers/virtio/virtio_balloon.c
-@@ -190,7 +190,8 @@ static int balloon(void *_vballoon)
- 		try_to_freeze();
- 		wait_event_interruptible(vb->config_change,
- 					 (diff = towards_target(vb)) != 0
--					 || kthread_should_stop());
-+					 || kthread_should_stop()
-+					 || freezing(current));
- 		if (diff > 0)
- 			fill_balloon(vb, diff);
- 		else if (diff < 0)
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -1673,10 +1673,30 @@ static int sg_start_req(Sg_request *srp,
+ 		md->null_mapped = hp->dxferp ? 0 : 1;
+ 	}
+ 
+-	if (iov_count)
+-		res = blk_rq_map_user_iov(q, rq, md, hp->dxferp, iov_count,
+-					  hp->dxfer_len, GFP_ATOMIC);
+-	else
++	if (iov_count) {
++		int len, size = sizeof(struct sg_iovec) * iov_count;
++		struct iovec *iov;
++
++		iov = kmalloc(size, GFP_ATOMIC);
++		if (!iov)
++			return -ENOMEM;
++
++		if (copy_from_user(iov, hp->dxferp, size)) {
++			kfree(iov);
++			return -EFAULT;
++		}
++
++		len = iov_length(iov, iov_count);
++		if (hp->dxfer_len < len) {
++			iov_count = iov_shorten(iov, iov_count, hp->dxfer_len);
++			len = hp->dxfer_len;
++		}
++
++		res = blk_rq_map_user_iov(q, rq, md, (struct sg_iovec *)iov,
++					  iov_count,
++					  len, GFP_ATOMIC);
++		kfree(iov);
++	} else
+ 		res = blk_rq_map_user(q, rq, md, hp->dxferp,
+ 				      hp->dxfer_len, GFP_ATOMIC);
+ 
 
