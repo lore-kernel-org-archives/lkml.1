@@ -1,146 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbZDWWDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbZDWWEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758274AbZDWWDg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZDWWDZ
+	id S1760197AbZDWWEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbZDWWDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:03:25 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:36469 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754980AbZDWWDY (ORCPT
+	Thu, 23 Apr 2009 18:03:50 -0400
+Received: from n23.bullet.mail.mud.yahoo.com ([68.142.206.162]:43753 "HELO
+	n23.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756216AbZDWWDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:03:24 -0400
-Date: Thu, 23 Apr 2009 23:03:19 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Valerie Aurora Henson <vaurora@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: fsync_range_with_flags() - improving sync_file_range()
-Message-ID: <20090423220319.GM13326@shareable.org>
-References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org> <20090423112105.GA1589@shareable.org> <20090423124230.GF2723@mit.edu> <20090423164330.GA9399@shareable.org> <20090423172925.GL2723@mit.edu> <20090423204411.GF13326@shareable.org> <20090423211305.GN2723@mit.edu>
+	Thu, 23 Apr 2009 18:03:49 -0400
+X-Yahoo-Newman-Id: 185510.71479.bm@omp414.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=M9o2ZOBY/hGTeJufnH/Nmbj+MLWqfJnZJ3LCanGFssxisYaeYBbjwIqRWOqvflmfLCb0VtBIwJxSu60okS7quVa5Y5qLhyS7bZuiGnKlOjQjeAxFYcxNIFeiuDBwXH/DkddXO5csIBpAjXw79iqiAbnMJ1ZMiPjaW6OHHxibmfE=  ;
+X-YMail-OSG: 6eV7JLkVM1koK6dAkASY_wTiqfPJb5ySeue6303VwJzC7inA_HJ0eCb6.q_9TNGn.slvpiHfJRTB94GDelx4PfeGJZoapid9_hThWf6K6iYVbZ7pz6Oicr5ZcuvuN_uPDBdguK5sUtF1ZmigAJImwVWsw02hw.gOQZO0GoPjWxloVrIb.mUCmlIdI9lhWF_tQnboV0SOvhOeFs36I93Vfg5p3.N0hiWyssxQq2wSvb7pFYjsV7GaPOvTldR4ER7MtyhwiWe3ql49zeELW8ElxN4XxlUFwfHQ27SdhUDbTMFyiRj3.sM-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Peter 'p2' De Schrijver" <peter.de-schrijver@nokia.com>
+Subject: Re: [PATCH] TWL4030: add function to send PB messages
+Date: Thu, 23 Apr 2009 15:03:47 -0700
+User-Agent: KMail/1.9.10
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <1240407833-28060-1-git-send-email-peter.de-schrijver@nokia.com>
+In-Reply-To: <1240407833-28060-1-git-send-email-peter.de-schrijver@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090423211305.GN2723@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200904231503.47287.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, Apr 23, 2009 at 09:44:11PM +0100, Jamie Lokier wrote:
-> > Yes that's the page I've read and didn't find useful :-)
-> > The data-locating metadata is explained thus:
-> > 
-> >      None of these operations write out the file’s metadata.
-> >      Therefore, unless the application is strictly performing
-> >      overwrites of already- instantiated disk blocks, there are no
-> >      guarantees that the data will be available after a crash.
+On Wednesday 22 April 2009, Peter 'p2' De Schrijver wrote:
+> This patch moves sending of powerbus messages to a separate function.
+
+Can you add #defines for those register offsets, and use
+those as names instead of 0x14/0x15/0x16?  And at least
+use BIT(x) instead of (1 << x).
+
+If this moves into twl4030_core.c (as I ask about elsewhere),
+those registers can just be defines local to that file.
+
+Otherwise this seems ok.
+
+
+> It also 
+> makes sure I2C access to the powerbus is enabled.
 > 
-> Well, I thought that was clear.  Today, sync_file_range(2) only works
-> if the data-localting metadata is already on the disk.  This is useful
-> for databases where the tablespace is allocated ahead of time, but not
-> much else.
-
-The text is clear to me, except for the ambiguity about whether
-"strictly performing overwrites of already-instantiated disk blocks"
-means in-place file overwrites on all filesystems, or strictly depends
-on the filesystem's disk format.
-
-It turns out "already-instantiated disk blocks" really does mean disk
-blocks and not file blocks, and that low-level dependency looks so out
-of place as generic file system call that I wondered if it was just a
-poorly worded reference to file blocks.
-
-> > But a kernel thread from Feb 2008 revealed the truth:
-> > sync_file_range() _doesn't_ commit data on such filesystems.
+> Signed-off-by: Peter 'p2' De Schrijver <peter.de-schrijver@nokia.com>
+> ---
+>  drivers/regulator/twl4030-regulator.c |   72 +++++++++++++++++++++++++++++---
+>  1 files changed, 65 insertions(+), 7 deletions(-)
 > 
-> Because we could very easily add a flag which would cause it to commit
-> the data-locating metadata blocks --- or maybe we change it so that it
-> does commit the data-locating metadata, on the assumption that if the
-> data-locating metadata is already committed, which would be true for
-> all of its existing users, it's a no-op, and if it isn't, we should
-> just comit the data-locating metadata and add a call from the existing
-> implementation to a filesystem-provided method function.
+> diff --git a/drivers/regulator/twl4030-regulator.c b/drivers/regulator/twl4030-regulator.c
+> index 472c35a..df9a94b 100644
+> --- a/drivers/regulator/twl4030-regulator.c
+> +++ b/drivers/regulator/twl4030-regulator.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/regulator/driver.h>
+>  #include <linux/regulator/machine.h>
+>  #include <linux/i2c/twl4030.h>
+> +#include <linux/delay.h>
+>  
+>  
+>  /*
+> @@ -81,6 +82,69 @@ twl4030reg_write(struct twlreg_info *info, unsigned offset, u8 value)
+>  			value, info->base + offset);
+>  }
+>  
+> +static int twl4030_wait_pb_ready(void)
+> +{
+> +
+> +	u8 pb_status;
+> +	int status, timeout = 10;
+> +
+> +	do {
+> +		status = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER,
+> +						&pb_status, 0x14);
+> +		if (status < 0)
+> +			return status;
+> +
 
-I can't think of any reason why you'd not want to commit the
-data-locating metadata, except for performance tweaking.  And that
-lives better in the kernel than the app, because it's filesystem
-dependent anyway.  And there are better ways to tweak performance - a
-good implementation of aio_fdatasync springs to mind :-)
+Worth a comment that PB_CFG.BIT(0) == PB_I2C_BUSY ... true if there's
+a word queued for the power bus, but not yet sent.  And that we assume
+no other I2C master is sending such events...
 
-> > So sync_file_range() is basically useless as a data integrity
-> > operation.  It's not a substitute for fdatasync().  Therefore why
-> > would you ever use it?
+
+> +		if (!(pb_status & 1))
+> +			return 0;
+> +
+> +		mdelay(1);
+> +		timeout--;
+> +
+> +	} while (timeout);
+> +
+> +	return -ETIMEDOUT;
+> +}
+> +
+> +static int twl4030_send_pb_msg(unsigned msg)
+> +{
+> +
+> +	u8 pb_state;
+> +	int status;
+> +
+> +	/* save powerbus configuration */
+> +	status = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER,
+> +					&pb_state, 0x14);
+> +	if (status < 0)
+> +		return status;
+> +
+> +	/* Enable I2C access to powerbus */
+> +	status = twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER,
+> +					pb_state | (1<<1), 0x14);
+> +	if (status < 0)
+> +		return status;
+> +
+> +	status = twl4030_wait_pb_ready();
+
+I'd probably combine wait_pb_ready() with this; not that
+this is wrong, but you should only need to set BIT(1) once,
+and there's no need to re-read that byte to test BIT(0).
+
+Minor point ... I hate needless I/O.  This isn't a critical
+path though.
+
+
+> +	if (status < 0)
+> +		return status;
+> +
+> +	status = twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, msg >> 8,
+> +			0x15 /* PB_WORD_MSB */);
+> +	if (status < 0)
+> +		return status;
+> +
+> +	status = twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, msg & 0xff,
+> +			0x16 /* PB_WORD_LSB */);
+> +	if (status < 0)
+> +		return status;
+> +
+> +	status = twl4030_wait_pb_ready();
+> +	if (status < 0)
+> +		return status;
+> +
+> +	/* Restore powerbus configuration */
+> +	return twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, pb_state, 0x14);
+> +}
+> +
+>  /*----------------------------------------------------------------------*/
+>  
+>  /* generic power resource operations, which work on all regulators */
+> @@ -177,13 +241,7 @@ static int twl4030reg_set_mode(struct regulator_dev *rdev, unsigned mode)
+>  	if (!(status & (P3_GRP | P2_GRP | P1_GRP)))
+>  		return -EACCES;
+>  
+> -	status = twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER,
+> -			message >> 8, 0x15 /* PB_WORD_MSB */ );
+> -	if (status >= 0)
+> -		return status;
+> -
+> -	return twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER,
+> -			message, 0x16 /* PB_WORD_LSB */ );
+> +	return twl4030_send_pb_msg(message);
+>  }
+>  
+>  /*----------------------------------------------------------------------*/
+> -- 
+> 1.5.6.3
 > 
-> It's not useful *today*.  But we could make it useful.  The power of
-> the existing bit flags is useful, although granted it can be confusing
-> for the users who aren't haven't meditated deeply upon the writeback
-> code paths.  I thought it was clear, but if it isn't we can improve
-> the documentation.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> More to the point, given that we already have sync_file_range(2), I
-> would argue that it would be unfortunate to create a new system call
-> that has overlapping functionality but which is not a superset of
-> sync_file_range(2).  Maybe Nick has a good reason for starting with an
-> entirely new system call, but if so, it would be nice if it at least
-> have the power of sync_file_range(2), in addition to having new
-> functionality.
-
-I agree on all these points.  There might be slight improvements
-possible to the API, such as multiple ranges, but most things should
-be doable with new flags.
-
-I'm not sure what "power" sync_file_range has over fsync_range.  I
-used to think it must be better because you can separate out the
-phases and let the application be clever.  But since it can block
-arbitrarily with none of the WAIT flags set, and since you can request
-range writeout with fadvise() anyway, I'm not seeing any extra
-expressive power in its current form.
-
-> > I suspect all the fsync-related uncertainty about whether it really
-> > works, including interactions with filesystem quirks, reliable and
-> > potential bugs in filesystems, would be much easier to get right if we
-> > only had a way to repeatably test it.
 > 
-> The answer today is sync_file_range(2) is purely a creature of the MM
-> subsystem, and doesn't do anything with respect to filesystem metadata
-> or barriers.  Once you understand that, the rest of the man page is
-> pretty simple, I think.  :-)   
 
-Heh.  If only I knew the MM subsystem well enough to understand it
-then :-)  Right now, with all those writeback hooks, I'm not sure if
-sync_file_range results in data-locating metadata being sync'd on, say,
-Btrfs or not :-)
 
-> > I'm thinking running a kernel inside a VM invoked and
-> > stopped/killed/branched is the only realistic way to test that all
-> > data is committed properly, with/without necessary I/O barriers, and
-> > recovers properly after a crash and resume.  Fortunately we have good
-> > VMs now, such a test seems very doable.  It would help with testing
-> > journalling & recovery behaviour too.
-> > 
-> > Is there such a test or related tool already?
-> 
-> I don't know of one.  I agree it would be a useful thing to have.  It
-> won't test barriers at the driver level, but it would be good for
-> testing the everything above that.
 
-With a VM like QEMU/KVM it would be quite easy to test barriers at the
-driver level too, including SCSI and ATA.  To thoroughly test, you
-could simulate an infinitely large drive cache, flushed to the backing
-file only on barrier requests.  To avoid lots of reboots, just take
-lots of snapshots without stopping the guest and check the snapshots
-while the test continues.  Nowadays you can make snapshots appear as
-block devices in the host kernel for fscking and looking at the
-contents.
-
-Hmm.  Looks like that harness could also test your rename-over logic
-in ext3, test that journalling works in general, and to test userspace
-such as databases always call fsync (or sync_file_range) at the right
-times.  Hmm.
-
--- Jamie
