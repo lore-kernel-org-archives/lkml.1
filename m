@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbZDWWJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760719AbZDWWKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760068AbZDWWJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbZDWWJ1
+	id S1760719AbZDWWKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZDWWKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:09:27 -0400
-Received: from yoda.london.02.net ([82.132.130.151]:44116 "EHLO mail.o2.co.uk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756961AbZDWWJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:09:26 -0400
-X-Greylist: delayed 354 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 18:09:26 EDT
-Message-ID: <49F0E58D.4050201@f2s.com>
-Date: Thu, 23 Apr 2009 23:02:53 +0100
-From: Bernd Porr <BerndPorr@f2s.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 23 Apr 2009 18:10:35 -0400
+Received: from bay0-omc3-s31.bay0.hotmail.com ([65.54.246.231]:22534 "EHLO
+	bay0-omc3-s31.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752455AbZDWWKf convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 18:10:35 -0400
+X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 18:10:34 EDT
+Message-ID: <BAY109-W38D2EA5A4AC1AC4BA23193C3750@phx.gbl>
+X-Originating-IP: [96.253.143.103]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <andi@firstfloor.org>, <macro@linux-mips.org>, <mingo@elte.hu>,
+       <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
+Subject: RE: I/O APIC: Timer through 8259A revamp
+Date: Thu, 23 Apr 2009 15:04:24 -0700
+Importance: Normal
+In-Reply-To: <20090423180419.GT13896@one.firstfloor.org>
+References: <fa.LVGNb1leZ16O2EUrcLYbCwtL9mc@ifi.uio.no>
+ <fa.DPrbiibT7M43HJi+nTdM88e1eOQ@ifi.uio.no>
+ <fa.p4mWFgWCFwhnKR83MseIShfc6uQ@ifi.uio.no>
+ <fb0aeafb-a24b-413f-8d74-19c28de7faff@u9g2000pre.googlegroups.com>
+ <20090423180419.GT13896@one.firstfloor.org>
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: David Woodhouse <dwmw2@infradead.org>, maximilian attems <max@stro.at>,
-       "Christopher J. Harrer" <charrer@alacritech.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] linux-firmware updates
-References: <20090422233828.GA17239@kroah.com>
-In-Reply-To: <20090422233828.GA17239@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Apr 2009 22:04:25.0369 (UTC) FILETIME=[76F84890:01C9C45F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, Greg.
 
-/Bernd
+> I'm not sure what you mean here. The ATI timer fixes were done
+> on both i386 and x86-64.
+See this thread:
+http://lkml.org/lkml/2006/2/28/256
 
-www:    http://www.berndporr.me.uk/
-         http://www.linux-usb-daq.co.uk/
-Mobile: +44 (0)7840 340069
-Work:   +44 (0)141 330 5237
-         University of Glasgow
-         Department of Electronics & Electrical Engineering
-         Room 519, Rankine Building, Oakfield Avenue,
-         Glasgow, G12 8LT
+Yuhong Bao
 
-
-Greg KH wrote:
-> The following changes since commit a1b8f9ee2c559adc85a3a87e8352f451ad4747b4:
->   David Woodhouse (1):
->         Merge branch 'master' of http://git.decadent.org.uk/git/linux-firmware
-> 
-> are available in the git repository at:
-> 
->   gregkh@master.kernel.org:/pub/scm/linux/kernel/git/gregkh/linux-firmware.git gregkh
-> 
-> Bernd Porr (2):
->       Add usbdux firmware
->       Add the source code for the usbdux firmware
-> 
-> maximilian attems (1):
->       Alacritech: reword firmware license to be distributable
-> 
->  WHENCE                         |   16 +-
->  usbdux/Makefile_dux            |   19 +
->  usbdux/README.dux              |   15 +
->  usbdux/fx2-include.asm         |  164 ++++++
->  usbdux/usbdux_firmware.asm     | 1184 ++++++++++++++++++++++++++++++++++++++++
->  usbdux/usbduxfast_firmware.asm |  547 +++++++++++++++++++
->  usbdux_firmware.bin            |  Bin 0 -> 1770 bytes
->  usbduxfast_firmware.bin        |  Bin 0 -> 999 bytes
->  8 files changed, 1941 insertions(+), 4 deletions(-)
->  create mode 100644 usbdux/Makefile_dux
->  create mode 100644 usbdux/README.dux
->  create mode 100644 usbdux/fx2-include.asm
->  create mode 100644 usbdux/usbdux_firmware.asm
->  create mode 100644 usbdux/usbduxfast_firmware.asm
->  create mode 100644 usbdux_firmware.bin
->  create mode 100644 usbduxfast_firmware.bin
-> 
+_________________________________________________________________
+Create a cool, new character for your Windows Live™ Messenger.
+http://go.microsoft.com/?linkid=9656621
