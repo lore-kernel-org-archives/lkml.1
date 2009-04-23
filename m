@@ -1,43 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757809AbZDWRpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZDWRwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757809AbZDWRpV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 13:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbZDWRpF
+	id S1757980AbZDWRwf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 13:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZDWRw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 13:45:05 -0400
-Received: from yw-out-2122.google.com ([74.125.46.27]:26711 "EHLO
-	yw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384AbZDWRpE convert rfc822-to-8bit (ORCPT
+	Thu, 23 Apr 2009 13:52:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:38105 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751782AbZDWRwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 13:45:04 -0400
+	Thu, 23 Apr 2009 13:52:25 -0400
+Date: Thu, 23 Apr 2009 13:52:22 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
+In-Reply-To: <49F09C35.1080006@goop.org>
+Message-ID: <alpine.DEB.2.00.0904231311090.24293@gandalf.stny.rr.com>
+References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <alpine.DEB.2.00.0904222200350.24310@gandalf.stny.rr.com> <20090423082031.GA599@elte.hu>
+ <alpine.DEB.2.00.0904230935060.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com> <49F09C35.1080006@goop.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Thu, 23 Apr 2009 10:45:03 -0700 (PDT)
-In-Reply-To: <fa.p4mWFgWCFwhnKR83MseIShfc6uQ@ifi.uio.no>
-X-IP: 164.116.126.146
-References: <fa.LVGNb1leZ16O2EUrcLYbCwtL9mc@ifi.uio.no> <fa.DPrbiibT7M43HJi+nTdM88e1eOQ@ifi.uio.no> 
-	<fa.p4mWFgWCFwhnKR83MseIShfc6uQ@ifi.uio.no>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_6; en-us) 
-	AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.2 Safari/525.20.1,gzip(gfe),gzip(gfe)
-Message-ID: <fb0aeafb-a24b-413f-8d74-19c28de7faff@u9g2000pre.googlegroups.com>
-Subject: Re: I/O APIC: Timer through 8259A revamp
-From: yuhong <yuhongbao_386@hotmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  The new burst of breakage came with the invention of ACPI and its tables
-> for interrupt routing for the APIC.
-Yep, when NVIDIA and ATI entered the chipset market, who would have
-predicted that it would cause more 8254 and APIC related troubles? Or
-it would be years before it were finally fixed properly? Even worse,
-ATI made chipsets before AMD and Intel introduced their 64-bit CPUs,
-yet it was the x86-64 architecture where the attempts to fix the ATI
-APIC 8254 timer issues were going to. Only later when it was finally
-fixed properly was it backported to x86.
+
+On Thu, 23 Apr 2009, Jeremy Fitzhardinge wrote:
+
+> Steven Rostedt wrote:
+> > Ah, this is a lockdep thing.
+> > 
+> > The raw_local_irq_save/restore in __native_flush_tlb_global does not update
+> > hardirqs_enabled.
+> > 
+> > When we call into ftrace, when we cross page bounderies, we disable
+> > interrupts using the normal local_irq_save/restore calls.
+> > 
+> > But when we restore, it detects that interrupts are not going to be enabled,
+> > and keeps hardirqs_enabled off.
+> > 
+> > The printk solved the issue because it called local_irq_restore, which set
+> > the variable back.
+> > 
+> > I guess there's two solutions here. One, we can change the
+> > raw_local_irq_enable/disable variants in __native_flush_tlb_global to the
+> > non-raw type (it should protect against recursion).
+> > 
+> > or we can try to make the ring buffer use the raw_local_irq variants too. I
+> > tried this once before, and it did cause issues.
+> > 
+> > Note, there's a "check_flags" in lockdep, but it is only called on locking,
+> > it is not called when we only disable/enable interrupts.
+> >   
+> 
+> OK, the good news is that its not a callee-save calling convention problem,
+> which is what I feared.  But it does sound pretty awkward to fix.  Does
+> __native_flush_tlb_global() have to use raw_local_irq_save/restore?
+
+No, I just investigated (and booted) without the raw versions (using the 
+normal disable instead). The hooks just update variables in the task 
+struct. I see no reason to have use it.
+
+I use to use it with ftrace, but I found that issues are caused if ftrace 
+called something internal that used local_irq_save.
+
+Perhaps that is the issue. If something uses raw_local_irq_save then calls 
+flush_tlb_global you might get a problem with the flags again (like we did 
+here). But the only user of raw_* should be lockdep and irqsoff, and they 
+should be able to deal with recursion. I don't think there should be any 
+other user.
+
+-- Steve
+
