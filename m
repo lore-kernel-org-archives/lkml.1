@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZDWRc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZDWRhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZDWRc0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 13:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbZDWRcQ
+	id S1756211AbZDWRhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 13:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZDWRg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 13:32:16 -0400
-Received: from proxima.lp0.eu ([81.2.80.65]:54554 "EHLO proxima.lp0.eu"
+	Thu, 23 Apr 2009 13:36:59 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:54636 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754489AbZDWRcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 13:32:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
-	b=M9HWTxLFSMvFNz0DmaY2DhCuG1StYCKTLydIO1vb2yfE3dPHhVEStbNTm8eaZDx1/s7ZavWaakV+NcyKrJ9iex/RCkaOUetye4kjcGDtNFEIZi7npPCmK0Zne8yaY5wX;
-Message-ID: <49F0A61D.1010002@simon.arlott.org.uk>
-Date: Thu, 23 Apr 2009 18:32:13 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Linux DVB <linux-dvb@linuxtv.org>
-Subject: [PATCH] dvb-core: Fix potential mutex_unlock without mutex_lock in
- dvb_dvr_read
-Content-Type: text/plain; charset=UTF-8
+	id S1752446AbZDWRg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 13:36:58 -0400
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090423095821.GA25102@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+	 <1240416791.10627.78.camel@nimitz> <20090422171151.GF15367@csn.ul.ie>
+	 <1240421415.10627.93.camel@nimitz> <20090423001311.GA26643@csn.ul.ie>
+	 <1240450447.10627.119.camel@nimitz>  <20090423095821.GA25102@csn.ul.ie>
+Content-Type: text/plain
+Date: Thu, 23 Apr 2009 10:36:50 -0700
+Message-Id: <1240508211.10627.139.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dvb_dvr_read may unlock the dmxdev mutex and return -ENODEV,
-except this function is a file op and will never be called
-with the mutex held.
+On Thu, 2009-04-23 at 10:58 +0100, Mel Gorman wrote:
+> > How about this:  I'll go and audit the use of order in page_alloc.c to
+> > make sure that having an order>MAX_ORDER-1 floating around is OK and
+> > won't break anything. 
+> 
+> Great. Right now, I think it's ok but I haven't audited for this
+> explicily and a second set of eyes never hurts.
 
-There's existing mutex_lock and mutex_unlock around the actual
-read but it's commented out. These should probably be uncommented
-but the read blocks and this could block another non-blocking
-reader on the mutex instead.
+OK, after looking through this, I have a couple of ideas.  One is that
+we do the MAX_ORDER check in __alloc_pages_internal(), but *after* the
+first call to get_page_from_freelist().  That's because I'm worried if
+we ever got into the reclaim code with a >MAX_ORDER 'order'.  Such as:
 
-This change comments out the extra mutex_unlock.
+void wakeup_kswapd(struct zone *zone, int order)
+{
+...
+        if (pgdat->kswapd_max_order < order)
+                pgdat->kswapd_max_order = order;
+        if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+                return;
+        if (!waitqueue_active(&pgdat->kswapd_wait))
+                return;
+        wake_up_interruptible(&pgdat->kswapd_wait);
+}
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
----
-This has been on my TODO list for far too long... I did come
-up with a mutex_trylock/mutex_lock_interruptible version but
-claiming that it'll block when it may not doesn't make sense
-(and any blocking read would cause all non-blocking reads to
-continually return -EWOULDBLOCK until there is data).
+unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+                                gfp_t gfp_mask, nodemask_t *nodemask)
+{
+        struct scan_control sc = {
+...
+                .order = order,
+                .mem_cgroup = NULL,
+                .isolate_pages = isolate_pages_global,
+                .nodemask = nodemask,
+        };
 
- drivers/media/dvb/dvb-core/dmxdev.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+        return do_try_to_free_pages(zonelist, &sc);
+}
 
-diff --git a/drivers/media/dvb/dvb-core/dmxdev.c b/drivers/media/dvb/dvb-core/dmxdev.c
-index c35fbb8..d6d098a 100644
---- a/drivers/media/dvb/dvb-core/dmxdev.c
-+++ b/drivers/media/dvb/dvb-core/dmxdev.c
-@@ -247,7 +247,7 @@ static ssize_t dvb_dvr_read(struct file *file, char __user *buf, size_t count,
- 	int ret;
+This will keep us only checking 'order' once for each
+alloc_pages_internal() call.  It is an extra branch, but it is out of
+the really, really hot path since we're about to start reclaim here
+anyway.
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index e2f2699..1e3a01e 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1498,6 +1498,13 @@ restart:
+ 			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+ 	if (page)
+ 		goto got_pg;
++	/*
++	 * We're out of the rocket-hot area above, so do a quick sanity
++	 * check.  We do this here to avoid ever trying to do any reclaim
++	 * of >=MAX_ORDER areas which can never succeed, of course.
++	 */
++	if (order >= MAX_ORDER)
++		goto nopage;
  
- 	if (dmxdev->exit) {
--		mutex_unlock(&dmxdev->mutex);
-+		//mutex_unlock(&dmxdev->mutex);
- 		return -ENODEV;
- 	}
- 
--- 
-1.6.2.2
+ 	/*
+ 	 * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
 
--- 
-Simon Arlott
+
+-- Dave
+
