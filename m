@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759527AbZDWPId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbZDWPIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759527AbZDWPId (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759488AbZDWPH7
+	id S1759561AbZDWPIw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759473AbZDWPI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:07:59 -0400
-Received: from mga07.intel.com ([143.182.124.22]:58462 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759477AbZDWPH6 (ORCPT
+	Thu, 23 Apr 2009 11:08:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34318 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759517AbZDWPIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:07:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,236,1239001200"; 
-   d="scan'208";a="135036172"
-Message-ID: <49F08447.9040003@linux.intel.com>
-Date: Thu, 23 Apr 2009 08:07:51 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 23 Apr 2009 11:08:25 -0400
+Date: Thu, 23 Apr 2009 11:08:22 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
+In-Reply-To: <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com>
+References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <alpine.DEB.2.00.0904222200350.24310@gandalf.stny.rr.com> <20090423082031.GA599@elte.hu>
+ <alpine.DEB.2.00.0904230935060.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Johannes Weiner <hannes@cmpxchg.org>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, akpm@osdl.org
-Subject: Re: [PATCH] Eliminate thousands of warnings in WARN_ON with gcc 3.2
- build
-References: <20090422221134.GA1753@basil.nowhere.org> <20090423120219.GA23479@cmpxchg.org> <20090423122327.GN13896@one.firstfloor.org> <20090423143859.GA20453@cmpxchg.org> <20090423151024.GO13896@one.firstfloor.org>
-In-Reply-To: <20090423151024.GO13896@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Thu, Apr 23, 2009 at 04:38:59PM +0200, Johannes Weiner wrote:
->>> +void warn_slowpath_null(const char *file, int line)
->>> +{
->>> +	warn_slowpath_fmt(file, line, (const char *) { 0 });
->>> +}
->>> +EXPORT_SYMBOL(warn_slowpath_null);
->> I would WTF here without knowing the warning.  Can you add a comment?
->>
->> Otherwise, Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+
+On Thu, 23 Apr 2009, Steven Rostedt wrote:
 > 
-> Ok version with comment.
+> static inline void __native_flush_tlb_global(void)
+> {
+>         unsigned long flags;
+>         unsigned long cr4;
+> 
+>         /*
+>          * Read-modify-write to CR4 - protect it from preemption and
+>          * from interrupts. (Use the raw variant because this code can
+>          * be called from deep inside debugging code.)
+>          */
+>         raw_local_irq_save(flags);
+> 
+>         cr4 = read_cr4();
+>         /* clear PGE */
+>         write_cr4(cr4 & ~X86_CR4_PGE);
+>         /* write old PGE again and flush TLBs */
+>         write_cr4(cr4);
+> 
+>         raw_local_irq_restore(flags);
+> }
+> 
+> 
+> Each of those read_cr4 and write_cr4 can be traced. But I still do not see 
+> how this can cause corruption in the current task struct.
+> 
+> The TLB just caches the pages we are using, not the contents inside. I 
+> still do not see how this can corrupt a bit. Unless a register leaked :-/
 
-Makes sense if we plan to keep gcc 3.2 supported; if we plan to drop it then we shouldn't bother.
+Ah, this is a lockdep thing.
 
-Anyway
+The raw_local_irq_save/restore in __native_flush_tlb_global does not 
+update hardirqs_enabled.
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+When we call into ftrace, when we cross page bounderies, we disable 
+interrupts using the normal local_irq_save/restore calls.
+
+But when we restore, it detects that interrupts are not going to be 
+enabled, and keeps hardirqs_enabled off.
+
+The printk solved the issue because it called local_irq_restore, which set 
+the variable back.
+
+I guess there's two solutions here. One, we can change the 
+raw_local_irq_enable/disable variants in __native_flush_tlb_global to the 
+non-raw type (it should protect against recursion).
+
+or we can try to make the ring buffer use the raw_local_irq variants too. 
+I tried this once before, and it did cause issues.
+
+Note, there's a "check_flags" in lockdep, but it is only called on 
+locking, it is not called when we only disable/enable interrupts.
+
+-- Steve
 
