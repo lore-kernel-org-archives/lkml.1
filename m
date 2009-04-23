@@ -1,324 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbZDWJlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZDWJnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759AbZDWJlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 05:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZDWJlk
+	id S1755990AbZDWJnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 05:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZDWJnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 05:41:40 -0400
-Received: from mga03.intel.com ([143.182.124.21]:51121 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753387AbZDWJli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 05:41:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,235,1239001200"; 
-   d="scan'208";a="134916520"
-From: "Shi, Alex" <alex.shi@intel.com>
-To: "Shi, Alex" <alex.shi@intel.com>, Chris Wright <chrisw@sous-sol.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>
-CC: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       Len Brown <lenb@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-Date: Thu, 23 Apr 2009 17:40:24 +0800
-Subject: RE: [patch 012/100] acpi: fix of pmtimer overflow that make Cx
- states time incorrect
-Thread-Topic: [patch 012/100] acpi: fix of pmtimer overflow that make Cx
- states time incorrect
-Thread-Index: AcnD5FbKB7gAH/4zQmKRfSxbbBMdKQAELJZgAACEMNA=
-Message-ID: <F7C8A4D3A9905B45A80E4C194793FA6501D2FC03A1@PDSMSX501.ccr.corp.intel.com>
-References: <20090423072020.428683652@sous-sol.org>
- <20090423072212.535803819@sous-sol.org> 
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
+	Thu, 23 Apr 2009 05:43:14 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:24359 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754062AbZDWJnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 05:43:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cw75ydPJYcL9EFedpXbRvgaIKsbe/zy9tXo3D9YKkNxo4wfVQOtQr4qe6NN1xkTiRv
+         xy+eP9wv4SMZ16bhoIStsp/4WlhR1dX6ynwmjvyJqc4YoXGIW4nuon01x31JWTEj1XGw
+         yx+66JcPDHbe4WLgFNUG+tghXqog7xK2LPlrM=
+Message-ID: <49F0382A.6050306@panasas.com>
+Date: Thu, 23 Apr 2009 12:43:06 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Christoph Hellwig <hch@infradead.org>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: [PATCH UPDATED 09/14] block: clean up request completion API
+References: <1240331881-28218-1-git-send-email-tj@kernel.org> <1240331881-28218-10-git-send-email-tj@kernel.org> <20090421175919.GA11671@infradead.org> <49EFC360.3010109@kernel.org> <49EFCD82.4050000@gmail.com>
+In-Reply-To: <49EFCD82.4050000@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n3N9fvqu020680
 
-Update: 
-Len Brown's patch may fix this bug.
-http://bugzilla.kernel.org/show_bug.cgi?id=13087#c41 
+On 04/23/2009 05:08 AM, Tejun Heo wrote:
+> Request completion has gone through several changes and became a bit
+> messy over the time.  Clean it up.
+> 
+> 1. end_that_request_data() is a thin wrapper around
+>    end_that_request_data_first() which checks whether bio is NULL
+>    before doing anything and handles bidi completion.
+>    blk_update_request() is a thin wrapper around
+>    end_that_request_data() which clears nr_sectors on the last
+>    iteration but doesn't use the bidi completion.
+> 
+>    Clean it up by moving the initial bio NULL check and nr_sectors
+>    clearing on the last iteration into end_that_request_data() and
+>    renaming it to blk_update_request(), which makes blk_end_io() the
+>    only user of end_that_request_data().  Collapse
+>    end_that_request_data() into blk_end_io().
+> 
+> 2. There are four visible completion variants - blk_end_request(),
+>    __blk_end_request(), blk_end_bidi_request() and end_request().
+>    blk_end_request() and blk_end_bidi_request() uses blk_end_request()
+>    as the backend but __blk_end_request() and end_request() use
+>    separate implementation in __blk_end_request() due to different
+>    locking rules.
+> 
+>    blk_end_bidi_request() is identical to blk_end_io().  Collapse
+>    blk_end_io() into blk_end_bidi_request(), separate out request
+>    update into internal helper blk_update_bidi_request() and add
+>    __blk_end_bidi_request().  Redefine [__]blk_end_request() as thin
+>    inline wrappers around [__]blk_end_bidi_request().
+> 
+> 3. As the whole request issue/completion usages are about to be
+>    modified and audited, it's a good chance to convert completion
+>    functions return bool which better indicates the intended meaning
+>    of return values.
+> 
+> 4. The function name end_that_request_last() is from the days when it
+>    was a public interface and slighly confusing.  Give it a proper
+>    internal name - blk_finish_request().
+> 
+> 5. Add description explaning that blk_end_bidi_request() can be safely
+>    used for uni requests as suggested by Boaz Harrosh.
+> 
+> The only visible behavior change is from #1.  nr_sectors counts are
+> cleared after the final iteration no matter which function is used to
+> complete the request.  I couldn't find any place where the code
+> assumes those nr_sectors counters contain the values for the last
+> segment and this change is good as it makes the API much more
+> consistent as the end result is now same whether a request is
+> completed using [__]blk_end_request() alone or in combination with
+> blk_update_request().
+> 
+> API further cleaned up per Christoph's suggestion.
+> 
 
-Alex 
+Rrrr.
 
->-----Original Message-----
->From: Shi, Alex
->Sent: 2009ƒÍ4‘¬23»’ 17:25
->To: 'Chris Wright'; linux-kernel@vger.kernel.org; stable@kernel.org
->Cc: Justin Forbes; Zwane Mwaikambo; Theodore Ts'o; Randy Dunlap; Dave Jones;
->Chuck Wolber; Chris Wedgwood; Michael Krufky; Chuck Ebbert; Domenico Andreoli;
->Willy Tarreau; Rodrigo Rubira Branco; Jake Edge; Eugene Teo;
->torvalds@linux-foundation.org; akpm@linux-foundation.org;
->alan@lxorguk.ukuu.org.uk; Len Brown; linux-acpi@vger.kernel.org; Pallipadi,
->Venkatesh; Zhao, Yakui; Brown, Len
->Subject: RE: [patch 012/100] acpi: fix of pmtimer overflow that make Cx states
->time incorrect
->
->It was reported make some latop booting hang. and is not root caused now. :(
->http://bugzilla.kernel.org/show_bug.cgi?id=13087
->
->Alex
->>-----Original Message-----
->>From: Chris Wright [mailto:chrisw@sous-sol.org]
->>Sent: 2009ƒÍ4‘¬23»’ 15:21
->>To: linux-kernel@vger.kernel.org; stable@kernel.org
->>Cc: Justin Forbes; Zwane Mwaikambo; Theodore Ts'o; Randy Dunlap; Dave Jones;
->>Chuck Wolber; Chris Wedgwood; Michael Krufky; Chuck Ebbert; Domenico Andreoli;
->>Willy Tarreau; Rodrigo Rubira Branco; Jake Edge; Eugene Teo;
->>torvalds@linux-foundation.org; akpm@linux-foundation.org;
->>alan@lxorguk.ukuu.org.uk; Len Brown; linux-acpi@vger.kernel.org; Shi, Alex;
->>Pallipadi, Venkatesh; Zhao, Yakui; Brown, Len
->>Subject: [patch 012/100] acpi: fix of pmtimer overflow that make Cx states time
->>incorrect
->>
->>-stable review patch.  If anyone has any objections, please let us know.
->>---------------------
->>
->>From: alex.shi <alex.shi@intel.com>
->>
->>upstream commit: ff69f2bba67bd45514923aaedbf40fe351787c59
->>
->>We found Cx states time abnormal in our some of machines which have 16
->>LCPUs, the C0 take too many time while system is really idle when kernel
->>enabled tickless and highres.  powertop output is below:
->>
->>     PowerTOP version 1.9       (C) 2007 Intel Corporation
->>
->>Cn                Avg residency       P-states (frequencies)
->>C0 (cpu running)        (40.5%)         2.53 Ghz     0.0%
->>C1                0.0ms ( 0.0%)         2.53 Ghz     0.0%
->>C2              128.8ms (59.5%)         2.40 Ghz     0.0%
->>                                        1.60 Ghz   100.0%
->>
->>Wakeups-from-idle per second :  4.7     interval: 20.0s
->>no ACPI power usage estimate available
->>
->>Top causes for wakeups:
->>  41.4% ( 24.9)       <interrupt> : extra timer interrupt
->>  20.2% ( 12.2)     <kernel core> : usb_hcd_poll_rh_status
->>(rh_timer_func)
->>
->>After tacking detailed for this issue, Yakui and I find it is due to 24
->>bit PM timer overflows when some of cpu sleep more than 4 seconds.  With
->>tickless kernel, the CPU want to sleep as much as possible when system
->>idle.  But the Cx sleep time are recorded by pmtimer which length is
->>determined by BIOS.  The current Cx time was gotten in the following
->>function from driver/acpi/processor_idle.c:
->>
->>static inline u32 ticks_elapsed(u32 t1, u32 t2)
->>{
->>       if (t2 >= t1)
->>               return (t2 - t1);
->>       else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
->>               return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
->>       else
->>               return ((0xFFFFFFFF - t1) + t2);
->>}
->>
->>If pmtimer is 24 bits and it take 5 seconds from t1 to t2, in above
->>function, just about 1 seconds ticks was recorded.  So the Cx time will be
->>reduced about 4 seconds.  and this is why we see above powertop output.
->>
->>To resolve this problem, Yakui and I use ktime_get() to record the Cx
->>states time instead of PM timer as the following patch.  the patch was
->>tested with i386/x86_64 modes on several platforms.
->>
->>Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->>Tested-by: Alex Shi <alex.shi@intel.com>
->>Signed-off-by: Alex Shi <alex.shi@intel.com>
->>Signed-off-by: Yakui.zhao <yakui.zhao@intel.com>
->>Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->>Signed-off-by: Len Brown <len.brown@intel.com>
->>Signed-off-by: Chris Wright <chrisw@sous-sol.org>
->>---
->> drivers/acpi/processor_idle.c |   63
->>++++++++++++++++++------------------------
->> 1 file changed, 27 insertions(+), 36 deletions(-)
->>
->>--- a/drivers/acpi/processor_idle.c
->>+++ b/drivers/acpi/processor_idle.c
->>@@ -64,7 +64,6 @@
->> #define _COMPONENT              ACPI_PROCESSOR_COMPONENT
->> ACPI_MODULE_NAME("processor_idle");
->> #define ACPI_PROCESSOR_FILE_POWER	"power"
->>-#define US_TO_PM_TIMER_TICKS(t)		((t * (PM_TIMER_FREQUENCY/1000)) /
->>1000)
->> #define PM_TIMER_TICK_NS		(1000000000ULL/PM_TIMER_FREQUENCY)
->> #define C2_OVERHEAD			1	/* 1us */
->> #define C3_OVERHEAD			1	/* 1us */
->>@@ -78,6 +77,10 @@ module_param(nocst, uint, 0000);
->> static unsigned int latency_factor __read_mostly = 2;
->> module_param(latency_factor, uint, 0644);
->>
->>+static s64 us_to_pm_timer_ticks(s64 t)
->>+{
->>+	return div64_u64(t * PM_TIMER_FREQUENCY, 1000000);
->>+}
->> /*
->>  * IBM ThinkPad R40e crashes mysteriously when going into C2 or C3.
->>  * For now disable this. Probably a bug somewhere else.
->>@@ -159,25 +162,6 @@ static struct dmi_system_id __cpuinitdat
->> 	{},
->> };
->>
->>-static inline u32 ticks_elapsed(u32 t1, u32 t2)
->>-{
->>-	if (t2 >= t1)
->>-		return (t2 - t1);
->>-	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
->>-		return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
->>-	else
->>-		return ((0xFFFFFFFF - t1) + t2);
->>-}
->>-
->>-static inline u32 ticks_elapsed_in_us(u32 t1, u32 t2)
->>-{
->>-	if (t2 >= t1)
->>-		return PM_TIMER_TICKS_TO_US(t2 - t1);
->>-	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
->>-		return PM_TIMER_TICKS_TO_US(((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
->>-	else
->>-		return PM_TIMER_TICKS_TO_US((0xFFFFFFFF - t1) + t2);
->>-}
->>
->> /*
->>  * Callers should disable interrupts before the call and enable
->>@@ -853,7 +837,8 @@ static inline void acpi_idle_do_entry(st
->> static int acpi_idle_enter_c1(struct cpuidle_device *dev,
->> 			      struct cpuidle_state *state)
->> {
->>-	u32 t1, t2;
->>+	ktime_t  kt1, kt2;
->>+	s64 idle_time;
->> 	struct acpi_processor *pr;
->> 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
->>
->>@@ -871,14 +856,15 @@ static int acpi_idle_enter_c1(struct cpu
->> 		return 0;
->> 	}
->>
->>-	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->>+	kt1 = ktime_get_real();
->> 	acpi_idle_do_entry(cx);
->>-	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->>+	kt2 = ktime_get_real();
->>+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
->>
->> 	local_irq_enable();
->> 	cx->usage++;
->>
->>-	return ticks_elapsed_in_us(t1, t2);
->>+	return idle_time;
->> }
->>
->> /**
->>@@ -891,8 +877,9 @@ static int acpi_idle_enter_simple(struct
->> {
->> 	struct acpi_processor *pr;
->> 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
->>-	u32 t1, t2;
->>-	int sleep_ticks = 0;
->>+	ktime_t  kt1, kt2;
->>+	s64 idle_time;
->>+	s64 sleep_ticks = 0;
->>
->> 	pr = __get_cpu_var(processors);
->>
->>@@ -925,18 +912,19 @@ static int acpi_idle_enter_simple(struct
->> 	if (cx->type == ACPI_STATE_C3)
->> 		ACPI_FLUSH_CPU_CACHE();
->>
->>-	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->>+	kt1 = ktime_get_real();
->> 	/* Tell the scheduler that we are going deep-idle: */
->> 	sched_clock_idle_sleep_event();
->> 	acpi_idle_do_entry(cx);
->>-	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->>+	kt2 = ktime_get_real();
->>+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
->>
->> #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
->> 	/* TSC could halt in idle, so notify users */
->> 	if (tsc_halts_in_c(cx->type))
->> 		mark_tsc_unstable("TSC halts in idle");;
->> #endif
->>-	sleep_ticks = ticks_elapsed(t1, t2);
->>+	sleep_ticks = us_to_pm_timer_ticks(idle_time);
->>
->> 	/* Tell the scheduler how much we idled: */
->> 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
->>@@ -948,7 +936,7 @@ static int acpi_idle_enter_simple(struct
->>
->> 	acpi_state_timer_broadcast(pr, cx, 0);
->> 	cx->time += sleep_ticks;
->>-	return ticks_elapsed_in_us(t1, t2);
->>+	return idle_time;
->> }
->>
->> static int c3_cpu_count;
->>@@ -966,8 +954,10 @@ static int acpi_idle_enter_bm(struct cpu
->> {
->> 	struct acpi_processor *pr;
->> 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
->>-	u32 t1, t2;
->>-	int sleep_ticks = 0;
->>+	ktime_t  kt1, kt2;
->>+	s64 idle_time;
->>+	s64 sleep_ticks = 0;
->>+
->>
->> 	pr = __get_cpu_var(processors);
->>
->>@@ -1034,9 +1024,10 @@ static int acpi_idle_enter_bm(struct cpu
->> 		ACPI_FLUSH_CPU_CACHE();
->> 	}
->>
->>-	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->>+	kt1 = ktime_get_real();
->> 	acpi_idle_do_entry(cx);
->>-	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->>+	kt2 = ktime_get_real();
->>+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
->>
->> 	/* Re-enable bus master arbitration */
->> 	if (pr->flags.bm_check && pr->flags.bm_control) {
->>@@ -1051,7 +1042,7 @@ static int acpi_idle_enter_bm(struct cpu
->> 	if (tsc_halts_in_c(ACPI_STATE_C3))
->> 		mark_tsc_unstable("TSC halts in idle");
->> #endif
->>-	sleep_ticks = ticks_elapsed(t1, t2);
->>+	sleep_ticks = us_to_pm_timer_ticks(idle_time);
->> 	/* Tell the scheduler how much we idled: */
->> 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
->>
->>@@ -1062,7 +1053,7 @@ static int acpi_idle_enter_bm(struct cpu
->>
->> 	acpi_state_timer_broadcast(pr, cx, 0);
->> 	cx->time += sleep_ticks;
->>-	return ticks_elapsed_in_us(t1, t2);
->>+	return idle_time;
->> }
->>
->> struct cpuidle_driver acpi_idle_driver = {
+This patch could be nice, but not after I've seen the previous one.
+The first one was much^3 nicer.
 
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+Maybe all you need to do is push the lock flag into blk_finish_request()
+
+<original patch>
++	if (!locked) {
+> +		spin_lock_irqsave(q->queue_lock, flags);
+> +		finish_request(rq, error);
+> +		spin_unlock_irqrestore(q->queue_lock, flags);
+> +	} else
+> +		finish_request(rq, error);
+> 
+</original patch>
+
+Then you have only one call site to finish_request() inside blk_end_io().
+
+finish_request() will become the ugly site, but if looking at the alternative
+I think it is worth it. Code is smaller, cleaner, and clearer. (Sometimes principles
+must be sacrificed)
+
+At the end, I hate that lock around finish_request(), I wish the req->end_io()
+was not called with the lock held and the plain blk_put_request() (locking version)
+could be called. Having req->end_io() under lock is a pain in the ass that makes
+you go through loops when you need proper error handling. One day I will get rid of
+it.
+
+Tejun? now that you done both, which one do you like better? or is it just me?
+
+Thanks
+Boaz
