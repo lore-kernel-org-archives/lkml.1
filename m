@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbZDWRNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZDWRTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754587AbZDWRNX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 13:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZDWRNM
+	id S1755608AbZDWRTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 13:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZDWRTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 13:13:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54360 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752094AbZDWRNL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 13:13:11 -0400
-Date: Thu, 23 Apr 2009 10:07:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Howells <dhowells@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait() and
- co. imply a memory barrier
-In-Reply-To: <21209.1240504344@redhat.com>
-Message-ID: <alpine.LFD.2.00.0904231004120.3101@localhost.localdomain>
-References: <20090422175753.GA14236@elte.hu> <20090415162712.342d4c07.akpm@linux-foundation.org> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com>
- <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com>  <21209.1240504344@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 23 Apr 2009 13:19:06 -0400
+Received: from proxima.lp0.eu ([81.2.80.65]:60466 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752725AbZDWRTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 13:19:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
+	b=iw8KiljHDtyh/lNF1pGtxRPos8mY+YWU1R57zNckrspx3o73g0ZFWG6/lVO/lPgiyjLvfMZXbIJcEhN2Bmxsnhoxf5G63eT1D3JGF/TjmBqAcXaisZ8pan9BQfdl1bZy;
+Message-ID: <49F0A306.9010409@simon.arlott.org.uk>
+Date: Thu, 23 Apr 2009 18:19:02 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: [PATCH] cxacru: Fix negative dB output
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Values of dB between -0.99 and -0.01 will be output with the wrong
+sign. This converts the negative value to positive and outputs it
+with a "-" prefix.
 
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+ drivers/usb/atm/cxacru.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-On Thu, 23 Apr 2009, David Howells wrote:
->
-> I was wondering if wake_up() and friends should in fact imply smp_wmb(), but I
-> guess that they're often used in conjunction with spinlocks - and in such a
-> situation a barrier is unnecessary overhead.
+diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
+index 6789089..56802d2 100644
+--- a/drivers/usb/atm/cxacru.c
++++ b/drivers/usb/atm/cxacru.c
+@@ -227,8 +227,14 @@ static ssize_t cxacru_sysfs_showattr_s8(s8 value, char *buf)
+ 
+ static ssize_t cxacru_sysfs_showattr_dB(s16 value, char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
+-					value / 100, abs(value) % 100);
++	if (likely(value >= 0)) {
++		return snprintf(buf, PAGE_SIZE, "%u.%02u\n",
++					value / 100, value % 100);
++	} else {
++		value = -value;
++		return snprintf(buf, PAGE_SIZE, "-%u.%02u\n",
++					value / 100, value % 100);
++	}
+ }
+ 
+ static ssize_t cxacru_sysfs_showattr_bool(u32 value, char *buf)
+-- 
+1.6.2.2
 
-I think we _have_ to imply a smp_wmb() in the wakup semantics, because 
-otherwise sleepers can't do anything sane (no amount of barriers on the 
-sleeping side will help). IOW, there basically has to be an implied write 
-barrier between the thing that causes an event to become true, and the 
-thing that turns 'task->state' back to RUNNING.
-
-This is similar to the issue of doing cross-CPU IPI's: sending an IPI 
-_must_ imply a memory barrier with the IPI mechanism, because otherwise 
-the receiver could never do anything sane.
-
-		Linus
+-- 
+Simon Arlott
