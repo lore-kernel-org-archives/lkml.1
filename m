@@ -1,108 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbZDWHve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZDWHpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759620AbZDWHve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbZDWHdk
+	id S1758870AbZDWHpU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbZDWHbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:33:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43807 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757319AbZDWHdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:33:39 -0400
-Date: Thu, 23 Apr 2009 09:37:09 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: Re: fresh data was Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re: New x86 warning
-Message-ID: <20090423073709.GH13896@one.firstfloor.org>
-References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu> <8763gxoz50.fsf_-_@basil.nowhere.org> <alpine.LFD.2.00.0904221354320.3101@localhost.localdomain> <20090422211501.GD13896@one.firstfloor.org> <alpine.LFD.2.00.0904221417110.3101@localhost.localdomain> <20090422220428.GE13896@one.firstfloor.org> <87skjzoqah.fsf_-_@basil.nowhere.org> <20090423063625.GB9833@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423063625.GB9833@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 23 Apr 2009 03:31:06 -0400
+Received: from sous-sol.org ([216.99.217.87]:50548 "EHLO x200.localdomain"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756537AbZDWHbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:31:02 -0400
+Message-Id: <20090423072503.721622155@sous-sol.org>
+User-Agent: quilt/0.47-1
+Date: Thu, 23 Apr 2009 00:20:59 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 039/100] dm snapshot: avoid dropping lock in __find_pending_exception
+References: <20090423072020.428683652@sous-sol.org>
+Content-Disposition: inline; filename=dm-snapshot-avoid-dropping-lock-in-__find_pending_exception.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 08:36:25AM +0200, Ingo Molnar wrote:
-> 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > Andi Kleen <andi@firstfloor.org> writes:
-> > 
-> > >> > Quick test here:
-> > >> 
-> > >> How about you just compile the kernel with gcc-3.2 and compare the number 
-> > >> of calls to memcpy before-and-after instead? That's the real test.
-> > >
-> > > I waited over 10 minutes for the full vmlinux objdumps to finish. sorry lost
-> > > patience. If someone has a fast disassembler we can try it. I'll leave
-> > > them running over night, maybe there are exact numbers tomorrow.
-> > >
-> > > But from a quick check (find -name '*.o' | xargs nm | grep memcpy) there are
-> > > very little files which call it with the patch, so there's some
-> > > evidence that there isn't a dramatic increase.
-> > 
-> > I let the objdumps finish over night. [...]
-> 
-> objdump -d never took me more than a minute - let alone a full 
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-I use objdump -S. Maybe that's slower than -d.
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-Hmm quick test, yes -S seems to be much slower than -d. Thanks for
-the hint. I guess I should switch to -d for these cases, unfortunately
--S seems to be hardcoded in my fingers and of course it gives much
-nicer output if you have debug info.
+upstream commit: c66213921c816f6b1b16a84911618ba9a363b134
 
-> night. You must be doing something really wrong there. Looking at 
-> objdump -d is an essential, unavoidable component of my workflow 
-> with x86 architecture patches, you need to find a way to do it 
+It is uncommon and bug-prone to drop a lock in a function that is called with
+the lock held, so this is moved to the caller.
 
-I do it all the time too, but only for specific functions, not
-for full kernels. I have a objdump-symbol script for that that
-looks up a symbol in the symbol table and only disassembles
-the function I'm interested in 
-(ftp://firstfloor.org/pub/ak/perl/objdump-symbol) 
-I normally don't look at full listings of the complete kernel.
+Cc: stable@kernel.org
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/md/dm-snap.c |   42 ++++++++++++++++++++++++------------------
+ 1 file changed, 24 insertions(+), 18 deletions(-)
 
-> > [...] On my setup (defconfig + some additions) there are actually 
-> > less calls to out of line memcpy/__memcpy with the patch. I see 
-> > only one for my defconfig, while there are ~10 without the patch. 
-> > So it makes very little difference. The code size savings must 
-> > come from more efficient code generation for the inline case. I 
-> > haven't investigated that in detail though.
-> > 
-> > So the patch seems like a overall win.
-> 
-> It's a clear loss here with GCC 3.4, and it took me less than 5 
-> minutes to figure that out.
+--- a/drivers/md/dm-snap.c
++++ b/drivers/md/dm-snap.c
+@@ -992,23 +992,10 @@ __lookup_pending_exception(struct dm_sna
+  * this.
+  */
+ static struct dm_snap_pending_exception *
+-__find_pending_exception(struct dm_snapshot *s, struct bio *bio)
++__find_pending_exception(struct dm_snapshot *s,
++			 struct dm_snap_pending_exception *pe, chunk_t chunk)
+ {
+-	struct dm_snap_pending_exception *pe, *pe2;
+-	chunk_t chunk = sector_to_chunk(s, bio->bi_sector);
+-
+-	/*
+-	 * Create a new pending exception, we don't want
+-	 * to hold the lock while we do this.
+-	 */
+-	up_write(&s->lock);
+-	pe = alloc_pending_exception(s);
+-	down_write(&s->lock);
+-
+-	if (!s->valid) {
+-		free_pending_exception(pe);
+-		return NULL;
+-	}
++	struct dm_snap_pending_exception *pe2;
+ 
+ 	pe2 = __lookup_pending_exception(s, chunk);
+ 	if (pe2) {
+@@ -1083,7 +1070,17 @@ static int snapshot_map(struct dm_target
+ 	if (bio_rw(bio) == WRITE) {
+ 		pe = __lookup_pending_exception(s, chunk);
+ 		if (!pe) {
+-			pe = __find_pending_exception(s, bio);
++			up_write(&s->lock);
++			pe = alloc_pending_exception(s);
++			down_write(&s->lock);
++
++			if (!s->valid) {
++				free_pending_exception(pe);
++				r = -EIO;
++				goto out_unlock;
++			}
++
++			pe = __find_pending_exception(s, pe, chunk);
+ 			if (!pe) {
+ 				__invalidate_snapshot(s, -ENOMEM);
+ 				r = -EIO;
+@@ -1220,7 +1217,16 @@ static int __origin_write(struct list_he
+ 
+ 		pe = __lookup_pending_exception(snap, chunk);
+ 		if (!pe) {
+-			pe = __find_pending_exception(snap, bio);
++			up_write(&snap->lock);
++			pe = alloc_pending_exception(snap);
++			down_write(&snap->lock);
++
++			if (!snap->valid) {
++				free_pending_exception(pe);
++				goto next_snapshot;
++			}
++
++			pe = __find_pending_exception(snap, pe, chunk);
+ 			if (!pe) {
+ 				__invalidate_snapshot(snap, -ENOMEM);
+ 				goto next_snapshot;
 
-Loss in what way?
-
-> 
-> With what precise compiler version did you test (please paste the 
-> gcc -v output), and could you send me the precise .config you used, 
-
-See the 2nd previous mail: 3.2.3
-
-I didn't do tests with later versions, assuming there are no 
-regressions.
-
-> and describe the method you used to determine the number of 
-> out-of-line memcpy calls? I'd like to double-check your numbers.
-
-objdump -S ... | grep call.*memcpy         (gives some false positives,
-you have to weed them out)
-
-In addition I did a quick find -name '*.o' | xargs nm | grep 'U.*memcpy$'
-to (under) estimate the calls  
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
