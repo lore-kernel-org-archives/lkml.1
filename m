@@ -1,97 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbZDWLwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZDWLzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753282AbZDWLwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZDWLwA
+	id S1754834AbZDWLzz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZDWLzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:52:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42230 "EHLO mx2.redhat.com"
+	Thu, 23 Apr 2009 07:55:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54123 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbZDWLv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:51:59 -0400
-Subject: Re: [Patch] mm tracepoints update - use case.
-From: Larry Woodman <lwoodman@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       =?UTF-8?Q?Fr=E9=A6=98=E9=A7=BBic?= Weisbecker 
-	<fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, riel@redhat.com, rostedt@goodmis.org
-In-Reply-To: <20090423084233.GF599@elte.hu>
-References: <1240402037.4682.3.camel@dhcp47-138.lab.bos.redhat.com>
-	 <1240428151.11613.46.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
-	 <20090422215055.5be60685.akpm@linux-foundation.org>
-	 <20090423084233.GF599@elte.hu>
-Content-Type: text/plain
-Date: Thu, 23 Apr 2009 07:47:11 -0400
-Message-Id: <1240487231.4682.27.camel@dhcp47-138.lab.bos.redhat.com>
+	id S1751948AbZDWLzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 07:55:43 -0400
+Date: Thu, 23 Apr 2009 21:55:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, alex.williamson@hp.com, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: upstream tree build warnings
+Message-Id: <20090423215533.157df0e0.sfr@canb.auug.org.au>
+In-Reply-To: <20090423.002403.74400050.davem@davemloft.net>
+References: <20090423163847.200f227e.sfr@canb.auug.org.au>
+	<20090423.002403.74400050.davem@davemloft.net>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-23 at 10:42 +0200, Ingo Molnar wrote:
+--Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Not so in the usescases i made use of tracers. The key is not to 
-> trace everything, but to have a few key _concepts_ traced 
-> pervasively. Having a dynamic notion of a per event changes is also 
-> obviously good. In a fast changing workload you cannot just tell 
-> based on summary statistics whether rapid changes are the product of 
-> the inherent entropy of the workload, or the result of the MM being 
-> confused.
-> 
-> /proc/ statisitics versus good tracing is like the difference 
-> between a magnifying glass and an electron microscope. Both have 
-> their strengths, and they are best if used together.
-> 
-> One such conceptual thing in the scheduler is the lifetime of a 
-> task, its schedule, deschedule and wakeup events. It can already 
-> show a massive amount of badness in practice, and it only takes a 
-> few tracepoints to do.
-> 
-> Same goes for the MM IMHO. Number of pages reclaimed is obviously a 
-> key metric to follow. Larry is an expert who fixed a _lot_ of MM 
-> crap in the last 5-10 years at Red Hat, so if he says that these 
-> tracepoints are useful to him, we shouldnt just dismiss that 
-> experience like that. I wish Larry spent some of his energies on 
-> fixing the upstream MM too ;-)
-> 
-> A balanced number of MM tracepoints, showing the concepts and the 
-> inner dynamics of the MM would be useful. We dont need every little 
-> detail traced (we have the function tracer for that), but a few key 
-> aspects would be nice to capture ...
+Hi Dave,
 
-I hear you, there is  lot of data coming out of these mm tracepoints as
-well as must of the other tracepoints I've played around with, we have
-to filter them.  I added them in locations that would allow us to debug
-a variety of real running systems such as a Wall St. trading server
-during the heaviest period of the day without rebooting a debug kernel.
-We can collect whatever is needed to figure out whats happening then
-turning it all off when we've collected enough.  We've seen systems
-experiencing performance problems caused by the "inner'ds" of the page
-reclaim code, memory leak problems cause by applications, excessive COW
-faults caused by applications that mmap() gigs of files then fork and
-applications that rely the kernel to flush out every modified page of
-those gigs of mmap()'d file data every 30 seconds via kupdate because
-other kernel do. The list goes on and on...  These tracepoints are in
-the same locations that we've placed debug code in debug kernels in the
-past.
+On Thu, 23 Apr 2009 00:24:03 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Thu, 23 Apr 2009 16:38:47 +1000
+>=20
+> > Today's linux-next build (powerpc allyesconfig gcc4.4.0) produced these
+> > warnings:
+> >=20
+> > drivers/net/virtio_net.c: In function 'virnet_vlan_rx_add_vid':
+> > include/linux/scatterlist.h:57: warning: 'sg' is used uninitialized in =
+this function
+> > drivers/net/virtio_net.c:746: note: 'sg' was declared here
+> > drivers/net/virtio_net.c: In function 'virnet_vlan_rx_kill_vid':
+> > include/linux/scatterlist.h:57: warning: 'sg' is used uninitialized in =
+this function
+> > drivers/net/virtio_net.c:758: note: 'sg' was declared here
+> >=20
+> > in each case, sg is uninitialised when its address is passed to
+> > sg_set_buf() which passes it to gs_set_page() which passes it to
+> > sg_assign_page() which dereferences it (to use ->page_link).
+>=20
+> I wonder if this is a side effect of changes that went in via Rusty's
+> tree?  I don't remember touching this driver in a while.
 
-Larry
+The callers came in throught commit
+0bde95690d65653e420d04856c5d5783155c747c ("virtio_net: Add support for
+VLAN filtering in the hypervisor") which I assume came in throught the
+net tree (it has you SOB on it). Committed Feb 5, 2009, went into Linus'
+tree before 2.6.30-rc1.
 
+scatterlist.h hasn't changed since July, 2008.
 
- 
-> 
-> pagefaults, allocations, cache-misses, cache flushes and how pages 
-> shift between various queues in the MM would be a good start IMHO.
-> 
-> Anyway, i suspect your answer means a NAK :-( Would be nice if you 
-> would suggest a path out of that NAK.
-> 
-> 	Ingo
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknwVzUACgkQjjKRsyhoI8yLbACfYcVhwNwyGGk3oi8Ul8uu8Wg+
+RH8AnRPTKP5Jb3zM/L0rQ/S+neOXZwWn
+=Rauq
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf--
