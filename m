@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZDWUZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZDWU13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbZDWUZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZDWUZh
+	id S1754622AbZDWU13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZDWU1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:25:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752703AbZDWUZg (ORCPT
+	Thu, 23 Apr 2009 16:27:17 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:52856 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbZDWU1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:25:36 -0400
-Date: Thu, 23 Apr 2009 13:23:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm/vmalloc.c: fix sparse warning
-Message-Id: <20090423132358.2adf4611.akpm@linux-foundation.org>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909015F9239@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE1909015F9239@mi8nycmail19.Mi8.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 16:27:16 -0400
+Date: Thu, 23 Apr 2009 16:27:05 -0400
+To: hooanon05@yahoo.co.jp
+Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       hch@infradead.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH v2] Fix i_mutex handling in nfsd readdir
+Message-ID: <20090423202705.GA31085@fieldses.org>
+References: <1239960739.3428.33.camel@macbook.infradead.org> <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk> <20090417225306.GO26366@ZenIV.linux.org.uk> <1240013753.21423.86.camel@macbook.infradead.org> <1240144069.3589.156.camel@macbook.infradead.org> <7321.1240375306@jrobl> <20090422191244.GD9541@fieldses.org> <9180.1240468823@jrobl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9180.1240468823@jrobl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Apr 2009 20:55:06 -0400
-"H Hartley Sweeten" <hartleys@visionengravers.com> wrote:
-
-> Fix sparse warning in mm/vmalloc.c.
+On Thu, Apr 23, 2009 at 03:40:23PM +0900, hooanon05@yahoo.co.jp wrote:
 > 
->   warning: symbol 'tmp' shadows an earlier one
+> "J. Bruce Fields":
+> > > Isn't it better to test it BEFORE fh_compose()?
+> 	:::
+> > Yes, I think you're right.
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Then here you are.
+
+The nfsv4 readdir callback needs a similar fix.
+
+Also, it looks to me like this results in us encoding an entry for this
+deleted file in the readdir reply, but with an empty filehandle.  From a
+quick glance at the rfc it's not clear to me whether this is really
+legal.  I suspect it may cause odd behavior on clients.  At the least it
+would seem cleaner to check for this condition early enough that we can
+just skip the entry entirely.
+
+--b.
+
 > 
-> ---
+> J. R. Okajima
 > 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index fab1987..4959a30 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -292,13 +292,13 @@ static void __insert_vmap_area(struct vmap_area
-> *va)
->  	struct rb_node *tmp;
->  
->  	while (*p) {
-> -		struct vmap_area *tmp;
-> +		struct vmap_area *tmp_va;
->  
->  		parent = *p;
-> -		tmp = rb_entry(parent, struct vmap_area, rb_node);
-> -		if (va->va_start < tmp->va_end)
-> +		tmp_va = rb_entry(parent, struct vmap_area, rb_node);
-> +		if (va->va_start < tmp_va->va_end)
->  			p = &(*p)->rb_left;
-> -		else if (va->va_end > tmp->va_start)
-> +		else if (va->va_end > tmp_va->va_start)
->  			p = &(*p)->rb_right;
->  		else
->  			BUG(); 
-
-It would be sufficient to simply delete the inner definition of `tmp'.
-
-Use of a variable called "tmp" is often bad - it's almost always a
-result of plain old laziness and the code can be improved by using a
-more meaningful identifier.
-
-But in this case the code is sufficiently short and simple that I guess
-we can live with "tmp".
-
+> ----------------------------------------------------------------------
+> 
+> commit c98c6c4a207d602bd9498ea5f1d2993a00e98445
+> Author: J. R. Okajima <hooanon05@yahoo.co.jp>
+> Date:   Thu Apr 23 15:38:43 2009 +0900
+> 
+>     NFSD: test d_inode before fh_compose()
+>     
+>     After 2f9092e1020246168b1309b35e085ecd7ff9ff72 "Fix i_mutex vs. readdir
+>     handling in nfsd" (and 14f7dd63 "Copy XFS readdir hack into nfsd code"),
+>     an entry may be removed between the first mutex_unlock and the second
+>     mutex_lock. In this case, lookup_one_len() in compose_entry_fh() will
+>     return a negative dentry.
+>     It is better to test inode (positive/negative) BEFORE fh_compose().
+>     
+>     Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+> 
+> diff --git a/fs/nfsd/nfs3xdr.c b/fs/nfsd/nfs3xdr.c
+> index 17d0dd9..1b5543b 100644
+> --- a/fs/nfsd/nfs3xdr.c
+> +++ b/fs/nfsd/nfs3xdr.c
+> @@ -851,8 +851,8 @@ compose_entry_fh(struct nfsd3_readdirres *cd, struct svc_fh *fhp,
+>  	if (IS_ERR(dchild))
+>  		return 1;
+>  	if (d_mountpoint(dchild) ||
+> -	    fh_compose(fhp, exp, dchild, &cd->fh) != 0 ||
+> -	    !dchild->d_inode)
+> +	    !dchild->d_inode ||
+> +	    fh_compose(fhp, exp, dchild, &cd->fh) != 0)
+>  		rv = 1;
+>  	dput(dchild);
+>  	return rv;
