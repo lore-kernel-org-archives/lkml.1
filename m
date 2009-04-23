@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbZDWLSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZDWLVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbZDWLSk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZDWLSa
+	id S1757602AbZDWLVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZDWLVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:18:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:31199 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788AbZDWLS2 (ORCPT
+	Thu, 23 Apr 2009 07:21:11 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:39186 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754866AbZDWLVK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:18:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CvcQh/oE3tFO29XzBfdD8L8aXIYYOhhZd/hP2NmPNHiilgi+nAwI1aKz5npeJJR81Z
-         EnTKMxUjpxEz73Rh2/CiXj9KRc//vo4I123CcI5RZqsWikG43e7lwIAFHRPV2iekxuMr
-         Wun9o6aF77R69TTYmsmEIKPDL2pvHm69zCd2A=
+	Thu, 23 Apr 2009 07:21:10 -0400
+Date: Thu, 23 Apr 2009 12:21:05 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valerie Aurora Henson <vaurora@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
+       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
+Message-ID: <20090423112105.GA1589@shareable.org>
+References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <4e5e476b0904221407v7f43c058l8fc61198a2e4bb6e@mail.gmail.com>
-References: <4e5e476b0904221407v7f43c058l8fc61198a2e4bb6e@mail.gmail.com>
-Date: Thu, 23 Apr 2009 11:18:27 +0000
-Message-ID: <4d8e3fd30904230418g20e89cb1se4303754914bbcd7@mail.gmail.com>
-Subject: Re: Reduce latencies for syncronous writes and high I/O priority 
-	requests in deadline IO scheduler
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: jens.axboe@oracle.com, Linux-Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422221748.8c9022d1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/22/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> Hi,
-> deadline I/O scheduler currently classifies all I/O requests in only 2
-> classes, reads (always considered high priority) and writes (always
-> lower).
-> The attached patch, intended to reduce latencies for syncronous writes
-> and high I/O priority requests, introduces more levels of priorities:
-> * real time reads: highest priority and shortest deadline, can starve
-> other levels
-> * syncronous operations (either best effort reads or RT/BE writes),
-> mid priority, starvation for lower level is prevented as usual
-> * asyncronous operations (async writes and all IDLE class requests),
-> lowest priority and longest deadline
->
+Andrew Morton wrote:
+> Would it be better to implement new syscall(s) with finer-grained control
+> and better semantics?  Then userspace would just need to to:
+> 
+> 	fsync_on_steroids(fd, FSYNC_BEFORE_RENAME);
+> 
+> and that all gets down into the filesystem which can then work out what
+> it needs to do to implement the command.
 
++1 from me.  Several flags come to mind for discussion.
+FSYNC_HARDWARE.  FSYNC_ORDER_ONLY, FSYNC_FLUSH.
+FSYNC_DATA_BEFORE_SIZE.  FSYNC_BEFORE_NEW_FILE.
 
-numbers are impressive.
+Nick Piggin was working on  fsync_range().
 
-do you observe better latencies in normal desktop usage as well?
+Maybe it's time to do fsync properly?
 
-ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
-http://mypage.vodafone.it/
+-- Jamie
