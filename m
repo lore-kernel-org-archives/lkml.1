@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZDWQ5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZDWRB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbZDWQ5s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZDWQ5h
+	id S1755799AbZDWRB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 13:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbZDWRBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:57:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55660 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbZDWQ5g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:57:36 -0400
-Date: Thu, 23 Apr 2009 12:57:36 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] vfs: Make sys_sync() use fsync_super() (version 2)
-Message-ID: <20090423165736.GB4083@infradead.org>
-References: <1240498045-14288-1-git-send-email-jack@suse.cz> <1240498045-14288-5-git-send-email-jack@suse.cz>
+	Thu, 23 Apr 2009 13:01:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42845 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751276AbZDWRBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 13:01:18 -0400
+Date: Thu, 23 Apr 2009 18:55:46 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
+       viro@zeniv.linux.org.uk,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait()
+	and co. imply a memory barrier
+Message-ID: <20090423165546.GA7117@redhat.com>
+References: <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1240498045-14288-5-git-send-email-jack@suse.cz>
+In-Reply-To: <21209.1240504344@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +int __sync_blockdev(struct block_device *bdev, int wait)
-> +{
-> +	if (!bdev)
-> +		return 0;
-> +	if (!wait)
-> +		return filemap_flush(bdev->bd_inode->i_mapping);
-> +	return filemap_write_and_wait(bdev->bd_inode->i_mapping);
-> +}
-
-I wonder if the filemap_flush for the async case really buys us much,
-all the async and then later sync writeback activities of the FS will
-redirty lots of bits of the blockdev mapping that we then have to write
-twice.
-
-> @@ -284,7 +277,12 @@ static int __fsync_super(struct super_block *sb)
->   */
->  int fsync_super(struct super_block *sb)
->  {
-> -	return __fsync_super(sb);
-> +	int ret;
+On 04/23, David Howells wrote:
+>
+> +	complete();
+> +	try_to_wake_up();
+> +	wake_up();
+> +	wake_up_all();
+> +	wake_up_bit();
+> +	wake_up_interruptible();
+> +	wake_up_interruptible_all();
+> +	wake_up_interruptible_nr();
+> +	wake_up_interruptible_poll();
+> +	wake_up_interruptible_sync();
+> +	wake_up_interruptible_sync_poll();
+> +	wake_up_locked();
+> +	wake_up_locked_poll();
+> +	wake_up_nr();
+> +	wake_up_poll();
 > +
-> +	ret = __fsync_super(sb, 0);
-> +	if (ret < 0)
-> +		return ret;
-> +	return __fsync_super(sb, 1);
+> +After waking, and assuming it doesn't take a matching lock, the sleeper may
+> +need to interpolate a read or full memory barrier before accessing that state
+> +as finish_wait() does not imply a barrier either, and schedule() only implies a
+> +barrier on entry.
 
-This async first then wait approach does have some benefits when syncing
-multiple filesystems, but I wonder if it isn't actually conta-productive
-when syncing a single one.
+Well. I am starting to suspect I missed something, but I disagree. Or I just
+(this is very possible) misunderstand the above.
 
-Maybe this should be a separate patch ontop to allow for more
-fine-grained benchmarking.
+finish_wait() doesn't imply a barrier, but why this matters?
 
->  /*
-> - * Call the ->sync_fs super_op against all filesystems which are r/w and
-> - * which implement it.
-> + * Sync all the data for all the filesystems (called by do_sync())
+And if we don't use prepare_to_wait() and just do
 
-Your patch removes do_sync :)
+	for (;;) {
+		set_current_state(WHATEVER);
+		if (!CONDITION)
+			schedule();
+		break;
+	}
 
->  static void do_sync_work(struct work_struct *work)
->  {
-> -	do_sync(0);
-> +	/*
-> +	 * Sync twice to reduce the possibility we skipped some inodes / pages
-> +	 * because they were temporarily locked
-> +	 */
-> +	sync_filesystems(0);
-> +	sync_filesystems(0);
-> +	printk("Emergency Sync complete\n");
->  	kfree(work);
+we do have mb(), but
 
-Ah, nice.  Good to have this out of the sys_sync path.
+> + *
+> + * It should not be assumed that this function implies any sort of memory
+> + * barrier.
+>   */
+>  static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+
+unless try_to_wake_up() has a barrier semantics too, this code
+
+	CONDITION = 1;
+	wake_up_process(waiter);
+
+is not right, and that mb above can't help.
 
 
-The patch looks generally good but I'll need some heavy testing.  I'll
-do some XFS testing with it ASAP.
+Could you please give the code example which shows we need a barrier
+after finish_wait() ?
+
+I am just trying to understand what I missed.
+
+Oleg.
+
