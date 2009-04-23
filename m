@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbZDWHsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbZDWHtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754354AbZDWHsq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbZDWHcs
+	id S1759303AbZDWHtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZDWHdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:32:48 -0400
-Received: from sous-sol.org ([216.99.217.87]:50793 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:33:10 -0400
+Received: from sous-sol.org ([216.99.217.87]:50839 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757051AbZDWHcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:32:47 -0400
-Message-Id: <20090423072758.106398728@sous-sol.org>
+	id S1757167AbZDWHdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:33:07 -0400
+Message-Id: <20090423072804.211647624@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:26 -0700
+Date: Thu, 23 Apr 2009 00:21:27 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Cox <alan@linux.intel.com>
-Subject: [patch 066/100] tty: Fix leak in ti-usb
+       alan@lxorguk.ukuu.org.uk, Ben Hutchings <bhutchings@solarflare.com>,
+       netdev@vger.kernel.org, linux-net-drivers@solarflare.com
+Subject: [patch 067/100] sfc: Match calls to netif_napi_add() and netif_napi_del()
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=tty-fix-leak-in-ti-usb.patch
+Content-Disposition: inline; filename=sfc-match-calls-to-netif_napi_add-and-netif_napi_del.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,58 +36,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Ben Hutchings <bhutchings@solarflare.com>
 
-upstream commit: cf5450930db0ae308584e5361f3345e0ff73e643
+upstream commit: 718cff1eec595ce6ab0635b8160a51ee37d9268d
 
-If the ti-usb adapter returns an zero data length frame (which happens)
-then we leak a kref.  Found by Christoph Mair <christoph.mair@gmail.com>
-who proposed a patch.  The patch here is different as Christoph's patch
-didn't work for the case where tty = NULL and data arrived but Christoph
-did all the hard work chasing it down.
+sfc could call netif_napi_add() multiple times for the same
+napi_struct, corrupting the list of napi_structs for the associated
+device and leading to a busy-loop on device removal.  Move the call to
+netif_napi_add() and add a call to netif_napi_del() in the obvious
+places.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[bhutchings: backport to 2.6.29]
+Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/serial/ti_usb_3410_5052.c |   26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+We didn't spot this earlier because only netpoll would look at the list,
+but this changed with the addition of GRO in 2.6.29.  I have no excuse
+for not catching it during the .29 release cycle though.
 
---- a/drivers/usb/serial/ti_usb_3410_5052.c
-+++ b/drivers/usb/serial/ti_usb_3410_5052.c
-@@ -1215,20 +1215,22 @@ static void ti_bulk_in_callback(struct u
- 	}
+Ben.
+
+ drivers/net/sfc/efx.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/drivers/net/sfc/efx.c
++++ b/drivers/net/sfc/efx.c
+@@ -424,10 +424,6 @@ static void efx_start_channel(struct efx
  
- 	tty = tty_port_tty_get(&port->port);
--	if (tty && urb->actual_length) {
--		usb_serial_debug_data(debug, dev, __func__,
--			urb->actual_length, urb->transfer_buffer);
--
--		if (!tport->tp_is_open)
--			dbg("%s - port closed, dropping data", __func__);
--		else
--			ti_recv(&urb->dev->dev, tty,
-+	if (tty) {
-+		if (urb->actual_length) {
-+			usb_serial_debug_data(debug, dev, __func__,
-+				urb->actual_length, urb->transfer_buffer);
-+
-+			if (!tport->tp_is_open)
-+				dbg("%s - port closed, dropping data",
-+					__func__);
-+			else
-+				ti_recv(&urb->dev->dev, tty,
- 						urb->transfer_buffer,
- 						urb->actual_length);
--
--		spin_lock(&tport->tp_lock);
--		tport->tp_icount.rx += urb->actual_length;
--		spin_unlock(&tport->tp_lock);
-+			spin_lock(&tport->tp_lock);
-+			tport->tp_icount.rx += urb->actual_length;
-+			spin_unlock(&tport->tp_lock);
-+		}
- 		tty_kref_put(tty);
- 	}
+ 	EFX_LOG(channel->efx, "starting chan %d\n", channel->channel);
  
+-	if (!(channel->efx->net_dev->flags & IFF_UP))
+-		netif_napi_add(channel->napi_dev, &channel->napi_str,
+-			       efx_poll, napi_weight);
+-
+ 	/* The interrupt handler for this channel may set work_pending
+ 	 * as soon as we enable it.  Make sure it's cleared before
+ 	 * then.  Similarly, make sure it sees the enabled flag set. */
+@@ -1273,6 +1269,8 @@ static int efx_init_napi(struct efx_nic 
+ 
+ 	efx_for_each_channel(channel, efx) {
+ 		channel->napi_dev = efx->net_dev;
++		netif_napi_add(channel->napi_dev, &channel->napi_str,
++			       efx_poll, napi_weight);
+ 		rc = efx_lro_init(&channel->lro_mgr, efx);
+ 		if (rc)
+ 			goto err;
+@@ -1289,6 +1287,8 @@ static void efx_fini_napi(struct efx_nic
+ 
+ 	efx_for_each_channel(channel, efx) {
+ 		efx_lro_fini(&channel->lro_mgr);
++		if (channel->napi_dev)
++			netif_napi_del(&channel->napi_str);
+ 		channel->napi_dev = NULL;
+ 	}
+ }
 
