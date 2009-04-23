@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZDWT5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZDWT6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZDWT5d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZDWT5Y
+	id S1753432AbZDWT6Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZDWT56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:57:24 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:20220 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbZDWT5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:57:23 -0400
-Message-ID: <49F0C817.8050407@caviumnetworks.com>
-Date: Thu, 23 Apr 2009 12:57:11 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 23 Apr 2009 15:57:58 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:43445 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751782AbZDWT55 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 15:57:57 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsQEAChl8ElMQW1W/2dsb2JhbACBT841g3QFh2U
+Date: Thu, 23 Apr 2009 15:57:54 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Anders Kaseorg <andersk@MIT.EDU>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Tim Abbott <tabbott@MIT.EDU>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jeffrey B Arnold <jbarnold@MIT.EDU>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
+Message-ID: <20090423195754.GA24963@Krystal>
+References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au> <alpine.DEB.1.10.0904191437250.31802@vinegar-pot.mit.edu> <20090422091645.GB18226@elte.hu> <alpine.DEB.1.10.0904221250280.24280@vinegar-pot.mit.edu> <49EFA0DE.9070407@redhat.com> <alpine.DEB.2.00.0904221901190.7725@vinegar-pot.mit.edu>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
-References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Apr 2009 19:57:12.0369 (UTC) FILETIME=[B158EA10:01C9C44D]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <alpine.DEB.2.00.0904221901190.7725@vinegar-pot.mit.edu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:53:52 up 54 days, 16:20,  1 user,  load average: 0.11, 0.31,
+	0.37
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> A boolean single_bit_set() routine would simplify the numerous
-> constructs of the form (((n & (n - 1)) == 0)) when testing for
-> single-bitness.
+* Anders Kaseorg (andersk@MIT.EDU) wrote:
+> On Wed, 22 Apr 2009, Masami Hiramatsu wrote:
+> > Could you also add "use text_poke() on x86" to your plan? :-)
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> That should be possible now that it is usable inside stop_machine().  It 
+> would be nicer to have an API that isn’t x86-specific, though.
 > 
-> ---
+> Another issue is that Ksplice supports patching rodata as well as text, 
+> and text_poke() does not support changes bigger than PAGE_SIZE.  Though 
+> perhaps text_poke() is not the right function for rodata patches anyway.
 > 
-> This is similar to the current is_power_of_2() routine defined in
-> include/linux/log2.h, which is mathematically identical but,
-> semantically, should be defined independently just so the code is more
-> readable.
+> > Hmm, I can't agree that we allow module to modify kernel text...
+> > Is that possible to separate kernel-text swapping routine from Ksplice
+> > module? In that case, we don't need to export text_mutex.
 > 
-> I'm open to an alternative function name.
+> No, it’s not enough for Ksplice to lock the kernel text only while 
+> actively swapping it.  We also need to prevent changes to the kernel text 
+> while Ksplice is doing run-pre matching to ensure safety.  This means that 
+> Ksplice wants to hold text_mutex for essentially the entire time it’s 
+> running.
 > 
-> diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-> index 6182913..1c0c840 100644
-> --- a/include/linux/bitops.h
-> +++ b/include/linux/bitops.h
-> @@ -45,6 +45,13 @@ static inline unsigned long hweight_long(unsigned long w)
->  	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
->  }
+
+how about a kernel Ksplice API which lets your patch modules get
+their handlers executed under the right execution context ? E.g. :
+
+int do_ksplice(void (*pre_hook)(struct blah *context),
+	void (*code_update_hook)(struct blah *context),
+	void (*post_hook)(struct blah *context));
+
+Which returns either 0 or -ESOMETHING. It would take care of locking and
+everything within core kernel code. The "patch" modules would simply
+provide the functions that does the code updates, assuming that the
+do_ksplice function makes sure to provide correct locking semantics.
+This way, the kernel code-base would contain the tricky locking bits.
+It seems much better than exporting the text_mutex to modules.
+
+Mathieu
+
+
+
+> Anders
 > 
-> +static inline __attribute__((const))
-> +bool single_bit_set(unsigned long n)
-> +{
-> +        return (n != 0 && ((n & (n - 1)) == 0));
-> +}
-> +
-> +
 
-
-It would be nice to be able to override this per architecture.
-
-For example a more efficient implementation on CPUs that have a 
-population count instruction (__builtin_popcountl()) might be:
-
-static inline __attribute__((const))
-bool singe_bit_set(unsigned long n)
-{
-	return __builtin_popcountl(n) == 1;
-}
-
-
-Also, are we still putting 'inline' everywhere?
-
-David Daney
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
