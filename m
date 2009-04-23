@@ -1,55 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbZDWS3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZDWSaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758326AbZDWS3v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 14:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbZDWS3e
+	id S1758626AbZDWSaP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 14:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758617AbZDWS3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 14:29:34 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51320 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752910AbZDWS3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 14:29:32 -0400
-Date: Thu, 23 Apr 2009 11:29:28 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       akpm@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-Message-ID: <20090423182928.GF6877@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090423052520.GA13036@linux.vnet.ibm.com> <20090423075436.GB22606@elte.hu> <20090423153402.GC6877@linux.vnet.ibm.com> <alpine.LFD.2.00.0904230842571.3101@localhost.localdomain>
+	Thu, 23 Apr 2009 14:29:41 -0400
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:46993
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758646AbZDWS3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 14:29:39 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 14:29:39 EDT
+From: Jarod Wilson <jarod@wilsonet.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH 1/2] crypto: handle ccm dec test vectors expected to fail verification
+Date: Thu, 23 Apr 2009 14:22:49 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-100.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>, Jarod Wilson <jarod@redhat.com>
+References: <200904091434.59639.jarod@redhat.com> <20090420062640.GB1135@gondor.apana.org.au> <49F0B09D.6040308@redhat.com>
+In-Reply-To: <49F0B09D.6040308@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904230842571.3101@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200904231422.50153.jarod@wilsonet.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 08:47:02AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 23 Apr 2009, Paul E. McKenney wrote:
-> > 
-> > Hmmm...  I need to ask Jeff Chua what HZ he was running with.  Because if
-> > there was some read-side critical section soaking up 30 milliseconds,
-> > all that hammering will do is slow things down...
-> 
-> The original bug report comes from simply bootup:
-> 
->   "I'm loading all the firewall rules during boot-up and this 6 secs 
->    slowness is really not very nice to wait for."
-> 
-> IOW, the problematic case likely effectively has _nothing_ else going on. 
-> Sure, there might be some parallelism (the bootup scripts are getting 
-> better for that), but hopefully not 6 seconds worth, and not likely any 
-> complex critical sections.
+Add infrastructure to tcrypt/testmgr to support handling ccm decryption
+test vectors that are expected to fail verification.
 
-Sounds good to me!  ;-)
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-							Thanx, Paul
+---
+ crypto/testmgr.c |   28 ++++++++++++++++++++++++++++
+ crypto/testmgr.h |    1 +
+ 2 files changed, 29 insertions(+), 0 deletions(-)
+
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index bfee6e9..84f9640 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -363,6 +363,16 @@ static int test_aead(struct crypto_aead *tfm, int enc,
+ 
+ 			switch (ret) {
+ 			case 0:
++				if (template[i].novrfy) {
++					/* verification was supposed to fail */
++					printk(KERN_ERR "alg: aead: %s failed "
++					       "on test %d for %s: ret was 0, "
++					       "expected -EBADMSG\n",
++					       e, j, algo);
++					/* so really, we got a bad message */
++					ret = -EBADMSG;
++					goto out;
++				}
+ 				break;
+ 			case -EINPROGRESS:
+ 			case -EBUSY:
+@@ -372,6 +382,10 @@ static int test_aead(struct crypto_aead *tfm, int enc,
+ 					INIT_COMPLETION(result.completion);
+ 					break;
+ 				}
++			case -EBADMSG:
++				if (template[i].novrfy)
++					/* verification failure was expected */
++					continue;
+ 				/* fall through */
+ 			default:
+ 				printk(KERN_ERR "alg: aead: %s failed on test "
+@@ -481,6 +495,16 @@ static int test_aead(struct crypto_aead *tfm, int enc,
+ 
+ 			switch (ret) {
+ 			case 0:
++				if (template[i].novrfy) {
++					/* verification was supposed to fail */
++					printk(KERN_ERR "alg: aead: %s failed "
++					       "on chunk test %d for %s: ret "
++					       "was 0, expected -EBADMSG\n",
++					       e, j, algo);
++					/* so really, we got a bad message */
++					ret = -EBADMSG;
++					goto out;
++				}
+ 				break;
+ 			case -EINPROGRESS:
+ 			case -EBUSY:
+@@ -490,6 +514,10 @@ static int test_aead(struct crypto_aead *tfm, int enc,
+ 					INIT_COMPLETION(result.completion);
+ 					break;
+ 				}
++			case -EBADMSG:
++				if (template[i].novrfy)
++					/* verification failure was expected */
++					continue;
+ 				/* fall through */
+ 			default:
+ 				printk(KERN_ERR "alg: aead: %s failed on "
+diff --git a/crypto/testmgr.h b/crypto/testmgr.h
+index 526f00a..b77b61d 100644
+--- a/crypto/testmgr.h
++++ b/crypto/testmgr.h
+@@ -62,6 +62,7 @@ struct aead_testvec {
+ 	int np;
+ 	int anp;
+ 	unsigned char fail;
++	unsigned char novrfy;	/* ccm dec verification failure expected */
+ 	unsigned char wk; /* weak key flag */
+ 	unsigned char klen;
+ 	unsigned short ilen;
+
+-- 
+Jarod Wilson
+jarod@wilsonet.com
