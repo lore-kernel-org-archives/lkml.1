@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbZDWNJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbZDWNKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbZDWNJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 09:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZDWNJ0
+	id S1758382AbZDWNKA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 09:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbZDWNJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 09:09:26 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:60711 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbZDWNJZ (ORCPT
+	Thu, 23 Apr 2009 09:09:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37820 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbZDWNJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 09:09:25 -0400
-Date: Thu, 23 Apr 2009 17:09:33 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Thu, 23 Apr 2009 09:09:46 -0400
+Date: Thu, 23 Apr 2009 09:09:46 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [RFC PATCH 1/2] pci: don't assume pref memio are 64bit -v3
-Message-ID: <20090423130933.GA13984@jurassic.park.msu.ru>
-References: <alpine.LFD.2.00.0904181602030.2199@localhost.localdomain> <alpine.LFD.2.00.0904182149240.2199@localhost.localdomain> <20090419090208.GA30211@elte.hu> <20090419090615.GA30631@elte.hu> <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org> <20090423123619.GA11519@jurassic.park.msu.ru> <20090423124154.GA1397@elte.hu>
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] vfs: Fix sys_sync() and fsync_super() reliability
+Message-ID: <20090423130946.GA3695@infradead.org>
+References: <1240415781-17834-1-git-send-email-jack@suse.cz> <1240415781-17834-2-git-send-email-jack@suse.cz> <20090423111040.GB4833@infradead.org> <20090423130724.GA20896@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090423124154.GA1397@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090423130724.GA20896@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 02:41:54PM +0200, Ingo Molnar wrote:
-> If you mean this "only" works on 95% of the systems that test the 
-> upstream kernel then yes.
-> 
-> Obviously other architectural needs have to be considered too, but 
-> you are making it sound as if there was some vast, more important 
-> space to consider that Yinghai did not consider in his foolishness 
-> ;-)
+On Thu, Apr 23, 2009 at 03:07:24PM +0200, Jan Kara wrote:
+> > Another thing I want to do in this area is sort out the meaning of
+> > write_super.  I'd really prefer to have every filesystem implement
+> > ->sync_fs for actual data-integerity syncs, and only leave ->write_super
+> > for the periodic writeouts, as the current implementation is extrenly
+> > confusing and causes a lot of trouble for filesystems doing their own
+> > periodic sb writeback.
+>   Yes, that would be nice but I guess it's a partly a separate issue
+> (and has to touch a lot of filesystems). I'll keep write_supers() call in
+> the next version of the patch so that this split isn't made harded by it.
 
-Maybe. But considering the fact that precisely 75% of the machines
-I'm using everyday are alphas, I think it's excusable ;-)
+Yeah, separate issue.  We need to do this sync massaging in a couple of
+small steps..
 
-Ivan.
