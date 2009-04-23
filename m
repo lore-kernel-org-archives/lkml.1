@@ -1,94 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZDWPNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbZDWPOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbZDWPNK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZDWPMw
+	id S1759313AbZDWPOu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZDWPOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:12:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47104 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbZDWPMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:12:50 -0400
-Date: Thu, 23 Apr 2009 17:11:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-Message-ID: <20090423151130.GA21130@elte.hu>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <alpine.DEB.2.00.0904222200350.24310@gandalf.stny.rr.com> <20090423082031.GA599@elte.hu> <alpine.DEB.2.00.0904230935060.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com>
+	Thu, 23 Apr 2009 11:14:35 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:50151 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752416AbZDWPOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 11:14:34 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH 0/3] irqfd
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org
+Date: Thu, 23 Apr 2009 11:14:26 -0400
+Message-ID: <20090423150910.14094.73708.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Applies to kvm.git b59cd3560111)
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+This series implements a mechanism called "irqfd".  It lets you create
+an eventfd based file-desriptor to inject interrupts to the guest.  We
+associate one gsi per fd for proper routing granularity.
 
-> On Thu, 23 Apr 2009, Steven Rostedt wrote:
-> > 
-> > static inline void __native_flush_tlb_global(void)
-> > {
-> >         unsigned long flags;
-> >         unsigned long cr4;
-> > 
-> >         /*
-> >          * Read-modify-write to CR4 - protect it from preemption and
-> >          * from interrupts. (Use the raw variant because this code can
-> >          * be called from deep inside debugging code.)
-> >          */
-> >         raw_local_irq_save(flags);
-> > 
-> >         cr4 = read_cr4();
-> >         /* clear PGE */
-> >         write_cr4(cr4 & ~X86_CR4_PGE);
-> >         /* write old PGE again and flush TLBs */
-> >         write_cr4(cr4);
-> > 
-> >         raw_local_irq_restore(flags);
-> > }
-> > 
-> > 
-> > Each of those read_cr4 and write_cr4 can be traced. But I still do not see 
-> > how this can cause corruption in the current task struct.
-> > 
-> > The TLB just caches the pages we are using, not the contents 
-> > inside. I still do not see how this can corrupt a bit. Unless a 
-> > register leaked :-/
-> 
-> Ah, this is a lockdep thing.
-> 
-> The raw_local_irq_save/restore in __native_flush_tlb_global does 
-> not update hardirqs_enabled.
-> 
-> When we call into ftrace, when we cross page bounderies, we 
-> disable interrupts using the normal local_irq_save/restore calls.
-> 
-> But when we restore, it detects that interrupts are not going to 
-> be enabled, and keeps hardirqs_enabled off.
+We do not have a user of this interface in this series, though note
+future version of virtual-bus (v4 and above) will be based on this.
 
-ah, so the problem is ftrace doing a function trace entry _in the 
-middle_ of the raw-irqs section in __native_flush_tlb_global()? (due 
-to the cr4 getting virtualized too)
+The first two patches will require mainline buy-in, particularly from Davide
+(cc'd).  The last patch is kvm specific.
 
-Nasty, really nasty.
+kvm-userspace.git patch to follow.
 
-	Ingo
+-Greg
+
+---
+
+Gregory Haskins (3):
+      kvm: add support for irqfd via eventfd-notification interface
+      eventfd: add a notifier mechanism
+      eventfd: export fget and signal interfaces for module use
+
+
+ arch/x86/kvm/Makefile    |    2 -
+ arch/x86/kvm/x86.c       |    1 
+ fs/eventfd.c             |   54 +++++++++++++++++++
+ include/linux/eventfd.h  |    8 +++
+ include/linux/kvm.h      |    7 ++
+ include/linux/kvm_host.h |    7 ++
+ virt/kvm/irqfd.c         |  133 ++++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/kvm_main.c      |   12 ++++
+ 8 files changed, 223 insertions(+), 1 deletions(-)
+ create mode 100644 virt/kvm/irqfd.c
+
+-- 
+Signature
