@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbZDWHx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbZDWIA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759996AbZDWHx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbZDWHdy
+	id S1760704AbZDWIA5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbZDWHgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:33:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:50997 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:36:52 -0400
+Received: from sous-sol.org ([216.99.217.87]:47512 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754744AbZDWHdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:33:50 -0400
-Message-Id: <20090423072639.615884422@sous-sol.org>
+	id S1757642AbZDWHgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:36:51 -0400
+Message-Id: <20090423073043.020447940@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:14 -0700
+Date: Thu, 23 Apr 2009 00:21:51 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <jdelvare@suse.de>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 054/100] SCSI: libiscsi: fix iscsi pool error path (fixlet)
+       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 091/100] Input: gameport - fix attach driver code
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=scsi-libiscsi-fix-iscsi-pool-error-path-fixlet.patch
+Content-Disposition: inline; filename=input-gameport-fix-attach-driver-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,45 +36,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jean Delvare <jdelvare@suse.de>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-upstream commit: fd6e1c14b73dbab89cb76af895d5612e4a8b5522
+upstream commit: 4ced8e7cb990a2c3bbf0ac7f27b35c890e7ce895
 
-Le lundi 30 mars 2009, Chris Wright a écrit :
-> q->queue could be ERR_PTR(-ENOMEM) which will break unwinding
-> on error.  Make iscsi_pool_free more defensive.
->
+The commit 6902c0bead4ce266226fc0c5b3828b850bdc884a that moved
+driver registration out of kgameportd thread was incomplete and
+did not add the code necessary to actually attach driver to
+already registered devices, rectify that.
 
-Making the freeing of q->queue dependent on q->pool being set looks
-really weird (although it is correct at the moment. But this seems
-to be fixable in a much simpler way.
-
-With the benefit that only the error case is slowed down. In both
-cases we have a problem if q->queue contains an error value but it's
-not -ENOMEM. Apparently this can't happen today, but it doesn't feel
-right to assume this will always be true. Maybe it's the right time
-to fix this as well.
-
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-[chrisw: this is a fixlet to f474a37b, also in -stable]
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/scsi/libiscsi.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/input/gameport/gameport.c |   14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
---- a/drivers/scsi/libiscsi.c
-+++ b/drivers/scsi/libiscsi.c
-@@ -1948,8 +1948,10 @@ iscsi_pool_init(struct iscsi_pool *q, in
+--- a/drivers/input/gameport/gameport.c
++++ b/drivers/input/gameport/gameport.c
+@@ -50,9 +50,8 @@ static LIST_HEAD(gameport_list);
  
- 	q->queue = kfifo_init((void*)q->pool, max * sizeof(void*),
- 			      GFP_KERNEL, NULL);
--	if (q->queue == ERR_PTR(-ENOMEM))
-+	if (IS_ERR(q->queue)) {
-+		q->queue = NULL;
- 		goto enomem;
-+	}
+ static struct bus_type gameport_bus;
  
- 	for (i = 0; i < max; i++) {
- 		q->pool[i] = kzalloc(item_size, GFP_KERNEL);
+-static void gameport_add_driver(struct gameport_driver *drv);
+ static void gameport_add_port(struct gameport *gameport);
+-static void gameport_destroy_port(struct gameport *gameport);
++static void gameport_attach_driver(struct gameport_driver *drv);
+ static void gameport_reconnect_port(struct gameport *gameport);
+ static void gameport_disconnect_port(struct gameport *gameport);
+ 
+@@ -230,7 +229,6 @@ static void gameport_find_driver(struct 
+ 
+ enum gameport_event_type {
+ 	GAMEPORT_REGISTER_PORT,
+-	GAMEPORT_REGISTER_DRIVER,
+ 	GAMEPORT_ATTACH_DRIVER,
+ };
+ 
+@@ -374,8 +372,8 @@ static void gameport_handle_event(void)
+ 				gameport_add_port(event->object);
+ 				break;
+ 
+-			case GAMEPORT_REGISTER_DRIVER:
+-				gameport_add_driver(event->object);
++			case GAMEPORT_ATTACH_DRIVER:
++				gameport_attach_driver(event->object);
+ 				break;
+ 
+ 			default:
+@@ -706,14 +704,14 @@ static int gameport_driver_remove(struct
+ 	return 0;
+ }
+ 
+-static void gameport_add_driver(struct gameport_driver *drv)
++static void gameport_attach_driver(struct gameport_driver *drv)
+ {
+ 	int error;
+ 
+-	error = driver_register(&drv->driver);
++	error = driver_attach(&drv->driver);
+ 	if (error)
+ 		printk(KERN_ERR
+-			"gameport: driver_register() failed for %s, error: %d\n",
++			"gameport: driver_attach() failed for %s, error: %d\n",
+ 			drv->driver.name, error);
+ }
+ 
 
