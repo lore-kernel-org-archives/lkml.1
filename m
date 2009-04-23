@@ -1,194 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZDWF7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZDWGDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbZDWF7U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZDWF7B
+	id S1753793AbZDWGDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 02:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZDWGDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:59:01 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:58579 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZDWF7A convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:59:00 -0400
-Message-ID: <49F0039D.3040707@cosmosbay.com>
-Date: Thu, 23 Apr 2009 07:58:53 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 23 Apr 2009 02:03:07 -0400
+Received: from hope.ime.usp.br ([143.107.45.8]:44381 "HELO hope.ime.usp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751382AbZDWGDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 02:03:06 -0400
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 02:03:05 EDT
+Date: Thu, 23 Apr 2009 02:56:19 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Quick question about libata and hdparm
+Message-ID: <20090423055618.GA23042@ime.usp.br>
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <20090420221955.2c71bd26@lxorguk.ukuu.org.uk> <20090421053258.GA18001@ime.usp.br> <200904211459.26965.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: stefan novak <lms.brubaker@gmail.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: bond interface arp, vlan and trunk / network question
-References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com> <49ECBBF0.80202@cosmosbay.com> <30257.1240252651@death.nxdomain.ibm.com> <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com> <7609.1240259780@death.nxdomain.ibm.com> <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com> <13606.1240262581@death.nxdomain.ibm.com> <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com> <22462.1240272112@death.nxdomain.ibm.com> <1ef444010904220129l24a74f07q8f32edfabe603436@mail.gmail.com> <32563.1240449149@death.nxdomain.ibm.com>
-In-Reply-To: <32563.1240449149@death.nxdomain.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 23 Apr 2009 07:58:53 +0200 (CEST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200904211459.26965.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Vosburgh a écrit :
-> stefan novak <lms.brubaker@gmail.com> wrote:
-> 
->> so its a bug in kernel?
-> 
-> 	Yes.  I think the following patch should add support for
-> arp_validate over VLANs, could you test this?  This is still a work in
-> progress, so it's pretty rough around the edges, but the core
-> functionality should be there.
-> 
-> 	This works by moving the skb_bond_should_drop logic around, and
-> replaces the current inline code with a hook into bonding to do all of
-> that, plus additional logic.  The reason for a hook is to get the
-> skb_bond_should_drop callers from the VLAN input path before the input
-> device is assigned to the VLAN device.
-> 
-> 	-J
+Hi, Bart, Alan.
 
-Hi Jay
+On Apr 21 2009, Bartlomiej Zolnierkiewicz wrote:
+> Incremental patch (a certain theory to verify).
+(...)
+> +	/* FIXME: this thrashes internal UDMA timings previously set by
+> +	   controller on SET FEATURES - XFER MODE command "snooping" */
+>  	/* The DMA clocks may have been trashed by a reset. FIXME: make conditional
+>  	   and move to qc_issue ? */
+> -	pdc202xx_set_dmamode(ap, qc->dev);
+> +	/* pdc202xx_set_dmamode(ap, qc->dev); */
 
-I wanted to test your patch and setup such VLAN config, and not yet applied your patch.
+This didn't work. I still get those same messages. If you want, I can try
+compiling the 2.6.30-rc3 kernel that was released now (as I mentioned
+before, I was using 2.6.29).
 
-# cat /proc/net/bonding/bond1
-Ethernet Channel Bonding Driver: v3.5.0 (November 4, 2008)
-
-Bonding Mode: fault-tolerance (active-backup)
-Primary Slave: None
-Currently Active Slave: eth2
-MII Status: up
-MII Polling Interval (ms): 0
-Up Delay (ms): 0
-Down Delay (ms): 0
-ARP Polling Interval (ms): 250
-ARP IP target/s (n.n.n.n form): 192.168.20.254
-
-Slave Interface: eth1
-MII Status: up
-Link Failure Count: 8
-Permanent HW addr: 00:1e:0b:ec:d3:d2
-
-Slave Interface: eth2
-MII Status: up
-Link Failure Count: 11
-Permanent HW addr: 00:1e:0b:92:78:50
-
-# grep . /sys/class/net/bond1/bonding/*
-/sys/class/net/bond1/bonding/active_slave:eth2
-/sys/class/net/bond1/bonding/ad_select:stable 0
-/sys/class/net/bond1/bonding/arp_interval:250
-/sys/class/net/bond1/bonding/arp_ip_target:192.168.20.254
-/sys/class/net/bond1/bonding/arp_validate:none 0
-/sys/class/net/bond1/bonding/downdelay:0
-/sys/class/net/bond1/bonding/fail_over_mac:none 0
-/sys/class/net/bond1/bonding/lacp_rate:slow 0
-/sys/class/net/bond1/bonding/miimon:0
-/sys/class/net/bond1/bonding/mii_status:up
-/sys/class/net/bond1/bonding/mode:active-backup 1
-/sys/class/net/bond1/bonding/num_grat_arp:1
-/sys/class/net/bond1/bonding/num_unsol_na:1
-/sys/class/net/bond1/bonding/slaves:eth1 eth2
-/sys/class/net/bond1/bonding/updelay:0
-/sys/class/net/bond1/bonding/use_carrier:1
-/sys/class/net/bond1/bonding/xmit_hash_policy:layer2 0
+I can test whatever you want me to.
 
 
+Thanks,
 
-So active slave is eth2. Still I receive trafic on eth1, according to ifconfig :
-# ifconfig eth1|grep packets;sleep 10;ifconfig eth1|grep packets
-          RX packets:2098122 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:2053085 errors:0 dropped:0 overruns:0 carrier:0
-          RX packets:2098162 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:2053085 errors:0 dropped:0 overruns:0 carrier:0
-
-exactly 4 packets per second.
-
-# ifconfig eth2|grep packets;sleep 10;ifconfig eth2|grep packets
-          RX packets:3695512 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:3683799 errors:0 dropped:0 overruns:0 carrier:0
-          RX packets:3695554 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:3683841 errors:0 dropped:0 overruns:0 carrier:0
-
-I also receive arp answers on eth2 (quite normal)
-
-I wanted to tcpdump on eth1 but got nothing :
-
-# tcpdump -p -n -s 0 -i eth1
-tcpdump: WARNING: eth1: no IPv4 address assigned
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes
-^C
-
-# tcpdump -p -n -s 0 -i eth2
-tcpdump: WARNING: eth2: no IPv4 address assigned
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
-07:54:48.430982 arp who-has 192.168.20.254 tell 192.168.20.110
-07:54:48.680980 arp who-has 192.168.20.254 tell 192.168.20.110
-07:54:48.930981 arp who-has 192.168.20.254 tell 192.168.20.110
-07:54:49.180980 arp who-has 192.168.20.254 tell 192.168.20.110
-07:54:49.430980 arp who-has 192.168.20.254 tell 192.168.20.110
-07:54:49.680980 arp who-has 192.168.20.254 tell 192.168.20.110
-
-# tcpdump -p -n -s 0 -i bond1
-tcpdump: WARNING: bond1: no IPv4 address assigned
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on bond1, link-type EN10MB (Ethernet), capture size 65535 bytes
-07:55:28.681491 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:28.931493 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:29.181466 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:29.431496 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:29.681487 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:29.931492 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-
-# tcpdump -p -n -s 0 -i bond1.103
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on bond1.103, link-type EN10MB (Ethernet), capture size 65535 bytes
-07:55:58.681521 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:58.931636 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:59.181495 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:59.431496 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:59.681499 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-07:55:59.931499 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
-
-Configuration script is 
-
-ip link set eth1 up
-ip link set eth2 up
-
-ip addr flush dev eth1
-ip addr flush dev eth2
-
-ip link set eth1 up
-ip link set eth2 up
-
-modprobe bond1
-
-ifconfig bond1 down
-
-# test du arp_check toutes les 250ms, en choissant l'HSRP du vlan 103 comme IP
-echo +192.168.20.254 >/sys/class/net/bond1/bonding/arp_ip_target
-echo 250 >/sys/class/net/bond1/bonding/arp_interval
-
-# mode actif/passif (active-backup)
-echo 1 >/sys/class/net/bond1/bonding/mode
-
-ifconfig bond1 up
-
-ifenslave bond1 eth1 eth2
-
-ip link set eth1 up
-ip link set eth2 up
-
-ip link add link bond1 bond1.103 txqueuelen 100 type vlan id 103
-ip addr add 192.168.20.110/24 dev bond1.103
-ip link set bond1.103 up
-
-ip link add link bond1 bond1.825 txqueuelen 1000 type vlan id 825
-ip addr add 10.170.73.123/25 dev bond1.825
-ip link set bond1.825 up
-
-
-
-Is this setup OK to test your patch ?
-
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
