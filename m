@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbZDWVZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758457AbZDWV10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbZDWVZQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZDWVY7
+	id S1758457AbZDWV10 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbZDWV1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:24:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57895 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756692AbZDWVY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 17:24:58 -0400
-Date: Thu, 23 Apr 2009 23:24:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait()
-	and co. imply a memory barrier
-Message-ID: <20090423212434.GA20556@elte.hu>
-References: <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com> <22170.1240518945@redhat.com> <alpine.LFD.2.00.0904231410590.3101@localhost.localdomain>
+	Thu, 23 Apr 2009 17:27:17 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:63151 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756901AbZDWV1Q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 17:27:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=GNje1TH2MFHro5Hx8xBmAI9AwwevYMDDkmSmcwFT8LJgt/rZDsIf+hcU2daedj1Uz2
+         VqILmqwcr1CeXCRL6Tq5+dDphtynGjP9B6UFtGNUiqXKlkrTfY6iy3ULrRpKphnUw1CW
+         N4e5fv2OkRufiHGheJzKHMqNeJ01B7mNl6kv0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: =?iso-8859-1?q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Subject: Re: Quick question about libata and hdparm
+Date: Thu, 23 Apr 2009 23:31:13 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-next-20090403; KDE/4.2.2; i686; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, Mark Lord <lkml@rtr.ca>,
+       linux-kernel@vger.kernel.org
+References: <E693AEE4-7895-4650-A1DC-1FB16D409D5B@ime.usp.br> <200904211459.26965.bzolnier@gmail.com> <20090423055618.GA23042@ime.usp.br>
+In-Reply-To: <20090423055618.GA23042@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904231410590.3101@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904232331.13729.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 23 April 2009 07:56:19 Rogério Brito wrote:
+> Hi, Bart, Alan.
+> 
+> On Apr 21 2009, Bartlomiej Zolnierkiewicz wrote:
+> > Incremental patch (a certain theory to verify).
+> (...)
+> > +	/* FIXME: this thrashes internal UDMA timings previously set by
+> > +	   controller on SET FEATURES - XFER MODE command "snooping" */
+> >  	/* The DMA clocks may have been trashed by a reset. FIXME: make conditional
+> >  	   and move to qc_issue ? */
+> > -	pdc202xx_set_dmamode(ap, qc->dev);
+> > +	/* pdc202xx_set_dmamode(ap, qc->dev); */
+> 
+> This didn't work. I still get those same messages. If you want, I can try
+> compiling the 2.6.30-rc3 kernel that was released now (as I mentioned
+> before, I was using 2.6.29).
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+I think that testing -rc3 won't hurt but don't get your hopes too high. ;)
 
-> On Thu, 23 Apr 2009, David Howells wrote:
-> > 
-> > Well, Ingo's point is it could be left up to the caller of 
-> > wake_up() to supply the barrier:
+> I can test whatever you want me to.
 
-Well, i mainly reacted to your documentation patch which was 
-incorrect as it said wake-up implies a _FULL_ memory barrier.
+You can try booting with "libata.force=1.00:mwdma2" kernel paramater to
+force use of "regular" MWDMA2 transfer mode instead of UDMA ones so we are
+sure that the issue is specific to pata_pdc202xx_old + UDMA.
 
-I also suggested that lockless code should have its barriers clearly 
-documented and they should not really rely on kernel facilities 
-acting as memory barriers.
+Other than that I'm out of ideas, though the hint that the original driver
+works just fine should help driver's maintainer in fixing this regression.
 
-Then i also suggested that maybe in the future we could remove the 
-smp_wmb() from try_to_wake_up(). That was just an afterthought, and 
-a rather stupid one at that, as Linus quickly noted :-)
-
-	Ingo
+Thanks,
+Bart
