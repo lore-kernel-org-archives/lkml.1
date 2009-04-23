@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZDWPqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbZDWPs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZDWPqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZDWPqn
+	id S1753550AbZDWPs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZDWPsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:46:43 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:59401 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751064AbZDWPqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:46:43 -0400
-Date: Thu, 23 Apr 2009 17:46:41 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: akpm@linux-foundation.org, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, vapier@gentoo.org,
-       rongkai.zhan@windriver.com, balajirrao@openmoko.org,
-       david-b@pacbell.net, broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH] rtc: Make rtc_update_irq callable with irqs enabled
-Message-ID: <20090423174641.2b03e7a7@i1501.lan.towertech.it>
-In-Reply-To: <20090424.002900.11623503.anemo@mba.ocn.ne.jp>
-References: <20090410005820.4fcfcc1f@i1501.lan.towertech.it>
-	<20090423.235141.61509229.anemo@mba.ocn.ne.jp>
-	<20090423170253.6b6dfd21@i1501.lan.towertech.it>
-	<20090424.002900.11623503.anemo@mba.ocn.ne.jp>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 11:48:16 -0400
+Received: from kroah.org ([198.145.64.141]:34297 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbZDWPsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 11:48:15 -0400
+Date: Thu, 23 Apr 2009 08:45:02 -0700
+From: Greg KH <greg@kroah.com>
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "stable@kernel.org" <stable@kernel.org>, Eugene Teo <eteo@redhat.com>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Chris Wright <chrisw@sous-sol.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Jake Edge <jake@lwn.net>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Willy Tarreau <w@1wt.eu>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [stable] [patch 000/100] 2.6.29.2 -stable review
+Message-ID: <20090423154502.GA27609@kroah.com>
+References: <20090423072020.428683652@sous-sol.org> <200904231556.38723.tvrtko.ursulin@sophos.com> <20090423150200.GA26871@kroah.com> <200904231608.42147.tvrtko.ursulin@sophos.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904231608.42147.tvrtko.ursulin@sophos.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 00:29:00 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-
->   Are you willing to make some tests in that direction with your
-> >  drivers?  
+On Thu, Apr 23, 2009 at 04:08:41PM +0100, Tvrtko Ursulin wrote:
+> On Thursday 23 April 2009 16:02:00 Greg KH wrote:
+> [snip]
+> > > > > Hi,
+> > > > >
+> > > > > Could you please include a fix for forcedeth resume from hibernation
+> > > > > regression as well?
+> > > > >
+> > > > > http://marc.info/?l=linux-netdev&m=123885046818928&w=4
+> > > >
+> > > > Do you have the git commit id of this patch in Linus's tree?
+> > >
+> > > It should be this one 35a7433c789ba6df6d96b70fa745ae9e6cac0038.
+> >
+> > Looks good, we should queue it up for the next release (at 100 patches,
+> > this one looks pretty full...)
 > 
-> Yes, if we had consensus of the API change.  But since all my drivers
-> have IRQF_DISABLED and I don't want to drop them, I'm not a good
-> tester for this ;)
+> OK, but if at all possible please squeeze it in in .2. I copied stable twice I 
+> think during the discussion about this regression which was almost one month 
+> ago now.
 
- Is not an API change, we are gradually relaxing it if it
- proves workable :)
+Yes, but you never provided the git commit id of the patch that is in
+Linus's tree to us.  Without that, knowing what to add to the -stable
+tree is pretty much impossible, given our current workload of the
+-stable queue.
 
--- 
+Please make it very easy on us, we are slow :)
 
- Best regards,
+thanks,
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+greg k-h
