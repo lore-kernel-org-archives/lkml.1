@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbZDWHku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbZDWHnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbZDWHku (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756404AbZDWHaO
+	id S1758695AbZDWHnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbZDWHax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:30:14 -0400
-Received: from sous-sol.org ([216.99.217.87]:50366 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:30:53 -0400
+Received: from sous-sol.org ([216.99.217.87]:50518 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756356AbZDWHaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:30:11 -0400
-Message-Id: <20090423072548.873251740@sous-sol.org>
+	id S1756256AbZDWHaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:30:52 -0400
+Message-Id: <20090423072645.830562637@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:07 -0700
+Date: Thu, 23 Apr 2009 00:21:15 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 047/100] acer-wmi: Blacklist Acer Aspire One
+       alan@lxorguk.ukuu.org.uk, "Serge E. Hallyn" <serue@us.ibm.com>,
+       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>
+Subject: [patch 055/100] cap_prctl: dont set error to 0 at no_change
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=acer-wmi-blacklist-acer-aspire-one.patch
+Content-Disposition: inline; filename=cap_prctl-don-t-set-error-to-0-at-no_change.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,67 +36,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-upstream commit: a74dd5fdabcd34c93e17e9c7024eeb503c92b048
+upstream commit: 5bf37ec3e0f5eb79f23e024a7fbc8f3557c087f0
 
-The Aspire One's ACPI-WMI interface is a placeholder that does nothing,
-and the invalid results that we get from it are now causing userspace
-problems as acer-wmi always returns that the rfkill is enabled (i.e. the
-radio is off, when it isn't). As it's hardware controlled, acer-wmi
-isn't needed on the Aspire One either.
+One-liner: capsh --print is broken without this patch.
 
-Thanks to Andy Whitcroft at Canonical for tracking down Ubuntu's userspace
-issues to this.
+In certain cases, cap_prctl returns error > 0 for success.  However,
+the 'no_change' label was always setting error to 0.  As a result,
+for example, 'prctl(CAP_BSET_READ, N)' would always return 0.
+It should return 1 if a process has N in its bounding set (as
+by default it does).
 
-Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Reported-by: Andy Whitcroft <apw@canonical.com>
-Cc: stable@kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
+I'm keeping the no_change label even though it's now functionally
+the same as 'error'.
+
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: David Howells <dhowells@redhat.com>
+Signed-off-by: James Morris <jmorris@namei.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/platform/x86/acer-wmi.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ security/commoncap.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/platform/x86/acer-wmi.c
-+++ b/drivers/platform/x86/acer-wmi.c
-@@ -225,6 +225,25 @@ static struct quirk_entry quirk_fujitsu_
- 	.wireless = 2,
- };
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -916,7 +916,6 @@ changed:
+ 	return commit_creds(new);
  
-+/* The Aspire One has a dummy ACPI-WMI interface - disable it */
-+static struct dmi_system_id __devinitdata acer_blacklist[] = {
-+	{
-+		.ident = "Acer Aspire One (SSD)",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AOA110"),
-+		},
-+	},
-+	{
-+		.ident = "Acer Aspire One (HDD)",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AOA150"),
-+		},
-+	},
-+	{}
-+};
-+
- static struct dmi_system_id acer_quirks[] = {
- 	{
- 		.callback = dmi_matched,
-@@ -1254,6 +1273,12 @@ static int __init acer_wmi_init(void)
- 
- 	printk(ACER_INFO "Acer Laptop ACPI-WMI Extras\n");
- 
-+	if (dmi_check_system(acer_blacklist)) {
-+		printk(ACER_INFO "Blacklisted hardware detected - "
-+				"not loading\n");
-+		return -ENODEV;
-+	}
-+
- 	find_quirks();
- 
- 	/*
+ no_change:
+-	error = 0;
+ error:
+ 	abort_creds(new);
+ 	return error;
 
