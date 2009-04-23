@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbZDWHil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZDWHkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbZDWHil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZDWHaB
+	id S1758137AbZDWHkB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbZDWHaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:30:01 -0400
-Received: from sous-sol.org ([216.99.217.87]:48609 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:30:12 -0400
+Received: from sous-sol.org ([216.99.217.87]:50356 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756236AbZDWHaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:30:00 -0400
-Message-Id: <20090423072415.893880995@sous-sol.org>
+	id S1754817AbZDWHaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:30:09 -0400
+Message-Id: <20090423072401.322478151@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:51 -0700
+Date: Thu, 23 Apr 2009 00:20:49 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 031/100] mm: define a UNIQUE value for AS_UNEVICTABLE flag
+       alan@lxorguk.ukuu.org.uk, Jack Steiner <steiner@sgi.com>,
+       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [patch 029/100] cpumask: fix slab corruption caused by alloc_cpumask_var_node()
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=mm-define-a-unique-value-for-as_unevictable-flag.patch
+Content-Disposition: inline; filename=cpumask-fix-slab-corruption-caused-by-alloc_cpumask_var_node.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,57 +38,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+From: Jack Steiner <steiner@sgi.com>
 
-upstream commit: 9a896c9a48ac6704c0ce8ee081b836644d0afe40
+upstream commit: 4f032ac4122a77dbabf7a24b2739b2790448180f
 
-A new "address_space flag"--AS_MM_ALL_LOCKS--was defined to use the next
-available AS flag while the Unevictable LRU was under development.  The
-Unevictable LRU was using the same flag and "no one" noticed.  Current
-mainline, since 2.6.28, has same value for two symbolic flag names.
+Fix slab corruption caused by alloc_cpumask_var_node() overwriting the
+tail end of an off-stack cpumask.
 
-So, define a unique flag value for AS_UNEVICTABLE--up close to the other
-flags, [at the cost of an additional #ifdef] so we'll notice next time.
-Note that #ifdef is not actually required, if we don't mind having the
-unused flag value defined.
+The function zeros out cpumask bits beyond the last possible cpu.  The
+starting point for zeroing should be the beginning of the mask offset by a
+byte count derived from the number of possible cpus.  The offset was
+calculated in bits instead of bytes.  This resulted in overwriting the end
+of the cpumask.
 
-Replace #defines with an enum.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+Acked-by: Mike Travis <travis@sgi.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: <stable@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- include/linux/pagemap.h |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ lib/cpumask.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -18,9 +18,14 @@
-  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
-  * allocation mode flags.
-  */
--#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
--#define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
--#define AS_MM_ALL_LOCKS	(__GFP_BITS_SHIFT + 2)	/* under mm_take_all_locks() */
-+enum mapping_flags {
-+	AS_EIO		= __GFP_BITS_SHIFT + 0,	/* IO error on async write */
-+	AS_ENOSPC	= __GFP_BITS_SHIFT + 1,	/* ENOSPC on async write */
-+	AS_MM_ALL_LOCKS	= __GFP_BITS_SHIFT + 2,	/* under mm_take_all_locks() */
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-+#endif
-+};
+--- a/lib/cpumask.c
++++ b/lib/cpumask.c
+@@ -109,10 +109,10 @@ bool alloc_cpumask_var_node(cpumask_var_
+ #endif
+ 	/* FIXME: Bandaid to save us from old primitives which go to NR_CPUS. */
+ 	if (*mask) {
++		unsigned char *ptr = (unsigned char *)cpumask_bits(*mask);
+ 		unsigned int tail;
+ 		tail = BITS_TO_LONGS(NR_CPUS - nr_cpumask_bits) * sizeof(long);
+-		memset(cpumask_bits(*mask) + cpumask_size() - tail,
+-		       0, tail);
++		memset(ptr + cpumask_size() - tail, 0, tail);
+ 	}
  
- static inline void mapping_set_error(struct address_space *mapping, int error)
- {
-@@ -33,7 +38,6 @@ static inline void mapping_set_error(str
- }
- 
- #ifdef CONFIG_UNEVICTABLE_LRU
--#define AS_UNEVICTABLE	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
- 
- static inline void mapping_set_unevictable(struct address_space *mapping)
- {
+ 	return *mask != NULL;
 
