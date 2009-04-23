@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbZDWH57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbZDWHhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760207AbZDWH57 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757402AbZDWHe1
+	id S1757869AbZDWHhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZDWH3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:34:27 -0400
-Received: from sous-sol.org ([216.99.217.87]:51061 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:29:15 -0400
+Received: from sous-sol.org ([216.99.217.87]:48438 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757403AbZDWHe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:34:26 -0400
-Message-Id: <20090423072820.899375499@sous-sol.org>
+	id S1756061AbZDWH3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:29:12 -0400
+Message-Id: <20090423072116.282581638@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:30 -0700
+Date: Thu, 23 Apr 2009 00:20:23 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 070/100] hpt366: fix HPT370 DMA timeouts
+       alan@lxorguk.ukuu.org.uk, Andrea Righi <righi.andrea@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 003/100] fbdev: fix info->lock deadlock in fbcon_event_notify()
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=hpt366-fix-hpt370-dma-timeouts.patch
+Content-Disposition: inline; filename=fbdev-fix-info-lock-deadlock-in-fbcon_event_notify.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,44 +39,282 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Andrea Righi <righi.andrea@gmail.com>
 
-upstream commit: c018f1ee5cf81e58b93d9e93a2ee39cad13dc1ac
+upstream commit: 513adb58685615b0b1d47a3f0d40f5352beff189
 
-The big driver change in 2.4.19-rc1 introduced a regression for many HPT370[A]
-chips -- DMA stopped to work completely, only causing endless timeouts...
+fb_notifier_call_chain() is called with info->lock held, i.e.  in
+do_fb_ioctl() => FBIOPUT_VSCREENINFO => fb_set_var() and the some
+notifier callbacks, like fbcon_event_notify(), try to re-acquire
+info->lock again.
 
-The culprit has been identified (at last!): it turned to be the code resetting
-the DMA state machine before each transfer. Stop doing it now as this counter-
-measure has clearly caused more harm than good.
+Remove the lock/unlock_fb_info() in all the framebuffer notifier
+callbacks' and be sure to always call fb_notifier_call_chain() with
+info->lock held.
 
-This should fix the kernel.org bug #7703.
+[fixes hang caused by 66c1ca01]
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Reported-by: Pavel Roskin <proski@gnu.org>
+Reported-by: Eric Miao <eric.y.miao@gmail.com>
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/ide/hpt366.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/backlight/backlight.c |    3 -
+ drivers/video/backlight/lcd.c       |    3 -
+ drivers/video/console/fbcon.c       |   55 +-----------------------------------
+ drivers/video/fbmem.c               |   19 ++++++++++++
+ 4 files changed, 22 insertions(+), 58 deletions(-)
 
---- a/drivers/ide/hpt366.c
-+++ b/drivers/ide/hpt366.c
-@@ -114,6 +114,8 @@
-  *   the register setting lists into the table indexed by the clock selected
-  * - set the correct hwif->ultra_mask for each individual chip
-  * - add Ultra and MW DMA mode filtering for the HPT37[24] based SATA cards
-+ * - stop resetting HPT370's state machine before each DMA transfer as that has
-+ *   caused more harm than good
-  *	Sergei Shtylyov, <sshtylyov@ru.mvista.com> or <source@mvista.com>
-  */
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -35,8 +35,6 @@ static int fb_notifier_callback(struct n
+ 		return 0;
  
-@@ -133,7 +135,7 @@
- #define DRV_NAME "hpt366"
+ 	bd = container_of(self, struct backlight_device, fb_notif);
+-	if (!lock_fb_info(evdata->info))
+-		return -ENODEV;
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+@@ -49,7 +47,6 @@ static int fb_notifier_callback(struct n
+ 			backlight_update_status(bd);
+ 		}
+ 	mutex_unlock(&bd->ops_lock);
+-	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
  
- /* various tuning parameters */
--#define HPT_RESET_STATE_ENGINE
-+#undef	HPT_RESET_STATE_ENGINE
- #undef	HPT_DELAY_INTERRUPT
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -40,8 +40,6 @@ static int fb_notifier_callback(struct n
+ 	if (!ld->ops)
+ 		return 0;
  
- static const char *quirk_drives[] = {
+-	if (!lock_fb_info(evdata->info))
+-		return -ENODEV;
+ 	mutex_lock(&ld->ops_lock);
+ 	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
+ 		if (event == FB_EVENT_BLANK) {
+@@ -53,7 +51,6 @@ static int fb_notifier_callback(struct n
+ 		}
+ 	}
+ 	mutex_unlock(&ld->ops_lock);
+-	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
+ 
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2263,9 +2263,12 @@ static void fbcon_generic_blank(struct v
+ 	}
+ 
+ 
++	if (!lock_fb_info(info))
++		return;
+ 	event.info = info;
+ 	event.data = &blank;
+ 	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
++	unlock_fb_info(info);
+ }
+ 
+ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+@@ -2956,8 +2959,6 @@ static int fbcon_fb_unregistered(struct 
+ {
+ 	int i, idx;
+ 
+-	if (!lock_fb_info(info))
+-		return -ENODEV;
+ 	idx = info->node;
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] == idx)
+@@ -2985,8 +2986,6 @@ static int fbcon_fb_unregistered(struct 
+ 	if (primary_device == idx)
+ 		primary_device = -1;
+ 
+-	unlock_fb_info(info);
+-
+ 	if (!num_registered_fb)
+ 		unregister_con_driver(&fb_con);
+ 
+@@ -3027,11 +3026,8 @@ static int fbcon_fb_registered(struct fb
+ {
+ 	int ret = 0, i, idx;
+ 
+-	if (!lock_fb_info(info))
+-		return -ENODEV;
+ 	idx = info->node;
+ 	fbcon_select_primary(info);
+-	unlock_fb_info(info);
+ 
+ 	if (info_idx == -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+@@ -3152,53 +3148,23 @@ static int fbcon_event_notify(struct not
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_suspended(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_RESUME:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_resumed(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_modechanged(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE_ALL:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_set_all_vcs(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_DELETE:
+ 		mode = event->data;
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		ret = fbcon_mode_deleted(info, mode);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_FB_UNBIND:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		idx = info->node;
+-		unlock_fb_info(info);
+ 		ret = fbcon_fb_unbind(idx);
+ 		break;
+ 	case FB_EVENT_FB_REGISTERED:
+@@ -3217,29 +3183,14 @@ static int fbcon_event_notify(struct not
+ 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
+ 		break;
+ 	case FB_EVENT_BLANK:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_fb_blanked(info, *(int *)event->data);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_NEW_MODELIST:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_new_modelist(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_GET_REQ:
+ 		caps = event->data;
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_get_requirement(info, caps);
+-		unlock_fb_info(info);
+ 		break;
+ 	}
+ done:
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1086,8 +1086,11 @@ static long do_fb_ioctl(struct fb_info *
+ 			return -EINVAL;
+ 		con2fb.framebuffer = -1;
+ 		event.data = &con2fb;
++		if (!lock_fb_info(info))
++			return -ENODEV;
+ 		event.info = info;
+ 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
++		unlock_fb_info(info);
+ 		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_CON2FBMAP:
+@@ -1104,8 +1107,11 @@ static long do_fb_ioctl(struct fb_info *
+ 			break;
+ 		}
+ 		event.data = &con2fb;
++		if (!lock_fb_info(info))
++			return -ENODEV;
+ 		event.info = info;
+ 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
++		unlock_fb_info(info);
+ 		break;
+ 	case FBIOBLANK:
+ 		if (!lock_fb_info(info))
+@@ -1510,7 +1516,10 @@ register_framebuffer(struct fb_info *fb_
+ 	registered_fb[i] = fb_info;
+ 
+ 	event.info = fb_info;
++	if (!lock_fb_info(fb_info))
++		return -ENODEV;
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
++	unlock_fb_info(fb_info);
+ 	return 0;
+ }
+ 
+@@ -1544,8 +1553,12 @@ unregister_framebuffer(struct fb_info *f
+ 		goto done;
+ 	}
+ 
++
++	if (!lock_fb_info(fb_info))
++		return -ENODEV;
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
++	unlock_fb_info(fb_info);
+ 
+ 	if (ret) {
+ 		ret = -EINVAL;
+@@ -1579,6 +1592,8 @@ void fb_set_suspend(struct fb_info *info
+ {
+ 	struct fb_event event;
+ 
++	if (!lock_fb_info(info))
++		return;
+ 	event.info = info;
+ 	if (state) {
+ 		fb_notifier_call_chain(FB_EVENT_SUSPEND, &event);
+@@ -1587,6 +1602,7 @@ void fb_set_suspend(struct fb_info *info
+ 		info->state = FBINFO_STATE_RUNNING;
+ 		fb_notifier_call_chain(FB_EVENT_RESUME, &event);
+ 	}
++	unlock_fb_info(info);
+ }
+ 
+ /**
+@@ -1656,8 +1672,11 @@ int fb_new_modelist(struct fb_info *info
+ 	err = 1;
+ 
+ 	if (!list_empty(&info->modelist)) {
++		if (!lock_fb_info(info))
++			return -ENODEV;
+ 		event.info = info;
+ 		err = fb_notifier_call_chain(FB_EVENT_NEW_MODELIST, &event);
++		unlock_fb_info(info);
+ 	}
+ 
+ 	return err;
 
