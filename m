@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbZDWPT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbZDWPUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759914AbZDWPT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZDWPTq
+	id S1759761AbZDWPUc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZDWPUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:19:46 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37483 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbZDWPTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:19:46 -0400
-Date: Thu, 23 Apr 2009 17:23:23 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Johannes Weiner <hannes@cmpxchg.org>,
-       linux-kernel@vger.kernel.org, torvalds@osdl.org, akpm@osdl.org
-Subject: Re: [PATCH] Eliminate thousands of warnings in WARN_ON with gcc 3.2 build
-Message-ID: <20090423152323.GQ13896@one.firstfloor.org>
-References: <20090422221134.GA1753@basil.nowhere.org> <20090423120219.GA23479@cmpxchg.org> <20090423122327.GN13896@one.firstfloor.org> <20090423143859.GA20453@cmpxchg.org> <20090423151024.GO13896@one.firstfloor.org> <49F08447.9040003@linux.intel.com>
-Mime-Version: 1.0
+	Thu, 23 Apr 2009 11:20:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54265 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751344AbZDWPUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 11:20:19 -0400
+Date: Thu, 23 Apr 2009 17:16:33 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jan Kratochvil <jan.kratochvil@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>
+Subject: Q: ptrace_signal() && PTRACE_SETSIGINFO (Was: SIGSTOP && ptrace)
+Message-ID: <20090423151633.GA3120@redhat.com>
+References: <1158166a0904230515h333a78c9uf49931824c1dfe72@mail.gmail.com> <20090423142627.GA31572@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49F08447.9040003@linux.intel.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090423142627.GA31572@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 08:07:51AM -0700, Arjan van de Ven wrote:
-> Andi Kleen wrote:
-> >On Thu, Apr 23, 2009 at 04:38:59PM +0200, Johannes Weiner wrote:
-> >>>+void warn_slowpath_null(const char *file, int line)
-> >>>+{
-> >>>+	warn_slowpath_fmt(file, line, (const char *) { 0 });
-> >>>+}
-> >>>+EXPORT_SYMBOL(warn_slowpath_null);
-> >>I would WTF here without knowing the warning.  Can you add a comment?
-> >>
-> >>Otherwise, Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-> >
-> >Ok version with comment.
-> 
-> Makes sense if we plan to keep gcc 3.2 supported; if we plan to drop it 
-> then we shouldn't bother.
+ptrace_signal:
 
-It helps even for other compilers for code size, at least it shrunk Johannes' 
-kernel by about 3k
+	signr = current->exit_code;
 
-> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+	/* Update the siginfo structure if the signal has
+	   changed.  If the debugger wanted something
+	   specific in the siginfo structure then it should
+	   have updated *info via PTRACE_SETSIGINFO.  */
 
-Thanks.
+Yes. PTRACE_SETSIGINFO can change *info if debugger wants something
+special. But then we do:
 
--Andi
+	if (signr != info->si_signo) {
+		info->si_signo = signr;
+		info->si_errno = 0;
+		info->si_code = SI_USER;
+		info->si_pid = task_pid_vnr(current->parent);
+		info->si_uid = task_uid(current->parent);
+	}
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Why? If the tracer changes ->exit_code it should know what it does.
+Why do we reset *info?
+
+But the real question, how can PTRACE_SETSIGINFO change ->si_signo
+(for example, for do_signal_stop(si_signo)) if this in fact is not
+allowed?
+
+Oleg.
+
