@@ -1,79 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbZDWKEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZDWKIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbZDWKEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbZDWKDx
+	id S1756196AbZDWKIw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZDWKIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:03:53 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:54623 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756537AbZDWKDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:03:51 -0400
-Date: Thu, 23 Apr 2009 11:03:48 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 18/22] Use allocation flags as an index to the zone
-	watermark
-Message-ID: <20090423100348.GA26953@csn.ul.ie>
-References: <20090422171451.GG15367@csn.ul.ie> <1240422423.10627.96.camel@nimitz> <20090423092350.F6E6.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090423092350.F6E6.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 23 Apr 2009 06:08:43 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47389 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753816AbZDWKIm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 06:08:42 -0400
+To: tj@kernel.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net
+In-reply-to: <49EFB1A9.3060503@kernel.org> (message from Tejun Heo on Thu, 23
+	Apr 2009 09:09:13 +0900)
+Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
+References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org>
+Message-Id: <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 23 Apr 2009 12:08:38 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 09:27:15AM +0900, KOSAKI Motohiro wrote:
-> > On Wed, 2009-04-22 at 18:14 +0100, Mel Gorman wrote:
-> > > Preference of taste really. When I started a conversion to accessors, it
-> > > changed something recognised to something new that looked uglier to me.
-> > > Only one place cares about the union enough to access is via an array so
-> > > why spread it everywhere.
+On Thu, 23 Apr 2009, Tejun Heo wrote:
+> Miklos Szeredi wrote:
+
+> > What I changed (IIRC):
 > > 
-> > Personally, I'd say for consistency.  Someone looking at both forms
-> > wouldn't necessarily know that they refer to the same variables unless
-> > they know about the union.
+> >  - Don't store pointer to struct inode, struct fuse_inode, and struct
+> >    file in struct fuse_file.  Instead store nodeid in struct
+> >    fuse_file, no worries about object lifetimes this way.
 > 
-> for just clalification...
+> Hmm... there really isn't any object lifetime issue with or without
+> the pointers as both fuse_file and fuse_inode follow VFS lifetime
+> rules.
+
+I did find some problems with lifetimes (it was I think struct file
+still being used in release code, but it may have been something
+different).
+
+>   I tried several different approaches including adding nodeid
+> but what pushed me toward adding the pointers was that the parameter
+> passing and which uses/depends on what becomes a bit too complex with
+> other approaches.  e.g. How do you discern between needing vfs inode
+> and fuse inode?
+
+VFS inode should never be needed by the CUSE codepaths.  Well, maybe
+for setting access/modification times, but in any case those need not
+be shared with fuse code.
+
 > 
-> AFAIK, C language specification don't gurantee point same value.
-> compiler can insert pad between struct-member and member, but not insert
-> into array.
+> >  - Don't implement fsync and flush in CUSE, they don't really make
+> >    sense on character devices.  At least I can't think of any use for
+> >    them.
+> >  - release() in CUSE can be synchronous.  Asynchronous release causes
+> >    many headaches in fuse, but is necessary due to the possible DoS
+> >    that an unprivileged filesystem could do with an unrelated process.
+> >    Since CUSE servers are always privileged, this should not be an
+> >    issue.
 > 
-
-Considering that they are the same type for elements and arrays, I
-didn't think padding would ever be a problem.
-
-> However, all gcc version don't do that. I think. but perhaps I missed
-> some minor gcc release..
+> Cool.
 > 
-> So, I also like Dave's idea. but it only personal feeling.
+> >  - Other cleanups.
+> > 
+> > I still think that the INIT sequence in CUSE is way too complicated
+> > and that the kernel thread is unnecessary.  How about doing the init
+> > with a single CUSE_INIT message which embeds the fuse_init_in and
+> > fuse_init_out structures.
 > 
+> I don't see why the kernel thread is such a big problem.  It's just a
+> kernel thread.
 
-The tide is against me on this one :).
+I think it's an unnecessary complication.  Threads are useful if
+something needs to be _done_, but in this case nothing is done, just
+waiting for the reply.  One example why I find it hackish is that you
+are returning error values from the thread, as if it was a synchronous
+thing, but those errors are obviously lost.
 
-How about I roll a patch on top of this set that replaces the union by
-calling all sites? I figure that patch will go through a few revisions before
-people are happy with the final API. However, as the patch wouldn't change
-functionality, I'd like to see this series getting wider testing if possible. The
-replace-union-with-single-array patch can be easily folded in then when
-it settles.
+I don't see any problems with doing the device initialization in the
+context of the replying process (which will usually be the same as the
+one opening the device anyway).
 
-Sound like a plan?
+>  We can surely fold FUSE_INIT inside FUSE_INIT tho but
+> one way or the other doesn't make whole lot of difference.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I just think it would be cleaner, both code-wise and protocol-wise.  I
+can do the above cleanups if you have no objection.
+
+> > I also don't see the purpose of the CUSE_INIT_DONE message.  Isn't
+> > it enough not to send any other messages while the initialization is
+> > not complete?  This is what fuse does.
+> 
+> The difference between FUSE and CUSE in this regard is that the
+> synchornous part of initialization is much less for CUSE.  ie. For
+> FUSE, after the mount is complete, all accesses go to FUSE, so it's
+> all good.  However, for CUSE, the device nodes are setup
+> asynchronously, so there's no such inherent synchronization point as
+> mount.  This becomes a problem when CUSE is started from modprobe to
+> emulate devices on demand because modprobe should not return before
+> the device nodes are setup.
+
+Hmm, OK.
+
+Thanks,
+Miklos
