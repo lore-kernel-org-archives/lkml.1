@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbZDWHj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbZDWHhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbZDWHj0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbZDWHaI
+	id S1757815AbZDWHhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZDWH3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:30:08 -0400
-Received: from sous-sol.org ([216.99.217.87]:48619 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:29:13 -0400
+Received: from sous-sol.org ([216.99.217.87]:48437 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756285AbZDWHaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:30:04 -0400
-Message-Id: <20090423072437.524221582@sous-sol.org>
+	id S1756049AbZDWH3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:29:11 -0400
+Message-Id: <20090423072328.181381441@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:54 -0700
+Date: Thu, 23 Apr 2009 00:20:44 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 034/100] dm: preserve bi_io_vec when resubmitting bios
+       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>,
+       "Jens Axboe" <jens.axboe@oracle.com>
+Subject: [patch 024/100] md/raid1 - dont assume newly allocated bvecs are initialised.
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=dm-preserve-bi_io_vec-when-resubmitting-bios.patch
+Content-Disposition: inline; filename=md-raid1-don-t-assume-newly-allocated-bvecs-are-initialised.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,86 +36,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: NeilBrown <neilb@suse.de>
 
-upstream commit: a920f6b3accc77d9dddbc98a7426be23ee479625
+upstream commit: 303a0e11d0ee136ad8f53f747f3c377daece763b
 
-Device mapper saves and restores various fields in the bio, but it doesn't save
-bi_io_vec.  If the device driver modifies this after a partially successful
-request, dm-raid1 and dm-multipath may attempt to resubmit a bio that has
-bi_size inconsistent with the size of vector.
+Since commit d3f761104b097738932afcc310fbbbbfb007ef92
+newly allocated bvecs aren't initialised to NULL, so we have
+to be more careful about freeing a bio which only managed
+to get a few pages allocated to it.  Otherwise the resync
+process crashes.
 
-To make requests resubmittable in dm-raid1 and dm-multipath, we must save
-and restore the bio vector as well.
-
-To reduce the memory overhead involved in this, we do not save the pages in a
-vector and use a 16-bit field size if the page size is less than 65536.
+This patch is appropriate for 2.6.29-stable.
 
 Cc: stable@kernel.org
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Cc: "Jens Axboe" <jens.axboe@oracle.com>
+Reported-by: Gabriele Tozzi <gabriele@tozzi.eu>
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/md/dm-bio-record.h |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/md/raid1.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/drivers/md/dm-bio-record.h
-+++ b/drivers/md/dm-bio-record.h
-@@ -16,30 +16,56 @@
-  * functions in this file help the target record and restore the
-  * original bio state.
-  */
-+
-+struct dm_bio_vec_details {
-+#if PAGE_SIZE < 65536
-+	__u16 bv_len;
-+	__u16 bv_offset;
-+#else
-+	unsigned bv_len;
-+	unsigned bv_offset;
-+#endif
-+};
-+
- struct dm_bio_details {
- 	sector_t bi_sector;
- 	struct block_device *bi_bdev;
- 	unsigned int bi_size;
- 	unsigned short bi_idx;
- 	unsigned long bi_flags;
-+	struct dm_bio_vec_details bi_io_vec[BIO_MAX_PAGES];
- };
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -120,6 +120,7 @@ static void * r1buf_pool_alloc(gfp_t gfp
+ 				goto out_free_pages;
  
- static inline void dm_bio_record(struct dm_bio_details *bd, struct bio *bio)
- {
-+	unsigned i;
-+
- 	bd->bi_sector = bio->bi_sector;
- 	bd->bi_bdev = bio->bi_bdev;
- 	bd->bi_size = bio->bi_size;
- 	bd->bi_idx = bio->bi_idx;
- 	bd->bi_flags = bio->bi_flags;
-+
-+	for (i = 0; i < bio->bi_vcnt; i++) {
-+		bd->bi_io_vec[i].bv_len = bio->bi_io_vec[i].bv_len;
-+		bd->bi_io_vec[i].bv_offset = bio->bi_io_vec[i].bv_offset;
-+	}
- }
+ 			bio->bi_io_vec[i].bv_page = page;
++			bio->bi_vcnt = i+1;
+ 		}
+ 	}
+ 	/* If not user-requests, copy the page pointers to all bios */
+@@ -135,9 +136,9 @@ static void * r1buf_pool_alloc(gfp_t gfp
+ 	return r1_bio;
  
- static inline void dm_bio_restore(struct dm_bio_details *bd, struct bio *bio)
- {
-+	unsigned i;
-+
- 	bio->bi_sector = bd->bi_sector;
- 	bio->bi_bdev = bd->bi_bdev;
- 	bio->bi_size = bd->bi_size;
- 	bio->bi_idx = bd->bi_idx;
- 	bio->bi_flags = bd->bi_flags;
-+
-+	for (i = 0; i < bio->bi_vcnt; i++) {
-+		bio->bi_io_vec[i].bv_len = bd->bi_io_vec[i].bv_len;
-+		bio->bi_io_vec[i].bv_offset = bd->bi_io_vec[i].bv_offset;
-+	}
- }
- 
- #endif
+ out_free_pages:
+-	for (i=0; i < RESYNC_PAGES ; i++)
+-		for (j=0 ; j < pi->raid_disks; j++)
+-			safe_put_page(r1_bio->bios[j]->bi_io_vec[i].bv_page);
++	for (j=0 ; j < pi->raid_disks; j++)
++		for (i=0; i < r1_bio->bios[j]->bi_vcnt ; i++)
++			put_page(r1_bio->bios[j]->bi_io_vec[i].bv_page);
+ 	j = -1;
+ out_free_bio:
+ 	while ( ++j < pi->raid_disks )
 
