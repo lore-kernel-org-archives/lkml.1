@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbZDWNsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758409AbZDWNvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbZDWNsH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 09:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZDWNry
+	id S1758409AbZDWNvT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 09:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZDWNvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 09:47:54 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:59645 "EHLO pmx1.sophos.com"
+	Thu, 23 Apr 2009 09:51:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45248 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754095AbZDWNrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 09:47:53 -0400
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch 000/100] 2.6.29.2 -stable review
-Date: Thu, 23 Apr 2009 14:47:50 +0100
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-References: <20090423072020.428683652@sous-sol.org>
-In-Reply-To: <20090423072020.428683652@sous-sol.org>
-MIME-Version: 1.0
-Message-Id: <200904231447.50809.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 23/04/2009 14:47:51,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 23/04/2009 14:47:51,
-	Serialize complete at 23/04/2009 14:47:51
-X-TNEFEvaluated: 1
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1752596AbZDWNvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 09:51:07 -0400
+Date: Thu, 23 Apr 2009 15:51:05 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: npiggin@suse.de, paulmck@us.ibm.com, akpm@linux-foundation.org
+Subject: [PATCH] atomic: Only take lock when the counter drops to zero on UP as well (v2)
+Message-ID: <20090423135105.GU11220@bolzano.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 23 April 2009 08:20:20 Chris Wright wrote:
-> This is the start of the stable review cycle for the 2.6.29.2 release.
-> There are 100 patches in this series, all will be posted as a response
-> to this one.  If anyone has any issues with these being applied, please
-> let us know.  If anyone is a maintainer of the proper subsystem, and
-> wants to add a Signed-off-by: line to the patch, please respond with it.
->
-> These patches are sent out with a number of different people on the
-> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-> to add your name to the list.  If you want to be off the reviewer list,
-> also email us.
->
-> Responses should be made by Sat, Apr 25, 07:00 UTC.  Anything received
-> after that time might be too late.
+_atomic_dec_and_lock() should not unconditionally take the lock before
+calling atomic_dec_and_test() in the UP case. For consistency reasons it
+should behave exactly like in the SMP case.
+    
+Besides that this works around the problem that with CONFIG_DEBUG_SPINLOCK
+this spins in __spin_lock_debug() if the lock is already taken even if the
+counter doesn't drop to 0.
 
-Hi,
-
-Could you please include a fix for forcedeth resume from hibernation 
-regression as well?
-
-http://marc.info/?l=linux-netdev&m=123885046818928&w=4
-
-Tvrtko
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+---
+diff --git a/lib/dec_and_lock.c b/lib/dec_and_lock.c
+index a65c314..e73822a 100644
+--- a/lib/dec_and_lock.c
++++ b/lib/dec_and_lock.c
+@@ -19,11 +19,10 @@
+  */
+ int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
+ {
+-#ifdef CONFIG_SMP
+ 	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
+ 	if (atomic_add_unless(atomic, -1, 1))
+ 		return 0;
+-#endif
++
+ 	/* Otherwise do it the slow way */
+ 	spin_lock(lock);
+ 	if (atomic_dec_and_test(atomic))
