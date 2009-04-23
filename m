@@ -1,116 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZDWAbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZDWAgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbZDWAbv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 20:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZDWAbj
+	id S1753722AbZDWAgg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 20:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZDWAg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 20:31:39 -0400
-Received: from xenotime.net ([72.52.64.118]:59833 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751240AbZDWAbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 20:31:38 -0400
-Date: Wed, 22 Apr 2009 17:32:32 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Karsten Keil" <Karsten-Keil@t-online.de>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       David Miller <davem@davemloft.net>, tilman@imap.cc,
-       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 3/3] Add reference to CAPI 2.0 standard
-Message-Id: <20090422173232.ad2b3f49.rdunlap@xenotime.net>
-In-Reply-To: <f094d823a0fc52e010f99aec720c9144d454c2fa.1240410708.git.keil@b1-systems.de>
-References: <cover.1240410708.git.keil@b1-systems.de>
-	<f094d823a0fc52e010f99aec720c9144d454c2fa.1240410708.git.keil@b1-systems.de>
-Organization: YPO4
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Wed, 22 Apr 2009 20:36:27 -0400
+Received: from exprod6og101.obsmtp.com ([64.18.1.181]:44273 "HELO
+	exprod6og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750755AbZDWAg0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 20:36:26 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] net/ipv6/tcp_ipv6.c: fix sparse warnings
+Date: Wed, 22 Apr 2009 20:35:39 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090165F12C@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] net/ipv6/tcp_ipv6.c: fix sparse warnings
+Thread-Index: AcnDq2zdgJbEjyRAS+WZAE7R3u7yCQ==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 23 Apr 2009 00:36:24.0889 (UTC) FILETIME=[8836DA90:01C9C3AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 16:31:48 +0200 Karsten Keil wrote:
+Fix the following sparse warnings in net/ipv6/tcp_ipv6.c.
 
-> Move the entry about CAPI 2.0 to the beginning and add a URL.
-> Incorporate changes suggested by Randy Dunlap, thanks for proofreading.
-> 
-> Signed-off-by: Karsten Keil <keil@b1-systems.de>
-> ---
->  Documentation/isdn/INTERFACE.CAPI |   20 +++++++++++++-------
->  1 files changed, 13 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Documentation/isdn/INTERFACE.CAPI b/Documentation/isdn/INTERFACE.CAPI
-> index 8947ffc..4d802ee 100644
-> --- a/Documentation/isdn/INTERFACE.CAPI
-> +++ b/Documentation/isdn/INTERFACE.CAPI
-> @@ -3,6 +3,11 @@ Kernel CAPI Interface to Hardware Drivers
->  
->  1. Overview
->  
-> +From the CAPI 2.0 spezification:
-                     ~~~~~~~~~~~~~
+  warning: symbol 'tcp6_gro_receive' was not declared. Should it be static?
+  warning: symbol 'tcp6_gro_complete' was not declared. Should it be static?
 
-typo or language?    specification:
+Both symbols are exported but not referenced anywhere outside of
+this source file. Remove the exports and make the functions static.
 
-
-> +COMMON-ISDN-API (CAPI) is an application programming interface standard used
-> +to access ISDN equipment connected to basic rate interfaces (BRI) and primary
-> +rate interfaces (PRI).
-> +
->  Kernel CAPI operates as a dispatching layer between CAPI applications and CAPI
->  hardware drivers. Hardware drivers register ISDN devices (controllers, in CAPI
->  lingo) with Kernel CAPI to indicate their readiness to provide their service
-> @@ -12,6 +17,9 @@ application registration to an available device, forwarding it to the
->  corresponding hardware driver. Kernel CAPI then forwards CAPI messages in both
->  directions between the application and the hardware driver.
->  
-> +Format and semantics of CAPI messages are specified in the CAPI 2.0 standard.
-> +This standard is freely available from http://www.capi.org.
-> +
->  
->  2. Driver and Device Registration
->  
-> @@ -53,12 +61,10 @@ open() operation on regular files or character devices.
->  After a successful return from register_appl(), CAPI messages from the
->  application may be passed to the driver for the device via calls to the
->  send_message() callback function. The CAPI message to send is stored in the
-> -data portion of a skb. Conversely, the driver may call Kernel CAPI's
-> +data portion of an skb. Conversely, the driver may call Kernel CAPI's
->  capi_ctr_handle_message() function to pass a received CAPI message to Kernel
->  CAPI for forwarding to an application, specifying its ApplID.
->  
-> -Format and semantics of CAPI messages are specified in the CAPI 2.0 standard.
-> -
->  Deregistration requests (CAPI operation CAPI_RELEASE) from applications are
->  forwarded as calls to the release_appl() callback function, passing the same
->  ApplID as with register_appl(). After return from release_appl(), no CAPI
-> @@ -75,9 +81,9 @@ the following non-private fields, all to be set by the driver before calling
->  register_capi_driver():
->  
->  char name[32]
-> -	the name of the driver, as a zero terminated ASCII string
-> +	the name of the driver, as a zero-terminated ASCII string
->  char revision[32]
-> -	the revision number of the driver, as a zero terminated ASCII string
-> +	the revision number of the driver, as a zero-terminated ASCII string
->  int (*add_card)(struct capi_driver *driver, capicardparams *data)
->  	a callback function pointer (may be NULL)
->  
-> @@ -100,10 +106,10 @@ void *driverdata
->  	an opaque pointer to driver specific data, not touched by Kernel CAPI
->  
->  char name[32]
-> -	the name of the controller, as a zero terminated ASCII string
-> +	the name of the controller, as a zero-terminated ASCII string
->  
->  char *driver_name
-> -	the name of the driver, as a zero terminated ASCII string
-> +	the name of the driver, as a zero-terminated ASCII string
->  
->  int (*load_firmware)(struct capi_ctr *ctrlr, capiloaddata *ldata)
->  	(optional) pointer to a callback function for sending firmware and
-> -- 
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
 ---
-~Randy
+
+diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
+index 4b5aa18..d391555 100644
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -941,7 +941,7 @@ static int tcp_v6_gso_send_check(struct sk_buff *skb)
+ 	return 0;
+ }
+ 
+-struct sk_buff **tcp6_gro_receive(struct sk_buff **head, struct sk_buff *skb)
++static struct sk_buff **tcp6_gro_receive(struct sk_buff **head, struct sk_buff *skb)
+ {
+ 	struct ipv6hdr *iph = ipv6_hdr(skb);
+ 
+@@ -961,9 +961,8 @@ struct sk_buff **tcp6_gro_receive(struct sk_buff **head, struct sk_buff *skb)
+ 
+ 	return tcp_gro_receive(head, skb);
+ }
+-EXPORT_SYMBOL(tcp6_gro_receive);
+ 
+-int tcp6_gro_complete(struct sk_buff *skb)
++static int tcp6_gro_complete(struct sk_buff *skb)
+ {
+ 	struct ipv6hdr *iph = ipv6_hdr(skb);
+ 	struct tcphdr *th = tcp_hdr(skb);
+@@ -974,7 +973,6 @@ int tcp6_gro_complete(struct sk_buff *skb)
+ 
+ 	return tcp_gro_complete(skb);
+ }
+-EXPORT_SYMBOL(tcp6_gro_complete);
+ 
+ static void tcp_v6_send_response(struct sk_buff *skb, u32 seq, u32 ack, u32 win,
+ 				 u32 ts, struct tcp_md5sig_key *key, int rst) 
