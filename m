@@ -1,131 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751125AbZDWJFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZDWJHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751125AbZDWJFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 05:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZDWJE5
+	id S1754721AbZDWJHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 05:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZDWJHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 05:04:57 -0400
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:37861
-	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZDWJE4 (ORCPT
+	Thu, 23 Apr 2009 05:07:19 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:27128 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbZDWJHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 05:04:56 -0400
-Date: Thu, 23 Apr 2009 18:04:54 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Tim Gardner <timg@tpi.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Sony laptop: Some Sony Vaia laptops do not enable wwan
-	power by default.
-Message-ID: <20090423090454.GB24761@kamineko.org>
-References: <20090422185351.AB41AF88CE@sepang.rtg.net>
+	Thu, 23 Apr 2009 05:07:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vqHIUSP9GQPbRdqcUMEi23NvflB/g5Aykru1RHlF++XdvUNUuGb+51lAkldkXSYh+/
+         31jGwgaiDmcBZL/0iOtLn6BHRXx6Ot2taCXNQ3640subYenlyfR2ExLuJ4Jpa9QPM9x3
+         bGfoJKCI9ktjearXR1VVb3bZsQchEY4yW+1rg=
+Message-ID: <49F02FBE.3020504@panasas.com>
+Date: Thu, 23 Apr 2009 12:07:10 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090422185351.AB41AF88CE@sepang.rtg.net>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.29-rc4-1 x86_64
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steven Whitehouse <swhiteho@redhat.com>
+CC: Christoph Lameter <cl@linux.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] __ffs64()
+References: <1240415192.29604.90.camel@localhost.localdomain>	 <alpine.DEB.1.10.0904221654370.32682@qirst.com> <1240474923.3396.7.camel@localhost.localdomain>
+In-Reply-To: <1240474923.3396.7.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 12:53:51PM -0600, Tim Gardner wrote:
-> Mattia,
+On Apr. 23, 2009, 11:22 +0300, Steven Whitehouse <swhiteho@redhat.com> wrote:
+> Hi,
 > 
-> Does this patch makes sense for just the Vaio? I've had positive feedback from
-> the tester in the bug report.
+> On Wed, 2009-04-22 at 16:59 -0400, Christoph Lameter wrote:
+>> On Wed, 22 Apr 2009, Steven Whitehouse wrote:
+>>
+>>> I'd like to add a new bitop, __ffs64() which I need in order to fix a
+>>> bug in GFS2. The question is, where should it go?
+>> I think the location is right.
+>>
+>>> On 64 bit arches, __ffs64() would be a synonym for __ffs(), but on 32
+>>> bit arches it degenerates to a conditional plus a call to __ffs(). I'm
+>>> assuming that there would not be a lot of point in optimising this
+>>> operation on 32 bit arches even if such an instruction was available, so
+>>> that I should do something like the below patch.
+>>>
+>>> Does that seem reasonable, or should I give it a separate header file
+>>> under asm-generic/bitops/ like some of the similar operations? It looks
+>>> like I'd have to touch a lot of other files if I were to go that route,
+>> One issue may be that some 32 bit architectures have a better way of doing
+>> 64 bit ffs.
+>>
+> Yes, thats what I was worried about. I don't have a wide enough
+> knowledge of the different architectures to make a judgement about
+> whether this is likely or not.
 > 
-> rtg
-> -----------------
-> From 083972abb1d5e84845927b3925f077953c207b82 Mon Sep 17 00:00:00 2001
-> From: Tim Gardner <tim.gardner@canonical.com>
-> Date: Tue, 21 Apr 2009 11:09:10 -0600
-> Subject: [PATCH] Sony laptop: Some Sony Vaio laptops do not enable wwan power by default.
-> 
-> Bug: https://bugs.launchpad.net/bugs/364678
-> 
-> Added quirk to enable wwan power based on DMI information already present in the module.
-> It appears that wwan is not powered up from a cold boot.
+> I guess maybe the right thing to do is to leave it as I did it in the
+> patch and if an arch wants to create its own implementation, then it
+> could be moved at that stage.
 
-The bug reporter says that this happens when booting from windows to
-linux, is it still true when manually enabling the device in linux and
-then rebooting (into linux again)?
+Agreed.
 
-> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> ---
->  drivers/misc/sony-laptop.c |   24 +++++++++++++++++++++++-
->  1 files changed, 23 insertions(+), 1 deletions(-)
+Benny
+
 > 
-> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
-> index 7e73acc..eab7011 100644
-> --- a/drivers/misc/sony-laptop.c
-> +++ b/drivers/misc/sony-laptop.c
-> @@ -1248,10 +1248,13 @@ struct device_ctrl {
->  	u16				evport_offset;
->  	u8				has_camera;
->  	u8				has_bluetooth;
-> -	u8				has_wwan;
->  	struct sonypi_eventtypes	*event_types;
->  };
->  
-> +struct sony_pic_quirk_entry {
-> +	u8				set_wwan_power;
-> +};
-> +
->  struct sony_pic_dev {
->  	struct device_ctrl	*control;
->  	struct acpi_device	*acpi_dev;
-> @@ -1260,6 +1263,7 @@ struct sony_pic_dev {
->  	struct list_head	interrupts;
->  	struct list_head	ioports;
->  	struct mutex		lock;
-> +	struct sony_pic_quirk_entry *quirks;
->  	u8			camera_power;
->  	u8			bluetooth_power;
->  	u8			wwan_power;
-> @@ -2685,6 +2689,12 @@ static int sony_pic_add(struct acpi_device *device)
->  	if (result)
->  		goto err_remove_pf;
->  
-> +	if (spic_dev.quirks && spic_dev.quirks->set_wwan_power) {
-> +		/*
-> +		 * Power isn't enabled by default.
-> +		 */
-> +		sony_pic_set_wwanpower(1);
-> +	}
->  	return 0;
->  
->  err_remove_pf:
-> @@ -2755,6 +2765,16 @@ static struct acpi_driver sony_pic_driver = {
->  		},
->  };
->  
-> +static struct sony_pic_quirk_entry sony_pic_vaio_vgn = {
-> +	.set_wwan_power = 1,
-> +};
-> +
-> +static int dmi_matched(const struct dmi_system_id *dmi)
-> +{
-> +	spic_dev.quirks = dmi->driver_data;
-> +	return 0;
-> +}
-> +
->  static struct dmi_system_id __initdata sonypi_dmi_table[] = {
->  	{
->  		.ident = "Sony Vaio",
-> @@ -2769,6 +2789,8 @@ static struct dmi_system_id __initdata sonypi_dmi_table[] = {
->  			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
->  			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-"),
->  		},
-> +		.callback = dmi_matched,
-> +		.driver_data = &sony_pic_vaio_vgn,
+> Steve.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-This is like just enabling it on all type3 (and some type2) vaios.
-Might as well call your quirk unconditionally for all models.
-
-Honestly I'd rather work towards the rfkill implementation as Matthew
-suggests.
--- 
-mattia
-:wq!
