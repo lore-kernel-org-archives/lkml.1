@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZDWHug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759725AbZDWHvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbZDWHug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbZDWHd3
+	id S1759725AbZDWHvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbZDWHdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:33:29 -0400
-Received: from sous-sol.org ([216.99.217.87]:50920 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:33:46 -0400
+Received: from sous-sol.org ([216.99.217.87]:50976 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757224AbZDWHd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:33:28 -0400
-Message-Id: <20090423072944.703184870@sous-sol.org>
+	id S1757284AbZDWHdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:33:45 -0400
+Message-Id: <20090423072839.770227835@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:42 -0700
+Date: Thu, 23 Apr 2009 00:21:32 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, chrisw@redhat.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
-       Andrea Arcangeli <aarcange@redhat.com>, Avi Kivity <avi@redhat.com>
-Subject: [patch 082/100] KVM: Fix missing smp tlb flush in invlpg
+       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 072/100] mm: pass correct mm when growing stack
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=kvm-fix-missing-smp-tlb-flush-in-invlpg.patch
+Content-Disposition: inline; filename=mm-pass-correct-mm-when-growing-stack.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,52 +35,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Andrea Arcangeli <aarcange@redhat.com>
+From: Hugh Dickins <hugh@veritas.com>
 
-upstream commit: 4539b35881ae9664b0e2953438dd83f5ee02c0b4
+upstream commit: 05fa199d45c54a9bda7aa3ae6537253d6f097aa9
 
-When kvm emulates an invlpg instruction, it can drop a shadow pte, but
-leaves the guest tlbs intact.  This can cause memory corruption when
-swapping out.
+Tetsuo Handa reports seeing the WARN_ON(current->mm == NULL) in
+security_vm_enough_memory(), when do_execve() is touching the
+target mm's stack, to set up its args and environment.
 
-Without this the other cpu can still write to a freed host physical page.
-tlb smp flush must happen if rmap_remove is called always before mmu_lock
-is released because the VM will take the mmu_lock before it can finally add
-the page to the freelist after swapout. mmu notifier makes it safe to flush
-the tlb after freeing the page (otherwise it would never be safe) so we can do
-a single flush for multiple sptes invalidated.
+Yes, a UMH_NO_WAIT or UMH_WAIT_PROC call_usermodehelper() spawns
+an mm-less kernel thread to do the exec.  And in any case, that
+vm_enough_memory check when growing stack ought to be done on the
+target mm, not on the execer's mm (though apart from the warning,
+it only makes a slight tweak to OVERCOMMIT_NEVER behaviour).
 
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Cc: stable@kernel.org
-Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
-Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
-[mtosatti: backport to 2.6.29]
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/x86/kvm/paging_tmpl.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ mm/mmap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -476,16 +476,20 @@ static int FNAME(shadow_invlpg_entry)(st
- 	if (level == PT_PAGE_TABLE_LEVEL ||
- 	    ((level == PT_DIRECTORY_LEVEL) && is_large_pte(*sptep))) {
- 		struct kvm_mmu_page *sp = page_header(__pa(sptep));
-+		int need_flush = 0;
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1571,7 +1571,7 @@ static int acct_stack_growth(struct vm_a
+ 	 * Overcommit..  This must be the final test, as it will
+ 	 * update security statistics.
+ 	 */
+-	if (security_vm_enough_memory(grow))
++	if (security_vm_enough_memory_mm(mm, grow))
+ 		return -ENOMEM;
  
- 		sw->pte_gpa = (sp->gfn << PAGE_SHIFT);
- 		sw->pte_gpa += (sptep - sp->spt) * sizeof(pt_element_t);
- 
- 		if (is_shadow_present_pte(*sptep)) {
-+			need_flush = 1;
- 			rmap_remove(vcpu->kvm, sptep);
- 			if (is_large_pte(*sptep))
- 				--vcpu->kvm->stat.lpages;
- 		}
- 		set_shadow_pte(sptep, shadow_trap_nonpresent_pte);
-+		if (need_flush)
-+			kvm_flush_remote_tlbs(vcpu->kvm);
- 		return 1;
- 	}
- 	if (!is_shadow_present_pte(*sptep))
+ 	/* Ok, everything looks good - let it rip */
 
