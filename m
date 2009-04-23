@@ -1,103 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZDWHZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbZDWH1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZDWHZu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZDWHZh
+	id S1754102AbZDWH1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZDWH07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:25:37 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:53750 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752824AbZDWHZg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:25:36 -0400
-Date: Thu, 23 Apr 2009 09:25:30 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH][BUILD FAILURE 03/12] Re: Next April 21 : PPC64 randconfig
- [arch/powerpc/kernel/of_platform.o]
-In-Reply-To: <1240460606.6689.32.camel@localhost>
-Message-ID: <alpine.LRH.2.00.0904230924490.2313@vixen.sonytel.be>
-References: <20090422161648.9231.76057.sendpatchset@subratamodak.linux.ibm.com> <1240447420.6689.13.camel@localhost>  <49EFDD66.3060407@oracle.com> <1240460606.6689.32.camel@localhost>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Thu, 23 Apr 2009 03:26:59 -0400
+Received: from sous-sol.org ([216.99.217.87]:48057 "EHLO x200.localdomain"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751146AbZDWH06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:26:58 -0400
+Message-Id: <20090423072229.534145635@sous-sol.org>
+User-Agent: quilt/0.47-1
+Date: Thu, 23 Apr 2009 00:20:35 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>
+Subject: [patch 015/100] drm/i915: Change DCC tiling detection case to cover only mobile parts.
+References: <20090423072020.428683652@sous-sol.org>
+Content-Disposition: inline; filename=drm-i915-change-dcc-tiling-detection-case-to-cover-only-mobile-parts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, Michael Ellerman wrote:
-> On Wed, 2009-04-22 at 20:15 -0700, Randy Dunlap wrote:
-> > Michael Ellerman wrote:
-> > > On Wed, 2009-04-22 at 21:46 +0530, Subrata Modak wrote:
-> > >> On Wed, 2009-04-22 at 00:20 +0530, Subrata Modak wrote:
-> > >>> Reported this earlier on 14th April 2009:
-> > >>> http://lkml.org/lkml/2009/4/14/480,
-> > >>>
-> > >>> Michael,
-> > >>>
-> > >>> Any fix in sight ?
-> > >>> http://lkml.org/lkml/2009/4/14/676,
-> > >>>
-> > >>> CC      arch/powerpc/kernel/of_platform.o
-> > >>> arch/powerpc/kernel/of_platform.c: In function 'of_pci_phb_probe':
-> > >>> arch/powerpc/kernel/of_platform.c:270: error: implicit declaration of
-> > >>> function 'pci_devs_phb_init_dynamic'
-> > >>> arch/powerpc/kernel/of_platform.c:279: error: implicit declaration of
-> > >>> function 'scan_phb'
-> > >>> arch/powerpc/kernel/of_platform.c:295: error: implicit declaration of
-> > >>> function 'pci_bus_add_devices'
-> > >>> make[1]: *** [arch/powerpc/kernel/of_platform.o] Error 1
-> > >>> make: *** [arch/powerpc/kernel] Error 2
-> > >>> ---
-> > > 
-> > > The problem above is as I said before, that the Cell Kconfig forces on
-> > > PPC_OF_PLATFORM_PCI even if PCI is disabled. I think the proper fix is
-> > > just to have CELL_NATIVE force on PCI.
-> > > 
-> > > I don't know how you got the other errors, both pci_dn.c and pci_dlpar.c
-> > > are only built if CONFIG_PCI is enabled, see the Makefiles.
-> > 
-> > 
-> > The Kconfig could be more like this:
-> > config PPC_CELL_NATIVE
-> > 	bool
-> > 	select PPC_CELL_COMMON
-> > -	select PPC_OF_PLATFORM_PCI
-> > +	select PPC_OF_PLATFORM_PCI if PCI
-> 
-> That might be better. Although I think in truth the Cell code won't
-> build without PCI, but we could fix that. As I said in my patch I think
-> we do want PCI on Cell native, so we should just select it too.
-> 
-> http://patchwork.ozlabs.org/patch/26338/
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-Last time this came up, it was mentioned that QPACE doesn't have PCI.
+From: Eric Anholt <eric@anholt.net>
 
-With kind regards,
+upstream commit: 568d9a8f6d4bf81e0672c74573dc02981d31e3ea
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+Later spec investigation has revealed that every 9xx mobile part has
+had this register in this format.  Also, no non-mobile parts have been shown
+to have this register.  So make all mobile use the same code, and all
+non-mobile use the hack 965 detection.
 
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/gpu/drm/i915/i915_gem_tiling.c |   31 +++++++++++++++----------------
+ 1 file changed, 15 insertions(+), 16 deletions(-)
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+--- a/drivers/gpu/drm/i915/i915_gem_tiling.c
++++ b/drivers/gpu/drm/i915/i915_gem_tiling.c
+@@ -96,16 +96,16 @@ i915_gem_detect_bit_6_swizzle(struct drm
+ 		 */
+ 		swizzle_x = I915_BIT_6_SWIZZLE_NONE;
+ 		swizzle_y = I915_BIT_6_SWIZZLE_NONE;
+-	} else if ((!IS_I965G(dev) && !IS_G33(dev)) || IS_I965GM(dev) ||
+-		   IS_GM45(dev)) {
++	} else if (IS_MOBILE(dev)) {
+ 		uint32_t dcc;
+ 
+-		/* On 915-945 and GM965, channel interleave by the CPU is
+-		 * determined by DCC.  The CPU will alternate based on bit 6
+-		 * in interleaved mode, and the GPU will then also alternate
+-		 * on bit 6, 9, and 10 for X, but the CPU may also optionally
+-		 * alternate based on bit 17 (XOR not disabled and XOR
+-		 * bit == 17).
++		/* On mobile 9xx chipsets, channel interleave by the CPU is
++		 * determined by DCC.  For single-channel, neither the CPU
++		 * nor the GPU do swizzling.  For dual channel interleaved,
++		 * the GPU's interleave is bit 9 and 10 for X tiled, and bit
++		 * 9 for Y tiled.  The CPU's interleave is independent, and
++		 * can be based on either bit 11 (haven't seen this yet) or
++		 * bit 17 (common).
+ 		 */
+ 		dcc = I915_READ(DCC);
+ 		switch (dcc & DCC_ADDRESSING_MODE_MASK) {
+@@ -115,19 +115,18 @@ i915_gem_detect_bit_6_swizzle(struct drm
+ 			swizzle_y = I915_BIT_6_SWIZZLE_NONE;
+ 			break;
+ 		case DCC_ADDRESSING_MODE_DUAL_CHANNEL_INTERLEAVED:
+-			if (IS_I915G(dev) || IS_I915GM(dev) ||
+-			    dcc & DCC_CHANNEL_XOR_DISABLE) {
++			if (dcc & DCC_CHANNEL_XOR_DISABLE) {
++				/* This is the base swizzling by the GPU for
++				 * tiled buffers.
++				 */
+ 				swizzle_x = I915_BIT_6_SWIZZLE_9_10;
+ 				swizzle_y = I915_BIT_6_SWIZZLE_9;
+-			} else if ((IS_I965GM(dev) || IS_GM45(dev)) &&
+-				   (dcc & DCC_CHANNEL_XOR_BIT_17) == 0) {
+-				/* GM965/GM45 does either bit 11 or bit 17
+-				 * swizzling.
+-				 */
++			} else if ((dcc & DCC_CHANNEL_XOR_BIT_17) == 0) {
++				/* Bit 11 swizzling by the CPU in addition. */
+ 				swizzle_x = I915_BIT_6_SWIZZLE_9_10_11;
+ 				swizzle_y = I915_BIT_6_SWIZZLE_9_11;
+ 			} else {
+-				/* Bit 17 or perhaps other swizzling */
++				/* Bit 17 swizzling by the CPU in addition. */
+ 				swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
+ 				swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
+ 			}
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
