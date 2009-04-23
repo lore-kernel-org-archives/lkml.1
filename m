@@ -1,84 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZDWQL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZDWQNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112AbZDWQL5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZDWQLr
+	id S1753642AbZDWQNF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZDWQMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:11:47 -0400
-Received: from e24smtp03.br.ibm.com ([32.104.18.24]:35333 "EHLO
-	e24smtp03.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751344AbZDWQLq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:11:46 -0400
-Message-ID: <49F0933C.6040009@linux.vnet.ibm.com>
-Date: Thu, 23 Apr 2009 13:11:40 -0300
-From: Daniel Debonzi <debonzi@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Vladislav Bolkhovitin <vst@vlnb.net>, James Smart <James.Smart@emulex.com>,
-       "scst-devel@lists.sourceforge.net" <scst-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: [Scst-devel] Discussion about SCST sysfs layout and implementation.
-References: <49E7307A.8000205@vlnb.net> <49E77795.7080204@linux.vnet.ibm.com> <49E85F1C.7040106@vlnb.net> <49E8832F.6070302@linux.vnet.ibm.com> <49E88E3F.8030107@vlnb.net> <49E891C8.1050007@emulex.com> <49E8BFB2.50608@vlnb.net> <ac3eb2510904171056v4c6c971dx99bfb87464a6b02d@mail.gmail.com> <ac3eb2510904171124h11c4c70bu371fa06127cb45da@mail.gmail.com>
-In-Reply-To: <ac3eb2510904171124h11c4c70bu371fa06127cb45da@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 12:12:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49829 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbZDWQMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:12:49 -0400
+Date: Thu, 23 Apr 2009 12:04:27 -0400
+From: Valerie Aurora Henson <vaurora@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Sandeen <sandeen@redhat.com>, Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
+Message-ID: <20090423160426.GF8476@shell>
+References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422221748.8c9022d1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-I was off those days due to a long holiday here in Brazil. Now I am 
-getting back to it.
-
-Kay Sievers wrote:
-> On Fri, Apr 17, 2009 at 19:56, Kay Sievers <kay.sievers@vrfy.org> wrote:
->> On Fri, Apr 17, 2009 at 19:43, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
->>> Thank you for the suggestion. If nobody objects, we will go with
->>> /sys/class/scst_tgt.
->> On Fri, Apr 17, 2009 at 19:43, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
->>> I agree, looks like using struct device instead of struct kobject should
->>> additionally complicate the code a lot for not clear gain.
->> Thes both replies together suggest that you miss how sysfs and the
->> driver core works. Please go and read the current code, and look at
->> sysfs, before trying anything like this.
->>
->> There is no way to add any stuff to /sys/class/scst_tgt/ without using
->> proper "struct device" objects.
->>
->> For the same reason we will not have a disconnected device tree, we
->> will not havet any raw kobject in the /sys/devices, /sys/class,
->> /sys/bus directories.
+On Wed, Apr 22, 2009 at 10:17:48PM -0700, Andrew Morton wrote:
+> On Wed, 22 Apr 2009 20:12:57 -0400 Valerie Aurora Henson <vaurora@redhat.com> wrote:
 > 
-> As a starting point, consider creating a "scst" bus_type. Then make
-> sure all devices you need are uniquely named, so they can be in a flat
-> list in /sys/bus/scst/devices/.
+> > In the default mode for ext3 and btrfs, fsync() is both slow and
+> > unnecessary for some important application use cases - at the same
+> > time that it is absolutely required for correctness for other modes of
+> > ext3, ext4, XFS, etc.  If applications could easilyl distinguish
+> > between the two cases, they would be more likely to be correct and
+> > fast.
+> > 
+> > How about an fpathconf() variable, something like _PC_ORDERED?  E.g.:
+> > 
+> > 	/* Unoptimized example optional fsync() demo */
+> > 	write(fd);
+> > 	/* Only fsync() if we need it */
+> > 	if (fpath_conf(fd, _PC_ORDERED) != 1)
+> > 		fsync(fd);
+> > 	rename(tmp_path, new_path);
+> > 
+> > I know of two specific real-world cases in which this would
+> > significantly improve performance: (a) fsync() before rename(), (b)
+> > fsync() of the parent directory of a newly created file.  Case (b) is
+> > particularly nasty when you have multiple threads creating files in
+> > the same directory because the dir's i_mutex is held across fsync() -
+> > file creates become limited to the speed of sequential fsync()s.
+> > 
+> > Conceptual libc patch below.
 > 
-> Then add all the devices as struct_device to the tree, maybe use an
-> existing parent struct_device (like a pci device) if you have one, or
-> create a custom one in /sys/devices/ if there is nothing to use.
+> Would it be better to implement new syscall(s) with finer-grained control
+> and better semantics?  Then userspace would just need to to:
 > 
-> All the devices you add will show up in a hierarchy in /sys/devices/
-> depending on the parent information you supply, and every single
-> device of your subsystem will be listed in a flat list in
-> /sys/bus/scst/devices/*. You will also get proper events for userspace
-> that way.
+> 	fsync_on_steroids(fd, FSYNC_BEFORE_RENAME);
 > 
-> The question is where the actual block devices hang off, and if they
-> can use one of the created scst devices, or if they will be virtual
-> ones?
+> and that all gets down into the filesystem which can then work out what
+> it needs to do to implement the command.
 
-Vlad, how do you think we should move on it?
-Do you want me to try to go deeper on it and make a new plan/propose or 
-would you like to reformulate the RFC you did?
+You and Jamie have a good point: fsync() is a very big hammer used for
+many different purposes, and it would be nice to have finer-grained
+tools.  There are distinct limits to what you can do to optimize a
+full fsync(); we should be thrilled to get fewer of them from userspace.
 
-As you all know my knowledge still limited on this subject so I don't 
-feel comfortable to make this sort of decisions at this moments.
+Like others, I am concerned about the complexity for the programmer.
+Perhaps in addition to the various fine-grained options, there is a:
 
-Regards,
-Daniel Debonzi
+	fsync_on_steroids(fd, FSYNC_DO_WHAT_ORDERED_WOULD_DO);
 
+The idea is that we've currently got a lot of code that assumes ext3
+data=ordered semantics (btrfs will fulfill these assumptions too).  It
+would be nice if we had one simple drop-in test to distinguish between
+ext3-ordered/btrfs/reiserfs and all other fs's; I think we'd get a lot
+more adoption that way.
 
+All that being said, I'd be thrilled to have fine-grained fsync().
+
+-VAL
