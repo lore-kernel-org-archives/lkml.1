@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZDWXdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbZDWXeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbZDWXdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 19:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZDWXda
+	id S1757952AbZDWXeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 19:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbZDWXee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 19:33:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44926 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752328AbZDWXd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 19:33:29 -0400
-Date: Fri, 24 Apr 2009 00:31:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 1/2] do_execve() must not clear fs->in_exec if it was
-	set by another thread
-Message-ID: <20090423233157.GA22981@ZenIV.linux.org.uk>
-References: <20090401023849.GW28946@ZenIV.linux.org.uk> <20090401030339.GX28946@ZenIV.linux.org.uk> <20090406153127.GA21220@redhat.com> <Pine.LNX.4.64.0904191710320.9099@blonde.anvils> <20090421161006.GC5402@redhat.com> <alpine.LFD.2.00.0904210924270.2199@localhost.localdomain> <20090421171530.GA12014@redhat.com> <alpine.LFD.2.00.0904211032191.2199@localhost.localdomain> <Pine.LNX.4.64.0904212031120.10256@blonde.anvils> <20090423230156.GA31302@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423230156.GA31302@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 23 Apr 2009 19:34:34 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:38221 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753851AbZDWXed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 19:34:33 -0400
+Date: Fri, 24 Apr 2009 09:33:29 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200904232333.n3NNXTKV005460@localhost.localdomain>
+To: torvalds@linux-foundation.org
+Subject: [git pull] m68knommu arch fixes
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 01:01:56AM +0200, Oleg Nesterov wrote:
-> If do_execve() fails after check_unsafe_exec(), it clears fs->in_exec
-> unconditionally. This is wrong if we race with our sub-thread which
-> also does do_execve:
+
+Hi Linus,
+
+Please pull to get a small set of fixes for the m68knommu arch,
+and updates to the defconfigs.
+
+Regards
+Greg
 
 
-[snip]
 
-Applied (both of those).
+The following changes since commit ccc5ff94c66e628d3c501b26ace5d4339667715d:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../mason/btrfs-unstable
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
+
+Greg Ungerer (9):
+      m68knommu: fix missing .data.cacheline_aligned section
+      m68knommu: remove unused kernel stats offsets
+      m68knommu: fix DMA support for ColdFire
+      m68knommu: update the defconfig for the ColdFire 5208evb board
+      m68knommu: add a defconfig for the ColdFire M5272C3 board
+      m68knommu: update the default config for the ColdFire 5249EVB.
+      m68knommu: update the default config for the ColdFire 5257EVB board
+      m68knommu: update the default config for the ColdFire 5307C3 board
+      m68knommu: update the default config for the ColdFire 5407C3 board
+
+Richard Retanubun (1):
+      m68knommu: Fixed GPIO pin initialization for CONFIG_M5271 FEC.
+
+ arch/m68knommu/Kconfig                    |    1 +
+ arch/m68knommu/configs/m5208evb_defconfig |  163 +++++----
+ arch/m68knommu/configs/m5249evb_defconfig |  268 ++++++++++---
+ arch/m68knommu/configs/m5272c3_defconfig  |  645 +++++++++++++++++++++++++++++
+ arch/m68knommu/configs/m5275evb_defconfig |  167 +++++----
+ arch/m68knommu/configs/m5307c3_defconfig  |  231 ++++++++---
+ arch/m68knommu/configs/m5407c3_defconfig  |  179 +++++----
+ arch/m68knommu/kernel/asm-offsets.c       |    6 -
+ arch/m68knommu/kernel/dma.c               |   37 ++-
+ arch/m68knommu/kernel/vmlinux.lds.S       |    2 +
+ arch/m68knommu/platform/527x/config.c     |    5 +
+ 11 files changed, 1346 insertions(+), 358 deletions(-)
+ create mode 100644 arch/m68knommu/configs/m5272c3_defconfig
