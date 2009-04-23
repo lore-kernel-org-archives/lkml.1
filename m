@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbZDWTKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759035AbZDWTMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbZDWTKp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZDWTKf
+	id S1759035AbZDWTMd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZDWTMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:10:35 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:55014 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZDWTKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:10:34 -0400
-Subject: Re: 2.6.30-rc2 soft lockups: ACPI?  clock source problem?
-From: john stultz <johnstul@us.ibm.com>
-To: Dave Hansen <dave@sr71.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, lenb@kernel.org
-In-Reply-To: <1240511508.10627.159.camel@nimitz>
-References: <1240335038.11194.11.camel@nimitz>
-	 <20090422204557.10c3cc37.akpm@linux-foundation.org>
-	 <1240511508.10627.159.camel@nimitz>
-Content-Type: text/plain
-Date: Thu, 23 Apr 2009 12:10:27 -0700
-Message-Id: <1240513827.7224.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 15:12:15 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:61329 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbZDWTMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 15:12:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=JekwCQ5zxu5xT+2ozo186LRvUuubg0M1GxukQjfGlie4y4h6rndUSzi2e2qDx/wZMs
+         h9fcXbzo+Vler5o5Skb5SCO5PZIOc8qHxe18HarALsGOuDXwyIBHQfwLDSeC4BPUFgUm
+         PctMjdn9AutSwzrTmrxgsnrXdf5j0P2yMpSJQ=
+From: Alessio Igor Bogani <abogani@texware.it>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       LFSDEV <linux-fsdevel@vger.kernel.org>,
+       Alessio Igor Bogani <abogani@texware.it>
+Subject: [PATCH 0/5 -tip] umount_begin BKL pushdown
+Date: Thu, 23 Apr 2009 21:12:00 +0200
+Message-Id: <1240513925-5603-1-git-send-email-abogani@texware.it>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-23 at 11:31 -0700, Dave Hansen wrote:
-> On Wed, 2009-04-22 at 20:45 -0700, Andrew Morton wrote:
-> > (Is jstultz@us.ibm.com correct?)
-> 
-> Only I want it to go to the black hole which is Lotus Notes. :)
-> 
-> > On Tue, 21 Apr 2009 10:30:38 -0700 Dave Hansen <dave@sr71.net> wrote:
-> > > This was during my first boot of 2.6.30-rc2.
-> > 
-> > Did it ever happen again?
-> 
-> I've seen it on three different boots, but the stack traces were a bit
-> different each time.  So, I assume it is a true timekeeping thing
-> instead of something *actually* locking up.
-> 
-> > I assume this is a post-2.6.29 regression?  (Yet another.  We've been
-> > extra bad this time)
-> 
-> This laptop has been quite good to me and I haven't rebooted since the
-> late 2.6.28 days.  It isn't anything special, though.  Just a Lenovo
-> T61.  I wonder if my .config is a bit different.
+Push the BKL acquisition from vfs to every specific filesystems
+with hope that it can be eliminated in a second moment.
 
-I've got a T61 at home, so I'll try to test it out. Dave, can you send
-me your .config? Also any chance you can bisect this down a tiny bit?
-
-thanks
--john
-
+The first 4 patches add BKL lock into umount_begin() functions (for
+the filesystems that have this handler). The last one remove
+lock_kernel()/unlock_kernel() from fs/namespace.c (the only point
+that invoke umount_begin() funtcions).
