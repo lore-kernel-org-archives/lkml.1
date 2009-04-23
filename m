@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZDWQki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZDWQlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZDWQki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZDWQk2
+	id S1754006AbZDWQlN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZDWQkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:40:28 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:58196 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751422AbZDWQk1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:40:27 -0400
-Date: Thu, 23 Apr 2009 18:40:24 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: vapier.adi@gmail.com, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       hcegtvedt@atmel.com, vapier@gentoo.org, rongkai.zhan@windriver.com,
-       balajirrao@openmoko.org, david-b@pacbell.net,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [rtc-linux] Re: [PATCH] rtc: Make rtc_update_irq callable with
-  irqs enabled
-Message-ID: <20090423184024.39402a8f@i1501.lan.towertech.it>
-In-Reply-To: <8bd0f97a0904230930w7c9ffaa4x5110c59098ff475b@mail.gmail.com>
-References: <1239036633-10032-1-git-send-email-anemo@mba.ocn.ne.jp>
-	<20090409153921.04b6384c.akpm@linux-foundation.org>
-	<20090410005820.4fcfcc1f@i1501.lan.towertech.it>
-	<20090423.235141.61509229.anemo@mba.ocn.ne.jp>
-	<20090423170253.6b6dfd21@i1501.lan.towertech.it>
-	<8bd0f97a0904230807q6c40436wa561d7b26db26cef@mail.gmail.com>
-	<20090423173728.4fa010fa@i1501.lan.towertech.it>
-	<8bd0f97a0904230930w7c9ffaa4x5110c59098ff475b@mail.gmail.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 23 Apr 2009 12:40:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48881 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752906AbZDWQky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:40:54 -0400
+Date: Thu, 23 Apr 2009 18:36:24 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
+       viro@zeniv.linux.org.uk,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Document that wake_up(), complete() and co. imply a
+	full memory barrier
+Message-ID: <20090423163624.GA6732@redhat.com>
+References: <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <20090422175753.GA14236@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422175753.GA14236@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009 12:30:58 -0400
-Mike Frysinger <vapier.adi@gmail.com> wrote:
+On 04/22, Ingo Molnar wrote:
+>
+> * David Howells <dhowells@redhat.com> wrote:
+>
+> The dangerous pattern is lockless code doing wakeups. But lockless
+> code always has to use proper barriers or atomics anyway, and has to
+> be aware of the fact that kernel primitives they call are not
+> necessarily full memory barriers.
+>
+> In fact i'd encourage to _not_ document try_to_lock() as a write
+> barrier either - but rather have explicit barriers where they are
+> needed. Then we could remove that barrier from try_to_wake_up() too
+> ;-)
 
->   for the blackfin you should just check if
-> >  you have locking issues in your irq routine  
-> 
-> the Blackfin driver calls rtc_update_irq() from its IRQ handler and
-> the handler is not registered with IRQF_DISABLED.  it makes more sense
-> to me to fix rtc_update_irq() than require all RTC drivers to register
-> with IRQF_DISABLED.  especially in my case as the Blackfin driver
-> itself doesnt need any locks.
+Well. I think in that case almost every try_to_wake_up/wake_up_process
+needs mb().
 
- I agree. rtc_update_irq is not problematic by itself, it just takes
- locks that other parts of the driver should take appropriately.
+For example:
 
- For example, if you take irq_lock with irqs enabled you
- will get in trouble. blackfin seems ok, for the other
- drivers we need to verify this.
+	do_nanosleep:
 
--- 
+		for (;;) {
+			set_current_state(TASK_INTERRUPTIBLE);
+			if (likely(t->task))
+				schedule();
+			break;
+		}
 
- Best regards,
+	hrtimer_wakeup:
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+		task = t->task
+		t->task = NULL;
+		wake_up_process(task);
 
-  http://www.towertech.it
+If try_to_wake_up() has no the barrier semantics, we can miss the event.
+"t->task = NULL" and the reading of task->state must not be reordered.
+
+Oleg.
 
