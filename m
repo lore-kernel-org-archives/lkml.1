@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZDWB0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZDWBdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbZDWB0o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 21:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZDWB0e
+	id S1753502AbZDWBdI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 21:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZDWBcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 21:26:34 -0400
-Received: from THUNK.ORG ([69.25.196.29]:50238 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbZDWB0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 21:26:34 -0400
-Date: Wed, 22 Apr 2009 21:22:54 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>, randy.dunlap@oracle.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>,
-       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
-       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
-       agk@sourceware.org, subrata@linux.vnet.ibm.com,
-       Paul Menage <menage@google.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
-       ngupta@google.com
-Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
-Message-ID: <20090423012254.GZ15541@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Andrea Righi <righi.andrea@gmail.com>, randy.dunlap@oracle.com,
-	Carl Henrik Lunde <chlunde@ping.uio.no>,
-	Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
-	Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
-	dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
-	agk@sourceware.org, subrata@linux.vnet.ibm.com,
-	Paul Menage <menage@google.com>, akpm@linux-foundation.org,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-	dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
-	ngupta@google.com
-References: <20090421163537.GI19186@mit.edu> <20090421172317.GM19637@balbir.in.ibm.com> <20090421174620.GD15541@mit.edu> <20090421181429.GO19637@balbir.in.ibm.com> <20090421191401.GF15541@mit.edu> <20090421204905.GA5573@linux> <20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com> <20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com> <20090422102239.GA1935@linux> <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 22 Apr 2009 21:32:54 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3915 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbZDWBcx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 21:32:53 -0400
+Subject: Re: RFC: introduce struct ksymbol
+From: Joe Perches <joe@perches.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090418160910.GA6212@nowhere>
+References: <1239753659-11790-1-git-send-email-fweisbec@gmail.com>
+	 <1239771791.32241.6.camel@localhost> <20090415055839.GA12040@elte.hu>
+	 <200904152021.41427.rusty@rustcorp.com.au>
+	 <1239954933.31728.12.camel@localhost>  <20090418160910.GA6212@nowhere>
+Content-Type: text/plain
+Date: Wed, 22 Apr 2009 18:31:46 -0700
+Message-Id: <1240450306.21848.187.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 09:05:35AM +0900, KAMEZAWA Hiroyuki wrote:
-> So, current status is.
-> 
->   A. memcg should support dirty_ratio for its own memory reclaim.
->      in plan.
-> 
->   B. another cgroup can be implemnted to support cgroup_dirty_limit().
->      But relationship with "A" should be discussed.
->      no plan yet.
-> 
->   C. I/O cgroup and bufferred I/O tracking system.
->      Now under patch review.
-> 
-> And this I/O throttle is mainly for "C" discussion. 
+On Sat, 2009-04-18 at 18:09 +0200, Frederic Weisbecker wrote:
+> On Fri, Apr 17, 2009 at 12:55:33AM -0700, Joe Perches wrote:
+> > On Wed, 2009-04-15 at 20:21 +0930, Rusty Russell wrote: 
+> > > The current symbol printing APIs are awful; we should address them first
+> > > (like the %pF patch does) IMHO.
+> > I suggest just %pS<type>
+> > With %pS, struct ksym is probably not all that
+> > useful unless it's for something like a sscanf.
+> > Today there are these symbol uses:
+> > name, offset, size, modname
+> > So perhaps %pS<foo> where foo is any combination of:
+> > n name
+> > o offset
+> > s size
+> > m modname
+> > a all
+> > and if not specified is a name lookup ("%pSn").
+> It seems to me a rather good idea, it offers a good granularity
+> about what has to displayed.
 
-How much testing has been done in terms of whether the I/O throttling
-actually works?  Not just, "the kernel doesn't crash", but that where
-you have one process generating a large amount of I/O load, in various
-different ways, and whether the right things happens?  If so, how has
-this been measured?
+After implementing this %pS<foo> in a local tree,
+I started to remove all print_symbol uses.
 
-I'm really concerned that given some of the ways that I/O will "leak"
-out --- the via pdflush, swap writeout, etc., that without the rest of
-the pieces in place, I/O throttling by itself might not prove to be
-very effective.  Sure, if the workload is only doing direct I/O, life
-is pretty easy and it shouldn't be hard to throttle the cgroup.
+print_symbol is used in <foo>_warning_symbol calls.
+These <foo>_warning_symbol uses seem dead.
 
-But in the case where there is bufferred I/O, without write
-throttling, it's hard to see how well the I/O controller will work in
-practice.  In fact, I wouldn't be that surprised if it's possible to
-trigger the OOM killer.......
+Are they in use in some way or should they just
+be removed?
 
-Regards,
+see: http://lkml.org/lkml/2009/2/5/142
 
-						- Ted
+$ grep -r --include=*.[chS] -nH -e warning_symbol *
+arch/x86/kernel/dumpstack.c:115:print_trace_warning_symbol(void *data, char *msg, unsigned long symbol)
+arch/x86/kernel/dumpstack.c:145:	.warning_symbol = print_trace_warning_symbol,
+arch/x86/kernel/stacktrace.c:17:save_stack_warning_symbol(void *data, char *msg, unsigned long symbol)
+arch/x86/kernel/stacktrace.c:57:	.warning_symbol = save_stack_warning_symbol,
+arch/x86/kernel/stacktrace.c:64:	.warning_symbol = save_stack_warning_symbol,
+arch/x86/oprofile/backtrace.c:18:static void backtrace_warning_symbol(void *data, char *msg,
+arch/x86/oprofile/backtrace.c:45:	.warning_symbol = backtrace_warning_symbol,
+arch/x86/include/asm/stacktrace.h:11:	void (*warning_symbol)(void *data, char *msg, unsigned long symbol);
+kernel/trace/trace_sysprof.c:64:backtrace_warning_symbol(void *data, char *msg, unsigned long symbol)
+kernel/trace/trace_sysprof.c:93:	.warning_symbol		= backtrace_warning_symbol,
+
+
+
