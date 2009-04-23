@@ -1,260 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZDVXtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbZDWAH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbZDVXtV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 19:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZDVXtM
+	id S1752902AbZDWAH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 20:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZDWAHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 19:49:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:46301 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbZDVXtJ convert rfc822-to-8bit (ORCPT
+	Wed, 22 Apr 2009 20:07:14 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41519 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbZDWAHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 19:49:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=h1V0T9heQ2cXV7QB7fHumz21ZD8ETorwtwOtTsafRWbPgpte5UufnoQp2Jc9fF3HOs
-         2xZUOWdTHxc7nh+VIRoJvRvlSK1lKS/Ro6ir+4u9ld+POsaZk2mQWoc7gKN5+qH5UDjw
-         yjDHCOZHh2JsVFXwqN7bFL/FuRke7ciV74kjo=
-MIME-Version: 1.0
-In-Reply-To: <8763gxoz50.fsf_-_@basil.nowhere.org>
-References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu>
-	 <8763gxoz50.fsf_-_@basil.nowhere.org>
-Date: Wed, 22 Apr 2009 16:49:08 -0700
-Message-ID: <3605561d0904221649n169dc579xb0694297154d97fa@mail.gmail.com>
-Subject: Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re: 
-	New x86 warning
-From: Joe Damato <ice799@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 22 Apr 2009 20:07:12 -0400
+Date: Thu, 23 Apr 2009 09:05:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
+       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
+       agk@sourceware.org, subrata@linux.vnet.ibm.com,
+       Paul Menage <menage@google.com>, Theodore Tso <tytso@mit.edu>,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       matt@bluehost.com, roberto@unbit.it, ngupta@google.com
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-Id: <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090422102239.GA1935@linux>
+References: <20090421140631.GF19186@mit.edu>
+	<20090421143130.GA22626@linux>
+	<20090421163537.GI19186@mit.edu>
+	<20090421172317.GM19637@balbir.in.ibm.com>
+	<20090421174620.GD15541@mit.edu>
+	<20090421181429.GO19637@balbir.in.ibm.com>
+	<20090421191401.GF15541@mit.edu>
+	<20090421204905.GA5573@linux>
+	<20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422102239.GA1935@linux>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 1:45 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> Ingo Molnar <mingo@elte.hu> writes:
->
->> * Jeff Garzik <jeff@garzik.org> wrote:
->>
->>> On x86-32, this warning now appears for me in 2.6.30-rc3, and did
->>> not appear in 2.6.29.
->>>
->>> drivers/acpi/acpica/tbfadt.c: In function 'acpi_tb_create_local_fadt':
->>> /spare/repo/linux-2.6/arch/x86/include/asm/string_32.h:75: warning:
->>> array subscript is above array bounds
->>
->> Last i checked it was a GCC bounds check bogosity. All attempts to
->> work it around or annotate it sanely (without changing the assembly
->> code) failed. (new ideas welcome)
->>
->> The closest i came was the hacklet below to the assembly code. [with
->> an intentionally corrupted patch header to make it harder to apply
->> accidentally.]
->
-> Modern gcc (and that is all that is supported now) should be able to
-> generate this code on its own already.  So if you call __builtin_* it
-> will  just work (that is what 64bit does) without that explicit code.
->
-> Here's a patch that does that with some numbers. It gives about 3k
-> smaller kernels on my configuration.
->
-> IMHO it's long overdue to do this for 32bit too.
->
-> It's a very attractive patch because it removes a lot of code:
+On Wed, 22 Apr 2009 12:22:41 +0200
+Andrea Righi <righi.andrea@gmail.com> wrote:
+ 
+> Actually I was proposing something quite similar, if I've understood
+> well. Just add a hook in balance_dirty_pages() to throttle tasks in
+> cgroups that exhausted their IO BW.
+> 
+> The way to do so will be similar to the per-bdi write throttling, taking
+> in account the IO requests previously submitted per cgroup, the pages
+> dirtied per cgroup (considering that are not necessarily dirtied by the
+> owner of the page) and apply something like congestion_wait() to
+> throttle the tasks in the cgroups that exceeded the BW limit.
+> 
+> Maybe we can just introduce cgroup_dirty_limit() simply replicating what
+> we're doing for task_dirty_limit(), but using per cgroup statistics of
+> course.
+> 
+> I can change the io-throttle controller to do so. This feature should be
+> valid also for the proportional BW approach.
+> 
+> BTW Vivek's proposal to also dispatch IO requests according to cgroup
+> proportional BW limits can be still valid and it is worth to be tested
+> IMHO. But we must also find a way to say to the right cgroup: hey! stop
+> to waste the memory with dirty pages, because you've directly or
+> indirectly generated too much IO in the system and I'm throttling and/or
+> not scheduling your IO requests.
+> 
+> Objections?
+> 
+No objections. plz let me know my following understanding is right.
 
-I think this patch is great. Perhaps this would be a good time to also
-clean out memset for x86_32? (If needed, I can start a new email
-thread with this patch) I've built and booted this on my x86_32
-hardware.
+  1. dirty_ratio should be supported per cgroup.
+     - Memory cgroup should support dirty_ratio or dirty_ratio cgroup should be implemented.
+       For doing this, we can make use of page_cgroup.
 
-[danger: a newb's patch below]
+       One good point of dirty-ratio cgroup is that dirty-ratio accounting is done
+       against a cgroup which made pages dirty not against a owner of the page. But
+       if dirty_ratio cgroup is completely independent from mem_cgroup, it cannot
+       be a help for memory reclaiming.
+       Then,
+         - memcg itself should have dirty_ratio check.
+         - like bdi/task_dirty_limit(), a cgroup (which is not memcg) can be used
+           another filter for dirty_ratio.
 
-Joe
+  2. dirty_ratio is not I/O BW control.
 
---
+  3. I/O BW(limit) control cgroup should be implemented and it should be exsiting
+     in I/O scheduling layer or somewhere around. But it's not easy.
 
-Define memset to __builtin_memset and gcc should do the right thing.
-Keep around the generic memset routine that gcc can use when it does
-not inline. Removes a bunch of ugly code, too.
+  4. To track bufferred I/O, we have to add "tag" to pages which tell us who
+     generated the I/O. Now it's called blockio-cgroup and implementation details
+     are still under discussion.
 
-Signed-off-by: Joe Damato <ice799@gmail.com>
----
- arch/x86/include/asm/string_32.h |  117 +-------------------------------------
- arch/x86/lib/memcpy_32.c         |   12 ++++
- 2 files changed, 15 insertions(+), 114 deletions(-)
+So, current status is.
 
-diff --git a/arch/x86/include/asm/string_32.h b/arch/x86/include/asm/string_32.h
-index 29fff54..aedee80 100644
---- a/arch/x86/include/asm/string_32.h
-+++ b/arch/x86/include/asm/string_32.h
-@@ -30,7 +30,6 @@ extern char *strchr(const char *s, int c);
- extern size_t strlen(const char *s);
+  A. memcg should support dirty_ratio for its own memory reclaim.
+     in plan.
 
- #define __HAVE_ARCH_MEMCPY
--
- extern void *__memcpy(void *to, const void *from, size_t n);
+  B. another cgroup can be implemnted to support cgroup_dirty_limit().
+     But relationship with "A" should be discussed.
+     no plan yet.
 
- #ifdef CONFIG_X86_USE_3DNOW
-@@ -79,42 +78,8 @@ void *memmove(void *dest, const void *src, size_t n);
- #define __HAVE_ARCH_MEMCHR
- extern void *memchr(const void *cs, int c, size_t count);
+  C. I/O cgroup and bufferred I/O tracking system.
+     Now under patch review.
 
--static inline void *__memset_generic(void *s, char c, size_t count)
--{
--	int d0, d1;
--	asm volatile("rep\n\t"
--		     "stosb"
--		     : "=&c" (d0), "=&D" (d1)
--		     : "a" (c), "1" (s), "0" (count)
--		     : "memory");
--	return s;
--}
--
--/* we might want to write optimized versions of these later */
--#define __constant_count_memset(s, c, count) __memset_generic((s),
-(c), (count))
--
--/*
-- * memset(x, 0, y) is a reasonably common thing to do, so we want to fill
-- * things 32 bits at a time even when we don't know the size of the
-- * area at compile-time..
-- */
--static __always_inline
--void *__constant_c_memset(void *s, unsigned long c, size_t count)
--{
--	int d0, d1;
--	asm volatile("rep ; stosl\n\t"
--		     "testb $2,%b3\n\t"
--		     "je 1f\n\t"
--		     "stosw\n"
--		     "1:\ttestb $1,%b3\n\t"
--		     "je 2f\n\t"
--		     "stosb\n"
--		     "2:"
--		     : "=&c" (d0), "=&D" (d1)
--		     : "a" (c), "q" (count), "0" (count/4), "1" ((long)s)
--		     : "memory");
--	return s;
--}
-+#define __HAVE_ARCH_MEMSET
-+extern void *__memset(void *s, char c, size_t count);
+And this I/O throttle is mainly for "C" discussion. 
 
- /* Added by Gertjan van Wingerde to make minix and sysv module work */
- #define __HAVE_ARCH_STRNLEN
-@@ -124,83 +89,7 @@ extern size_t strnlen(const char *s, size_t count);
- #define __HAVE_ARCH_STRSTR
- extern char *strstr(const char *cs, const char *ct);
+Right ?
 
--/*
-- * This looks horribly ugly, but the compiler can optimize it totally,
-- * as we by now know that both pattern and count is constant..
-- */
--static __always_inline
--void *__constant_c_and_count_memset(void *s, unsigned long pattern,
--				    size_t count)
--{
--	switch (count) {
--	case 0:
--		return s;
--	case 1:
--		*(unsigned char *)s = pattern & 0xff;
--		return s;
--	case 2:
--		*(unsigned short *)s = pattern & 0xffff;
--		return s;
--	case 3:
--		*(unsigned short *)s = pattern & 0xffff;
--		*((unsigned char *)s + 2) = pattern & 0xff;
--		return s;
--	case 4:
--		*(unsigned long *)s = pattern;
--		return s;
--	}
--
--#define COMMON(x)							\
--	asm volatile("rep ; stosl"					\
--		     x							\
--		     : "=&c" (d0), "=&D" (d1)				\
--		     : "a" (eax), "0" (count/4), "1" ((long)s)	\
--		     : "memory")
--
--	{
--		int d0, d1;
--#if __GNUC__ == 4 && __GNUC_MINOR__ == 0
--		/* Workaround for broken gcc 4.0 */
--		register unsigned long eax asm("%eax") = pattern;
--#else
--		unsigned long eax = pattern;
--#endif
--
--		switch (count % 4) {
--		case 0:
--			COMMON("");
--			return s;
--		case 1:
--			COMMON("\n\tstosb");
--			return s;
--		case 2:
--			COMMON("\n\tstosw");
--			return s;
--		default:
--			COMMON("\n\tstosw\n\tstosb");
--			return s;
--		}
--	}
--
--#undef COMMON
--}
--
--#define __constant_c_x_memset(s, c, count)			\
--	(__builtin_constant_p(count)				\
--	 ? __constant_c_and_count_memset((s), (c), (count))	\
--	 : __constant_c_memset((s), (c), (count)))
--
--#define __memset(s, c, count)				\
--	(__builtin_constant_p(count)			\
--	 ? __constant_count_memset((s), (c), (count))	\
--	 : __memset_generic((s), (c), (count)))
--
--#define __HAVE_ARCH_MEMSET
--#define memset(s, c, count)						\
--	(__builtin_constant_p(c)					\
--	 ? __constant_c_x_memset((s), (0x01010101UL * (unsigned char)(c)), \
--				 (count))				\
--	 : __memset((s), (c), (count)))
-+#define memset(s, c, count) __builtin_memset(s, c, count)
+-Kame
 
- /*
-  * find the first occurrence of byte 'c', or 1 past the area if none
-diff --git a/arch/x86/lib/memcpy_32.c b/arch/x86/lib/memcpy_32.c
-index 16dc123..16b10d9 100644
---- a/arch/x86/lib/memcpy_32.c
-+++ b/arch/x86/lib/memcpy_32.c
-@@ -30,6 +30,18 @@ void *memcpy(void *to, const void *from, size_t n)
- }
- EXPORT_SYMBOL(memcpy);
 
-+void *__memset(void *s, char c, size_t count)
-+{
-+	int d0, d1;
-+	asm volatile("rep\n\t"
-+		     "stosb"
-+		     : "=&c" (d0), "=&D" (d1)
-+		     : "a" (c), "1" (s), "0" (count)
-+		     : "memory");
-+	return s;
-+}
-+EXPORT_SYMBOL(__memset);
-+
- void *memset(void *s, int c, size_t count)
- {
- 	return __memset(s, c, count);
--- 
-1.6.2
+
+Regards,
+-Kame
+
+
+
+
