@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759853AbZDWWuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbZDWWwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759853AbZDWWuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZDWWuf
+	id S1760312AbZDWWwy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZDWWwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:50:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752902AbZDWWuf (ORCPT
+	Thu, 23 Apr 2009 18:52:45 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:44715 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753484AbZDWWwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:50:35 -0400
-Date: Thu, 23 Apr 2009 15:44:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: dave@linux.vnet.ibm.com, linux-mm@kvack.org,
-       kosaki.motohiro@jp.fujitsu.com, cl@linux-foundation.org,
-       npiggin@suse.de, linux-kernel@vger.kernel.org, ming.m.lin@intel.com,
-       yanmin_zhang@linux.intel.com, peterz@infradead.org,
-       penberg@cs.helsinki.fi
-Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
-Message-Id: <20090423154409.92aaf809.akpm@linux-foundation.org>
-In-Reply-To: <20090422171151.GF15367@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
-	<1240408407-21848-3-git-send-email-mel@csn.ul.ie>
-	<1240416791.10627.78.camel@nimitz>
-	<20090422171151.GF15367@csn.ul.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 18:52:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=SmAzL+58Lyo0zi7abL6JGdpFIkfWH+Yy7+W/YE8gIJ95oeKQ6cHis+dWosJ4npzUP
+	6wtfE/2NGGigCypw7Q7Cg==
+Date: Thu, 23 Apr 2009 15:52:36 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: add
+ Documentation/ABI/testing/sysfs-kernel-slab
+In-Reply-To: <alpine.DEB.1.10.0904231829550.26300@qirst.com>
+Message-ID: <alpine.DEB.2.00.0904231549130.32736@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0904231136390.20852@chino.kir.corp.google.com> <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com> <alpine.DEB.2.00.0904231510020.30545@chino.kir.corp.google.com> <alpine.DEB.1.10.0904231829550.26300@qirst.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 18:11:51 +0100
-Mel Gorman <mel@csn.ul.ie> wrote:
+On Thu, 23 Apr 2009, Christoph Lameter wrote:
 
-> > I depend on the allocator to tell me when I've fed it too high of an
-> > order.  If we really need this, perhaps we should do an audit and then
-> > add a WARN_ON() for a few releases to catch the stragglers.
-> > 
+> >  - slqb uses /sys/kernel/slab as well and we simply add its files in
+> >    sysfs-kernel-slab and leave it to userspace to test for which allocator
+> >    is actually being used.  Both allocators share many of the same
+> >    fundamental attributes but some are only applicable to one,
+> >
+> >  - slqb moves to /sys/kernel/slqb since slub is already resident in
+> >    /sys/kernel/slab and the mm/slab.c allocator actually has no sysfs
+> >    interface, or
 > 
-> I consider it buggy to ask for something so large that you always end up
-> with the worst option - vmalloc().
+> slqb cannot be concurrently used with slub. So slqb can use
+> /sys/kernel/slab as well. So could the original slab allocator.
+> Dont change this.
+> 
 
-Nevertheless, it's a pretty common pattern for initialisation code all
-over the kernel to do
+I'm more concerned with the userspace API.  You're comfortable with 
+letting userspace determine what allocator the kernel is using either by 
+testing for the presence of certain slub or slqb-specific files or 
+checking the config?
 
-	while (allocate(huge_amount) == NULL)
-		huge_amount /= 2;
+That should be fine since there's parity among the files that both 
+allocators share, but seems fragile if an allocator adds a file that was 
+previously only applicable to the other or the API happens to change.
 
-and the proposed change will convert that from "works" to "either goes
-BUG or mysteriously overindexes zone->free_area[] in
-__rmqueue_smallest()".  The latter of which is really nasty.
-
-> How about leaving it as a VM_BUG_ON
-> to get as many reports as possible on who is depending on this odd
-> behaviour?
-
-That would be quite disruptive.  Even emitting a trace for each call
-would be irritating.  How's about this:
-
---- a/mm/page_alloc.c~page-allocator-do-not-sanity-check-order-in-the-fast-path-fix
-+++ a/mm/page_alloc.c
-@@ -1405,7 +1405,8 @@ get_page_from_freelist(gfp_t gfp_mask, n
- 
- 	classzone_idx = zone_idx(preferred_zone);
- 
--	VM_BUG_ON(order >= MAX_ORDER);
-+	if (WARN_ON_ONCE(order >= MAX_ORDER))
-+		return NULL;
- 
- zonelist_scan:
- 	/*
-_
-
-
-and then we revisit later?
+My thinking was that /sys/kernel/slqb would be a permanent reference point 
+that userspace could easily test to determine what API is available.
