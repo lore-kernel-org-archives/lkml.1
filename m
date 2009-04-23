@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbZDWSps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbZDWSsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbZDWSps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 14:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbZDWSpi
+	id S1758135AbZDWSsP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 14:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZDWSr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 14:45:38 -0400
-Received: from sous-sol.org ([216.99.217.87]:53704 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753447AbZDWSph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 14:45:37 -0400
-Date: Thu, 23 Apr 2009 11:43:44 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-Message-ID: <20090423184344.GT3036@sequoia.sous-sol.org>
-References: <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <alpine.DEB.2.00.0904222200350.24310@gandalf.stny.rr.com> <20090423082031.GA599@elte.hu> <alpine.DEB.2.00.0904230935060.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com> <49F09C35.1080006@goop.org> <20090423172138.GR3036@sequoia.sous-sol.org> <20090423180238.GS3036@sequoia.sous-sol.org> <alpine.DEB.2.00.0904231432170.24293@gandalf.stny.rr.com>
+	Thu, 23 Apr 2009 14:47:57 -0400
+Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:56964 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753702AbZDWSr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 14:47:57 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Thu, 23 Apr 2009 19:45:04 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Devriendt <paul.devriendt@amd.com>,
+       Mark Langsdorf <mark.langsdorf@amd.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] powernow-k8.c: mess cleanup
+Message-ID: <20090423184504.GA5487@hades.domain.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904231432170.24293@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> I bet it does, but I'm currently reviewing if we need the raw there. I may 
-> take your patch instead.
+Mess cleanup in powernow_k8_acpi_pst_values() function.
 
-OK, saves a whopping 200 bytes on my .config too ;-)
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   16 +++++++++-------
+ 1 files changed, 9 insertions(+), 7 deletions(-)
 
-   text	   data	    bss	    dec	    hex	filename
-8041385	1816009	1822720	11680114	 b23972	vmlinux.orig
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index 4709ead..6c31f95 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1,3 +1,4 @@
++
+ /*
+  *   (c) 2003-2006 Advanced Micro Devices, Inc.
+  *  Your use of this code is subject to the terms and conditions of the
+@@ -809,13 +810,14 @@ static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data,
+ 	if (!data->acpi_data.state_count || (cpu_family == CPU_HW_PSTATE))
+ 		return;
+ 
+-	control = data->acpi_data.states[index].control; data->irt = (control
+-			>> IRT_SHIFT) & IRT_MASK; data->rvo = (control >>
+-				RVO_SHIFT) & RVO_MASK; data->exttype = (control
+-					>> EXT_TYPE_SHIFT) & EXT_TYPE_MASK;
+-	data->plllock = (control >> PLL_L_SHIFT) & PLL_L_MASK; data->vidmvs = 1
+-		<< ((control >> MVS_SHIFT) & MVS_MASK); data->vstable =
+-		(control >> VST_SHIFT) & VST_MASK; }
++	control = data->acpi_data.states[index].control;
++	data->irt = (control >> IRT_SHIFT) & IRT_MASK;
++	data->rvo = (control >> RVO_SHIFT) & RVO_MASK;
++	data->exttype = (control >> EXT_TYPE_SHIFT) & EXT_TYPE_MASK;
++	data->plllock = (control >> PLL_L_SHIFT) & PLL_L_MASK;
++	data->vidmvs = 1 << ((control >> MVS_SHIFT) & MVS_MASK);
++	data->vstable = (control >> VST_SHIFT) & VST_MASK;
++}
+ 
+ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
+ {
+-- 
+1.6.2.4
 
-   text	   data	    bss	    dec	    hex	filename
-8041181	1816009	1822720	11679910	 b238a6	vmlinux
