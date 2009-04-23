@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbZDWHe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZDWHp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbZDWHe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZDWH2b
+	id S1758593AbZDWHp5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbZDWHbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:28:31 -0400
-Received: from sous-sol.org ([216.99.217.87]:48343 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:31:09 -0400
+Received: from sous-sol.org ([216.99.217.87]:50558 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755646AbZDWH20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:28:26 -0400
-Message-Id: <20090423072223.406830766@sous-sol.org>
+	id S1756594AbZDWHbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:31:07 -0400
+Message-Id: <20090423072513.934477545@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:34 -0700
+Date: Thu, 23 Apr 2009 00:21:01 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,12 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, Dan Carpenter <error27@gmail.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 014/100] dock: fix dereference after kfree()
+       alan@lxorguk.ukuu.org.uk, Cheng Renquan <crquan@gmail.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 041/100] dm target: use module refcount directly
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=dock-fix-dereference-after-kfree.patch
+Content-Disposition: inline; filename=dm-target-use-module-refcount-directly.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,34 +36,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dan Carpenter <error27@gmail.com>
+From: Cheng Renquan <crquan@gmail.com>
 
-upstream commit: f240729832dff3785104d950dad2d3ced4387f6d
+upstream commit: 5642b8a61a15436231adf27b2b1bd96901b623dd
 
-dock_remove() calls kfree() on dock_station so we should use
-list_for_each_entry_safe() to avoid dereferencing freed memory.
+The tt_internal's 'use' field is superfluous: the module's refcount can do
+the work properly.  An acceptable side-effect is that this increases the
+reference counts reported by 'lsmod'.
 
-Found by smatch (http://repo.or.cz/w/smatch.git/).  Compile tested.
+Remove the superfluous test when removing a target module.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+[Crash possible without this on SMP - agk]
+
+Cc: stable@kernel.org
+Signed-off-by: Cheng Renquan <crquan@gmail.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Reviewed-by: Alasdair G Kergon <agk@redhat.com>
+Reviewed-by: Jonathan Brassow <jbrassow@redhat.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/acpi/dock.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/md/dm-target.c |   20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
 
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -1146,9 +1146,10 @@ static int __init dock_init(void)
- static void __exit dock_exit(void)
- {
- 	struct dock_station *dock_station;
-+	struct dock_station *tmp;
+--- a/drivers/md/dm-target.c
++++ b/drivers/md/dm-target.c
+@@ -18,7 +18,6 @@ struct tt_internal {
+ 	struct target_type tt;
  
- 	unregister_acpi_bus_notifier(&dock_acpi_notifier);
--	list_for_each_entry(dock_station, &dock_stations, sibiling)
-+	list_for_each_entry_safe(dock_station, tmp, &dock_stations, sibiling)
- 		dock_remove(dock_station);
- }
+ 	struct list_head list;
+-	long use;
+ };
+ 
+ static LIST_HEAD(_targets);
+@@ -44,12 +43,8 @@ static struct tt_internal *get_target_ty
+ 	down_read(&_lock);
+ 
+ 	ti = __find_target_type(name);
+-	if (ti) {
+-		if ((ti->use == 0) && !try_module_get(ti->tt.module))
+-			ti = NULL;
+-		else
+-			ti->use++;
+-	}
++	if (ti && !try_module_get(ti->tt.module))
++		ti = NULL;
+ 
+ 	up_read(&_lock);
+ 	return ti;
+@@ -77,10 +72,7 @@ void dm_put_target_type(struct target_ty
+ 	struct tt_internal *ti = (struct tt_internal *) t;
+ 
+ 	down_read(&_lock);
+-	if (--ti->use == 0)
+-		module_put(ti->tt.module);
+-
+-	BUG_ON(ti->use < 0);
++	module_put(ti->tt.module);
+ 	up_read(&_lock);
+ 
+ 	return;
+@@ -140,12 +132,6 @@ void dm_unregister_target(struct target_
+ 		BUG();
+ 	}
+ 
+-	if (ti->use) {
+-		DMCRIT("Attempt to unregister target still in use: %s",
+-		       t->name);
+-		BUG();
+-	}
+-
+ 	list_del(&ti->list);
+ 	kfree(ti);
  
 
