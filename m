@@ -1,259 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbZDWNqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbZDWNsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207AbZDWNqJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 09:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZDWNpt
+	id S1758532AbZDWNsH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 09:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZDWNry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 09:45:49 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:44918 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754241AbZDWNpr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 09:45:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArwGAIMJ8ElMQW1W/2dsb2JhbACBT850g3UG
-Date: Thu, 23 Apr 2009 09:45:39 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org
-Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-Message-ID: <20090423134539.GC11261@Krystal>
-References: <20090423052520.GA13036@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 23 Apr 2009 09:47:54 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:59645 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754095AbZDWNrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 09:47:53 -0400
+From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Organization: Sophos Plc
+To: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 000/100] 2.6.29.2 -stable review
+Date: Thu, 23 Apr 2009 14:47:50 +0100
+User-Agent: KMail/1.9.10
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+References: <20090423072020.428683652@sous-sol.org>
+In-Reply-To: <20090423072020.428683652@sous-sol.org>
+MIME-Version: 1.0
+Message-Id: <200904231447.50809.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 23/04/2009 14:47:51,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 23/04/2009 14:47:51,
+	Serialize complete at 23/04/2009 14:47:51
+X-TNEFEvaluated: 1
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090423052520.GA13036@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:26:23 up 54 days,  9:52,  1 user,  load average: 0.27, 0.44,
-	0.34
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> First cut of "big hammer" expedited RCU grace periods, but only for
-> rcu_bh.  This creates another softirq vector, so that entering this
-> softirq vector will have forced an rcu_bh quiescent state (as noted by
-> Dave Miller).  Use smp_call_function() to invoke raise_softirq() on all
-> CPUs in order to cause this to happen.  Track the CPUs that have passed
-> through a quiescent state (or gone offline) with a cpumask.
-> 
-> Does nothing to expedite callbacks already registered with call_rcu_bh(),
-> but there is no need to.
-> 
-> Shortcomings:
-> 
-> o	Untested, probably does not compile, not for inclusion.
-> 
-> o	Does not handle rcu, only rcu_bh.
-> 
-> Thoughts?
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/interrupt.h |    1 
->  include/linux/rcupdate.h  |    1 
->  kernel/rcupdate.c         |  106 ++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 108 insertions(+)
-> 
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index 91bb76f..b7b58cc 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -338,6 +338,7 @@ enum
->  	TASKLET_SOFTIRQ,
->  	SCHED_SOFTIRQ,
->  	HRTIMER_SOFTIRQ,
-> +	RCU_EXPEDITED_SOFTIRQ,
->  	RCU_SOFTIRQ,	/* Preferable RCU should always be the last softirq */
->  
->  	NR_SOFTIRQS
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index 15fbb3c..d4af557 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -264,6 +264,7 @@ extern void synchronize_rcu(void);
->  extern void rcu_barrier(void);
->  extern void rcu_barrier_bh(void);
->  extern void rcu_barrier_sched(void);
-> +extern void synchronize_rcu_bh_expedited(void);
->  
->  /* Internal to kernel */
->  extern void rcu_init(void);
-> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> index a967c9f..bfa98dd 100644
-> --- a/kernel/rcupdate.c
-> +++ b/kernel/rcupdate.c
-> @@ -217,10 +217,116 @@ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
->  	return NOTIFY_OK;
->  }
->  
-> +static DEFINE_MUTEX(synchronize_rcu_bh_mutex);
-> +static long synchronize_rcu_bh_completed; /* Expedited-grace-period count. */
+On Thursday 23 April 2009 08:20:20 Chris Wright wrote:
+> This is the start of the stable review cycle for the 2.6.29.2 release.
+> There are 100 patches in this series, all will be posted as a response
+> to this one.  If anyone has any issues with these being applied, please
+> let us know.  If anyone is a maintainer of the proper subsystem, and
+> wants to add a Signed-off-by: line to the patch, please respond with it.
+>
+> These patches are sent out with a number of different people on the
+> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+> to add your name to the list.  If you want to be off the reviewer list,
+> also email us.
+>
+> Responses should be made by Sat, Apr 25, 07:00 UTC.  Anything received
+> after that time might be too late.
 
-Given you access this variable through a mutex, you might want to
-consider using a u64 (unsigned long long) to make sure it counts a full
-64-bits on 32-bits architectures. This would make overflows less likely
-to happen. Note that the reads should be done through a mutex then.
-Another alternative is to protect it using a seqlock. Note that the two
-previous "non-atomic" read solutions should never be used in NMI
-context. :-/
+Hi,
 
-> +
-> +#ifndef CONFIG_SMP
-> +
-> +static void __init synchronize_rcu_expedited_init(void)
-> +{
-> +}
-> +
-> +void synchronize_rcu_bh_expedited(void)
-> +{
-> +	mutex_lock(&synchronize_rcu_bh_mutex);
-> +	synchronize_rcu_bh_completed++;
-> +	mutex_unlock(&synchronize_rcu_bh_mutex);
-> +}
-> +
-> +#else /* #ifndef CONFIG_SMP */
-> +
-> +static DEFINE_PER_CPU(int, rcu_bh_need_qs);
-> +static cpumask_var_t rcu_bh_waiting_map;
-> +
-> +static void synchronize_rcu_bh_expedited_help(struct softirq_action *unused)
-> +{
-> +	if (__get_cpu_var(rcu_bh_need_qs)) {
+Could you please include a fix for forcedeth resume from hibernation 
+regression as well?
 
-Is this test useful at all ? The value can only be 0 or 1, so if it is
-already 0, then we set it to 0 again. I doubt you care that much about
-cache-line bouncing ?
+http://marc.info/?l=linux-netdev&m=123885046818928&w=4
 
-> +		smp_mb();
-> +		__get_cpu_var(rcu_bh_need_qs) = 0;
-> +		smp_mb();
-
-Is this second mb required ? We want to make sure no memory access
-coming from code executed before the flag write goes into the next qs
-period, this is fine (and explains the first mb()), but do we care
-about interleaving writes done after the flag write ? In the worse case,
-they will be put in the previous qs period, and that seems fine.
-
-> +	}
-> +}
-> +
-> +static void rcu_bh_fast_qs(void *unused)
-> +{
-> +	raise_softirq(RCU_EXPEDITED_SOFTIRQ);
-> +}
-> +
-> +static void __init synchronize_rcu_expedited_init(void)
-> +{
-> +	open_softirq(RCU_EXPEDITED_SOFTIRQ, synchronize_rcu_bh_expedited_help);
-> +	alloc_bootmem_cpumask_var(&rcu_bh_waiting_map);
-> +}
-> +
-> +void synchronize_rcu_bh_expedited(void)
-> +{
-> +	int cpu;
-> +	int done;
-> +	int times = 0;
-> +
-> +	mutex_lock(&synchronize_rcu_bh_mutex);
-> +
-> +	/* Take snapshot of online CPUs, blocking CPU hotplug. */
-> +	preempt_disable();
-
-Hrm, how about simply 
-
-get_online_cpus();
-
-put_online_cpus();
-
-just once at the beginning/end of this function to stop cpu hotplug ?
-
-All these preempt_enable/disable seems a bit too much. But I see that
-you might not want to disabling cpu hotplug for too long, so you
-probably have a good reason to do it this way.
-
-> +	cpumask_copy(rcu_bh_waiting_map, &cpu_online_map);
-> +	preempt_enable();
-> +
-> +	/* Mark each online CPU as needing a quiescent state. */
-> +	for_each_cpu(cpu, rcu_bh_waiting_map)
-> +		per_cpu(rcu_bh_need_qs, cpu) = 1;
-> +
-> +	/* Call for a quiescent state on each online CPU. */
-> +	preempt_disable();
-> +	cpumask_clear_cpu(smp_processor_id(), rcu_bh_waiting_map);
-
-Commenting that smp_call_function has a smp_mb(), which makes sure
-per_cpu(rcu_bh_need_qs, cpu) writes happened before calling the remote
-functions would not hurt.
-
-Mathieu
-
-> +	smp_call_function(rcu_bh_fast_qs, NULL, 1);
-> +	preempt_enable();
-> +
-> +	/*
-> +	 * Loop waiting for each CPU to either pass through a quiescent
-> +	 * state or to go offline.  We don't care which.
-> +	 */
-> +	for (;;) {
-> +		
-> +		/* Ignore CPUs that have gone offline, blocking CPU hotplug. */
-> +		preempt_disable();
-> +		cpumask_and(rcu_bh_waiting_map, rcu_bh_waiting_map,
-> +			    &cpu_online_map);
-> +		cpumask_clear_cpu(smp_processor_id(), rcu_bh_waiting_map);
-> +		preempt_enable();
-> +
-> +		/* Check if any CPUs still need a quiescent state. */
-> +		done = 1;
-> +		for_each_cpu(cpu, rcu_bh_waiting_map) {
-> +			if (per_cpu(rcu_bh_need_qs, cpu)) {
-> +				done = 0;
-> +				break;
-> +			}
-> +			cpumask_clear_cpu(cpu, rcu_bh_waiting_map);
-> +		}
-> +		if (done)
-> +			break;
-> +
-> +		/*
-> +		 * Wait a bit.  If we have already waited a fair
-> +		 * amount of time, sleep.
-> +		 */
-> +		if (++times < 10)
-> +			udelay(10 * times);
-> +		else
-> +			schedule_timeout_uninterruptible(1);
-> +	}
-> +
-> +	synchronize_rcu_bh_completed++;
-
-> +	mutex_unlock(&synchronize_rcu_bh_mutex);
-> +}
-> +
-> +#endif /* #else #ifndef CONFIG_SMP */
-> +
->  void __init rcu_init(void)
->  {
->  	__rcu_init();
->  	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
-> +	synchronize_rcu_expedited_init();
->  }
->  
->  void rcu_scheduler_starting(void)
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Tvrtko
