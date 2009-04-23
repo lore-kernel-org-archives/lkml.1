@@ -1,251 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbZDWIDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbZDWHve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758084AbZDWIDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZDWHhV
+	id S1759620AbZDWHve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbZDWHdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:37:21 -0400
-Received: from sous-sol.org ([216.99.217.87]:47524 "EHLO x200.localdomain"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757784AbZDWHhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:37:17 -0400
-Message-Id: <20090423073035.174126466@sous-sol.org>
-User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:50 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       David John <davidjon@xenontk.org>
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 090/100] x86, PAT: Remove page granularity tracking for vm_insert_pfn maps
-References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=x86-pat-remove-page-granularity-tracking-for-vm_insert_pfn-maps.patch
+	Thu, 23 Apr 2009 03:33:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43807 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757319AbZDWHdj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:33:39 -0400
+Date: Thu, 23 Apr 2009 09:37:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: Re: fresh data was Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re: New x86 warning
+Message-ID: <20090423073709.GH13896@one.firstfloor.org>
+References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu> <8763gxoz50.fsf_-_@basil.nowhere.org> <alpine.LFD.2.00.0904221354320.3101@localhost.localdomain> <20090422211501.GD13896@one.firstfloor.org> <alpine.LFD.2.00.0904221417110.3101@localhost.localdomain> <20090422220428.GE13896@one.firstfloor.org> <87skjzoqah.fsf_-_@basil.nowhere.org> <20090423063625.GB9833@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090423063625.GB9833@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Thu, Apr 23, 2009 at 08:36:25AM +0200, Ingo Molnar wrote:
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > Andi Kleen <andi@firstfloor.org> writes:
+> > 
+> > >> > Quick test here:
+> > >> 
+> > >> How about you just compile the kernel with gcc-3.2 and compare the number 
+> > >> of calls to memcpy before-and-after instead? That's the real test.
+> > >
+> > > I waited over 10 minutes for the full vmlinux objdumps to finish. sorry lost
+> > > patience. If someone has a fast disassembler we can try it. I'll leave
+> > > them running over night, maybe there are exact numbers tomorrow.
+> > >
+> > > But from a quick check (find -name '*.o' | xargs nm | grep memcpy) there are
+> > > very little files which call it with the patch, so there's some
+> > > evidence that there isn't a dramatic increase.
+> > 
+> > I let the objdumps finish over night. [...]
+> 
+> objdump -d never took me more than a minute - let alone a full 
 
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+I use objdump -S. Maybe that's slower than -d.
 
-upstream commit: 4b065046273afa01ec8e3de7da407e8d3599251d
+Hmm quick test, yes -S seems to be much slower than -d. Thanks for
+the hint. I guess I should switch to -d for these cases, unfortunately
+-S seems to be hardcoded in my fingers and of course it gives much
+nicer output if you have debug info.
 
-This change resolves the problem of too many single page entries
-in pat_memtype_list and "freeing invalid memtype" errors with i915,
-reported here:
+> night. You must be doing something really wrong there. Looking at 
+> objdump -d is an essential, unavoidable component of my workflow 
+> with x86 architecture patches, you need to find a way to do it 
 
-  http://marc.info/?l=linux-kernel&m=123845244713183&w=2
+I do it all the time too, but only for specific functions, not
+for full kernels. I have a objdump-symbol script for that that
+looks up a symbol in the symbol table and only disassembles
+the function I'm interested in 
+(ftp://firstfloor.org/pub/ak/perl/objdump-symbol) 
+I normally don't look at full listings of the complete kernel.
 
-Remove page level granularity track and untrack of vm_insert_pfn.
-memtype tracking at page granularity does not scale and cleaner
-approach would be for the driver to request a type for a bigger
-IO address range or PCI io memory range for that device, either at
-mmap time or driver init time and just use that type during
-vm_insert_pfn.
+> > [...] On my setup (defconfig + some additions) there are actually 
+> > less calls to out of line memcpy/__memcpy with the patch. I see 
+> > only one for my defconfig, while there are ~10 without the patch. 
+> > So it makes very little difference. The code size savings must 
+> > come from more efficient code generation for the inline case. I 
+> > haven't investigated that in detail though.
+> > 
+> > So the patch seems like a overall win.
+> 
+> It's a clear loss here with GCC 3.4, and it took me less than 5 
+> minutes to figure that out.
 
-This patch just removes the track/untrack of vm_insert_pfn. That
-means we will be in same state as 2.6.28, with respect to these APIs.
+Loss in what way?
 
-Newer APIs for the drivers to request a memtype for a bigger region
-is coming soon.
+> 
+> With what precise compiler version did you test (please paste the 
+> gcc -v output), and could you send me the precise .config you used, 
 
-[ Impact: fix Xorg startup warnings and hangs ]
+See the 2nd previous mail: 3.2.3
 
-Reported-by: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Tested-by: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-LKML-Reference: <20090408223716.GC3493@linux-os.sc.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/x86/mm/pat.c |   98 ++++++++++--------------------------------------------
- 1 file changed, 19 insertions(+), 79 deletions(-)
+I didn't do tests with later versions, assuming there are no 
+regressions.
 
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -713,29 +713,28 @@ static void free_pfn_range(u64 paddr, un
-  *
-  * If the vma has a linear pfn mapping for the entire range, we get the prot
-  * from pte and reserve the entire vma range with single reserve_pfn_range call.
-- * Otherwise, we reserve the entire vma range, my ging through the PTEs page
-- * by page to get physical address and protection.
-  */
- int track_pfn_vma_copy(struct vm_area_struct *vma)
- {
--	int retval = 0;
--	unsigned long i, j;
- 	resource_size_t paddr;
- 	unsigned long prot;
--	unsigned long vma_start = vma->vm_start;
--	unsigned long vma_end = vma->vm_end;
--	unsigned long vma_size = vma_end - vma_start;
-+	unsigned long vma_size = vma->vm_end - vma->vm_start;
- 	pgprot_t pgprot;
- 
- 	if (!pat_enabled)
- 		return 0;
- 
-+	/*
-+	 * For now, only handle remap_pfn_range() vmas where
-+	 * is_linear_pfn_mapping() == TRUE. Handling of
-+	 * vm_insert_pfn() is TBD.
-+	 */
- 	if (is_linear_pfn_mapping(vma)) {
- 		/*
- 		 * reserve the whole chunk covered by vma. We need the
- 		 * starting address and protection from pte.
- 		 */
--		if (follow_phys(vma, vma_start, 0, &prot, &paddr)) {
-+		if (follow_phys(vma, vma->vm_start, 0, &prot, &paddr)) {
- 			WARN_ON_ONCE(1);
- 			return -EINVAL;
- 		}
-@@ -743,28 +742,7 @@ int track_pfn_vma_copy(struct vm_area_st
- 		return reserve_pfn_range(paddr, vma_size, &pgprot, 1);
- 	}
- 
--	/* reserve entire vma page by page, using pfn and prot from pte */
--	for (i = 0; i < vma_size; i += PAGE_SIZE) {
--		if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
--			continue;
--
--		pgprot = __pgprot(prot);
--		retval = reserve_pfn_range(paddr, PAGE_SIZE, &pgprot, 1);
--		if (retval)
--			goto cleanup_ret;
--	}
- 	return 0;
--
--cleanup_ret:
--	/* Reserve error: Cleanup partial reservation and return error */
--	for (j = 0; j < i; j += PAGE_SIZE) {
--		if (follow_phys(vma, vma_start + j, 0, &prot, &paddr))
--			continue;
--
--		free_pfn_range(paddr, PAGE_SIZE);
--	}
--
--	return retval;
- }
- 
- /*
-@@ -774,50 +752,28 @@ cleanup_ret:
-  * prot is passed in as a parameter for the new mapping. If the vma has a
-  * linear pfn mapping for the entire range reserve the entire vma range with
-  * single reserve_pfn_range call.
-- * Otherwise, we look t the pfn and size and reserve only the specified range
-- * page by page.
-- *
-- * Note that this function can be called with caller trying to map only a
-- * subrange/page inside the vma.
-  */
- int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t *prot,
- 			unsigned long pfn, unsigned long size)
- {
--	int retval = 0;
--	unsigned long i, j;
--	resource_size_t base_paddr;
- 	resource_size_t paddr;
--	unsigned long vma_start = vma->vm_start;
--	unsigned long vma_end = vma->vm_end;
--	unsigned long vma_size = vma_end - vma_start;
-+	unsigned long vma_size = vma->vm_end - vma->vm_start;
- 
- 	if (!pat_enabled)
- 		return 0;
- 
-+	/*
-+	 * For now, only handle remap_pfn_range() vmas where
-+	 * is_linear_pfn_mapping() == TRUE. Handling of
-+	 * vm_insert_pfn() is TBD.
-+	 */
- 	if (is_linear_pfn_mapping(vma)) {
- 		/* reserve the whole chunk starting from vm_pgoff */
- 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
- 		return reserve_pfn_range(paddr, vma_size, prot, 0);
- 	}
- 
--	/* reserve page by page using pfn and size */
--	base_paddr = (resource_size_t)pfn << PAGE_SHIFT;
--	for (i = 0; i < size; i += PAGE_SIZE) {
--		paddr = base_paddr + i;
--		retval = reserve_pfn_range(paddr, PAGE_SIZE, prot, 0);
--		if (retval)
--			goto cleanup_ret;
--	}
- 	return 0;
--
--cleanup_ret:
--	/* Reserve error: Cleanup partial reservation and return error */
--	for (j = 0; j < i; j += PAGE_SIZE) {
--		paddr = base_paddr + j;
--		free_pfn_range(paddr, PAGE_SIZE);
--	}
--
--	return retval;
- }
- 
- /*
-@@ -828,39 +784,23 @@ cleanup_ret:
- void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
- 			unsigned long size)
- {
--	unsigned long i;
- 	resource_size_t paddr;
--	unsigned long prot;
--	unsigned long vma_start = vma->vm_start;
--	unsigned long vma_end = vma->vm_end;
--	unsigned long vma_size = vma_end - vma_start;
-+	unsigned long vma_size = vma->vm_end - vma->vm_start;
- 
- 	if (!pat_enabled)
- 		return;
- 
-+	/*
-+	 * For now, only handle remap_pfn_range() vmas where
-+	 * is_linear_pfn_mapping() == TRUE. Handling of
-+	 * vm_insert_pfn() is TBD.
-+	 */
- 	if (is_linear_pfn_mapping(vma)) {
- 		/* free the whole chunk starting from vm_pgoff */
- 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
- 		free_pfn_range(paddr, vma_size);
- 		return;
- 	}
--
--	if (size != 0 && size != vma_size) {
--		/* free page by page, using pfn and size */
--		paddr = (resource_size_t)pfn << PAGE_SHIFT;
--		for (i = 0; i < size; i += PAGE_SIZE) {
--			paddr = paddr + i;
--			free_pfn_range(paddr, PAGE_SIZE);
--		}
--	} else {
--		/* free entire vma, page by page, using the pfn from pte */
--		for (i = 0; i < vma_size; i += PAGE_SIZE) {
--			if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
--				continue;
--
--			free_pfn_range(paddr, PAGE_SIZE);
--		}
--	}
- }
- 
- pgprot_t pgprot_writecombine(pgprot_t prot)
+> and describe the method you used to determine the number of 
+> out-of-line memcpy calls? I'd like to double-check your numbers.
 
+objdump -S ... | grep call.*memcpy         (gives some false positives,
+you have to weed them out)
+
+In addition I did a quick find -name '*.o' | xargs nm | grep 'U.*memcpy$'
+to (under) estimate the calls  
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
