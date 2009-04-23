@@ -1,114 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZDWFaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZDWFeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbZDWFaN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZDWF36
+	id S1754158AbZDWFeT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 01:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZDWFeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:29:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:52935 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbZDWF35 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:29:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Yd8nzFaBo1RHUnhDrLPRBYm6jDZn5FRl3qQU1okmQum+fb8deDxvn15zgJFYSRloLd
-         eSrGnxTVQ2FMkH/vKsyADh7LgY2rMl00kMOUuk7hfxPmHyXktDse89/WgtHiUSo9CRMV
-         JDOlI12E/g5LvtS4qBA4dmrWE/nMSY9NLF3Y4=
+	Thu, 23 Apr 2009 01:34:09 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38041 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751002AbZDWFeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 01:34:08 -0400
+Date: Thu, 23 Apr 2009 07:34:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Wolfram Strepp <wstrepp@gmx.de>
+Subject: Re: [BUG] rbtree bug with mmotm 2009-04-14-17-24
+Message-ID: <20090423053402.GH4593@kernel.dk>
+References: <49EF293F.4030504@opengridcomputing.com> <49EF2C32.4030409@opengridcomputing.com> <20090422163032.GV4593@kernel.dk> <20090422163705.GW4593@kernel.dk> <49EF5F31.30408@opengridcomputing.com> <20090422183406.GA4593@kernel.dk> <49EF6929.9020600@opengridcomputing.com> <20090422192216.GE4593@kernel.dk> <49EF7B40.9050505@opengridcomputing.com> <49EF7F3A.1070809@opengridcomputing.com>
 MIME-Version: 1.0
-In-Reply-To: <1239908780.10567.8.camel@ht.satnam>
-References: <a85e78f50904161052s71dabbe9p17ac68b35331eae@mail.gmail.com>
-	 <1239908780.10567.8.camel@ht.satnam>
-Date: Thu, 23 Apr 2009 10:59:56 +0530
-Message-ID: <a85e78f50904222229j3208105dy5d6f45833b83abd4@mail.gmail.com>
-Subject: Re: [PATCH] removes unused variable from kernel/sysctl.h
-From: Sukanto Ghosh <sukanto.cse.iitb@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EF7F3A.1070809@opengridcomputing.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, Apr 17, 2009 at 12:36 AM, Jaswinder Singh Rajput
-<jaswinder@kernel.org> wrote:
-> Hello Sukanto,
->
-> On Thu, 2009-04-16 at 23:22 +0530, Sukanto Ghosh wrote:
->> This patch removes the unused variable 'val' from the
->> __do_proc_dointvec() function
->> in kernel/sysctl.h. The integer has been declared and used as 'val =
->> -val' and there is
->> no reference to it anywhere.
->> Although I am this doesn't affects the kernel binary because gcc
->> removes it, still it
->> might be confusing for people reading the code.
+On Wed, Apr 22 2009, Steve Wise wrote:
+> Steve Wise wrote:
+>> Jens Axboe wrote:
+>>
+>>  
+>>
+>>>> Still crashes with this variant:
+>>>>     
+>>>
+>>> OK, so please try and revert a36e71f996e25d6213f57951f7ae1874086ec57e
+>>> and see if that works?
+>>>
+>>> Or, better yet, please try and revert
+>>> 55a63998b8967615a15e2211ba0ff3a84a565824 first. If that doesn't work,
+>>> try the above revert.
+>>>
+>>>   
+>>
+>> Reverting 55a63998b8967615a15e2211ba0ff3a84a565824 did the trick.
+>>
+>>
+>> Steve.
+>>
 >>
 >
-> This patch is already submitted by Tomohiro Kusumi on Thu Dec 27 2007:
+> <snipit from 55a63998b8967615a15e2211ba0ff3a84a565824>
 >
-> http://lkml.indiana.edu/hypermail/linux/kernel/0712.3/0557.html
-
-I asked Tomohiro regarding this and got the following reply:
-
-----
-I think they just missed that patch since I found my name on
-the following page regarding this patch.
-http://lkml.org/lkml/2008/5/30/335
-
-I think it's obvious that the val is unnecessary and someone
-probably just forgot to remove it when they cleaned up that code.
------
-
+> @@ -200,17 +197,14 @@ static void __rb_erase_color(struct rb_node *node,  
+> struct rb_node *parent,
+>                        {
+>                                if (!other->rb_left ||  
+> rb_is_black(other->rb_left))
+>                                {
+> -                                       register struct rb_node *o_right;
+> -                                       if ((o_right = other->rb_right))
+> -                                               rb_set_black(o_right);
+> +                                       rb_set_black(other->rb_right);
+>                                        rb_set_red(other);
+>                                        __rb_rotate_left(other, root);
+>                                        other = parent->rb_left;
+>                                }
+>                                rb_set_color(other, rb_color(parent));
+>                                rb_set_black(parent);
+> -                               if (other->rb_left)
+> -                                       rb_set_black(other->rb_left);
+> +                               rb_set_black(other->rb_left);
+>                                __rb_rotate_right(parent, root);
+>                                node = root->rb_node;
+>                                break;
 >
->>
->> Signed-off-by: Sukanto Ghosh <sukanto.cse.iitb@gmail.com>
->>
->> ----
->>
->> --- linux-2.6.29.1/kernel/sysctl.c.orig 2009-04-16 19:57:21.000000000 +0530
->> +++ linux-2.6.29.1/kernel/sysctl.c      2009-04-16 19:58:26.000000000 +0530
->> @@ -2198,7 +2198,7 @@ static int __do_proc_dointvec(void *tbl_
->>                   void *data)
 >
-> This is a very old function and have almost no git history, its old name
-> was do_proc_dointvec on 2005-04-16 15:20:36 when git tree was made and
-> then only(almost) function name is changed.
->
->>  {
->>  #define TMPBUFLEN 21
->> -       int *i, vleft, first=1, neg, val;
->> +       int *i, vleft, first=1, neg;
->>         unsigned long lval;
->>         size_t left, len;
->>
->> @@ -2251,8 +2251,6 @@ static int __do_proc_dointvec(void *tbl_
->>                         len = p-buf;
->>                         if ((len < left) && *p && !isspace(*p))
->>                                 break;
->> -                       if (neg)
->> -                               val = -val;
->
-> So you need to do further investigation. Is this a typo or some other
-> mistake.
+> I don't know this code, but isn't the 'if (other->rb_left)' really  
+> needed?  Or is it always true that if '!other->rb_left' is true entering  
+> this snipit, then after executing the first 'if' block, then  
+> 'other->rb_left' must be a valid ptr? (how's that for confusing english? 
+> :)
 
-Considering that this function is currently working properly and the
-variable 'val' is not used anywhere, it is obvious that removing the
-variable will not affect the functionality of the function in any
-manner.
-
-It seems that either people haven't noticed this unused variable
-before Tomohiro did, or they did not see merit in submitting the
-trivial patch. But I believe such code cleanups are required.
-
-If you (maintainers) feel that it is worth it, should I re-submit the patch ?
-
+Heh, not sure. What is sure is that the commit in question is
+problematic. Either because it itself has a bug, or because it exposes a
+bug elsewhere in the rbtree code. So I'd suggest we just revert that
+commit ASAP.
 
 -- 
-Regards,
-Sukanto Ghosh
+Jens Axboe
+
