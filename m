@@ -1,114 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbZDWSZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbZDWS1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbZDWSZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 14:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZDWSZd
+	id S1758494AbZDWS1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 14:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZDWS1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 14:25:33 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37928 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZDWSZd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 14:25:33 -0400
-Date: Thu, 23 Apr 2009 19:03:32 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Peter Oruba <peter.oruba@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 microcode: work_on_cpu and cleanup of the 
- synchronization logic
-In-Reply-To: <b647ffbd0904230155t61578496pf75fb79e54def3a3@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0904231807370.7545@blonde.anvils>
-References: <1240258569.6195.8.camel@earth> <1240344440.5861.10.camel@earth>
-  <1240439073.12721.23.camel@earth> <20090423082704.GD599@elte.hu>
- <b647ffbd0904230155t61578496pf75fb79e54def3a3@mail.gmail.com>
+	Thu, 23 Apr 2009 14:27:12 -0400
+Received: from relay2.ptmail.sapo.pt ([212.55.154.22]:44945 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752423AbZDWS1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 14:27:11 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Thu, 23 Apr 2009 19:24:17 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@redhat.com>,
+       mark.langsdorf@amd.com, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>, Jan Kiszka <jan.kiszka@siemens.com>
+Subject: Re: [BUG -tip] unable to handle kernel paging request
+Message-ID: <20090423182417.GA3679@hades.domain.com>
+References: <20090413165913.GA4798@hades.domain.com> <20090413205908.GA15435@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090413205908.GA15435@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, Dmitry Adamushko wrote:
-> 2009/4/23 Ingo Molnar <mingo@elte.hu>:
-> > * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> >
-> >> Version 3
-> >>
-> >> diff with v.2
-> >>
-> >> - use smp_call_function_single() instead of work_on_cpu() as suggested by Ingo;
-> >> - add 'enum ucode_state' as return value of request_microcode_{fw,user}
-> >> - minor cleanups
-> >
-> > This version looks really nice structurally.
-
-Yes, it looks the right way to go to me too.
-
-> > What type of testing have you done on the patch, on what CPU type?
+(CC'ing Avi Kivity and Jan Kiszka)
+On Mon, Apr 13, 2009 at 01:59:08PM -0700, Paul E. McKenney wrote:
+> On Mon, Apr 13, 2009 at 05:59:13PM +0100, Luis Henriques wrote:
+> > Hi,
+> > 
+> > (not sure if I'm CC'ing all the relevant persons...)
+> > 
+> > I am hitting this bug, which occurs mainly when I am shutting down my laptop.  I
+> > took a look at the cpufreq code and found out something which I am not sure if it
+> > is related with this bug (or even if it is an issue at all):
+> > 
+> > void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
+> > {
+> >         struct cpufreq_policy *policy;
+> > 
+> >         BUG_ON(irqs_disabled());
+> > 
+> >         freqs->flags = cpufreq_driver->flags;
+> > 
+> > 		...
+> > 
+> > This code accesses cpufreq_driver without using the cpufreq_driver_lock.  I
+> > believe this is the only place in the code where this lock is not obtaining
+> > before accessing the global cpufreq_driver.
+> > 
+> > Any ideas?
 > 
-> Quite limited testing. It looks like there is no newer ucode availble
-> for my dual-core Intel Core2 Duo (Thinkpad R60) so what I did is as
-> follows:
+> Well, one thought would be that SRCU is protecting it, but when I look
+> at the code, SRCU is instead only protecting the notifier chain itself.
+> So SRCU is -not- a substitute for cpufreq_driver_lock in this case.
 > 
-> - change update_match_revision() in microcode_intel.c in a way that
-> allows loading of a ucode with a revision == the current revision
-> (rev. 0x57 in my case). From the POV of the microcode module it
-> nevertheless looks like an update;
-
-My P4 Xeon and Core2s and Atom all want newer microcode from the
-latest microcode.dat, and your version seems to work fine on them.
-
+> But the "freqs" argument looks to be a parameter block private to the
+> caller, so the modification of freqs->old is safe.  Ditto for
+> adjust_jiffies().
 > 
-> - update via /dev/microcode (CONFIG_MICROCODE_OLD_INTERFACE) with a .dat file;
+> This does use per-CPU data, but it is not clear to me how preemption is
+> disabled -- or that it is always operating on the current CPU, for that
+> matter.  And the few notifier callbacks I looked at did not have any
+> locking either.
 > 
-> - suspend -> resume (reload of ucode via cpu-callbacks)
+> So is the cpufreq_driver_lock acquired at a higher level, for example,
+> by the guy who calls through the cpufreq_driver control blocks?
 > 
-> These tests worked for me.
+> 							Thanx, Paul
 
-Yes, and I've also tried #if 0'ing the MICROCODE_OLD_INTERFACE code,
-converting the microcode.dat to binary, and placing that in
-/lib/firmware/intel-ucode/06-0f-0a or wherever: the firmware
-interface seems to be working too.
+I believe my problem has finally been solved by commit
+888d256e9c565cb61505bd218eb37c81fe77a325 in kvm git tree.  Basically, the kvm
+notifier for the cpufreq was not being unregistered when kvm module was
+unloaded and, thus, when notifier_call_chain invoked the handler for the kvm,
+there was a NULL pointer there.
 
-> 
-> Obviously, it'd be nice if more people could give it a try (e.g.
-> update with a firmware image and also on AMD - although the changes in
-> microcode_amd.c are quite straightforward).
+Does this make sense to everybody?
 
-But like you I don't have an AMD to test.
+Anyway, is there any reason for the following code in notifier_call_chain() to
+be protected by ifdefs:
 
-And just like last time I came here, I find there are more alternative
-ways through all this than I'm familiar with, and have time to test:
-device versus firmware, Intel versus AMD, startup versus resume versus
-online, builtin versus modular.  I get easily confused without more
-time to spend on it.
 
-That SYSTEM_RUNNING test you've flagged with "--dimm. Review this case":
-yes, that's still necessary for when CONFIG_MICROCODE=y (and no initrd?),
-as I have - trying to get the firmware at that point will hang.  I did
-try changing module_init(microcode_init) to late_initcall(microcode_init),
-but that didn't solve it.  And skipping out at that point does leave CPU0
-not updated.  But you've not made anything worse there, and most people
-will have CONFIG_MICROCODE=m.
+#ifdef CONFIG_DEBUG_NOTIFIERS
+                if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
+                        WARN(1, "Invalid notifier called!");
+                        nb = next_nb;
+                        continue;
+                }
+#endif
+				ret = nb->notifier_call(nb, val, v);
 
-> 
-> p.s. argh... just noticed that the following line is redundant in
-> microcode_core.c (forgot to remove it)
-> 
-> +enum { UCODE_UPDATE_ERR, UCODE_UPDATE_OK, UCODE_UPDATE_NAVAIL };
 
-A couple of things that worried me.
+Because I believe it would be nicer to have this check unconditional -- it would
+still warn the user and would prevent eventual NULL pointers.
 
-I guess your mutex Synchronization works out, but are interrupts
-still disabled around the critical wrmsr()s, wherever they're getting
-called from?
+Regards,
+--
+Luis Henriques
 
-And you've a habit of returning -1 in error cases, which later gets
-muddled in with errnos, so that it would amount to -EPERM, which is
-probably not what you want.
-
-Hugh
+> > --
+> > Luis Henriques
+> > 
+> > [ 2015.908598] BUG: unable to handle kernel paging request at 0000737463656a6f
+> > [ 2015.908606] IP: [<0000737463656a6f>] 0x737463656a6f
+> > [ 2015.908616] PGD 0 
+> > [ 2015.908620] Oops: 0010 [#1] PREEMPT SMP 
+> > [ 2015.908627] last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+> > [ 2015.908631] CPU 0 
+> > [ 2015.908635] Modules linked in: ipv6 powernow_k8 cpufreq_stats af_packet cpufreq_conservative cpufreq_ondemand freq_table cpufreq_powersave cpufreq_userspace sbp2 loop snd_hda_codec_atihdmi snd_hda_codec_realtek rfkill snd_hda_intel ath5k backlight snd_hda_codec evdev i2c_piix4 psmouse k8temp snd_hwdep snd_pcm snd_timer led_class snd_page_alloc input_polldev battery processor ac button sg sr_mod cdrom ata_generic pata_acpi sd_mod ohci_hcd ohci1394 ieee1394 pata_atiixp ahci libata ide_pci_generic ehci_hcd r8169 mii scsi_mod usbcore ide_core thermal fan [last unloaded: kvm]
+> > [ 2015.908723] Pid: 3117, comm: powernowd Tainted: G   M       2.6.30-rc1-tip-01567-gacf5b32 #19 Satellite A210
+> > [ 2015.908727] RIP: 0010:[<0000737463656a6f>]  [<0000737463656a6f>] 0x737463656a6f
+> > [ 2015.908734] RSP: 0018:ffff88007b4ffcd0  EFLAGS: 00010282
+> > [ 2015.908737] RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffffffffa03957b0
+> > [ 2015.908740] RDX: ffff88007b4ffdb8 RSI: 0000000000000000 RDI: ffffffffa03957b0
+> > [ 2015.908744] RBP: ffff88007b4ffd08 R08: 0000000000000000 R09: 0000000000000000
+> > [ 2015.908747] R10: ffffffff80274269 R11: 0000000000000000 R12: 00000000fffffffd
+> > [ 2015.908750] R13: 0000000000000000 R14: ffff88007b4ffdb8 R15: 0000000000000000
+> > [ 2015.908755] FS:  00007f327af266f0(0000) GS:ffff880001042000(0000) knlGS:00000000f6b24720
+> > [ 2015.908758] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > [ 2015.908762] CR2: 0000737463656a6f CR3: 000000007a4ca000 CR4: 00000000000006e0
+> > [ 2015.908765] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [ 2015.908769] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [ 2015.908772] Process powernowd (pid: 3117, threadinfo ffff88007b4fe000, task ffff88007d864020)
+> > [ 2015.908776] Stack:
+> > [ 2015.908778]  ffffffff8027465f ffff88007b4ffcf8 ffffffff810113a0 0000000000000000
+> > [ 2015.908786]  00000000ffffffff ffffffff81011318 0000000000000000 ffff88007b4ffd58
+> > [ 2015.908795]  ffffffff8027480e 0000000000000000 ffff88007b4ffdb8 0000000000000000
+> > [ 2015.908805] Call Trace:
+> > [ 2015.908808]  [<ffffffff8027465f>] ? notifier_call_chain+0x3f/0x80
+> > [ 2015.908817]  [<ffffffff8027480e>] __srcu_notifier_call_chain+0x5e/0x90
+> > [ 2015.908824]  [<ffffffff80274856>] srcu_notifier_call_chain+0x16/0x20
+> > [ 2015.908830]  [<ffffffff804988a9>] cpufreq_notify_transition+0x89/0xd0
+> > [ 2015.908837]  [<ffffffffa030da05>] powernowk8_target+0x285/0x7c0 [powernow_k8]
+> > [ 2015.908845]  [<ffffffffa02da072>] ? cpufreq_set+0x32/0xc0 [cpufreq_userspace]
+> > [ 2015.908852]  [<ffffffff8049862c>] __cpufreq_driver_target+0x3c/0x40
+> > [ 2015.908858]  [<ffffffffa02da0ce>] cpufreq_set+0x8e/0xc0 [cpufreq_userspace]
+> > [ 2015.908865]  [<ffffffff80498bbd>] store_scaling_setspeed+0x6d/0x80
+> > [ 2015.908871]  [<ffffffff8049a66f>] store+0x6f/0xa0
+> > [ 2015.908876]  [<ffffffff8037a54f>] sysfs_write_file+0xcf/0x140
+> > [ 2015.908883]  [<ffffffff80318b4b>] vfs_write+0xcb/0x170
+> > [ 2015.908889]  [<ffffffff80318ce5>] sys_write+0x55/0x90
+> > [ 2015.908895]  [<ffffffff8020c1f2>] system_call_fastpath+0x16/0x1b
+> > [ 2015.908902] Code:  Bad RIP value.
+> > [ 2015.908907] RIP  [<0000737463656a6f>] 0x737463656a6f
+> > [ 2015.908913]  RSP <ffff88007b4ffcd0>
+> > [ 2015.908915] CR2: 0000737463656a6f
+> > [ 2015.909459] ---[ end trace cefb79d041e94864 ]---
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
