@@ -1,86 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZDWPeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbZDWPfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbZDWPeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZDWPeJ
+	id S1751520AbZDWPfZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZDWPfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:34:09 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:59658 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbZDWPeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:34:05 -0400
-Date: Thu, 23 Apr 2009 08:34:02 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-Message-ID: <20090423153402.GC6877@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090423052520.GA13036@linux.vnet.ibm.com> <20090423075436.GB22606@elte.hu>
+	Thu, 23 Apr 2009 11:35:10 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:33211 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbZDWPfI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 11:35:08 -0400
+Date: Thu, 23 Apr 2009 11:41:45 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, e1000-devel@lists.sourceforge.net,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [E1000-devel] e1000: "eeprom checksum is not valid" after kexec
+Message-ID: <20090423144145.GA3749@vespa.holoscopio.com>
+References: <49F06EEB.9060500@gmail.com> <20090423141026.GB4046@vespa.holoscopio.com> <49F07B69.1020305@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cNdxnHkX5QqsyA0e"
 Content-Disposition: inline
-In-Reply-To: <20090423075436.GB22606@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <49F07B69.1020305@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 09:54:36AM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > First cut of "big hammer" expedited RCU grace periods, but only 
-> > for rcu_bh.  This creates another softirq vector, so that entering 
-> > this softirq vector will have forced an rcu_bh quiescent state (as 
-> > noted by Dave Miller).  Use smp_call_function() to invoke 
-> > raise_softirq() on all CPUs in order to cause this to happen.  
-> > Track the CPUs that have passed through a quiescent state (or gone 
-> > offline) with a cpumask.
-> > 
-> > Does nothing to expedite callbacks already registered with 
-> > call_rcu_bh(), but there is no need to.
-> > 
-> > Shortcomings:
-> > 
-> > o	Untested, probably does not compile, not for inclusion.
-> > 
-> > o	Does not handle rcu, only rcu_bh.
-> > 
-> > Thoughts?
-> 
-> I'm wondering, why not just do a two-liner, along the lines of:
-> 
-> 	for_each_online_cpu(cpu)
-> 		smp_send_reschedule(cpu);
-> 
-> That should trigger a quiescent state on all online cpus. It wont 
-> perturb the scheduler state (which is reschedule-IPI invariant).
-> (And this is a big-hammer approach anyway so even if it did we 
-> wouldnt care.)
-> 
-> Am i missing something embarrasingly obvious perhaps?
 
-This two-liner would indeed trigger a quiescent state on all online CPUs.
+--cNdxnHkX5QqsyA0e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-However, it would not force RCU to notice these quiescent states quickly.
-This is because RCU's normal grace-period-detection path can be thought of
-as a state machine driven out of the per-CPU scheduling-clock interrupt
-handler.  So RCU would still take another jiffy or two to close the grace
-period -- more if there was a partly-done grace period that needed to
-complete before a new one could start.
+On Thu, Apr 23, 2009 at 04:30:01PM +0200, Jiri Slaby wrote:
+> On 04/23/2009 04:10 PM, Thadeu Lima de Souza Cascardo wrote:
+> > On Thu, Apr 23, 2009 at 03:36:43PM +0200, Jiri Slaby wrote:
+> >> Hi,
+> >>
+> >> 4a865905f685eaefaedf6ade362323dc52aa703b
+> >> (PCI PM: Make pci_set_power_state() handle devices with no PM support)
+> >> breaks e1000 after being kexec'ed. These reverts fix the problem:
+> >>     Revert "PCI PM: Make pci_set_power_state() handle devices with no =
+PM
+> >> support"
+> >>     Revert "PCI PM: Introduce __pci_[start|complete]_power_transition()
+> >> (rev. 2)"
+> >>
+> >> I reverted the second one just for an easy revert of the former one,
+> >> which is actually the culprit.
+> >>
+> >> The symptoms:
+> >> e1000 0000:02:01.0: enabling device (0000 -> 0003)
+> >> e1000 0000:02:01.0: PCI INT A -> Link[LNKA] -> GSI 11 (level, low) -> =
+IRQ 11
+> >> e1000 0000:02:01.0: setting latency timer to 64
+> >> e1000: 0000:02:01.0: e1000_probe: The EEPROM Checksum Is Not Valid
+> >> Switched to high resolution mode on CPU 0
+> >=20
+> > Have you tried b43fcd7dc7b, found in v2.6.30-rc3?
+>=20
+> I've tried 2.6.30-rc3-next-20090423 without success.
 
-So both Lai's and my patch bypass RCU's normal state machine in order
-to not only force the quiescent states, but also to determine that they
-have in fact happened.
+You mean next-20090423. The patch is really found there.
 
-Hmmm...  I need to ask Jeff Chua what HZ he was running with.  Because if
-there was some read-side critical section soaking up 30 milliseconds,
-all that hammering will do is slow things down...
+But, then, I realize you mean reverting these patches for the kernel
+that is running or the kernel that is being kexec'd?
 
-							Thanx, Paul
+If b43fcd7dc7b is applied to the running kernel, it fixes the shutdown
+issue, and the next loaded kernel probes e1000 fine.
+
+If you are reverting 4a865905f in the kexec'd kernel and the running
+kernel does not have b43fcd7dc7b, then I'd like to test the revert for
+my case here, which is e100.
+
+Which is it?
+
+Regards,
+Cascardo.
+
+--cNdxnHkX5QqsyA0e
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknwfikACgkQyTpryRcqtS0lDACfQllmexUatgI2O/fN/VAFV0et
+4BUAoJdGtjtxzRVm6K8lZSFslFtoQIYd
+=2CnN
+-----END PGP SIGNATURE-----
+
+--cNdxnHkX5QqsyA0e--
