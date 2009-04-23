@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbZDWWwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZDWWyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760312AbZDWWwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZDWWwp
+	id S1759614AbZDWWyk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZDWWyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:52:45 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:44715 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbZDWWwo (ORCPT
+	Thu, 23 Apr 2009 18:54:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38155 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751515AbZDWWyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:52:44 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=SmAzL+58Lyo0zi7abL6JGdpFIkfWH+Yy7+W/YE8gIJ95oeKQ6cHis+dWosJ4npzUP
-	6wtfE/2NGGigCypw7Q7Cg==
-Date: Thu, 23 Apr 2009 15:52:36 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] slub: add
- Documentation/ABI/testing/sysfs-kernel-slab
-In-Reply-To: <alpine.DEB.1.10.0904231829550.26300@qirst.com>
-Message-ID: <alpine.DEB.2.00.0904231549130.32736@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0904231136390.20852@chino.kir.corp.google.com> <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com> <alpine.DEB.2.00.0904231510020.30545@chino.kir.corp.google.com> <alpine.DEB.1.10.0904231829550.26300@qirst.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 23 Apr 2009 18:54:31 -0400
+Date: Thu, 23 Apr 2009 15:48:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: mel@csn.ul.ie, linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
+       cl@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       ming.m.lin@intel.com, yanmin_zhang@linux.intel.com,
+       peterz@infradead.org, penberg@cs.helsinki.fi
+Subject: Re: [PATCH 07/22] Calculate the preferred zone for allocation only
+ once
+Message-Id: <20090423154834.bde33a72.akpm@linux-foundation.org>
+In-Reply-To: <1240408407-21848-8-git-send-email-mel@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	<1240408407-21848-8-git-send-email-mel@csn.ul.ie>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, Christoph Lameter wrote:
+On Wed, 22 Apr 2009 14:53:12 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-> >  - slqb uses /sys/kernel/slab as well and we simply add its files in
-> >    sysfs-kernel-slab and leave it to userspace to test for which allocator
-> >    is actually being used.  Both allocators share many of the same
-> >    fundamental attributes but some are only applicable to one,
-> >
-> >  - slqb moves to /sys/kernel/slqb since slub is already resident in
-> >    /sys/kernel/slab and the mm/slab.c allocator actually has no sysfs
-> >    interface, or
+> get_page_from_freelist() can be called multiple times for an allocation.
+> Part of this calculates the preferred_zone which is the first usable zone
+> in the zonelist but the zone depends on the GFP flags specified at the
+> beginning of the allocation call. This patch calculates preferred_zone
+> once. It's safe to do this because if preferred_zone is NULL at the start
+> of the call, no amount of direct reclaim or other actions will change the
+> fact the allocation will fail.
 > 
-> slqb cannot be concurrently used with slub. So slqb can use
-> /sys/kernel/slab as well. So could the original slab allocator.
-> Dont change this.
-> 
+>
+> ...
+>
+> -	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+> -
+>							&preferred_zone);
+> ...  
+>
+> +	/* The preferred zone is used for statistics later */
+> +	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
 
-I'm more concerned with the userspace API.  You're comfortable with 
-letting userspace determine what allocator the kernel is using either by 
-testing for the presence of certain slub or slqb-specific files or 
-checking the config?
+Let's quietly zap that dopey cast.
 
-That should be fine since there's parity among the files that both 
-allocators share, but seems fragile if an allocator adds a file that was 
-previously only applicable to the other or the API happens to change.
+--- a/mm/page_alloc.c~page-allocator-calculate-the-preferred-zone-for-allocation-only-once-fix
++++ a/mm/page_alloc.c
+@@ -1775,8 +1775,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, u
+ 		return NULL;
+ 
+ 	/* The preferred zone is used for statistics later */
+-	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+-							&preferred_zone);
++	first_zones_zonelist(zonelist, high_zoneidx, nodemask, &preferred_zone);
+ 	if (!preferred_zone)
+ 		return NULL;
+ 
+_
 
-My thinking was that /sys/kernel/slqb would be a permanent reference point 
-that userspace could easily test to determine what API is available.
