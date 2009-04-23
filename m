@@ -1,52 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbZDWP5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZDWP5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbZDWP5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZDWP5U
+	id S1753587AbZDWP5u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbZDWP5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:57:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48631 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751665AbZDWP5T (ORCPT
+	Thu, 23 Apr 2009 11:57:30 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:29636 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753963AbZDWP53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:57:19 -0400
-Date: Thu, 23 Apr 2009 08:47:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       akpm@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-In-Reply-To: <20090423153402.GC6877@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.0904230842571.3101@localhost.localdomain>
-References: <20090423052520.GA13036@linux.vnet.ibm.com> <20090423075436.GB22606@elte.hu> <20090423153402.GC6877@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 23 Apr 2009 11:57:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nszg+3UYTheDlQupwBjKvE6bHYdGLVtNdhUxE0Z9hlePt4RjaPQydhGjiANsJJTFEG
+         d7Tsp9yQ14u0OHHp6MjD/mcLh2SXdRL65nVqiAeWAPoTx+nhFC0zBK6uvyUJPTjqeYND
+         zGK6ldmBgUKihQr8dCsSE1zXFvJ/0seVxLRH4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090423112823.GB4593@kernel.dk>
+References: <4e5e476b0904221407v7f43c058l8fc61198a2e4bb6e@mail.gmail.com>
+	 <20090423112823.GB4593@kernel.dk>
+Date: Thu, 23 Apr 2009 17:57:27 +0200
+Message-ID: <4e5e476b0904230857q11c634c8j37c871817bfc83cf@mail.gmail.com>
+Subject: Re: Reduce latencies for syncronous writes and high I/O priority 
+	requests in deadline IO scheduler
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jens,
+
+On Thu, Apr 23, 2009 at 1:28 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Wed, Apr 22 2009, Corrado Zoccolo wrote:
+>> The patch also introduces some new heuristics:
+>> * for non-rotational devices, reads (within a given priority level)
+>> are issued in FIFO order, to improve the latency perceived by readers
+>
+> Danger danger... I smell nasty heuristics.
+
+Ok, I wanted to sneak this heuristic in :), but probably I can abridge
+it from the initial submission.
+The fact is that many people around are using noop scheduler for SSDs,
+to get the ultimate preformance out of their hardware, and I wanted to
+give them a better alternative. CFQ doesn't honor non-rotational flag
+when tag-queuing is not supported, so it will not be an alternative in
+such cases.
+
+>
+>> * minimum batch timespan (time quantum): partners with fifo_batch to
+>> improve throughput, by sending more consecutive requests together. A
+>> given number of requests will not always take the same time (due to
+>> amount of seek needed), therefore fifo_batch must be tuned for worst
+>> cases, while in best cases, having longer batches would give a
+>> throughput boost.
+>> * batch start request is chosen fifo_batch/3 requests before the
+>> expired one, to improve fairness for requests with lower start sector,
+>> that otherwise have higher probability to miss a deadline than
+>> mid-sector requests.
+>
+> This is a huge patch, I'm not going to be reviewing this. Make this a
+> patchset, each doing that little change separately. Then it's easier to
+> review, and much easier to pick the parts that can go in directly and
+> leave the ones that either need more work or are not going be merged
+> out.
+>
+Ok.
+I think I can split it into:
+* add new heuristics (so those can be evaluated independently of the
+read/write vs. sync/async)
+* read/write becomes sync/async
+* add iopriorities
+
+>> I did few performance comparisons:
+>> * HDD, ext3 partition with data=writeback, tiotest with 32 threads,
+>> each writing 80MB of data
+>
+> It doesn't seem to make a whole lot of difference, does it?
+
+The intent is not to boost throughput, but to reduce sync latency.
+The heuristics were added to avoid throughput regression.
+
+> Main difference here seems to be random read performance, the rest are
+> pretty close and could just be noise. Random write is much worse, from a
+> latency view point. Is this just one run, or did you average several?
+
+The random writes issued by tio-test are async writes, so the latency
+is not an issue, and having higher latencies here actually help in
+improving throughput.
+
+>
+> For something like this, you also need to consider workloads that
+> consist of processes with different IO patterns running at the same
+> time. With this tiotest run, you only test sequential readers competing,
+> then random readers, etc.
+
+Sure. Do you have any suggestion?
+I have an other workload, that is the boot of my netbook, on which the
+patched ioscheduler saves 1s out of 12s.
+All other IOschedulers, including noop, perform equally worse (for
+noop, I think I lose on writes).
+
+> So, please, split the big patch into lots of little separate pieces.
+> Benchmark each one separately, so they each carry their own
+> justification.
+
+Does a theoretical proof of unfairness also matter, for the
+fifo_batch/3 backjump?
+
+>> * fsync-tester results, on HDD, empty ext3 partition, mounted with
+>
+> At least this test looks a lot better!
+
+This is why the subject says "reducing latencies ..." :)
+Maybe I should have started the mails with this test, instead of the
+other ones showing that there wasn't regression for throughput (that
+in principle could happen when trying to reduce latencies).
+
+Thanks,
+Corrado
 
 
-On Thu, 23 Apr 2009, Paul E. McKenney wrote:
-> 
-> Hmmm...  I need to ask Jeff Chua what HZ he was running with.  Because if
-> there was some read-side critical section soaking up 30 milliseconds,
-> all that hammering will do is slow things down...
+-- 
+__________________________________________________________________________
 
-The original bug report comes from simply bootup:
-
-  "I'm loading all the firewall rules during boot-up and this 6 secs 
-   slowness is really not very nice to wait for."
-
-IOW, the problematic case likely effectively has _nothing_ else going on. 
-Sure, there might be some parallelism (the bootup scripts are getting 
-better for that), but hopefully not 6 seconds worth, and not likely any 
-complex critical sections.
-
-		Linus
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
