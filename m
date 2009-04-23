@@ -1,134 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZDWP5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZDWQCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753587AbZDWP5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbZDWP5a
+	id S1752905AbZDWQCE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbZDWQBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:57:30 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:29636 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753963AbZDWP53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:57:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nszg+3UYTheDlQupwBjKvE6bHYdGLVtNdhUxE0Z9hlePt4RjaPQydhGjiANsJJTFEG
-         d7Tsp9yQ14u0OHHp6MjD/mcLh2SXdRL65nVqiAeWAPoTx+nhFC0zBK6uvyUJPTjqeYND
-         zGK6ldmBgUKihQr8dCsSE1zXFvJ/0seVxLRH4=
-MIME-Version: 1.0
-In-Reply-To: <20090423112823.GB4593@kernel.dk>
-References: <4e5e476b0904221407v7f43c058l8fc61198a2e4bb6e@mail.gmail.com>
-	 <20090423112823.GB4593@kernel.dk>
-Date: Thu, 23 Apr 2009 17:57:27 +0200
-Message-ID: <4e5e476b0904230857q11c634c8j37c871817bfc83cf@mail.gmail.com>
-Subject: Re: Reduce latencies for syncronous writes and high I/O priority 
-	requests in deadline IO scheduler
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 12:01:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60220 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750741AbZDWQBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:01:52 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090415162712.342d4c07.akpm@linux-foundation.org>
+References: <20090415162712.342d4c07.akpm@linux-foundation.org> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, Oleg Nesterov <oleg@redhat.com>,
+       Trond.Myklebust@netapp.com, serue@us.ibm.com, steved@redhat.com,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slow_work_thread() should do the exclusive wait
+Date: Thu, 23 Apr 2009 17:00:35 +0100
+Message-ID: <20712.1240502435@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Thu, Apr 23, 2009 at 1:28 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Wed, Apr 22 2009, Corrado Zoccolo wrote:
->> The patch also introduces some new heuristics:
->> * for non-rotational devices, reads (within a given priority level)
->> are issued in FIFO order, to improve the latency perceived by readers
->
-> Danger danger... I smell nasty heuristics.
+> I wonder if slow_work_cull_timeout() should have some sort of barrier,
+> so the write is suitably visible to the woken thread.  Bearing in mind
+> that the thread might _already_ have been woken by someone else?
 
-Ok, I wanted to sneak this heuristic in :), but probably I can abridge
-it from the initial submission.
-The fact is that many people around are using noop scheduler for SSDs,
-to get the ultimate preformance out of their hardware, and I wanted to
-give them a better alternative. CFQ doesn't honor non-rotational flag
-when tag-queuing is not supported, so it will not be an alternative in
-such cases.
+Perhaps the attached patch?
 
->
->> * minimum batch timespan (time quantum): partners with fifo_batch to
->> improve throughput, by sending more consecutive requests together. A
->> given number of requests will not always take the same time (due to
->> amount of seek needed), therefore fifo_batch must be tuned for worst
->> cases, while in best cases, having longer batches would give a
->> throughput boost.
->> * batch start request is chosen fifo_batch/3 requests before the
->> expired one, to improve fairness for requests with lower start sector,
->> that otherwise have higher probability to miss a deadline than
->> mid-sector requests.
->
-> This is a huge patch, I'm not going to be reviewing this. Make this a
-> patchset, each doing that little change separately. Then it's easier to
-> review, and much easier to pick the parts that can go in directly and
-> leave the ones that either need more work or are not going be merged
-> out.
->
-Ok.
-I think I can split it into:
-* add new heuristics (so those can be evaluated independently of the
-read/write vs. sync/async)
-* read/write becomes sync/async
-* add iopriorities
+David
+---
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] slow_work_cull_timeout() should have a memory barrier
 
->> I did few performance comparisons:
->> * HDD, ext3 partition with data=writeback, tiotest with 32 threads,
->> each writing 80MB of data
->
-> It doesn't seem to make a whole lot of difference, does it?
+slow_work_cull_timeout() should have a write memory barrier so that the setting
+of the cull flag is seen before the wakeup takes place.  This is required
+because wake_up() does not guarantee any memory barriership at all.
 
-The intent is not to boost throughput, but to reduce sync latency.
-The heuristics were added to avoid throughput regression.
+Concomitant to this, slow_work_thread() should have a read memory barrier
+between its return from schedule() and its testing of slow_work_cull() as
+finish_wait() isn't a guaranteed barrier either.
 
-> Main difference here seems to be random read performance, the rest are
-> pretty close and could just be noise. Random write is much worse, from a
-> latency view point. Is this just one run, or did you average several?
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-The random writes issued by tio-test are async writes, so the latency
-is not an issue, and having higher latencies here actually help in
-improving throughput.
-
->
-> For something like this, you also need to consider workloads that
-> consist of processes with different IO patterns running at the same
-> time. With this tiotest run, you only test sequential readers competing,
-> then random readers, etc.
-
-Sure. Do you have any suggestion?
-I have an other workload, that is the boot of my netbook, on which the
-patched ioscheduler saves 1s out of 12s.
-All other IOschedulers, including noop, perform equally worse (for
-noop, I think I lose on writes).
-
-> So, please, split the big patch into lots of little separate pieces.
-> Benchmark each one separately, so they each carry their own
-> justification.
-
-Does a theoretical proof of unfairness also matter, for the
-fifo_batch/3 backjump?
-
->> * fsync-tester results, on HDD, empty ext3 partition, mounted with
->
-> At least this test looks a lot better!
-
-This is why the subject says "reducing latencies ..." :)
-Maybe I should have started the mails with this test, instead of the
-other ones showing that there wasn't regression for throughput (that
-in principle could happen when trying to reduce latencies).
-
-Thanks,
-Corrado
+ kernel/slow-work.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 
--- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 521ed20..96e418d 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -382,6 +382,7 @@ static int slow_work_thread(void *_data)
+ 		finish_wait(&slow_work_thread_wq, &wait);
+ 
+ 		try_to_freeze();
++		smp_rmb();
+ 
+ 		vsmax = vslow_work_proportion;
+ 		vsmax *= atomic_read(&slow_work_thread_count);
+@@ -416,6 +417,7 @@ static int slow_work_thread(void *_data)
+ static void slow_work_cull_timeout(unsigned long data)
+ {
+ 	slow_work_cull = true;
++	smp_wmb();
+ 	wake_up(&slow_work_thread_wq);
+ }
+ 
