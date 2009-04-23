@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZDWTtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZDWTzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbZDWTtS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZDWTtA
+	id S1754416AbZDWTzv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDWTzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:49:00 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:46153 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZDWTs7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:48:59 -0400
-Date: Thu, 23 Apr 2009 15:48:46 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: We La <w.landgraf@yahoo.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.30-rc3 : Regression: i915 , video
-In-reply-to: <72010.86725.qm@web112215.mail.gq1.yahoo.com>
-Message-id: <alpine.LFD.2.00.0904231537590.15830@localhost.localdomain>
-References: <72010.86725.qm@web112215.mail.gq1.yahoo.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 23 Apr 2009 15:55:41 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:51129 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751576AbZDWTzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 15:55:41 -0400
+Date: Thu, 23 Apr 2009 21:55:38 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: david-b@pacbell.net, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       hcegtvedt@atmel.com, vapier@gentoo.org, rongkai.zhan@windriver.com,
+       balajirrao@openmoko.org, broonie@opensource.wolfsonmicro.com
+Subject: Re: [rtc-linux] Re: [PATCH] rtc: Make rtc_update_irq callable with
+ irqs enabled
+Message-ID: <20090423215538.256fb5ff@i1501.lan.towertech.it>
+In-Reply-To: <200904231245.33435.david-b@pacbell.net>
+References: <20090410005820.4fcfcc1f@i1501.lan.towertech.it>
+	<200904231225.01618.david-b@pacbell.net>
+	<20090423212639.7ba7cb0b@i1501.lan.towertech.it>
+	<200904231245.33435.david-b@pacbell.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Apr 2009 12:45:32 -0700
+David Brownell <david-b@pacbell.net> wrote:
 
+> If the spinlock is *ever* acquired with IRQs disabled,
+> it must *always* be acquired that way.
 > 
-> Problems on MSI U100 laptop:
-> 
-> root@werner:~# modprobe i915
-> WARNING: Error inserting video (/lib/modules/2.6.30-rc3/kernel/drivers/acpi/video.ko): No such device
-> FATAL: Error inserting i915 (/lib/modules/2.6.30-rc3/kernel/drivers/gpu/drm/i915/i915.ko): Unknown symbol in module, or unknown parameter (see dmesg)
-> root@werner:~#
-> 
-> Apr 23 16:16:57 localhost kernel: i915: Unknown symbol acpi_video_register
-> 
-> 
-> On older kernels this drivers worked
-> 
-> Werner Landgraf
-> Linux  SYS
+> The typical use is ... from IRQ context, which will in
+> some cases mean IRQs disabled.  QED.
 
-you've got modular i915 and no acpi video driver?
-Does this patch help?
+ the spinlock could be acquired with IRQs disabled,
+ with spin_lock_irq, in the alarm setup functions and
+ acquired with the standard spinlock calls in the irq
+ handler.
 
-http://patchwork.kernel.org/patch/18420/
+ would it work?
 
-thanks,
--Len Brown, Intel Open Source Technology Center
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
