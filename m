@@ -1,399 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZDWXmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZDWXtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbZDWXmj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 19:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZDWXmb
+	id S1753548AbZDWXtW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 19:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZDWXtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 19:42:31 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:45346 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbZDWXm3 (ORCPT
+	Thu, 23 Apr 2009 19:49:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54023 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751126AbZDWXtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 19:42:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=q9rDekwlJHDNcqMrMvN0G/jIRyKFw+EQ8TcTLa3BtnXaRMTKm38+eB6RM/R6yLKQG0
-         q7Ithr37FD+IpMSlYeQoQnXE1IigSN26tIbSkISr+K8pux190amCBOveq/PQ+loF7gS9
-         OV0evUHcqtF6pVxrQRs81Wo/v1CxVJSCgjXko=
-Date: Fri, 24 Apr 2009 01:42:25 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Russell King <rmk+kernel@arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-arm@lists.arm.linux.org.uk
-Subject: Re: [PATCH] Add function graph tracer support for ARM
-Message-ID: <20090423234224.GC5976@nowhere>
-References: <49F0AEA2.5010309@am.sony.com> <20090423192022.GA5976@nowhere> <49F0ECCC.70202@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F0ECCC.70202@am.sony.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 23 Apr 2009 19:49:12 -0400
+Date: Thu, 23 Apr 2009 16:46:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: [BUG] 2.6.29.1 debugobjects warning
+Message-Id: <20090423164638.3b5769c6.akpm@linux-foundation.org>
+In-Reply-To: <20090423140002.GA12852@Krystal>
+References: <20090423140002.GA12852@Krystal>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 03:33:48PM -0700, Tim Bird wrote:
-> Frederic Weisbecker wrote:
-> > On Thu, Apr 23, 2009 at 11:08:34AM -0700, Tim Bird wrote:
-> >> Add ftrace function-graph tracer support for ARM.
-> ...
+On Thu, 23 Apr 2009 10:00:02 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Hi,
 > 
-> >> This works for me with a gcc 4.1.1 compiler on an
-> >> OMAP OSK board, with kernel 2.6.29.
-> > 
-> > 
-> > There have been a lot of changes on the function graph tracer
-> > since 2.6.29 :)
+> I got the following warning on my Thinkpad T43p laptop (single-core
+> 32-bits x86). I run the 2.6.29.1 tree, plus LTTng patchset applied. It
+> seems to come from cpufreq. Any idea what is going on here ?
 > 
-> LOL.  It serves me right for going on vacation for a week. ;-)
 > 
-> > I don't know which tree would be the best to rebase this work on, 
-> > whether ARM or -tip. But anyway it should really be based against
-> > a 2.6.30 development tree.
-> Are you talking about -tip of Linus' tree, or is there a
-> tracing tree I should getting stuff from?
+> ------------[ cut here ]------------
+> WARNING: at lib/debugobjects.c:217 debug_print_object+0x5a/0x70()
+> Hardware name: 2687D5U
+> ODEBUG: init active object type: timer_list
+> Modules linked in: irda parport nsc_ircc irtty_sir parport_pc psmouse snd_seq sn
+> d_seq_midi_event hid_logitech ac unix floppy output battery sir_dev nvram snd_ra
+> wmidi pcmcia x_tables ip_tables joydev snd_seq_midi evdev video snd_page_alloc s
+> oundcore led_class i2c_i801 cryptoloop snd snd_seq_dummy rfkill thinkpad_acpi sn
+> d_seq_oss snd_mixer_oss loop ipw2200 blowfish aes_i586 snd_pcm_oss ac97_bus snd_
+> seq_device agpgart snd_pcm ide_cd_mod snd_timer intel_agp snd_ac97_codec ide_gen
+> eric button snd_intel8x0 edd acpi_cpufreq ltt_statedump ipc_trace usbhid thermal
+>  mm_trace snd_intel8x0m fs_trace pcmcia_core rcu_trace lib80211 syscall_trace rs
+> rc_nonstatic libphy serio_raw kernel_trace tg3 trap_trace libipw crc_ccitt net_t
+> race dm_mod dm_log dm_region_hash dm_mirror yenta_socket dm_snapshot fat vfat nl
+> s_cp437 nls_iso8859_1 lp ppdev af_packet drm ntfs ipv6 auth_rpcgss binfmt_misc r
+> adeon lockd sunrpc nfs
+> Pid: 3628, comm: cpufreqd Not tainted 2.6.29.1-trace #28
+> Call Trace:
+>  [<c1044123>] warn_slowpath+0x73/0xd0
+>  [<c1069c28>] ? mark_held_locks+0x48/0x90
+>  [<c13313f5>] ? __mutex_unlock_slowpath+0xd5/0x150
+>  [<c1069f39>] ? trace_hardirqs_on_caller+0x199/0x1f0
+>  [<c1331478>] ? mutex_unlock+0x8/0x10
+>  [<c1331478>] ? mutex_unlock+0x8/0x10
+>  [<c1107b76>] ? sysfs_addrm_finish+0x16/0x230
+>  [<c1107671>] ? sysfs_find_dirent+0x21/0x30
+>  [<c116d71a>] debug_print_object+0x5a/0x70
+>  [<c116e054>] __debug_object_init+0x254/0x340
+>  [<c126533f>] ? cpufreq_governor_dbs+0x10f/0x210
+>  [<c116e187>] debug_object_init+0x17/0x20
+>  [<c104de70>] init_timer+0x10/0x30
+>  [<c104de9b>] init_timer_deferrable+0xb/0x20
+>  [<c12653fd>] cpufreq_governor_dbs+0x1cd/0x210
+>  [<c126205b>] __cpufreq_governor+0xab/0x120
+>  [<c12621cb>] __cpufreq_set_policy+0xfb/0x140
+>  [<c1262c24>] store_scaling_governor+0xa4/0x220
+>  [<c1263550>] ? handle_update+0x0/0x10
+>  [<c1262b80>] ? store_scaling_governor+0x0/0x220
+>  [<c126343e>] store+0x4e/0x70
+>  [<c1106b9c>] sysfs_write_file+0x9c/0x100
+>  [<c10b825c>] vfs_write+0x9c/0x140
+>  [<c1106b00>] ? sysfs_write_file+0x0/0x100
+>  [<c10b8447>] sys_write+0x47/0xe0
+>  [<c1021dde>] syscall_call+0x7/0xb
+>  [<c1020000>] ? sys_vfork+0x20/0x30
 > 
-> As far as I can tell, the ARM bits that this patch applies
-> against are relatively stable, so I'd prefer to stay
-> in synch with an ftrace tree, since that appears to be
-> the more mobile target at the moment.
-> 
-> ...
-> >> --- a/arch/arm/include/asm/ftrace.h
-> >> +++ b/arch/arm/include/asm/ftrace.h
-> >> @@ -7,8 +7,32 @@
-> >>
-> >>  #ifndef __ASSEMBLY__
-> >>  extern void mcount(void);
-> >> -#endif
-> >> +#endif /* __ASSEMBLY__ */
-> >>
-> >> -#endif
-> >> +#endif /* CONFIG_FUNCTION_TRACER */
-> >> +
-> >> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> >> +
-> >> +#ifndef __ASSEMBLY__
-> >> +
-> >> +/*
-> >> + * Stack of return addresses for functions of a thread.
-> >> + * Used in struct thread_info
-> >> + */
-> >> +struct ftrace_ret_stack {
-> >> +	unsigned long ret;
-> >> +	unsigned long func;
-> >> +	unsigned long long calltime;
-> >> +};
-> > 
-> > 
-> > This one is now on <linux/ftrace.h>
-> 
-> OK - I'll update this relative to an appropriate
-> more recent version.  Thanks.
-> 
-> >> --- a/arch/arm/kernel/ftrace.c
-> >> +++ b/arch/arm/kernel/ftrace.c
-> >> @@ -16,6 +16,8 @@
-> >>  #include <asm/cacheflush.h>
-> >>  #include <asm/ftrace.h>
-> >>
-> >> +#ifdef CONFIG_DYNAMIC_FTRACE
-> >> +
-> >>  #define PC_OFFSET      8
-> >>  #define BL_OPCODE      0xeb000000
-> >>  #define BL_OFFSET_MASK 0x00ffffff
-> >> @@ -101,3 +103,147 @@ int __init ftrace_dyn_arch_init(void *da
-> >>  	ftrace_mcount_set(data);
-> >>  	return 0;
-> >>  }
-> >> +
-> >> +#endif /* CONFIG_DYNAMIC_FTRACE */
-> >> +
-> >> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> >> +
-> >> +/* Add a function return address to the trace stack on thread info.*/
-> >> +static int push_return_trace(unsigned long ret, unsigned long long time,
-> >> +	unsigned long func, int *depth)
-> >> +{
-> >> +	int index;
-> >> +
-> >> +	if (!current->ret_stack)
-> >> +		return -EBUSY;
-> >> +
-> >> +	/* The return trace stack is full */
-> >> +	if (current->curr_ret_stack == FTRACE_RETFUNC_DEPTH - 1) {
-> >> +		atomic_inc(&current->trace_overrun);
-> >> +		return -EBUSY;
-> >> +	}
-> >> +
-> >> +	index = ++current->curr_ret_stack;
-> >> +	barrier();
-> >> +	current->ret_stack[index].ret = ret;
-> >> +	current->ret_stack[index].func = func;
-> >> +	current->ret_stack[index].calltime = time;
-> >> +	*depth = index;
-> >> +
-> >> +	return 0;
-> >> +}
-> > 
-> > 
-> > This part has been moved as generic code in kernel/trace/trace_function_graph.c
-> 
-> OK - same as above, and for the following dittos.  I'll
-> check the latest and eliminate duplicate stuff.
-> 
-> >> +	struct ftrace_graph_ret trace;
-> >> +	unsigned long ret;
-> >> +
-> >> +	/* guard against trace entry while handling a trace exit */
-> >> +	already_here++;
-> > 
-> > I don't understand the purpose of this variable. Also it's not atomic,
-> > you will rapidly run into an imbalance of its value due to concurrent
-> > inc/decrementations.
-> 
-> It as a quick workaround to solve recursion in the trace system
-> itself.  More notes below.
-> 
-> >> +
-> >> +	pop_return_trace(&trace, &ret);
-> >> +	trace.rettime = cpu_clock(raw_smp_processor_id());
-> >> +	ftrace_graph_return(&trace);
-> >> +
-> >> +	if (unlikely(!ret)) {
-> >> +		ftrace_graph_stop();
-> >> +		WARN_ON(1);
-> >> +		/* Might as well panic. Where else to go? */
-> >> +		ret = (unsigned long)panic;
-> >> +	}
-> >> +
-> >> +	already_here--;
-> >> +	return ret;
-> >> +}
-> >> +
-> >> +/*
-> >> + * Hook the return address and push it in the stack of return addrs
-> >> + * in current thread info.
-> >> + */
-> >> +
-> >> +void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
 
-> >> +{
-> >> +	unsigned long old;
-> >> +	unsigned long long calltime;
-> >> +
-> >> +	struct ftrace_graph_ent trace;
-> >> +	unsigned long return_hooker = (unsigned long)
-> >> +				&return_to_handler;
-> >> +
-> >> +	if (already_here)
-> >> +		return;
-> >> +	already_here++;
-> > 
-> > 
-> > 
-> > I really don't understand why you want this.
-> > Not only doesn't it protect anything because it's not atomic
-> > but moreover this function is supposed to be reentrant.
-> 
-> It's there for recursion, not (non-recursive) reentrancy.
-> If I don't have this, I walk immediately off the stack when
-> I enable the trace, because of nested trace entry.
-> 
-> This solution has, as you point out, several issues.
-> It works OK in a UP environment, but would need to be
-> per-cpu to be made a proper guard for SMP.
-> 
-> I don't mind doing something per-cpu, but last time I
-> looked at the atomic_inc stuff, it was super-expensive
-> on ARM. Is this still the case?
-
-
-I don't know. But now I understand the point of this guard.
-On x86, all these low level functions, such as prepare_ftrace_return,
-return_to_handler are using un-traceable functions.
-
-As an example, sched_clock() is protected because x86/kernel/tsc.c
-has CFLAGS_REMOVE_tsc.o = -pg
-native_sched_clock() (an alias to sched_clock()) is then not traced.
-Also it doesn't call any extern traceable functions so this is safe.
-
-There are other CFLAGS_REMOVE_* = -pg around the kernel for critical
-places. For exemple kernel_text_address was previously protected when
-it was used inside prepare_ftrace_return.
-
-The generic kernel code will of course be the same for arm and
-x86 so the files and functions you should care about are in arch/arm.
-
-Just check that you aren't calling one of these from the function graph
-tracing code and also do the same check for those which have been moved
-in kernel/trace/trace_function_graph.c:
-
-- ftrace_push_return_trace()
-- ftrace_pop_return_trace()
-- ftrace_return_to_handler()
-
-As an example:
-
-ftrace_push_return_trace() -> trace_clock_local() -> sched_clock()
-	-> native_sched_clock() -> .... recursion on arch code?
-
-Three ways to protect a function from tracing:
-
-- __notrace annotations (individual functions), applies on function tracer
-  and function graph tracer.
-- CFLAGS_REMOVE_tsc.o = -pg (whole files)
-- __notrace_funcgraph, same as __notrace but is a nop if !CONFIG_FUNCTION_GRAPH_TRACER
-  It is useful in rare cases when we only want to deactivate tracing for
-  functions on the function graph tracer but not the function tracer.
-  It is rare, I almost only used it for kernel_text_address(). Really
-  in doubt it's better to choose __notrace.
-
-Also, the nasty things to debug often happen when you protect a function
-but you haven't seen that this function called an extern function which
-is traced :-)
-
-Another horrid thing comes when inlined functions are referenced.
-It's safe to assume that inline functions are not traced, but if
-their address is used as a pointer, then they becomes uninlined
-and get traced. It's rare but we have met one of these cases.
-
-Anyway inside trace_graph_entry() or trace_graph_return(),
-you can stop worrying about recursion, because these functions
-are self protected against recursion.
-
-Concerning the arch functions that you should worry about, you can
-start grepping arch/x86 for __notrace and "-pg". But it's only
-a start, I guess there are unexpected traps somewhere :)
-
-
-> 
-> > 
-> > It's perfectly safe against irq, preemption.
-> > It's also not reentrant but safe against NMI if you pick the
-> > protection we have in 2.6.30:
-> > 
-> > if (unlikely(in_nmi()))
-> > 	return;
-> > 
-> > Hmm, btw I should move this protection to a higher level,
-> > we should be able to trace NMI in some conditions.
-> 
-> Pardon my ignorance, but is there an NMI on ARM?
-
-
-I know know either :)
-
- 
-> > 
-> >> +
-> >> +	if (unlikely(atomic_read(&current->tracing_graph_pause))) {
-> >> +		already_here--;
-> >> +		return;
-> >> +	}
-> >> +
-> >> +	/* FIXTHIS - need a local_irqsave here?, (to fend off ints?) */
-> > 
-> > 
-> > No you don't need to protect against irq here.
-> > This is not racy because an irq will push its return adress to the task stack
-> > (in struct task_struct) and on return it will pop its return address.
-> > Then the stack of return addresses will be left intact for the current interrupted
-> > traced function.
-> 
-> OK - my already_here will interefere with this (eliminating the trace
-> capture of any irqs caught during a trace event).  I'll have to think
-> about this more.
-> 
-> > 
-> >> +	/* FIXTHIS - x86 protects against a fault during this operation!*/
-> >> +	old = *parent;
-> >> +	*parent = return_hooker;
-> > 
-> > 
-> > 
-> > Yeah we protect against fault for that. But we never had any fault problem
-> > actually. But it's better to keep it, it doesn't impact performances and
-> > it can help to debug possible future issues in the function graph tracer itself.
-> 
-> OK.
-> 
-> > 
-> >> +
-> >> +	if (unlikely(!__kernel_text_address(old))) {
-> >> +		ftrace_graph_stop();
-> >> +		*parent = old;
-> >> +		WARN_ON(1);
-> >> +		already_here--;
-> >> +		return;
-> >> +	}
-> > 
-> > 
-> > We removed this check. It impacts performances and we haven't seen
-> > any warnings from this place.
-> 
-> OK.
-> 
-> > 
-> >> +
-> >> +	/* FIXTHIS - trace entry appears to nest inside following */
-> >> +	calltime = cpu_clock(raw_smp_processor_id());
-> > 
-> > 
-> > 
-> > Now we are using the local_clock from kernel/trace/trace_clock.c
-> > It's just a wrapping to sched_clock() and sched_clock() is faster
-> > though a bit less accurate.
-> 
-> My personal preference is speed over accuracy, so this is
-> OK with me.  It does mean, however, that if I get rid of
-> my guard variable, I'll need to add notrace down through
-> sched_clock().
-
-
-
-Yeah, or may remove -pg on a whole file. I don't know much the arch/arm
-place so, it depends on how native_sched_clock() is implemented,
-if it calls another functions, whether they are inline, on the same
-file or extern...
-
-
-
-> 
-> > But that's a good beginning. It's great that you've made it work on
-> > Arm.
-> > 
-> > It would be very nice if you could rebase it against latest -tip
-> > or Arm though I can't tell you which one would be the best.
-> > 
-> > -tip is the most up to date with tracing, and Arm is more
-> > up to date with...heh Arm :-)
-> 
-> I'll work on rebasing against latest -tip.  Let me know if
-> this means something other than the tip of Linus' tree.
-
-
-
-It's not the mainline, it's a tree which handles the tracing
-branch and also another things (x86, scheduler, etc...):
-
-http://people.redhat.com/mingo/tip.git/readme.txt
-
-
-Another thing. How do you handle 64 bits return values?
-You get the return value in r0 for most calls but
-I suspect a pair of registers (r1:r0 ?) is used for
-64 bits return values, which includes a lot of
-clock related functions.
-
-In x86, we solved it by always returning the edx:eax pair.
-
-Thanks,
-Frederic.
+It seems to be complaining that cpufreq_governor_dbs() is running
+init_timer() against a timer which has already been initialised once.
 
