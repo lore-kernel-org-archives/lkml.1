@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZDWHgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbZDWHiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741AbZDWHgu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbZDWH2y
+	id S1757934AbZDWHiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZDWH3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:28:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:48402 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:29:48 -0400
+Received: from sous-sol.org ([216.99.217.87]:48544 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755942AbZDWH2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:28:53 -0400
-Message-Id: <20090423072348.362268028@sous-sol.org>
+	id S1756193AbZDWH3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:29:46 -0400
+Message-Id: <20090423072426.702063355@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:47 -0700
+Date: Thu, 23 Apr 2009 00:20:53 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,12 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Dmitri Vorobiev <dmitri.vorobiev@movial.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 027/100] ide: drivers/ide/ide-atapi.c needs <linux/scatterlist.h>
+       Mallikarjuna R Chilakala <mallikarjuna.chilakala@intel.com>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       David S Miller <davem@davemloft.net>
+Subject: [patch 033/100] ixgbe: Fix potential memory leak/driver panic issue while setting up Tx & Rx ring parameters
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=ide-drivers-ide-ide-atapi.c-needs-linux-scatterlist.h.patch
+Content-Disposition: inline; filename=ixgbe-fix-potential-memory-leak-driver-panic-issue-while-setting-up-tx-rx-ring-parameters.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,39 +39,175 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Mallikarjuna R Chilakala <mallikarjuna.chilakala@intel.com>
 
-upstream commit: 479edf065576aeed7ac99d10838bb3b4f870b5f9
+upstream commit: f9ed88549e2ec73922b788e3865282d221233662
 
-On m68k:
-| drivers/ide/ide-atapi.c: In function 'ide_io_buffers':
-| drivers/ide/ide-atapi.c:87: error: implicit declaration of function 'sg_page'
-| drivers/ide/ide-atapi.c:87: warning: passing argument 1 of 'PageHighMem' makes pointer from integer without a cast
-| drivers/ide/ide-atapi.c:91: warning: passing argument 1 of 'kmap_atomic' makes pointer from integer without a cast
-| drivers/ide/ide-atapi.c:96: error: implicit declaration of function 'sg_virt'
-| drivers/ide/ide-atapi.c:96: warning: assignment makes pointer from integer without a cast
-| drivers/ide/ide-atapi.c:107: error: implicit declaration of function 'sg_next'
-| drivers/ide/ide-atapi.c:107: warning: assignment makes pointer from integer without a cast
+While setting up the ring parameters using ethtool the driver can
+panic or leak memory as ixgbe_open tries to setup tx & rx resources.
+The updated logic will use ixgbe_down/up after successful allocation of
+tx & rx resources
 
-[bart: Dmitri Vorobiev submitted similar patch fixing MIPS]
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Mallikarjuna R Chilakala <mallikarjuna.chilakala@intel.com>
+Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: stable@kernel.org
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/ide/ide-atapi.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ixgbe/ixgbe_ethtool.c |  103 +++++++++++++++++++++-----------------
+ 1 file changed, 59 insertions(+), 44 deletions(-)
 
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -6,6 +6,8 @@
- #include <linux/cdrom.h>
- #include <linux/delay.h>
- #include <linux/ide.h>
-+#include <linux/scatterlist.h>
-+
- #include <scsi/scsi.h>
+--- a/drivers/net/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ixgbe/ixgbe_ethtool.c
+@@ -691,9 +691,10 @@ static int ixgbe_set_ringparam(struct ne
+                                struct ethtool_ringparam *ring)
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+-	struct ixgbe_ring *temp_ring;
++	struct ixgbe_ring *temp_tx_ring, *temp_rx_ring;
+ 	int i, err;
+ 	u32 new_rx_count, new_tx_count;
++	bool need_update = false;
  
- #ifdef DEBUG
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+ 		return -EINVAL;
+@@ -712,80 +713,94 @@ static int ixgbe_set_ringparam(struct ne
+ 		return 0;
+ 	}
+ 
+-	temp_ring = kcalloc(adapter->num_tx_queues,
+-	                    sizeof(struct ixgbe_ring), GFP_KERNEL);
+-	if (!temp_ring)
+-		return -ENOMEM;
+-
+ 	while (test_and_set_bit(__IXGBE_RESETTING, &adapter->state))
+ 		msleep(1);
+ 
+-	if (new_tx_count != adapter->tx_ring->count) {
++	temp_tx_ring = kcalloc(adapter->num_tx_queues,
++	                       sizeof(struct ixgbe_ring), GFP_KERNEL);
++	if (!temp_tx_ring) {
++		err = -ENOMEM;
++		goto err_setup;
++	}
++
++	if (new_tx_count != adapter->tx_ring_count) {
++		memcpy(temp_tx_ring, adapter->tx_ring,
++		       adapter->num_tx_queues * sizeof(struct ixgbe_ring));
+ 		for (i = 0; i < adapter->num_tx_queues; i++) {
+-			temp_ring[i].count = new_tx_count;
+-			err = ixgbe_setup_tx_resources(adapter, &temp_ring[i]);
++			temp_tx_ring[i].count = new_tx_count;
++			err = ixgbe_setup_tx_resources(adapter,
++			                               &temp_tx_ring[i]);
+ 			if (err) {
+ 				while (i) {
+ 					i--;
+ 					ixgbe_free_tx_resources(adapter,
+-					                        &temp_ring[i]);
++					                        &temp_tx_ring[i]);
+ 				}
+ 				goto err_setup;
+ 			}
+-			temp_ring[i].v_idx = adapter->tx_ring[i].v_idx;
++			temp_tx_ring[i].v_idx = adapter->tx_ring[i].v_idx;
+ 		}
+-		if (netif_running(netdev))
+-			netdev->netdev_ops->ndo_stop(netdev);
+-		ixgbe_reset_interrupt_capability(adapter);
+-		ixgbe_napi_del_all(adapter);
+-		INIT_LIST_HEAD(&netdev->napi_list);
+-		kfree(adapter->tx_ring);
+-		adapter->tx_ring = temp_ring;
+-		temp_ring = NULL;
+-		adapter->tx_ring_count = new_tx_count;
+-	}
+-
+-	temp_ring = kcalloc(adapter->num_rx_queues,
+-	                    sizeof(struct ixgbe_ring), GFP_KERNEL);
+-	if (!temp_ring) {
+-		if (netif_running(netdev))
+-			netdev->netdev_ops->ndo_open(netdev);
+-		return -ENOMEM;
++		need_update = true;
+ 	}
+ 
+-	if (new_rx_count != adapter->rx_ring->count) {
++	temp_rx_ring = kcalloc(adapter->num_rx_queues,
++	                       sizeof(struct ixgbe_ring), GFP_KERNEL);
++	if ((!temp_rx_ring) && (need_update)) {
++		for (i = 0; i < adapter->num_tx_queues; i++)
++			ixgbe_free_tx_resources(adapter, &temp_tx_ring[i]);
++		kfree(temp_tx_ring);
++		err = -ENOMEM;
++		goto err_setup;
++	}
++
++	if (new_rx_count != adapter->rx_ring_count) {
++		memcpy(temp_rx_ring, adapter->rx_ring,
++		       adapter->num_rx_queues * sizeof(struct ixgbe_ring));
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
+-			temp_ring[i].count = new_rx_count;
+-			err = ixgbe_setup_rx_resources(adapter, &temp_ring[i]);
++			temp_rx_ring[i].count = new_rx_count;
++			err = ixgbe_setup_rx_resources(adapter,
++			                               &temp_rx_ring[i]);
+ 			if (err) {
+ 				while (i) {
+ 					i--;
+ 					ixgbe_free_rx_resources(adapter,
+-					                        &temp_ring[i]);
++					                      &temp_rx_ring[i]);
+ 				}
+ 				goto err_setup;
+ 			}
+-			temp_ring[i].v_idx = adapter->rx_ring[i].v_idx;
++			temp_rx_ring[i].v_idx = adapter->rx_ring[i].v_idx;
+ 		}
++		need_update = true;
++	}
++
++	/* if rings need to be updated, here's the place to do it in one shot */
++	if (need_update) {
+ 		if (netif_running(netdev))
+-			netdev->netdev_ops->ndo_stop(netdev);
+-		ixgbe_reset_interrupt_capability(adapter);
+-		ixgbe_napi_del_all(adapter);
+-		INIT_LIST_HEAD(&netdev->napi_list);
+-		kfree(adapter->rx_ring);
+-		adapter->rx_ring = temp_ring;
+-		temp_ring = NULL;
++			ixgbe_down(adapter);
++
++		/* tx */
++		if (new_tx_count != adapter->tx_ring_count) {
++			kfree(adapter->tx_ring);
++			adapter->tx_ring = temp_tx_ring;
++			temp_tx_ring = NULL;
++			adapter->tx_ring_count = new_tx_count;
++		}
+ 
+-		adapter->rx_ring_count = new_rx_count;
++		/* rx */
++		if (new_rx_count != adapter->rx_ring_count) {
++			kfree(adapter->rx_ring);
++			adapter->rx_ring = temp_rx_ring;
++			temp_rx_ring = NULL;
++			adapter->rx_ring_count = new_rx_count;
++		}
+ 	}
+ 
+ 	/* success! */
+ 	err = 0;
+-err_setup:
+-	ixgbe_init_interrupt_scheme(adapter);
+ 	if (netif_running(netdev))
+-		netdev->netdev_ops->ndo_open(netdev);
++		ixgbe_up(adapter);
+ 
++err_setup:
+ 	clear_bit(__IXGBE_RESETTING, &adapter->state);
+ 	return err;
+ }
 
