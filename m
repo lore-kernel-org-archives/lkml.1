@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759725AbZDWHvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZDWHof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759725AbZDWHvv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbZDWHdq
+	id S1758392AbZDWHof (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbZDWHa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:33:46 -0400
-Received: from sous-sol.org ([216.99.217.87]:50976 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:30:58 -0400
+Received: from sous-sol.org ([216.99.217.87]:50537 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757284AbZDWHdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:33:45 -0400
-Message-Id: <20090423072839.770227835@sous-sol.org>
+	id S1754334AbZDWHa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:30:57 -0400
+Message-Id: <20090423072609.028182312@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:32 -0700
+Date: Thu, 23 Apr 2009 00:21:10 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 072/100] mm: pass correct mm when growing stack
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       Mark Fasheh <mfasheh@suse.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 050/100] splice: fix deadlock in splicing to file
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=mm-pass-correct-mm-when-growing-stack.patch
+Content-Disposition: inline; filename=splice-fix-deadlock-in-splicing-to-file.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,38 +36,116 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Hugh Dickins <hugh@veritas.com>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-upstream commit: 05fa199d45c54a9bda7aa3ae6537253d6f097aa9
+upstream commit: 7bfac9ecf0585962fe13584f5cf526d8c8e76f17
 
-Tetsuo Handa reports seeing the WARN_ON(current->mm == NULL) in
-security_vm_enough_memory(), when do_execve() is touching the
-target mm's stack, to set up its args and environment.
+There's a possible deadlock in generic_file_splice_write(),
+splice_from_pipe() and ocfs2_file_splice_write():
 
-Yes, a UMH_NO_WAIT or UMH_WAIT_PROC call_usermodehelper() spawns
-an mm-less kernel thread to do the exec.  And in any case, that
-vm_enough_memory check when growing stack ought to be done on the
-target mm, not on the execer's mm (though apart from the warning,
-it only makes a slight tweak to OVERCOMMIT_NEVER behaviour).
+ - task A calls generic_file_splice_write()
+ - this calls inode_double_lock(), which locks i_mutex on both
+   pipe->inode and target inode
+ - ordering depends on inode pointers, can happen that pipe->inode is
+   locked first
+ - __splice_from_pipe() needs more data, calls pipe_wait()
+ - this releases lock on pipe->inode, goes to interruptible sleep
+ - task B calls generic_file_splice_write(), similarly to the first
+ - this locks pipe->inode, then tries to lock inode, but that is
+   already held by task A
+ - task A is interrupted, it tries to lock pipe->inode, but fails, as
+   it is already held by task B
+ - ABBA deadlock
 
-Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Fix this by explicitly ordering locks: the outer lock must be on
+target inode and the inner lock (which is later unlocked and relocked)
+must be on pipe->inode.  This is OK, pipe inodes and target inodes
+form two nonoverlapping sets, generic_file_splice_write() and friends
+are not called with a target which is a pipe.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Acked-by: Mark Fasheh <mfasheh@suse.com>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 Cc: stable@kernel.org
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- mm/mmap.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ocfs2/file.c |    8 ++++++--
+ fs/splice.c     |   25 ++++++++++++++++++++-----
+ 2 files changed, 26 insertions(+), 7 deletions(-)
 
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1571,7 +1571,7 @@ static int acct_stack_growth(struct vm_a
- 	 * Overcommit..  This must be the final test, as it will
- 	 * update security statistics.
- 	 */
--	if (security_vm_enough_memory(grow))
-+	if (security_vm_enough_memory_mm(mm, grow))
- 		return -ENOMEM;
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1926,7 +1926,7 @@ static ssize_t ocfs2_file_splice_write(s
+ 		   out->f_path.dentry->d_name.len,
+ 		   out->f_path.dentry->d_name.name);
  
- 	/* Ok, everything looks good - let it rip */
+-	inode_double_lock(inode, pipe->inode);
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+ 
+ 	ret = ocfs2_rw_lock(inode, 1);
+ 	if (ret < 0) {
+@@ -1941,12 +1941,16 @@ static ssize_t ocfs2_file_splice_write(s
+ 		goto out_unlock;
+ 	}
+ 
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 	ret = generic_file_splice_write_nolock(pipe, out, ppos, len, flags);
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
+ 
+ out_unlock:
+ 	ocfs2_rw_unlock(inode, 1);
+ out:
+-	inode_double_unlock(inode, pipe->inode);
++	mutex_unlock(&inode->i_mutex);
+ 
+ 	mlog_exit(ret);
+ 	return ret;
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -736,10 +736,19 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 	 * ->write_end. Most of the time, these expect i_mutex to
+ 	 * be held. Since this may result in an ABBA deadlock with
+ 	 * pipe->inode, we have to order lock acquiry here.
++	 *
++	 * Outer lock must be inode->i_mutex, as pipe_wait() will
++	 * release and reacquire pipe->inode->i_mutex, AND inode must
++	 * never be a pipe.
+ 	 */
+-	inode_double_lock(inode, pipe->inode);
++	WARN_ON(S_ISFIFO(inode->i_mode));
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 	ret = __splice_from_pipe(pipe, &sd, actor);
+-	inode_double_unlock(inode, pipe->inode);
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
++	mutex_unlock(&inode->i_mutex);
+ 
+ 	return ret;
+ }
+@@ -830,11 +839,17 @@ generic_file_splice_write(struct pipe_in
+ 	};
+ 	ssize_t ret;
+ 
+-	inode_double_lock(inode, pipe->inode);
++	WARN_ON(S_ISFIFO(inode->i_mode));
++	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+ 	ret = file_remove_suid(out);
+-	if (likely(!ret))
++	if (likely(!ret)) {
++		if (pipe->inode)
++			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+ 		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
+-	inode_double_unlock(inode, pipe->inode);
++		if (pipe->inode)
++			mutex_unlock(&pipe->inode->i_mutex);
++	}
++	mutex_unlock(&inode->i_mutex);
+ 	if (ret > 0) {
+ 		unsigned long nr_pages;
+ 
 
