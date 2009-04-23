@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbZDWHhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZDWH7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbZDWHhn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZDWH3P
+	id S1759274AbZDWH7b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbZDWHff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:29:15 -0400
-Received: from sous-sol.org ([216.99.217.87]:48438 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:35:35 -0400
+Received: from sous-sol.org ([216.99.217.87]:47436 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756061AbZDWH3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:29:12 -0400
-Message-Id: <20090423072116.282581638@sous-sol.org>
+	id S1757552AbZDWHfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:35:33 -0400
+Message-Id: <20090423073118.918243869@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:23 -0700
+Date: Thu, 23 Apr 2009 00:21:57 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,14 +24,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrea Righi <righi.andrea@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 003/100] fbdev: fix info->lock deadlock in fbcon_event_notify()
+       alan@lxorguk.ukuu.org.uk, Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [patch 097/100] hugetlbfs: return negative error code for bad mount option
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=fbdev-fix-info-lock-deadlock-in-fbcon_event_notify.patch
+Content-Disposition: inline; filename=hugetlbfs-return-negative-error-code-for-bad-mount-option.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -39,282 +35,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Andrea Righi <righi.andrea@gmail.com>
+From: Akinobu Mita <akinobu.mita@gmail.com>
 
-upstream commit: 513adb58685615b0b1d47a3f0d40f5352beff189
+upstream commit: c12ddba09394c60e1120e6997794fa6ed52da884
 
-fb_notifier_call_chain() is called with info->lock held, i.e.  in
-do_fb_ioctl() => FBIOPUT_VSCREENINFO => fb_set_var() and the some
-notifier callbacks, like fbcon_event_notify(), try to re-acquire
-info->lock again.
+This fixes the following BUG:
 
-Remove the lock/unlock_fb_info() in all the framebuffer notifier
-callbacks' and be sure to always call fb_notifier_call_chain() with
-info->lock held.
+  # mount -o size=MM -t hugetlbfs none /huge
+  hugetlbfs: Bad value 'MM' for mount option 'size=MM'
+  ------------[ cut here ]------------
+  kernel BUG at fs/super.c:996!
 
-[fixes hang caused by 66c1ca01]
+Due to
 
-Reported-by: Pavel Roskin <proski@gnu.org>
-Reported-by: Eric Miao <eric.y.miao@gmail.com>
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+	BUG_ON(!mnt->mnt_sb);
+
+in vfs_kern_mount().
+
+Also, remove unused #include <linux/quotaops.h>
+
+Cc: William Irwin <wli@holomorphy.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/video/backlight/backlight.c |    3 -
- drivers/video/backlight/lcd.c       |    3 -
- drivers/video/console/fbcon.c       |   55 +-----------------------------------
- drivers/video/fbmem.c               |   19 ++++++++++++
- 4 files changed, 22 insertions(+), 58 deletions(-)
+ fs/hugetlbfs/inode.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -35,8 +35,6 @@ static int fb_notifier_callback(struct n
- 		return 0;
- 
- 	bd = container_of(self, struct backlight_device, fb_notif);
--	if (!lock_fb_info(evdata->info))
--		return -ENODEV;
- 	mutex_lock(&bd->ops_lock);
- 	if (bd->ops)
- 		if (!bd->ops->check_fb ||
-@@ -49,7 +47,6 @@ static int fb_notifier_callback(struct n
- 			backlight_update_status(bd);
- 		}
- 	mutex_unlock(&bd->ops_lock);
--	unlock_fb_info(evdata->info);
- 	return 0;
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -26,7 +26,6 @@
+ #include <linux/pagevec.h>
+ #include <linux/parser.h>
+ #include <linux/mman.h>
+-#include <linux/quotaops.h>
+ #include <linux/slab.h>
+ #include <linux/dnotify.h>
+ #include <linux/statfs.h>
+@@ -842,7 +841,7 @@ hugetlbfs_parse_options(char *options, s
+ bad_val:
+  	printk(KERN_ERR "hugetlbfs: Bad value '%s' for mount option '%s'\n",
+ 	       args[0].from, p);
+- 	return 1;
++ 	return -EINVAL;
  }
  
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -40,8 +40,6 @@ static int fb_notifier_callback(struct n
- 	if (!ld->ops)
- 		return 0;
- 
--	if (!lock_fb_info(evdata->info))
--		return -ENODEV;
- 	mutex_lock(&ld->ops_lock);
- 	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
- 		if (event == FB_EVENT_BLANK) {
-@@ -53,7 +51,6 @@ static int fb_notifier_callback(struct n
- 		}
- 	}
- 	mutex_unlock(&ld->ops_lock);
--	unlock_fb_info(evdata->info);
- 	return 0;
- }
- 
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2263,9 +2263,12 @@ static void fbcon_generic_blank(struct v
- 	}
- 
- 
-+	if (!lock_fb_info(info))
-+		return;
- 	event.info = info;
- 	event.data = &blank;
- 	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
-+	unlock_fb_info(info);
- }
- 
- static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
-@@ -2956,8 +2959,6 @@ static int fbcon_fb_unregistered(struct 
- {
- 	int i, idx;
- 
--	if (!lock_fb_info(info))
--		return -ENODEV;
- 	idx = info->node;
- 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
- 		if (con2fb_map[i] == idx)
-@@ -2985,8 +2986,6 @@ static int fbcon_fb_unregistered(struct 
- 	if (primary_device == idx)
- 		primary_device = -1;
- 
--	unlock_fb_info(info);
--
- 	if (!num_registered_fb)
- 		unregister_con_driver(&fb_con);
- 
-@@ -3027,11 +3026,8 @@ static int fbcon_fb_registered(struct fb
- {
- 	int ret = 0, i, idx;
- 
--	if (!lock_fb_info(info))
--		return -ENODEV;
- 	idx = info->node;
- 	fbcon_select_primary(info);
--	unlock_fb_info(info);
- 
- 	if (info_idx == -1) {
- 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-@@ -3152,53 +3148,23 @@ static int fbcon_event_notify(struct not
- 
- 	switch(action) {
- 	case FB_EVENT_SUSPEND:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_suspended(info);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_RESUME:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_resumed(info);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_MODE_CHANGE:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_modechanged(info);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_MODE_CHANGE_ALL:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_set_all_vcs(info);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_MODE_DELETE:
- 		mode = event->data;
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		ret = fbcon_mode_deleted(info, mode);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_FB_UNBIND:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		idx = info->node;
--		unlock_fb_info(info);
- 		ret = fbcon_fb_unbind(idx);
- 		break;
- 	case FB_EVENT_FB_REGISTERED:
-@@ -3217,29 +3183,14 @@ static int fbcon_event_notify(struct not
- 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
- 		break;
- 	case FB_EVENT_BLANK:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_fb_blanked(info, *(int *)event->data);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_NEW_MODELIST:
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_new_modelist(info);
--		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_GET_REQ:
- 		caps = event->data;
--		if (!lock_fb_info(info)) {
--			ret = -ENODEV;
--			goto done;
--		}
- 		fbcon_get_requirement(info, caps);
--		unlock_fb_info(info);
- 		break;
- 	}
- done:
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1086,8 +1086,11 @@ static long do_fb_ioctl(struct fb_info *
- 			return -EINVAL;
- 		con2fb.framebuffer = -1;
- 		event.data = &con2fb;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		event.info = info;
- 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
-+		unlock_fb_info(info);
- 		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUT_CON2FBMAP:
-@@ -1104,8 +1107,11 @@ static long do_fb_ioctl(struct fb_info *
- 			break;
- 		}
- 		event.data = &con2fb;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		event.info = info;
- 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
-+		unlock_fb_info(info);
- 		break;
- 	case FBIOBLANK:
- 		if (!lock_fb_info(info))
-@@ -1510,7 +1516,10 @@ register_framebuffer(struct fb_info *fb_
- 	registered_fb[i] = fb_info;
- 
- 	event.info = fb_info;
-+	if (!lock_fb_info(fb_info))
-+		return -ENODEV;
- 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
-+	unlock_fb_info(fb_info);
- 	return 0;
- }
- 
-@@ -1544,8 +1553,12 @@ unregister_framebuffer(struct fb_info *f
- 		goto done;
- 	}
- 
-+
-+	if (!lock_fb_info(fb_info))
-+		return -ENODEV;
- 	event.info = fb_info;
- 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
-+	unlock_fb_info(fb_info);
- 
- 	if (ret) {
- 		ret = -EINVAL;
-@@ -1579,6 +1592,8 @@ void fb_set_suspend(struct fb_info *info
- {
- 	struct fb_event event;
- 
-+	if (!lock_fb_info(info))
-+		return;
- 	event.info = info;
- 	if (state) {
- 		fb_notifier_call_chain(FB_EVENT_SUSPEND, &event);
-@@ -1587,6 +1602,7 @@ void fb_set_suspend(struct fb_info *info
- 		info->state = FBINFO_STATE_RUNNING;
- 		fb_notifier_call_chain(FB_EVENT_RESUME, &event);
- 	}
-+	unlock_fb_info(info);
- }
- 
- /**
-@@ -1656,8 +1672,11 @@ int fb_new_modelist(struct fb_info *info
- 	err = 1;
- 
- 	if (!list_empty(&info->modelist)) {
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		event.info = info;
- 		err = fb_notifier_call_chain(FB_EVENT_NEW_MODELIST, &event);
-+		unlock_fb_info(info);
- 	}
- 
- 	return err;
+ static int
 
