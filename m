@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZDWHbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbZDWHad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZDWHbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZDWH1b
+	id S1756343AbZDWHad (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZDWH12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:31 -0400
-Received: from sous-sol.org ([216.99.217.87]:48186 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:27:28 -0400
+Received: from sous-sol.org ([216.99.217.87]:48160 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754124AbZDWH1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:27:25 -0400
-Message-Id: <20090423072148.553920638@sous-sol.org>
+	id S1754707AbZDWH1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:27:19 -0400
+Message-Id: <20090423072201.068795610@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:28 -0700
+Date: Thu, 23 Apr 2009 00:20:30 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 008/100] ext4: fix locking typo in mballoc which could cause soft lockup hangs
+       alan@lxorguk.ukuu.org.uk, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 010/100] tracing/core: fix early free of cpumasks
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=ext4-fix-locking-typo-in-mballoc-which-could-cause-soft-lockup-hangs.patch
+Content-Disposition: inline; filename=tracing-core-fix-early-free-of-cpumasks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,42 +36,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Theodore Ts'o <tytso@mit.edu>
+From: Frederic Weisbecker <fweisbec@gmail.com>
 
-upstream commit: e7c9e3e99adf6c49c5d593a51375916acc039d1e
+upstream commit: 2fc1dfbe17e7705c55b7a99da995fa565e26f151
 
-Smatch (http://repo.or.cz/w/smatch.git/) complains about the locking in
-ext4_mb_add_n_trim() from fs/ext4/mballoc.c
+Impact: fix crashes when tracing cpumasks
 
-  4438          list_for_each_entry_rcu(tmp_pa, &lg->lg_prealloc_list[order],
-  4439                                                  pa_inode_list) {
-  4440                  spin_lock(&tmp_pa->pa_lock);
-  4441                  if (tmp_pa->pa_deleted) {
-  4442                          spin_unlock(&pa->pa_lock);
-  4443                          continue;
-  4444                  }
+While ring-buffer allocation, the cpumasks are allocated too,
+including the tracing cpumask and the per-cpu file mask handler.
+But these cpumasks are freed accidentally just after.
+Fix it.
 
-Brown paper bag time...
-
-Reported-by: Dan Carpenter <error27@gmail.com>
-Reviewed-by: Eric Sandeen <sandeen@redhat.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@gmail.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: stable@kernel.org
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1237164303-11476-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/ext4/mballoc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/trace/trace.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -4439,7 +4439,7 @@ static void ext4_mb_add_n_trim(struct ex
- 						pa_inode_list) {
- 		spin_lock(&tmp_pa->pa_lock);
- 		if (tmp_pa->pa_deleted) {
--			spin_unlock(&pa->pa_lock);
-+			spin_unlock(&tmp_pa->pa_lock);
- 			continue;
- 		}
- 		if (!added && pa->pa_free < tmp_pa->pa_free) {
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3886,7 +3886,8 @@ __init static int tracer_alloc_buffers(v
+ 				       &trace_panic_notifier);
+ 
+ 	register_die_notifier(&trace_die_notifier);
+-	ret = 0;
++
++	return 0;
+ 
+ out_free_cpumask:
+ 	free_cpumask_var(tracing_cpumask);
 
