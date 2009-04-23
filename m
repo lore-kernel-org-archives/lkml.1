@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZDWScH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZDWSdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbZDWScH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 14:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758740AbZDWSbv
+	id S1759211AbZDWSdR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 14:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZDWSc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 14:31:51 -0400
-Received: from www.sr71.net ([198.145.64.142]:34418 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056AbZDWSbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 14:31:50 -0400
-Subject: Re: 2.6.30-rc2 soft lockups: ACPI?  clock source problem?
-From: Dave Hansen <dave@sr71.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, lenb@kernel.org,
-       john stultz <johnstul@us.ibm.com>
-In-Reply-To: <20090422204557.10c3cc37.akpm@linux-foundation.org>
-References: <1240335038.11194.11.camel@nimitz>
-	 <20090422204557.10c3cc37.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 23 Apr 2009 11:31:48 -0700
-Message-Id: <1240511508.10627.159.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 14:32:58 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:35140 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755507AbZDWSc5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 14:32:57 -0400
+Date: Thu, 23 Apr 2009 14:23:38 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: AIM9 from 2.6.22 to 2.6.29
+In-Reply-To: <20090423162759.GA16429@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0904231422590.7406@qirst.com>
+References: <20090418154207.1260.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0904201300140.1585@qirst.com> <20090421101855.F10D.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0904211011430.19969@qirst.com> <20090423162759.GA16429@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-22 at 20:45 -0700, Andrew Morton wrote:
-> (Is jstultz@us.ibm.com correct?)
+On Thu, 23 Apr 2009, Mel Gorman wrote:
 
-Only I want it to go to the black hole which is Lotus Notes. :)
+> Wow, that's probably unusable it's so old. I don't release vmregress any
+> more but I'm up to version 0.89-rc5
 
-> On Tue, 21 Apr 2009 10:30:38 -0700 Dave Hansen <dave@sr71.net> wrote:
-> > This was during my first boot of 2.6.30-rc2.
-> 
-> Did it ever happen again?
+Well vmregress includes a nice AIM9diff script that I am using. Where can
+we get the newest version of your vmregress?
 
-I've seen it on three different boots, but the stack traces were a bit
-different each time.  So, I assume it is a true timekeeping thing
-instead of something *actually* locking up.
 
-> I assume this is a post-2.6.29 regression?  (Yet another.  We've been
-> extra bad this time)
-
-This laptop has been quite good to me and I haven't rebooted since the
-late 2.6.28 days.  It isn't anything special, though.  Just a Lenovo
-T61.  I wonder if my .config is a bit different.
-
--- Dave
 
