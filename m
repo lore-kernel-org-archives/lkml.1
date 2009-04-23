@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZDWDur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751337AbZDWETY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZDWDur (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 23:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZDWDug
+	id S1751337AbZDWETY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 00:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbZDWETO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 23:50:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57178 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752120AbZDWDue (ORCPT
+	Thu, 23 Apr 2009 00:19:14 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38896 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbZDWETN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 23:50:34 -0400
-Date: Wed, 22 Apr 2009 20:45:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <dave@sr71.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, jstultz <jstultz@us.ibm.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>, lenb@kernel.org,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: 2.6.30-rc2 soft lockups: ACPI?  clock source problem?
-Message-Id: <20090422204557.10c3cc37.akpm@linux-foundation.org>
-In-Reply-To: <1240335038.11194.11.camel@nimitz>
-References: <1240335038.11194.11.camel@nimitz>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 23 Apr 2009 00:19:13 -0400
+Date: Thu, 23 Apr 2009 13:14:37 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "hugh@veritas.com" <hugh@veritas.com>
+Subject: Re: [RFC][PATCH] fix swap entries is not reclaimed in proper way
+ for mem+swap controller
+Message-Id: <20090423131438.062cfb13.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090422143833.2e11e10b.nishimura@mxp.nes.nec.co.jp>
+References: <20090421162121.1a1d15fe.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090422143833.2e11e10b.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,66 +32,243 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-(Is jstultz@us.ibm.com correct?)
-
-On Tue, 21 Apr 2009 10:30:38 -0700 Dave Hansen <dave@sr71.net> wrote:
-
-> This was during my first boot of 2.6.30-rc2.
-
-Did it ever happen again?
-
-I assume this is a post-2.6.29 regression?  (Yet another.  We've been
-extra bad this time)
-
->  At the end of all this,
-> there's a "Clocksource tsc unstable (delta = -222703151079 ns)" which
-> makes me think this probably wasn't a real soft lockup.  Maybe just a
-> bad guess since the clock source changed.  It seems really odd that both
-> CPUs would do this at precisely the same time, but in different code.
+> I'll dig and try more including another aproach..
 > 
-> I'm including the ACPI folks since there was some ACPI stuff in here
-> that is way beyond me. :)
-> 
-> [   76.657737] ACPI: SSDT bf6e1b32 002C4 (v01  PmRef  Cpu0Ist 00000100 INTL 20050513)
-> [   76.676235] ACPI: SSDT bf6e1e7b 0085E (v01  PmRef  Cpu0Cst 00000100 INTL 20050513)
-> [   76.695503] Monitor-Mwait will be used to enter C-1 state
-> [   76.695531] Monitor-Mwait will be used to enter C-2 state
-> [   76.695557] Monitor-Mwait will be used to enter C-3 state
-> [  299.485576] BUG: soft lockup - CPU#1 stuck for 207s! [udevd:3994]
+How about this patch ?
 
-we got a softlockup
+It seems to have been working fine for several hours.
+I should add more and more comments and clean it up, of course :)
+(I think it would be better to unify definitions of new functions to swapfile.c,
+and checking page_mapped() might be enough for mem_cgroup_free_unused_swapcache().)
 
-> [  299.485639] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-> [  299.485680] processor ACPI_CPU:00: registered as cooling_device0
-> [  299.485684] ACPI: Processor [CPU0] (supports 8 throttling states)
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ include/linux/memcontrol.h |    5 +++
+ include/linux/swap.h       |   11 ++++++++
+ mm/memcontrol.c            |   62 ++++++++++++++++++++++++++++++++++++++++++++
+ mm/swap_state.c            |    8 +++++
+ mm/swapfile.c              |   32 ++++++++++++++++++++++-
+ mm/vmscan.c                |    8 +++++
+ 6 files changed, 125 insertions(+), 1 deletions(-)
 
-then a bunch of acpi messages which are probably unrelated.
-
-> [  299.485576] Modules linked in: processor(+) ohci1394 ehci_hcd uhci_hcd ieee1394 usbcore thermal fan fuse
-> [  299.485576] 
-> [  299.485576] Pid: 3994, comm: udevd Not tainted (2.6.30-rc2 #304) 7659A71
-> [  299.485576] EIP: 0060:[<c014d0f5>] EFLAGS: 00000202 CPU: 1
-> [  299.485576] EIP is at current_kernel_time+0x35/0x40
-> [  299.485576] EAX: 00009529 EBX: f75cf400 ECX: 00000000 EDX: f7687480
-> [  299.485576] ESI: f70a49a0 EDI: f765ac80 EBP: f749de38 ESP: f749de2c
-> [  299.485576]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> [  299.485576] CR0: 8005003b CR2: b7f09078 CR3: 36db7000 CR4: 000006b0
-> [  299.485576] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> [  299.485576] DR6: ffff0ff0 DR7: 00000400
-> [  299.485576] Call Trace:
-> [  299.485576]  [<c013629b>] current_fs_time+0xb/0x20
-> [  299.485576]  [<c01ba7b8>] file_update_time+0x48/0xc0
-> [  299.485576]  [<c01af03f>] pipe_write+0x2ff/0x410
-> [  299.485576]  [<c013f2a6>] ? get_signal_to_deliver+0x276/0x380
-> [  299.485576]  [<c01a7bed>] do_sync_write+0xcd/0x110
-> [  299.485576]  [<c0145cd0>] ? autoremove_wake_function+0x0/0x40
-> [  299.485576]  [<c0191d89>] ? remove_vma+0x49/0x60
-> [  299.485576]  [<c01a8436>] vfs_write+0x96/0x160
-> [  299.485576]  [<c01a7b20>] ? do_sync_write+0x0/0x110
-> [  299.485576]  [<c01a8afd>] sys_write+0x3d/0x70
-> [  299.485576]  [<c0102e18>] sysenter_do_call+0x12/0x2c
-
-then the softlockup backtrace.  current_kernel_time() got stuck.
-
-
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 25b9ca9..8b674c2 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -101,6 +101,7 @@ struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
+ 						      struct zone *zone);
+ struct zone_reclaim_stat*
+ mem_cgroup_get_reclaim_stat_from_page(struct page *page);
++extern void mem_cgroup_free_unused_swapcache(struct page *page);
+ extern void mem_cgroup_print_oom_info(struct mem_cgroup *memcg,
+ 					struct task_struct *p);
+ 
+@@ -259,6 +260,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
+ 	return NULL;
+ }
+ 
++static inline void mem_cgroup_free_unused_swapcache(struct page *page)
++{
++}
++
+ static inline void
+ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
+ {
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 62d8143..cdfa982 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -336,11 +336,22 @@ static inline void disable_swap_token(void)
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
++extern int mem_cgroup_fixup_swapin(struct page *page);
++extern void mem_cgroup_fixup_swapfree(struct page *page);
+ #else
+ static inline void
+ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ {
+ }
++static inline int
++mem_cgroup_fixup_swapin(struct page *page)
++{
++	return 0;
++}
++static inline void
++mem_cgroup_fixup_swapfree(struct page *page)
++{
++}
+ #endif
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 79c32b8..f90967b 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1536,6 +1536,68 @@ void mem_cgroup_uncharge_swap(swp_entry_t ent)
+ }
+ #endif
+ 
++struct mem_cgroup_swap_fixup_work {
++	struct work_struct work;
++	struct page *page;
++};
++
++static void mem_cgroup_fixup_swapfree_cb(struct work_struct *work)
++{
++	struct mem_cgroup_swap_fixup_work *my_work;
++	struct page *page;
++
++	my_work = container_of(work, struct mem_cgroup_swap_fixup_work, work);
++	page = my_work->page;
++
++	lock_page(page);
++	if (PageSwapCache(page))
++		mem_cgroup_free_unused_swapcache(page);
++	unlock_page(page);
++
++	kfree(my_work);
++	put_page(page);
++}
++
++void mem_cgroup_fixup_swapfree(struct page *page)
++{
++	struct mem_cgroup_swap_fixup_work *my_work;
++
++	if (mem_cgroup_disabled())
++		return;
++
++	if (!PageSwapCache(page) || page_mapped(page))
++		return;
++
++	my_work = kmalloc(sizeof(*my_work), GFP_ATOMIC); /* cannot sleep */
++	if (my_work) {
++		get_page(page);	/* put_page will be called in callback */
++		my_work->page = page;
++		INIT_WORK(&my_work->work, mem_cgroup_fixup_swapfree_cb);
++		schedule_work(&my_work->work);
++	}
++
++	return;
++}
++
++/*
++ * called from shrink_page_list() and mem_cgroup_fixup_swapfree_cb() to free
++ * !PageCgroupUsed SwapCache, because memcg cannot handle these SwapCache well.
++ */
++void mem_cgroup_free_unused_swapcache(struct page *page)
++{
++		struct page_cgroup *pc;
++
++		VM_BUG_ON(!PageLocked(page));
++		VM_BUG_ON(!PageSwapCache(page));
++
++		pc = lookup_page_cgroup(page);
++		/*
++		 * Used bit of swapcache is solid under page lock.
++		 */
++		if (!PageCgroupUsed(pc))
++			try_to_free_swap(page);
++}
++
+ /*
+  * Before starting migration, account PAGE_SIZE to mem_cgroup that the old
+  * page belongs to.
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 3ecea98..57d9678 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -310,6 +310,14 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+ 		SetPageSwapBacked(new_page);
+ 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (likely(!err)) {
++			if (unlikely(mem_cgroup_fixup_swapin(new_page)))
++				/*
++				 * new_page is not used by anyone.
++				 * And it has been already removed from
++				 * SwapCache and freed.
++				 */
++				return NULL;
++
+ 			/*
+ 			 * Initiate read into locked page and return.
+ 			 */
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 312fafe..1f6934c 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -578,6 +578,7 @@ int free_swap_and_cache(swp_entry_t entry)
+ {
+ 	struct swap_info_struct *p;
+ 	struct page *page = NULL;
++	struct page *stale = NULL;
+ 
+ 	if (is_migration_entry(entry))
+ 		return 1;
+@@ -587,7 +588,7 @@ int free_swap_and_cache(swp_entry_t entry)
+ 		if (swap_entry_free(p, entry) == 1) {
+ 			page = find_get_page(&swapper_space, entry.val);
+ 			if (page && !trylock_page(page)) {
+-				page_cache_release(page);
++				stale = page;
+ 				page = NULL;
+ 			}
+ 		}
+@@ -606,9 +607,38 @@ int free_swap_and_cache(swp_entry_t entry)
+ 		unlock_page(page);
+ 		page_cache_release(page);
+ 	}
++	if (stale) {
++		mem_cgroup_fixup_swapfree(stale);
++		page_cache_release(stale);
++	}
+ 	return p != NULL;
+ }
+ 
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++int mem_cgroup_fixup_swapin(struct page *page)
++{
++	int ret = 0;
++
++	VM_BUG_ON(!PageLocked(page));
++	VM_BUG_ON(!PageSwapCache(page));
++
++	if (mem_cgroup_disabled())
++		return 0;
++
++	/* Used only by SwapCache ? */
++	if (unlikely(!page_swapcount(page))) {
++		get_page(page);
++		ret = remove_mapping(&swapper_space, page);
++		if (ret)
++			/* should be unlocked before beeing freed */
++			unlock_page(page);
++		page_cache_release(page);
++	}
++
++	return ret;
++}
++#endif
++
+ #ifdef CONFIG_HIBERNATION
+ /*
+  * Find the swap type that corresponds to given device (if any).
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index eac9577..640bfb6 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -785,6 +785,14 @@ activate_locked:
+ 		SetPageActive(page);
+ 		pgactivate++;
+ keep_locked:
++		if (!scanning_global_lru(sc) && PageSwapCache(page))
++			/*
++			 * Free !PageCgroupUsed SwapCache here, because memcg
++			 * cannot handle these SwapCache well.
++			 * This can happen if the page is freed by the owner
++			 * process before it is added to SwapCache.
++			 */
++			mem_cgroup_free_unused_swapcache(page);
+ 		unlock_page(page);
+ keep:
+ 		list_add(&page->lru, &ret_pages);
