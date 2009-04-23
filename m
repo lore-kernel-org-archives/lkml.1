@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZDWGIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZDWGJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbZDWGIv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 02:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZDWGIm
+	id S1754160AbZDWGJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 02:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZDWGJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 02:08:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41546 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751782AbZDWGIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 02:08:41 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: fresh data was Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re: New x86 warning
-From: Andi Kleen <andi@firstfloor.org>
-References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu>
-	<8763gxoz50.fsf_-_@basil.nowhere.org>
-	<alpine.LFD.2.00.0904221354320.3101@localhost.localdomain>
-	<20090422211501.GD13896@one.firstfloor.org>
-	<alpine.LFD.2.00.0904221417110.3101@localhost.localdomain>
-	<20090422220428.GE13896@one.firstfloor.org>
-Date: Thu, 23 Apr 2009 08:08:38 +0200
-In-Reply-To: <20090422220428.GE13896@one.firstfloor.org> (Andi Kleen's message of "Thu, 23 Apr 2009 00:04:28 +0200")
-Message-ID: <87skjzoqah.fsf_-_@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 23 Apr 2009 02:09:26 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50216 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406AbZDWGJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 02:09:26 -0400
+Date: Thu, 23 Apr 2009 08:09:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: [GIT PATCH linux-2.6-block] block: cleanup patches, take#3
+Message-ID: <20090423060917.GJ4593@kernel.dk>
+References: <1240331881-28218-1-git-send-email-tj@kernel.org> <20090422101038.GA4593@kernel.dk> <49EFCE29.7050903@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49EFCE29.7050903@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+On Thu, Apr 23 2009, Tejun Heo wrote:
+> Hello,
+> 
+> Jens Axboe wrote:
+> >> linux-2.6-block#for-next(a95320f3ede3f028837a621715cd352e83ffe7c2)
+> >> + linux-2.6-ide#for-next(2ecf0a57c60dcb588f310d94412118e15c510532)
+> > 
+> > Looks nice, the only real quibble I have is the one that hch also brings
+> > up. Using a 'locked' argument is always ugly. Otherwise, overall the
+> > patchset is really nice and does good cleanups. Getting rid of ->data is
+> > great as well.
+> > 
+> > Once we get that settled, pulling into for-2.6.31 will be done.
+> 
+> Tree updated.  In addition to the @locked removal, Acked-by:'s are
+> added to 0012 and 0013 got a proper arm-omap prefix.
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
 
->> > Quick test here:
->> 
->> How about you just compile the kernel with gcc-3.2 and compare the number 
->> of calls to memcpy before-and-after instead? That's the real test.
->
-> I waited over 10 minutes for the full vmlinux objdumps to finish. sorry lost
-> patience. If someone has a fast disassembler we can try it. I'll leave
-> them running over night, maybe there are exact numbers tomorrow.
->
-> But from a quick check (find -name '*.o' | xargs nm | grep memcpy) there are
-> very little files which call it with the patch, so there's some
-> evidence that there isn't a dramatic increase.
-
-I let the objdumps finish over night. On my setup (defconfig + some 
-additions) there are actually less calls to out of line memcpy/__memcpy
-with the patch. I see only one for my defconfig, while there are 
-~10 without the patch. So it makes very little difference.
-The code size savings must come from more efficient code generation
-for the inline case. I haven't investigated  that in detail though.
-
-So the patch seems like a overall win.
-
--Andi
-
+Thanks, pulled!
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Jens Axboe
+
