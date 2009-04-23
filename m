@@ -1,239 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZDWANZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbZDWANk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZDWANZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 20:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZDWANM
+	id S1751732AbZDWANk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 20:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbZDWANR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 20:13:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57793 "EHLO mx1.redhat.com"
+	Wed, 22 Apr 2009 20:13:17 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54770 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751230AbZDWANK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 20:13:10 -0400
-Date: Wed, 22 Apr 2009 20:12:57 -0400
-From: Valerie Aurora Henson <vaurora@redhat.com>
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: [RFC PATCH] fpathconf() for fsync() behavior
-Message-ID: <20090423001257.GA16540@shell>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753661AbZDWANP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 20:13:15 -0400
+Date: Thu, 23 Apr 2009 01:13:11 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+Message-ID: <20090423001311.GA26643@csn.ul.ie>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie> <1240408407-21848-3-git-send-email-mel@csn.ul.ie> <1240416791.10627.78.camel@nimitz> <20090422171151.GF15367@csn.ul.ie> <1240421415.10627.93.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <1240421415.10627.93.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the default mode for ext3 and btrfs, fsync() is both slow and
-unnecessary for some important application use cases - at the same
-time that it is absolutely required for correctness for other modes of
-ext3, ext4, XFS, etc.  If applications could easilyl distinguish
-between the two cases, they would be more likely to be correct and
-fast.
+On Wed, Apr 22, 2009 at 10:30:15AM -0700, Dave Hansen wrote:
+> On Wed, 2009-04-22 at 18:11 +0100, Mel Gorman wrote:
+> > On Wed, Apr 22, 2009 at 09:13:11AM -0700, Dave Hansen wrote:
+> > > On Wed, 2009-04-22 at 14:53 +0100, Mel Gorman wrote:
+> > > > No user of the allocator API should be passing in an order >= MAX_ORDER
+> > > > but we check for it on each and every allocation. Delete this check and
+> > > > make it a VM_BUG_ON check further down the call path.
+> > > 
+> > > Should we get the check re-added to some of the upper-level functions,
+> > > then?  Perhaps __get_free_pages() or things like alloc_pages_exact()? 
+> > 
+> > I don't think so, no. It just moves the source of the text bloat and
+> > for the few callers that are asking for something that will never
+> > succeed.
+> 
+> Well, it's a matter of figuring out when it can succeed.  Some of this
+> stuff, we can figure out at compile-time.  Others are a bit harder.
+> 
 
-How about an fpathconf() variable, something like _PC_ORDERED?  E.g.:
+What do you suggest then? Some sort of constant that tells you the
+maximum size you can call for callers that think they might ever request
+too much?
 
-	/* Unoptimized example optional fsync() demo */
-	write(fd);
-	/* Only fsync() if we need it */
-	if (fpath_conf(fd, _PC_ORDERED) != 1)
-		fsync(fd);
-	rename(tmp_path, new_path);
+Shuffling the check around to other top-level helpers seems pointless to
+me because as I said, it just moves text bloat from one place to the
+next.
 
-I know of two specific real-world cases in which this would
-significantly improve performance: (a) fsync() before rename(), (b)
-fsync() of the parent directory of a newly created file.  Case (b) is
-particularly nasty when you have multiple threads creating files in
-the same directory because the dir's i_mutex is held across fsync() -
-file creates become limited to the speed of sequential fsync()s.
+> > > I'm selfishly thinking of what I did in profile_init().  Can I slab
+> > > alloc it?  Nope.  Page allocator?  Nope.  Oh, well, try vmalloc():
+> > > 
+> > >         prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
+> > >         if (prof_buffer)
+> > >                 return 0;
+> > > 
+> > >         prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
+> > >         if (prof_buffer)
+> > >                 return 0;
+> > > 
+> > >         prof_buffer = vmalloc(buffer_bytes);
+> > >         if (prof_buffer)
+> > >                 return 0;
+> > > 
+> > >         free_cpumask_var(prof_cpu_mask);
+> > >         return -ENOMEM;
+> > > 
+> > 
+> > Can this ever actually be asking for an order larger than MAX_ORDER
+> > though? If so, you're condemning it to always behave poorly.
+> 
+> Yeah.  It is based on text size.  Smaller kernels with trimmed configs
+> and no modules have no problem fitting under MAX_ORDER, as do kernels
+> with larger base page sizes.  
+> 
 
-Conceptual libc patch below.
+It would seem that the right thing to have done here in the first place
+then was
 
--VAL
+if (buffer_bytes > PAGE_SIZE << (MAX_ORDER-1)
+	return vmalloc(...)
 
-diff --git a/sysdeps/unix/sysv/linux/pathconf.c b/sysdeps/unix/sysv/linux/pathconf.c
-index db03529..5b64939 100644
---- a/sysdeps/unix/sysv/linux/pathconf.c
-+++ b/sysdeps/unix/sysv/linux/pathconf.c
-@@ -51,6 +51,9 @@ __pathconf (const char *file, int name)
-     case _PC_CHOWN_RESTRICTED:
-       return __statfs_chown_restricted (__statfs (file, &fsbuf), &fsbuf);
- 
-+    case _PC_ORDERED:
-+      return __statfs_ordered (__statfs (file, &fsbuf), &fsbuf);
-+
-     default:
-       return posix_pathconf (file, name);
-     }
-@@ -225,3 +228,44 @@ __statfs_chown_restricted (int result, const struct statfs *fsbuf)
- 
-   return retval;
- }
-+
-+
-+/* Tells us if write operations are ordered with respect to each
-+ * other.  Useful for skipping fsync in some cases.  Default is 0 -
-+ * not ordered. */
-+
-+/* Used like: return statfs_ordered (__statfs (name, &buf), &buf); */
-+long int
-+__statfs_ordered (int result, const struct statfs *fsbuf)
-+{
-+  if (result < 0)
-+    {
-+      if (errno == ENOSYS)
-+	/* Not possible, return the default value.  */
-+	return 0;
-+
-+      /* Some error occured.  */
-+      return -1;
-+    }
-+
-+#define BTRFS_SUPER_MAGIC       0x9123683E
-+  switch (fsbuf->f_type)
-+    {
-+    case BTRFS_SUPER_MAGIC:
-+    case EXT2_SUPER_MAGIC:
-+	    /* XXX Must distinguish between 2, 3, and 4 */
-+    case REISERFS_SUPER_MAGIC:
-+	    /* XXX Nasty hacking needed here to determine exact
-+	     * journaling mode.  Options include parsing /proc/mounts,
-+	     * defining an ioctl(), creating a generic VFS interface.
-+	     * For demonstration purposes, assume the default mode,
-+	     * which is ordered for each of these file systems.
-+	     */
-+	    return 1;
-+    case XFS_SUPER_MAGIC:
-+	    /* XXX XFS has a trillion options, is there one to do ordered mode? */
-+	    return 0;
-+    default:
-+      return 0;
-+    }
-+}
-diff --git a/bits/confname.h b/bits/confname.h
-index 80b51ac..3d19902 100644
---- a/bits/confname.h
-+++ b/bits/confname.h
-@@ -39,6 +39,8 @@ enum
- #define	_PC_PIPE_BUF			_PC_PIPE_BUF
-     _PC_CHOWN_RESTRICTED,
- #define	_PC_CHOWN_RESTRICTED		_PC_CHOWN_RESTRICTED
-+    _PC_ORDERED,
-+#define	_PC_ORDERED			_PC_ORDERED
-     _PC_NO_TRUNC,
- #define	_PC_NO_TRUNC			_PC_NO_TRUNC
-     _PC_VDISABLE,
-diff --git a/conform/data/unistd.h-data b/conform/data/unistd.h-data
-index b6effa0..7325ff5 100644
---- a/conform/data/unistd.h-data
-+++ b/conform/data/unistd.h-data
-@@ -248,6 +248,7 @@ constant _PC_MAX_CANON
- constant _PC_MAX_INPUT
- constant _PC_NAME_MAX
- constant _PC_NO_TRUNC
-+constant _PC_ORDERED
- constant _PC_PATH_MAX
- constant _PC_PIPE_BUF
- constant _PC_PRIO_IO
-diff --git a/posix/annexc.c b/posix/annexc.c
-index df5913a..658bdc1 100644
---- a/posix/annexc.c
-+++ b/posix/annexc.c
-@@ -501,7 +501,7 @@ static const char *const unistd_syms[] =
-   "F_OK", "NULL", "R_OK", "SEEK_CUR", "SEEK_END", "SEEK_SET", "STDERR_FILENO",
-   "STDIN_FILENO", "STDOUT_FILENO", "W_OK", "X_OK",
-   "_PC_ASYNC_IO", "_PC_CHOWN_RESTRICTED", "_PC_LINK_MAX", "_PC_MAX_CANON",
--  "_PC_MAX_INPUT", "_PC_NAME_MAX", "_PC_NO_TRUNC", "_PC_PATH_MAX",
-+  "_PC_MAX_INPUT", "_PC_NAME_MAX", "_PC_NO_TRUNC", "_PC_PATH_MAX", "_PC_ORDERED",
-   "_PC_PIPE_BUF", "_PC_PRIO_IO", "_PC_SYNC_IO", "_PC_VDISABLE",
-   "_SC_AIO_LISTIO_MAX", "_SC_AIO_MAX", "_SC_AIO_PRIO_DELTA_MAX",
-   "_SC_ARG_MAX", "_SC_ASYNCHRONOUS_IO", "_SC_CHILD_MAX", "_SC_CLK_TCK",
-diff --git a/posix/fpathconf.c b/posix/fpathconf.c
-index 840460b..d7f9a89 100644
---- a/posix/fpathconf.c
-+++ b/posix/fpathconf.c
-@@ -47,6 +47,7 @@ __fpathconf (fd, name)
-     case _PC_PIPE_BUF:
-     case _PC_SOCK_MAXBUF:
-     case _PC_CHOWN_RESTRICTED:
-+    case _PC_ORDERED:
-     case _PC_NO_TRUNC:
-     case _PC_VDISABLE:
-       break;
-diff --git a/posix/getconf.c b/posix/getconf.c
-index 6184292..5995d60 100644
---- a/posix/getconf.c
-+++ b/posix/getconf.c
-@@ -81,6 +81,9 @@ static const struct conf vars[] =
- #ifdef _PC_CHOWN_RESTRICTED
-     { "_POSIX_CHOWN_RESTRICTED", _PC_CHOWN_RESTRICTED, PATHCONF },
- #endif
-+#ifdef _PC_ORDERED
-+    { "_POSIX_ORDERED", _PC_ORDERED, PATHCONF },
-+#endif
- #ifdef _PC_NO_TRUNC
-     { "_POSIX_NO_TRUNC", _PC_NO_TRUNC, PATHCONF },
- #endif
-diff --git a/sysdeps/posix/fpathconf.c b/sysdeps/posix/fpathconf.c
-index 605cd17..c29fa6f 100644
---- a/sysdeps/posix/fpathconf.c
-+++ b/sysdeps/posix/fpathconf.c
-@@ -121,6 +121,13 @@ __fpathconf (fd, name)
-       return -1;
- #endif
- 
-+    case _PC_ORDERED:
-+#ifdef	_POSIX_ORDERED
-+      return _POSIX_ORDERED;
-+#else
-+      return -1;
-+#endif
-+
-     case _PC_NO_TRUNC:
- #ifdef	_POSIX_NO_TRUNC
-       return _POSIX_NO_TRUNC;
-diff --git a/sysdeps/posix/pathconf.c b/sysdeps/posix/pathconf.c
-index 75c99ee..f9d84ab 100644
---- a/sysdeps/posix/pathconf.c
-+++ b/sysdeps/posix/pathconf.c
-@@ -117,6 +117,13 @@ __pathconf (const char *path, int name)
-       return -1;
- #endif
- 
-+    case _PC_ORDERED:
-+#ifdef	_POSIX_ORDERED
-+    return _POSIX_ORDERED;
-+#else
-+      return -1;
-+#endif
-+
-     case _PC_NO_TRUNC:
- #ifdef	_POSIX_NO_TRUNC
-       return _POSIX_NO_TRUNC;
-diff --git a/sysdeps/unix/sysv/linux/fpathconf.c b/sysdeps/unix/sysv/linux/fpathconf.c
-index 2701c9e..51c43c4 100644
---- a/sysdeps/unix/sysv/linux/fpathconf.c
-+++ b/sysdeps/unix/sysv/linux/fpathconf.c
-@@ -48,6 +48,9 @@ __fpathconf (fd, name)
-     case _PC_CHOWN_RESTRICTED:
-       return __statfs_chown_restricted (__fstatfs (fd, &fsbuf), &fsbuf);
- 
-+    case _PC_ORDERED:
-+      return __statfs_ordered (__fstatfs (fd, &fsbuf), &fsbuf);
-+
-     default:
-       return posix_fpathconf (fd, name);
-     }
-diff --git a/sysdeps/unix/sysv/linux/pathconf.h b/sysdeps/unix/sysv/linux/pathconf.h
-index 806adcc..1c0b513 100644
---- a/sysdeps/unix/sysv/linux/pathconf.h
-+++ b/sysdeps/unix/sysv/linux/pathconf.h
-@@ -37,3 +37,6 @@ extern long int __statfs_symlinks (int result, const struct statfs *fsbuf);
- /* Used like: return __statfs_chown_restricted (__statfs (name, &buf), &buf);*/
- extern long int __statfs_chown_restricted (int result,
- 					   const struct statfs *fsbuf);
-+
-+/* Used like: return statfs_ordered (__statfs (name, &buf), &buf); */
-+extern long int __statfs_ordered (int result, const struct statfs *fsbuf);
+kzalloc attempt
 
+alloc_pages_exact attempt
+
+> > > Same thing in __kmalloc_section_memmap():
+> > > 
+> > >         page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
+> > >         if (page)
+> > >                 goto got_map_page;
+> > > 
+> > >         ret = vmalloc(memmap_size);
+> > >         if (ret)
+> > >                 goto got_map_ptr;
+> > > 
+> > 
+> > If I'm reading that right, the order will never be a stupid order. It can fail
+> > for higher orders in which case it falls back to vmalloc() .  For example,
+> > to hit that limit, the section size for a 4K kernel, maximum usable order
+> > of 10, the section size would need to be 256MB (assuming struct page size
+> > of 64 bytes). I don't think it's ever that size and if so, it'll always be
+> > sub-optimal which is a poor choice to make.
+> 
+> I think the section size default used to be 512M on x86 because we
+> concentrate on removing whole DIMMs.  
+> 
+
+It was a poor choice then as their sections always ended up in
+vmalloc() or else it was using the bootmem allocator in which case it
+doesn't matter that the core page allocator was doing.
+
+> > > I depend on the allocator to tell me when I've fed it too high of an
+> > > order.  If we really need this, perhaps we should do an audit and then
+> > > add a WARN_ON() for a few releases to catch the stragglers.
+> > 
+> > I consider it buggy to ask for something so large that you always end up
+> > with the worst option - vmalloc(). How about leaving it as a VM_BUG_ON
+> > to get as many reports as possible on who is depending on this odd
+> > behaviour?
+> > 
+> > If there are users with good reasons, then we could convert this to WARN_ON
+> > to fix up the callers. I suspect that the allocator can already cope with
+> > recieving a stupid order silently but slowly. It should go all the way to the
+> > bottom and just never find anything useful and return NULL.  zone_watermark_ok
+> > is the most dangerous looking part but even it should never get to MAX_ORDER
+> > because it should always find there are not enough free pages and return
+> > before it overruns.
+> 
+> Whatever we do, I'd agree that it's fine that this is a degenerate case
+> that gets handled very slowly and as far out of hot paths as possible.
+> Anybody who can fall back to a vmalloc is not doing these things very
+> often.
+> 
+
+If that's the case, the simpliest course might be to just drop the VM_BUG_ON()
+as a separate patch after asserting it's safe to call into the page
+allocator with too large an order with the consequence of it being a
+relatively expensive call considering it can never succeed.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
