@@ -1,84 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZDWUIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZDWUMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736AbZDWUIB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZDWUHw
+	id S1754157AbZDWUMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbZDWUM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:07:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56517 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbZDWUHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:07:52 -0400
-Message-ID: <49F0CA5C.8090409@redhat.com>
-Date: Thu, 23 Apr 2009 16:06:52 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 23 Apr 2009 16:12:28 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:49836 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbZDWUM1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 16:12:27 -0400
+Date: Thu, 23 Apr 2009 16:11:30 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: David Daney <ddaney@caviumnetworks.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
+In-Reply-To: <49F0C817.8050407@caviumnetworks.com>
+Message-ID: <alpine.LFD.2.00.0904231601120.5514@localhost.localdomain>
+References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain> <49F0C817.8050407@caviumnetworks.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Anders Kaseorg <andersk@MIT.EDU>
-CC: Tim Abbott <tabbott@MIT.EDU>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jeffrey B Arnold <jbarnold@MIT.EDU>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
-References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au> <alpine.DEB.1.10.0904191437250.31802@vinegar-pot.mit.edu> <20090422091645.GB18226@elte.hu> <alpine.DEB.1.10.0904221250280.24280@vinegar-pot.mit.edu> <49EFA0DE.9070407@redhat.com> <alpine.DEB.2.00.0904221901190.7725@vinegar-pot.mit.edu>
-In-Reply-To: <alpine.DEB.2.00.0904221901190.7725@vinegar-pot.mit.edu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anders Kaseorg wrote:
-> On Wed, 22 Apr 2009, Masami Hiramatsu wrote:
->> Could you also add "use text_poke() on x86" to your plan? :-)
-> 
-> That should be possible now that it is usable inside stop_machine().  It 
-> would be nicer to have an API that isn’t x86-specific, though.
+On Thu, 23 Apr 2009, David Daney wrote:
 
-Now, text_poke() become atomic and can be called inside stop_machine().
-I agree with that text_poke() is currently implemented only on x86,
-but adding a generic text_poke() which just do memcpy() is easy.
+> Robert P. J. Day wrote:
+> > A boolean single_bit_set() routine would simplify the numerous
+> > constructs of the form (((n & (n - 1)) == 0)) when testing for
+> > single-bitness.
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> >
+> > ---
+> >
+> > This is similar to the current is_power_of_2() routine defined in
+> > include/linux/log2.h, which is mathematically identical but,
+> > semantically, should be defined independently just so the code is more
+> > readable.
+> >
+> > I'm open to an alternative function name.
+> >
+> > diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+> > index 6182913..1c0c840 100644
+> > --- a/include/linux/bitops.h
+> > +++ b/include/linux/bitops.h
+> > @@ -45,6 +45,13 @@ static inline unsigned long hweight_long(unsigned long w)
+> >  	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+> >  }
+> >
+> > +static inline __attribute__((const))
+> > +bool single_bit_set(unsigned long n)
+> > +{
+> > +        return (n != 0 && ((n & (n - 1)) == 0));
+> > +}
+> > +
+> > +
+>
+>
+> It would be nice to be able to override this per architecture.
 
-> Another issue is that Ksplice supports patching rodata as well as text, 
-> and text_poke() does not support changes bigger than PAGE_SIZE.  Though 
-> perhaps text_poke() is not the right function for rodata patches anyway.
+  sure, that makes sense.  but in the meantime, there's nothing to
+keep from starting the process and, arch by arch, overriding it down
+the road as it becomes convenient.
 
-PAGE_SIZE limitation is not a problem, because you can call text_poke()
-repeatedly.
-But indeed, handling rodata in text_poke() is a bit odd...
+> Also, are we still putting 'inline' everywhere?
 
-I assume that you are using alias pages (mapping ro-pages to rw-area) in
-Ksplice, and if so, I think we can make it as a generic function and
-share it with text_poke().
+  beats me.  are we?  and, just to be definitively pedantic about
+this, for maximum readability, i think it would be nice to define
+*both* the function and its converse:
 
->> Hmm, I can't agree that we allow module to modify kernel text...
->> Is that possible to separate kernel-text swapping routine from Ksplice
->> module? In that case, we don't need to export text_mutex.
-> 
-> No, it’s not enough for Ksplice to lock the kernel text only while 
-> actively swapping it.  We also need to prevent changes to the kernel text 
-> while Ksplice is doing run-pre matching to ensure safety.  This means that 
-> Ksplice wants to hold text_mutex for essentially the entire time it’s 
-> running.
+  if (exactly_one_bit_set())
+  if (more_than_one_bit_set())
 
-Then, why can't you move that "matching" routine into the kernel too? :-)
+or something to that effect.  i'll leave the final naming decisions up
+to others higher up the food chain.
 
-Thank you,
+rday
 
+p.s.  you can see the potential simplification by running, at the top
+of the kernel tree:
 
--- 
-Masami Hiramatsu
+  $ grep -Ern "([^\(\)]+) ?\& ?\(\1 ?- ?1\)" .
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+some of those represent power of 2 semantics, while others are the
+single bit thingy.  and others are just weird.
 
-e-mail: mhiramat@redhat.com
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
