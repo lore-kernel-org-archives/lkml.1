@@ -1,107 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbZDWKvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZDWKyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbZDWKvV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZDWKvM
+	id S1756503AbZDWKyT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbZDWKyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:51:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34702 "EHLO hera.kernel.org"
+	Thu, 23 Apr 2009 06:54:05 -0400
+Received: from mail.mev.co.uk ([62.49.15.74]:42442 "EHLO mail.mev.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754291AbZDWKvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:51:11 -0400
-Message-ID: <49F04851.70702@kernel.org>
-Date: Thu, 23 Apr 2009 19:52:01 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1755315AbZDWKyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 06:54:04 -0400
+Message-ID: <49F048C5.5040006@mev.co.uk>
+Date: Thu, 23 Apr 2009 11:53:57 +0100
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       unsik Kim <donari75@gmail.com>
-Subject: [PATCH block#for-linus] mg_disk: fix locking
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Greg KH <greg@kroah.com>,
+       "fmhess@users.sourceforge.net" <fmhess@users.sourceforge.net>,
+       Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
+       Ian Abbott <ian.abbott@mev.co.uk>, David Schleef <ds@schleef.org>
+Subject: Re: staging: comedi: non working tests on unsigned cmd->convert_arg
+References: <49EDC792.60100@gmail.com> <20090422165049.GC19524@kroah.com> <200904221411.13851.fmhess@speakeasy.net> <20090423020824.GA6083@kroah.com> <49F04192.6080300@gmail.com>
+In-Reply-To: <49F04192.6080300@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 10:51:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IRQ and timeout handlers call functions which expect locked queue lock
-without locking it.  Fix it.
+Roel Kluin wrote:
+> Greg KH wrote:
+>> On Wed, Apr 22, 2009 at 02:11:10PM -0400, Frank Mori Hess wrote:
+>>> On Wednesday 22 April 2009, Greg KH wrote:
+>>>> On Tue, Apr 21, 2009 at 03:18:10PM +0200, Roel Kluin wrote:
+>>>>> vi drivers/staging/comedi/comedi.h +342
+>>>>>
+>>>>> and note that cmd->convert_arg in s626_ai_cmdtest() is unsigned.
+>>>>> Should there maybe be a test:
+>>>>>
+>>>>> if (cmd->convert_src == TRIG_EXT && cmd->convert_arg > MAX)
+>>>>>
+>>>>> (and what should MAX be then?)
+>>>> I don't know.  Let's ask the comedi developers :)
+>>>>
+>>>> Frank, what do you think about this?
+>>> It looks like there already is such a test, right below the useless one the 
+>>> patch removes.
+>> Ok, thanks for checking.  Roel, care to resend these patches then?
+>>
+>> thanks,
+>>
+>> greg k-h
+>>
+> So you don't want to set cmd->*_arg to 0 when beyond 39 or below 0?
 
-While at it, convert 0s used as null pointer constant to NULLs.
+Well setting cmd->*_arg to 0 when beyond 39 would be a change of
+functionality, so that's a no-no for a cleanup patch.  And it would
+never be below 0 because it's unsigned, so those 'if' statements in the
+original were redundant.
 
-[ Impact: fix locking, cleanup ]
+> ------------------------------>8-------------8<---------------------------------
+> Remove tests for negative unsigned.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com> 
+> ---
+> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
+> index 30dec9d..a48b244 100644
+> --- a/drivers/staging/comedi/drivers/s626.c
+> +++ b/drivers/staging/comedi/drivers/s626.c
+> @@ -1886,31 +1886,16 @@ static int s626_ai_cmdtest(struct comedi_device *dev, struct comedi_subdevice *s
+>  		err++;
+>  	}
+>  
+> -	if (cmd->start_src == TRIG_EXT && cmd->start_arg < 0) {
+> -		cmd->start_arg = 0;
+> -		err++;
+> -	}
+> -
+>  	if (cmd->start_src == TRIG_EXT && cmd->start_arg > 39) {
+>  		cmd->start_arg = 39;
+>  		err++;
+>  	}
+>  
+> -	if (cmd->scan_begin_src == TRIG_EXT && cmd->scan_begin_arg < 0) {
+> -		cmd->scan_begin_arg = 0;
+> -		err++;
+> -	}
+> -
+>  	if (cmd->scan_begin_src == TRIG_EXT && cmd->scan_begin_arg > 39) {
+>  		cmd->scan_begin_arg = 39;
+>  		err++;
+>  	}
+>  
+> -	if (cmd->convert_src == TRIG_EXT && cmd->convert_arg < 0) {
+> -		cmd->convert_arg = 0;
+> -		err++;
+> -	}
+> -
+>  	if (cmd->convert_src == TRIG_EXT && cmd->convert_arg > 39) {
+>  		cmd->convert_arg = 39;
+>  		err++;
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: unsik Kim <donari75@gmail.com>
----
-Only compile tested.  unsik, can you please ack it?
 
-Thanks.
+-- 
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
 
- drivers/block/mg_disk.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-Index: block/drivers/block/mg_disk.c
-===================================================================
---- block.orig/drivers/block/mg_disk.c
-+++ block/drivers/block/mg_disk.c
-@@ -160,11 +160,16 @@ static irqreturn_t mg_irq(int irq, void
- 	struct mg_host *host = dev_id;
- 	void (*handler)(struct mg_host *) = host->mg_do_intr;
- 
--	host->mg_do_intr = 0;
-+	spin_lock(&host->lock);
-+
-+	host->mg_do_intr = NULL;
- 	del_timer(&host->timer);
- 	if (!handler)
- 		handler = mg_unexpected_intr;
- 	handler(host);
-+
-+	spin_unlock(&host->lock);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -319,7 +324,7 @@ static void mg_read(struct request *req)
- 
- 	remains = req->nr_sectors;
- 
--	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_RD, 0) !=
-+	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_RD, NULL) !=
- 			MG_ERR_NONE)
- 		mg_bad_rw_intr(host);
- 
-@@ -363,7 +368,7 @@ static void mg_write(struct request *req
- 
- 	remains = req->nr_sectors;
- 
--	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_WR, 0) !=
-+	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_WR, NULL) !=
- 			MG_ERR_NONE) {
- 		mg_bad_rw_intr(host);
- 		return;
-@@ -521,9 +526,11 @@ void mg_times_out(unsigned long data)
- 	char *name;
- 	struct request *req;
- 
-+	spin_lock_irq(&host->lock);
-+
- 	req = elv_next_request(host->breq);
- 	if (!req)
--		return;
-+		goto out_unlock;
- 
- 	host->mg_do_intr = NULL;
- 
-@@ -534,6 +541,8 @@ void mg_times_out(unsigned long data)
- 	mg_bad_rw_intr(host);
- 
- 	mg_request(host->breq);
-+out_unlock:
-+	spin_unlock_irq(&host->lock);
- }
- 
- static void mg_request_poll(struct request_queue *q)
