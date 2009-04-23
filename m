@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbZDWUqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbZDWUu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbZDWUqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbZDWUqg
+	id S1758243AbZDWUu3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZDWUuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:46:36 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58056 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755069AbZDWUqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:46:35 -0400
-Date: Thu, 23 Apr 2009 22:46:33 +0200
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/4] vfs: Make __fsync_super() a static function
-	(version 2)
-Message-ID: <20090423204633.GB31584@duck.suse.cz>
-References: <1240498045-14288-1-git-send-email-jack@suse.cz> <1240498045-14288-4-git-send-email-jack@suse.cz> <20090423165205.GA4083@infradead.org>
+	Thu, 23 Apr 2009 16:50:14 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52639 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754086AbZDWUuN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 16:50:13 -0400
+Message-ID: <49F0D45D.3000706@zytor.com>
+Date: Thu, 23 Apr 2009 13:49:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423165205.GA4083@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Huang Ying <ying.huang@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] [4/4] x86: MCE: Fix EIPV behaviour with !PCC
+References: <20090407506.675031434@firstfloor.org>	 <20090407150657.61C4E1D046E@basil.firstfloor.org> <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1240479838.6842.555.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 23-04-09 12:52:05, Christoph Hellwig wrote:
-> On Thu, Apr 23, 2009 at 04:47:24PM +0200, Jan Kara wrote:
-> > -void __fsync_super(struct super_block *sb)
-> > +static int __fsync_super(struct super_block *sb)
-> >  {
-> >  	sync_inodes_sb(sb, 0);
-> >  	vfs_dq_sync(sb);
-> > @@ -284,8 +284,7 @@ void __fsync_super(struct super_block *sb)
-> 
-> I think you're missing a return somewhere :)
-  Argh, forgot to commit this compile fix ;).
+Huang Ying wrote:
+> Add some description for the patch, hope that to be more clear.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+The patch description makes sense.  I cannot, however, make head or tail 
+out of the subject line or how it is related to the patch at all?
+
+I have rewritten it to "always panic on tolerant == 0", ok with everyone?
+
+	-hpa
