@@ -1,94 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZDWLBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZDWLCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbZDWLBT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZDWLBA
+	id S1757471AbZDWLCy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZDWLCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:01:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34808 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbZDWLA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:00:58 -0400
-Message-ID: <49F04A66.4080303@garzik.org>
-Date: Thu, 23 Apr 2009 07:00:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Grant Grundler <grundler@google.com>
-CC: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+	Thu, 23 Apr 2009 07:02:44 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:34881 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751445AbZDWLCn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 07:02:43 -0400
+Subject: Re: linux-next: Tree for April 22: kmemleak: unreferenced object
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Matthias Kaehlcke <matthias@kaehlcke.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-References: <20090422090929.GA14928@havoc.gtf.org> <da824cf30904221208l42e41d38g5af52b1b3b5ea9a1@mail.gmail.com>
-In-Reply-To: <da824cf30904221208l42e41d38g5af52b1b3b5ea9a1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <20090422124932.GA26289@traven>
+References: <20090422154247.dbffd285.sfr@canb.auug.org.au>
+	 <20090422124932.GA26289@traven>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 23 Apr 2009 12:01:29 +0100
+Message-Id: <1240484489.20564.32.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-OriginalArrivalTime: 23 Apr 2009 11:02:13.0475 (UTC) FILETIME=[F4EA6330:01C9C402]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Grundler wrote:
-> On Wed, Apr 22, 2009 at 2:09 AM, Jeff Garzik <jeff@garzik.org> wrote:
->> Currently, libata creates a Scsi_Host per port.  This was originally
->> done to leverage SCSI's infrastructure to arbitrate among master/slave
->> devices, but is not needed for most modern SATA controllers.   And I
->> _think_ it is not needed for master/slave if done properly, either.
->>
->> The patch below converts libata such that there is now a 1:1
->> correspondence between struct Scsi_Host and struct ata_host.  ATA ports
->> are represented as SCSI layer 'channels', which is more natural.
+On Wed, 2009-04-22 at 14:49 +0200, Matthias Kaehlcke wrote:
+> shortly after booting next-20090422 on an ep9301, kmemleak complains
+> about an unreferenced object:
 > 
-> Jeff,
-> So far in reading this, the only reasons I gather for changing this
-> mapping are "not needed" and "is more natural". Data Center
-> environments (not just Google's) like to track disks in many different
-> ways, including the SCSI identifiers since this one "key" for physical
-> location. Breaking the current mappings is going to cause some people
-> a world of pain since they will need to manually build (and integrate)
-> old->new maps of the SCSI identifiers. Can you propose some real,
-> tangible benefit to making this change? (e.g. enables some other
-> feature)
+> kmemleak: unreferenced object 0xc5408610 (size 5):
+>   comm "swapper", pid 0, jiffies 4294937323
+>   backtrace:
+>     [<c00267e0>] save_stack_trace+0x24/0x28
+>     [<c00a3db4>] kmemleak_alloc+0x144/0x2cc
+>     [<c00a211c>] __kmalloc_node+0x1bc/0x1d4
+>     [<c008d730>] kstrdup+0x3c/0x54
+>     [<c00bedec>] alloc_vfsmnt+0x9c/0x148
+>     [<c00a7c10>] vfs_kern_mount+0x34/0xa8
+>     [<c00a7ca4>] kern_mount_data+0x20/0x24
+>     [<c0013428>] bdev_cache_init+0x54/0xa0
+>     [<c0012c74>] vfs_caches_init+0x104/0x140
+>     [<c0008980>] start_kernel+0x244/0x2b8
+>     [<00008034>] 0x8034
+>     [<ffffffff>] 0xffffffff
 
-Sure there are compat issues, just like there are compat issues with the 
-existing consensus goal of moving libata to the block layer -- part of 
-which implies that ATA disks would be served via a "native" block device 
-rather than drivers/scsi/sd.c.
+That's a known leak happening in bdev_cache_init() - the bd_mnt pointer
+is never freed (and people argued that we shouldn't be bothered with
+freeing it). I marked it with kmemleak_ignore() but forgot about the
+block allocated by kstrdup() in alloc_vfsmnt() and referenced from the
+vfsmount structure.
 
-So at least to me, it is axiomatic that these issues will be examined.
+I'll change kmemleak_ignore() to kmemleak_not_leak() so that the
+vfsmount structure is scanned for other referenced objects.
 
-As to benefits, the phrase "more natural" means the code naturally 
-aligns with existing object topologies (ata_host becomes analagous to 
-Scsi_Host), which always has a long list of technical benefits.
+Thanks.
 
-- we get to remove all the ugly hacks currently in place that assume 
-ata_port is _the_ first class object.
-- we get to remove all the workarounds where SCSI assumes it manipulates 
-all devices on a controller (not true in current libata)
-- SCSI (soon block) host-wide busy, block etc functionality now works as 
-expected
-- it makes the libata conversion from SCSI to block layer easier
-- it makes integration with SAS+SATA devices such as mvsas or ipr easier
-- the list goes on; that is just off the top of my head, before my 
-morning Mountain Dew
-
-"more natural" also solves a longstanding user confusion/complaint about 
-libata:  users expected that libata would export each ATA "channel" 
-(bus) as a SCSI channel.
-
-
-> Mark already pointed out this might cause issues with Error Handling
-> (forcing a review of all that code). So before triggering other
-> developers (e.g. HW vendors) do that kind of work I'd like to hear
-> what the reward is going to be at the end.
-
-Are you aware that EH is already receiving a stream of updates, moving 
-it from SCSI to the block layer?  This area has been in constant motion 
-since, well, Tejun arrived and started improving things!  :)
-
-	Jeff
-
-
-
+-- 
+Catalin
 
