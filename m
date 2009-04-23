@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZDWUws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbZDWUxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbZDWUws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZDWUwj
+	id S1758604AbZDWUxm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbZDWUxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:52:39 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37924 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755473AbZDWUwi (ORCPT
+	Thu, 23 Apr 2009 16:53:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55009 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754550AbZDWUxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:52:38 -0400
-Date: Thu, 23 Apr 2009 16:48:52 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Subject: [PATCH v3 0/3] Add support for compiling with -ffunction-sections
- -fdata-sections
-In-Reply-To: <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu>
-References: <1238973278-31735-1-git-send-email-tabbott@mit.edu> <alpine.DEB.1.10.0904072019560.17274@vinegar-pot.mit.edu> <alpine.DEB.1.10.0904201255080.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201637280.2199@localhost.localdomain>
- <alpine.DEB.1.10.0904202010220.30705@vinegar-pot.mit.edu> <alpine.LFD.2.00.0904201730590.2199@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Thu, 23 Apr 2009 16:53:33 -0400
+Date: Thu, 23 Apr 2009 13:51:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: hartleys@visionengravers.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm/vmalloc.c: fix sparse warning
+Message-Id: <20090423135146.89026a2b.akpm@linux-foundation.org>
+In-Reply-To: <20090423203557.GY8633@ZenIV.linux.org.uk>
+References: <BD79186B4FD85F4B8E60E381CAEE1909015F9239@mi8nycmail19.Mi8.com>
+	<20090423132358.2adf4611.akpm@linux-foundation.org>
+	<20090423203557.GY8633@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Apr 2009, Linus Torvalds wrote:
+On Thu, 23 Apr 2009 21:35:57 +0100
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-> I'd be ok with merging it, but I haven't really gotten a strong feeling 
-> that anybody is going to enable it or use it.
+> On Thu, Apr 23, 2009 at 01:23:58PM -0700, Andrew Morton wrote:
+> > On Fri, 17 Apr 2009 20:55:06 -0400
+> > "H Hartley Sweeten" <hartleys@visionengravers.com> wrote:
+> > 
+> > > Fix sparse warning in mm/vmalloc.c.
+> > > 
+> > >   warning: symbol 'tmp' shadows an earlier one
+> 
+> Folks, could we please add to appropriate documentation (SubmittingPatches,
+> perhaps) a bit about using descriptive subjects?
 
-Linus,
+If everyone did that, my typing skillz would deteriorate.
 
-Would you be willing to merge the first 3 patches in this patch series at 
-this point?  I'm resending these patches to resolve some conflicts that 
-was recently introduced.
+> In general, "$TOOL warning in $FILE" says nothing useful.  In this case
+> "Get rid of shadowed variable in mm/vmalloc.c:<function>" would be far
+> more useful, with "found by sparse" _maybe_ showing up in the commit
+> message more or less as a footnote.  Or even "shadowed variable in
+> mm/vmalloc.c:<function>".
 
-To summarize the discussion, there are three uses for this code that have 
-significant interest.
-
-One is decreasing the kernel size.  Denys Vlasenko has numbers that using 
-the linker's --gc-sections option (for which these patches are a 
-prerequisite) saves 10% of the kernel size when CONFIG_MODULES=n, and 1% 
-when CONFIG_MODULES=y.  Paul Mundt thinks many embedded users would use 
-this if it were available.
-
-A related use is cleaning up a lot of ifdefs that exist only to decrease 
-the kernel size.  Several developers commented favorably on the direction 
-of using section garbage collection for dead code removal.
-
-Finally, Ksplice depends on the option added by this patch series.
-
-The first 3 patches in this patch series fix problems associated with 
-using -ffunction-sections.  As there are some architectures currently 
-using -ffunction-sections, these should ideally be merged now, especially 
-the first patch which involves scattered changes.
-
-	-Tim Abbott
+yup.
