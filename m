@@ -1,140 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbZDWHzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbZDWIPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760060AbZDWHzA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbZDWHeF
+	id S1756035AbZDWIPF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZDWIOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:34:05 -0400
-Received: from sous-sol.org ([216.99.217.87]:51023 "EHLO x200.localdomain"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753895AbZDWHeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:34:03 -0400
-Message-Id: <20090423073018.652954795@sous-sol.org>
-User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:48 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, chrisw@redhat.com
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
-       Amit Shah <amit.shah@redhat.com>, Avi Kivity <avi@redhat.com>
-Subject: [patch 088/100] KVM: VMX: Update necessary state when guest enters long mode
-References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=kvm-vmx-update-necessary-state-when-guest-enters-long-mode.patch
+	Thu, 23 Apr 2009 04:14:42 -0400
+Received: from systemlinux.org ([83.151.29.59]:45981 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752252AbZDWIOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 04:14:40 -0400
+Date: Thu, 23 Apr 2009 10:07:29 +0200
+From: Andre Noll <maan@systemlinux.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Bill Davidsen <davidsen@tmr.com>, Matti Aarnio <matti.aarnio@zmailer.org>,
+       Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
+       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, neilb@suse.de
+Subject: Re: Proposal: make RAID6 code optional
+Message-ID: <20090423080729.GA11504@skl-net.de>
+References: <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org> <49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <20090422180051.GD13280@skl-net.de> <49EF6457.90505@zytor.com> <20090422185703.GF13280@skl-net.de> <49EFC5DD.9090201@zytor.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
+Content-Disposition: inline
+In-Reply-To: <49EFC5DD.9090201@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
 
-From: Amit Shah <amit.shah@redhat.com>
+--wRRV7LY7NUeQGEoC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-upstream commit: 401d10dee083bda281f2fdcdf654080313ba30ec
+On 18:35, H. Peter Anvin wrote:
+> Andre Noll wrote:
+> > On 11:39, H. Peter Anvin wrote:
+> >> Yes, I believe it would be easier than having dynamically allocated=20
+> >> arrays.  Dynamically generated arrays using static memory allocations=
+=20
+> >> (bss) is one thing, but that would only reduce size of the module on=
+=20
+> >> disk, which I don't think anyone considers a problem.
+> >=20
+> > We would save 64K of RAM in the raid5-only case if we'd defer the
+> > allocation of the multiplication table until the first raid6 array
+> > is about to be started.
+>=20
+> Yes, and we'd have to access it through a pointer for the rest of eternit=
+y.
 
-setup_msrs() should be called when entering long mode to save the
-shadow state for the 64-bit guest state.
+True. You put a lot of effort into raid6 to make it fast, so you know
+best how much that would slow down the code. If using a pointer instead
+of an array would have a measurable impact on the raid6 performance,
+then we should indeed avoid using dynamically allocated memory for
+the table.
 
-Using vmx_set_efer() in enter_lmode() removes some duplicated code
-and also ensures we call setup_msrs(). We can safely pass the value
-of shadow_efer to vmx_set_efer() as no other bits in the efer change
-while enabling long mode (guest first sets EFER.LME, then sets CR0.PG
-which causes a vmexit where we activate long mode).
+As this slowdown likely depends on the arch, it is not easy to measure.
+So I guess the best way to decrease memory usage for the raid5-only
+case is to put the raid6-specific code into a separate module as you
+suggested earlier.
 
-With this fix, is_long_mode() can check for EFER.LMA set instead of
-EFER.LME and 5e23049e86dd298b72e206b420513dbc3a240cd9 can be reverted.
+Thanks
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/x86/kvm/vmx.c |   54 +++++++++++++++++++++++------------------------------
- 1 file changed, 24 insertions(+), 30 deletions(-)
+--wRRV7LY7NUeQGEoC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1433,6 +1433,29 @@ continue_rmode:
- 	init_rmode(vcpu->kvm);
- }
- 
-+static void vmx_set_efer(struct kvm_vcpu *vcpu, u64 efer)
-+{
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+	struct kvm_msr_entry *msr = find_msr_entry(vmx, MSR_EFER);
-+
-+	vcpu->arch.shadow_efer = efer;
-+	if (!msr)
-+		return;
-+	if (efer & EFER_LMA) {
-+		vmcs_write32(VM_ENTRY_CONTROLS,
-+			     vmcs_read32(VM_ENTRY_CONTROLS) |
-+			     VM_ENTRY_IA32E_MODE);
-+		msr->data = efer;
-+	} else {
-+		vmcs_write32(VM_ENTRY_CONTROLS,
-+			     vmcs_read32(VM_ENTRY_CONTROLS) &
-+			     ~VM_ENTRY_IA32E_MODE);
-+
-+		msr->data = efer & ~EFER_LME;
-+	}
-+	setup_msrs(vmx);
-+}
-+
- #ifdef CONFIG_X86_64
- 
- static void enter_lmode(struct kvm_vcpu *vcpu)
-@@ -1447,13 +1470,8 @@ static void enter_lmode(struct kvm_vcpu 
- 			     (guest_tr_ar & ~AR_TYPE_MASK)
- 			     | AR_TYPE_BUSY_64_TSS);
- 	}
--
- 	vcpu->arch.shadow_efer |= EFER_LMA;
--
--	find_msr_entry(to_vmx(vcpu), MSR_EFER)->data |= EFER_LMA | EFER_LME;
--	vmcs_write32(VM_ENTRY_CONTROLS,
--		     vmcs_read32(VM_ENTRY_CONTROLS)
--		     | VM_ENTRY_IA32E_MODE);
-+	vmx_set_efer(vcpu, vcpu->arch.shadow_efer);
- }
- 
- static void exit_lmode(struct kvm_vcpu *vcpu)
-@@ -1612,30 +1630,6 @@ static void vmx_set_cr4(struct kvm_vcpu 
- 	vmcs_writel(GUEST_CR4, hw_cr4);
- }
- 
--static void vmx_set_efer(struct kvm_vcpu *vcpu, u64 efer)
--{
--	struct vcpu_vmx *vmx = to_vmx(vcpu);
--	struct kvm_msr_entry *msr = find_msr_entry(vmx, MSR_EFER);
--
--	vcpu->arch.shadow_efer = efer;
--	if (!msr)
--		return;
--	if (efer & EFER_LMA) {
--		vmcs_write32(VM_ENTRY_CONTROLS,
--				     vmcs_read32(VM_ENTRY_CONTROLS) |
--				     VM_ENTRY_IA32E_MODE);
--		msr->data = efer;
--
--	} else {
--		vmcs_write32(VM_ENTRY_CONTROLS,
--				     vmcs_read32(VM_ENTRY_CONTROLS) &
--				     ~VM_ENTRY_IA32E_MODE);
--
--		msr->data = efer & ~EFER_LME;
--	}
--	setup_msrs(vmx);
--}
--
- static u64 vmx_get_segment_base(struct kvm_vcpu *vcpu, int seg)
- {
- 	struct kvm_vmx_segment_field *sf = &kvm_vmx_segment_fields[seg];
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
+iD8DBQFJ8CHBWto1QDEAkw8RAu7BAJwPq5oS8Z30I26UNivvzOx8bEF/xwCfcY2W
+Rvh5eT1BTEipBSoeT95Tsoo=
+=6VR5
+-----END PGP SIGNATURE-----
+
+--wRRV7LY7NUeQGEoC--
