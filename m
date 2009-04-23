@@ -1,87 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZDWLzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZDWMAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbZDWLzz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZDWLzo
+	id S1755834AbZDWMAx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 08:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZDWMAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:55:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54123 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751948AbZDWLzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:55:43 -0400
-Date: Thu, 23 Apr 2009 21:55:33 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, alex.williamson@hp.com, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: upstream tree build warnings
-Message-Id: <20090423215533.157df0e0.sfr@canb.auug.org.au>
-In-Reply-To: <20090423.002403.74400050.davem@davemloft.net>
-References: <20090423163847.200f227e.sfr@canb.auug.org.au>
-	<20090423.002403.74400050.davem@davemloft.net>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf"
+	Thu, 23 Apr 2009 08:00:44 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:48004 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbZDWMAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 08:00:43 -0400
+Date: Thu, 23 Apr 2009 13:58:46 +0200
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "torvalds@osdl.org" <torvalds@osdl.org>,
+       "akpm@osdl.org" <akpm@osdl.org>
+Subject: Re: [PATCH] Eliminate thousands of warnings in WARN_ON with gcc
+	3.2 build
+Message-ID: <20090423115846.GA21823@axis.com>
+References: <20090422221134.GA1753@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422221134.GA1753@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Apr 23, 2009 at 12:11:34AM +0200, Andi Kleen wrote:
+> Eliminate thousands of warnings with gcc 3.2 build
+> 
+> When building with gcc 3.2 I get thousands of warnings about passing
+> a NULL format string to warn_on_slowpath(). Split this case out
+> into a separate call. This should also shrink the kernel
+> slightly in theory (haven't done numbers)
 
-Hi Dave,
+I've run into this also, it would be good to get rid of all those warnings.
 
-On Thu, 23 Apr 2009 00:24:03 -0700 (PDT) David Miller <davem@davemloft.net>=
- wrote:
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 23 Apr 2009 16:38:47 +1000
->=20
-> > Today's linux-next build (powerpc allyesconfig gcc4.4.0) produced these
-> > warnings:
-> >=20
-> > drivers/net/virtio_net.c: In function 'virnet_vlan_rx_add_vid':
-> > include/linux/scatterlist.h:57: warning: 'sg' is used uninitialized in =
-this function
-> > drivers/net/virtio_net.c:746: note: 'sg' was declared here
-> > drivers/net/virtio_net.c: In function 'virnet_vlan_rx_kill_vid':
-> > include/linux/scatterlist.h:57: warning: 'sg' is used uninitialized in =
-this function
-> > drivers/net/virtio_net.c:758: note: 'sg' was declared here
-> >=20
-> > in each case, sg is uninitialised when its address is passed to
-> > sg_set_buf() which passes it to gs_set_page() which passes it to
-> > sg_assign_page() which dereferences it (to use ->page_link).
->=20
-> I wonder if this is a side effect of changes that went in via Rusty's
-> tree?  I don't remember touching this driver in a while.
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  include/asm-generic/bug.h |    7 ++++---
+>  kernel/panic.c            |   12 +++++++++---
+>  2 files changed, 13 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6.30-rc2-ak/include/asm-generic/bug.h
+> ===================================================================
+> --- linux-2.6.30-rc2-ak.orig/include/asm-generic/bug.h	2009-01-11 20:20:40.000000000 +0100
+> +++ linux-2.6.30-rc2-ak/include/asm-generic/bug.h	2009-04-22 23:52:48.000000000 +0200
+> @@ -58,12 +58,13 @@
+>   */
+>  #ifndef __WARN
+>  #ifndef __ASSEMBLY__
+> -extern void warn_slowpath(const char *file, const int line,
+> +extern void warn_slowpath_fmt(const char *file, const int line,
+>  		const char *fmt, ...) __attribute__((format(printf, 3, 4)));
+> +extern void warn_slowpath_null(const char *file, const int line);
+>  #define WANT_WARN_ON_SLOWPATH
+>  #endif
+> -#define __WARN()		warn_slowpath(__FILE__, __LINE__, NULL)
+> -#define __WARN_printf(arg...)	warn_slowpath(__FILE__, __LINE__, arg)
+> +#define __WARN()		warn_slowpath_null(__FILE__, __LINE__)
+> +#define __WARN_printf(arg...)	warn_slowpath_fmt(__FILE__, __LINE__, arg)
+>  #else
+>  #define __WARN_printf(arg...)	do { printk(arg); __WARN(); } while (0)
+>  #endif
+> Index: linux-2.6.30-rc2-ak/kernel/panic.c
+> ===================================================================
+> --- linux-2.6.30-rc2-ak.orig/kernel/panic.c	2009-04-19 19:29:07.000000000 +0200
+> +++ linux-2.6.30-rc2-ak/kernel/panic.c	2009-04-22 23:53:55.000000000 +0200
+> @@ -342,7 +342,7 @@
+>  }
+>  
+>  #ifdef WANT_WARN_ON_SLOWPATH
+> -void warn_slowpath(const char *file, int line, const char *fmt, ...)
+> +void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
+>  {
+>  	va_list args;
+>  	char function[KSYM_SYMBOL_LEN];
+> @@ -358,7 +358,7 @@
+>  	if (board)
+>  		printk(KERN_WARNING "Hardware name: %s\n", board);
+>  
+> -	if (fmt) {
+> +	if (*fmt) {
 
-The callers came in throught commit
-0bde95690d65653e420d04856c5d5783155c747c ("virtio_net: Add support for
-VLAN filtering in the hypervisor") which I assume came in throught the
-net tree (it has you SOB on it). Committed Feb 5, 2009, went into Linus'
-tree before 2.6.30-rc1.
+Is this completely safe? If somebody is stupid enough to call
+WARN(condition, NULL); this won't work as it did before.
+OTOH, it would still be useless in debugging...
 
-scatterlist.h hasn't changed since July, 2008.
+>  		va_start(args, fmt);
+>  		vprintk(fmt, args);
+>  		va_end(args);
+> @@ -369,7 +369,13 @@
+>  	print_oops_end_marker();
+>  	add_taint(TAINT_WARN);
+>  }
+> -EXPORT_SYMBOL(warn_slowpath);
+> +EXPORT_SYMBOL(warn_slowpath_fmt);
+> +
+> +void warn_slowpath_null(const char *file, int line)
+> +{
+> +	warn_slowpath_fmt(file, line, "");
+> +}
+> +EXPORT_SYMBOL(warn_slowpath_null);
+>  #endif
+>  
+>  #ifdef CONFIG_CC_STACKPROTECTOR
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Otherwise:
 
---Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf
-Content-Type: application/pgp-signature
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknwVzUACgkQjjKRsyhoI8yLbACfYcVhwNwyGGk3oi8Ul8uu8Wg+
-RH8AnRPTKP5Jb3zM/L0rQ/S+neOXZwWn
-=Rauq
------END PGP SIGNATURE-----
-
---Signature=_Thu__23_Apr_2009_21_55_33_+1000_fOWTxQK7z=vDnSjf--
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
