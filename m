@@ -1,109 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZDWUMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZDWUOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbZDWUMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbZDWUM2
+	id S1754327AbZDWUOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZDWUOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:12:28 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:49836 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbZDWUM1 (ORCPT
+	Thu, 23 Apr 2009 16:14:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56091 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751869AbZDWUOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:12:27 -0400
-Date: Thu, 23 Apr 2009 16:11:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: David Daney <ddaney@caviumnetworks.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
-In-Reply-To: <49F0C817.8050407@caviumnetworks.com>
-Message-ID: <alpine.LFD.2.00.0904231601120.5514@localhost.localdomain>
-References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain> <49F0C817.8050407@caviumnetworks.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 23 Apr 2009 16:14:22 -0400
+Date: Thu, 23 Apr 2009 13:09:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+Subject: Re: WARNING: at fs/sysfs/group.c:138 sysfs_remove_group
+Message-Id: <20090423130930.50a6c9db.akpm@linux-foundation.org>
+In-Reply-To: <c4e36d110904170213q24c2688ag9bcaa8562dddaa3f@mail.gmail.com>
+References: <c4e36d110904170213q24c2688ag9bcaa8562dddaa3f@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, David Daney wrote:
+On Fri, 17 Apr 2009 11:13:08 +0200
+Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
 
-> Robert P. J. Day wrote:
-> > A boolean single_bit_set() routine would simplify the numerous
-> > constructs of the form (((n & (n - 1)) == 0)) when testing for
-> > single-bitness.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> >
-> > ---
-> >
-> > This is similar to the current is_power_of_2() routine defined in
-> > include/linux/log2.h, which is mathematically identical but,
-> > semantically, should be defined independently just so the code is more
-> > readable.
-> >
-> > I'm open to an alternative function name.
-> >
-> > diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-> > index 6182913..1c0c840 100644
-> > --- a/include/linux/bitops.h
-> > +++ b/include/linux/bitops.h
-> > @@ -45,6 +45,13 @@ static inline unsigned long hweight_long(unsigned long w)
-> >  	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
-> >  }
-> >
-> > +static inline __attribute__((const))
-> > +bool single_bit_set(unsigned long n)
-> > +{
-> > +        return (n != 0 && ((n & (n - 1)) == 0));
-> > +}
-> > +
-> > +
->
->
-> It would be nice to be able to override this per architecture.
+> Hi
+> 
+> 
+> When I've checked  2.6.30-rc2 kernel and  I've got among other errors
+> with Wifi message below.
+> As I've noticed - some people were reporting this problem already earlier:
+> 
+> http://www.gossamer-threads.com/lists/linux/kernel/1058276?page=last
+> 
+> But for me - it started with 2.6.30-rc kernels.
+> I've T61, 4GB, C2D, X86_64.
+> 
+> 
+> 
+> Zdenek
+> 
+> 
+> platform microcode: firmware: requesting intel-ucode/06-0f-0a
+> platform microcode: firmware: requesting intel-ucode/06-0f-0a
 
-  sure, that makes sense.  but in the meantime, there's nothing to
-keep from starting the process and, arch by arch, overriding it down
-the road as it becomes convenient.
+Lots of people are reporting this.  One person reported that each
+attempt takes 60 seconds, thus delaying boot be several minutes.
 
-> Also, are we still putting 'inline' everywhere?
+> Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+> ------------[ cut here ]------------
+> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0x10b/0x110()
+> Hardware name: 6464CTO
+> sysfs group ffffffffa038d900 not found for kobject 'cpu0'
+> Modules linked in: microcode(-) binfmt_misc dm_mirror dm_region_hash
+> dm_log dm_mod kvm_intel kvm i915 dr
+> m i2c_algo_bit uinput btusb bluetooth arc4 ecb cryptomgr aead
+> pcompress thinkpad_acpi snd_hda_codec_analog crypto_blkcipher
+> crypto_hash snd_hda_intel cry
+> pto_algapi snd_hda_codec iwl3945 snd_seq_oss iwlcore
+> snd_seq_midi_event mac80211 snd_seq rfkill backlight i2c_i801 psmouse
+> intel_agp snd_seq_device snd_p
+> cm_oss rtc_cmos rtc_core sr_mod cdrom i2c_core sdhci_pci sdhci
+> mmc_core serio_raw led_class iTCO_wdt iTCO_vendor_support nvram
+> cfg80211 snd_mixer_oss e10
+> 00e rtc_lib snd_pcm snd_timer snd evdev soundcore button ac battery
+> snd_page_alloc uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded:
+> scsi_wait_scan]
+> Pid: 1983, comm: rmmod Not tainted 2.6.30-rc2-00076-g3ee8da8 #51
+> Call Trace:
+>  [<ffffffff802434bf>] warn_slowpath+0xaf/0xf0
+>  [<ffffffff8039c3dd>] ? kobject_release+0x5d/0xa0
+>  [<ffffffff80333f7b>] sysfs_remove_group+0x10b/0x110
+>  [<ffffffffa038b3f8>] mc_sysdev_remove+0x38/0x50 [microcode]
+>  [<ffffffff8043c08f>] sysdev_driver_unregister+0x5f/0xa0
+>  [<ffffffffa038bee8>] microcode_exit+0x39/0x65 [microcode]
+>  [<ffffffff8026e974>] sys_delete_module+0x1b4/0x280
+>  [<ffffffff8039ff18>] ? __up_write+0xd8/0x150
+>  [<ffffffff8053e35f>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+>  [<ffffffff8020c19b>] system_call_fastpath+0x16/0x1b
 
-  beats me.  are we?  and, just to be definitively pedantic about
-this, for maximum readability, i think it would be nice to define
-*both* the function and its converse:
+ugh, where to start?
 
-  if (exactly_one_bit_set())
-  if (more_than_one_bit_set())
+sysdev_driver_register() calls all the ->add methods and cheerily drops
+their return codes on the floor.  Consequently
+sysdev_driver_unregister() will call the ->remove method on objects
+which were not successfully add()ed.
 
-or something to that effect.  i'll leave the final naming decisions up
-to others higher up the food chain.
+mc_sysdev_add() will return an error if microcode_init_cpu() failed but
+fails to remove its attr_group in that case.  So if
+sysdev_driver_register()/sysdev_driver_unregister() get fixed,
+microcode will misbehave.
 
-rday
+This patch:
 
-p.s.  you can see the potential simplification by running, at the top
-of the kernel tree:
+: commit af5c820a3169e81af869c113e18ec7588836cd50
+: Author:     Rusty Russell <rusty@rustcorp.com.au>
+: AuthorDate: Wed Mar 11 16:32:36 2009 +1030
+: Commit:     Ingo Molnar <mingo@elte.hu>
+: CommitDate: Wed Mar 18 13:50:47 2009 +0100
+: 
+:     x86: cpumask: use work_on_cpu in arch/x86/kernel/microcode_core.c
+: 
 
-  $ grep -Ern "([^\(\)]+) ?\& ?\(\1 ?- ?1\)" .
+attempted to fix things up a bit:
 
-some of those represent power of 2 semantics, while others are the
-single bit thingy.  and others are just weird.
+: @@ -379,8 +390,11 @@ static int mc_sysdev_add(struct sys_device *sys_dev)
+:         if (err)
+:                 return err;
+:  
+: -       microcode_init_cpu(cpu);
+: -       return 0;
+: +       err = microcode_init_cpu(cpu);
+: +       if (err)
+: +               sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
+: +
+: +       return err;
+:  }
+:  
+:  static int mc_sysdev_remove(struct sys_device *sys_dev)
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+But it seems that the sysfs_remove_group() later got removed again.
 
-        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+Sigh, what a pickle.  Rafael, please add this as a post-2.6.29 regression.
