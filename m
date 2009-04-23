@@ -1,126 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZDWLuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZDWLtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbZDWLuY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbZDWLtD
+	id S1754678AbZDWLtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbZDWLsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:49:03 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:60495 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756747AbZDWLtA (ORCPT
+	Thu, 23 Apr 2009 07:48:43 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:48893 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbZDWLsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:49:00 -0400
-Message-Id: <20090423114725.916538072@de.ibm.com>
+	Thu, 23 Apr 2009 07:48:42 -0400
+Message-Id: <20090423114725.022249915@de.ibm.com>
 References: <20090423114638.865214111@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 23 Apr 2009 13:46:42 +0200
+Date: Thu, 23 Apr 2009 13:46:39 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Frank Munzert <munzert@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 4/6] Use tape_generic_offline directly.
-Content-Disposition: inline; filename=004-tape-generic-offline.diff
+Subject: [patch 1/6] ipl: fix compile breakage
+Content-Disposition: inline; filename=001-ipl-compile-breakage.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Munzert <munzert@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-tape_3590_offline and tape_34xx_offline are removed and tape_generic_offline
-is called directly instead.
+Fix this for !CONFIG_SMP:
 
-Signed-off-by: Frank Munzert <munzert@de.ibm.com>
+arch/s390/kernel/ipl.c: In function 'stop_run':
+arch/s390/kernel/ipl.c:1461: error: implicit declaration of function 'signal_processor'
+
+Reported-by: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/char/tape.h      |    2 +-
- drivers/s390/char/tape_34xx.c |    8 +-------
- drivers/s390/char/tape_3590.c |    8 +-------
- drivers/s390/char/tape_core.c |    5 ++++-
- 4 files changed, 7 insertions(+), 16 deletions(-)
+ arch/s390/kernel/ipl.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: quilt-2.6/drivers/s390/char/tape_34xx.c
+Index: quilt-2.6/arch/s390/kernel/ipl.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/char/tape_34xx.c
-+++ quilt-2.6/drivers/s390/char/tape_34xx.c
-@@ -1294,12 +1294,6 @@ tape_34xx_online(struct ccw_device *cdev
- 	);
- }
+--- quilt-2.6.orig/arch/s390/kernel/ipl.c
++++ quilt-2.6/arch/s390/kernel/ipl.c
+@@ -23,6 +23,7 @@
+ #include <asm/ebcdic.h>
+ #include <asm/reset.h>
+ #include <asm/sclp.h>
++#include <asm/sigp.h>
+ #include <asm/checksum.h>
  
--static int
--tape_34xx_offline(struct ccw_device *cdev)
--{
--	return tape_generic_offline(cdev->dev.driver_data);
--}
--
- static struct ccw_driver tape_34xx_driver = {
- 	.name = "tape_34xx",
- 	.owner = THIS_MODULE,
-@@ -1307,7 +1301,7 @@ static struct ccw_driver tape_34xx_drive
- 	.probe = tape_generic_probe,
- 	.remove = tape_generic_remove,
- 	.set_online = tape_34xx_online,
--	.set_offline = tape_34xx_offline,
-+	.set_offline = tape_generic_offline,
- };
- 
- static int
-Index: quilt-2.6/drivers/s390/char/tape_3590.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/char/tape_3590.c
-+++ quilt-2.6/drivers/s390/char/tape_3590.c
-@@ -1707,19 +1707,13 @@ tape_3590_online(struct ccw_device *cdev
- 				   &tape_discipline_3590);
- }
- 
--static int
--tape_3590_offline(struct ccw_device *cdev)
--{
--	return tape_generic_offline(cdev->dev.driver_data);
--}
--
- static struct ccw_driver tape_3590_driver = {
- 	.name = "tape_3590",
- 	.owner = THIS_MODULE,
- 	.ids = tape_3590_ids,
- 	.probe = tape_generic_probe,
- 	.remove = tape_generic_remove,
--	.set_offline = tape_3590_offline,
-+	.set_offline = tape_generic_offline,
- 	.set_online = tape_3590_online,
- };
- 
-Index: quilt-2.6/drivers/s390/char/tape_core.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/char/tape_core.c
-+++ quilt-2.6/drivers/s390/char/tape_core.c
-@@ -387,8 +387,11 @@ tape_cleanup_device(struct tape_device *
-  * Manual offline is only allowed while the drive is not in use.
-  */
- int
--tape_generic_offline(struct tape_device *device)
-+tape_generic_offline(struct ccw_device *cdev)
- {
-+	struct tape_device *device;
-+
-+	device = cdev->dev.driver_data;
- 	if (!device) {
- 		return -ENODEV;
- 	}
-Index: quilt-2.6/drivers/s390/char/tape.h
-===================================================================
---- quilt-2.6.orig/drivers/s390/char/tape.h
-+++ quilt-2.6/drivers/s390/char/tape.h
-@@ -285,7 +285,7 @@ extern int tape_mtop(struct tape_device 
- extern void tape_state_set(struct tape_device *, enum tape_state);
- 
- extern int tape_generic_online(struct tape_device *, struct tape_discipline *);
--extern int tape_generic_offline(struct tape_device *device);
-+extern int tape_generic_offline(struct ccw_device *);
- 
- /* Externals from tape_devmap.c */
- extern int tape_generic_probe(struct ccw_device *);
+ #define IPL_PARM_BLOCK_VERSION 0
 
 -- 
 blue skies,
