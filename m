@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbZDWUpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZDWUpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbZDWUpM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZDWUoc
+	id S1755070AbZDWUpk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZDWUos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:44:32 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:31787 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755998AbZDWUo2 (ORCPT
+	Thu, 23 Apr 2009 16:44:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38215 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757322AbZDWUor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:44:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=j1z7a8A3SQbhu0G78A05zTgvLFsOTpvY55msLUt5mCVulm6FMmJQYtyrZl2OOZD7Ot
-         mnAE41q0G7w2sr5AuyoiKDV9zrDVyvNjr4lo/IRQkvyfIE/hHgO+YLfllxauSljTCkkB
-         vsyzIVu7WiCfH33PnEAUCVQBSlvRCaJAwhhzg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] MAINTAINERS: update IDE entry
-Date: Thu, 23 Apr 2009 22:48:31 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-next-20090403; KDE/4.2.2; i686; ; )
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904232248.31735.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Thu, 23 Apr 2009 16:44:47 -0400
+Date: Thu, 23 Apr 2009 13:41:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: fbcmap: non working tests on unsigned cmap->start
+Message-Id: <20090423134110.51ea8df2.akpm@linux-foundation.org>
+In-Reply-To: <49EDD799.8060607@gmail.com>
+References: <49EDD799.8060607@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 21 Apr 2009 16:26:33 +0200
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
-By a popular demand quilt tree was replaced by a git one.
+> vi include/linux/fb.h +478
+> 
+> Note that struct fb_cmap_user cmap->start in fb_set_user_cmap() is unsigned.
+> Should there maybe be a test:
+> 
+> if (cmap->start > MAX || ...)
+> 
+> (and what should MAX be then?)
+> 
+> Otherwise you may want to apply the cleanup patch below
+> 
+> Roel
+> ------------------------------>8-------------8<---------------------------------
+> Remove redundant tests on unsigned
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com> 
+> ---
+> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+> index f53b9f1..958bf4e 100644
+> --- a/drivers/video/fbcmap.c
+> +++ b/drivers/video/fbcmap.c
+> @@ -266,8 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+>  		rc = -ENODEV;
+>  		goto out;
+>  	}
+> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+> -				!info->fbops->fb_setcmap)) {
+> +	if (!info->fbops->fb_setcolreg && !info->fbops->fb_setcmap) {
+>  		rc = -EINVAL;
+>  		goto out1;
+>  	}
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+argh.
 
-Index: b/MAINTAINERS
-===================================================================
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2743,7 +2743,7 @@ IDE SUBSYSTEM
- P:	Bartlomiej Zolnierkiewicz
- M:	bzolnier@gmail.com
- L:	linux-ide@vger.kernel.org
--T:	quilt kernel.org/pub/linux/kernel/people/bart/pata-2.6/
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bart/ide-2.6.git
- S:	Maintained
- F:	Documentation/ide/
- F:	drivers/ide/
+- Perhaps userspace can kill the kernel by sending a "negative"
+  `start'.  Removing the test will make it even less likely that we'll
+  fix this bug.
+
+- If this bug doesn't exist, and there _is_ userspace which is
+  legitimately sending in "negative" values of `start' (unlikely?) then
+  we will break userspace if we fix this comparison.
+
+IOW, I don't have enough knowledge about this code to be able to know
+what to do.
+
