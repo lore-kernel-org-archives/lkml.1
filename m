@@ -1,108 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZDWKyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZDWLBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbZDWKyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbZDWKyF
+	id S1757064AbZDWLBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZDWLBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:54:05 -0400
-Received: from mail.mev.co.uk ([62.49.15.74]:42442 "EHLO mail.mev.co.uk"
+	Thu, 23 Apr 2009 07:01:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34808 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755315AbZDWKyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:54:04 -0400
-Message-ID: <49F048C5.5040006@mev.co.uk>
-Date: Thu, 23 Apr 2009 11:53:57 +0100
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	id S1751445AbZDWLA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 07:00:58 -0400
+Message-ID: <49F04A66.4080303@garzik.org>
+Date: Thu, 23 Apr 2009 07:00:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>
-CC: Greg KH <greg@kroah.com>,
-       "fmhess@users.sourceforge.net" <fmhess@users.sourceforge.net>,
-       Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       Ian Abbott <ian.abbott@mev.co.uk>, David Schleef <ds@schleef.org>
-Subject: Re: staging: comedi: non working tests on unsigned cmd->convert_arg
-References: <49EDC792.60100@gmail.com> <20090422165049.GC19524@kroah.com> <200904221411.13851.fmhess@speakeasy.net> <20090423020824.GA6083@kroah.com> <49F04192.6080300@gmail.com>
-In-Reply-To: <49F04192.6080300@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
+To: Grant Grundler <grundler@google.com>
+CC: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+References: <20090422090929.GA14928@havoc.gtf.org> <da824cf30904221208l42e41d38g5af52b1b3b5ea9a1@mail.gmail.com>
+In-Reply-To: <da824cf30904221208l42e41d38g5af52b1b3b5ea9a1@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> Greg KH wrote:
->> On Wed, Apr 22, 2009 at 02:11:10PM -0400, Frank Mori Hess wrote:
->>> On Wednesday 22 April 2009, Greg KH wrote:
->>>> On Tue, Apr 21, 2009 at 03:18:10PM +0200, Roel Kluin wrote:
->>>>> vi drivers/staging/comedi/comedi.h +342
->>>>>
->>>>> and note that cmd->convert_arg in s626_ai_cmdtest() is unsigned.
->>>>> Should there maybe be a test:
->>>>>
->>>>> if (cmd->convert_src == TRIG_EXT && cmd->convert_arg > MAX)
->>>>>
->>>>> (and what should MAX be then?)
->>>> I don't know.  Let's ask the comedi developers :)
->>>>
->>>> Frank, what do you think about this?
->>> It looks like there already is such a test, right below the useless one the 
->>> patch removes.
->> Ok, thanks for checking.  Roel, care to resend these patches then?
+Grant Grundler wrote:
+> On Wed, Apr 22, 2009 at 2:09 AM, Jeff Garzik <jeff@garzik.org> wrote:
+>> Currently, libata creates a Scsi_Host per port.  This was originally
+>> done to leverage SCSI's infrastructure to arbitrate among master/slave
+>> devices, but is not needed for most modern SATA controllers.   And I
+>> _think_ it is not needed for master/slave if done properly, either.
 >>
->> thanks,
->>
->> greg k-h
->>
-> So you don't want to set cmd->*_arg to 0 when beyond 39 or below 0?
-
-Well setting cmd->*_arg to 0 when beyond 39 would be a change of
-functionality, so that's a no-no for a cleanup patch.  And it would
-never be below 0 because it's unsigned, so those 'if' statements in the
-original were redundant.
-
-> ------------------------------>8-------------8<---------------------------------
-> Remove tests for negative unsigned.
+>> The patch below converts libata such that there is now a 1:1
+>> correspondence between struct Scsi_Host and struct ata_host.  ATA ports
+>> are represented as SCSI layer 'channels', which is more natural.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com> 
-> ---
-> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
-> index 30dec9d..a48b244 100644
-> --- a/drivers/staging/comedi/drivers/s626.c
-> +++ b/drivers/staging/comedi/drivers/s626.c
-> @@ -1886,31 +1886,16 @@ static int s626_ai_cmdtest(struct comedi_device *dev, struct comedi_subdevice *s
->  		err++;
->  	}
->  
-> -	if (cmd->start_src == TRIG_EXT && cmd->start_arg < 0) {
-> -		cmd->start_arg = 0;
-> -		err++;
-> -	}
-> -
->  	if (cmd->start_src == TRIG_EXT && cmd->start_arg > 39) {
->  		cmd->start_arg = 39;
->  		err++;
->  	}
->  
-> -	if (cmd->scan_begin_src == TRIG_EXT && cmd->scan_begin_arg < 0) {
-> -		cmd->scan_begin_arg = 0;
-> -		err++;
-> -	}
-> -
->  	if (cmd->scan_begin_src == TRIG_EXT && cmd->scan_begin_arg > 39) {
->  		cmd->scan_begin_arg = 39;
->  		err++;
->  	}
->  
-> -	if (cmd->convert_src == TRIG_EXT && cmd->convert_arg < 0) {
-> -		cmd->convert_arg = 0;
-> -		err++;
-> -	}
-> -
->  	if (cmd->convert_src == TRIG_EXT && cmd->convert_arg > 39) {
->  		cmd->convert_arg = 39;
->  		err++;
+> Jeff,
+> So far in reading this, the only reasons I gather for changing this
+> mapping are "not needed" and "is more natural". Data Center
+> environments (not just Google's) like to track disks in many different
+> ways, including the SCSI identifiers since this one "key" for physical
+> location. Breaking the current mappings is going to cause some people
+> a world of pain since they will need to manually build (and integrate)
+> old->new maps of the SCSI identifiers. Can you propose some real,
+> tangible benefit to making this change? (e.g. enables some other
+> feature)
+
+Sure there are compat issues, just like there are compat issues with the 
+existing consensus goal of moving libata to the block layer -- part of 
+which implies that ATA disks would be served via a "native" block device 
+rather than drivers/scsi/sd.c.
+
+So at least to me, it is axiomatic that these issues will be examined.
+
+As to benefits, the phrase "more natural" means the code naturally 
+aligns with existing object topologies (ata_host becomes analagous to 
+Scsi_Host), which always has a long list of technical benefits.
+
+- we get to remove all the ugly hacks currently in place that assume 
+ata_port is _the_ first class object.
+- we get to remove all the workarounds where SCSI assumes it manipulates 
+all devices on a controller (not true in current libata)
+- SCSI (soon block) host-wide busy, block etc functionality now works as 
+expected
+- it makes the libata conversion from SCSI to block layer easier
+- it makes integration with SAS+SATA devices such as mvsas or ipr easier
+- the list goes on; that is just off the top of my head, before my 
+morning Mountain Dew
+
+"more natural" also solves a longstanding user confusion/complaint about 
+libata:  users expected that libata would export each ATA "channel" 
+(bus) as a SCSI channel.
 
 
--- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
+> Mark already pointed out this might cause issues with Error Handling
+> (forcing a review of all that code). So before triggering other
+> developers (e.g. HW vendors) do that kind of work I'd like to hear
+> what the reward is going to be at the end.
+
+Are you aware that EH is already receiving a stream of updates, moving 
+it from SCSI to the block layer?  This area has been in constant motion 
+since, well, Tejun arrived and started improving things!  :)
+
+	Jeff
+
+
+
 
