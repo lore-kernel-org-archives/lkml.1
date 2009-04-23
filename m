@@ -1,140 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZDWQlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZDWQmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbZDWQlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZDWQl3
+	id S1757300AbZDWQmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZDWQmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:41:29 -0400
-Received: from mail.tpi.com ([70.99.223.143]:1084 "EHLO mail.tpi.com"
+	Thu, 23 Apr 2009 12:42:21 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:53118 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbZDWQl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:41:28 -0400
-Message-ID: <49F09A35.6070304@tpi.com>
-Date: Thu, 23 Apr 2009 10:41:25 -0600
-From: Tim Gardner <timg@tpi.com>
-Reply-To: timg@tpi.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Mattia Dongili <malattia@linux.it>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Sony laptop: Some Sony Vaia laptops do not enable wwan
- power by default.
-References: <20090422185351.AB41AF88CE@sepang.rtg.net> <20090423090454.GB24761@kamineko.org>
-In-Reply-To: <20090423090454.GB24761@kamineko.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752043AbZDWQmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:42:20 -0400
+Subject: Re: [PATCH 3/4] vfs: Make __fsync_super() a static function
+ (version 2)
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1240498045-14288-4-git-send-email-jack@suse.cz>
+References: <1240498045-14288-1-git-send-email-jack@suse.cz>
+	 <1240498045-14288-4-git-send-email-jack@suse.cz>
+Content-Type: text/plain
+Date: Thu, 23 Apr 2009 12:42:12 -0400
+Message-Id: <1240504932.11148.14.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: 
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
+X-UiO-Scanned: CE7AFC089AA29F9F0E6B83829B0B17D83532A30E
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 188 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mattia Dongili wrote:
-> On Wed, Apr 22, 2009 at 12:53:51PM -0600, Tim Gardner wrote:
->> Mattia,
->>
->> Does this patch makes sense for just the Vaio? I've had positive feedback from
->> the tester in the bug report.
->>
->> rtg
->> -----------------
->> From 083972abb1d5e84845927b3925f077953c207b82 Mon Sep 17 00:00:00 2001
->> From: Tim Gardner <tim.gardner@canonical.com>
->> Date: Tue, 21 Apr 2009 11:09:10 -0600
->> Subject: [PATCH] Sony laptop: Some Sony Vaio laptops do not enable wwan power by default.
->>
->> Bug: https://bugs.launchpad.net/bugs/364678
->>
->> Added quirk to enable wwan power based on DMI information already present in the module.
->> It appears that wwan is not powered up from a cold boot.
+On Thu, 2009-04-23 at 16:47 +0200, Jan Kara wrote:
+> __fsync_super() does the same thing as fsync_super(). So change the only
+> caller to use fsync_super() and make __fsync_super() static. This removes
+> unnecessarily duplicated call to sync_blockdev() and prepares ground
+> for the changes to __fsync_super() in the following patches.
 > 
-> The bug reporter says that this happens when booting from windows to
-> linux, is it still true when manually enabling the device in linux and
-> then rebooting (into linux again)?
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/block_dev.c     |    2 +-
+>  fs/super.c         |    5 ++---
+>  include/linux/fs.h |    1 -
+>  3 files changed, 3 insertions(+), 5 deletions(-)
 > 
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index f45dbc1..48d1290 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -240,7 +240,7 @@ struct super_block *freeze_bdev(struct block_device *bdev)
+>  		sb->s_frozen = SB_FREEZE_WRITE;
+>  		smp_wmb();
+>  
+> -		__fsync_super(sb);
+> +		fsync_super(sb);
+>  
+>  		sb->s_frozen = SB_FREEZE_TRANS;
+>  		smp_wmb();
+> diff --git a/fs/super.c b/fs/super.c
+> index d9759e0..4c92068 100644
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -263,7 +263,7 @@ EXPORT_SYMBOL(unlock_super);
+>   * device.  Takes the superblock lock.  Requires a second blkdev
+>   * flush by the caller to complete the operation.
+>   */
+> -void __fsync_super(struct super_block *sb)
+> +static int __fsync_super(struct super_block *sb)
+          ^^^ Typo?
 
-I can probably find out, though I'm not sure what impact it would have
-on the driver. Does this laptop have a physical rfkill slider switch
-from which you can somehow query initial state via ACPI or GPIO? If not,
-then I assume the desired behavior is to just enable wwan and bluetooth
-upon every boot ?
+>  {
+>  	sync_inodes_sb(sb, 0);
+>  	vfs_dq_sync(sb);
+> @@ -284,8 +284,7 @@ void __fsync_super(struct super_block *sb)
+>   */
+>  int fsync_super(struct super_block *sb)
+>  {
+> -	__fsync_super(sb);
+> -	return sync_blockdev(sb->s_bdev);
+> +	return __fsync_super(sb);
+>  }
+>  EXPORT_SYMBOL_GPL(fsync_super);
+>  
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 4bad02e..47a67c9 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -2084,7 +2084,6 @@ extern int filemap_fdatawrite_range(struct address_space *mapping,
+>  extern int vfs_fsync(struct file *file, struct dentry *dentry, int datasync);
+>  extern void sync_supers(void);
+>  extern void sync_filesystems(int wait);
+> -extern void __fsync_super(struct super_block *sb);
+>  extern void emergency_sync(void);
+>  extern void emergency_remount(void);
+>  extern int do_remount_sb(struct super_block *sb, int flags,
 
->> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
->> ---
->>  drivers/misc/sony-laptop.c |   24 +++++++++++++++++++++++-
->>  1 files changed, 23 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
->> index 7e73acc..eab7011 100644
->> --- a/drivers/misc/sony-laptop.c
->> +++ b/drivers/misc/sony-laptop.c
->> @@ -1248,10 +1248,13 @@ struct device_ctrl {
->>  	u16				evport_offset;
->>  	u8				has_camera;
->>  	u8				has_bluetooth;
->> -	u8				has_wwan;
->>  	struct sonypi_eventtypes	*event_types;
->>  };
->>  
->> +struct sony_pic_quirk_entry {
->> +	u8				set_wwan_power;
->> +};
->> +
->>  struct sony_pic_dev {
->>  	struct device_ctrl	*control;
->>  	struct acpi_device	*acpi_dev;
->> @@ -1260,6 +1263,7 @@ struct sony_pic_dev {
->>  	struct list_head	interrupts;
->>  	struct list_head	ioports;
->>  	struct mutex		lock;
->> +	struct sony_pic_quirk_entry *quirks;
->>  	u8			camera_power;
->>  	u8			bluetooth_power;
->>  	u8			wwan_power;
->> @@ -2685,6 +2689,12 @@ static int sony_pic_add(struct acpi_device *device)
->>  	if (result)
->>  		goto err_remove_pf;
->>  
->> +	if (spic_dev.quirks && spic_dev.quirks->set_wwan_power) {
->> +		/*
->> +		 * Power isn't enabled by default.
->> +		 */
->> +		sony_pic_set_wwanpower(1);
->> +	}
->>  	return 0;
->>  
->>  err_remove_pf:
->> @@ -2755,6 +2765,16 @@ static struct acpi_driver sony_pic_driver = {
->>  		},
->>  };
->>  
->> +static struct sony_pic_quirk_entry sony_pic_vaio_vgn = {
->> +	.set_wwan_power = 1,
->> +};
->> +
->> +static int dmi_matched(const struct dmi_system_id *dmi)
->> +{
->> +	spic_dev.quirks = dmi->driver_data;
->> +	return 0;
->> +}
->> +
->>  static struct dmi_system_id __initdata sonypi_dmi_table[] = {
->>  	{
->>  		.ident = "Sony Vaio",
->> @@ -2769,6 +2789,8 @@ static struct dmi_system_id __initdata sonypi_dmi_table[] = {
->>  			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
->>  			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-"),
->>  		},
->> +		.callback = dmi_matched,
->> +		.driver_data = &sony_pic_vaio_vgn,
-> 
-> This is like just enabling it on all type3 (and some type2) vaios.
-> Might as well call your quirk unconditionally for all models.
-> 
-> Honestly I'd rather work towards the rfkill implementation as Matthew
-> suggests.
-
-Agreed.
-
-rtg
--- 
-Tim Gardner timg@tpi.com www.tpi.com
-OR 503-601-0234 x102 MT 406-443-5357
