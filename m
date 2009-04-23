@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZDWQ22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbZDWQbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZDWQ22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZDWQ2F
+	id S1756470AbZDWQbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbZDWQbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:28:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59474 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbZDWQ2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:28:04 -0400
-Date: Thu, 23 Apr 2009 17:28:00 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: AIM9 from 2.6.22 to 2.6.29
-Message-ID: <20090423162759.GA16429@csn.ul.ie>
-References: <20090418154207.1260.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0904201300140.1585@qirst.com> <20090421101855.F10D.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0904211011430.19969@qirst.com>
+	Thu, 23 Apr 2009 12:31:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:36324 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbZDWQa7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:30:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MWWSrplw9HHdn1p9NbylTCMFoOpoCueu4QqdKNY3nk8KMQCl4ky7C8VPOCszVYprYD
+         3skakE4Jsk8n8jw/sOdaWgIzjrcMK/9ucytZqDjcyXNBHKueUwGSY9+j9BOb1IUhnnzo
+         pJcpY02DYhZpGp5J3FD6gSLQScBVqN2C6vwuA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904211011430.19969@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090423173728.4fa010fa@i1501.lan.towertech.it>
+References: <1239036633-10032-1-git-send-email-anemo@mba.ocn.ne.jp>
+	 <20090409153921.04b6384c.akpm@linux-foundation.org>
+	 <20090410005820.4fcfcc1f@i1501.lan.towertech.it>
+	 <20090423.235141.61509229.anemo@mba.ocn.ne.jp>
+	 <20090423170253.6b6dfd21@i1501.lan.towertech.it>
+	 <8bd0f97a0904230807q6c40436wa561d7b26db26cef@mail.gmail.com>
+	 <20090423173728.4fa010fa@i1501.lan.towertech.it>
+Date: Thu, 23 Apr 2009 12:30:58 -0400
+Message-ID: <8bd0f97a0904230930w7c9ffaa4x5110c59098ff475b@mail.gmail.com>
+Subject: Re: [rtc-linux] Re: [PATCH] rtc: Make rtc_update_irq callable with 
+	irqs enabled
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: rtc-linux@googlegroups.com
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, vapier@gentoo.org,
+       rongkai.zhan@windriver.com, balajirrao@openmoko.org,
+       david-b@pacbell.net, broonie@opensource.wolfsonmicro.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 10:32:51AM -0400, Christoph Lameter wrote:
-> On Tue, 21 Apr 2009, KOSAKI Motohiro wrote:
-> 
-> > sourceforge search engine don't search reaim9 ;)
-> 
-> It has an obscure name so the search wont find it.
-> 
-> http://sourceforge.net/project/showfiles.php?group_id=71019&package_id=79015&release_id=276799
-> 
-> or try
-> 
-> http://gentwo.org/benchmark
-> 
-> I renamed the tarballs to aim9 and aim7 so that you can see which is
-> which. Also includes Mel's vmregress stuff.
-> 
+On Thu, Apr 23, 2009 at 11:37, Alessandro Zummo wrote:
+> On Thu, 23 Apr 2009 11:07:38 -0400 Mike Frysinger wrote:
+>> we just removed the shared bit from the Blackfin rtc driver because it
+>> didnt really make sense for us.  i need to test something else, so is
+>> the only change you need is the one posted originally ?  that makes
+>> more sense to me than forcing everyone to use IRQF_DISABLED.
+>
+>  for the blackfin you should just check if
+>  you have locking issues in your irq routine
 
-Wow, that's probably unusable it's so old. I don't release vmregress any
-more but I'm up to version 0.89-rc5
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+the Blackfin driver calls rtc_update_irq() from its IRQ handler and
+the handler is not registered with IRQF_DISABLED.  it makes more sense
+to me to fix rtc_update_irq() than require all RTC drivers to register
+with IRQF_DISABLED.  especially in my case as the Blackfin driver
+itself doesnt need any locks.
+-mike
