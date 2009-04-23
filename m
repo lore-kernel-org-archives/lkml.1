@@ -1,95 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbZDWWRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbZDWWTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbZDWWRZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbZDWWRP
+	id S932333AbZDWWTb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbZDWWTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:17:15 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:56239 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932096AbZDWWRO convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:17:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnEIAM+A8ElMQW1W/2dsb2JhbACBUJVUuRGCLoFGBQ
-Date: Thu, 23 Apr 2009 18:17:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mark.langsdorf@amd.com, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>
-Subject: Re: [patch 2/2] x86 amd fix cmpxchg read acquire barrier
-Message-ID: <20090423221711.GA30855@Krystal>
-References: <20090422201852.092307236@polymtl.ca> <20090423080645.GF22606@elte.hu> <20090423131941.GA11261@Krystal> <200904231541.18041.a.miskiewicz@gmail.com>
+	Thu, 23 Apr 2009 18:19:21 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:46551 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755586AbZDWWTU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 18:19:20 -0400
+Date: Fri, 24 Apr 2009 02:19:36 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
+Subject: Re: [RFC PATCH 1/2] pci: don't assume pref memio are 64bit -v3
+Message-ID: <20090423221936.GA24171@jurassic.park.msu.ru>
+References: <20090420223305.GA15340@jurassic.park.msu.ru> <49ED0EBC.4070901@kernel.org> <20090421105629.GB17904@jurassic.park.msu.ru> <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru> <49F08580.9050407@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <200904231541.18041.a.miskiewicz@gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:11:32 up 54 days, 18:37,  1 user,  load average: 0.07, 0.22,
-	0.24
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49F08580.9050407@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arkadiusz Miskiewicz (a.miskiewicz@gmail.com) wrote:
-> On Thursday 23 of April 2009, Mathieu Desnoyers wrote:
-> > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > > " // Opteron Rev E has a bug in which on very rare occasions a locked
-> > > >   // instruction doesn't act as a read-acquire barrier if followed by a
-> > > >   // non-locked read-modify-write instruction.  Rev F has this bug in
-> > > >   // pre-release versions, but not in versions released to customers,
-> > > >   // so we test only for Rev E, which is family 15, model 32..63
-> > > > inclusive.
-> > >
-> > > Dunno. The fix looks a bit intrusive (emits a NOP even on good
-> > > CPUs). Also, the text above says "not in versions released to
-> > > customers".
-> > >
-> > > So unless there's an official erratum or reports in the field (not
-> > > from early prototype systems shipped to developers) i'd not rush to
-> > > apply it, just yet.
-> >
-> > Actually, Operon Rev E has this bug in the field (family 15, model
-> > 32..64). Rev F only had the bug in pre-releases.
-> >
-> > But yes, it's bad that it drags so many code additions to something as
-> > critical as cmpxchg. I start to think it might be better to just
-> > disallow bringing up more than one CPU on these machines.
+On Thu, Apr 23, 2009 at 08:13:04AM -0700, Yinghai Lu wrote:
+> at least the one in mm/memory_hotplug.c
 > 
-> That probably would be even worse than what we have now. This bug doesn't 
-> manifest too often in a noticeable way here (I have few such machines here, 
-> mostly 2 x dual core; once per few months mysql dies) and loosing 3 of 4 cores 
-> (or 1 cpu of 2; depends on what you mean) doesn't sound like fun.
+> /* add this memory to iomem resource */
+> static struct resource *register_memory_resource(u64 start, u64 size)
+> {
+>         struct resource *res;
+>         res = kzalloc(sizeof(struct resource), GFP_KERNEL);
+>         BUG_ON(!res);
 > 
+>         res->name = "System RAM";
+>         res->start = start;
+>         res->end = start + size - 1;
+>         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+>         if (request_resource(&iomem_resource, res) < 0) {
+>                 printk("System RAM resource %llx - %llx cannot be added\n",
+>                 (unsigned long long)res->start, (unsigned long long)res->end);
+>                 kfree(res);
+>                 res = NULL;
+>         }
+>         return res;
+> }
 
-Having silent data corruption does not sound like fun neither. Another
-alternative, when we detect those CPUs, is to printk a warning telling :
+Indeed. It's a really strong argument against mem64 resource approach.
 
-"AMD Opteron family X model Y is known to corrupt data on SMP due"
-"to incorrect cmpxchg instruction memory barriers. Please contact"
-"AMD for more information."
+On the other hand, it shows that getting 64-bit allocations right is
+indeed a very complex issue - without well defined root bus ranges
+there is a high risk of unexpectedly breaking something, like that memory
+hotplug. Oh well...
 
-And activate the "tainted" kernel flag. This way, we won't be bothered
-trying to fix AMD bugs, and it will officially become AMD's problem.
+So if the main purpose is to prevent 32-bit allocations in the DAC
+area, some mix of your v2 and v3 patches seems to be the way to go.
+That is
 
-Mathieu
+- keep IORESOURCE_MEM_64 bits from -v3, but drop iomem32_resource
+and iomem64_resource things;
 
-> > Mathieu
-> 
-> 
-> -- 
-> Arkadiusz Miśkiewicz        PLD/Linux Team
-> arekm / maven.pl            http://ftp.pld-linux.org/
-> 
-> 
+- pass "max" argument to allocate_resource() like you did in -v2,
+but *only* then allocating from iomem_resource (r == &iomem_resource).
+Also, instead of max = 0xffffffff use something like max = PCIBIOS_MAX_MEM_32.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+include/linux/pci.h:
+#ifndef PCIBIOS_MAX_MEM_32
+#define PCIBIOS_MAX_MEM_32	(-1)
+#endif
+
+This should preserve the current behaviour of pci_bus_alloc_resource()
+on non-x86 arches; overridden in arch/x86/include/asm/pci.h:
+#define PCIBIOS_MAX_MEM_32	0xffffffff
+
+> check bits 0-3 and check PCI_PREF_BASE_UPPER32 register being r/w ?
+
+Yes. If these bits are zero, no further checks are needed -
+bridge is 32-bit. If they aren't, do additional check for
+PCI_PREF_BASE_UPPER32 being non-zero or writable, but *only*
+if this prefetch resource is not already allocated (res->parent == NULL),
+just for safety reasons - we don't want to disconnect the allocated
+range from the bus even for a short time.
+
+Ivan.
