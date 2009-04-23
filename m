@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZDWH2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZDWH2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbZDWH2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZDWH1W
+	id S1755168AbZDWH2V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZDWH1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:22 -0400
-Received: from sous-sol.org ([216.99.217.87]:48153 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:27:20 -0400
+Received: from sous-sol.org ([216.99.217.87]:48152 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754651AbZDWH1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754637AbZDWH1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Apr 2009 03:27:18 -0400
-Message-Id: <20090423072212.535803819@sous-sol.org>
+Message-Id: <20090423072130.073731512@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:32 -0700
+Date: Thu, 23 Apr 2009 00:20:25 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, "alex.shi" <alex.shi@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Yakui.zhao" <yakui.zhao@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 012/100] acpi: fix of pmtimer overflow that make Cx states time incorrect
+       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yinghai@kernel.org>,
+       H Peter Anvin <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 005/100] PCI/x86: detect host bridge config space size w/o using quirks
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=acpi-fix-of-pmtimer-overflow-that-make-cx-states-time-incorrect.patch
+Content-Disposition: inline; filename=pci-x86-detect-host-bridge-config-space-size-w-o-using-quirks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,228 +36,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: alex.shi <alex.shi@intel.com>
+From: Yinghai Lu <yinghai@kernel.org>
 
-upstream commit: ff69f2bba67bd45514923aaedbf40fe351787c59
+upstream commit: dfadd9edff498d767008edc6b2a6e86a7a19934d
 
-We found Cx states time abnormal in our some of machines which have 16
-LCPUs, the C0 take too many time while system is really idle when kernel
-enabled tickless and highres.  powertop output is below:
+Many host bridges support a 4k config space, so check them directy
+instead of using quirks to add them.
 
-     PowerTOP version 1.9       (C) 2007 Intel Corporation
+We only need to do this extra check for host bridges at this point,
+because only host bridges are known to have extended address space
+without also having a PCI-X/PCI-E caps.  Other devices with this
+property could be done with quirks (if there are any).
 
-Cn                Avg residency       P-states (frequencies)
-C0 (cpu running)        (40.5%)         2.53 Ghz     0.0%
-C1                0.0ms ( 0.0%)         2.53 Ghz     0.0%
-C2              128.8ms (59.5%)         2.40 Ghz     0.0%
-                                        1.60 Ghz   100.0%
+As a bonus, we can remove the quirks for AMD host bridges with family
+10h and 11h since they're not needed any more.
 
-Wakeups-from-idle per second :  4.7     interval: 20.0s
-no ACPI power usage estimate available
+With this patch, we can get correct pci cfg size of new Intel CPUs/IOHs
+with host bridges.
 
-Top causes for wakeups:
-  41.4% ( 24.9)       <interrupt> : extra timer interrupt
-  20.2% ( 12.2)     <kernel core> : usb_hcd_poll_rh_status
-(rh_timer_func)
-
-After tacking detailed for this issue, Yakui and I find it is due to 24
-bit PM timer overflows when some of cpu sleep more than 4 seconds.  With
-tickless kernel, the CPU want to sleep as much as possible when system
-idle.  But the Cx sleep time are recorded by pmtimer which length is
-determined by BIOS.  The current Cx time was gotten in the following
-function from driver/acpi/processor_idle.c:
-
-static inline u32 ticks_elapsed(u32 t1, u32 t2)
-{
-       if (t2 >= t1)
-               return (t2 - t1);
-       else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
-               return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
-       else
-               return ((0xFFFFFFFF - t1) + t2);
-}
-
-If pmtimer is 24 bits and it take 5 seconds from t1 to t2, in above
-function, just about 1 seconds ticks was recorded.  So the Cx time will be
-reduced about 4 seconds.  and this is why we see above powertop output.
-
-To resolve this problem, Yakui and I use ktime_get() to record the Cx
-states time instead of PM timer as the following patch.  the patch was
-tested with i386/x86_64 modes on several platforms.
-
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Tested-by: Alex Shi <alex.shi@intel.com>
-Signed-off-by: Alex Shi <alex.shi@intel.com>
-Signed-off-by: Yakui.zhao <yakui.zhao@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/acpi/processor_idle.c |   63 ++++++++++++++++++------------------------
- 1 file changed, 27 insertions(+), 36 deletions(-)
+ arch/x86/pci/fixup.c |   20 --------------------
+ drivers/pci/probe.c  |    9 ++++++++-
+ 2 files changed, 8 insertions(+), 21 deletions(-)
 
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -64,7 +64,6 @@
- #define _COMPONENT              ACPI_PROCESSOR_COMPONENT
- ACPI_MODULE_NAME("processor_idle");
- #define ACPI_PROCESSOR_FILE_POWER	"power"
--#define US_TO_PM_TIMER_TICKS(t)		((t * (PM_TIMER_FREQUENCY/1000)) / 1000)
- #define PM_TIMER_TICK_NS		(1000000000ULL/PM_TIMER_FREQUENCY)
- #define C2_OVERHEAD			1	/* 1us */
- #define C3_OVERHEAD			1	/* 1us */
-@@ -78,6 +77,10 @@ module_param(nocst, uint, 0000);
- static unsigned int latency_factor __read_mostly = 2;
- module_param(latency_factor, uint, 0644);
+--- a/arch/x86/pci/fixup.c
++++ b/arch/x86/pci/fixup.c
+@@ -495,26 +495,6 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S
+ 			  pci_siemens_interrupt_controller);
  
-+static s64 us_to_pm_timer_ticks(s64 t)
-+{
-+	return div64_u64(t * PM_TIMER_FREQUENCY, 1000000);
-+}
  /*
-  * IBM ThinkPad R40e crashes mysteriously when going into C2 or C3.
-  * For now disable this. Probably a bug somewhere else.
-@@ -159,25 +162,6 @@ static struct dmi_system_id __cpuinitdat
- 	{},
- };
- 
--static inline u32 ticks_elapsed(u32 t1, u32 t2)
+- * Regular PCI devices have 256 bytes, but AMD Family 10h/11h CPUs have
+- * 4096 bytes configuration space for each function of their processor
+- * configuration space.
+- */
+-static void amd_cpu_pci_cfg_space_size(struct pci_dev *dev)
 -{
--	if (t2 >= t1)
--		return (t2 - t1);
--	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
--		return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
--	else
--		return ((0xFFFFFFFF - t1) + t2);
+-	dev->cfg_size = pci_cfg_space_size_ext(dev);
 -}
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1300, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1301, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1302, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1303, amd_cpu_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1304, amd_cpu_pci_cfg_space_size);
 -
--static inline u32 ticks_elapsed_in_us(u32 t1, u32 t2)
--{
--	if (t2 >= t1)
--		return PM_TIMER_TICKS_TO_US(t2 - t1);
--	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
--		return PM_TIMER_TICKS_TO_US(((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
--	else
--		return PM_TIMER_TICKS_TO_US((0xFFFFFFFF - t1) + t2);
--}
- 
- /*
-  * Callers should disable interrupts before the call and enable
-@@ -853,7 +837,8 @@ static inline void acpi_idle_do_entry(st
- static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 			      struct cpuidle_state *state)
+-/*
+  * SB600: Disable BAR1 on device 14.0 to avoid HPET resources from
+  * confusing the PCI engine:
+  */
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -847,6 +847,11 @@ int pci_cfg_space_size(struct pci_dev *d
  {
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	s64 idle_time;
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 
-@@ -871,14 +856,15 @@ static int acpi_idle_enter_c1(struct cpu
- 		return 0;
- 	}
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get_real();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get_real();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	local_irq_enable();
- 	cx->usage++;
- 
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- /**
-@@ -891,8 +877,9 @@ static int acpi_idle_enter_simple(struct
- {
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
--	u32 t1, t2;
--	int sleep_ticks = 0;
-+	ktime_t  kt1, kt2;
-+	s64 idle_time;
-+	s64 sleep_ticks = 0;
- 
- 	pr = __get_cpu_var(processors);
- 
-@@ -925,18 +912,19 @@ static int acpi_idle_enter_simple(struct
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get_real();
- 	/* Tell the scheduler that we are going deep-idle: */
- 	sched_clock_idle_sleep_event();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get_real();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 	/* TSC could halt in idle, so notify users */
- 	if (tsc_halts_in_c(cx->type))
- 		mark_tsc_unstable("TSC halts in idle");;
- #endif
--	sleep_ticks = ticks_elapsed(t1, t2);
-+	sleep_ticks = us_to_pm_timer_ticks(idle_time);
- 
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
-@@ -948,7 +936,7 @@ static int acpi_idle_enter_simple(struct
- 
- 	acpi_state_timer_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- static int c3_cpu_count;
-@@ -966,8 +954,10 @@ static int acpi_idle_enter_bm(struct cpu
- {
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
--	u32 t1, t2;
--	int sleep_ticks = 0;
-+	ktime_t  kt1, kt2;
-+	s64 idle_time;
-+	s64 sleep_ticks = 0;
+ 	int pos;
+ 	u32 status;
++	u16 class;
 +
++	class = dev->class >> 8;
++	if (class == PCI_CLASS_BRIDGE_HOST)
++		return pci_cfg_space_size_ext(dev);
  
- 	pr = __get_cpu_var(processors);
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+ 	if (!pos) {
+@@ -936,7 +941,6 @@ static struct pci_dev *pci_scan_device(s
+ 	dev->multifunction = !!(hdr_type & 0x80);
+ 	dev->vendor = l & 0xffff;
+ 	dev->device = (l >> 16) & 0xffff;
+-	dev->cfg_size = pci_cfg_space_size(dev);
+ 	dev->error_state = pci_channel_io_normal;
+ 	set_pcie_port_type(dev);
  
-@@ -1034,9 +1024,10 @@ static int acpi_idle_enter_bm(struct cpu
- 		ACPI_FLUSH_CPU_CACHE();
+@@ -952,6 +956,9 @@ static struct pci_dev *pci_scan_device(s
+ 		return NULL;
  	}
  
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get_real();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get_real();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	/* Re-enable bus master arbitration */
- 	if (pr->flags.bm_check && pr->flags.bm_control) {
-@@ -1051,7 +1042,7 @@ static int acpi_idle_enter_bm(struct cpu
- 	if (tsc_halts_in_c(ACPI_STATE_C3))
- 		mark_tsc_unstable("TSC halts in idle");
- #endif
--	sleep_ticks = ticks_elapsed(t1, t2);
-+	sleep_ticks = us_to_pm_timer_ticks(idle_time);
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
-@@ -1062,7 +1053,7 @@ static int acpi_idle_enter_bm(struct cpu
- 
- 	acpi_state_timer_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
++	/* need to have dev->class ready */
++	dev->cfg_size = pci_cfg_space_size(dev);
++
+ 	return dev;
  }
  
- struct cpuidle_driver acpi_idle_driver = {
 
