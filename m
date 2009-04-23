@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZDWHoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZDWHfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbZDWHoO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZDWHa5
+	id S1757569AbZDWHfs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZDWH2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:30:57 -0400
-Received: from sous-sol.org ([216.99.217.87]:50532 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:28:33 -0400
+Received: from sous-sol.org ([216.99.217.87]:48350 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755025AbZDWHaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:30:55 -0400
-Message-Id: <20090423072530.579523011@sous-sol.org>
+	id S1754157AbZDWH2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:28:30 -0400
+Message-Id: <20090423072308.747289590@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:04 -0700
+Date: Thu, 23 Apr 2009 00:20:41 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Moritz Muehlenhoff <jmm@debian.org>,
-       David S Miller <davem@davemloft.net>
-Subject: [patch 044/100] af_rose/x25: Sanity check the maximum user frame size
+       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
+       Zhenyu Wang <zhenyu.z.wang@intel.com>
+Subject: [patch 021/100] drm/i915: only set TV mode when any property changed
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=af_rose-x25-sanity-check-the-maximum-user-frame-size.patch
+Content-Disposition: inline; filename=drm-i915-only-set-tv-mode-when-any-property-changed.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,66 +36,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Zhenyu Wang <zhenyu.z.wang@intel.com>
 
-upstream commit: 83e0bbcbe2145f160fbaa109b0439dae7f4a38a9
+upstream commit: ebcc8f2eade76946dbb5d5c545b91f8157051aa8
 
-CVE-2009-0795.
+If there's no real property change, don't need to set TV mode again.
 
-Otherwise we can wrap the sizes and end up sending garbage.
-
-Closes #10423
-
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+[anholt: checkpatch.pl fix]
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/netrom/af_netrom.c |    6 +++++-
- net/rose/af_rose.c     |    4 ++++
- net/x25/af_x25.c       |    6 ++++++
- 3 files changed, 15 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/i915/intel_tv.c |   27 ++++++++++++++++++++-------
+ 1 file changed, 20 insertions(+), 7 deletions(-)
 
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -1082,7 +1082,11 @@ static int nr_sendmsg(struct kiocb *iocb
+--- a/drivers/gpu/drm/i915/intel_tv.c
++++ b/drivers/gpu/drm/i915/intel_tv.c
+@@ -1559,32 +1559,45 @@ intel_tv_set_property(struct drm_connect
+ 	struct intel_output *intel_output = to_intel_output(connector);
+ 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
+ 	int ret = 0;
++	bool changed = false;
  
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: Addresses built.\n");
+ 	ret = drm_connector_property_set_value(connector, property, val);
+ 	if (ret < 0)
+ 		goto out;
  
--	/* Build a packet */
-+	/* Build a packet - the conventional user limit is 236 bytes. We can
-+	   do ludicrously large NetROM frames but must not overflow */
-+	if (len > 65536)
-+		return -EMSGSIZE;
+-	if (property == dev->mode_config.tv_left_margin_property)
++	if (property == dev->mode_config.tv_left_margin_property &&
++		tv_priv->margin[TV_MARGIN_LEFT] != val) {
+ 		tv_priv->margin[TV_MARGIN_LEFT] = val;
+-	else if (property == dev->mode_config.tv_right_margin_property)
++		changed = true;
++	} else if (property == dev->mode_config.tv_right_margin_property &&
++		tv_priv->margin[TV_MARGIN_RIGHT] != val) {
+ 		tv_priv->margin[TV_MARGIN_RIGHT] = val;
+-	else if (property == dev->mode_config.tv_top_margin_property)
++		changed = true;
++	} else if (property == dev->mode_config.tv_top_margin_property &&
++		tv_priv->margin[TV_MARGIN_TOP] != val) {
+ 		tv_priv->margin[TV_MARGIN_TOP] = val;
+-	else if (property == dev->mode_config.tv_bottom_margin_property)
++		changed = true;
++	} else if (property == dev->mode_config.tv_bottom_margin_property &&
++		tv_priv->margin[TV_MARGIN_BOTTOM] != val) {
+ 		tv_priv->margin[TV_MARGIN_BOTTOM] = val;
+-	else if (property == dev->mode_config.tv_mode_property) {
++		changed = true;
++	} else if (property == dev->mode_config.tv_mode_property) {
+ 		if (val >= NUM_TV_MODES) {
+ 			ret = -EINVAL;
+ 			goto out;
+ 		}
++		if (!strcmp(tv_priv->tv_format, tv_modes[val].name))
++			goto out;
 +
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: building packet.\n");
- 	size = len + NR_NETWORK_LEN + NR_TRANSPORT_LEN;
- 
---- a/net/rose/af_rose.c
-+++ b/net/rose/af_rose.c
-@@ -1124,6 +1124,10 @@ static int rose_sendmsg(struct kiocb *io
- 
- 	/* Build a packet */
- 	SOCK_DEBUG(sk, "ROSE: sendto: building packet.\n");
-+	/* Sanity check the packet size */
-+	if (len > 65535)
-+		return -EMSGSIZE;
-+
- 	size = len + AX25_BPQ_HEADER_LEN + AX25_MAX_HEADER_LEN + ROSE_MIN_LEN;
- 
- 	if ((skb = sock_alloc_send_skb(sk, size, msg->msg_flags & MSG_DONTWAIT, &err)) == NULL)
---- a/net/x25/af_x25.c
-+++ b/net/x25/af_x25.c
-@@ -1037,6 +1037,12 @@ static int x25_sendmsg(struct kiocb *ioc
- 		sx25.sx25_addr   = x25->dest_addr;
+ 		tv_priv->tv_format = tv_modes[val].name;
+-		intel_tv_mode_set(&intel_output->enc, NULL, NULL);
++		changed = true;
+ 	} else {
+ 		ret = -EINVAL;
+ 		goto out;
  	}
  
-+	/* Sanity check the packet size */
-+	if (len > 65535) {
-+		rc = -EMSGSIZE;
-+		goto out;
-+	}
-+
- 	SOCK_DEBUG(sk, "x25_sendmsg: sendto: Addresses built.\n");
- 
- 	/* Build a packet */
+-	intel_tv_mode_set(&intel_output->enc, NULL, NULL);
++	if (changed)
++		intel_tv_mode_set(&intel_output->enc, NULL, NULL);
+ out:
+ 	return ret;
+ }
 
