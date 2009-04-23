@@ -1,110 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZDYIMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZDYIQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbZDYIMH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Apr 2009 04:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZDYILt
+	id S1755352AbZDYIQX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Apr 2009 04:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZDYIQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Apr 2009 04:11:49 -0400
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:58385 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbZDYILr (ORCPT
+	Sat, 25 Apr 2009 04:16:10 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42327 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbZDYIQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Apr 2009 04:11:47 -0400
-Message-ID: <49F2C59A.9010703@freemail.hu>
-Date: Sat, 25 Apr 2009 10:11:06 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sat, 25 Apr 2009 04:16:08 -0400
+Date: Thu, 23 Apr 2009 06:42:29 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Lameter <cl@linux.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scheduler regression: Too frequent timer interrupts(?)
+Message-ID: <20090423044228.GA2428@ucw.cz>
+References: <alpine.DEB.1.10.0904161539130.23632@qirst.com> <1239951613.23397.4107.camel@laptop> <alpine.DEB.1.10.0904170941020.11877@qirst.com> <1239977776.23397.4590.camel@laptop> <alpine.DEB.1.10.0904171021360.20239@qirst.com> <1239979901.23397.4638.camel@laptop> <alpine.DEB.1.10.0904171100510.21575@qirst.com> <1239982137.23397.4684.camel@laptop>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] v4l2: fill the unused fields with zeros in case of VIDIOC_S_FMT
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32721; Body=3 Fuz1=3
-	Fuz2=3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239982137.23397.4684.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The VIDIOC_S_FMT is a write-read ioctl: it sets the format and returns
-the current format in case of success. The parameter of VIDIOC_S_FMT
-ioctl is a pointer to struct v4l2_format. [1] This structure contains some
-fields which are not used depending on the .type value. These unused
-fields are filled with zeros with this patch.
+On Fri 2009-04-17 17:28:57, Peter Zijlstra wrote:
+> On Fri, 2009-04-17 at 11:04 -0400, Christoph Lameter wrote:
+> > On Fri, 17 Apr 2009, Peter Zijlstra wrote:
+> > 
+> > > And a random 1us cutoff, is well, random.
+> > 
+> > Its got to be somewhere.
+> 
+> No it doesn't, a cutoff is useless. If I steal cputime at units below
+> the cutoff I can, in the limit, steal up to 100% cpu time and you'd not
+> notice.
 
-The patch was tested with v4l-test 0.12 [2] with vivi and with
-gspca_sunplus driver together with Trust 610 LCD POWERC@M ZOOM.
+Are you sure cutoff is useless?
 
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r10944.htm
+Irq entry/exit is sure to take > 1usec, right?
 
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
+> > > So 5 <1us interruption are not at all accounted, whereas a single 1>us
+> > > interruption is. I'd rather get rid of those 5 than try and shave a bit
+> > > of the one, if you get what I mean.
+> > 
+> > Ok. We can set the threshold lower and see how that goes.
+> 
+> Pointless. See above.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.30-rc3/drivers/media/video/v4l2-ioctl.c.orig	2009-04-22 05:07:00.000000000 +0200
-+++ linux-2.6.30-rc3/drivers/media/video/v4l2-ioctl.c	2009-04-25 09:05:42.000000000 +0200
-@@ -777,44 +777,61 @@
- 	{
- 		struct v4l2_format *f = (struct v4l2_format *)arg;
+I'd say that taking interrupt and returning in below 1000nsec is
+impossible, even on very fast hw.
 
-+#define CLEAR_UNUSED_FIELDS(data, last_member) \
-+	memset(((u8 *)f)+ \
-+		offsetof(struct v4l2_format, fmt)+ \
-+		sizeof(struct v4l2_ ## last_member), \
-+		0, \
-+		sizeof(*f)- \
-+		offsetof(struct v4l2_format, fmt)+ \
-+		sizeof(struct v4l2_ ## last_member))
-+
- 		/* FIXME: Should be one dump per type */
- 		dbgarg(cmd, "type=%s\n", prt_names(f->type, v4l2_type_names));
-
- 		switch (f->type) {
- 		case V4L2_BUF_TYPE_VIDEO_CAPTURE:
-+			CLEAR_UNUSED_FIELDS(f, pix_format);
- 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
- 			if (ops->vidioc_s_fmt_vid_cap)
- 				ret = ops->vidioc_s_fmt_vid_cap(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OVERLAY:
-+			CLEAR_UNUSED_FIELDS(f, window);
- 			if (ops->vidioc_s_fmt_vid_overlay)
- 				ret = ops->vidioc_s_fmt_vid_overlay(file,
- 								    fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OUTPUT:
-+			CLEAR_UNUSED_FIELDS(f, pix_format);
- 			v4l_print_pix_fmt(vfd, &f->fmt.pix);
- 			if (ops->vidioc_s_fmt_vid_out)
- 				ret = ops->vidioc_s_fmt_vid_out(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VIDEO_OUTPUT_OVERLAY:
-+			CLEAR_UNUSED_FIELDS(f, window);
- 			if (ops->vidioc_s_fmt_vid_out_overlay)
- 				ret = ops->vidioc_s_fmt_vid_out_overlay(file,
- 					fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VBI_CAPTURE:
-+			CLEAR_UNUSED_FIELDS(f, vbi_format);
- 			if (ops->vidioc_s_fmt_vbi_cap)
- 				ret = ops->vidioc_s_fmt_vbi_cap(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_VBI_OUTPUT:
-+			CLEAR_UNUSED_FIELDS(f, vbi_format);
- 			if (ops->vidioc_s_fmt_vbi_out)
- 				ret = ops->vidioc_s_fmt_vbi_out(file, fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_SLICED_VBI_CAPTURE:
-+			CLEAR_UNUSED_FIELDS(f, sliced_vbi_format);
- 			if (ops->vidioc_s_fmt_sliced_vbi_cap)
- 				ret = ops->vidioc_s_fmt_sliced_vbi_cap(file,
- 									fh, f);
- 			break;
- 		case V4L2_BUF_TYPE_SLICED_VBI_OUTPUT:
-+			CLEAR_UNUSED_FIELDS(f, sliced_vbi_format);
- 			if (ops->vidioc_s_fmt_sliced_vbi_out)
- 				ret = ops->vidioc_s_fmt_sliced_vbi_out(file,
- 									fh, f);
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
