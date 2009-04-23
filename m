@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbZDWHhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbZDWIH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbZDWHhU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZDWH3N
+	id S1752652AbZDWIH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760646AbZDWIA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:29:13 -0400
-Received: from sous-sol.org ([216.99.217.87]:48437 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 04:00:29 -0400
+Received: from sous-sol.org ([216.99.217.87]:44428 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756049AbZDWH3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:29:11 -0400
-Message-Id: <20090423072328.181381441@sous-sol.org>
+	id S1760655AbZDWIA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 04:00:28 -0400
+Message-Id: <20090423072725.432395010@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:44 -0700
+Date: Thu, 23 Apr 2009 00:21:21 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-Subject: [patch 024/100] md/raid1 - dont assume newly allocated bvecs are initialised.
+       alan@lxorguk.ukuu.org.uk, Nathan Lynch <ntl@pobox.com>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 061/100] sched: do not count frozen tasks toward load
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=md-raid1-don-t-assume-newly-allocated-bvecs-are-initialised.patch
+Content-Disposition: inline; filename=sched-do-not-count-frozen-tasks-toward-load.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,48 +39,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Nathan Lynch <ntl@pobox.com>
 
-upstream commit: 303a0e11d0ee136ad8f53f747f3c377daece763b
+upstream commit: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
 
-Since commit d3f761104b097738932afcc310fbbbbfb007ef92
-newly allocated bvecs aren't initialised to NULL, so we have
-to be more careful about freeing a bio which only managed
-to get a few pages allocated to it.  Otherwise the resync
-process crashes.
+Freezing tasks via the cgroup freezer causes the load average to climb
+because the freezer's current implementation puts frozen tasks in
+uninterruptible sleep (D state).
 
-This patch is appropriate for 2.6.29-stable.
+Some applications which perform job-scheduling functions consult the
+load average when making decisions.  If a cgroup is frozen, the load
+average does not provide a useful measure of the system's utilization
+to such applications.  This is especially inconvenient if the job
+scheduler employs the cgroup freezer as a mechanism for preempting low
+priority jobs.  Contrast this with using SIGSTOP for the same purpose:
+the stopped tasks do not count toward system load.
 
-Cc: stable@kernel.org
-Cc: "Jens Axboe" <jens.axboe@oracle.com>
-Reported-by: Gabriele Tozzi <gabriele@tozzi.eu>
-Signed-off-by: NeilBrown <neilb@suse.de>
+Change task_contributes_to_load() to return false if the task is
+frozen.  This results in /proc/loadavg behavior that better meets
+users' expectations.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Acked-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Tested-by: Nigel Cunningham <nigel@tuxonice.net>
+Cc: <stable@kernel.org>
+Cc: containers@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Matt Helsley <matthltc@us.ibm.com>
+LKML-Reference: <20090408194512.47a99b95@manatee.lan>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/md/raid1.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ include/linux/sched.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/md/raid1.c
-+++ b/drivers/md/raid1.c
-@@ -120,6 +120,7 @@ static void * r1buf_pool_alloc(gfp_t gfp
- 				goto out_free_pages;
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -202,7 +202,8 @@ extern unsigned long long time_sync_thre
+ #define task_is_stopped_or_traced(task)	\
+ 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+ #define task_contributes_to_load(task)	\
+-				((task->state & TASK_UNINTERRUPTIBLE) != 0)
++				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
++				 (task->flags & PF_FROZEN) == 0)
  
- 			bio->bi_io_vec[i].bv_page = page;
-+			bio->bi_vcnt = i+1;
- 		}
- 	}
- 	/* If not user-requests, copy the page pointers to all bios */
-@@ -135,9 +136,9 @@ static void * r1buf_pool_alloc(gfp_t gfp
- 	return r1_bio;
- 
- out_free_pages:
--	for (i=0; i < RESYNC_PAGES ; i++)
--		for (j=0 ; j < pi->raid_disks; j++)
--			safe_put_page(r1_bio->bios[j]->bi_io_vec[i].bv_page);
-+	for (j=0 ; j < pi->raid_disks; j++)
-+		for (i=0; i < r1_bio->bios[j]->bi_vcnt ; i++)
-+			put_page(r1_bio->bios[j]->bi_io_vec[i].bv_page);
- 	j = -1;
- out_free_bio:
- 	while ( ++j < pi->raid_disks )
+ #define __set_task_state(tsk, state_value)		\
+ 	do { (tsk)->state = (state_value); } while (0)
 
