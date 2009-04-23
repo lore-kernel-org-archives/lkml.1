@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZDWPbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZDWPeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbZDWPbK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 11:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZDWPay
+	id S1758173AbZDWPeY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 11:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZDWPeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 11:30:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:27351 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZDWPax (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 11:30:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=veNUUe2jPpe16uQ2y2BGA5rcYq9TYTcCucngIGwLq/duG3DO74KKWYQpqrJWoo/Dsj
-         eUqLRFs9zRXcVFqHWfuZ7XaVEpZYeRjqv81lH/GcqDffrsiSekKhW8qfkq7DBOdk00dC
-         pU1Kgu3Njt17/VRQ4/Zsu/BIsS6OFL+4G/2xM=
+	Thu, 23 Apr 2009 11:34:09 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:59658 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751043AbZDWPeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 11:34:05 -0400
+Date: Thu, 23 Apr 2009 08:34:02 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
+Message-ID: <20090423153402.GC6877@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090423052520.GA13036@linux.vnet.ibm.com> <20090423075436.GB22606@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090423125848.GB11519@jurassic.park.msu.ru>
-References: <20090419090208.GA30211@elte.hu>
-	 <20090420223305.GA15340@jurassic.park.msu.ru>
-	 <49ED0EBC.4070901@kernel.org>
-	 <20090421105629.GB17904@jurassic.park.msu.ru>
-	 <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes>
-	 <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes>
-	 <86802c440904221903p5667bbf9y642d671942555958@mail.gmail.com>
-	 <20090423125848.GB11519@jurassic.park.msu.ru>
-Date: Thu, 23 Apr 2009 08:30:52 -0700
-Message-ID: <86802c440904230830m2e978078s71953dcb23a059b8@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/2] pci: don't assume pref memio are 64bit -v3
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090423075436.GB22606@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 5:58 AM, Ivan Kokshaysky
-<ink@jurassic.park.msu.ru> wrote:
-> On Wed, Apr 22, 2009 at 07:03:33PM -0700, Yinghai Lu wrote:
->> to check the BAR support 64bit or not should be read from
->> pci_read_bases and pci_bridge_read_bases...
->
-> pci_read_bases: take a closer look at decode_bar() function and
-> PCI_BASE_ADDRESS_MEM_TYPE_64 flag.
->
-> pci_bridge_read_bases: we cannot rely on the bits 0-3 of
-> PCI_PREF_MEMORY_BASE providing correct information anyway.
-> More reliable check for 64-bitness would be a test for
-> PCI_PREF_BASE_UPPER32 register being r/w, which I think
-> belongs in pci_bridge_check_ranges().
+On Thu, Apr 23, 2009 at 09:54:36AM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > First cut of "big hammer" expedited RCU grace periods, but only 
+> > for rcu_bh.  This creates another softirq vector, so that entering 
+> > this softirq vector will have forced an rcu_bh quiescent state (as 
+> > noted by Dave Miller).  Use smp_call_function() to invoke 
+> > raise_softirq() on all CPUs in order to cause this to happen.  
+> > Track the CPUs that have passed through a quiescent state (or gone 
+> > offline) with a cpumask.
+> > 
+> > Does nothing to expedite callbacks already registered with 
+> > call_rcu_bh(), but there is no need to.
+> > 
+> > Shortcomings:
+> > 
+> > o	Untested, probably does not compile, not for inclusion.
+> > 
+> > o	Does not handle rcu, only rcu_bh.
+> > 
+> > Thoughts?
+> 
+> I'm wondering, why not just do a two-liner, along the lines of:
+> 
+> 	for_each_online_cpu(cpu)
+> 		smp_send_reschedule(cpu);
+> 
+> That should trigger a quiescent state on all online cpus. It wont 
+> perturb the scheduler state (which is reschedule-IPI invariant).
+> (And this is a big-hammer approach anyway so even if it did we 
+> wouldnt care.)
+> 
+> Am i missing something embarrasingly obvious perhaps?
 
-check bits 0-3 and check PCI_PREF_BASE_UPPER32 register being r/w ?
+This two-liner would indeed trigger a quiescent state on all online CPUs.
 
-YH
+However, it would not force RCU to notice these quiescent states quickly.
+This is because RCU's normal grace-period-detection path can be thought of
+as a state machine driven out of the per-CPU scheduling-clock interrupt
+handler.  So RCU would still take another jiffy or two to close the grace
+period -- more if there was a partly-done grace period that needed to
+complete before a new one could start.
+
+So both Lai's and my patch bypass RCU's normal state machine in order
+to not only force the quiescent states, but also to determine that they
+have in fact happened.
+
+Hmmm...  I need to ask Jeff Chua what HZ he was running with.  Because if
+there was some read-side critical section soaking up 30 milliseconds,
+all that hammering will do is slow things down...
+
+							Thanx, Paul
