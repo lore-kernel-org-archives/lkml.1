@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760415AbZDWH6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbZDWIDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760415AbZDWH6o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbZDWHev
+	id S1758084AbZDWIDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZDWHhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:34:51 -0400
-Received: from sous-sol.org ([216.99.217.87]:51076 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:37:21 -0400
+Received: from sous-sol.org ([216.99.217.87]:47524 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757485AbZDWHet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:34:49 -0400
-Message-Id: <20090423072627.658983380@sous-sol.org>
+	id S1757784AbZDWHhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:37:17 -0400
+Message-Id: <20090423073035.174126466@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:13 -0700
+Date: Thu, 23 Apr 2009 00:21:50 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       David John <davidjon@xenontk.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,12 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <jdelvare@suse.de>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 053/100] SCSI: libiscsi: fix iscsi pool error path
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 090/100] x86, PAT: Remove page granularity tracking for vm_insert_pfn maps
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=scsi-libiscsi-fix-iscsi-pool-error-path.patch
+Content-Disposition: inline; filename=x86-pat-remove-page-granularity-tracking-for-vm_insert_pfn-maps.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,45 +40,212 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jean Delvare <jdelvare@suse.de>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-upstream commit: f474a37bc48667595b5653a983b635c95ed82a3b
+upstream commit: 4b065046273afa01ec8e3de7da407e8d3599251d
 
-Memory freeing in iscsi_pool_free() looks wrong to me. Either q->pool
-can be NULL and this should be tested before dereferencing it, or it
-can't be NULL and it shouldn't be tested at all. As far as I can see,
-the only case where q->pool is NULL is on early error in
-iscsi_pool_init(). One possible way to fix the bug is thus to not
-call iscsi_pool_free() in this case (nothing needs to be freed anyway)
-and then we can get rid of the q->pool check.
+This change resolves the problem of too many single page entries
+in pat_memtype_list and "freeing invalid memtype" errors with i915,
+reported here:
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+  http://marc.info/?l=linux-kernel&m=123845244713183&w=2
+
+Remove page level granularity track and untrack of vm_insert_pfn.
+memtype tracking at page granularity does not scale and cleaner
+approach would be for the driver to request a type for a bigger
+IO address range or PCI io memory range for that device, either at
+mmap time or driver init time and just use that type during
+vm_insert_pfn.
+
+This patch just removes the track/untrack of vm_insert_pfn. That
+means we will be in same state as 2.6.28, with respect to these APIs.
+
+Newer APIs for the drivers to request a memtype for a bigger region
+is coming soon.
+
+[ Impact: fix Xorg startup warnings and hangs ]
+
+Reported-by: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+Tested-by: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+LKML-Reference: <20090408223716.GC3493@linux-os.sc.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/scsi/libiscsi.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/x86/mm/pat.c |   98 ++++++++++--------------------------------------------
+ 1 file changed, 19 insertions(+), 79 deletions(-)
 
---- a/drivers/scsi/libiscsi.c
-+++ b/drivers/scsi/libiscsi.c
-@@ -1944,7 +1944,7 @@ iscsi_pool_init(struct iscsi_pool *q, in
- 		num_arrays++;
- 	q->pool = kzalloc(num_arrays * max * sizeof(void*), GFP_KERNEL);
- 	if (q->pool == NULL)
--		goto enomem;
-+		return -ENOMEM;
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -713,29 +713,28 @@ static void free_pfn_range(u64 paddr, un
+  *
+  * If the vma has a linear pfn mapping for the entire range, we get the prot
+  * from pte and reserve the entire vma range with single reserve_pfn_range call.
+- * Otherwise, we reserve the entire vma range, my ging through the PTEs page
+- * by page to get physical address and protection.
+  */
+ int track_pfn_vma_copy(struct vm_area_struct *vma)
+ {
+-	int retval = 0;
+-	unsigned long i, j;
+ 	resource_size_t paddr;
+ 	unsigned long prot;
+-	unsigned long vma_start = vma->vm_start;
+-	unsigned long vma_end = vma->vm_end;
+-	unsigned long vma_size = vma_end - vma_start;
++	unsigned long vma_size = vma->vm_end - vma->vm_start;
+ 	pgprot_t pgprot;
  
- 	q->queue = kfifo_init((void*)q->pool, max * sizeof(void*),
- 			      GFP_KERNEL, NULL);
-@@ -1979,8 +1979,7 @@ void iscsi_pool_free(struct iscsi_pool *
+ 	if (!pat_enabled)
+ 		return 0;
  
- 	for (i = 0; i < q->max; i++)
- 		kfree(q->pool[i]);
--	if (q->pool)
--		kfree(q->pool);
-+	kfree(q->pool);
- 	kfree(q->queue);
++	/*
++	 * For now, only handle remap_pfn_range() vmas where
++	 * is_linear_pfn_mapping() == TRUE. Handling of
++	 * vm_insert_pfn() is TBD.
++	 */
+ 	if (is_linear_pfn_mapping(vma)) {
+ 		/*
+ 		 * reserve the whole chunk covered by vma. We need the
+ 		 * starting address and protection from pte.
+ 		 */
+-		if (follow_phys(vma, vma_start, 0, &prot, &paddr)) {
++		if (follow_phys(vma, vma->vm_start, 0, &prot, &paddr)) {
+ 			WARN_ON_ONCE(1);
+ 			return -EINVAL;
+ 		}
+@@ -743,28 +742,7 @@ int track_pfn_vma_copy(struct vm_area_st
+ 		return reserve_pfn_range(paddr, vma_size, &pgprot, 1);
+ 	}
+ 
+-	/* reserve entire vma page by page, using pfn and prot from pte */
+-	for (i = 0; i < vma_size; i += PAGE_SIZE) {
+-		if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
+-			continue;
+-
+-		pgprot = __pgprot(prot);
+-		retval = reserve_pfn_range(paddr, PAGE_SIZE, &pgprot, 1);
+-		if (retval)
+-			goto cleanup_ret;
+-	}
+ 	return 0;
+-
+-cleanup_ret:
+-	/* Reserve error: Cleanup partial reservation and return error */
+-	for (j = 0; j < i; j += PAGE_SIZE) {
+-		if (follow_phys(vma, vma_start + j, 0, &prot, &paddr))
+-			continue;
+-
+-		free_pfn_range(paddr, PAGE_SIZE);
+-	}
+-
+-	return retval;
  }
- EXPORT_SYMBOL_GPL(iscsi_pool_free);
+ 
+ /*
+@@ -774,50 +752,28 @@ cleanup_ret:
+  * prot is passed in as a parameter for the new mapping. If the vma has a
+  * linear pfn mapping for the entire range reserve the entire vma range with
+  * single reserve_pfn_range call.
+- * Otherwise, we look t the pfn and size and reserve only the specified range
+- * page by page.
+- *
+- * Note that this function can be called with caller trying to map only a
+- * subrange/page inside the vma.
+  */
+ int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t *prot,
+ 			unsigned long pfn, unsigned long size)
+ {
+-	int retval = 0;
+-	unsigned long i, j;
+-	resource_size_t base_paddr;
+ 	resource_size_t paddr;
+-	unsigned long vma_start = vma->vm_start;
+-	unsigned long vma_end = vma->vm_end;
+-	unsigned long vma_size = vma_end - vma_start;
++	unsigned long vma_size = vma->vm_end - vma->vm_start;
+ 
+ 	if (!pat_enabled)
+ 		return 0;
+ 
++	/*
++	 * For now, only handle remap_pfn_range() vmas where
++	 * is_linear_pfn_mapping() == TRUE. Handling of
++	 * vm_insert_pfn() is TBD.
++	 */
+ 	if (is_linear_pfn_mapping(vma)) {
+ 		/* reserve the whole chunk starting from vm_pgoff */
+ 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
+ 		return reserve_pfn_range(paddr, vma_size, prot, 0);
+ 	}
+ 
+-	/* reserve page by page using pfn and size */
+-	base_paddr = (resource_size_t)pfn << PAGE_SHIFT;
+-	for (i = 0; i < size; i += PAGE_SIZE) {
+-		paddr = base_paddr + i;
+-		retval = reserve_pfn_range(paddr, PAGE_SIZE, prot, 0);
+-		if (retval)
+-			goto cleanup_ret;
+-	}
+ 	return 0;
+-
+-cleanup_ret:
+-	/* Reserve error: Cleanup partial reservation and return error */
+-	for (j = 0; j < i; j += PAGE_SIZE) {
+-		paddr = base_paddr + j;
+-		free_pfn_range(paddr, PAGE_SIZE);
+-	}
+-
+-	return retval;
+ }
+ 
+ /*
+@@ -828,39 +784,23 @@ cleanup_ret:
+ void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
+ 			unsigned long size)
+ {
+-	unsigned long i;
+ 	resource_size_t paddr;
+-	unsigned long prot;
+-	unsigned long vma_start = vma->vm_start;
+-	unsigned long vma_end = vma->vm_end;
+-	unsigned long vma_size = vma_end - vma_start;
++	unsigned long vma_size = vma->vm_end - vma->vm_start;
+ 
+ 	if (!pat_enabled)
+ 		return;
+ 
++	/*
++	 * For now, only handle remap_pfn_range() vmas where
++	 * is_linear_pfn_mapping() == TRUE. Handling of
++	 * vm_insert_pfn() is TBD.
++	 */
+ 	if (is_linear_pfn_mapping(vma)) {
+ 		/* free the whole chunk starting from vm_pgoff */
+ 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
+ 		free_pfn_range(paddr, vma_size);
+ 		return;
+ 	}
+-
+-	if (size != 0 && size != vma_size) {
+-		/* free page by page, using pfn and size */
+-		paddr = (resource_size_t)pfn << PAGE_SHIFT;
+-		for (i = 0; i < size; i += PAGE_SIZE) {
+-			paddr = paddr + i;
+-			free_pfn_range(paddr, PAGE_SIZE);
+-		}
+-	} else {
+-		/* free entire vma, page by page, using the pfn from pte */
+-		for (i = 0; i < vma_size; i += PAGE_SIZE) {
+-			if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
+-				continue;
+-
+-			free_pfn_range(paddr, PAGE_SIZE);
+-		}
+-	}
+ }
+ 
+ pgprot_t pgprot_writecombine(pgprot_t prot)
 
