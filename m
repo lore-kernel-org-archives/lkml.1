@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbZDWHsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbZDWHzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759348AbZDWHsa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZDWHcg
+	id S1760148AbZDWHzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757138AbZDWHeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:32:36 -0400
-Received: from sous-sol.org ([216.99.217.87]:50766 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:34:08 -0400
+Received: from sous-sol.org ([216.99.217.87]:51030 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756975AbZDWHce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:32:34 -0400
-Message-Id: <20090423072739.992210157@sous-sol.org>
+	id S1756961AbZDWHeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:34:05 -0400
+Message-Id: <20090423072752.451846749@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:23 -0700
+Date: Thu, 23 Apr 2009 00:21:25 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       paulus@samba.org, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 063/100] hrtimer: fix rq->lock inversion (again)
+       alan@lxorguk.ukuu.org.uk,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 065/100] spi: spi_write_then_read() bugfixes
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=hrtimer-fix-rq-lock-inversion.patch
+Content-Disposition: inline; filename=spi-spi_write_then_read-bugfixes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,206 +36,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-upstream commit: 7f1e2ca9f04b02794597f60e7b1d43f0a1317939
+upstream commit: bdff549ebeff92b1a6952e5501caf16a6f8898c8
 
-It appears I inadvertly introduced rq->lock recursion to the
-hrtimer_start() path when I delegated running already expired
-timers to softirq context.
+The "simplify spi_write_then_read()" patch included two regressions from
+the 2.6.27 behaviors:
 
-This patch fixes it by introducing a __hrtimer_start_range_ns()
-method that will not use raise_softirq_irqoff() but
-__raise_softirq_irqoff() which avoids the wakeup.
+ - The data it wrote out during the (full duplex) read side
+   of the transfer was not zeroed.
 
-It then also changes schedule() to check for pending softirqs and
-do the wakeup then, I'm not quite sure I like this last bit, nor
-am I convinced its really needed.
+ - It fails completely on half duplex hardware, such as
+   Microwire and most "3-wire" SPI variants.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: paulus@samba.org
-LKML-Reference: <20090313112301.096138802@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Mikael Pettersson <mikpe@it.uu.se>
+So, revert that patch.  A revised version should be submitted at some
+point, which can get the speedup on standard hardware (full duplex)
+without breaking on less-capable half-duplex stuff.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- include/linux/hrtimer.h   |    5 ++++
- include/linux/interrupt.h |    1 
- kernel/hrtimer.c          |   55 ++++++++++++++++++++++++++++------------------
- kernel/sched.c            |   14 +++++++++--
- kernel/softirq.c          |    2 -
- 5 files changed, 52 insertions(+), 25 deletions(-)
+ drivers/spi/spi.c |   22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -336,6 +336,11 @@ extern int hrtimer_start(struct hrtimer 
- 			 const enum hrtimer_mode mode);
- extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
- 			unsigned long range_ns, const enum hrtimer_mode mode);
-+extern int
-+__hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+			 unsigned long delta_ns,
-+			 const enum hrtimer_mode mode, int wakeup);
-+
- extern int hrtimer_cancel(struct hrtimer *timer);
- extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -658,7 +658,7 @@ int spi_write_then_read(struct spi_devic
  
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -274,6 +274,7 @@ extern void softirq_init(void);
- #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
- extern void raise_softirq_irqoff(unsigned int nr);
- extern void raise_softirq(unsigned int nr);
-+extern void wakeup_softirqd(void);
+ 	int			status;
+ 	struct spi_message	message;
+-	struct spi_transfer	x;
++	struct spi_transfer	x[2];
+ 	u8			*local_buf;
  
- /* This is the worklist that queues up per-cpu softirq work.
-  *
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -651,14 +651,20 @@ static inline void hrtimer_init_timer_hr
-  * and expiry check is done in the hrtimer_interrupt or in the softirq.
-  */
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
--					    struct hrtimer_clock_base *base)
-+					    struct hrtimer_clock_base *base,
-+					    int wakeup)
- {
- 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
--		spin_unlock(&base->cpu_base->lock);
--		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
--		spin_lock(&base->cpu_base->lock);
-+		if (wakeup) {
-+			spin_unlock(&base->cpu_base->lock);
-+			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-+			spin_lock(&base->cpu_base->lock);
-+		} else
-+			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-+
- 		return 1;
- 	}
-+
- 	return 0;
- }
+ 	/* Use preallocated DMA-safe buffer.  We can't avoid copying here,
+@@ -669,9 +669,15 @@ int spi_write_then_read(struct spi_devic
+ 		return -EINVAL;
  
-@@ -703,7 +709,8 @@ static inline int hrtimer_is_hres_enable
- static inline int hrtimer_switch_to_hres(void) { return 0; }
- static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
--					    struct hrtimer_clock_base *base)
-+					    struct hrtimer_clock_base *base,
-+					    int wakeup)
- {
- 	return 0;
- }
-@@ -886,20 +893,9 @@ remove_hrtimer(struct hrtimer *timer, st
- 	return 0;
- }
+ 	spi_message_init(&message);
+-	memset(&x, 0, sizeof x);
+-	x.len = n_tx + n_rx;
+-	spi_message_add_tail(&x, &message);
++	memset(x, 0, sizeof x);
++	if (n_tx) {
++		x[0].len = n_tx;
++		spi_message_add_tail(&x[0], &message);
++	}
++	if (n_rx) {
++		x[1].len = n_rx;
++		spi_message_add_tail(&x[1], &message);
++	}
  
--/**
-- * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
-- * @timer:	the timer to be added
-- * @tim:	expiry time
-- * @delta_ns:	"slack" range for the timer
-- * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-- *
-- * Returns:
-- *  0 on success
-- *  1 when the timer was active
-- */
--int
--hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
--			const enum hrtimer_mode mode)
-+int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+		unsigned long delta_ns, const enum hrtimer_mode mode,
-+		int wakeup)
- {
- 	struct hrtimer_clock_base *base, *new_base;
- 	unsigned long flags;
-@@ -940,12 +936,29 @@ hrtimer_start_range_ns(struct hrtimer *t
- 	 * XXX send_remote_softirq() ?
- 	 */
- 	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
--		hrtimer_enqueue_reprogram(timer, new_base);
-+		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
+ 	/* ... unless someone else is using the pre-allocated buffer */
+ 	if (!mutex_trylock(&lock)) {
+@@ -682,15 +688,15 @@ int spi_write_then_read(struct spi_devic
+ 		local_buf = buf;
  
- 	unlock_hrtimer_base(timer, &flags);
+ 	memcpy(local_buf, txbuf, n_tx);
+-	x.tx_buf = local_buf;
+-	x.rx_buf = local_buf;
++	x[0].tx_buf = local_buf;
++	x[1].rx_buf = local_buf + n_tx;
  
- 	return ret;
- }
-+
-+/**
-+ * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
-+ * @timer:	the timer to be added
-+ * @tim:	expiry time
-+ * @delta_ns:	"slack" range for the timer
-+ * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-+ *
-+ * Returns:
-+ *  0 on success
-+ *  1 when the timer was active
-+ */
-+int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+		unsigned long delta_ns, const enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_range_ns(timer, tim, delta_ns, mode, 1);
-+}
- EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ 	/* do the i/o */
+ 	status = spi_sync(spi, &message);
+ 	if (status == 0)
+-		memcpy(rxbuf, x.rx_buf + n_tx, n_rx);
++		memcpy(rxbuf, x[1].rx_buf, n_rx);
  
- /**
-@@ -961,7 +974,7 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns
- int
- hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- {
--	return hrtimer_start_range_ns(timer, tim, 0, mode);
-+	return __hrtimer_start_range_ns(timer, tim, 0, mode, 1);
- }
- EXPORT_SYMBOL_GPL(hrtimer_start);
- 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -231,13 +231,20 @@ static void start_rt_bandwidth(struct rt
- 
- 	spin_lock(&rt_b->rt_runtime_lock);
- 	for (;;) {
-+		unsigned long delta;
-+		ktime_t soft, hard;
-+
- 		if (hrtimer_active(&rt_b->rt_period_timer))
- 			break;
- 
- 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
- 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
--		hrtimer_start_expires(&rt_b->rt_period_timer,
--				HRTIMER_MODE_ABS);
-+
-+		soft = hrtimer_get_softexpires(&rt_b->rt_period_timer);
-+		hard = hrtimer_get_expires(&rt_b->rt_period_timer);
-+		delta = ktime_to_ns(ktime_sub(hard, soft));
-+		__hrtimer_start_range_ns(&rt_b->rt_period_timer, soft, delta,
-+				HRTIMER_MODE_ABS, 0);
- 	}
- 	spin_unlock(&rt_b->rt_runtime_lock);
- }
-@@ -1129,7 +1136,8 @@ static __init void init_hrtick(void)
-  */
- static void hrtick_start(struct rq *rq, u64 delay)
- {
--	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
-+	__hrtimer_start_range_ns(&rq->hrtick_timer, ns_to_ktime(delay), 0,
-+			HRTIMER_MODE_REL, 0);
- }
- 
- static inline void init_hrtick(void)
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct task_struct
-  * to the pending events, so lets the scheduler to balance
-  * the softirq load for us.
-  */
--static inline void wakeup_softirqd(void)
-+void wakeup_softirqd(void)
- {
- 	/* Interrupts are disabled: no need to stop preemption */
- 	struct task_struct *tsk = __get_cpu_var(ksoftirqd);
+-	if (x.tx_buf == buf)
++	if (x[0].tx_buf == buf)
+ 		mutex_unlock(&lock);
+ 	else
+ 		kfree(local_buf);
 
