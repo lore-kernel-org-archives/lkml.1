@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZDWVSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDWVWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZDWVSe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759697AbZDWVSV
+	id S1755950AbZDWVWS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZDWVWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:18:21 -0400
-Received: from sous-sol.org ([216.99.217.87]:44845 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759836AbZDWVST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 17:18:19 -0400
-Date: Thu, 23 Apr 2009 14:11:41 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Peter Lojkin <ia6432@inbox.ru>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 057/100] posix-timers: fix RLIMIT_CPU && fork()
-Message-ID: <20090423211141.GU3036@sequoia.sous-sol.org>
-References: <20090423072020.428683652@sous-sol.org> <20090423072700.322939119@sous-sol.org> <20090423165940.622c8ad8@dhcp-100-2-144.bos.redhat.com>
+	Thu, 23 Apr 2009 17:22:06 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:55962 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbZDWVWE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 17:22:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ErNb8SI6p6tn4EvYeWzXN6ALI2IYQCrF/KSDY0Z6y03rDDppXaPniHNMd4Wrg7WeSd
+         Yw/jX5iySHqFbdKkWOkGCBgm7JFE52cbJp3tOpx9UnweBRvNLV8IRgVfLRIssBUj+t+I
+         QM+OLKz/pLdQfqTtAfHPUztQAvmfzIo9uXLXE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423165940.622c8ad8@dhcp-100-2-144.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49EFC8FE.7010403@zytor.com>
+References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu>
+	 <8763gxoz50.fsf_-_@basil.nowhere.org>
+	 <3605561d0904221649n169dc579xb0694297154d97fa@mail.gmail.com>
+	 <49EFC8FE.7010403@zytor.com>
+Date: Thu, 23 Apr 2009 14:22:02 -0700
+Message-ID: <3605561d0904231422s57bd4cedl722be1dabf27428f@mail.gmail.com>
+Subject: Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re: 
+	New x86 warning
+From: Joe Damato <ice799@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chuck Ebbert (cebbert@redhat.com) wrote:
-> On Thu, 23 Apr 2009 00:21:17 -0700
-> Chris Wright <chrisw@sous-sol.org> wrote:
-> 
-> > -stable review patch.  If anyone has any objections, please let us know.
-> > ---------------------
-> > 
-> > From: Oleg Nesterov <oleg@redhat.com>
-> > 
-> > upstream commit: 6279a751fe096a21dc7704e918d570d3ff06e769
-> > 
-> 
-> The following commit was also submitted:
-> 
->    37bebc70d7ad4144c571d74500db3bb26ec0c0eb
->    posix timers: fix RLIMIT_CPU && fork()
-> 
-> Did it get dropped because it has the exact same title?
+On Wed, Apr 22, 2009 at 6:48 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Joe Damato wrote:
+>>
+>> I think this patch is great. Perhaps this would be a good time to also
+>> clean out memset for x86_32? (If needed, I can start a new email
+>> thread with this patch) I've built and booted this on my x86_32
+>> hardware.
+>>
+>
+> Under the same conditions, i.e. making sure that with the oldest gcc we
+> still care about (3.2) we don't end up uninlining any new cases we
+> shouldn't.
 
-No, Oleg said to ignore it in favor to the two that are in 2.6.29.2.
-That first one was an attempt at a quick and dirty fix for 2.6.29,
-but it missed 2.6.29 proper.
+Looks like this thread is dead/dying, but figured I should reply with
+my test findings. The number of out-of-line calls (as determined by:
+make mrproper && make defconfig && make && objdump -d vmlinux | grep
+"call.*\<memset" | wc -l))
 
-thanks,
--chris
+gcc 4.2.4 - withOUT memset patch: 20
+gcc 4.2.4 - with memset patch: 365
+
+gcc 3.4 - withOUT memset patch: 17
+gcc 3.4 - with memset patch: 349
+
+I'm guessing this is probably not acceptable, so I won't bother
+installing/trying gcc-3.2 unless anyone thinks that a 300+ increase in
+out-of-line calls is OK.
+
+Joe
