@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZDWNkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbZDWNld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758039AbZDWNkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 09:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZDWNkp
+	id S1758498AbZDWNld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 09:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZDWNlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 09:40:45 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:26774 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752690AbZDWNko (ORCPT
+	Thu, 23 Apr 2009 09:41:23 -0400
+Received: from mail-bw0-f163.google.com ([209.85.218.163]:49706 "EHLO
+	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbZDWNlV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 09:40:44 -0400
-From: Benny Halevy <bhalevy@panasas.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Fred Isaman <iisaman@citi.umich.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Benny Halevy <bhalevy@panasas.com>
-Subject: [PATCH] lib: find_last_bit.o needed by a module only, move it from lib to obj
-Date: Thu, 23 Apr 2009 16:40:32 +0300
-Message-Id: <1240494032-9674-1-git-send-email-bhalevy@panasas.com>
-X-Mailer: git-send-email 1.6.2.1
-X-OriginalArrivalTime: 23 Apr 2009 13:40:40.0137 (UTC) FILETIME=[1753E390:01C9C419]
+	Thu, 23 Apr 2009 09:41:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=lJ94YqcEv1VRPbMRh4Y5pod+mz41YZnv+yfk5bIfO/JWqZMhXxU1Ncx8siBVm0M1nJ
+         EcIoLLoeTAa8l6LWrPKsqwlbrOiPf/Y4NH3ndCVYGHcNzUjZq9qDliGSYSrPHDUQxx5/
+         emPdYFID2rWKuyxECpnXptXUpCO1jyFmLWIQ0=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 2/2] x86 amd fix cmpxchg read acquire barrier
+Date: Thu, 23 Apr 2009 15:41:17 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3; KDE/4.2.2; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mark.langsdorf@amd.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>
+References: <20090422201852.092307236@polymtl.ca> <20090423080645.GF22606@elte.hu> <20090423131941.GA11261@Krystal>
+In-Reply-To: <20090423131941.GA11261@Krystal>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904231541.18041.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Fred Isaman <iisaman@citi.umich.edu>
+On Thursday 23 of April 2009, Mathieu Desnoyers wrote:
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > " // Opteron Rev E has a bug in which on very rare occasions a locked
+> > >   // instruction doesn't act as a read-acquire barrier if followed by a
+> > >   // non-locked read-modify-write instruction.  Rev F has this bug in
+> > >   // pre-release versions, but not in versions released to customers,
+> > >   // so we test only for Rev E, which is family 15, model 32..63
+> > > inclusive.
+> >
+> > Dunno. The fix looks a bit intrusive (emits a NOP even on good
+> > CPUs). Also, the text above says "not in versions released to
+> > customers".
+> >
+> > So unless there's an official erratum or reports in the field (not
+> > from early prototype systems shipped to developers) i'd not rush to
+> > apply it, just yet.
+>
+> Actually, Operon Rev E has this bug in the field (family 15, model
+> 32..64). Rev F only had the bug in pre-releases.
+>
+> But yes, it's bad that it drags so many code additions to something as
+> critical as cmpxchg. I start to think it might be better to just
+> disallow bringing up more than one CPU on these machines.
 
-Currently, although find_last_bit is EXPORTed, it is statically linked with
-the lernel and is referenced only under CONFIG_SMP.
+That probably would be even worse than what we have now. This bug doesn't 
+manifest too often in a noticeable way here (I have few such machines here, 
+mostly 2 x dual core; once per few months mysql dies) and loosing 3 of 4 cores 
+(or 1 cpu of 2; depends on what you mean) doesn't sound like fun.
 
-When CONFIG_SMP is undefined and find_last_bit is referenced only by modules,
-linking fails with:
-ERROR: "find_last_bit" [fs/nfs/nfs.ko] undefined!
+> Mathieu
 
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Fred Isaman <iisaman@citi.umich.edu>
-Signed-off-by: Benny Halevy <bhalevy@panasas.com>
----
 
-Linus, can you please merge this trivial patch upstream?
-This breaks nfs-2.6/{nfsv41,linux-next} on uni-processors
-configured with !CONFIG_SMP.
-
-Thanks,
-
-Benny
-
- lib/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/lib/Makefile b/lib/Makefile
-index d6edd67..33a40e4 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -38,7 +38,7 @@ lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
- lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
- lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
- lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
--lib-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
-+obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
- obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
- obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
- obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
 -- 
-1.6.2.1
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
 
