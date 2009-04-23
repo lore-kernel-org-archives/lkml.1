@@ -1,202 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZDWFZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZDWFaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZDWFZk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZDWFZZ
+	id S1753498AbZDWFaN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 01:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZDWF36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:25:25 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35981 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbZDWFZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:25:23 -0400
-Date: Wed, 22 Apr 2009 22:25:20 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: [PATCH RFC] v1 expedited "big hammer" RCU grace periods
-Message-ID: <20090423052520.GA13036@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Thu, 23 Apr 2009 01:29:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:52935 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbZDWF35 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 01:29:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Yd8nzFaBo1RHUnhDrLPRBYm6jDZn5FRl3qQU1okmQum+fb8deDxvn15zgJFYSRloLd
+         eSrGnxTVQ2FMkH/vKsyADh7LgY2rMl00kMOUuk7hfxPmHyXktDse89/WgtHiUSo9CRMV
+         JDOlI12E/g5LvtS4qBA4dmrWE/nMSY9NLF3Y4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1239908780.10567.8.camel@ht.satnam>
+References: <a85e78f50904161052s71dabbe9p17ac68b35331eae@mail.gmail.com>
+	 <1239908780.10567.8.camel@ht.satnam>
+Date: Thu, 23 Apr 2009 10:59:56 +0530
+Message-ID: <a85e78f50904222229j3208105dy5d6f45833b83abd4@mail.gmail.com>
+Subject: Re: [PATCH] removes unused variable from kernel/sysctl.h
+From: Sukanto Ghosh <sukanto.cse.iitb@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First cut of "big hammer" expedited RCU grace periods, but only for
-rcu_bh.  This creates another softirq vector, so that entering this
-softirq vector will have forced an rcu_bh quiescent state (as noted by
-Dave Miller).  Use smp_call_function() to invoke raise_softirq() on all
-CPUs in order to cause this to happen.  Track the CPUs that have passed
-through a quiescent state (or gone offline) with a cpumask.
+Hi,
 
-Does nothing to expedite callbacks already registered with call_rcu_bh(),
-but there is no need to.
+On Fri, Apr 17, 2009 at 12:36 AM, Jaswinder Singh Rajput
+<jaswinder@kernel.org> wrote:
+> Hello Sukanto,
+>
+> On Thu, 2009-04-16 at 23:22 +0530, Sukanto Ghosh wrote:
+>> This patch removes the unused variable 'val' from the
+>> __do_proc_dointvec() function
+>> in kernel/sysctl.h. The integer has been declared and used as 'val =
+>> -val' and there is
+>> no reference to it anywhere.
+>> Although I am this doesn't affects the kernel binary because gcc
+>> removes it, still it
+>> might be confusing for people reading the code.
+>>
+>
+> This patch is already submitted by Tomohiro Kusumi on Thu Dec 27 2007:
+>
+> http://lkml.indiana.edu/hypermail/linux/kernel/0712.3/0557.html
 
-Shortcomings:
+I asked Tomohiro regarding this and got the following reply:
 
-o	Untested, probably does not compile, not for inclusion.
+----
+I think they just missed that patch since I found my name on
+the following page regarding this patch.
+http://lkml.org/lkml/2008/5/30/335
 
-o	Does not handle rcu, only rcu_bh.
+I think it's obvious that the val is unnecessary and someone
+probably just forgot to remove it when they cleaned up that code.
+-----
 
-Thoughts?
+>
+>>
+>> Signed-off-by: Sukanto Ghosh <sukanto.cse.iitb@gmail.com>
+>>
+>> ----
+>>
+>> --- linux-2.6.29.1/kernel/sysctl.c.orig 2009-04-16 19:57:21.000000000 +0530
+>> +++ linux-2.6.29.1/kernel/sysctl.c      2009-04-16 19:58:26.000000000 +0530
+>> @@ -2198,7 +2198,7 @@ static int __do_proc_dointvec(void *tbl_
+>>                   void *data)
+>
+> This is a very old function and have almost no git history, its old name
+> was do_proc_dointvec on 2005-04-16 15:20:36 when git tree was made and
+> then only(almost) function name is changed.
+>
+>>  {
+>>  #define TMPBUFLEN 21
+>> -       int *i, vleft, first=1, neg, val;
+>> +       int *i, vleft, first=1, neg;
+>>         unsigned long lval;
+>>         size_t left, len;
+>>
+>> @@ -2251,8 +2251,6 @@ static int __do_proc_dointvec(void *tbl_
+>>                         len = p-buf;
+>>                         if ((len < left) && *p && !isspace(*p))
+>>                                 break;
+>> -                       if (neg)
+>> -                               val = -val;
+>
+> So you need to do further investigation. Is this a typo or some other
+> mistake.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+Considering that this function is currently working properly and the
+variable 'val' is not used anywhere, it is obvious that removing the
+variable will not affect the functionality of the function in any
+manner.
 
- include/linux/interrupt.h |    1 
- include/linux/rcupdate.h  |    1 
- kernel/rcupdate.c         |  106 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 108 insertions(+)
+It seems that either people haven't noticed this unused variable
+before Tomohiro did, or they did not see merit in submitting the
+trivial patch. But I believe such code cleanups are required.
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 91bb76f..b7b58cc 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -338,6 +338,7 @@ enum
- 	TASKLET_SOFTIRQ,
- 	SCHED_SOFTIRQ,
- 	HRTIMER_SOFTIRQ,
-+	RCU_EXPEDITED_SOFTIRQ,
- 	RCU_SOFTIRQ,	/* Preferable RCU should always be the last softirq */
- 
- 	NR_SOFTIRQS
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 15fbb3c..d4af557 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -264,6 +264,7 @@ extern void synchronize_rcu(void);
- extern void rcu_barrier(void);
- extern void rcu_barrier_bh(void);
- extern void rcu_barrier_sched(void);
-+extern void synchronize_rcu_bh_expedited(void);
- 
- /* Internal to kernel */
- extern void rcu_init(void);
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index a967c9f..bfa98dd 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -217,10 +217,116 @@ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
- 	return NOTIFY_OK;
- }
- 
-+static DEFINE_MUTEX(synchronize_rcu_bh_mutex);
-+static long synchronize_rcu_bh_completed; /* Expedited-grace-period count. */
-+
-+#ifndef CONFIG_SMP
-+
-+static void __init synchronize_rcu_expedited_init(void)
-+{
-+}
-+
-+void synchronize_rcu_bh_expedited(void)
-+{
-+	mutex_lock(&synchronize_rcu_bh_mutex);
-+	synchronize_rcu_bh_completed++;
-+	mutex_unlock(&synchronize_rcu_bh_mutex);
-+}
-+
-+#else /* #ifndef CONFIG_SMP */
-+
-+static DEFINE_PER_CPU(int, rcu_bh_need_qs);
-+static cpumask_var_t rcu_bh_waiting_map;
-+
-+static void synchronize_rcu_bh_expedited_help(struct softirq_action *unused)
-+{
-+	if (__get_cpu_var(rcu_bh_need_qs)) {
-+		smp_mb();
-+		__get_cpu_var(rcu_bh_need_qs) = 0;
-+		smp_mb();
-+	}
-+}
-+
-+static void rcu_bh_fast_qs(void *unused)
-+{
-+	raise_softirq(RCU_EXPEDITED_SOFTIRQ);
-+}
-+
-+static void __init synchronize_rcu_expedited_init(void)
-+{
-+	open_softirq(RCU_EXPEDITED_SOFTIRQ, synchronize_rcu_bh_expedited_help);
-+	alloc_bootmem_cpumask_var(&rcu_bh_waiting_map);
-+}
-+
-+void synchronize_rcu_bh_expedited(void)
-+{
-+	int cpu;
-+	int done;
-+	int times = 0;
-+
-+	mutex_lock(&synchronize_rcu_bh_mutex);
-+
-+	/* Take snapshot of online CPUs, blocking CPU hotplug. */
-+	preempt_disable();
-+	cpumask_copy(rcu_bh_waiting_map, &cpu_online_map);
-+	preempt_enable();
-+
-+	/* Mark each online CPU as needing a quiescent state. */
-+	for_each_cpu(cpu, rcu_bh_waiting_map)
-+		per_cpu(rcu_bh_need_qs, cpu) = 1;
-+
-+	/* Call for a quiescent state on each online CPU. */
-+	preempt_disable();
-+	cpumask_clear_cpu(smp_processor_id(), rcu_bh_waiting_map);
-+	smp_call_function(rcu_bh_fast_qs, NULL, 1);
-+	preempt_enable();
-+
-+	/*
-+	 * Loop waiting for each CPU to either pass through a quiescent
-+	 * state or to go offline.  We don't care which.
-+	 */
-+	for (;;) {
-+		
-+		/* Ignore CPUs that have gone offline, blocking CPU hotplug. */
-+		preempt_disable();
-+		cpumask_and(rcu_bh_waiting_map, rcu_bh_waiting_map,
-+			    &cpu_online_map);
-+		cpumask_clear_cpu(smp_processor_id(), rcu_bh_waiting_map);
-+		preempt_enable();
-+
-+		/* Check if any CPUs still need a quiescent state. */
-+		done = 1;
-+		for_each_cpu(cpu, rcu_bh_waiting_map) {
-+			if (per_cpu(rcu_bh_need_qs, cpu)) {
-+				done = 0;
-+				break;
-+			}
-+			cpumask_clear_cpu(cpu, rcu_bh_waiting_map);
-+		}
-+		if (done)
-+			break;
-+
-+		/*
-+		 * Wait a bit.  If we have already waited a fair
-+		 * amount of time, sleep.
-+		 */
-+		if (++times < 10)
-+			udelay(10 * times);
-+		else
-+			schedule_timeout_uninterruptible(1);
-+	}
-+
-+	synchronize_rcu_bh_completed++;
-+	mutex_unlock(&synchronize_rcu_bh_mutex);
-+}
-+
-+#endif /* #else #ifndef CONFIG_SMP */
-+
- void __init rcu_init(void)
- {
- 	__rcu_init();
- 	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
-+	synchronize_rcu_expedited_init();
- }
- 
- void rcu_scheduler_starting(void)
+If you (maintainers) feel that it is worth it, should I re-submit the patch ?
+
+
+-- 
+Regards,
+Sukanto Ghosh
