@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbZDWKME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbZDWKMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbZDWKME (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbZDWKLx
+	id S1756906AbZDWKMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbZDWKMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:11:53 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:65472 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752428AbZDWKLw (ORCPT
+	Thu, 23 Apr 2009 06:12:33 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:39711 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751929AbZDWKMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:11:52 -0400
+	Thu, 23 Apr 2009 06:12:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:subject:date:mime-version:content-type
-         :content-transfer-encoding:x-priority:x-msmail-priority:x-mailer
-         :x-mimeole;
-        b=TYgVbqV3KdtAPmDw/R+YHBmJd/JW9pr48FRQuq48xLoubkS+o4MwwK7IkJzm2n4l1N
-         72i3PDBGi5AE9wHz8p3xjf/urOz9ul6srIGu+pOWKRnKGecNvcAMc7HtMfF8q5ah65Mu
-         +Q2iTLnro6yQefuhFTahLabEjc5N+tcNsUYn4=
-Message-ID: <7398C9BACDA74507AA9FCCCE4847C5A4@avitech.sk>
-From: "Peter Hanzel" <hanzelpeter@gmail.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>
-Subject: DRM KMS + intel fb
-Date: Thu, 23 Apr 2009 12:12:15 +0200
+        h=sender:from:date:subject:mime-version:x-uid:x-length:to
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id;
+        b=SZBoEtm9zJSGlvG9JI152pLsxdF7m/3LGp46tUmZDfmHkdCiX9bh0Ffr3UzgTvfT2y
+         9u3TsU5eBvIfoXB67L4err30F+gRW5xPJ1RdN1TWjdoqIDX9tNYRdMOHceXU421mhype
+         ISreZlEV5ZvfVZqs7djylyossWZff4oTkT4rk=
+From: Florian Fainelli <florian@openwrt.org>
+Date: Thu, 23 Apr 2009 12:12:21 +0200
+Subject: [PATCH] Update email address.
 MIME-Version: 1.0
+X-Length: 1292
+To: Linux Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Disposition: inline
+Message-Id: <200904231212.21384.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+I will finish school soon, so replace my student address
+with this one.
 
-I am watching the KMS in DRM development. And now i want to try kernel 
-modesetting with framebuffer console.
-I am only using console framebuffer. How it works with DRM KMS.
-
-Suppose I compile DRM i1915 with KMS. How can I swich video mode on start 
-and than from user space.
-Normally with framebuffer it is IOCTL on /dev/fb.  Will it work or not?
-
-Some explantion should ne enough, thanks 
-
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
+---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5d460c9..98dc744 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3625,13 +3625,13 @@ S:	Maintained
+ 
+ RDC R-321X SoC
+ P:	Florian Fainelli
+-M:	florian.fainelli@telecomint.eu
++M:	florian@openwrt.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+ RDC R6040 FAST ETHERNET DRIVER
+ P:	Florian Fainelli
+-M:	florian.fainelli@telecomint.eu
++M:	florian@openwrt.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
