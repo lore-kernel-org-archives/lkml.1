@@ -1,51 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbZDWMhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbZDWMjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbZDWMhg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 08:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbZDWMhW
+	id S1758349AbZDWMjZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 08:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbZDWMjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 08:37:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33330 "EHLO mx2.redhat.com"
+	Thu, 23 Apr 2009 08:39:14 -0400
+Received: from mga14.intel.com ([143.182.124.37]:32301 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755261AbZDWMhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 08:37:21 -0400
-From: Avi Kivity <avi@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] KVM fixes for 2.6.30-rc3
-Date: Thu, 23 Apr 2009 15:36:10 +0300
-Message-Id: <1240490170-19928-1-git-send-email-avi@redhat.com>
+	id S1755035AbZDWMjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 08:39:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,235,1239001200"; 
+   d="scan'208";a="134975099"
+From: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Subject: [PATCH] ioatdma: fix "ioatdma frees DMA memory with wrong function"
+To: dan.j.williams@intel.com
+Cc: a.beregalov@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Date: Thu, 23 Apr 2009 14:31:51 +0200
+Message-ID: <20090423123128.31427.20238.stgit@linux.site>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull the following kvm fixes from repo and branch at:
+as reported by Alexander Beregalov <a.beregalov@gmail.com>
 
-  git://git.kernel.org/pub/scm/virt/kvm/kvm.git kvm-updates/2.6.30
+ioatdma 0000:00:08.0: DMA-API: device driver frees DMA memory with
+wrong function [device address=0x000000007f76f800] [size=2000 bytes]
+[map
+ped as single] [unmapped as page]
 
-The only noteworthy fix is that a bug in kvm global page handling during
-guest invlpg breaks the FreeBSD kernel, so we're dropping that optimization
-until further notice.
+The ioatdma driver was unmapping all regions
+(either allocated as page or single) using unmap_page.
+This patch lets dma driver recognize if unmap_single or unmap_page should be used.
+It introduces two new dma control flags:
+DMA_COMPL_SRC_UNMAP_SINGLE and DMA_COMPL_DEST_UNMAP_SINGLE.
+They should be set to indicate dma driver to do dma-unmapping as single
+(first one for the source, tha latter for the destination).
+If respective flag is not set, the driver assumes dma-unmapping as page.
 
-Avi Kivity (1):
-      KVM: MMU: Fix off-by-one calculating large page count
+Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
+Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
+Tested-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-Jan Kiszka (2):
-      KVM: Fix overlapping check for memory slots
-      KVM: Unregister cpufreq notifier on unload
+ drivers/dma/dmaengine.c   |   17 +++++++++++------
+ drivers/dma/ioat_dma.c    |   45 ++++++++++++++++++++++++++++-----------------
+ include/linux/dmaengine.h |    6 ++++++
+ 3 files changed, 45 insertions(+), 23 deletions(-)
 
-Jes Sorensen (1):
-      KVM: ia64: fix locking order entering guest
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 92438e9..5a87384 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -804,11 +804,14 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
++	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
+ 	dma_dest = dma_map_single(dev->dev, dest, len, DMA_FROM_DEVICE);
+-	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
+-					 DMA_CTRL_ACK);
++	flags = DMA_CTRL_ACK |
++		DMA_COMPL_SRC_UNMAP_SINGLE |
++		DMA_COMPL_DEST_UNMAP_SINGLE;
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
+ 
+ 	if (!tx) {
+ 		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
+@@ -850,11 +853,12 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
++	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
+ 	dma_dest = dma_map_page(dev->dev, page, offset, len, DMA_FROM_DEVICE);
+-	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
+-					 DMA_CTRL_ACK);
++	flags = DMA_CTRL_ACK | DMA_COMPL_SRC_UNMAP_SINGLE;
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
+ 
+ 	if (!tx) {
+ 		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
+@@ -898,12 +902,13 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
++	unsigned long flags;
+ 
+ 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
+ 	dma_dest = dma_map_page(dev->dev, dest_pg, dest_off, len,
+ 				DMA_FROM_DEVICE);
+-	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len,
+-					 DMA_CTRL_ACK);
++	flags = DMA_CTRL_ACK;
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, flags);
+ 
+ 	if (!tx) {
+ 		dma_unmap_page(dev->dev, dma_src, len, DMA_TO_DEVICE);
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index e4fc33c..1955ee8 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -1063,22 +1063,31 @@ static void ioat_dma_cleanup_tasklet(uns
+ static void
+ ioat_dma_unmap(struct ioat_dma_chan *ioat_chan, struct ioat_desc_sw *desc)
+ {
+-	/*
+-	 * yes we are unmapping both _page and _single
+-	 * alloc'd regions with unmap_page. Is this
+-	 * *really* that bad?
+-	 */
+-	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_DEST_UNMAP))
+-		pci_unmap_page(ioat_chan->device->pdev,
+-				pci_unmap_addr(desc, dst),
+-				pci_unmap_len(desc, len),
+-				PCI_DMA_FROMDEVICE);
+-
+-	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_SRC_UNMAP))
+-		pci_unmap_page(ioat_chan->device->pdev,
+-				pci_unmap_addr(desc, src),
+-				pci_unmap_len(desc, len),
+-				PCI_DMA_TODEVICE);
++	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
++		if (desc->async_tx.flags & DMA_COMPL_DEST_UNMAP_SINGLE)
++			pci_unmap_single(ioat_chan->device->pdev,
++					 pci_unmap_addr(desc, dst),
++					 pci_unmap_len(desc, len),
++					 PCI_DMA_FROMDEVICE);
++		else
++			pci_unmap_page(ioat_chan->device->pdev,
++				       pci_unmap_addr(desc, dst),
++				       pci_unmap_len(desc, len),
++				       PCI_DMA_FROMDEVICE);
++	}
++
++	if (!(desc->async_tx.flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
++		if (desc->async_tx.flags & DMA_COMPL_SRC_UNMAP_SINGLE)
++			pci_unmap_single(ioat_chan->device->pdev,
++					 pci_unmap_addr(desc, src),
++					 pci_unmap_len(desc, len),
++					 PCI_DMA_TODEVICE);
++		else
++			pci_unmap_page(ioat_chan->device->pdev,
++				       pci_unmap_addr(desc, src),
++				       pci_unmap_len(desc, len),
++				       PCI_DMA_TODEVICE);
++	}
+ }
+ 
+ /**
+@@ -1363,6 +1372,7 @@ static int ioat_dma_self_test(struct ioa
+ 	int err = 0;
+ 	struct completion cmp;
+ 	unsigned long tmo;
++	unsigned long flags;
+ 
+ 	src = kzalloc(sizeof(u8) * IOAT_TEST_SIZE, GFP_KERNEL);
+ 	if (!src)
+@@ -1392,8 +1402,9 @@ static int ioat_dma_self_test(struct ioa
+ 				 DMA_TO_DEVICE);
+ 	dma_dest = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
+ 				  DMA_FROM_DEVICE);
++	flags = DMA_COMPL_SRC_UNMAP_SINGLE | DMA_COMPL_DEST_UNMAP_SINGLE;
+ 	tx = device->common.device_prep_dma_memcpy(dma_chan, dma_dest, dma_src,
+-						   IOAT_TEST_SIZE, 0);
++						   IOAT_TEST_SIZE, flags);
+ 	if (!tx) {
+ 		dev_err(&device->pdev->dev,
+ 			"Self-test prep failed, disabling\n");
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 2e2aa3d..ffefba8 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -78,12 +78,18 @@ #define DMA_TX_TYPE_END (DMA_SLAVE + 1)
+  * 	dependency chains
+  * @DMA_COMPL_SKIP_SRC_UNMAP - set to disable dma-unmapping the source buffer(s)
+  * @DMA_COMPL_SKIP_DEST_UNMAP - set to disable dma-unmapping the destination(s)
++ * @DMA_COMPL_SRC_UNMAP_SINGLE - set to do the source dma-unmapping as single
++ * 	(if not set, do the source dma-unmapping as page)
++ * @DMA_COMPL_DEST_UNMAP_SINGLE - set to do the destination dma-unmapping as single
++ * 	(if not set, do the destination dma-unmapping as page)
+  */
+ enum dma_ctrl_flags {
+ 	DMA_PREP_INTERRUPT = (1 << 0),
+ 	DMA_CTRL_ACK = (1 << 1),
+ 	DMA_COMPL_SKIP_SRC_UNMAP = (1 << 2),
+ 	DMA_COMPL_SKIP_DEST_UNMAP = (1 << 3),
++	DMA_COMPL_SRC_UNMAP_SINGLE = (1 << 4),
++	DMA_COMPL_DEST_UNMAP_SINGLE = (1 << 5),
+ };
+ 
+ /**
 
-Joerg Roedel (1):
-      KVM: x86: release time_page on vcpu destruction
-
-Marcelo Tosatti (1):
-      KVM: MMU: disable global page optimization
-
- arch/ia64/kvm/kvm-ia64.c |   14 ++++++++------
- arch/x86/kvm/mmu.c       |    2 +-
- arch/x86/kvm/x86.c       |    8 ++++++++
- include/linux/kvm.h      |    2 ++
- virt/kvm/kvm_main.c      |   11 +++++------
- 5 files changed, 24 insertions(+), 13 deletions(-)
