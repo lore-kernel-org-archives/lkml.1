@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZDWBg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbZDWBwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbZDWBg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 21:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZDWBgR
+	id S1752465AbZDWBwJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 21:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZDWBvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 21:36:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38010 "EHLO
+	Wed, 22 Apr 2009 21:51:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33592 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbZDWBgQ (ORCPT
+	with ESMTP id S1751720AbZDWBvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 21:36:16 -0400
-Message-ID: <49EFC5DD.9090201@zytor.com>
-Date: Wed, 22 Apr 2009 18:35:25 -0700
+	Wed, 22 Apr 2009 21:51:54 -0400
+Message-ID: <49EFC8FE.7010403@zytor.com>
+Date: Wed, 22 Apr 2009 18:48:46 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andre Noll <maan@systemlinux.org>
-CC: Bill Davidsen <davidsen@tmr.com>, Matti Aarnio <matti.aarnio@zmailer.org>,
-       Jesper Juhl <jj@chaosbits.net>, Prakash Punnoor <prakash@punnoor.de>,
-       Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, neilb@suse.de
-Subject: Re: Proposal: make RAID6 code optional
-References: <200904180946.27722.prakash@punnoor.de> <49E98AD2.8060601@msgid.tls.msk.ru> <200904181117.03418.prakash@punnoor.de> <alpine.LNX.2.00.0904181551320.16493@swampdragon.chaosbits.net> <20090418145850.GD28512@mea-ext.zmailer.org> <49EDD11E.2030309@tmr.com> <49EE00F9.6090000@zytor.com> <20090422180051.GD13280@skl-net.de> <49EF6457.90505@zytor.com> <20090422185703.GF13280@skl-net.de>
-In-Reply-To: <20090422185703.GF13280@skl-net.de>
+To: Joe Damato <ice799@gmail.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org
+Subject: Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re:
+ 	New x86 warning
+References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu>	 <8763gxoz50.fsf_-_@basil.nowhere.org> <3605561d0904221649n169dc579xb0694297154d97fa@mail.gmail.com>
+In-Reply-To: <3605561d0904221649n169dc579xb0694297154d97fa@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andre Noll wrote:
-> On 11:39, H. Peter Anvin wrote:
->> Yes, I believe it would be easier than having dynamically allocated 
->> arrays.  Dynamically generated arrays using static memory allocations 
->> (bss) is one thing, but that would only reduce size of the module on 
->> disk, which I don't think anyone considers a problem.
+Joe Damato wrote:
 > 
-> We would save 64K of RAM in the raid5-only case if we'd defer the
-> allocation of the multiplication table until the first raid6 array
-> is about to be started.
+> I think this patch is great. Perhaps this would be a good time to also
+> clean out memset for x86_32? (If needed, I can start a new email
+> thread with this patch) I've built and booted this on my x86_32
+> hardware.
+> 
 
-Yes, and we'd have to access it through a pointer for the rest of eternity.
+Under the same conditions, i.e. making sure that with the oldest gcc we
+still care about (3.2) we don't end up uninlining any new cases we
+shouldn't.
 
 	-hpa
 
