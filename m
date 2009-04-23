@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751764AbZDWAKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZDWALc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751764AbZDWAKb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 20:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZDWAKU
+	id S1753587AbZDWALc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 20:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZDWALW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 20:10:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42898 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbZDWAKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 20:10:20 -0400
-Message-ID: <49EFB1A9.3060503@kernel.org>
-Date: Thu, 23 Apr 2009 09:09:13 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 22 Apr 2009 20:11:22 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53253 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbZDWALW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 20:11:22 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH 16/22] Do not setup zonelist cache when there is only one node
+Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0904221333040.14558@chino.kir.corp.google.com>
+References: <1240432339.22694.64.camel@lts-notebook> <alpine.DEB.2.00.0904221333040.14558@chino.kir.corp.google.com>
+Message-Id: <20090423090704.F6E3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net
-Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
-References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 00:09:17 +0000 (UTC)
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 23 Apr 2009 09:11:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Miklos Szeredi wrote:
-> Hello Tejun,
+> On Wed, 22 Apr 2009, Lee Schermerhorn wrote:
 > 
-> Sorry for the delay, I was busy reimplementing some of the stuff in
-> your patchset.  The current state is here:
+> > > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > > index 7f45de1..e59bb80 100644
+> > > > --- a/mm/page_alloc.c
+> > > > +++ b/mm/page_alloc.c
+> > > > @@ -1467,8 +1467,11 @@ this_zone_full:
+> > > >  		if (NUMA_BUILD)
+> > > >  			zlc_mark_zone_full(zonelist, z);
+> > > 
+> > > If zonelist caching is never used for UMA machines, why should they ever 
+> > > call zlc_mark_zone_full()?  It will always dereference 
+> > > zonelist->zlcache_ptr and immediately return without doing anything.
+> > > 
+> > > Wouldn't it better to just add
+> > > 
+> > > 	if (num_online_nodes() == 1)
+> > > 		continue;
+> > > 
+> > > right before this call to zlc_mark_zone_full()?  This should compile out 
+> > > the remainder of the loop for !CONFIG_NUMA kernels anyway.
+> > 
+> > Shouldn't it already do that?  NUMA_BUILD is defined as 0 when
+> > !CONFIG_NUMA to avoid #ifdef's in the code while still allowing compiler
+> > error checking in the dead code.
+> > 
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/fuse.git cuse-test
-> 
->   http://git.kernel.org/?p=linux/kernel/git/mszeredi/fuse.git;a=shortlog;h=cuse-test
-> 
-> What I changed (IIRC):
-> 
->  - Don't store pointer to struct inode, struct fuse_inode, and struct
->    file in struct fuse_file.  Instead store nodeid in struct
->    fuse_file, no worries about object lifetimes this way.
+> Yeah, but adding the check on num_online_nodes() also prevents needlessly 
+> calling zlc_mark_zone_full() on CONFIG_NUMA kernels when running on an UMA 
+> machine.
 
-Hmm... there really isn't any object lifetime issue with or without
-the pointers as both fuse_file and fuse_inode follow VFS lifetime
-rules.  I tried several different approaches including adding nodeid
-but what pushed me toward adding the pointers was that the parameter
-passing and which uses/depends on what becomes a bit too complex with
-other approaches.  e.g. How do you discern between needing vfs inode
-and fuse inode?
+I don't like this idea...
 
->  - Don't implement fsync and flush in CUSE, they don't really make
->    sense on character devices.  At least I can't think of any use for
->    them.
->  - release() in CUSE can be synchronous.  Asynchronous release causes
->    many headaches in fuse, but is necessary due to the possible DoS
->    that an unprivileged filesystem could do with an unrelated process.
->    Since CUSE servers are always privileged, this should not be an
->    issue.
+In UMA system, zlc_mark_zone_full() isn't so expensive. but In large system
+one branch increasing is often costly.
 
-Cool.
 
->  - Other cleanups.
-> 
-> I still think that the INIT sequence in CUSE is way too complicated
-> and that the kernel thread is unnecessary.  How about doing the init
-> with a single CUSE_INIT message which embeds the fuse_init_in and
-> fuse_init_out structures.
 
-I don't see why the kernel thread is such a big problem.  It's just a
-kernel thread.  We can surely fold FUSE_INIT inside FUSE_INIT tho but
-one way or the other doesn't make whole lot of difference.
-
-> I also don't see the purpose of the CUSE_INIT_DONE message.  Isn't
-> it enough not to send any other messages while the initialization is
-> not complete?  This is what fuse does.
-
-The difference between FUSE and CUSE in this regard is that the
-synchornous part of initialization is much less for CUSE.  ie. For
-FUSE, after the mount is complete, all accesses go to FUSE, so it's
-all good.  However, for CUSE, the device nodes are setup
-asynchronously, so there's no such inherent synchronization point as
-mount.  This becomes a problem when CUSE is started from modprobe to
-emulate devices on demand because modprobe should not return before
-the device nodes are setup.
-
-Thanks.
-
--- 
-tejun
