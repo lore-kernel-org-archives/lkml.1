@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbZDWH1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZDWH1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102AbZDWH1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZDWH07
+	id S1752347AbZDWH1h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZDWH1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:26:59 -0400
-Received: from sous-sol.org ([216.99.217.87]:48057 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:27:02 -0400
+Received: from sous-sol.org ([216.99.217.87]:48069 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751146AbZDWH06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:26:58 -0400
-Message-Id: <20090423072229.534145635@sous-sol.org>
+	id S1754097AbZDWH1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:27:00 -0400
+Message-Id: <20090423072242.771252535@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:35 -0700
+Date: Thu, 23 Apr 2009 00:20:37 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>
-Subject: [patch 015/100] drm/i915: Change DCC tiling detection case to cover only mobile parts.
+       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
+       Zhao Yakui <yakui.zhao@intel.com>
+Subject: [patch 017/100] drm/i915: Sync crt hotplug detection with intel video driver
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=drm-i915-change-dcc-tiling-detection-case-to-cover-only-mobile-parts.patch
+Content-Disposition: inline; filename=drm-i915-sync-crt-hotplug-detection-with-intel-video-driver.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,73 +36,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Eric Anholt <eric@anholt.net>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-upstream commit: 568d9a8f6d4bf81e0672c74573dc02981d31e3ea
+upstream commit: 771cb081354161eea21534ba58e5cc1a2db94a25
 
-Later spec investigation has revealed that every 9xx mobile part has
-had this register in this format.  Also, no non-mobile parts have been shown
-to have this register.  So make all mobile use the same code, and all
-non-mobile use the hack 965 detection.
+This covers:
+Use long crt hotplug activation time on GM45.
 
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/gpu/drm/i915/i915_gem_tiling.c |   31 +++++++++++++++----------------
- 1 file changed, 15 insertions(+), 16 deletions(-)
+ drivers/gpu/drm/i915/i915_reg.h  |   16 +++++++++++++
+ drivers/gpu/drm/i915/intel_crt.c |   47 +++++++++++++++++++++++++++------------
+ 2 files changed, 49 insertions(+), 14 deletions(-)
 
---- a/drivers/gpu/drm/i915/i915_gem_tiling.c
-+++ b/drivers/gpu/drm/i915/i915_gem_tiling.c
-@@ -96,16 +96,16 @@ i915_gem_detect_bit_6_swizzle(struct drm
- 		 */
- 		swizzle_x = I915_BIT_6_SWIZZLE_NONE;
- 		swizzle_y = I915_BIT_6_SWIZZLE_NONE;
--	} else if ((!IS_I965G(dev) && !IS_G33(dev)) || IS_I965GM(dev) ||
--		   IS_GM45(dev)) {
-+	} else if (IS_MOBILE(dev)) {
- 		uint32_t dcc;
+--- a/drivers/gpu/drm/i915/i915_reg.h
++++ b/drivers/gpu/drm/i915/i915_reg.h
+@@ -629,6 +629,22 @@
+ #define   TV_HOTPLUG_INT_EN			(1 << 18)
+ #define   CRT_HOTPLUG_INT_EN			(1 << 9)
+ #define   CRT_HOTPLUG_FORCE_DETECT		(1 << 3)
++#define CRT_HOTPLUG_ACTIVATION_PERIOD_32	(0 << 8)
++/* must use period 64 on GM45 according to docs */
++#define CRT_HOTPLUG_ACTIVATION_PERIOD_64	(1 << 8)
++#define CRT_HOTPLUG_DAC_ON_TIME_2M		(0 << 7)
++#define CRT_HOTPLUG_DAC_ON_TIME_4M		(1 << 7)
++#define CRT_HOTPLUG_VOLTAGE_COMPARE_40		(0 << 5)
++#define CRT_HOTPLUG_VOLTAGE_COMPARE_50		(1 << 5)
++#define CRT_HOTPLUG_VOLTAGE_COMPARE_60		(2 << 5)
++#define CRT_HOTPLUG_VOLTAGE_COMPARE_70		(3 << 5)
++#define CRT_HOTPLUG_VOLTAGE_COMPARE_MASK	(3 << 5)
++#define CRT_HOTPLUG_DETECT_DELAY_1G		(0 << 4)
++#define CRT_HOTPLUG_DETECT_DELAY_2G		(1 << 4)
++#define CRT_HOTPLUG_DETECT_VOLTAGE_325MV	(0 << 2)
++#define CRT_HOTPLUG_DETECT_VOLTAGE_475MV	(1 << 2)
++#define CRT_HOTPLUG_MASK			(0x3fc) /* Bits 9-2 */
++
  
--		/* On 915-945 and GM965, channel interleave by the CPU is
--		 * determined by DCC.  The CPU will alternate based on bit 6
--		 * in interleaved mode, and the GPU will then also alternate
--		 * on bit 6, 9, and 10 for X, but the CPU may also optionally
--		 * alternate based on bit 17 (XOR not disabled and XOR
--		 * bit == 17).
-+		/* On mobile 9xx chipsets, channel interleave by the CPU is
-+		 * determined by DCC.  For single-channel, neither the CPU
-+		 * nor the GPU do swizzling.  For dual channel interleaved,
-+		 * the GPU's interleave is bit 9 and 10 for X tiled, and bit
-+		 * 9 for Y tiled.  The CPU's interleave is independent, and
-+		 * can be based on either bit 11 (haven't seen this yet) or
-+		 * bit 17 (common).
- 		 */
- 		dcc = I915_READ(DCC);
- 		switch (dcc & DCC_ADDRESSING_MODE_MASK) {
-@@ -115,19 +115,18 @@ i915_gem_detect_bit_6_swizzle(struct drm
- 			swizzle_y = I915_BIT_6_SWIZZLE_NONE;
- 			break;
- 		case DCC_ADDRESSING_MODE_DUAL_CHANNEL_INTERLEAVED:
--			if (IS_I915G(dev) || IS_I915GM(dev) ||
--			    dcc & DCC_CHANNEL_XOR_DISABLE) {
-+			if (dcc & DCC_CHANNEL_XOR_DISABLE) {
-+				/* This is the base swizzling by the GPU for
-+				 * tiled buffers.
-+				 */
- 				swizzle_x = I915_BIT_6_SWIZZLE_9_10;
- 				swizzle_y = I915_BIT_6_SWIZZLE_9;
--			} else if ((IS_I965GM(dev) || IS_GM45(dev)) &&
--				   (dcc & DCC_CHANNEL_XOR_BIT_17) == 0) {
--				/* GM965/GM45 does either bit 11 or bit 17
--				 * swizzling.
--				 */
-+			} else if ((dcc & DCC_CHANNEL_XOR_BIT_17) == 0) {
-+				/* Bit 11 swizzling by the CPU in addition. */
- 				swizzle_x = I915_BIT_6_SWIZZLE_9_10_11;
- 				swizzle_y = I915_BIT_6_SWIZZLE_9_11;
- 			} else {
--				/* Bit 17 or perhaps other swizzling */
-+				/* Bit 17 swizzling by the CPU in addition. */
- 				swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
- 				swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
- 			}
+ #define PORT_HOTPLUG_STAT	0x61114
+ #define   HDMIB_HOTPLUG_INT_STATUS		(1 << 29)
+--- a/drivers/gpu/drm/i915/intel_crt.c
++++ b/drivers/gpu/drm/i915/intel_crt.c
+@@ -133,20 +133,39 @@ static bool intel_crt_detect_hotplug(str
+ {
+ 	struct drm_device *dev = connector->dev;
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+-	u32 temp;
+-
+-	unsigned long timeout = jiffies + msecs_to_jiffies(1000);
+-
+-	temp = I915_READ(PORT_HOTPLUG_EN);
+-
+-	I915_WRITE(PORT_HOTPLUG_EN,
+-		   temp | CRT_HOTPLUG_FORCE_DETECT | (1 << 5));
+-
+-	do {
+-		if (!(I915_READ(PORT_HOTPLUG_EN) & CRT_HOTPLUG_FORCE_DETECT))
+-			break;
+-		msleep(1);
+-	} while (time_after(timeout, jiffies));
++	u32 hotplug_en;
++	int i, tries = 0;
++	/*
++	 * On 4 series desktop, CRT detect sequence need to be done twice
++	 * to get a reliable result.
++	 */
++
++	if (IS_G4X(dev) && !IS_GM45(dev))
++		tries = 2;
++	else
++		tries = 1;
++	hotplug_en = I915_READ(PORT_HOTPLUG_EN);
++	hotplug_en &= ~(CRT_HOTPLUG_MASK);
++	hotplug_en |= CRT_HOTPLUG_FORCE_DETECT;
++
++	if (IS_GM45(dev))
++		hotplug_en |= CRT_HOTPLUG_ACTIVATION_PERIOD_64;
++
++	hotplug_en |= CRT_HOTPLUG_VOLTAGE_COMPARE_50;
++
++	for (i = 0; i < tries ; i++) {
++		unsigned long timeout;
++		/* turn on the FORCE_DETECT */
++		I915_WRITE(PORT_HOTPLUG_EN, hotplug_en);
++		timeout = jiffies + msecs_to_jiffies(1000);
++		/* wait for FORCE_DETECT to go off */
++		do {
++			if (!(I915_READ(PORT_HOTPLUG_EN) &
++					CRT_HOTPLUG_FORCE_DETECT))
++				break;
++			msleep(1);
++		} while (time_after(timeout, jiffies));
++	}
+ 
+ 	if ((I915_READ(PORT_HOTPLUG_STAT) & CRT_HOTPLUG_MONITOR_MASK) ==
+ 	    CRT_HOTPLUG_MONITOR_COLOR)
 
