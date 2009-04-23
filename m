@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932297AbZDWWXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZDWW0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932297AbZDWWXX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758486AbZDWWXM
+	id S1760150AbZDWW0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZDWW0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:23:12 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:40555 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754600AbZDWWXK (ORCPT
+	Thu, 23 Apr 2009 18:26:24 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:42755 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752327AbZDWW0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:23:10 -0400
-Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-In-Reply-To: <49F0A570.8000908@redhat.com>
-References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com>
-	 <49D69F39.4010101@zytor.com>  <49D6ABD1.7040704@redhat.com>
-	 <1239058135.5212.43.camel@localhost.localdomain>
-	 <49DA8857.8030607@zytor.com>  <49E7BFDC.8040305@redhat.com>
-	 <1239926776.5883.17.camel@dyn9047018094.beaverton.ibm.com>
-	 <49E7C87E.8000202@zytor.com>  <49EE6235.20706@redhat.com>
-	 <1240447635.3713.21.camel@dyn9047018094.beaverton.ibm.com>
-	 <49F0A570.8000908@redhat.com>
-Content-Type: text/plain
-Date: Thu, 23 Apr 2009 15:22:32 -0700
-Message-Id: <1240525367.3461.10.camel@dyn9047018094.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 18:26:23 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Mm+ocYqF6H98hPPkkZ53x9fBdIqYiCxlv8CjiyX18yXQFQKg3l9y2OSZH4mrKHyWE
+	nP4KITQRMXxrRsZ6iy2hg==
+Date: Thu, 23 Apr 2009 15:26:14 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] slub: add
+ Documentation/ABI/testing/sysfs-kernel-slab
+In-Reply-To: <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.0904231510020.30545@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0904231136390.20852@chino.kir.corp.google.com> <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-23 at 13:29 -0400, Masami Hiramatsu wrote:
-...
+On Thu, 23 Apr 2009, David Rientjes wrote:
+
+> Adds documentation for the slub ABI.
 > 
-> Hmm, maybe, parser can handle "(extra_info)" as a solid keyword.
-> so let's define actual format.
+> This is placed in the `testing' directory since the meanings of these
+> files are still subject to change as slub is developed.
 > 
-> <opcode maps>
-> Table: table-name
-> Referrer: escamed-name
-> opcode: mnemonic|Grp [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
-> opcode: ESC # escaped-name
-> 
-> <group maps>
-> reg: mnemonic ...
 
-For some instruction groups -- e.g., Groups 12, 13, 14 -- the
-instruction prefix (66, f2, f3) and the reg field both affect the
-instruction type.  And for some x87 instructions, the value of the modrm
-byte's rm field also affects the instruction type.  (For others, rm just
-selects among the st(0)..st(7) registers, as one might expect.)
+I just noticed that slqb also uses /sys/kernel/slab for its sysfs API, so 
+this isn't going to work unless
 
-Of course, that's all about floating-point instructions, which are of
-more interest to uprobes than kprobes. 
+ - slqb uses /sys/kernel/slab as well and we simply add its files in
+   sysfs-kernel-slab and leave it to userspace to test for which allocator
+   is actually being used.  Both allocators share many of the same
+   fundamental attributes but some are only applicable to one,
 
-Jim
+ - slqb moves to /sys/kernel/slqb since slub is already resident in
+   /sys/kernel/slab and the mm/slab.c allocator actually has no sysfs
+   interface, or
 
+ - this file is renamed to sysfs-kernel-slub and a sysfs-kernel-slab file
+   is created that simply points users to the correct ABI file depending
+   on their configuration.
+
+I'd be included to suggest that slqb moves to /sys/kernel/slqb despite the 
+naming disparity between slub and its ABI in /sys/kernel/slab.
+
+Opinions?
+
+
+slqb: move sysfs API into slqb directory
+
+SLUB already has a sysfs API in the `slab' directory, so SLQB must use 
+`slqb'.
+
+Cc: Nick Piggin <npiggin@suse.de>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+diff --git a/mm/slqb.c b/mm/slqb.c
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -3536,7 +3536,7 @@ static int __init slab_sysfs_init(void)
+ 	struct kmem_cache *s;
+ 	int err;
+ 
+-	slab_kset = kset_create_and_add("slab", &slab_uevent_ops, kernel_kobj);
++	slab_kset = kset_create_and_add("slqb", &slab_uevent_ops, kernel_kobj);
+ 	if (!slab_kset) {
+ 		printk(KERN_ERR "Cannot register slab subsystem.\n");
+ 		return -ENOSYS;
