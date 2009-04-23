@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZDWW0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbZDWWc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbZDWW0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZDWW0Y
+	id S1759469AbZDWWc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbZDWWcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:26:24 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:42755 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752327AbZDWW0X (ORCPT
+	Thu, 23 Apr 2009 18:32:50 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62490 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751575AbZDWWcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:26:23 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Mm+ocYqF6H98hPPkkZ53x9fBdIqYiCxlv8CjiyX18yXQFQKg3l9y2OSZH4mrKHyWE
-	nP4KITQRMXxrRsZ6iy2hg==
-Date: Thu, 23 Apr 2009 15:26:14 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] slub: add
- Documentation/ABI/testing/sysfs-kernel-slab
-In-Reply-To: <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0904231510020.30545@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0904231136390.20852@chino.kir.corp.google.com> <alpine.DEB.2.00.0904231137440.20852@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 23 Apr 2009 18:32:50 -0400
+Date: Thu, 23 Apr 2009 18:31:25 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+cc: Anders Kaseorg <andersk@MIT.EDU>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jeffrey B Arnold <jbarnold@MIT.EDU>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH 1/5] ftrace: use module notifier for function tracer
+In-Reply-To: <20090423195754.GA24963@Krystal>
+Message-ID: <alpine.DEB.1.10.0904231612180.28329@vinegar-pot.mit.edu>
+References: <20090416021830.556671772@goodmis.org> <20090416021928.040177084@goodmis.org> <200904192055.04213.rusty@rustcorp.com.au> <alpine.DEB.1.10.0904191437250.31802@vinegar-pot.mit.edu> <20090422091645.GB18226@elte.hu> <alpine.DEB.1.10.0904221250280.24280@vinegar-pot.mit.edu>
+ <49EFA0DE.9070407@redhat.com> <alpine.DEB.2.00.0904221901190.7725@vinegar-pot.mit.edu> <20090423195754.GA24963@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009, David Rientjes wrote:
+On Thu, 23 Apr 2009, Mathieu Desnoyers wrote:
+> how about a kernel Ksplice API which lets your patch modules get
+> their handlers executed under the right execution context ? E.g. :
+[...]
+> This way, the kernel code-base would contain the tricky locking bits.
+> It seems much better than exporting the text_mutex to modules.
 
-> Adds documentation for the slub ABI.
-> 
-> This is placed in the `testing' directory since the meanings of these
-> files are still subject to change as slub is developed.
-> 
+On Thu, 23 Apr 2009, Masami Hiramatsu wrote:
+> Then, why can't you move that "matching" routine into the kernel too? :-)
 
-I just noticed that slqb also uses /sys/kernel/slab for its sysfs API, so 
-this isn't going to work unless
+I think both of you are assuming that Ksplice is grabbing text_mutex in 
+the patch modules for each update, which isn't what's going on.  There are 
+two types of modules associated with Ksplice, the per-update patch modules 
+and the Ksplice core, which could be built as a module.
 
- - slqb uses /sys/kernel/slab as well and we simply add its files in
-   sysfs-kernel-slab and leave it to userspace to test for which allocator
-   is actually being used.  Both allocators share many of the same
-   fundamental attributes but some are only applicable to one,
+The patch modules for each update are already stub modules that just load 
+some data into a data structure and call into the Ksplice core at 
+module_init/cleanup (by Ksplice core, I mean kernel/ksplice.c).  All the 
+tricky bits including the run-pre matching routine and the locking code 
+are in the Ksplice core.
 
- - slqb moves to /sys/kernel/slqb since slub is already resident in
-   /sys/kernel/slab and the mm/slab.c allocator actually has no sysfs
-   interface, or
-
- - this file is renamed to sysfs-kernel-slub and a sysfs-kernel-slab file
-   is created that simply points users to the correct ABI file depending
-   on their configuration.
-
-I'd be included to suggest that slqb moves to /sys/kernel/slqb despite the 
-naming disparity between slub and its ABI in /sys/kernel/slab.
-
-Opinions?
+The reason that we want to export text_mutex is that it can be useful for 
+the Ksplice core (still kernel/ksplice.c) to be built as a module.  This 
+is desirable when a different version of the kernel/ksplice.c code is 
+needed in order to apply a particular update (e.g. because there was a bug 
+in Ksplice).
 
 
-slqb: move sysfs API into slqb directory
+I agree that great care should be taken when writing code that patches the 
+kernel's text.  However, I don't think failing to export text_mutex to GPL 
+modules helps ensure that.  In particular, not exporting text_mutex 
+doesn't prevent modules from patching the kernel text.  It just prevents 
+any modules that do so from grabbing the appropriate lock.
 
-SLUB already has a sysfs API in the `slab' directory, so SLQB must use 
-`slqb'.
+	-Tim Abbott
 
-Cc: Nick Piggin <npiggin@suse.de>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
-diff --git a/mm/slqb.c b/mm/slqb.c
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -3536,7 +3536,7 @@ static int __init slab_sysfs_init(void)
- 	struct kmem_cache *s;
- 	int err;
- 
--	slab_kset = kset_create_and_add("slab", &slab_uevent_ops, kernel_kobj);
-+	slab_kset = kset_create_and_add("slqb", &slab_uevent_ops, kernel_kobj);
- 	if (!slab_kset) {
- 		printk(KERN_ERR "Cannot register slab subsystem.\n");
- 		return -ENOSYS;
+
