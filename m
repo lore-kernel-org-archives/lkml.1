@@ -1,45 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbZDWLjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZDWLsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757115AbZDWLjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 07:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZDWLjL
+	id S1754721AbZDWLsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 07:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZDWLsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 07:39:11 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:43805 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753192AbZDWLjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 07:39:10 -0400
-Date: Thu, 23 Apr 2009 13:39:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] block bits for 2.6.30-rc3
-Message-ID: <20090423113909.GC4593@kernel.dk>
-References: <20090423103523.GT4593@kernel.dk> <49F04D7C.2040807@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F04D7C.2040807@garzik.org>
+	Thu, 23 Apr 2009 07:48:04 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:57375 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZDWLsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 07:48:03 -0400
+Message-Id: <20090423114725.624459709@de.ibm.com>
+References: <20090423114638.865214111@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 23 Apr 2009 13:46:41 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 3/6] /proc/stat idle field for idle cpus
+Content-Disposition: inline; filename=003-idle-stat.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23 2009, Jeff Garzik wrote:
-> Jens Axboe wrote:
->> Bartlomiej Zolnierkiewicz (1):
->>       block: enable by default support for large devices and files on 32-bit archs
->
-> Although I strongly support this change -- is this really appropriate  
-> for -rc3?
->
-> I know it's only a one-line Kconfig change, but still...  this does not  
-> seem to fall into the category of "regression fix."
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-It was sitting for about a month before being included, but yes it is
-probably something that should have gone in before -rc1. I'll defer to
-Linus, I can easily postpone it to 2.6.31-rc1 it need be.
+The cpu idle field in the output of /proc/stat is too small for cpus
+that have been idle for more than a tick. Add the architecture hook
+arch_idle_time that allows to add the not accounted idle time of a
+sleeping cpu without waking the cpu.
+
+The s390 implementation of arch_idle_time uses the already existing
+s390_idle_data per_cpu variable to find the sleep time of a neighboring
+idle cpu.
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/include/asm/cputime.h |    4 ++++
+ arch/s390/kernel/vtime.c        |   16 ++++++++++++++++
+ fs/proc/stat.c                  |    5 +++++
+ 3 files changed, 25 insertions(+)
+
+Index: quilt-2.6/arch/s390/include/asm/cputime.h
+===================================================================
+--- quilt-2.6.orig/arch/s390/include/asm/cputime.h
++++ quilt-2.6/arch/s390/include/asm/cputime.h
+@@ -174,4 +174,8 @@ cputime64_to_clock_t(cputime64_t cputime
+        return __div(cputime, 4096000000ULL / USER_HZ);
+ }
+ 
++cputime64_t s390_get_idle_time(int cpu);
++
++#define arch_idle_time(cpu) s390_get_idle_time(cpu)
++
+ #endif /* _S390_CPUTIME_H */
+Index: quilt-2.6/arch/s390/kernel/vtime.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/kernel/vtime.c
++++ quilt-2.6/arch/s390/kernel/vtime.c
+@@ -240,6 +240,22 @@ void vtime_stop_cpu(void)
+ 	}
+ }
+ 
++cputime64_t s390_get_idle_time(int cpu)
++{
++	struct s390_idle_data *idle;
++	unsigned long long now, idle_time, idle_enter;
++
++	idle = &per_cpu(s390_idle, cpu);
++	spin_lock(&idle->lock);
++	now = get_clock();
++	idle_time = 0;
++	idle_enter = idle->idle_enter;
++	if (idle_enter != 0ULL && idle_enter < now)
++		idle_time = now - idle_enter;
++	spin_unlock(&idle->lock);
++	return idle_time;
++}
++
+ /*
+  * Sorted add to a list. List is linear searched until first bigger
+  * element is found.
+Index: quilt-2.6/fs/proc/stat.c
+===================================================================
+--- quilt-2.6.orig/fs/proc/stat.c
++++ quilt-2.6/fs/proc/stat.c
+@@ -18,6 +18,9 @@
+ #ifndef arch_irq_stat
+ #define arch_irq_stat() 0
+ #endif
++#ifndef arch_idle_time
++#define arch_idle_time(cpu) 0
++#endif
+ 
+ static int show_stat(struct seq_file *p, void *v)
+ {
+@@ -40,6 +43,7 @@ static int show_stat(struct seq_file *p,
+ 		nice = cputime64_add(nice, kstat_cpu(i).cpustat.nice);
+ 		system = cputime64_add(system, kstat_cpu(i).cpustat.system);
+ 		idle = cputime64_add(idle, kstat_cpu(i).cpustat.idle);
++		idle = cputime64_add(idle, arch_idle_time(i));
+ 		iowait = cputime64_add(iowait, kstat_cpu(i).cpustat.iowait);
+ 		irq = cputime64_add(irq, kstat_cpu(i).cpustat.irq);
+ 		softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
+@@ -69,6 +73,7 @@ static int show_stat(struct seq_file *p,
+ 		nice = kstat_cpu(i).cpustat.nice;
+ 		system = kstat_cpu(i).cpustat.system;
+ 		idle = kstat_cpu(i).cpustat.idle;
++		idle = cputime64_add(idle, arch_idle_time(i));
+ 		iowait = kstat_cpu(i).cpustat.iowait;
+ 		irq = kstat_cpu(i).cpustat.irq;
+ 		softirq = kstat_cpu(i).cpustat.softirq;
 
 -- 
-Jens Axboe
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
