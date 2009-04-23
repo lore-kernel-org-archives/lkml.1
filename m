@@ -1,94 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbZDWIFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbZDWH4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbZDWIFW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbZDWHpP
+	id S1760085AbZDWH4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbZDWHeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:45:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50316 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758875AbZDWHpN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:45:13 -0400
-Date: Thu, 23 Apr 2009 09:48:48 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags (take 3)
-Message-ID: <20090423074848.GJ13896@one.firstfloor.org>
-References: <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090416111108.AC55.A69D9226@jp.fujitsu.com> <20090423022625.GA8822@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423022625.GA8822@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 23 Apr 2009 03:34:17 -0400
+Received: from sous-sol.org ([216.99.217.87]:51046 "EHLO x200.localdomain"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756669AbZDWHeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:34:15 -0400
+Message-Id: <20090423073012.859243905@sous-sol.org>
+User-Agent: quilt/0.47-1
+Date: Thu, 23 Apr 2009 00:21:47 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, chrisw@redhat.com
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
+       Weidong Han <weidong.han@intel.com>, Avi Kivity <avi@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: [patch 087/100] KVM: fix kvm_vm_ioctl_deassign_device
+References: <20090423072020.428683652@sous-sol.org>
+Content-Disposition: inline; filename=kvm-fix-kvm_vm_ioctl_deassign_device.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 10:26:25AM +0800, Wu Fengguang wrote:
-> Andi and KOSAKI: can we hopefully reach harmony of opinions on this version?
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-Haven't read the patch sorry, just comments on the text.
+From: Weidong Han <weidong.han@intel.com>
 
-> 
-> Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
-> 
-> 1) for kernel hackers (on CONFIG_DEBUG_KERNEL)
->    - all available page flags are exported, and
->    - exported as is
+upstream commit: 4a906e49f103c2e544148a209ba1db316510799f
 
-So the interface changes based on that option? That would
-be unfortunate if true.
+only need to set assigned_dev_id for deassignment, use
+match->flags to judge and deassign it.
 
-> 2) for admins and end users
->    - only the more `well known' flags are exported:
-> 	11. KPF_MMAP		(pseudo flag) memory mapped page
-> 	12. KPF_ANON		(pseudo flag) memory mapped page (anonymous)
-> 	13. KPF_SWAPCACHE	page is in swap cache
-> 	14. KPF_SWAPBACKED	page is swap/RAM backed
-> 	15. KPF_COMPOUND_HEAD	(*)
-> 	16. KPF_COMPOUND_TAIL	(*)
-> 	17. KPF_UNEVICTABLE	page is in the unevictable LRU list
-> 	18. KPF_POISON		hardware detected corruption
-> 	19. KPF_NOPAGE		(pseudo flag) no page frame at the address
+Acked-by: Mark McLoughlin <markmc@redhat.com>
+Signed-off-by: Weidong Han <weidong.han@intel.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ virt/kvm/kvm_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I think DIRTY should be in that list.
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -563,7 +563,7 @@ static int kvm_vm_ioctl_deassign_device(
+ 		goto out;
+ 	}
+ 
+-	if (assigned_dev->flags & KVM_DEV_ASSIGN_ENABLE_IOMMU)
++	if (match->flags & KVM_DEV_ASSIGN_ENABLE_IOMMU)
+ 		kvm_deassign_device(kvm, match);
+ 
+ 	kvm_free_assigned_device(kvm, match);
 
-> 
-> 	(*) For compound pages, exporting _both_ head/tail info enables
-> 	    users to tell where a compound page starts/ends, and its order.
-> 
->    - limit flags to their typical usage scenario, as indicated by KOSAKI:
-> 	- LRU pages: only export relevant flags
-> 		- PG_lru
-> 		- PG_unevictable
-> 		- PG_active
-
-And active too because it's already exported in /proc/meminfo
-
-> 		- PG_dirty
-> 		- PG_uptodate
-> 		- PG_writeback
-> 	- SLAB pages: mask out overloaded flags:
-> 		- PG_error
-
-Error should be exported too, it has straight forward semantics 
-and could be useful to the admin.
-
-
-> 	- admins may wonder where all the compound pages gone - the use of
-> 	  compound pages in SLUB might have some real world relevance, so that
-> 	  end users want to be aware of this behavior
-
-I'm not sure why it uses compound pages at all. It would be nicer
-if compound pages were limited to huge pages, and then start/tail
-wouldn't be needed.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
