@@ -1,72 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbZDWHnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZDWILg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbZDWHnv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZDWHay
+	id S1754656AbZDWILg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbZDWILQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:30:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:50520 "EHLO x200.localdomain"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755474AbZDWHaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:30:52 -0400
-Message-Id: <20090423072536.813114918@sous-sol.org>
-User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:05 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <jdelvare@suse.de>,
-       David S Miller <davem@davemloft.net>
-Subject: [patch 045/100] net/netrom: Fix socket locking
-References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=net-netrom-fix-socket-locking.patch
+	Thu, 23 Apr 2009 04:11:16 -0400
+Received: from mga14.intel.com ([143.182.124.37]:46975 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751146AbZDWILN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 04:11:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,235,1239001200"; 
+   d="scan'208";a="134887391"
+Date: Thu, 23 Apr 2009 16:10:47 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
+	(take 3)
+Message-ID: <20090423081047.GA18898@localhost>
+References: <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090416111108.AC55.A69D9226@jp.fujitsu.com> <20090423022625.GA8822@localhost> <20090423074848.GJ13896@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090423074848.GJ13896@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Thu, Apr 23, 2009 at 03:48:48PM +0800, Andi Kleen wrote:
+> On Thu, Apr 23, 2009 at 10:26:25AM +0800, Wu Fengguang wrote:
+> > Andi and KOSAKI: can we hopefully reach harmony of opinions on this version?
+> 
+> Haven't read the patch sorry, just comments on the text.
+> 
+> > 
+> > Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
+> > 
+> > 1) for kernel hackers (on CONFIG_DEBUG_KERNEL)
+> >    - all available page flags are exported, and
+> >    - exported as is
+> 
+> So the interface changes based on that option? That would
+> be unfortunate if true.
 
-From: Jean Delvare <jdelvare@suse.de>
+To be exact, it's "extend the view" on CONFIG_DEBUG_KERNEL.  The
+meanings won't change, you simply see more flags that didn't turn up
+when !CONFIG_DEBUG_KERNEL.
 
-upstream commit: cc29c70dd581f85ee7a3e7980fb031f90b90a2ab
+> > 2) for admins and end users
+> >    - only the more `well known' flags are exported:
+> > 	11. KPF_MMAP		(pseudo flag) memory mapped page
+> > 	12. KPF_ANON		(pseudo flag) memory mapped page (anonymous)
+> > 	13. KPF_SWAPCACHE	page is in swap cache
+> > 	14. KPF_SWAPBACKED	page is swap/RAM backed
+> > 	15. KPF_COMPOUND_HEAD	(*)
+> > 	16. KPF_COMPOUND_TAIL	(*)
+> > 	17. KPF_UNEVICTABLE	page is in the unevictable LRU list
+> > 	18. KPF_POISON		hardware detected corruption
+> > 	19. KPF_NOPAGE		(pseudo flag) no page frame at the address
+> 
+> I think DIRTY should be in that list.
 
-Patch "af_rose/x25: Sanity check the maximum user frame size"
-(commit 83e0bbcbe2145f160fbaa109b0439dae7f4a38a9) from Alan Cox got
-locking wrong. If we bail out due to user frame size being too large,
-we must unlock the socket beforehand.
+It has been there.  ERROR, DIRTY and ACTIVE were exported at the time
+this interface was initially introduced:
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
-in net-2.6 on way to Linus
+        #define KPF_LOCKED              0
+==>     #define KPF_ERROR               1
+        #define KPF_REFERENCED          2
+        #define KPF_UPTODATE            3
+==>     #define KPF_DIRTY               4
+        #define KPF_LRU                 5
+==>     #define KPF_ACTIVE              6
+        #define KPF_SLAB                7
+        #define KPF_WRITEBACK           8
+        #define KPF_RECLAIM             9
+        #define KPF_BUDDY               10
 
- net/netrom/af_netrom.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > 	(*) For compound pages, exporting _both_ head/tail info enables
+> > 	    users to tell where a compound page starts/ends, and its order.
+> > 
+> >    - limit flags to their typical usage scenario, as indicated by KOSAKI:
+> > 	- LRU pages: only export relevant flags
+> > 		- PG_lru
+> > 		- PG_unevictable
+> > 		- PG_active
+> 
+> And active too because it's already exported in /proc/meminfo
 
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -1084,8 +1084,10 @@ static int nr_sendmsg(struct kiocb *iocb
+ditto
  
- 	/* Build a packet - the conventional user limit is 236 bytes. We can
- 	   do ludicrously large NetROM frames but must not overflow */
--	if (len > 65536)
--		return -EMSGSIZE;
-+	if (len > 65536) {
-+		err = -EMSGSIZE;
-+		goto out;
-+	}
- 
- 	SOCK_DEBUG(sk, "NET/ROM: sendto: building packet.\n");
- 	size = len + NR_NETWORK_LEN + NR_TRANSPORT_LEN;
+> > 		- PG_dirty
+> > 		- PG_uptodate
+> > 		- PG_writeback
+> > 	- SLAB pages: mask out overloaded flags:
+> > 		- PG_error
+> 
+> Error should be exported too, it has straight forward semantics 
+> and could be useful to the admin.
 
+ditto
+ 
+> > 	- admins may wonder where all the compound pages gone - the use of
+> > 	  compound pages in SLUB might have some real world relevance, so that
+> > 	  end users want to be aware of this behavior
+> 
+> I'm not sure why it uses compound pages at all. It would be nicer
+> if compound pages were limited to huge pages, and then start/tail
+> wouldn't be needed.
+
+Good idea.
+
+Would you recommend a good way to identify huge pages?
+Test by page order, or by (dtor == free_huge_page)?      
+
+Thanks,
+Fengguang
