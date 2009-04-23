@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbZDWHcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZDWHug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752AbZDWHcZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZDWH1c
+	id S1759521AbZDWHug (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbZDWHd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:32 -0400
-Received: from sous-sol.org ([216.99.217.87]:48208 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:33:29 -0400
+Received: from sous-sol.org ([216.99.217.87]:50920 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754325AbZDWH1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:27:31 -0400
-Message-Id: <20090423072303.222208746@sous-sol.org>
+	id S1757224AbZDWHd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:33:28 -0400
+Message-Id: <20090423072944.703184870@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:40 -0700
+Date: Thu, 23 Apr 2009 00:21:42 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, chrisw@redhat.com
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 020/100] drm: Use pgprot_writecombine in GEM GTT mapping to get the right bits for !PAT.
+       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
+       Andrea Arcangeli <aarcange@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: [patch 082/100] KVM: Fix missing smp tlb flush in invlpg
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=drm-use-pgprot_writecombine-in-gem-gtt-mapping-to-get-the-right-bits-for-pat.patch
+Content-Disposition: inline; filename=kvm-fix-missing-smp-tlb-flush-in-invlpg.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,42 +36,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Andrea Arcangeli <aarcange@redhat.com>
 
-upstream commit: 1055f9ddad093f54dfd708a0f976582034d4ce1a
+upstream commit: 4539b35881ae9664b0e2953438dd83f5ee02c0b4
 
-Otherwise, the PAGE_CACHE_WC would end up getting us a UC-only mapping, and
-the write performance of GTT maps dropped 10x.
+When kvm emulates an invlpg instruction, it can drop a shadow pte, but
+leaves the guest tlbs intact.  This can cause memory corruption when
+swapping out.
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-[anholt: cleaned up unused var]
-Signed-off-by: Eric Anholt <eric@anholt.net>
+Without this the other cpu can still write to a freed host physical page.
+tlb smp flush must happen if rmap_remove is called always before mmu_lock
+is released because the VM will take the mmu_lock before it can finally add
+the page to the freelist after swapout. mmu notifier makes it safe to flush
+the tlb after freeing the page (otherwise it would never be safe) so we can do
+a single flush for multiple sptes invalidated.
+
+Cc: stable@kernel.org
+Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
+Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+[mtosatti: backport to 2.6.29]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/gpu/drm/drm_gem.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ arch/x86/kvm/paging_tmpl.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/gpu/drm/drm_gem.c
-+++ b/drivers/gpu/drm/drm_gem.c
-@@ -505,7 +505,6 @@ int drm_gem_mmap(struct file *filp, stru
- 	struct drm_map *map = NULL;
- 	struct drm_gem_object *obj;
- 	struct drm_hash_item *hash;
--	unsigned long prot;
- 	int ret = 0;
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -476,16 +476,20 @@ static int FNAME(shadow_invlpg_entry)(st
+ 	if (level == PT_PAGE_TABLE_LEVEL ||
+ 	    ((level == PT_DIRECTORY_LEVEL) && is_large_pte(*sptep))) {
+ 		struct kvm_mmu_page *sp = page_header(__pa(sptep));
++		int need_flush = 0;
  
- 	mutex_lock(&dev->struct_mutex);
-@@ -538,11 +537,7 @@ int drm_gem_mmap(struct file *filp, stru
- 	vma->vm_ops = obj->dev->driver->gem_vm_ops;
- 	vma->vm_private_data = map->handle;
- 	/* FIXME: use pgprot_writecombine when available */
--	prot = pgprot_val(vma->vm_page_prot);
--#ifdef CONFIG_X86
--	prot |= _PAGE_CACHE_WC;
--#endif
--	vma->vm_page_prot = __pgprot(prot);
-+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ 		sw->pte_gpa = (sp->gfn << PAGE_SHIFT);
+ 		sw->pte_gpa += (sptep - sp->spt) * sizeof(pt_element_t);
  
- 	/* Take a ref for this mapping of the object, so that the fault
- 	 * handler can dereference the mmap offset's pointer to the object.
+ 		if (is_shadow_present_pte(*sptep)) {
++			need_flush = 1;
+ 			rmap_remove(vcpu->kvm, sptep);
+ 			if (is_large_pte(*sptep))
+ 				--vcpu->kvm->stat.lpages;
+ 		}
+ 		set_shadow_pte(sptep, shadow_trap_nonpresent_pte);
++		if (need_flush)
++			kvm_flush_remote_tlbs(vcpu->kvm);
+ 		return 1;
+ 	}
+ 	if (!is_shadow_present_pte(*sptep))
 
