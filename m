@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbZDWTXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbZDWTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbZDWTXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 15:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZDWTX1
+	id S1757695AbZDWTYr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZDWTYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 15:23:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38408 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbZDWTX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 15:23:26 -0400
-Date: Thu, 23 Apr 2009 21:22:55 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: Jay Vosburgh <fubar@us.ibm.com>
-Cc: stefan novak <lms.brubaker@gmail.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: bond interface arp, vlan and trunk / network question
-Message-ID: <20090423192254.GA1618@psychotron.englab.brq.redhat.com>
-References: <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com> <13606.1240262581@death.nxdomain.ibm.com> <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com> <22462.1240272112@death.nxdomain.ibm.com> <1ef444010904220129l24a74f07q8f32edfabe603436@mail.gmail.com> <32563.1240449149@death.nxdomain.ibm.com> <20090423074803.GB29268@psychotron.englab.brq.redhat.com> <12644.1240498781@death.nxdomain.ibm.com> <20090423152005.GI29268@psychotron.englab.brq.redhat.com> <3302.1240511660@death.nxdomain.ibm.com>
+	Thu, 23 Apr 2009 15:24:37 -0400
+Received: from n64.bullet.mail.sp1.yahoo.com ([98.136.44.189]:42901 "HELO
+	n64.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754436AbZDWTYg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 15:24:36 -0400
+X-Greylist: delayed 332 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 15:24:36 EDT
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 915955.22907.bm@omp115.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=DEkMkGZ+GTs4oUTfEDYHB2nT0pkWMYW+ityR3EZYeHLUb4oynAgXcgrd8D3XDGRBwYkR68EMLUj5I7UmhV0QotSYWKaBVg0qa88/Zca2Q2/LUI+aN+hkijQcUK5xhIWz3RrGEXt8KCVrBT6bGVEJmE1nguaHOVTI/p6JHYeTdLs=;
+Message-ID: <72010.86725.qm@web112215.mail.gq1.yahoo.com>
+X-YMail-OSG: kLAOAfEVM1nFMHbTx_jJ7EY.1yVYAomeR0nvALT4p24l7NRD0Gq8lo5NOvlUqZgDL33bn2xZbPMA6PDW5Ij_98QPngaqTfskmuI_T.kwaU5DYj5RDpinWluIMuTCCE8LfMxNxEKOVUArVke5LokMuxaN3HYwkUzvLVwe_yu5TBRL5nE5LFLwFQuR4ibXYy1bXcAvCIHqLBBpvSntRUoPNkx3BX9SGZjTaA802RGnTzZAb5RDl13bRmN_n.L4jPpq6e8AWzGX4tQwit3EIe1.BQjaOg--
+X-Mailer: YahooMailClassic/5.2.19 YahooMailWebService/0.7.289.1
+Date: Thu, 23 Apr 2009 12:19:02 -0700 (PDT)
+From: We La <w.landgraf@yahoo.com>
+Subject: 2.6.30-rc3 : Regression: i915 , video
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3302.1240511660@death.nxdomain.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thu, Apr 23, 2009 at 08:34:20PM CEST, fubar@us.ibm.com wrote:
->Jiri Pirko <jpirko@redhat.com> wrote:
->>Thu, Apr 23, 2009 at 04:59:41PM CEST, fubar@us.ibm.com wrote:
->>>Jiri Pirko <jpirko@redhat.com> wrote:
->[...]
->>>>>+{
->>>>>+	struct net_device *dev = skb->dev;
->>>>>+	struct net_device *master = dev->master;
->>>>>+
->>>>>+	if (master)
->>>>>+		return bond_handle_frame_hook(skb);
->>>>
->>>>Maybe this hook can be called from netif_receive_skb() directly. You would safe
->>>>at least 2 dereferences, 1 if check. You would also need to add
->>>>"skb->dev->master &&" to if in __vlan_hwaccel_rx() and vlan_gro_common().
->>>
->>>	This won't work, because the VLAN code reassigns skb->dev to the
->>>VLAN device before calling netif_receive_skb.
->>
->>Sure, but bond_should_drop is called before it actually reassigns that. So the
->>check in bond_should_drop tests "original_dev->master".
->>
->>I had on mind something like following:
->>
->>Signed-off-by: Jiri Pirko <jpirko@redhat.com>
->>
->>diff --git a/net/8021q/vlan_core.c b/net/8021q/vlan_core.c
->>index c67fe6f..87a7334 100644
->>--- a/net/8021q/vlan_core.c
->>+++ b/net/8021q/vlan_core.c
->>@@ -11,7 +11,7 @@ int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
->> 	if (netpoll_rx(skb))
->> 		return NET_RX_DROP;
->>
->>-	if (skb_bond_should_drop(skb))
->>+	if (skb->dev->master && bond_handle_frame_hook(skb))
->[...]
->
->	Yah, ok, I see what you mean.  The same could be accomplished by
->turning skb_bond_should_drop back into an inline in the header file, and
 
-Well no exactly. In vlan_x certainly yes but in netif_receive_skb() you safe
-something by not checking ->master twice and 2 dereferences. Just noting when I
-see the waste...
+Problems on MSI U100 laptop:
 
->hiding the fiddly bits from the calling context.
->
->	It's pretty grotty no matter how it's done; I'd prefer to avoid
->the whole hook business, but I haven't thought of a less bad way.
+root@werner:~# modprobe i915
+WARNING: Error inserting video (/lib/modules/2.6.30-rc3/kernel/drivers/acpi/video.ko): No such device
+FATAL: Error inserting i915 (/lib/modules/2.6.30-rc3/kernel/drivers/gpu/drm/i915/i915.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+root@werner:~#
 
-Yes I agree hooking this sucks :/ Anyway, is there any movement to eliminate
-all these hooks from netif_receive_skb() ?
+Apr 23 16:16:57 localhost kernel: i915: Unknown symbol acpi_video_register
 
-	Jirka
->
->	-J
->
->---
->	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+
+On older kernels this drivers worked
+
+Werner Landgraf
+Linux  SYS
+
+
+
+      
+
