@@ -1,71 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZDWQlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZDWQlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZDWQlN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZDWQkz
+	id S1757218AbZDWQlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZDWQl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:40:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48881 "EHLO mx2.redhat.com"
+	Thu, 23 Apr 2009 12:41:29 -0400
+Received: from mail.tpi.com ([70.99.223.143]:1084 "EHLO mail.tpi.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752906AbZDWQky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:40:54 -0400
-Date: Thu, 23 Apr 2009 18:36:24 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document that wake_up(), complete() and co. imply a
-	full memory barrier
-Message-ID: <20090423163624.GA6732@redhat.com>
-References: <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <20090422175753.GA14236@elte.hu>
+	id S1751125AbZDWQl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 12:41:28 -0400
+Message-ID: <49F09A35.6070304@tpi.com>
+Date: Thu, 23 Apr 2009 10:41:25 -0600
+From: Tim Gardner <timg@tpi.com>
+Reply-To: timg@tpi.com
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090422175753.GA14236@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mattia Dongili <malattia@linux.it>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Sony laptop: Some Sony Vaia laptops do not enable wwan
+ power by default.
+References: <20090422185351.AB41AF88CE@sepang.rtg.net> <20090423090454.GB24761@kamineko.org>
+In-Reply-To: <20090423090454.GB24761@kamineko.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22, Ingo Molnar wrote:
->
-> * David Howells <dhowells@redhat.com> wrote:
->
-> The dangerous pattern is lockless code doing wakeups. But lockless
-> code always has to use proper barriers or atomics anyway, and has to
-> be aware of the fact that kernel primitives they call are not
-> necessarily full memory barriers.
->
-> In fact i'd encourage to _not_ document try_to_lock() as a write
-> barrier either - but rather have explicit barriers where they are
-> needed. Then we could remove that barrier from try_to_wake_up() too
-> ;-)
+Mattia Dongili wrote:
+> On Wed, Apr 22, 2009 at 12:53:51PM -0600, Tim Gardner wrote:
+>> Mattia,
+>>
+>> Does this patch makes sense for just the Vaio? I've had positive feedback from
+>> the tester in the bug report.
+>>
+>> rtg
+>> -----------------
+>> From 083972abb1d5e84845927b3925f077953c207b82 Mon Sep 17 00:00:00 2001
+>> From: Tim Gardner <tim.gardner@canonical.com>
+>> Date: Tue, 21 Apr 2009 11:09:10 -0600
+>> Subject: [PATCH] Sony laptop: Some Sony Vaio laptops do not enable wwan power by default.
+>>
+>> Bug: https://bugs.launchpad.net/bugs/364678
+>>
+>> Added quirk to enable wwan power based on DMI information already present in the module.
+>> It appears that wwan is not powered up from a cold boot.
+> 
+> The bug reporter says that this happens when booting from windows to
+> linux, is it still true when manually enabling the device in linux and
+> then rebooting (into linux again)?
+> 
 
-Well. I think in that case almost every try_to_wake_up/wake_up_process
-needs mb().
+I can probably find out, though I'm not sure what impact it would have
+on the driver. Does this laptop have a physical rfkill slider switch
+from which you can somehow query initial state via ACPI or GPIO? If not,
+then I assume the desired behavior is to just enable wwan and bluetooth
+upon every boot ?
 
-For example:
+>> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+>> ---
+>>  drivers/misc/sony-laptop.c |   24 +++++++++++++++++++++++-
+>>  1 files changed, 23 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
+>> index 7e73acc..eab7011 100644
+>> --- a/drivers/misc/sony-laptop.c
+>> +++ b/drivers/misc/sony-laptop.c
+>> @@ -1248,10 +1248,13 @@ struct device_ctrl {
+>>  	u16				evport_offset;
+>>  	u8				has_camera;
+>>  	u8				has_bluetooth;
+>> -	u8				has_wwan;
+>>  	struct sonypi_eventtypes	*event_types;
+>>  };
+>>  
+>> +struct sony_pic_quirk_entry {
+>> +	u8				set_wwan_power;
+>> +};
+>> +
+>>  struct sony_pic_dev {
+>>  	struct device_ctrl	*control;
+>>  	struct acpi_device	*acpi_dev;
+>> @@ -1260,6 +1263,7 @@ struct sony_pic_dev {
+>>  	struct list_head	interrupts;
+>>  	struct list_head	ioports;
+>>  	struct mutex		lock;
+>> +	struct sony_pic_quirk_entry *quirks;
+>>  	u8			camera_power;
+>>  	u8			bluetooth_power;
+>>  	u8			wwan_power;
+>> @@ -2685,6 +2689,12 @@ static int sony_pic_add(struct acpi_device *device)
+>>  	if (result)
+>>  		goto err_remove_pf;
+>>  
+>> +	if (spic_dev.quirks && spic_dev.quirks->set_wwan_power) {
+>> +		/*
+>> +		 * Power isn't enabled by default.
+>> +		 */
+>> +		sony_pic_set_wwanpower(1);
+>> +	}
+>>  	return 0;
+>>  
+>>  err_remove_pf:
+>> @@ -2755,6 +2765,16 @@ static struct acpi_driver sony_pic_driver = {
+>>  		},
+>>  };
+>>  
+>> +static struct sony_pic_quirk_entry sony_pic_vaio_vgn = {
+>> +	.set_wwan_power = 1,
+>> +};
+>> +
+>> +static int dmi_matched(const struct dmi_system_id *dmi)
+>> +{
+>> +	spic_dev.quirks = dmi->driver_data;
+>> +	return 0;
+>> +}
+>> +
+>>  static struct dmi_system_id __initdata sonypi_dmi_table[] = {
+>>  	{
+>>  		.ident = "Sony Vaio",
+>> @@ -2769,6 +2789,8 @@ static struct dmi_system_id __initdata sonypi_dmi_table[] = {
+>>  			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
+>>  			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-"),
+>>  		},
+>> +		.callback = dmi_matched,
+>> +		.driver_data = &sony_pic_vaio_vgn,
+> 
+> This is like just enabling it on all type3 (and some type2) vaios.
+> Might as well call your quirk unconditionally for all models.
+> 
+> Honestly I'd rather work towards the rfkill implementation as Matthew
+> suggests.
 
-	do_nanosleep:
+Agreed.
 
-		for (;;) {
-			set_current_state(TASK_INTERRUPTIBLE);
-			if (likely(t->task))
-				schedule();
-			break;
-		}
-
-	hrtimer_wakeup:
-
-		task = t->task
-		t->task = NULL;
-		wake_up_process(task);
-
-If try_to_wake_up() has no the barrier semantics, we can miss the event.
-"t->task = NULL" and the reading of task->state must not be reordered.
-
-Oleg.
-
+rtg
+-- 
+Tim Gardner timg@tpi.com www.tpi.com
+OR 503-601-0234 x102 MT 406-443-5357
