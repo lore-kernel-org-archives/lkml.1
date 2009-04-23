@@ -1,119 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZDWFSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbZDWFWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752473AbZDWFSZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZDWFSP
+	id S1753100AbZDWFWX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 01:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZDWFWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:18:15 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:25922 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZDWFSP (ORCPT
+	Thu, 23 Apr 2009 01:22:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55687 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751002AbZDWFWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:18:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=L6PeD+NhszwwazjvFgcj9ScZcLXAZLW2RvYof4ZhMipNZqYovREK6on+zWbl+DL/K3
-         p4+GcChaUqYzlEJf8sFeUsWOAbO08+lUzhRBnB2wTZNgHAL06m1t6v5iWWhqg0RltKOZ
-         g7qS7CYVy0OAUgJuzz7jR89TwFSS4KQvvhQms=
-Subject: Re: [PATCH 3/3] tracing/filters: disallow newline as delimeter
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090422080928.GA8562@elte.hu>
-References: <49ED8DD2.2070700@cn.fujitsu.com>
-	 <49ED8DFD.9070909@cn.fujitsu.com> <20090421095705.GA15448@elte.hu>
-	 <49ED9AC2.9000507@cn.fujitsu.com> <20090421100722.GA18486@elte.hu>
-	 <49ED9C91.4070201@cn.fujitsu.com> <20090421101619.GA19660@elte.hu>
-	 <1240377698.6711.61.camel@tropicana>  <20090422080928.GA8562@elte.hu>
-Content-Type: text/plain
-Date: Thu, 23 Apr 2009 00:18:12 -0500
-Message-Id: <1240463892.9368.44.camel@tropicana>
+	Thu, 23 Apr 2009 01:22:13 -0400
+Date: Wed, 22 Apr 2009 22:20:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Crash in v2.6.30-rc3 (regression from 30-rc2)
+Message-Id: <20090422222031.17d9d72e.akpm@linux-foundation.org>
+In-Reply-To: <49EFD2A4.6080801@novell.com>
+References: <49EFD2A4.6080801@novell.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-22 at 10:09 +0200, Ingo Molnar wrote:
-> * Tom Zanussi <tzanussi@gmail.com> wrote:
-> 
-> > On Tue, 2009-04-21 at 12:16 +0200, Ingo Molnar wrote:
-> > > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > 
-> > > > Ingo Molnar wrote:
-> > > > > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > > > 
-> > > > >> Ingo Molnar wrote:
-> > > > >>> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > > >>>
-> > > > >>>> I guess because user input is often ended with '\n' (like "echo 
-> > > > >>>> xxx"), thus '\n' is used as a delimeter besides ' ', but we can 
-> > > > >>>> just strip tailing spaces.
-> > > > >>> Hm, how about:
-> > > > >>>
-> > > > >>> ( echo 'x'
-> > > > >>>   echo '|| y' ) > filter
-> > > > >>>
-> > > > >>> type of scripts? Shouldnt the parser be permissive in general?
-> > > > >>>
-> > > > >> This patch doesn't forbid this usage: ;)
-> > > > >>
-> > > > >> ( echo 'parent_comm == a'
-> > > > >>   echo '|| parent_comm == b' ) > filter
-> > > > >>
-> > > > >> This patch does forbid this usage:
-> > > > >>
-> > > > >> ( echo 'parent_comm'
-> > > > >>   echo '=='
-> > > > >>   echo 'a' ) > filter
-> > > > > 
-> > > > > Same argument though, no?
-> > > > > 
-> > > > 
-> > > > Then I have no strong opinion on this. I'm fine to drop this patch.
-> > > 
-> > > I've applied the other two - no strong opinion either about this 
-> > > patch. Tom, what do you think? (there's also some new parser in the 
-> > > works i suspect)
-> > 
-> > I think it works ok as it is, so dropping this patch would be fine 
-> > with me.
-> > 
-> > I am working on a new parser; I'd hoped to have it finished by 
-> > now, but I seem to be continually distracted lately. :-( At this 
-> > point I have a parser that basically works; the main thing it 
-> > still needs and what I'm working on now is a way to allow it to be 
-> > easily extended to support special-case handling for special types 
-> > e.g. if a predicate field refers to something that's a dev_t, the 
-> > user should be able to specify 'device == /dev/sda' or 'device == 
-> > sda' or 'device == (8,1)' or 'device == 8:1', so it should be 
-> > relatively easy to add that kind of support to the parser when 
-> > there's a need for it.
-> > 
-> > Once that's done, I'll hook it all up and post it as soon as I 
-> > can, at the end of the week hopefully...
-> 
-> Nice! :-)
-> 
-> If your current lineup works you might want to post that straight 
-> away even without the type extensions, if you think there's value in 
-> testing/reviewing those bits independently. It generally works 
-> better to have gradual patches. (we can find bugs sooner, review is 
-> easier, etc.)
-> 
+On Wed, 22 Apr 2009 22:29:56 -0400 Gregory Haskins <ghaskins@novell.com> wrote:
 
-Sure, I understand.  I wasn't planning on adding any type extensions
-with the initial parser, just restructuring the code so that adding them
-wouldn't require a lot of restructuring later.  So, yeah, just the basic
-parser once I get it into a postable state, very soon, and anything else
-for later...
+> Hi All,
+> 
+>  FYI: I am seeing this when moving from 30-rc2 to 30-rc3 on a 4-way
+> x86_64 box.
+> 
+> I have since reverted back to rc2, but can easily spin up the new kernel
+> again to decode more info or try a fix, if desired.
+> 
+> One data point I do have is that the box seemed to have booted when I
+> forgot to add console=ttyS0 to the kernel args.  I suspect the serial
+> console is just changing timing, but its 100% reproducible in this setup.
+> 
+> BUG: unable to handle kernel NULL pointer dereference at (null)
+> IP: [<ffffffff803863f8>] rb_erase+0x132/0x28c
+> PGD 13a11e067 PUD 13dd1d067 PMD 0
+> Oops: 0000 [#1] SMP
+> last sysfs file:
+> /sys/devices/pci0000:00/0000:00:1f.1/host6/target6:0:0/6:0:0:0/type
+> CPU 0
+> Modules linked in: i5000_edac shpchp rtc_core soundcore thermal sr_mod
+> parport_pc processor button libphy natsemi cdrom i2c_core edac_core
+> parport snd_page_alloc pcspkr serio_raw pci_hotplug rtc_lib kvm_intel sg
+> joydev kvm usbhid hid linear ehci_hcd uhci_hcd sd_mod crc_t10dif usbcore
+> dm_snapshot edd fan thermal_sys hwmon dm_mod ext3 mbcache jbd
+> ide_pci_generic piix ide_core ata_generic ata_piix ahci libata scsi_mod
+> Pid: 1561, comm: vgchange Not tainted 2.6.30-rc3-vbus #30 Precision
+> WorkStation 490   
+> RIP: 0010:[<ffffffff803863f8>]  [<ffffffff803863f8>] rb_erase+0x132/0x28c
 
-Tom 
-
-> 	Ingo
+I believe this is being worked on over in the thread titled "[BUG]
+rbtree bug with mmotm 2009-04-14-17-24".
 
