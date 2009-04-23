@@ -1,81 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZDWKnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbZDWKvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbZDWKnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZDWKnH
+	id S1757099AbZDWKvV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZDWKvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:43:07 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57477 "EHLO kernel.dk"
+	Thu, 23 Apr 2009 06:51:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34702 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698AbZDWKnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:43:05 -0400
-Date: Thu, 23 Apr 2009 12:43:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-Message-ID: <20090423104304.GV4593@kernel.dk>
-References: <20090422090929.GA14928@havoc.gtf.org> <49EEE225.3010700@garzik.org> <20090423063542.GK4593@kernel.dk> <49F0456B.2050502@garzik.org>
+	id S1754291AbZDWKvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 06:51:11 -0400
+Message-ID: <49F04851.70702@kernel.org>
+Date: Thu, 23 Apr 2009 19:52:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F0456B.2050502@garzik.org>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       unsik Kim <donari75@gmail.com>
+Subject: [PATCH block#for-linus] mg_disk: fix locking
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 10:51:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23 2009, Jeff Garzik wrote:
-> Jens Axboe wrote:
->> On Wed, Apr 22 2009, Jeff Garzik wrote:
->>> Jeff Garzik wrote:
->>>> Currently, libata creates a Scsi_Host per port.  This was originally
->>>> done to leverage SCSI's infrastructure to arbitrate among master/slave
->>>> devices, but is not needed for most modern SATA controllers.   And I
->>>> _think_ it is not needed for master/slave if done properly, either.
->>> BTW note the above, with regards to the libata SCSI->block 
->>> conversion.  libata currently relies on SCSI for some amount of 
->>> generic device  arbitration, in several situations (see ->qc_defer,   
->>> SCSI_MLQUEUE_.*_BUSY).  libata expects SCSI to be intelligent and not 
->>>  starve devices, etc.
->>
->> Defer looks like internal policy, I don't see that functioning any
->> different in the block layer. SCSI_MLQUEUE_*_BUSY in SCSI is primarily
->> using the block layer functionality of BLKPREP_DEFER to begin with, so I
->> think we're pretty close to providing all that already.
->
-> It's not quite that simple.  I am referring mainly to arbitration across  
-> multiple request_queue's.  SCSI has useful code in place to deal with  
-> target-busy and host-busy conditions, both of which could potentially be  
-> blocking and unblocking multiple request queues.
->
-> mlqueue is much more than just a wrapper over block requeueing  
-> functions.  Read scsi_next_command() and scsi_run_queue(), and grep for  
-> starved_list, host_{busy,blocked}, target_{busy,blocked},  
-> device_{busy,blocked}.
->
-> In our master/slave case, we must choose between queue A and queue B,  
-> making sure to starve neither.  For simplex DMA, we potentially have  
-> queues A, B, C and D serving requests across the "bus bottleneck," and  
-> must ensure no starvation of A, B, C or D.
->
->
-> Although I have no code to back this up, my gut feeling is that a  
-> "request queue group" object, with associated functions, that would be  
-> the appropriate place for cross-queue or "host-wide" (as in, struct  
-> Scsi_Host or struct ata_host) functionality.
->
-> Whatever the solution, libata definitely makes use of SCSI's  
-> cross-request_queue arbitration, so any move to block will require  
-> similar functionality.
+IRQ and timeout handlers call functions which expect locked queue lock
+without locking it.  Fix it.
 
-Agree, I think we discussed this many years ago as well. I guess a
-request queue grouping with fair arbitration would suffice. If you need
-to defer for a device beyond that, a simple BLKPREP_DEFER would just
-postpone service until the next round. Probably allow both "skip until
-next round", or "defer the entire group, service me again next time
-first".
+While at it, convert 0s used as null pointer constant to NULLs.
 
--- 
-Jens Axboe
+[ Impact: fix locking, cleanup ]
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: unsik Kim <donari75@gmail.com>
+---
+Only compile tested.  unsik, can you please ack it?
+
+Thanks.
+
+ drivers/block/mg_disk.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+Index: block/drivers/block/mg_disk.c
+===================================================================
+--- block.orig/drivers/block/mg_disk.c
++++ block/drivers/block/mg_disk.c
+@@ -160,11 +160,16 @@ static irqreturn_t mg_irq(int irq, void
+ 	struct mg_host *host = dev_id;
+ 	void (*handler)(struct mg_host *) = host->mg_do_intr;
+ 
+-	host->mg_do_intr = 0;
++	spin_lock(&host->lock);
++
++	host->mg_do_intr = NULL;
+ 	del_timer(&host->timer);
+ 	if (!handler)
+ 		handler = mg_unexpected_intr;
+ 	handler(host);
++
++	spin_unlock(&host->lock);
++
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -319,7 +324,7 @@ static void mg_read(struct request *req)
+ 
+ 	remains = req->nr_sectors;
+ 
+-	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_RD, 0) !=
++	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_RD, NULL) !=
+ 			MG_ERR_NONE)
+ 		mg_bad_rw_intr(host);
+ 
+@@ -363,7 +368,7 @@ static void mg_write(struct request *req
+ 
+ 	remains = req->nr_sectors;
+ 
+-	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_WR, 0) !=
++	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_WR, NULL) !=
+ 			MG_ERR_NONE) {
+ 		mg_bad_rw_intr(host);
+ 		return;
+@@ -521,9 +526,11 @@ void mg_times_out(unsigned long data)
+ 	char *name;
+ 	struct request *req;
+ 
++	spin_lock_irq(&host->lock);
++
+ 	req = elv_next_request(host->breq);
+ 	if (!req)
+-		return;
++		goto out_unlock;
+ 
+ 	host->mg_do_intr = NULL;
+ 
+@@ -534,6 +541,8 @@ void mg_times_out(unsigned long data)
+ 	mg_bad_rw_intr(host);
+ 
+ 	mg_request(host->breq);
++out_unlock:
++	spin_unlock_irq(&host->lock);
+ }
+ 
+ static void mg_request_poll(struct request_queue *q)
