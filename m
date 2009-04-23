@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZDWHf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZDWHeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZDWHf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZDWH2c
+	id S1756669AbZDWHeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZDWH22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:28:32 -0400
-Received: from sous-sol.org ([216.99.217.87]:48346 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:28:28 -0400
+Received: from sous-sol.org ([216.99.217.87]:48342 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755698AbZDWH23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:28:29 -0400
-Message-Id: <20090423072248.318124884@sous-sol.org>
+	id S1755630AbZDWH20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:28:26 -0400
+Message-Id: <20090423072143.255015405@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:38 -0700
+Date: Thu, 23 Apr 2009 00:20:27 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
-       Chris Wilson <chris@chris-wilson.co.uk>
-Subject: [patch 018/100] drm/i915: Check for dev->primary->master before dereference.
+       alan@lxorguk.ukuu.org.uk, Dan Carpenter <error27@gmail.com>
+Subject: [patch 007/100] ext4: fix typo which causes a memory leak on error path
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=drm-i915-check-for-dev-primary-master-before-dereference.patch
+Content-Disposition: inline; filename=ext4-fix-typo-which-causes-a-memory-leak-on-error-path.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,44 +35,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Chris Wilson <chris@chris-wilson.co.uk>
+From: Dan Carpenter <error27@gmail.com>
 
-upstream commit: 98787c057fdefdce6230ff46f2c1105835005a4c
+upstream commit: a7b19448ddbdc34b2b8fedc048ba154ca798667b
 
-I've hit the occasional oops inside i915_wait_ring() with an indication of
-a NULL derefence of dev->primary->master.  Adding a NULL check is
-consistent with the other potential users of dev->primary->master.
+This was found by smatch (http://repo.or.cz/w/smatch.git/)
 
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: stable@kernel.org
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/gpu/drm/i915/i915_dma.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ fs/ext4/mballoc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -41,7 +41,6 @@
- int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
- {
- 	drm_i915_private_t *dev_priv = dev->dev_private;
--	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
- 	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
- 	u32 acthd_reg = IS_I965G(dev) ? ACTHD_I965 : ACTHD;
- 	u32 last_acthd = I915_READ(acthd_reg);
-@@ -58,8 +57,12 @@ int i915_wait_ring(struct drm_device * d
- 		if (ring->space >= n)
- 			return 0;
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2693,7 +2693,7 @@ int ext4_mb_init(struct super_block *sb,
+ 	i = (sb->s_blocksize_bits + 2) * sizeof(unsigned int);
+ 	sbi->s_mb_maxs = kmalloc(i, GFP_KERNEL);
+ 	if (sbi->s_mb_maxs == NULL) {
+-		kfree(sbi->s_mb_maxs);
++		kfree(sbi->s_mb_offsets);
+ 		return -ENOMEM;
+ 	}
  
--		if (master_priv->sarea_priv)
--			master_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-+		if (dev->primary->master) {
-+			struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
-+			if (master_priv->sarea_priv)
-+				master_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-+		}
-+
- 
- 		if (ring->head != last_head)
- 			i = 0;
 
