@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZDWXbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZDWXdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbZDWXbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 19:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZDWXbH
+	id S1756004AbZDWXdl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 19:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZDWXda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 19:31:07 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:37150 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbZDWXbG (ORCPT
+	Thu, 23 Apr 2009 19:33:30 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44926 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752328AbZDWXd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 19:31:06 -0400
-To: "Alexander V. Lukyanov" <lav@netis.ru>
-Cc: linux-kernel@vger.kernel.org, <netdev@vger.kernel.org>
-References: <20090422055735.GA4334@night.netis.ru>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 23 Apr 2009 16:30:57 -0700
-In-Reply-To: <20090422055735.GA4334@night.netis.ru> (Alexander V. Lukyanov's message of "Wed\, 22 Apr 2009 09\:57\:35 +0400")
-Message-ID: <m1hc0fuevi.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 23 Apr 2009 19:33:29 -0400
+Date: Fri, 24 Apr 2009 00:31:57 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 1/2] do_execve() must not clear fs->in_exec if it was
+	set by another thread
+Message-ID: <20090423233157.GA22981@ZenIV.linux.org.uk>
+References: <20090401023849.GW28946@ZenIV.linux.org.uk> <20090401030339.GX28946@ZenIV.linux.org.uk> <20090406153127.GA21220@redhat.com> <Pine.LNX.4.64.0904191710320.9099@blonde.anvils> <20090421161006.GC5402@redhat.com> <alpine.LFD.2.00.0904210924270.2199@localhost.localdomain> <20090421171530.GA12014@redhat.com> <alpine.LFD.2.00.0904211032191.2199@localhost.localdomain> <Pine.LNX.4.64.0904212031120.10256@blonde.anvils> <20090423230156.GA31302@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: lav@netis.ru, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Alexander V. Lukyanov" <lav@netis.ru>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0245]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: 2.6.29.1: unregister_netdevice problem
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090423230156.GA31302@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Alexander V. Lukyanov" <lav@netis.ru> writes:
+On Fri, Apr 24, 2009 at 01:01:56AM +0200, Oleg Nesterov wrote:
+> If do_execve() fails after check_unsafe_exec(), it clears fs->in_exec
+> unconditionally. This is wrong if we race with our sub-thread which
+> also does do_execve:
 
-> Eventually I have an increased load average without apparent reason.
-> When I reboot the server in such a case, I get infinitely repeating
-> messages on the console:
->
-> unregister_netdevice: waiting for eth0.2 to become free. Usage count = 4
->
-> eth0.2 is a vlan interface, eth0 is 02:00.0 Ethernet controller: Realtek
-> Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet
-> controller (rev 01)
 
-CC: netdev where someone might have a better clue.
+[snip]
 
-Infinitely repeating unregister_netdevice messages means something
-isn't releasing it's reference count to your network device.
-
-There really isn't enough information in your email to figure out
-what you were doing that, or what piece of code triggered this.
-
-Eric
+Applied (both of those).
