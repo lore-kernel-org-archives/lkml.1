@@ -1,205 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZDWMPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbZDWMTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbZDWMPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 08:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbZDWMP2
+	id S1756037AbZDWMTV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 08:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZDWMTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 08:15:28 -0400
-Received: from mail-bw0-f163.google.com ([209.85.218.163]:37024 "EHLO
-	mail-bw0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbZDWMP1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 08:15:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=U6Pp1zb7wU/Ja/UQMFwXIymqv63X5CTxFYN4wUPvQ8MAhWnnezT8TbB6gG5siMacRa
-         KA5EcFAaC83MSK8nIailxBSW8OcNOn/Fa05pqeUI0SmnGFNiTagdrscUyXuhW5S+Scap
-         bcirCWP8vBe8Pea9/W/HNrVQegjRd61cEi730=
+	Thu, 23 Apr 2009 08:19:11 -0400
+Received: from thunk.org ([69.25.196.29]:47863 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752867AbZDWMTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 08:19:09 -0400
+Date: Thu, 23 Apr 2009 08:17:45 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, randy.dunlap@oracle.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
+       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
+       agk@sourceware.org, subrata@linux.vnet.ibm.com,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       matt@bluehost.com, roberto@unbit.it, ngupta@google.com
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090423121745.GC2723@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrea Righi <righi.andrea@gmail.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	akpm@linux-foundation.org, randy.dunlap@oracle.com,
+	Carl Henrik Lunde <chlunde@ping.uio.no>,
+	Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+	Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
+	dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
+	agk@sourceware.org, subrata@linux.vnet.ibm.com,
+	Paul Menage <menage@google.com>,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+	dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
+	ngupta@google.com
+References: <20090421191401.GF15541@mit.edu> <20090421204905.GA5573@linux> <20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com> <20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com> <20090422102239.GA1935@linux> <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com> <20090423012254.GZ15541@mit.edu> <20090423115419.c493266a.kamezawa.hiroyu@jp.fujitsu.com> <20090423043547.GB2723@mit.edu> <20090423094423.GA9756@linux>
 MIME-Version: 1.0
-Date: Thu, 23 Apr 2009 14:15:25 +0200
-Message-ID: <1158166a0904230515h333a78c9uf49931824c1dfe72@mail.gmail.com>
-Subject: ptrace(PTRACE_SYSCALL/CONT/DETACH, ..., SIGSTOP) does not work
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>
-Cc: Jan Kratochvil <jan.kratochvil@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090423094423.GA9756@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oleg,
+On Thu, Apr 23, 2009 at 11:44:24AM +0200, Andrea Righi wrote:
+> This is true in part. Actually io-throttle v12 has been largely tested,
+> also in production environments (Matt and David in cc can confirm
+> this) with quite interesting results.
+> 
+> I tested the previous versions usually with many parallel iozone, dd,
+> using many different configurations.
+> 
+> In v12 writeback IO is not actually limited, what io-throttle did was to
+> account and limit reads and direct IO in submit_bio() and limit and
+> account page cache writes in balance_dirty_pages_ratelimited_nr().
 
-Bringing the discussion to lkml per your request.
+Did the testing include what happened if the system was also
+simultaneously under memory pressure?  What you might find happening
+then is that the cgroups which have lots of dirty pages, which are not
+getting written out, have their memory usage "protected", while
+cgroups that have lots of clean pages have more of their pages
+(unfairly) evicted from memory.  The worst case, of course, would be
+if the memory pressure is coming from an uncapped cgroup.
 
-Lets focus on ptrace() API, not the actual kernel behavior (which may be
-different due to bugs). In other words, how ptrace should work?
+> In a previous discussion (http://lkml.org/lkml/2008/11/4/565) we decided
+> to split the problems: the decision was that IO controller should
+> consider only IO requests and the memory controller should take care of
+> the OOM / dirty pages problems. Distinct memcg dirty_ratio seemed to be
+> a good start. Anyway, I think we're not so far from having an acceptable
+> solution, also looking at the recent thoughts and discussions in this
+> thread. For the implementation part, as pointed by Kamezawa per bdi /
+> task dirty ratio is a very similar problem. Probably we can simply
+> replicate the same concepts per cgroup.
 
-ptrace(PTRACE_SYSCALL/CONT/DETACH, ..., sig) API is needed in order to continue
-the process after ptrace stop, and let it see and handle the signal.
+I looked at that discussion, and it doesn't seem to be about splitting
+the problem between the IO controller and the memory controller at
+all.  Instead, Andrew is talking about how thottling dirty memory page
+writeback on a per-cpuset basis (which is what Christoph Lamaeter
+wanted for large SGI systems) made sense as compared to controlling
+the rate at which pages got dirty, which is considered much higher
+priority:
 
-For example, imagine that you are stracing cat process. It is blocked on read
-syscall:
+    Generally, I worry that this is a specific fix to a specific problem
+    encountered on specific machines with specific setups and specific
+    workloads, and that it's just all too low-level and myopic.
 
-# { sleep 10; echo Hello; } | strace cat
-...
-read(0,
+    And now we're back in the usual position where there's existing code and
+    everyone says it's terribly wonderful and everyone is reluctant to step
+    back and look at the big picture.  Am I wrong?
 
-What strace is doing at this point? It is in wait4(-1, &status, __WALL, NULL).
+    Plus: we need per-memcg dirty-memory throttling, and this is more
+    important than per-cpuset, I suspect.  How will the (already rather
+    buggy) code look once we've stuffed both of them in there?
+   
+So that's basically the same worry I have; which is we're looking at
+things at a too-low-level basis, and not at the big picture.
 
-Now someone sends a signal. strace sees this:
+There wasn't discussion about the I/O controller on this thread at
+all, at least as far as I could find; nor that splitting the problem
+was the right way to solve the problem.  Maybe somewhere there was a
+call for someone to step back and take a look at the "big picture"
+(what I've been calling the high level design), but I didn't see it in
+the thread.
 
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == <sig>}], __WALL, NULL) = <PID>
+It would seem to be much simpler if there was a single tuning knob for
+the I/O controller and for dirty page writeback --- after all, why
+*else* would you be trying to control the rate at which pages get
+dirty?  And if you have a cgroup which sometimes does a lot of writes
+via direct I/O, and sometimes does a lot of writes through the page
+cache, and sometimes does *both*, it would seem to me that if you want
+to be able to smoothly limit the amount of I/O it does, you would want
+to account and charge for direct I/O and page cache I/O under the same
+"bucket".   Is that what the user would want?   
 
-strace will inform user with "--- SIGxxxx ---", and what strace needs to do
-now? Right! It needs to deliver the signal to <PID>, and wait again:
+Suppose you only have 200 MB/sec worth of disk bandwidth, and you
+parcel it out in 50 MB/sec chunks to 4 cgroups.  But you also parcel
+out 50MB/sec of dirty writepages quota to each of the 4 cgroups.  Now
+suppose one of the cgroups, which was normally doing not much of
+anything, suddenly starts doing a database backup which does 50 MB/sec
+of direct I/O reading from the database file, and 50 MB/sec dirtying
+pages in the page cache as it writes the backup file.  Suddenly that
+one cgroup is using half of the system's I/O bandwidth!
 
-ptrace(PTRACE_SYSCALL, <PID>, 0x1, <sig>);
-wait4(-1, &status, __WALL, NULL);
+And before you say this is "correct" from a definitional point of
+view, is it "correct" from what a system administrator would want to
+control?  Is it the right __feature__?  If you just say, well, we
+defined the problem that way, and we're doing things the way we
+defined it, that's a case of garbage in, garbage out.  You also have
+to ask the question, "did we define the _problem_ in the right way?"
+What does the user of this feature really want to do?  
 
-And now, this signal should NOT show up in wait4 (because tracer already saw
-it, we don't want infinite cycle here :), but should act as normal.
+It would seem to me that the system administrator would want a single
+knob, saying "I don't know or care how the processes in a cgroup does
+its I/O; I just want to limit things so that the cgroup can only hog
+25% of the I/O bandwidth."
 
+And note this is completely separate from the question of what happens
+if you throttle I/O in the page cache writeback loop, and you end up
+with an imbalance in the clean/dirty ratios of the cgroups.  And
+looking at this thread, life gets even *more* amusing on NUMA machines
+if you do this; what if you end up starving a cpuset as a result of
+this I/O balancing decision, so a particular cpuset doesn't have
+enough memory?  That's when you'll *definitely* start having OOM
+problems.
 
-Example 1: cat is signaled with a signal with default action "nop". Strace does
-this (irrelevant syscalls removed):
+So maybe someone has thought about all of these issues --- if so, may
+I gently suggest that someone write all of this down?  The design
+issues here are subtle, at least to my little brain, and relying on
+people remembering that something was discussed on LKML six months ago
+doesn't seem like a good long-term strategy.  Eventually this code
+will need to be maintained, and maybe some of the engineers working on
+it will have moved on to other projects.  So this is something that is
+rather definitely deserves to be written up and dropped into
+Documentation/ or in ample code code comments discussing on the
+various subsystems interact.
 
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGWINCH}], __WALL, NULL) = 31027
-write(2, "--- SIGWINCH (Window changed) @ "..., 42) = 42
-ptrace(PTRACE_SYSCALL, 31027, 0x1, SIGWINCH) = 0
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == 133}], __WALL, NULL) = 31027
-...
+Best regards,
 
-Example 2: cat is signaled with a signal with default action "die". Strace does
-this:
-
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTERM}], __WALL, NULL) = 32654
-write(2, "--- SIGTERM (Terminated) @ 0 (0)"..., 37) = 37
-ptrace(PTRACE_SYSCALL, 32654, 0x1, SIGTERM) = 0
-wait4(-1, [{WIFSIGNALED(s) && WTERMSIG(s) == SIGTERM}], __WALL, NULL) = 32654
-write(2, "+++ killed by SIGTERM +++\n", 26) = 26
-wait4(-1, 0x7fff02e98f7c, WNOHANG|__WALL, NULL) = -1 ECHILD (No child
-processes)
-
-There two examples works as expected. In particular, user-observed cat's
-behavior is not changed by the fact that it is straced.
-
-
-Now, the bug:
-
-Example 3: cat is signaled with SIGSTOP. Strace does this:
-
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGSTOP}], __WALL, NULL) = 30989
-write(2, "--- SIGSTOP (Stopped (signal)) @"..., 43) = 43
-ptrace(PTRACE_SYSCALL, 30989, 0x1, SIGSTOP) = 0
-
-  Note: traced process is NOT stopped here as it should be!
-  Somehow, we get another SIGSTOP notification:
-
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGSTOP}], __WALL, NULL) = 30989
-
-  strace is confused (it thinks it's another SIGSTOP).
-  it injects SIGSTOP again:
-
-write(2, "--- SIGSTOP (Stopped (signal)) @"..., 43) = 43
-ptrace(PTRACE_SYSCALL, 30989, 0x1, SIGSTOP) = 0
-
-  thankfully, this doesn't loop forever, but tracee is still not stopped!
-  we are immediately getting notification that it entered read syscall:
-
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == 133}], __WALL, NULL) = 30989
-ptrace(PTRACE_PEEKUSER, 30989, 8*ORIG_RAX, [0]) = 0
-ptrace(PTRACE_PEEKUSER, 30989, 8*CS, [0x33]) = 0
-ptrace(PTRACE_PEEKUSER, 30989, 8*RAX, [0xffffffffffffffda]) = 0
-ptrace(PTRACE_PEEKUSER, 30989, 8*RDI, [0]) = 0
-ptrace(PTRACE_PEEKUSER, 30989, 8*RSI, [0x77a000]) = 0
-ptrace(PTRACE_PEEKUSER, 30989, 8*RDX, [0x1000]) = 0
-write(2, "read(0, ", 8)                 = 8
-ptrace(PTRACE_SYSCALL, 30989, 0x1, SIG_0) = 0
-wait4(-1, ..., __WALL, NULL) = ....
-
-This does not look correct to me. Straced process is not behaving in the same
-way as it would without strace.
-
-
-If you disagree with me, let me know what, in your opinion, strace should do to
-properly emulate process behavior?
-
-
-BTW, same happens with other stopping signal, TSTP:
-
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTSTP}], __WALL, NULL) = 32682
-write(2, "--- SIGTSTP (Stopped) @ 0 (0) --"..., 34) = 34
-ptrace(PTRACE_SYSCALL, 32682, 0x1, SIGTSTP) = 0
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTSTP}], __WALL, NULL) = 32682
-write(2, "--- SIGTSTP (Stopped) @ 0 (0) --"..., 34) = 34
-ptrace(PTRACE_SYSCALL, 32682, 0x1, SIGTSTP) = 0
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == 133}], __WALL, NULL) = 32682
-ptrace(PTRACE_PEEKUSER, 32682, 8*ORIG_RAX, [0]) = 0
-ptrace(PTRACE_PEEKUSER, 32682, 8*CS, [0x33]) = 0
-ptrace(PTRACE_PEEKUSER, 32682, 8*RAX, [0xffffffffffffffda]) = 0
-ptrace(PTRACE_PEEKUSER, 32682, 8*RDI, [0]) = 0
-ptrace(PTRACE_PEEKUSER, 32682, 8*RSI, [0x2483000]) = 0
-ptrace(PTRACE_PEEKUSER, 32682, 8*RDX, [0x1000]) = 0
-write(2, "read(0, ", 8)                 = 8
-wait4(-1, ...., __WALL, NULL) = ...
-
-
->From  Oleg Nesterov 2009-04-22 19:22:29 EDT
-> > Now, the bug:
-> >
-> > Example 3: cat is signaled with SIGSTOP. Strace does this:
-> >
-> > wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGSTOP}], __WALL, NULL) = 30989
->
-> The tracee dequeues SIGSTOP, does get_signal_to_deliver()->ptrace_stop(),
-> and do not really handle SIGSTOP.
->
-> > write(2, "--- SIGSTOP (Stopped (signal)) @"..., 43) = 43
-> > ptrace(PTRACE_SYSCALL, 30989, 0x1, SIGSTOP) = 0
-> >
-> >   Note: traced process is NOT stopped here as it should be!
-> >   Somehow, we get another SIGSTOP notification:
-> >
-> > wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGSTOP}], __WALL, NULL) = 30989
->
-> strace does ptrace(PTRACE_SYSCALL, SIGSTOP), this sets ->exit_code = SIGSTOP.
-> The tracee sees the debugger wants SIGSTOP to be handled and calls
-> do_signal_stop().
-> (we have some complications with SIGNAL_STOP_DEQUEUED, but lets ignore them).
->
-> finish_stop() notifies ->parent == tracer about jctl stop, strace does
-> do_wait()
-> and gets WSTOPSIG(s) == SIGSTOP.
->
-> What is wrong?
-
-It's wrong that single SIGSTOP gets reported twice, yet fails to act even once.
-
-You are replying from the point of view of kernel's current implementation.
-Stop thinking about implementation. Think about he API.
-Does kernel fulfil what API promises? It does not look like it does.
-
-What strace told kernel to do? strace said:
-
-    Kernel, please make traced process act as if it received <sig>:
-    * ignore <sig> if <sig> is blocked
-      (and keep it pending in pending signal mask);
-    * jump to handler if handler is registered;
-    * ignore <sig> if it is SIG_IGNed, or if default action is no-op;
-    * make process die if default handler is to die;
-    * make process stop if default handler is to stop.
-
-IOW: strace does NOT want to see this signal reported back to strace -
-it already saw that, what's the point in seeing it again?
-
-All of the above is working correctly, except for the last line:
-"make process stop if default handler is to stop". This one does not work.
-Instead it acts really weird, as shown in my SIGSTOP and SIGTSTP
-examples above.
-
-I think this is a bug.
---
-vda
+					- Ted
