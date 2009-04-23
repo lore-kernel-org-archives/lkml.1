@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbZDWGHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZDWGIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbZDWGHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 02:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZDWGHI
+	id S1754785AbZDWGIv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 02:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZDWGIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 02:07:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44740 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbZDWGHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 02:07:07 -0400
-Date: Thu, 23 Apr 2009 16:06:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Cc: linux-next@vger.kernel.org, <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: upstream tree build failure
-Message-Id: <20090423160656.fac84e3f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 02:08:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41546 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751782AbZDWGIl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 02:08:41 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: fresh data was Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re: New x86 warning
+From: Andi Kleen <andi@firstfloor.org>
+References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu>
+	<8763gxoz50.fsf_-_@basil.nowhere.org>
+	<alpine.LFD.2.00.0904221354320.3101@localhost.localdomain>
+	<20090422211501.GD13896@one.firstfloor.org>
+	<alpine.LFD.2.00.0904221417110.3101@localhost.localdomain>
+	<20090422220428.GE13896@one.firstfloor.org>
+Date: Thu, 23 Apr 2009 08:08:38 +0200
+In-Reply-To: <20090422220428.GE13896@one.firstfloor.org> (Andi Kleen's message of "Thu, 23 Apr 2009 00:04:28 +0200")
+Message-ID: <87skjzoqah.fsf_-_@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Andi Kleen <andi@firstfloor.org> writes:
 
-[I am now using gcc version 4.4.0 ...]
+>> > Quick test here:
+>> 
+>> How about you just compile the kernel with gcc-3.2 and compare the number 
+>> of calls to memcpy before-and-after instead? That's the real test.
+>
+> I waited over 10 minutes for the full vmlinux objdumps to finish. sorry lost
+> patience. If someone has a fast disassembler we can try it. I'll leave
+> them running over night, maybe there are exact numbers tomorrow.
+>
+> But from a quick check (find -name '*.o' | xargs nm | grep memcpy) there are
+> very little files which call it with the patch, so there's some
+> evidence that there isn't a dramatic increase.
 
-Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+I let the objdumps finish over night. On my setup (defconfig + some 
+additions) there are actually less calls to out of line memcpy/__memcpy
+with the patch. I see only one for my defconfig, while there are 
+~10 without the patch. So it makes very little difference.
+The code size savings must come from more efficient code generation
+for the inline case. I haven't investigated  that in detail though.
 
-arch/powerpc/mm/tlb_nohash_low.S:206:6: error: #elif with no expression
+So the patch seems like a overall win.
 
-Previous gcc versions didn't notice this because one of the preceding
-#ifs always evaluated to true.  I have applied the following patch for today.
+-Andi
+
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 23 Apr 2009 16:00:47 +1000
-Subject: [PATCH] powerpc: fix for long standing bug noticed by gcc 4.4.0
-
-Previous gcc versions didn't notice this because one of the preceding
-
-gcc 4.4.0 produced this error:
-
-arch/powerpc/mm/tlb_nohash_low.S:206:6: error: #elif with no expression
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/tlb_nohash_low.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
-index 45fed36..21e1b9a 100644
---- a/arch/powerpc/mm/tlb_nohash_low.S
-+++ b/arch/powerpc/mm/tlb_nohash_low.S
-@@ -203,6 +203,6 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	isync
- 1:	wrtee	r10
- 	blr
--#elif
-+#else
- #error Unsupported processor type !
- #endif
--- 
-1.6.2.3
-
+ak@linux.intel.com -- Speaking for myself only.
