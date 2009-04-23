@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbZDWODT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbZDWOKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758509AbZDWODT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 10:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZDWODJ
+	id S1758151AbZDWOKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 10:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZDWOKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 10:03:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59868 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbZDWODJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 10:03:09 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: 2.6.30-rc deadline scheduler performance regression for iozone over NFS
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 23 Apr 2009 10:01:58 -0400
-Message-ID: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 23 Apr 2009 10:10:33 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:47260 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754089AbZDWOKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 10:10:33 -0400
+Date: Thu, 23 Apr 2009 11:10:26 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, e1000-devel@lists.sourceforge.net,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [E1000-devel] e1000: "eeprom checksum is not valid" after kexec
+Message-ID: <20090423141026.GB4046@vespa.holoscopio.com>
+References: <49F06EEB.9060500@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jq0ap7NbKX2Kqbes"
+Content-Disposition: inline
+In-Reply-To: <49F06EEB.9060500@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I've been working on CFQ improvements for interleaved I/Os between
-processes, and noticed a regression in performance when using the
-deadline I/O scheduler.  The test uses a server configured with a cciss
-array and 1Gb/s ethernet.
+--jq0ap7NbKX2Kqbes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The iozone command line was:
-  iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+On Thu, Apr 23, 2009 at 03:36:43PM +0200, Jiri Slaby wrote:
+> Hi,
+>=20
+> 4a865905f685eaefaedf6ade362323dc52aa703b
+> (PCI PM: Make pci_set_power_state() handle devices with no PM support)
+> breaks e1000 after being kexec'ed. These reverts fix the problem:
+>     Revert "PCI PM: Make pci_set_power_state() handle devices with no PM
+> support"
+>     Revert "PCI PM: Introduce __pci_[start|complete]_power_transition()
+> (rev. 2)"
+>=20
+> I reverted the second one just for an easy revert of the former one,
+> which is actually the culprit.
+>=20
+> The symptoms:
+> e1000 0000:02:01.0: enabling device (0000 -> 0003)
+> e1000 0000:02:01.0: PCI INT A -> Link[LNKA] -> GSI 11 (level, low) -> IRQ=
+ 11
+> e1000 0000:02:01.0: setting latency timer to 64
+> e1000: 0000:02:01.0: e1000_probe: The EEPROM Checksum Is Not Valid
+> Switched to high resolution mode on CPU 0
 
-The numbers in the nfsd's row represent the number of nfsd "threads".
-These numbers (in MB/s) represent the average of 5 runs.
+Have you tried b43fcd7dc7b, found in v2.6.30-rc3?
 
-               v2.6.29
+--jq0ap7NbKX2Kqbes
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-nfsd's  |   1    |  2   |   4   |   8
---------+---------------+-------+------
-deadline| 43207 | 67436 | 96289 | 107590
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-              2.6.30-rc1
+iEYEARECAAYFAknwdtIACgkQyTpryRcqtS0y4wCfXQoVLgFbvcQJvljDh3Rulxut
+ijgAnAvCWxx4IPaEjlaRvgKuwEtqEF7b
+=jF31
+-----END PGP SIGNATURE-----
 
-nfsd's  |   1   |   2   |   4   |   8
---------+---------------+-------+------
-deadline| 43732 | 68059 | 76659 | 83231
-
-    2.6.30-rc3.block-for-linus
-
-nfsd's  |   1   |   2   |   4   |   8
---------+---------------+-------+------
-deadline| 46102 | 71151 | 83120 | 82330
-
-
-Notice the drop for 4 and 8 threads.  It may be worth noting that the
-default number of NFSD threads is 8.
-
-Cheers,
-Jeff
+--jq0ap7NbKX2Kqbes--
