@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZDWGf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZDWGg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbZDWGf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 02:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZDWGfo
+	id S1755528AbZDWGg2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 02:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZDWGgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 02:35:44 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58411 "EHLO kernel.dk"
+	Thu, 23 Apr 2009 02:36:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40683 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252AbZDWGfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 02:35:43 -0400
-Date: Thu, 23 Apr 2009 08:35:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
-Message-ID: <20090423063542.GK4593@kernel.dk>
-References: <20090422090929.GA14928@havoc.gtf.org> <49EEE225.3010700@garzik.org>
+	id S1753709AbZDWGgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 02:36:17 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49EEE225.3010700@garzik.org>
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: remove PT_DTRACE from arch/* except arch/um
+In-Reply-To: Oleg Nesterov's message of  Thursday, 23 April 2009 00:06:49 +0200 <20090422220649.GB22755@redhat.com>
+References: <20090330185146.D525AFC3AB@magilla.sf.frob.com>
+	<20090408203954.GA26816@redhat.com>
+	<20090416204004.GA28013@redhat.com>
+	<20090416232430.4DAE4FC3C6@magilla.sf.frob.com>
+	<20090420183718.GC32527@redhat.com>
+	<20090421011354.4B19EFC3C7@magilla.sf.frob.com>
+	<20090421214819.GA22845@redhat.com>
+	<20090422032205.B8D39FC3C7@magilla.sf.frob.com>
+	<20090422220400.GA22755@redhat.com>
+	<20090422220649.GB22755@redhat.com>
+X-Zippy-Says: BEEP-BEEP!!  I'm a '49 STUDEBAKER!!
+Message-Id: <20090423063613.278E8FC3C7@magilla.sf.frob.com>
+Date: Wed, 22 Apr 2009 23:36:13 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22 2009, Jeff Garzik wrote:
-> Jeff Garzik wrote:
->> Currently, libata creates a Scsi_Host per port.  This was originally
->> done to leverage SCSI's infrastructure to arbitrate among master/slave
->> devices, but is not needed for most modern SATA controllers.   And I
->> _think_ it is not needed for master/slave if done properly, either.
->
-> BTW note the above, with regards to the libata SCSI->block conversion.  
-> libata currently relies on SCSI for some amount of generic device  
-> arbitration, in several situations (see ->qc_defer,  
-> SCSI_MLQUEUE_.*_BUSY).  libata expects SCSI to be intelligent and not  
-> starve devices, etc.
+> Unfortunately, I know nothing about these arches, so I can only rely on grep.
+> But it really looks like nobody except arch/um actually uses DTRACE.
 
-Defer looks like internal policy, I don't see that functioning any
-different in the block layer. SCSI_MLQUEUE_*_BUSY in SCSI is primarily
-using the block layer functionality of BLKPREP_DEFER to begin with, so I
-think we're pretty close to providing all that already.
+Same with me.  But I do trust grep, and my knowledge that PT_DTRACE was
+widely used old cruft.  To be really paranoid, you can grep (painfully)
+for all ->ptrace ('[>.]ptrace\>') in arch code, plus find any that use
+it in asm-offsets.c, and then grep for TSK_PTRACE or whatever macro is
+defined there.  (Chances are high that there are no uses that you missed.)
+Or you could just leave it to the arch people to pipe up if we're wrong.
 
--- 
-Jens Axboe
+The patches all look quite right and harmless to me.
 
+
+Thanks,
+Roland
