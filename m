@@ -1,150 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZDWIfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZDWIha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZDWIfU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZDWIfB
+	id S1756713AbZDWIha (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZDWIhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 04:35:01 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:8277 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751391AbZDWIe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 04:34:59 -0400
-Message-ID: <49F02825.4060800@panasas.com>
-Date: Thu, 23 Apr 2009 11:34:45 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Thu, 23 Apr 2009 04:37:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41024 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753677AbZDWIhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 04:37:12 -0400
+Message-ID: <49F028CF.4020006@suse.de>
+Date: Thu, 23 Apr 2009 16:37:35 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: dgilbert@interlog.com
-CC: Vladislav Bolkhovitin <vst@vlnb.net>, Tejun Heo <tj@kernel.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Christoph Hellwig <hch@lst.de>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] [Target_Core_Mod/pSCSI]: Add optional legacy	scsi_execute_async()
- usage for Linux/SCSI passthrough
-References: <1239930560.4176.577.camel@haakon2.linux-iscsi.org> <49EB036B.8090607@panasas.com> <49EDB8EF.7040503@vlnb.net> <49EF1A88.1040105@panasas.com> <49EF6AA5.80500@interlog.com>
-In-Reply-To: <49EF6AA5.80500@interlog.com>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Magnus Damm <damm@igel.co.jp>
+Subject: Re: [PATCH 1/7] mach-mmp: add parameter to clksrc_read()
+References: <49EF6A4D.3030606@suse.de> <f17812d70904222318n4b742c17y647b8a8ca5273112@mail.gmail.com>
+In-Reply-To: <f17812d70904222318n4b742c17y647b8a8ca5273112@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Apr 2009 08:34:57.0456 (UTC) FILETIME=[623CE300:01C9C3EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/22/2009 10:06 PM, Douglas Gilbert wrote:
-> Boaz Harrosh wrote:
->> On 04/21/2009 03:15 PM, Vladislav Bolkhovitin wrote:
->>> Boaz Harrosh, on 04/19/2009 02:56 PM wrote:
->>>> On 04/17/2009 04:09 AM, Nicholas A. Bellinger wrote:
->>> [..]
->>>
->>>> Are you aware that scsi_execute_async() has gone in 2.6.30-rc1?
->>>>
->>>> I'm not sure what would be the best alternative for you. I would say
->>>> a bio, but it is still being debated. Your current options are:
->>>>
->>>> 1. bio_alloc then loop () bio_add_pc_page, and finally blk_rq_append_bio
->>>>    (Which block people don't like)
->>>> 2. sglist => page-pointers-array translation and blk_rq_map_user with 
->>>>    struct rq_map_data mode. (not possible with all kind of sglists)
->>>> 2. sglist => iovec translation and blk_rq_map_user_iov()
->>>>    (Very very ugly mapping of pages to virtual pointers)
->>>>
->>>> I have a similar situation with my OSD code.
->>> Do you have somewhere in it a need to run an arbitrary CDB with data 
->>> pages stored in an sglist? Is that code accepted in the mainline?
->>>
->> No, I have a direct bio which comes from two sources.
->> 1. A bio prepared by a filesystem to describe a write/read to a file (osd object)
->> 2. A cloned bio that comes from a stacking block-device over osd-object.
+
+
+Eric Miao Wrote:
+> This looks to be already fixed by Magnus Damm and merged in recent -rc3.
+> 
+
+>From my upstream clone, the last commit is
+49cbe78637eb0503f45fc9b556ec08918a616534, which is
+[ARM] pxa: add base support for Marvell's PXA168 processor line
+
+I don't find Magnus' patch from upstream. Is that patch already merged in some
+sub-system tree ?
+
+
+> On Thu, Apr 23, 2009 at 3:04 AM, Coly Li <coly.li@suse.de> wrote:
+>> After the patch to add parameter to uv_read_rtc(), I did a grep and found
+>> several similar issues.
 >>
->> So I do not have an sglist at all, anywhere in code.
+>> This patch modifies parameter of clksrc_read() from 'void' to 'struct
+>> clocksource *cs', which fixes compile warning for incompatible parameter type.
 >>
->>> If yes, why not to resurrect the necessary bits of scsi_execute_async() 
->>> (option (1) above)? It was deleted, because in 2.6.30 there are no users 
->>> of it left, but if there are users (OSD), then why not to return it? 
->>> Seems nothing better for the sg->bio case can be invented.
->>>
->> I hate scsi_execute_async() for lots of reasons, 
->> 1. The cover-up of an historical abuse of sglists by sg/sr
->> 2. Override of use_sg/data-pointer crap
-> 
-> Hate, abuse, crap??
-> [I believe the author of scsi_execute_async() is cc-ed on
-> your post.]
-> 
-
-Sorry, no offence intended. I meant today in the light of
-better options.
-
-> It served a purpose when the block layer was taking over
-> sglist handling and was synchronous. Block error handling
-> was non-existent or poor at the time. The block layer
-> wanted to disown the sg and st drivers because they didn't
-> fit its crude model. So scsi_execute_async() was our
-> "get out of the !@#$ing block system" card.
-> 
-
-I totally agree. At the time it was made it was the most
-advance IO concept in the kernel. And it served as an example
-of what should be done. Look how long it took to replace it.
-
-> Happily the block system has evolved to being able to
-> provide the async handling and error processing that
-> it, sg and st need. It is now a non-block system.
-> 
-> So scsi_execute_async() has become superfluous.
-> 
-
-There was a time around 2.6.17 or so, when it was made
-to go over block-layer, and it became just a translation from
-sglist to a bio. That was the time when it started to be a layering
-violation and started to hurt. But it took so long to clean all
-users and put things in order.
-
-So now when people start missing it again, I use harsh words, just to
-make a technical stand. I never meant it in the historical sense, at
-the time and context it was written it was brilliant.
-
->> 3. What is data-format got to do with sync/async execution
-> 
-> A fair bit in async. For example I'd like to know when data-out
-> buffers can be re-used and data-in buffers are ready. If it was
-> really clever it could alert me when thresholds were met in
-> the data-in buffer.
-> 
-
-I do that today, have 3-4 outstanding async SG_IO in flight before
-starting to wait on the first buffers fifo-style, Good sized requests
-give you very good balance, of preparing the next buffers while previous
-buffers are doing IO. So the disk is kept busy and all processing and
-io preparation is done in parallel. I found that calculating sizes in
-time units gives best results. Like 1/3 second for a cycle, that is 100-80
-milliseconds per request.
-
-> Doug Gilbert
-> 
->> 4. the need of all that scsi_io_context and the re-invention
->>    of async_done API.
->> 5. ...
->> Good riddence
+>> Signed-off-by: Coly Li <coly.li@suse.de>
+>> Cc: Eric Miao <eric.miao@marvell.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  arch/arm/mach-mmp/time.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
 >>
->> But you might be looking into an API introduced by an RFC by
->> Tejun Heo in the form of blk_rq_map_kern_sgl() which should
->> be a more appropriate general API for your use.
->> (And is not directly usable for me in OSD)
+>> diff --git a/arch/arm/mach-mmp/time.c b/arch/arm/mach-mmp/time.c
+>> index b03a6ed..a8400bb 100644
+>> --- a/arch/arm/mach-mmp/time.c
+>> +++ b/arch/arm/mach-mmp/time.c
+>> @@ -136,7 +136,7 @@ static struct clock_event_device ckevt = {
+>>        .set_mode       = timer_set_mode,
+>>  };
 >>
->>> Vlad
->> Boaz
+>> -static cycle_t clksrc_read(void)
+>> +static cycle_t clksrc_read(struct clocksource *cs)
+>>  {
+>>        return timer_read();
+>>  }
+>>
+>> --
+>> Coly Li
+>> SuSE Labs
+>>
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 >>
 > 
+> 
+> 
 
-Sorry, I have the out most respect for you
-Boaz
+-- 
+Coly Li
+SuSE Labs
