@@ -1,147 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbZDWVhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932087AbZDWVip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbZDWVhV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbZDWVfq
+	id S932087AbZDWVip (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbZDWVif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:35:46 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59189 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759055AbZDWVfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 17:35:41 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 1/4] vfs: Fix sys_sync() and fsync_super() reliability (version 3)
-Date: Thu, 23 Apr 2009 23:35:33 +0200
-Message-Id: <1240522536-2994-2-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1240522536-2994-1-git-send-email-jack@suse.cz>
-References: <1240522536-2994-1-git-send-email-jack@suse.cz>
+	Thu, 23 Apr 2009 17:38:35 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:45835 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753066AbZDWVid (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 17:38:33 -0400
+Message-ID: <49F0DFD7.5040107@linux.vnet.ibm.com>
+Date: Thu, 23 Apr 2009 14:38:31 -0700
+From: jvrao <jvrao@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>,
+       Linux Driver <Linux-Driver@qlogic.com>
+Subject: Re: Interrupts are being dropped under heavy IO on -rt .
+References: <49DF71CF.7070509@linux.vnet.ibm.com> <20090415194802.GD1382@plap4-2.local>
+In-Reply-To: <20090415194802.GD1382@plap4-2.local>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So far, do_sync() called:
-  sync_inodes(0);
-  sync_supers();
-  sync_filesystems(0);
-  sync_filesystems(1);
-  sync_inodes(1);
+Andrew Vasquez wrote:
+> On Fri, 10 Apr 2009, jvrao wrote:
+> 
+>> Qlogic driver uses MSI-EDGE interrupts by default.
+>>  
+>> On -rt kernel under heavy IO load we observed that the driver missed 
+>> interrupts occasionally.
+>>
+>> Missing interrupts caused spurious mailbox timeouts and path failovers.
+>>
+>> Suspecting MSI interrupts, we disabled MSI and forcing the driver to use 
+>> APIC interrupts (Patch attached).
+>>
+>> With this change, our IO tests ran for extended period of time without 
+>> any issues.
+>>
+>> It would be interesting to see if the MSI infrastructure itself has 
+>> issues on realtime, or it is the combination of qla2xxx/MSI.
+>>
+>> Right now we don't have any setup to test out MSI with other adapters. 
+>> Hence, wondering if anyone faced similar issues.
+> 
+> Could you perhaps provide some details on hardware used within your
+> testing -- HBA type, storage, etc?  Also, can you share any logs of
+> the failures with extended-error-logging enabled
+> (ql2xextended_error_logging)?
 
-This ordering makes it kind of hard for filesystems as sync_inodes(0) need not
-submit all the IO (for example it skips inodes with I_SYNC set) so e.g. forcing
-transaction to disk in ->sync_fs() is not really enough. Therefore sys_sync has
-not been completely reliable on some filesystems (ext3, ext4, reiserfs, ocfs2
-and others are hit by this) when racing e.g. with background writeback. A
-similar problem hits also other filesystems (e.g. ext2) because of
-write_supers() being called before the sync_inodes(1).
+Hi, the following link provides more information on the logs and our analysis.
 
-Change the ordering of calls in do_sync() - this requires a new function
-sync_blkdevs() to preserve the property that block devices are always synced
-after write_super() / sync_fs() call.
+https://bugzilla.redhat.com/show_bug.cgi?id=466903
 
-The same issue is fixed in __fsync_super() function used on umount /
-remount read-only.
+[root@elm3c29 R2-SR1]# lspci | grep -i qlogic
+03:05.0 Fibre Channel: QLogic Corp. ISP2422-based 4Gb Fibre Channel to PCI-X HBA (rev 02)
+03:05.1 Fibre Channel: QLogic Corp. ISP2422-based 4Gb Fibre Channel to PCI-X HBA (rev 02)
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/super.c         |   27 ++++++++++++++++++++++++++-
- fs/sync.c          |    3 ++-
- include/linux/fs.h |    2 ++
- 3 files changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/fs/super.c b/fs/super.c
-index 786fe7d..4826540 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -267,6 +267,7 @@ void __fsync_super(struct super_block *sb)
- {
- 	sync_inodes_sb(sb, 0);
- 	vfs_dq_sync(sb);
-+	sync_inodes_sb(sb, 1);
- 	lock_super(sb);
- 	if (sb->s_dirt && sb->s_op->write_super)
- 		sb->s_op->write_super(sb);
-@@ -274,7 +275,6 @@ void __fsync_super(struct super_block *sb)
- 	if (sb->s_op->sync_fs)
- 		sb->s_op->sync_fs(sb, 1);
- 	sync_blockdev(sb->s_bdev);
--	sync_inodes_sb(sb, 1);
- }
- 
- /*
-@@ -502,6 +502,31 @@ restart:
- 	mutex_unlock(&mutex);
- }
- 
-+/*
-+ *  Sync all block devices underlying some superblock
-+ */
-+void sync_blockdevs(void)
-+{
-+	struct super_block *sb;
-+
-+	spin_lock(&sb_lock);
-+restart:
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		if (!sb->s_bdev)
-+			continue;
-+		sb->s_count++;
-+		spin_unlock(&sb_lock);
-+		down_read(&sb->s_umount);
-+		if (sb->s_root)
-+			sync_blockdev(sb->s_bdev);
-+		up_read(&sb->s_umount);
-+		spin_lock(&sb_lock);
-+		if (__put_super_and_need_restart(sb))
-+			goto restart;
-+	}
-+	spin_unlock(&sb_lock);
-+}
-+
- /**
-  *	get_super - get the superblock of a device
-  *	@bdev: device to get the superblock for
-diff --git a/fs/sync.c b/fs/sync.c
-index 7abc65f..fa14e42 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -26,10 +26,11 @@ static void do_sync(unsigned long wait)
- 	wakeup_pdflush(0);
- 	sync_inodes(0);		/* All mappings, inodes and their blockdevs */
- 	vfs_dq_sync(NULL);
-+	sync_inodes(wait);	/* Mappings, inodes and blockdevs, again. */
- 	sync_supers();		/* Write the superblocks */
- 	sync_filesystems(0);	/* Start syncing the filesystems */
- 	sync_filesystems(wait);	/* Waitingly sync the filesystems */
--	sync_inodes(wait);	/* Mappings, inodes and blockdevs, again. */
-+	sync_blockdevs();
- 	if (!wait)
- 		printk("Emergency Sync complete\n");
- 	if (unlikely(laptop_mode))
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 5bed436..4bad02e 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1942,6 +1942,7 @@ extern void bdput(struct block_device *);
- extern struct block_device *open_by_devnum(dev_t, fmode_t);
- extern void invalidate_bdev(struct block_device *);
- extern int sync_blockdev(struct block_device *bdev);
-+extern void sync_blockdevs(void);
- extern struct super_block *freeze_bdev(struct block_device *);
- extern void emergency_thaw_all(void);
- extern int thaw_bdev(struct block_device *bdev, struct super_block *sb);
-@@ -1951,6 +1952,7 @@ extern int fsync_no_super(struct block_device *);
- #else
- static inline void bd_forget(struct inode *inode) {}
- static inline int sync_blockdev(struct block_device *bdev) { return 0; }
-+static inline void sync_blockdevs(void) { }
- static inline void invalidate_bdev(struct block_device *bdev) {}
- 
- static inline struct super_block *freeze_bdev(struct block_device *sb)
--- 
-1.6.0.2
+Storage is DS4700 (Product ID: 1814)
+
+If you need more information, please let me know, I can generate more information/logs.
+I will also find time to reproduce this with ql2xextended_error_logging enabled.
+
+Thanks,
+JV
+
+> 
+> Regards,
+> Andrew Vasquez
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
