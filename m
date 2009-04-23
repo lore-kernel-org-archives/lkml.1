@@ -1,491 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbZDWC1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZDWC2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbZDWC1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Apr 2009 22:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZDWC1I
+	id S1754978AbZDWC2A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Apr 2009 22:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZDWC1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Apr 2009 22:27:08 -0400
-Received: from mga14.intel.com ([143.182.124.37]:50587 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbZDWC1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Apr 2009 22:27:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,234,1239001200"; 
-   d="scan'208";a="134777729"
-Date: Thu, 23 Apr 2009 10:26:25 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [RFC][PATCH] proc: export more page flags in /proc/kpageflags
-	(take 3)
-Message-ID: <20090423022625.GA8822@localhost>
-References: <20090414071159.GV14687@one.firstfloor.org> <20090415131800.GA11191@localhost> <20090416111108.AC55.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090416111108.AC55.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Apr 2009 22:27:49 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:59082 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752254AbZDWC1s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Apr 2009 22:27:48 -0400
+Date: Wed, 22 Apr 2009 22:27:40 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: x86@kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH] x86/hpet: prevent boot hang when hpet=force used on old ICH
+Message-id: <alpine.LFD.2.00.0904222223200.21119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi and KOSAKI: can we hopefully reach harmony of opinions on this version?
+From: Len Brown <len.brown@intel.com>
 
-Export 9 page flags in /proc/kpageflags, and 8 more for kernel developers.
+Linux tells ICH4 users that they can (manually) invoke
+"hpet=force" to enable the undocumented HPET.
+The HPET becomes available for both clocksource and clockevents.
 
-1) for kernel hackers (on CONFIG_DEBUG_KERNEL)
-   - all available page flags are exported, and
-   - exported as is
-2) for admins and end users
-   - only the more `well known' flags are exported:
-	11. KPF_MMAP		(pseudo flag) memory mapped page
-	12. KPF_ANON		(pseudo flag) memory mapped page (anonymous)
-	13. KPF_SWAPCACHE	page is in swap cache
-	14. KPF_SWAPBACKED	page is swap/RAM backed
-	15. KPF_COMPOUND_HEAD	(*)
-	16. KPF_COMPOUND_TAIL	(*)
-	17. KPF_UNEVICTABLE	page is in the unevictable LRU list
-	18. KPF_POISON		hardware detected corruption
-	19. KPF_NOPAGE		(pseudo flag) no page frame at the address
+But as of ff69f2bba67bd45514923aaedbf40fe351787c59
+(acpi: fix of pmtimer overflow that make Cx states time incorrect)
+the hpet may be used for idle accounting, and
+hpet=force on an ICH4 box hangs boot.
 
-	(*) For compound pages, exporting _both_ head/tail info enables
-	    users to tell where a compound page starts/ends, and its order.
+It turns out that reading the HPET timer immediately
+after return from C3 hangs.
 
-   - limit flags to their typical usage scenario, as indicated by KOSAKI:
-	- LRU pages: only export relevant flags
-		- PG_lru
-		- PG_unevictable
-		- PG_active
-		- PG_referenced
-		- page_mapped()
-		- PageAnon()
-		- PG_swapcache
-		- PG_swapbacked
-		- PG_reclaim
-	- no-IO pages: mask out irrelevant flags
-		- PG_dirty
-		- PG_uptodate
-		- PG_writeback
-	- SLAB pages: mask out overloaded flags:
-		- PG_error
-		- PG_active
-		- PG_private
-	- PG_reclaim: filter out the overloaded PG_readahead
+Well, the reason we enable the HPET on these systems
+is primarily for clockevents -- the HPET has a longer
+maximum timer duration than the PIT.  HPET as a clocksource
+is less interesting.
 
-Note that compound page flags are exported faithfully to end user.  This risks
-exposing internal implementation details of the SLUB allocator, however hiding
-it risks larger impacts:
-	- admins may wonder where all the compound pages gone - the use of
-	  compound pages in SLUB might have some real world relevance, so that
-	  end users want to be aware of this behavior
-	- admins may be confused on inconsistent number of head/tail segments
-	  This is because SLUB only marks PG_slab on the compound head page.
-	  If we mask out PG_head|PG_tail for PG_slab pages, we are actually
-	  only masking out PG_head flags. Therefore the PG_tail segments will
-	  outnumber PG_head ones, which puzzled me for some time..
+So for "hpet=force" on old ICH, allow HPET clockevents,
+but do not allow HPET as a clocksource.
 
-Here are the admin/linus views of all page flags on a newly booted nfs-root system:
+http://bugzilla.kernel.org/show_bug.cgi?id=13087
 
-# ./page-types # for admin
-         flags  page-count       MB  symbolic-flags                     long-symbolic-flags
-0x000000000000      491449     1919  ____________________________
-0x000000008000          15        0  _______________H____________       compound_head
-0x000000010000        4280       16  ________________T___________       compound_tail
-0x000000000008          17        0  ___U________________________       uptodate
-0x000000008010           1        0  ____D__________H____________       dirty,compound_head
-0x000000010010           4        0  ____D___________T___________       dirty,compound_tail
-0x000000000020           1        0  _____l______________________       lru
-0x000000000028        2678       10  ___U_l______________________       uptodate,lru
-0x00000000002c        5244       20  __RU_l______________________       referenced,uptodate,lru
-0x000000004060           1        0  _____lA_______b_____________       lru,active,swapbacked
-0x000000004064          13        0  __R__lA_______b_____________       referenced,lru,active,swapbacked
-0x000000000068         236        0  ___U_lA_____________________       uptodate,lru,active
-0x00000000006c         927        3  __RU_lA_____________________       referenced,uptodate,lru,active
-0x000000008080         968        3  _______S_______H____________       slab,compound_head
-0x000000000080        1539        6  _______S____________________       slab
-0x000000000400         516        2  __________B_________________       buddy
-0x000000000828        1142        4  ___U_l_____M________________       uptodate,lru,mmap
-0x00000000082c         280        1  __RU_l_____M________________       referenced,uptodate,lru,mmap
-0x000000004860           2        0  _____lA____M__b_____________       lru,active,mmap,swapbacked
-0x000000000868         366        1  ___U_lA____M________________       uptodate,lru,active,mmap
-0x00000000086c         623        2  __RU_lA____M________________       referenced,uptodate,lru,active,mmap
-0x000000005868        3639       14  ___U_lA____Ma_b_____________       uptodate,lru,active,mmap,anonymous,swapbacked
-0x00000000586c          27        0  __RU_lA____Ma_b_____________       referenced,uptodate,lru,active,mmap,anonymous,swapbacked
-         total      513968     2007
-
-# ./page-types # for linus, when CONFIG_DEBUG_KERNEL is turned on
-         flags  page-count       MB  symbolic-flags                     long-symbolic-flags
-0x000000000000      471731     1842  ____________________________
-0x000100000000       19258       75  ____________________r_______       reserved
-0x000000008000          15        0  _______________H____________       compound_head
-0x000000010000        4270       16  ________________T___________       compound_tail
-0x000000000008           3        0  ___U________________________       uptodate
-0x000000008014           1        0  __R_D__________H____________       referenced,dirty,compound_head
-0x000000010014           4        0  __R_D___________T___________       referenced,dirty,compound_tail
-0x000000000020           1        0  _____l______________________       lru
-0x000000000028        2626       10  ___U_l______________________       uptodate,lru
-0x00000000002c        5244       20  __RU_l______________________       referenced,uptodate,lru
-0x000000000068         238        0  ___U_lA_____________________       uptodate,lru,active
-0x00000000006c         925        3  __RU_lA_____________________       referenced,uptodate,lru,active
-0x000000004078           1        0  ___UDlA_______b_____________       uptodate,dirty,lru,active,swapbacked
-0x00000000407c          13        0  __RUDlA_______b_____________       referenced,uptodate,dirty,lru,active,swapbacked
-0x000000000228          49        0  ___U_l___I__________________       uptodate,lru,reclaim
-0x000000000400         523        2  __________B_________________       buddy
-0x000000000804           1        0  __R________M________________       referenced,mmap
-0x00000000080c           1        0  __RU_______M________________       referenced,uptodate,mmap
-0x000000000828        1142        4  ___U_l_____M________________       uptodate,lru,mmap
-0x00000000082c         280        1  __RU_l_____M________________       referenced,uptodate,lru,mmap
-0x000000000868         366        1  ___U_lA____M________________       uptodate,lru,active,mmap
-0x00000000086c         622        2  __RU_lA____M________________       referenced,uptodate,lru,active,mmap
-0x000000004878           2        0  ___UDlA____M__b_____________       uptodate,dirty,lru,active,mmap,swapbacked
-0x000000008880         907        3  _______S___M___H____________       slab,mmap,compound_head
-0x000000000880        1488        5  _______S___M________________       slab,mmap
-0x0000000088c0          59        0  ______AS___M___H____________       active,slab,mmap,compound_head
-0x0000000008c0          49        0  ______AS___M________________       active,slab,mmap
-0x000000001000         465        1  ____________a_______________       anonymous
-0x000000005008           8        0  ___U________a_b_____________       uptodate,anonymous,swapbacked
-0x000000005808           4        0  ___U_______Ma_b_____________       uptodate,mmap,anonymous,swapbacked
-0x00000000580c           1        0  __RU_______Ma_b_____________       referenced,uptodate,mmap,anonymous,swapbacked
-0x000000005868        3645       14  ___U_lA____Ma_b_____________       uptodate,lru,active,mmap,anonymous,swapbacked
-0x00000000586c          26        0  __RU_lA____Ma_b_____________       referenced,uptodate,lru,active,mmap,anonymous,swapbacked
-         total      513968     2007
-
-Kudos to KOSAKI and Andi for the extensive recommendations!
-
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/vm/pagemap.txt |   65 ++++++++++
- fs/proc/page.c               |  197 +++++++++++++++++++++++++++------
- 2 files changed, 227 insertions(+), 35 deletions(-)
+Ingo/Peter/Thomas,
+This regression was filed against ACPI, but the fix is under x86.
+I'd wait for Venki's ack on anything related to HPET,
+and I can send via your tree or yours, just let me know.
 
---- mm.orig/fs/proc/page.c
-+++ mm/fs/proc/page.c
-@@ -6,6 +6,7 @@
- #include <linux/mmzone.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-+#include <linux/backing-dev.h>
- #include <asm/uaccess.h>
- #include "internal.h"
+thanks,
+-Len
+
+ arch/x86/include/asm/hpet.h |    1 +
+ arch/x86/kernel/hpet.c      |    5 +++++
+ arch/x86/kernel/quirks.c    |    4 ++++
+ 3 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
+index 1c22cb0..39d4e86 100644
+--- a/arch/x86/include/asm/hpet.h
++++ b/arch/x86/include/asm/hpet.h
+@@ -66,6 +66,7 @@
+ extern unsigned long hpet_address;
+ extern unsigned long force_hpet_address;
+ extern int hpet_force_user;
++extern int hpet_is_forced_old_ich(void);
+ extern int is_hpet_enabled(void);
+ extern int hpet_enable(void);
+ extern void hpet_disable(void);
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 3f0019e..8b061c7 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -752,6 +752,11 @@ static int hpet_clocksource_register(void)
+ 	u64 start, now;
+ 	cycle_t t1;
  
-@@ -68,19 +69,167 @@ static const struct file_operations proc
++	if (hpet_is_forced_old_ich()) {
++		printk(KERN_WARNING "hpet: hpet=force on old ICH enables clockevents,"
++				" but not clocksource.\n");
++		return -ENODEV;
++	}
+ 	/* Start the counter */
+ 	hpet_restart_counter();
  
- /* These macros are used to decouple internal flags from exported ones */
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index e95022e..9e4d73d 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -253,6 +253,10 @@ static void old_ich_force_enable_hpet(struct pci_dev *dev)
+ 	dev_printk(KERN_DEBUG, &dev->dev, "Failed to force enable HPET\n");
+ }
  
--#define KPF_LOCKED     0
--#define KPF_ERROR      1
--#define KPF_REFERENCED 2
--#define KPF_UPTODATE   3
--#define KPF_DIRTY      4
--#define KPF_LRU        5
--#define KPF_ACTIVE     6
--#define KPF_SLAB       7
--#define KPF_WRITEBACK  8
--#define KPF_RECLAIM    9
--#define KPF_BUDDY     10
-+#define KPF_LOCKED		0
-+#define KPF_ERROR		1
-+#define KPF_REFERENCED		2
-+#define KPF_UPTODATE		3
-+#define KPF_DIRTY		4
-+#define KPF_LRU			5
-+#define KPF_ACTIVE		6
-+#define KPF_SLAB		7
-+#define KPF_WRITEBACK		8
-+#define KPF_RECLAIM		9
-+#define KPF_BUDDY		10
-+
-+/* new additions in 2.6.31 */
-+#define KPF_MMAP		11
-+#define KPF_ANON		12
-+#define KPF_SWAPCACHE		13
-+#define KPF_SWAPBACKED		14
-+#define KPF_COMPOUND_HEAD	15
-+#define KPF_COMPOUND_TAIL	16
-+#define KPF_UNEVICTABLE		17
-+#define KPF_POISON		18
-+#define KPF_NOPAGE		19
-+
-+/* kernel hacking assistances */
-+#define KPF_RESERVED		32
-+#define KPF_MLOCKED		33
-+#define KPF_MAPPEDTODISK	34
-+#define KPF_PRIVATE		35
-+#define KPF_PRIVATE2		36
-+#define KPF_OWNER_PRIVATE	37
-+#define KPF_ARCH		38
-+#define KPF_UNCACHED		39
-+
-+/*
-+ * Kernel flags are exported faithfully to Linus and his fellow hackers.
-+ * Otherwise some details are masked to avoid confusing the end user:
-+ * - some kernel flags are completely invisible
-+ * - some kernel flags are conditionally invisible on their odd usages
-+ */
-+#ifdef CONFIG_DEBUG_KERNEL
-+static inline int genuine_linus(void) { return 1; }
-+#else
-+static inline int genuine_linus(void) { return 0; }
-+#endif
-+
-+#define kpf_copy_bit(uflags, kflags, visible, ubit, kbit)		\
-+	do {								\
-+		if (visible || genuine_linus())				\
-+			uflags |= ((kflags >> kbit) & 1) << ubit;	\
-+	} while (0);
-+
-+/* a helper function _not_ intended for more general uses */
-+static inline int page_cap_writeback_dirty(struct page *page)
-+{
-+	struct address_space *mapping = NULL;
-+
-+	if (!PageSlab(page))
-+		mapping = page_mapping(page);
-+
-+	return !mapping || mapping_cap_writeback_dirty(mapping);
++int hpet_is_forced_old_ich() {
++	return (force_hpet_resume_type == OLD_ICH_FORCE_HPET_RESUME);
 +}
- 
--#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
-+static u64 get_uflags(struct page *page)
-+{
-+	u64 k;
-+	u64 u;
-+	int io;
-+	int lru;
-+	int slab;
 +
-+	/*
-+	 * pseudo flag: KPF_NOPAGE
-+	 * it differentiates a memory hole from a page with no flags
-+	 */
-+	if (!page)
-+		return 1 << KPF_NOPAGE;
-+
-+	k = page->flags;
-+	u = 0;
-+
-+	io   = page_cap_writeback_dirty(page);
-+	lru  = k & (1 << PG_lru);
-+	slab = k & (1 << PG_slab);
-+
-+	/*
-+	 * pseudo flags for the well known (anonymous) memory mapped pages
-+	 */
-+	if (lru || genuine_linus()) {
-+		if (page_mapped(page))
-+			u |= 1 << KPF_MMAP;
-+		if (PageAnon(page))
-+			u |= 1 << KPF_ANON;
-+	}
-+
-+	/*
-+	 * compound pages: export both head/tail info
-+	 * they together define a compound page's start/end pos and order
-+	 */
-+	if (PageHead(page))
-+		u |= 1 << KPF_COMPOUND_HEAD;
-+	if (PageTail(page))
-+		u |= 1 << KPF_COMPOUND_TAIL;
-+
-+	kpf_copy_bit(u, k, 1,	  KPF_LOCKED,		PG_locked);
-+
-+	kpf_copy_bit(u, k, 1,     KPF_SLAB,		PG_slab);
-+	kpf_copy_bit(u, k, 1,     KPF_BUDDY,		PG_buddy);
-+
-+	kpf_copy_bit(u, k, io,    KPF_ERROR,		PG_error);
-+	kpf_copy_bit(u, k, io,    KPF_DIRTY,		PG_dirty);
-+	kpf_copy_bit(u, k, io,    KPF_UPTODATE,		PG_uptodate);
-+	kpf_copy_bit(u, k, io,    KPF_WRITEBACK,	PG_writeback);
-+
-+	kpf_copy_bit(u, k, 1,     KPF_LRU,		PG_lru);
-+	kpf_copy_bit(u, k, lru,	  KPF_REFERENCED,	PG_referenced);
-+	kpf_copy_bit(u, k, lru,   KPF_ACTIVE,		PG_active);
-+	kpf_copy_bit(u, k, lru,   KPF_RECLAIM,		PG_reclaim);
-+
-+	kpf_copy_bit(u, k, lru,   KPF_SWAPCACHE,	PG_swapcache);
-+	kpf_copy_bit(u, k, lru,   KPF_SWAPBACKED,	PG_swapbacked);
-+
-+#ifdef CONFIG_MEMORY_FAILURE
-+	kpf_copy_bit(u, k, 1,     KPF_POISON,		PG_poison);
-+#endif
-+
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	kpf_copy_bit(u, k, lru,   KPF_UNEVICTABLE,	PG_unevictable);
-+	kpf_copy_bit(u, k, 0,     KPF_MLOCKED,		PG_mlocked);
-+#endif
-+
-+	kpf_copy_bit(u, k, 0,     KPF_RESERVED,		PG_reserved);
-+	kpf_copy_bit(u, k, 0,     KPF_MAPPEDTODISK,	PG_mappedtodisk);
-+	kpf_copy_bit(u, k, 0,     KPF_PRIVATE,		PG_private);
-+	kpf_copy_bit(u, k, 0,     KPF_PRIVATE2,		PG_private_2);
-+	kpf_copy_bit(u, k, 0,     KPF_OWNER_PRIVATE,	PG_owner_priv_1);
-+	kpf_copy_bit(u, k, 0,     KPF_ARCH,		PG_arch_1);
-+
-+#ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
-+	kpf_copy_bit(u, k, 0,     KPF_UNCACHED,		PG_uncached);
-+#endif
-+
-+	if (!genuine_linus()) {
-+		/*
-+		 * SLAB/SLOB/SLUB overload some page flags which may confuse end user
-+		 */
-+		if (slab) {
-+			u &= ~ ((1 << KPF_ACTIVE)	|
-+				(1 << KPF_ERROR)	|
-+				(1 << KPF_MMAP));
-+		}
-+		/*
-+		 * PG_reclaim could be overloaded as PG_readahead,
-+		 * and we only want to export the first one.
-+		 */
-+		if ((u & ((1 << KPF_RECLAIM) | (1 << KPF_WRITEBACK))) ==
-+			  (1 << KPF_RECLAIM))
-+			u &= ~ (1 << KPF_RECLAIM);
-+	}
-+
-+	return u;
-+};
- 
- static ssize_t kpageflags_read(struct file *file, char __user *buf,
- 			     size_t count, loff_t *ppos)
-@@ -90,7 +239,6 @@ static ssize_t kpageflags_read(struct fi
- 	unsigned long src = *ppos;
- 	unsigned long pfn;
- 	ssize_t ret = 0;
--	u64 kflags, uflags;
- 
- 	pfn = src / KPMSIZE;
- 	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
-@@ -98,32 +246,17 @@ static ssize_t kpageflags_read(struct fi
- 		return -EINVAL;
- 
- 	while (count > 0) {
--		ppage = NULL;
- 		if (pfn_valid(pfn))
- 			ppage = pfn_to_page(pfn);
--		pfn++;
--		if (!ppage)
--			kflags = 0;
- 		else
--			kflags = ppage->flags;
--
--		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
--			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
--			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
--			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
--			kpf_copy_bit(kflags, KPF_DIRTY, PG_dirty) |
--			kpf_copy_bit(kflags, KPF_LRU, PG_lru) |
--			kpf_copy_bit(kflags, KPF_ACTIVE, PG_active) |
--			kpf_copy_bit(kflags, KPF_SLAB, PG_slab) |
--			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
--			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
--			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
-+			ppage = NULL;
- 
--		if (put_user(uflags, out++)) {
-+		if (put_user(get_uflags(ppage), out)) {
- 			ret = -EFAULT;
- 			break;
- 		}
--
-+		out++;
-+		pfn++;
- 		count -= KPMSIZE;
- 	}
- 
---- mm.orig/Documentation/vm/pagemap.txt
-+++ mm/Documentation/vm/pagemap.txt
-@@ -12,9 +12,9 @@ There are three components to pagemap:
-    value for each virtual page, containing the following data (from
-    fs/proc/task_mmu.c, above pagemap_read):
- 
--    * Bits 0-55  page frame number (PFN) if present
-+    * Bits 0-54  page frame number (PFN) if present
-     * Bits 0-4   swap type if swapped
--    * Bits 5-55  swap offset if swapped
-+    * Bits 5-54  swap offset if swapped
-     * Bits 55-60 page shift (page size = 1<<page shift)
-     * Bit  61    reserved for future use
-     * Bit  62    page swapped
-@@ -36,7 +36,7 @@ There are three components to pagemap:
-  * /proc/kpageflags.  This file contains a 64-bit set of flags for each
-    page, indexed by PFN.
- 
--   The flags are (from fs/proc/proc_misc, above kpageflags_read):
-+   The flags are (from fs/proc/page.c, above kpageflags_read):
- 
-      0. LOCKED
-      1. ERROR
-@@ -49,6 +49,65 @@ There are three components to pagemap:
-      8. WRITEBACK
-      9. RECLAIM
-     10. BUDDY
-+    11. MMAP
-+    12. ANON
-+    13. SWAPCACHE
-+    14. SWAPBACKED
-+    15. COMPOUND_HEAD
-+    16. COMPOUND_TAIL
-+    17. UNEVICTABLE
-+    18. POISON
-+    19. NOPAGE
-+
-+Short descriptions to the page flags:
-+
-+ 0. LOCKED
-+    page is being locked for exclusive access, eg. by undergoing read/write IO
-+
-+ 7. SLAB
-+    page is managed by the SLAB/SLOB/SLUB/SLQB kernel memory allocator
-+
-+10. BUDDY
-+    a free memory block managed by the buddy system allocator
-+    The buddy system organizes free memory in blocks of various orders.
-+    An order N block has 2^N physically contiguous pages, with the BUDDY flag
-+    set for and _only_ for the first page.
-+
-+15. COMPOUND_HEAD
-+16. COMPOUND_TAIL
-+    A compound page with order N consists of 2^N physically contiguous pages.
-+    A compound page with order 2 takes the form of "HTTT", where H donates its
-+    head page and T donates its tail page(s).  The major consumers of compound
-+    pages are hugeTLB pages (Documentation/vm/hugetlbpage.txt), the SLUB etc.
-+    memory allocators and various device drivers.
-+
-+18. POISON
-+    hardware has detected memory corruption on this page
-+
-+19. NOPAGE
-+    no page frame exists at the requested address
-+
-+    [IO related page flags]
-+ 1. ERROR     IO error occurred
-+ 3. UPTODATE  page has up-to-date data
-+              ie. for file backed page: (in-memory data revision >= on-disk one)
-+ 4. DIRTY     page has been written to, hence contains new data
-+              ie. for file backed page: (in-memory data revision >  on-disk one)
-+ 8. WRITEBACK page is being synced to disk
-+
-+    [LRU related page flags]
-+ 5. LRU         page is in one of the LRU lists
-+ 6. ACTIVE      page is in the active LRU list
-+17. UNEVICTABLE page is in the unevictable (non-)LRU list
-+                It is somehow pinned and not a candidate for LRU page reclaims,
-+		eg. ramfs pages, shmctl(SHM_LOCK) and mlock() memory segments
-+ 2. REFERENCED  page has been referenced since last LRU list enqueue/requeue
-+ 9. RECLAIM     page will be reclaimed soon after its pageout IO completed
-+11. MMAP        a memory mapped page
-+12. ANON        a memory mapped page who is not a file page
-+13. SWAPCACHE   page is mapped to swap space, ie. has an associated swap entry
-+14. SWAPBACKED  page is backed by swap/RAM
-+
- 
- Using pagemap to do something useful:
- 
+ /*
+  * Undocumented chipset features. Make sure that the user enforced
+  * this.
+-- 
+1.6.3.rc1.34.g0be9b
+
