@@ -1,86 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZDWK0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZDWKcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbZDWK0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZDWK0D
+	id S1757207AbZDWKcZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbZDWKcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:26:03 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:49785 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbZDWK0B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:26:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CjcMr6TaP3aPytKZ7V68jHSjq35sY5MuSPsuqGgomXNmQA4+pspvM1D3bJMZj5FnWj
-         n2iALPUJNEepPDKbNaCRzscl9OzaQDDrPY3R6K6F6HSvMKGkcDVIaExi03kLLJ81DX02
-         K4e6t755cvbDXGKZvF1RRUcvC0v1Ayb+xm9sk=
-Date: Thu, 23 Apr 2009 12:25:52 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
-Message-ID: <20090423102551.GB16768@linux>
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-6-git-send-email-righi.andrea@gmail.com> <49F01E8F.80807@cn.fujitsu.com>
+	Thu, 23 Apr 2009 06:32:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57872 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752996AbZDWKcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 06:32:14 -0400
+Message-ID: <49F043A4.2060700@kernel.org>
+Date: Thu, 23 Apr 2009 19:32:04 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49F01E8F.80807@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net
+Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
+References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org> <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 10:31:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 03:53:51PM +0800, Gui Jianfeng wrote:
-> Andrea Righi wrote:
-> > Together with cgroup_io_throttle() the kiothrottled kernel thread
-> > represents the core of the io-throttle subsystem.
-> > 
-> > All the writeback IO requests that need to be throttled are not
-> > dispatched immediately in submit_bio(). Instead, they are added into an
-> > rbtree by iothrottle_make_request() and processed asynchronously by
-> > kiothrottled.
-> > 
-> > A deadline is associated to each request depending on the bandwidth
-> > usage of the cgroup it belongs. When a request is inserted into the
-> > rbtree kiothrottled is awakened. This thread selects all the requests
-> > with an expired deadline and submit the bunch of selected requests to
-> > the underlying block devices using generic_make_request().
+Hello,
+
+Miklos Szeredi wrote:
+> VFS inode should never be needed by the CUSE codepaths.  Well, maybe
+> for setting access/modification times, but in any case those need not
+> be shared with fuse code.
+
+One more usage: locking.
+
+>>> I still think that the INIT sequence in CUSE is way too complicated
+>>> and that the kernel thread is unnecessary.  How about doing the init
+>>> with a single CUSE_INIT message which embeds the fuse_init_in and
+>>> fuse_init_out structures.
+>> I don't see why the kernel thread is such a big problem.  It's just a
+>> kernel thread.
 > 
->   Hi Andrea,
+> I think it's an unnecessary complication.  Threads are useful if
+> something needs to be _done_, but in this case nothing is done, just
+> waiting for the reply.  One example why I find it hackish is that you
+> are returning error values from the thread, as if it was a synchronous
+> thing, but those errors are obviously lost.
+
+That doesn't have anything to do with whether it's done in kernel
+thread or not.  If that bothers you, just make it return 0 with
+comment /* return value ignored */.
+
+> I don't see any problems with doing the device initialization in the
+> context of the replying process (which will usually be the same as
+> the one opening the device anyway).
+
+I don't know.  If it's simple, sure why not.  If it makes things even
+marginally more complex (state saving and so on), why go that way?
+
+In my first job, I used to work on a quite complex state machine based
+server which had to do almost everything in multiple functions.  In
+the end, it was extremely ugly and ultimately the wrong kind of
+optimization, so I much prefer having a stack whenever it makes things
+simpler and the overhead isn't an issue.  What are the actual benefits
+of doing things in several different functions in this case?
+Performance definitely is not a concern here.
+
+>>  We can surely fold FUSE_INIT inside FUSE_INIT tho but
+>> one way or the other doesn't make whole lot of difference.
 > 
->   What if an user issues "sync", will the bios still be buffered in the rb-tree?
->   Do we need to flush the whole tree?
+> I just think it would be cleaner, both code-wise and protocol-wise.  I
+> can do the above cleanups if you have no objection.
 
-Good question. From The sync(2) man page:
+Sure, if you think things would be better that way.  Please go ahead.
 
-	According to the standard specification (e.g., POSIX.1-2001), sync()
-	schedules the writes, but may return before the actual writing is done.
-	However, since  version  1.3.20  Linux does  actually  wait.  (This
-	still  does not guarantee data integrity: modern disks have large
-	caches.)
+Thanks.
 
-It is not completely wrong looking at the standard. The writes are
-actually scheduled, but pending in the rbtree. Anyway, if we immediately
-dispatch them anyone can evade the IO controller simply issuing a lot of
-sync while doing IO. OTOH dispatching the requests respecting the max
-rate for each cgroup can cause the sync to wait for all the others' BW
-limitations.
-
-Honestly I don't have a good answer for this. Opinions?
-
--Andrea
+-- 
+tejun
