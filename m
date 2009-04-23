@@ -1,63 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbZDWIGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbZDWHsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbZDWIGm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbZDWHyZ
+	id S1759348AbZDWHsa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZDWHcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:54:25 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59407 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756794AbZDWHyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:54:24 -0400
-Message-ID: <49F01E8F.80807@cn.fujitsu.com>
-Date: Thu, 23 Apr 2009 15:53:51 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, matt@bluehost.com,
-       dradford@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, Nauman Rafique <nauman@google.com>,
-       fchecconi@gmail.com, paolo.valente@unimore.it,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] kiothrottled: throttle buffered (writeback) IO
-References: <1240090712-1058-1-git-send-email-righi.andrea@gmail.com> <1240090712-1058-6-git-send-email-righi.andrea@gmail.com>
-In-Reply-To: <1240090712-1058-6-git-send-email-righi.andrea@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 03:32:36 -0400
+Received: from sous-sol.org ([216.99.217.87]:50766 "EHLO x200.localdomain"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756975AbZDWHce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:32:34 -0400
+Message-Id: <20090423072739.992210157@sous-sol.org>
+User-Agent: quilt/0.47-1
+Date: Thu, 23 Apr 2009 00:21:23 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       paulus@samba.org, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 063/100] hrtimer: fix rq->lock inversion (again)
+References: <20090423072020.428683652@sous-sol.org>
+Content-Disposition: inline; filename=hrtimer-fix-rq-lock-inversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> Together with cgroup_io_throttle() the kiothrottled kernel thread
-> represents the core of the io-throttle subsystem.
-> 
-> All the writeback IO requests that need to be throttled are not
-> dispatched immediately in submit_bio(). Instead, they are added into an
-> rbtree by iothrottle_make_request() and processed asynchronously by
-> kiothrottled.
-> 
-> A deadline is associated to each request depending on the bandwidth
-> usage of the cgroup it belongs. When a request is inserted into the
-> rbtree kiothrottled is awakened. This thread selects all the requests
-> with an expired deadline and submit the bunch of selected requests to
-> the underlying block devices using generic_make_request().
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-  Hi Andrea,
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-  What if an user issues "sync", will the bios still be buffered in the rb-tree?
-  Do we need to flush the whole tree?
+upstream commit: 7f1e2ca9f04b02794597f60e7b1d43f0a1317939
 
--- 
-Regards
-Gui Jianfeng
+It appears I inadvertly introduced rq->lock recursion to the
+hrtimer_start() path when I delegated running already expired
+timers to softirq context.
+
+This patch fixes it by introducing a __hrtimer_start_range_ns()
+method that will not use raise_softirq_irqoff() but
+__raise_softirq_irqoff() which avoids the wakeup.
+
+It then also changes schedule() to check for pending softirqs and
+do the wakeup then, I'm not quite sure I like this last bit, nor
+am I convinced its really needed.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: paulus@samba.org
+LKML-Reference: <20090313112301.096138802@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Tested-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ include/linux/hrtimer.h   |    5 ++++
+ include/linux/interrupt.h |    1 
+ kernel/hrtimer.c          |   55 ++++++++++++++++++++++++++++------------------
+ kernel/sched.c            |   14 +++++++++--
+ kernel/softirq.c          |    2 -
+ 5 files changed, 52 insertions(+), 25 deletions(-)
+
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -336,6 +336,11 @@ extern int hrtimer_start(struct hrtimer 
+ 			 const enum hrtimer_mode mode);
+ extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
+ 			unsigned long range_ns, const enum hrtimer_mode mode);
++extern int
++__hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++			 unsigned long delta_ns,
++			 const enum hrtimer_mode mode, int wakeup);
++
+ extern int hrtimer_cancel(struct hrtimer *timer);
+ extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+ 
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -274,6 +274,7 @@ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+ extern void raise_softirq_irqoff(unsigned int nr);
+ extern void raise_softirq(unsigned int nr);
++extern void wakeup_softirqd(void);
+ 
+ /* This is the worklist that queues up per-cpu softirq work.
+  *
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -651,14 +651,20 @@ static inline void hrtimer_init_timer_hr
+  * and expiry check is done in the hrtimer_interrupt or in the softirq.
+  */
+ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+-					    struct hrtimer_clock_base *base)
++					    struct hrtimer_clock_base *base,
++					    int wakeup)
+ {
+ 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
+-		spin_unlock(&base->cpu_base->lock);
+-		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
+-		spin_lock(&base->cpu_base->lock);
++		if (wakeup) {
++			spin_unlock(&base->cpu_base->lock);
++			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
++			spin_lock(&base->cpu_base->lock);
++		} else
++			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
++
+ 		return 1;
+ 	}
++
+ 	return 0;
+ }
+ 
+@@ -703,7 +709,8 @@ static inline int hrtimer_is_hres_enable
+ static inline int hrtimer_switch_to_hres(void) { return 0; }
+ static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
+ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+-					    struct hrtimer_clock_base *base)
++					    struct hrtimer_clock_base *base,
++					    int wakeup)
+ {
+ 	return 0;
+ }
+@@ -886,20 +893,9 @@ remove_hrtimer(struct hrtimer *timer, st
+ 	return 0;
+ }
+ 
+-/**
+- * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
+- * @timer:	the timer to be added
+- * @tim:	expiry time
+- * @delta_ns:	"slack" range for the timer
+- * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
+- *
+- * Returns:
+- *  0 on success
+- *  1 when the timer was active
+- */
+-int
+-hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
+-			const enum hrtimer_mode mode)
++int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++		unsigned long delta_ns, const enum hrtimer_mode mode,
++		int wakeup)
+ {
+ 	struct hrtimer_clock_base *base, *new_base;
+ 	unsigned long flags;
+@@ -940,12 +936,29 @@ hrtimer_start_range_ns(struct hrtimer *t
+ 	 * XXX send_remote_softirq() ?
+ 	 */
+ 	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
+-		hrtimer_enqueue_reprogram(timer, new_base);
++		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
+ 
+ 	unlock_hrtimer_base(timer, &flags);
+ 
+ 	return ret;
+ }
++
++/**
++ * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
++ * @timer:	the timer to be added
++ * @tim:	expiry time
++ * @delta_ns:	"slack" range for the timer
++ * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
++ *
++ * Returns:
++ *  0 on success
++ *  1 when the timer was active
++ */
++int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++		unsigned long delta_ns, const enum hrtimer_mode mode)
++{
++	return __hrtimer_start_range_ns(timer, tim, delta_ns, mode, 1);
++}
+ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ 
+ /**
+@@ -961,7 +974,7 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns
+ int
+ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ {
+-	return hrtimer_start_range_ns(timer, tim, 0, mode);
++	return __hrtimer_start_range_ns(timer, tim, 0, mode, 1);
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
+ 
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -231,13 +231,20 @@ static void start_rt_bandwidth(struct rt
+ 
+ 	spin_lock(&rt_b->rt_runtime_lock);
+ 	for (;;) {
++		unsigned long delta;
++		ktime_t soft, hard;
++
+ 		if (hrtimer_active(&rt_b->rt_period_timer))
+ 			break;
+ 
+ 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
+ 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
+-		hrtimer_start_expires(&rt_b->rt_period_timer,
+-				HRTIMER_MODE_ABS);
++
++		soft = hrtimer_get_softexpires(&rt_b->rt_period_timer);
++		hard = hrtimer_get_expires(&rt_b->rt_period_timer);
++		delta = ktime_to_ns(ktime_sub(hard, soft));
++		__hrtimer_start_range_ns(&rt_b->rt_period_timer, soft, delta,
++				HRTIMER_MODE_ABS, 0);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+ }
+@@ -1129,7 +1136,8 @@ static __init void init_hrtick(void)
+  */
+ static void hrtick_start(struct rq *rq, u64 delay)
+ {
+-	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
++	__hrtimer_start_range_ns(&rq->hrtick_timer, ns_to_ktime(delay), 0,
++			HRTIMER_MODE_REL, 0);
+ }
+ 
+ static inline void init_hrtick(void)
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct task_struct
+  * to the pending events, so lets the scheduler to balance
+  * the softirq load for us.
+  */
+-static inline void wakeup_softirqd(void)
++void wakeup_softirqd(void)
+ {
+ 	/* Interrupts are disabled: no need to stop preemption */
+ 	struct task_struct *tsk = __get_cpu_var(ksoftirqd);
 
