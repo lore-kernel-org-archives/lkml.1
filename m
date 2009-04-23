@@ -1,62 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbZDWF4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZDWF7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbZDWF4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZDWF4D
+	id S1754521AbZDWF7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 01:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZDWF7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:56:03 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:32897 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZDWF4B (ORCPT
+	Thu, 23 Apr 2009 01:59:01 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:58579 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbZDWF7A convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:56:01 -0400
-Date: Thu, 23 Apr 2009 14:50:49 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Christoph Lameter <cl@linux.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "iwamatsu.nobuhiro@renesas.com" <iwamatsu.nobuhiro@renesas.com>
-Subject: Re: linux-next ia64 build problems in slqb
-Message-ID: <20090423055049.GA21733@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Pekka J Enberg <penberg@cs.helsinki.fi>,
-	"Luck, Tony" <tony.luck@intel.com>,
-	Christoph Lameter <cl@linux.com>, Nick Piggin <npiggin@suse.de>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"iwamatsu.nobuhiro@renesas.com" <iwamatsu.nobuhiro@renesas.com>
-References: <49ecf25e2378234eed@agluck-desktop.sc.intel.com> <84144f020904202251n616f188k80c6ce7d974d8b00@mail.gmail.com> <alpine.DEB.1.10.0904211034550.19969@qirst.com> <84144f020904211125v68b98df4ke1c04bc29df65fda@mail.gmail.com> <57C9024A16AD2D4C97DC78E552063EA39EC57748@orsmsx505.amr.corp.intel.com> <84144f020904211207q736bfc44n4cd622536cd0a67@mail.gmail.com> <57C9024A16AD2D4C97DC78E552063EA39EC57AB7@orsmsx505.amr.corp.intel.com> <Pine.LNX.4.64.0904220953040.20610@melkki.cs.Helsinki.FI>
+	Thu, 23 Apr 2009 01:59:00 -0400
+Message-ID: <49F0039D.3040707@cosmosbay.com>
+Date: Thu, 23 Apr 2009 07:58:53 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904220953040.20610@melkki.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: stefan novak <lms.brubaker@gmail.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: bond interface arp, vlan and trunk / network question
+References: <1ef444010904201050g72651387se3feca3fbd68ce30@mail.gmail.com> <49ECBBF0.80202@cosmosbay.com> <30257.1240252651@death.nxdomain.ibm.com> <1ef444010904201300r43268672sb74277f4a0242236@mail.gmail.com> <7609.1240259780@death.nxdomain.ibm.com> <1ef444010904201403s5d583750i1ce3a5da6c6f4059@mail.gmail.com> <13606.1240262581@death.nxdomain.ibm.com> <1ef444010904201439i60f9e918j760d94eeca428ece@mail.gmail.com> <22462.1240272112@death.nxdomain.ibm.com> <1ef444010904220129l24a74f07q8f32edfabe603436@mail.gmail.com> <32563.1240449149@death.nxdomain.ibm.com>
+In-Reply-To: <32563.1240449149@death.nxdomain.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 23 Apr 2009 07:58:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 10:02:06AM +0300, Pekka J Enberg wrote:
-> On Tue, 21 Apr 2009, Luck, Tony wrote:
-> > > One minor nit: the patch should define an empty static inline of
-> > > claim_remote_free_list() for the !SMP case. I can fix it at my end
-> > > before merging, though, if necessary.
-> > 
-> > Agreed.  It would be better to have an empty static inline than
-> > adding the noisy #ifdef SMP around every call to
-> > claim_remote_free_list() ... in fact some such #ifdef can be
-> > removed.
-> > 
-> > You could tag such a modified patch (attached) as:
-> > 
-> > Acked-by: Tony Luck <tony.luck@intel.com>
+Jay Vosburgh a écrit :
+> stefan novak <lms.brubaker@gmail.com> wrote:
 > 
-> Thanks for the help! I went and merged the following patch and I hope I 
-> got all the patch attributions right. Paul, does this work for you as well?
+>> so its a bug in kernel?
 > 
-Yup, works fine for me, thanks for taking care of this.
+> 	Yes.  I think the following patch should add support for
+> arp_validate over VLANs, could you test this?  This is still a work in
+> progress, so it's pretty rough around the edges, but the core
+> functionality should be there.
+> 
+> 	This works by moving the skb_bond_should_drop logic around, and
+> replaces the current inline code with a hook into bonding to do all of
+> that, plus additional logic.  The reason for a hook is to get the
+> skb_bond_should_drop callers from the VLAN input path before the input
+> device is assigned to the VLAN device.
+> 
+> 	-J
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Hi Jay
+
+I wanted to test your patch and setup such VLAN config, and not yet applied your patch.
+
+# cat /proc/net/bonding/bond1
+Ethernet Channel Bonding Driver: v3.5.0 (November 4, 2008)
+
+Bonding Mode: fault-tolerance (active-backup)
+Primary Slave: None
+Currently Active Slave: eth2
+MII Status: up
+MII Polling Interval (ms): 0
+Up Delay (ms): 0
+Down Delay (ms): 0
+ARP Polling Interval (ms): 250
+ARP IP target/s (n.n.n.n form): 192.168.20.254
+
+Slave Interface: eth1
+MII Status: up
+Link Failure Count: 8
+Permanent HW addr: 00:1e:0b:ec:d3:d2
+
+Slave Interface: eth2
+MII Status: up
+Link Failure Count: 11
+Permanent HW addr: 00:1e:0b:92:78:50
+
+# grep . /sys/class/net/bond1/bonding/*
+/sys/class/net/bond1/bonding/active_slave:eth2
+/sys/class/net/bond1/bonding/ad_select:stable 0
+/sys/class/net/bond1/bonding/arp_interval:250
+/sys/class/net/bond1/bonding/arp_ip_target:192.168.20.254
+/sys/class/net/bond1/bonding/arp_validate:none 0
+/sys/class/net/bond1/bonding/downdelay:0
+/sys/class/net/bond1/bonding/fail_over_mac:none 0
+/sys/class/net/bond1/bonding/lacp_rate:slow 0
+/sys/class/net/bond1/bonding/miimon:0
+/sys/class/net/bond1/bonding/mii_status:up
+/sys/class/net/bond1/bonding/mode:active-backup 1
+/sys/class/net/bond1/bonding/num_grat_arp:1
+/sys/class/net/bond1/bonding/num_unsol_na:1
+/sys/class/net/bond1/bonding/slaves:eth1 eth2
+/sys/class/net/bond1/bonding/updelay:0
+/sys/class/net/bond1/bonding/use_carrier:1
+/sys/class/net/bond1/bonding/xmit_hash_policy:layer2 0
+
+
+
+So active slave is eth2. Still I receive trafic on eth1, according to ifconfig :
+# ifconfig eth1|grep packets;sleep 10;ifconfig eth1|grep packets
+          RX packets:2098122 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:2053085 errors:0 dropped:0 overruns:0 carrier:0
+          RX packets:2098162 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:2053085 errors:0 dropped:0 overruns:0 carrier:0
+
+exactly 4 packets per second.
+
+# ifconfig eth2|grep packets;sleep 10;ifconfig eth2|grep packets
+          RX packets:3695512 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:3683799 errors:0 dropped:0 overruns:0 carrier:0
+          RX packets:3695554 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:3683841 errors:0 dropped:0 overruns:0 carrier:0
+
+I also receive arp answers on eth2 (quite normal)
+
+I wanted to tcpdump on eth1 but got nothing :
+
+# tcpdump -p -n -s 0 -i eth1
+tcpdump: WARNING: eth1: no IPv4 address assigned
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes
+^C
+
+# tcpdump -p -n -s 0 -i eth2
+tcpdump: WARNING: eth2: no IPv4 address assigned
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+07:54:48.430982 arp who-has 192.168.20.254 tell 192.168.20.110
+07:54:48.680980 arp who-has 192.168.20.254 tell 192.168.20.110
+07:54:48.930981 arp who-has 192.168.20.254 tell 192.168.20.110
+07:54:49.180980 arp who-has 192.168.20.254 tell 192.168.20.110
+07:54:49.430980 arp who-has 192.168.20.254 tell 192.168.20.110
+07:54:49.680980 arp who-has 192.168.20.254 tell 192.168.20.110
+
+# tcpdump -p -n -s 0 -i bond1
+tcpdump: WARNING: bond1: no IPv4 address assigned
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on bond1, link-type EN10MB (Ethernet), capture size 65535 bytes
+07:55:28.681491 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:28.931493 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:29.181466 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:29.431496 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:29.681487 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:29.931492 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+
+# tcpdump -p -n -s 0 -i bond1.103
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on bond1.103, link-type EN10MB (Ethernet), capture size 65535 bytes
+07:55:58.681521 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:58.931636 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:59.181495 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:59.431496 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:59.681499 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+07:55:59.931499 arp reply 192.168.20.254 is-at 00:00:0c:07:ac:01
+
+Configuration script is 
+
+ip link set eth1 up
+ip link set eth2 up
+
+ip addr flush dev eth1
+ip addr flush dev eth2
+
+ip link set eth1 up
+ip link set eth2 up
+
+modprobe bond1
+
+ifconfig bond1 down
+
+# test du arp_check toutes les 250ms, en choissant l'HSRP du vlan 103 comme IP
+echo +192.168.20.254 >/sys/class/net/bond1/bonding/arp_ip_target
+echo 250 >/sys/class/net/bond1/bonding/arp_interval
+
+# mode actif/passif (active-backup)
+echo 1 >/sys/class/net/bond1/bonding/mode
+
+ifconfig bond1 up
+
+ifenslave bond1 eth1 eth2
+
+ip link set eth1 up
+ip link set eth2 up
+
+ip link add link bond1 bond1.103 txqueuelen 100 type vlan id 103
+ip addr add 192.168.20.110/24 dev bond1.103
+ip link set bond1.103 up
+
+ip link add link bond1 bond1.825 txqueuelen 1000 type vlan id 825
+ip addr add 10.170.73.123/25 dev bond1.825
+ip link set bond1.825 up
+
+
+
+Is this setup OK to test your patch ?
+
