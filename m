@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbZDWM2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZDWM2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbZDWM2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 08:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZDWM1X
+	id S1757457AbZDWM2v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 08:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZDWM1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 08:27:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38553 "EHLO hera.kernel.org"
+	Thu, 23 Apr 2009 08:27:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38555 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753543AbZDWM1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753854AbZDWM1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Apr 2009 08:27:22 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, joerg@dorchain.net,
        geert@linux-m68k.org, donari75@gmail.com, davem@davemloft.net,
        jdike@linux.intel.com, benh@kernel.crashing.org, Laurent@lvivier.info
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/12] sunvdc: kill vdc_end_request()
-Date: Thu, 23 Apr 2009 21:25:46 +0900
-Message-Id: <1240489553-15724-6-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/12] ubd: drop unnecessary rq->sector manipulation
+Date: Thu, 23 Apr 2009 21:25:48 +0900
+Message-Id: <1240489553-15724-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1240489553-15724-1-git-send-email-tj@kernel.org>
 References: <1240489553-15724-1-git-send-email-tj@kernel.org>
@@ -25,51 +25,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vdc_end_request() is a thin silly wrapper on top of
-__blk_end_request().  Kill it.
+ubd curiously updates rq->sector while issuing the request in multiple
+pieces.  Don't do it and simply use local copy of sector.
 
 [ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: David S. Miller <davem@davemloft.net>
+Cc: Jeff Dike <jdike@linux.intel.com>
 ---
- drivers/block/sunvdc.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+ arch/um/drivers/ubd_kern.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/block/sunvdc.c b/drivers/block/sunvdc.c
-index 5861e33..f59887c 100644
---- a/drivers/block/sunvdc.c
-+++ b/drivers/block/sunvdc.c
-@@ -212,11 +212,6 @@ static void vdc_end_special(struct vdc_port *port, struct vio_disk_desc *desc)
- 	vdc_finish(&port->vio, -err, WAITING_FOR_GEN_CMD);
- }
- 
--static void vdc_end_request(struct request *req, int error, int num_sectors)
--{
--	__blk_end_request(req, error, num_sectors << 9);
--}
--
- static void vdc_end_one(struct vdc_port *port, struct vio_dring_state *dr,
- 			unsigned int index)
+diff --git a/arch/um/drivers/ubd_kern.c b/arch/um/drivers/ubd_kern.c
+index 36ca9fa..d100af4 100644
+--- a/arch/um/drivers/ubd_kern.c
++++ b/arch/um/drivers/ubd_kern.c
+@@ -1222,7 +1222,8 @@ static void do_ubd_request(struct request_queue *q)
  {
-@@ -239,7 +234,7 @@ static void vdc_end_one(struct vdc_port *port, struct vio_dring_state *dr,
+ 	struct io_thread_req *io_req;
+ 	struct request *req;
+-	int n, last_sectors;
++	sector_t sector;
++	int n;
  
- 	rqe->req = NULL;
+ 	while(1){
+ 		struct ubd *dev = q->queuedata;
+@@ -1238,11 +1239,10 @@ static void do_ubd_request(struct request_queue *q)
+ 		}
  
--	vdc_end_request(req, (desc->status ? -EIO : 0), desc->size >> 9);
-+	__blk_end_request(req, (desc->status ? -EIO : 0), desc->size);
+ 		req = dev->request;
+-		last_sectors = 0;
++		sector = rq->sector;
+ 		while(dev->start_sg < dev->end_sg){
+ 			struct scatterlist *sg = &dev->sg[dev->start_sg];
  
- 	if (blk_queue_stopped(port->disk->queue))
- 		blk_start_queue(port->disk->queue);
-@@ -453,7 +448,7 @@ static void do_vdc_request(struct request_queue *q)
+-			req->sector += last_sectors;
+ 			io_req = kmalloc(sizeof(struct io_thread_req),
+ 					 GFP_ATOMIC);
+ 			if(io_req == NULL){
+@@ -1251,10 +1251,10 @@ static void do_ubd_request(struct request_queue *q)
+ 				return;
+ 			}
+ 			prepare_request(req, io_req,
+-					(unsigned long long) req->sector << 9,
++					(unsigned long long)sector << 9,
+ 					sg->offset, sg->length, sg_page(sg));
  
- 		blkdev_dequeue_request(req);
- 		if (__send_request(req) < 0)
--			vdc_end_request(req, -EIO, req->hard_nr_sectors);
-+			__blk_end_request_all(req, -EIO);
- 	}
- }
- 
+-			last_sectors = sg->length >> 9;
++			sector += sg->length >> 9;
+ 			n = os_write_file(thread_fd, &io_req,
+ 					  sizeof(struct io_thread_req *));
+ 			if(n != sizeof(struct io_thread_req *)){
 -- 
 1.6.0.2
 
