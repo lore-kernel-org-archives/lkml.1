@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZDWHcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZDWHlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbZDWHcn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZDWH1s
+	id S1757703AbZDWHlP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbZDWHaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:48 -0400
-Received: from sous-sol.org ([216.99.217.87]:48253 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:30:16 -0400
+Received: from sous-sol.org ([216.99.217.87]:50372 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755369AbZDWH1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:27:46 -0400
-Message-Id: <20090423072153.855925852@sous-sol.org>
+	id S1756386AbZDWHaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:30:13 -0400
+Message-Id: <20090423072602.697761388@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:29 -0700
+Date: Thu, 23 Apr 2009 00:21:09 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,14 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ivo van Doorn <ivdoorn@gmail.com>,
-       Arnaud Patard <apatard@mandriva.com>, linux-wireless@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Gertjan van Wingerde <gwingerde@gmail.com>,
-       Ivo van Doorn <IvDoorn@gmail.com>
-Subject: [patch 009/100] rt2x00: Fix SLAB corruption during rmmod
+       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 049/100] netfilter: {ip, ip6, arp}_tables: fix incorrect loop detection
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=rt2x00-fix-slab-corruption-during-rmmod.patch
+Content-Disposition: inline; filename=netfilter-ip-ip6-arp-_tables-fix-incorrect-loop-detection.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -39,202 +38,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Gertjan van Wingerde <gwingerde@gmail.com>
+From: Patrick McHardy <kaber@trash.net>
 
-At rmmod stage, the code path is the following one :
+upstream commit: 1f9352ae2253a97b07b34dcf16ffa3b4ca12c558
 
-rt2x00lib_remove_dev
-  ->  rt2x00lib_uninitialize()
-        -> rt2x00rfkill_unregister()
-             -> rfkill_unregister()
-        -> rt2x00rfkill_free()
-             -> rfkill_free()
+Commit e1b4b9f ([NETFILTER]: {ip,ip6,arp}_tables: fix exponential worst-case
+search for loops) introduced a regression in the loop detection algorithm,
+causing sporadic incorrectly detected loops.
 
-The problem is that rfkill_free should not be called after rfkill_register
-otherwise put_device(&rfkill->dev) will be called 2 times. This patch
-fixes this by only calling rt2x00rfkill_free() when rt2x00rfkill_register()
-hasn't been called or has failed.
+When a chain has already been visited during the check, it is treated as
+having a standard target containing a RETURN verdict directly at the
+beginning in order to not check it again. The real target of the first
+rule is then incorrectly treated as STANDARD target and checked not to
+contain invalid verdicts.
 
-This patch is for 2.6.29 only. The code in question has completely disappeared
-in 2.6.30 and does not contain this bug.
+Fix by making sure the rule does actually contain a standard target.
 
-Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
-Tested-by: Arnaud Patard <apatard@mandriva.com>
-Signed-off-by: Ivo van Doorn <IvDoorn@gmail.com>
+Based on patch by Francis Dupont <Francis_Dupont@isc.org>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/wireless/rt2x00/rt2x00.h       |    3 -
- drivers/net/wireless/rt2x00/rt2x00dev.c    |    2 
- drivers/net/wireless/rt2x00/rt2x00lib.h    |   10 ---
- drivers/net/wireless/rt2x00/rt2x00rfkill.c |   86 +++++++++++++----------------
- 4 files changed, 40 insertions(+), 61 deletions(-)
+---
+ net/ipv4/netfilter/arp_tables.c |    4 +++-
+ net/ipv4/netfilter/ip_tables.c  |    4 +++-
+ net/ipv6/netfilter/ip6_tables.c |    4 +++-
+ 3 files changed, 9 insertions(+), 3 deletions(-)
 
---- a/drivers/net/wireless/rt2x00/rt2x00.h
-+++ b/drivers/net/wireless/rt2x00/rt2x00.h
-@@ -687,8 +687,7 @@ struct rt2x00_dev {
- 	 */
- #ifdef CONFIG_RT2X00_LIB_RFKILL
- 	unsigned long rfkill_state;
--#define RFKILL_STATE_ALLOCATED		1
--#define RFKILL_STATE_REGISTERED		2
-+#define RFKILL_STATE_REGISTERED		1
- 	struct rfkill *rfkill;
- 	struct delayed_work rfkill_work;
- #endif /* CONFIG_RT2X00_LIB_RFKILL */
---- a/drivers/net/wireless/rt2x00/rt2x00dev.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
-@@ -1105,7 +1105,6 @@ int rt2x00lib_probe_dev(struct rt2x00_de
- 	 * Register extra components.
- 	 */
- 	rt2x00leds_register(rt2x00dev);
--	rt2x00rfkill_allocate(rt2x00dev);
- 	rt2x00debug_register(rt2x00dev);
+--- a/net/ipv4/netfilter/arp_tables.c
++++ b/net/ipv4/netfilter/arp_tables.c
+@@ -374,7 +374,9 @@ static int mark_source_chains(struct xt_
+ 			    && unconditional(&e->arp)) || visited) {
+ 				unsigned int oldpos, size;
  
- 	set_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags);
-@@ -1137,7 +1136,6 @@ void rt2x00lib_remove_dev(struct rt2x00_
- 	 * Free extra components
- 	 */
- 	rt2x00debug_deregister(rt2x00dev);
--	rt2x00rfkill_free(rt2x00dev);
- 	rt2x00leds_unregister(rt2x00dev);
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((strcmp(t->target.u.user.name,
++					    ARPT_STANDARD_TARGET) == 0) &&
++				    t->verdict < -NF_MAX_VERDICT - 1) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
+--- a/net/ipv4/netfilter/ip_tables.c
++++ b/net/ipv4/netfilter/ip_tables.c
+@@ -496,7 +496,9 @@ mark_source_chains(struct xt_table_info 
+ 			    && unconditional(&e->ip)) || visited) {
+ 				unsigned int oldpos, size;
  
- 	/*
---- a/drivers/net/wireless/rt2x00/rt2x00lib.h
-+++ b/drivers/net/wireless/rt2x00/rt2x00lib.h
-@@ -260,8 +260,6 @@ static inline void rt2x00crypto_rx_inser
- #ifdef CONFIG_RT2X00_LIB_RFKILL
- void rt2x00rfkill_register(struct rt2x00_dev *rt2x00dev);
- void rt2x00rfkill_unregister(struct rt2x00_dev *rt2x00dev);
--void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev);
--void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev);
- #else
- static inline void rt2x00rfkill_register(struct rt2x00_dev *rt2x00dev)
- {
-@@ -270,14 +268,6 @@ static inline void rt2x00rfkill_register
- static inline void rt2x00rfkill_unregister(struct rt2x00_dev *rt2x00dev)
- {
- }
--
--static inline void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
--{
--}
--
--static inline void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
--{
--}
- #endif /* CONFIG_RT2X00_LIB_RFKILL */
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((strcmp(t->target.u.user.name,
++			    		    IPT_STANDARD_TARGET) == 0) &&
++				    t->verdict < -NF_MAX_VERDICT - 1) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
+--- a/net/ipv6/netfilter/ip6_tables.c
++++ b/net/ipv6/netfilter/ip6_tables.c
+@@ -525,7 +525,9 @@ mark_source_chains(struct xt_table_info 
+ 			    && unconditional(&e->ipv6)) || visited) {
+ 				unsigned int oldpos, size;
  
- /*
---- a/drivers/net/wireless/rt2x00/rt2x00rfkill.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00rfkill.c
-@@ -94,14 +94,50 @@ static void rt2x00rfkill_poll(struct wor
- 			   &rt2x00dev->rfkill_work, RFKILL_POLL_INTERVAL);
- }
- 
-+static int rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
-+{
-+	struct device *dev = wiphy_dev(rt2x00dev->hw->wiphy);
-+
-+	rt2x00dev->rfkill = rfkill_allocate(dev, RFKILL_TYPE_WLAN);
-+	if (!rt2x00dev->rfkill)
-+		return -ENOMEM;
-+
-+	rt2x00dev->rfkill->name = rt2x00dev->ops->name;
-+	rt2x00dev->rfkill->data = rt2x00dev;
-+	rt2x00dev->rfkill->toggle_radio = rt2x00rfkill_toggle_radio;
-+	if (test_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags)) {
-+		rt2x00dev->rfkill->get_state = rt2x00rfkill_get_state;
-+		rt2x00dev->rfkill->state =
-+			rt2x00dev->ops->lib->rfkill_poll(rt2x00dev) ?
-+			    RFKILL_STATE_SOFT_BLOCKED : RFKILL_STATE_UNBLOCKED;
-+	} else {
-+		rt2x00dev->rfkill->state = RFKILL_STATE_UNBLOCKED;
-+	}
-+
-+	INIT_DELAYED_WORK(&rt2x00dev->rfkill_work, rt2x00rfkill_poll);
-+
-+	return 0;
-+}
-+
-+static void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
-+{
-+	rfkill_free(rt2x00dev->rfkill);
-+	rt2x00dev->rfkill = NULL;
-+}
-+
- void rt2x00rfkill_register(struct rt2x00_dev *rt2x00dev)
- {
--	if (!test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state) ||
--	    test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
-+	if (test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
-+		return;
-+
-+	if (rt2x00rfkill_allocate(rt2x00dev)) {
-+		ERROR(rt2x00dev, "Failed to allocate rfkill handler.\n");
- 		return;
-+	}
- 
- 	if (rfkill_register(rt2x00dev->rfkill)) {
- 		ERROR(rt2x00dev, "Failed to register rfkill handler.\n");
-+		rt2x00rfkill_free(rt2x00dev);
- 		return;
- 	}
- 
-@@ -117,8 +153,7 @@ void rt2x00rfkill_register(struct rt2x00
- 
- void rt2x00rfkill_unregister(struct rt2x00_dev *rt2x00dev)
- {
--	if (!test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state) ||
--	    !test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
-+	if (!test_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state))
- 		return;
- 
- 	cancel_delayed_work_sync(&rt2x00dev->rfkill_work);
-@@ -127,46 +162,3 @@ void rt2x00rfkill_unregister(struct rt2x
- 
- 	__clear_bit(RFKILL_STATE_REGISTERED, &rt2x00dev->rfkill_state);
- }
--
--void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
--{
--	struct device *dev = wiphy_dev(rt2x00dev->hw->wiphy);
--
--	if (test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state))
--		return;
--
--	rt2x00dev->rfkill = rfkill_allocate(dev, RFKILL_TYPE_WLAN);
--	if (!rt2x00dev->rfkill) {
--		ERROR(rt2x00dev, "Failed to allocate rfkill handler.\n");
--		return;
--	}
--
--	__set_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state);
--
--	rt2x00dev->rfkill->name = rt2x00dev->ops->name;
--	rt2x00dev->rfkill->data = rt2x00dev;
--	rt2x00dev->rfkill->toggle_radio = rt2x00rfkill_toggle_radio;
--	if (test_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags)) {
--		rt2x00dev->rfkill->get_state = rt2x00rfkill_get_state;
--		rt2x00dev->rfkill->state =
--			rt2x00dev->ops->lib->rfkill_poll(rt2x00dev) ?
--			    RFKILL_STATE_SOFT_BLOCKED : RFKILL_STATE_UNBLOCKED;
--	} else {
--		rt2x00dev->rfkill->state = RFKILL_STATE_UNBLOCKED;
--	}
--
--	INIT_DELAYED_WORK(&rt2x00dev->rfkill_work, rt2x00rfkill_poll);
--
--	return;
--}
--
--void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
--{
--	if (!test_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->rfkill_state))
--		return;
--
--	cancel_delayed_work_sync(&rt2x00dev->rfkill_work);
--
--	rfkill_free(rt2x00dev->rfkill);
--	rt2x00dev->rfkill = NULL;
--}
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((strcmp(t->target.u.user.name,
++					    IP6T_STANDARD_TARGET) == 0) &&
++				    t->verdict < -NF_MAX_VERDICT - 1) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
 
