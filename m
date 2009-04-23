@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbZDWUjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZDWUjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbZDWUjQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbZDWUi5
+	id S1757095AbZDWUjb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZDWUi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:38:57 -0400
-Received: from a4.complang.tuwien.ac.at ([128.130.173.65]:46717 "EHLO
-	a4.complang.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754604AbZDWUi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 16:38:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49235 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754253AbZDWUi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Apr 2009 16:38:56 -0400
-X-mailer: xrn 9.03-beta-14
-From: anton@mips.complang.tuwien.ac.at (Anton Ertl)
-Subject: Re: [rfc] built-in native compiler for Linux?
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-X-Newsgroups: linux.kernel
-In-reply-to: <20090422085828.GA16917@elte.hu>
-Date: Thu, 23 Apr 2009 20:22:24 GMT
-Message-ID: <2009Apr23.222224@mips.complang.tuwien.ac.at>
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090423163624.GA6732@redhat.com>
+References: <20090423163624.GA6732@redhat.com> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <20090422175753.GA14236@elte.hu> 
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
+       viro@zeniv.linux.org.uk,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Document that wake_up(), complete() and co. imply a full memory barrier
+Date: Thu, 23 Apr 2009 21:37:14 +0100
+Message-ID: <22193.1240519034@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
-> Furthermore, a lot of optimizations in GCC are driven by 
->SPECint and SPECfp benchmarketing, with little practical relevance 
->to 99% of the apps, including the kernel.
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Right, and it's not just the kernel that has to work around GCC
-breakage, it's also many apps (possibly all of them except SPEC
-benchmarks, and the few 100% C99-compliant programs (probably none
-with more than than 500 lines of code)).
+> Well. I think in that case almost every try_to_wake_up/wake_up_process
+> needs mb().
 
-So I guess a decent alternative to GCC would attract not just the
-kernel people, but also many (most?) applications people.  Then GCC
-would no longer be misused for ordinary applications or kernels and it
-could focus on its true destiny: compiling SPEC benchmarks.
+Not exactly.  They need smp_wmb() in the wake_up() path - unless they use
+locks, which a lot of cases do.
 
-Whether to build such a compiler mostly from scratch as you suggest or
-as a fork of GCC is up to whoever does it.  The GCC fork variant has
-the advantage of having a lot of targets available already, but the
-disadvantage of a large and complex code base.
-
-- anton
--- 
-M. Anton Ertl                    Some things have to be seen to be believed
-anton@mips.complang.tuwien.ac.at Most things have to be believed to be seen
-http://www.complang.tuwien.ac.at/anton/home.html
+David
