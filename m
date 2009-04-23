@@ -1,91 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZDWIzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751125AbZDWJFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZDWIzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZDWIzc
+	id S1751125AbZDWJFN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 05:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZDWJE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 04:55:32 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:38349 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZDWIzb (ORCPT
+	Thu, 23 Apr 2009 05:04:57 -0400
+Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:37861
+	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbZDWJE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 04:55:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CskTC/wGolM22fKITjXWGUqoXT8PqEBr/bTD0OCgwrF5OxFVFs4XpxNXTJosHyG8iS
-         vLFk52bLu8njQC30lEG3cG6aHDLELriDxU+0Q9KpEXkLwGsRWw/HdFAR7HYKkOXbJsao
-         Z3DkL9c+G756GRzXSGH3JRuqfik9WSxW+1L6E=
+	Thu, 23 Apr 2009 05:04:56 -0400
+Date: Thu, 23 Apr 2009 18:04:54 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Tim Gardner <timg@tpi.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Sony laptop: Some Sony Vaia laptops do not enable wwan
+	power by default.
+Message-ID: <20090423090454.GB24761@kamineko.org>
+References: <20090422185351.AB41AF88CE@sepang.rtg.net>
 MIME-Version: 1.0
-In-Reply-To: <20090423082704.GD599@elte.hu>
-References: <1240258569.6195.8.camel@earth> <1240344440.5861.10.camel@earth>
-	 <1240439073.12721.23.camel@earth> <20090423082704.GD599@elte.hu>
-Date: Thu, 23 Apr 2009 10:55:29 +0200
-Message-ID: <b647ffbd0904230155t61578496pf75fb79e54def3a3@mail.gmail.com>
-Subject: Re: [PATCH] x86 microcode: work_on_cpu and cleanup of the 
-	synchronization logic
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Peter Oruba <peter.oruba@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090422185351.AB41AF88CE@sepang.rtg.net>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.29-rc4-1 x86_64
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/23 Ingo Molnar <mingo@elte.hu>:
->
-> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
->
->> Version 3
->>
->> diff with v.2
->>
->> - use smp_call_function_single() instead of work_on_cpu() as suggested by Ingo;
->> - add 'enum ucode_state' as return value of request_microcode_{fw,user}
->> - minor cleanups
->
-> This version looks really nice structurally. What type of testing
-> have you done on the patch, on what CPU type?
+On Wed, Apr 22, 2009 at 12:53:51PM -0600, Tim Gardner wrote:
+> Mattia,
+> 
+> Does this patch makes sense for just the Vaio? I've had positive feedback from
+> the tester in the bug report.
+> 
+> rtg
+> -----------------
+> From 083972abb1d5e84845927b3925f077953c207b82 Mon Sep 17 00:00:00 2001
+> From: Tim Gardner <tim.gardner@canonical.com>
+> Date: Tue, 21 Apr 2009 11:09:10 -0600
+> Subject: [PATCH] Sony laptop: Some Sony Vaio laptops do not enable wwan power by default.
+> 
+> Bug: https://bugs.launchpad.net/bugs/364678
+> 
+> Added quirk to enable wwan power based on DMI information already present in the module.
+> It appears that wwan is not powered up from a cold boot.
 
-Quite limited testing. It looks like there is no newer ucode availble
-for my dual-core Intel Core2 Duo (Thinkpad R60) so what I did is as
-follows:
+The bug reporter says that this happens when booting from windows to
+linux, is it still true when manually enabling the device in linux and
+then rebooting (into linux again)?
 
-- change update_match_revision() in microcode_intel.c in a way that
-allows loading of a ucode with a revision == the current revision
-(rev. 0x57 in my case). From the POV of the microcode module it
-nevertheless looks like an update;
+> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+> ---
+>  drivers/misc/sony-laptop.c |   24 +++++++++++++++++++++++-
+>  1 files changed, 23 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
+> index 7e73acc..eab7011 100644
+> --- a/drivers/misc/sony-laptop.c
+> +++ b/drivers/misc/sony-laptop.c
+> @@ -1248,10 +1248,13 @@ struct device_ctrl {
+>  	u16				evport_offset;
+>  	u8				has_camera;
+>  	u8				has_bluetooth;
+> -	u8				has_wwan;
+>  	struct sonypi_eventtypes	*event_types;
+>  };
+>  
+> +struct sony_pic_quirk_entry {
+> +	u8				set_wwan_power;
+> +};
+> +
+>  struct sony_pic_dev {
+>  	struct device_ctrl	*control;
+>  	struct acpi_device	*acpi_dev;
+> @@ -1260,6 +1263,7 @@ struct sony_pic_dev {
+>  	struct list_head	interrupts;
+>  	struct list_head	ioports;
+>  	struct mutex		lock;
+> +	struct sony_pic_quirk_entry *quirks;
+>  	u8			camera_power;
+>  	u8			bluetooth_power;
+>  	u8			wwan_power;
+> @@ -2685,6 +2689,12 @@ static int sony_pic_add(struct acpi_device *device)
+>  	if (result)
+>  		goto err_remove_pf;
+>  
+> +	if (spic_dev.quirks && spic_dev.quirks->set_wwan_power) {
+> +		/*
+> +		 * Power isn't enabled by default.
+> +		 */
+> +		sony_pic_set_wwanpower(1);
+> +	}
+>  	return 0;
+>  
+>  err_remove_pf:
+> @@ -2755,6 +2765,16 @@ static struct acpi_driver sony_pic_driver = {
+>  		},
+>  };
+>  
+> +static struct sony_pic_quirk_entry sony_pic_vaio_vgn = {
+> +	.set_wwan_power = 1,
+> +};
+> +
+> +static int dmi_matched(const struct dmi_system_id *dmi)
+> +{
+> +	spic_dev.quirks = dmi->driver_data;
+> +	return 0;
+> +}
+> +
+>  static struct dmi_system_id __initdata sonypi_dmi_table[] = {
+>  	{
+>  		.ident = "Sony Vaio",
+> @@ -2769,6 +2789,8 @@ static struct dmi_system_id __initdata sonypi_dmi_table[] = {
+>  			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
+>  			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-"),
+>  		},
+> +		.callback = dmi_matched,
+> +		.driver_data = &sony_pic_vaio_vgn,
 
-- update via /dev/microcode (CONFIG_MICROCODE_OLD_INTERFACE) with a .dat file;
+This is like just enabling it on all type3 (and some type2) vaios.
+Might as well call your quirk unconditionally for all models.
 
-- suspend -> resume (reload of ucode via cpu-callbacks)
-
-These tests worked for me.
-
-Obviously, it'd be nice if more people could give it a try (e.g.
-update with a firmware image and also on AMD - although the changes in
-microcode_amd.c are quite straightforward).
-
-
-p.s. argh... just noticed that the following line is redundant in
-microcode_core.c (forgot to remove it)
-
-+enum { UCODE_UPDATE_ERR, UCODE_UPDATE_OK, UCODE_UPDATE_NAVAIL };
-
-
->
-> Thanks,
->
->        Ingo
->
-
+Honestly I'd rather work towards the rfkill implementation as Matthew
+suggests.
 -- 
-Best regards,
-Dmitry Adamushko
+mattia
+:wq!
