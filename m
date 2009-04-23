@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZDWKcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZDWKda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZDWKcZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 06:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbZDWKcO
+	id S1757600AbZDWKda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbZDWKdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 06:32:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57872 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752996AbZDWKcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 06:32:14 -0400
-Message-ID: <49F043A4.2060700@kernel.org>
-Date: Thu, 23 Apr 2009 19:32:04 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 23 Apr 2009 06:33:16 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:36724 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752824AbZDWKdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 06:33:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=owEdEVaHLs6JCiFmGKNCAXuy3OKtYvP5DCsX+EO8bPirZcuPrKyZXlY1CcOClnSW98
+         8NBKMHjBtI1/g2NMtWqQhowLmy5iUu299yiotztPpJ7lbfs5GALxMtgUmb+Mrq8NfwgX
+         fTmbVXeRBHO6wI7nmrj01udeL5glPW26d5gdE=
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net
-Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
-References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org> <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Apr 2009 10:31:09 +0000 (UTC)
+In-Reply-To: <a4423d670904230254v672798ddtda443e549ef45490@mail.gmail.com>
+References: <20090422154247.dbffd285.sfr@canb.auug.org.au>
+	 <49EEF38D.8000801@in.ibm.com>
+	 <a4423d670904230254v672798ddtda443e549ef45490@mail.gmail.com>
+Date: Thu, 23 Apr 2009 11:33:13 +0100
+Message-ID: <5a44caba0904230333v88a2a81j3f86cfb46b3ec33c@mail.gmail.com>
+Subject: Re: April 22 Next : net/rfkill randconfig failure
+From: Ken Lewis <kennylewis@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>,
+       Sachin Sant <sachinp@in.ibm.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       linux-wireless@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=0016364ee12a3d7e8f046836680d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--0016364ee12a3d7e8f046836680d
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Miklos Szeredi wrote:
-> VFS inode should never be needed by the CUSE codepaths.  Well, maybe
-> for setting access/modification times, but in any case those need not
-> be shared with fuse code.
+2009/4/23 Alexander Beregalov <a.beregalov@gmail.com>:
+> 2009/4/22 Sachin Sant <sachinp@in.ibm.com>:
+>> Today's next tree build (x86 randconfig) failed with
+>>
+>> net/rfkill/rfkill.c: In function 'update_rfkill_state':
+>> net/rfkill/rfkill.c:99: error: implicit declaration of function
+>> 'rfkill_led_trigger'
+>> make[2]: *** [net/rfkill/rfkill.o] Error 1
+>>
+>> .config attached
+>>
+>
+> Add CCs
 
-One more usage: locking.
+I'm getting the same issue, but my .config does not include
+CONFIG_RFKILL_LEDS.  I use the attached patch to ensure the functions
+were defined.  Apols for the formatting: first patch atttempt.
 
->>> I still think that the INIT sequence in CUSE is way too complicated
->>> and that the kernel thread is unnecessary.  How about doing the init
->>> with a single CUSE_INIT message which embeds the fuse_init_in and
->>> fuse_init_out structures.
->> I don't see why the kernel thread is such a big problem.  It's just a
->> kernel thread.
-> 
-> I think it's an unnecessary complication.  Threads are useful if
-> something needs to be _done_, but in this case nothing is done, just
-> waiting for the reply.  One example why I find it hackish is that you
-> are returning error values from the thread, as if it was a synchronous
-> thing, but those errors are obviously lost.
+Take care.
+Ken.
 
-That doesn't have anything to do with whether it's done in kernel
-thread or not.  If that bothers you, just make it return 0 with
-comment /* return value ignored */.
+--0016364ee12a3d7e8f046836680d
+Content-Type: text/plain; charset=US-ASCII; name="next-20090423-rfkill-diff.txt"
+Content-Disposition: attachment; filename="next-20090423-rfkill-diff.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ftvbe0q70
 
-> I don't see any problems with doing the device initialization in the
-> context of the replying process (which will usually be the same as
-> the one opening the device anyway).
-
-I don't know.  If it's simple, sure why not.  If it makes things even
-marginally more complex (state saving and so on), why go that way?
-
-In my first job, I used to work on a quite complex state machine based
-server which had to do almost everything in multiple functions.  In
-the end, it was extremely ugly and ultimately the wrong kind of
-optimization, so I much prefer having a stack whenever it makes things
-simpler and the overhead isn't an issue.  What are the actual benefits
-of doing things in several different functions in this case?
-Performance definitely is not a concern here.
-
->>  We can surely fold FUSE_INIT inside FUSE_INIT tho but
->> one way or the other doesn't make whole lot of difference.
-> 
-> I just think it would be cleaner, both code-wise and protocol-wise.  I
-> can do the above cleanups if you have no objection.
-
-Sure, if you think things would be better that way.  Please go ahead.
-
-Thanks.
-
--- 
-tejun
+ZGlmZiAtLWdpdCBhL25ldC9yZmtpbGwvcmZraWxsLmMgYi9uZXQvcmZraWxsL3Jma2lsbC5jCmlu
+ZGV4IDUzNDMwYTcuLmZjZGQ1ZTAgMTAwNjQ0Ci0tLSBhL25ldC9yZmtpbGwvcmZraWxsLmMKKysr
+IGIvbmV0L3Jma2lsbC9yZmtpbGwuYwpAQCAtNzUsNiArNzUsMTIgQEAgc3RhdGljIHZvaWQgcmZr
+aWxsX2xlZF90cmlnZ2VyX2FjdGl2YXRlKHN0cnVjdCBsZWRfY2xhc3NkZXYgKmxlZCkKIAogCXJm
+a2lsbF9sZWRfdHJpZ2dlcihyZmtpbGwsIHJma2lsbC0+c3RhdGUpOwogfQorI2Vsc2UKK3N0YXRp
+YyB2b2lkIHJma2lsbF9sZWRfdHJpZ2dlcihzdHJ1Y3QgcmZraWxsICpyZmtpbGwsCisJCQkgICAg
+ICAgZW51bSByZmtpbGxfc3RhdGUgc3RhdGUpCit7IH0KK3N0YXRpYyB2b2lkIHJma2lsbF9sZWRf
+dHJpZ2dlcl9hY3RpdmF0ZShzdHJ1Y3QgbGVkX2NsYXNzZGV2ICpsZWQpCit7IH0KICNlbmRpZiAv
+KiBDT05GSUdfUkZLSUxMX0xFRFMgKi8KIAogc3RhdGljIHZvaWQgcmZraWxsX3VldmVudChzdHJ1
+Y3QgcmZraWxsICpyZmtpbGwpCg==
+--0016364ee12a3d7e8f046836680d--
