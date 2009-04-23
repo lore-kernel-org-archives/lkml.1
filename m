@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbZDWH5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZDWIEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760077AbZDWH5m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZDWHeX
+	id S1754813AbZDWIEk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbZDWHo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:34:23 -0400
-Received: from sous-sol.org ([216.99.217.87]:51049 "EHLO x200.localdomain"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757036AbZDWHeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:34:19 -0400
-Message-Id: <20090423072904.126675150@sous-sol.org>
-User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:36 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 076/100] SCSI: sg: fix q->queue_lock on scsi_error_handler path
-References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=scsi-sg-fix-q-queue_lock-on-scsi_error_handler-path.patch
+	Thu, 23 Apr 2009 03:44:56 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53550 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758816AbZDWHoz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:44:55 -0400
+Subject: Re: [PATCH 02/22] Do not sanity check order in the fast path
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0904221244030.14558@chino.kir.corp.google.com>
+References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
+	 <1240408407-21848-3-git-send-email-mel@csn.ul.ie>
+	 <1240416791.10627.78.camel@nimitz> <20090422171151.GF15367@csn.ul.ie>
+	 <alpine.DEB.2.00.0904221244030.14558@chino.kir.corp.google.com>
+Date: Thu, 23 Apr 2009 10:44:53 +0300
+Message-Id: <1240472693.16082.56.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Wed, 2009-04-22 at 13:11 -0700, David Rientjes wrote:
+> On Wed, 22 Apr 2009, Mel Gorman wrote:
+> 
+> > If there are users with good reasons, then we could convert this to WARN_ON
+> > to fix up the callers. I suspect that the allocator can already cope with
+> > recieving a stupid order silently but slowly. It should go all the way to the
+> > bottom and just never find anything useful and return NULL.  zone_watermark_ok
+> > is the most dangerous looking part but even it should never get to MAX_ORDER
+> > because it should always find there are not enough free pages and return
+> > before it overruns.
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> slub: enforce MAX_ORDER
+> 
+> slub_max_order may not be equal to or greater than MAX_ORDER.
+> 
+> Additionally, if a single object cannot be placed in a slab of
+> slub_max_order, it still must allocate slabs below MAX_ORDER.
+> 
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-upstream commit: 015640edb1f346e0b2eda703587c4cd1c310ec1d
-
-sg_rq_end_io() is called via rq->end_io. In some rare cases,
-sg_rq_end_io calls blk_put_request/blk_rq_unmap_user (when a program
-issuing a command has gone before the command completion; e.g. by
-interrupting a program issuing a command before the command
-completes).
-
-We can't call blk_put_request/blk_rq_unmap_user in interrupt so the
-commit c96952ed7031e7c576ecf90cf95b8ec099d5295a uses
-execute_in_process_context().
-
-The problem is that scsi_error_handler() calls rq->end_io too. We
-can't call blk_put_request/blk_rq_unmap_user too in this path (we hold
-q->queue_lock).
-
-To avoid the above problem, in these rare cases, this patch always
-uses schedule_work() instead of execute_in_process_context().
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: Douglas Gilbert <dgilbert@interlog.com>
-Cc: Stable Tree <stable@kernel.org>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- drivers/scsi/sg.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1323,8 +1323,10 @@ static void sg_rq_end_io(struct request 
- 		wake_up_interruptible(&sfp->read_wait);
- 		kill_fasync(&sfp->async_qp, SIGPOLL, POLL_IN);
- 		kref_put(&sfp->f_ref, sg_remove_sfp);
--	} else
--		execute_in_process_context(sg_rq_end_io_usercontext, &srp->ew);
-+	} else {
-+		INIT_WORK(&srp->ew.work, sg_rq_end_io_usercontext);
-+		schedule_work(&srp->ew.work);
-+	}
- }
- 
- static struct file_operations sg_fops = {
-@@ -2134,7 +2136,8 @@ static void sg_remove_sfp(struct kref *k
- 	write_unlock_irqrestore(&sg_index_lock, iflags);
- 	wake_up_interruptible(&sdp->o_excl_wait);
- 
--	execute_in_process_context(sg_remove_sfp_usercontext, &sfp->ew);
-+	INIT_WORK(&sfp->ew.work, sg_remove_sfp_usercontext);
-+	schedule_work(&sfp->ew.work);
- }
- 
- static int
+Applied, thanks!
 
