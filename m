@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZDWRa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbZDWRat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbZDWRa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 13:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbZDWR3k
+	id S1757629AbZDWRat (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 13:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbZDWRa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 13:29:40 -0400
-Received: from thunk.org ([69.25.196.29]:36798 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756395AbZDWR3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 13:29:38 -0400
-Date: Thu, 23 Apr 2009 13:29:25 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Valerie Aurora Henson <vaurora@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
-Message-ID: <20090423172925.GL2723@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jamie Lokier <jamie@shareable.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Valerie Aurora Henson <vaurora@redhat.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Chris Mason <chris.mason@oracle.com>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Ric Wheeler <rwheeler@redhat.com>
-References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org> <20090423112105.GA1589@shareable.org> <20090423124230.GF2723@mit.edu> <20090423164330.GA9399@shareable.org>
+	Thu, 23 Apr 2009 13:30:28 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60096 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753297AbZDWRa1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 13:30:27 -0400
+Message-ID: <49F0A5AF.5080906@us.ibm.com>
+Date: Thu, 23 Apr 2009 10:30:23 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423164330.GA9399@shareable.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Ravikiran G Thirumalai <kiran@scalex86.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, shai@scalex86.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [rfc] [patch 1/2 ] Process private hash tables for private	futexes
+References: <20090321044637.GA7278@localdomain> <49C4AE64.4060400@cosmosbay.com> <20090322045414.GD7278@localdomain> <49C5F3FD.9010606@cosmosbay.com> <20090323202837.GE7278@localdomain> <49C805E3.4060808@cosmosbay.com> <49C88616.9030307@cosmosbay.com>
+In-Reply-To: <49C88616.9030307@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 05:43:30PM +0100, Jamie Lokier wrote:
-> Sure, most apps are low quality in all respects. Many don't care about
-> a bit of corruption when the battery runs out.  There's no pressure to
-> get that right, and it's quite hard to get right without good practice
-> to follow, and good APIs which encourage good practice naturally.
+Eric Dumazet wrote:
+
 > 
-> Imho, the rename-automagic-safety rule now in ext3/4 is _better_ than
-> requiring apps to call fsync, because it doesn't require an immediate,
-> synchronous disk flush and hardware cache flush.  Fsync requires those
-> things, to be useful for databases and mail servers.  If you're
-> renaming a lot of files, 1000s of explicit fsyncs serialises badly on
-> rotating media.
+> +	futex_queues = alloc_large_system_hash("futexes",
+> +			sizeof(struct futex_hash_bucket),
+> +			nr_slots,
+> +			0, /* scale : unused */
+> +			0, /* flags */
+> +			NULL, /* shift */
+> +			&futex_hash_mask,
+> +			nr_slots);
 
-Well, some KDE deskops rewrites *hundreds* of files on on startup, and
-users get very cranky when their window layouts, for which they have
-spent *hours* optimizing just so, get lost on application crash.  (It
-doesn't help that KDE was rewriting files even though nothing had
-changed.... I can't remember if it was via rename or truncate, but I
-have a bad feeling it was via truncate.)
+OK, so I'm a little late to the party, apologies.
 
-> sync_file_range() itself is just too weird to use.  Reading the man
-> page many times, I still couldn't be sure what it does or is meant to
-> do until asking on l-k a few years ago.  My guess, from reading the
-> man page, turned out to be wrong.  The recommended way to use it for a
-> database-like application was quite convoluted and required the app to
-> apply its own set of mm-style heuristics.  I never did find out if it
-> commits data-locating metadata and file size after extending a file or
-> filling a hole.  It never seemed to emit I/O barriers.
+Minor nit (from someone who has been spending a lot of time in futex.c
+trying to clean things up recently :-).  Let's not comment each argument
+individually.  It needlessly lengthens the code.  The interested user
+can easily look up alloc_large_system_hash.  If you feel a comment is
+really needed, consider a single line before the call... I gave this
+some thought and couldn't think of anything you could put there that
+wouldn't still send the interested reader over to page_alloc.c.
 
-Have you looked at the man page for sync_file_range()?  It's gotten a
-lot better.  My version says it was last updated 2008-05-27, and it
-now answers your question about whether it commits data-locating
-metadata (it doesn't).  It now has a bunch of examples how how to use
-the flags in combination.
+/* Allocate futex hashtable with... <whatever is special about this> */
+futex_queues = alloc_large_system_hash("futexes",
+				       sizeof(struct futex_hash_bucket),
+				       nr_slots, 0, 0, NULL, &futex_hash_mask,
+				       nr_slots);
 
-In terms of making it easier to use, some predefined bitfield
-combinations is all that's necessary.
-
-As far as extending the implementation so it calls into filesystem to
-commit data-locating metadata, and other semantics such as "flush on
-next commit, or "flush-when-upcoming-metadata-changes-such-as-a-rename", 
-we might need to change the implementation somewhat (or a lot).
-
-But the interface does make a lot of sense.  (But maybe that's because
-I've spent too much time staring at all of the page writeback call
-paths, and compared to that even string theory is pretty simple.  :-)
-
-       	   	       	    	 	       - Ted
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
