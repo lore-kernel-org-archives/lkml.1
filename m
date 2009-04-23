@@ -1,103 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZDWQrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZDWQrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbZDWQrQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZDWQq6
+	id S1756914AbZDWQrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZDWQrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:46:58 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37352 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZDWQq5 (ORCPT
+	Thu, 23 Apr 2009 12:47:21 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:21519 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755937AbZDWQrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:46:57 -0400
-Message-ID: <49F09B78.7000403@novell.com>
-Date: Thu, 23 Apr 2009 12:46:48 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH 2/3] eventfd: add a notifier mechanism
-References: <20090423150910.14094.73708.stgit@dev.haskins.net> <20090423151436.14094.35875.stgit@dev.haskins.net> <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA4C8D3D84102D26A54819969"
+	Thu, 23 Apr 2009 12:47:19 -0400
+Subject: Re: linux-next: upstream tree build warnings
+From: Alex Williamson <alex.williamson@hp.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Miller <davem@davemloft.net>, linux-next@vger.kernel.org,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+In-Reply-To: <20090423225108.600a6e8e.sfr@canb.auug.org.au>
+References: <20090423163847.200f227e.sfr@canb.auug.org.au>
+	 <20090423.002403.74400050.davem@davemloft.net>
+	 <20090423215533.157df0e0.sfr@canb.auug.org.au>
+	 <20090423225108.600a6e8e.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Organization: HP OSLO R&D
+Date: Thu, 23 Apr 2009 10:46:37 -0600
+Message-Id: <1240505197.9646.517.camel@2710p.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA4C8D3D84102D26A54819969
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-04-23 at 22:51 +1000, Stephen Rothwell wrote:
+> Hi Dave,
+> 
+> On Thu, 23 Apr 2009 21:55:33 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > The callers came in throught commit
+> > 0bde95690d65653e420d04856c5d5783155c747c ("virtio_net: Add support for
+> > VLAN filtering in the hypervisor") which I assume came in throught the
+> > net tree (it has you SOB on it). Committed Feb 5, 2009, went into Linus'
+> > tree before 2.6.30-rc1.
+> > 
+> > scatterlist.h hasn't changed since July, 2008.
+> 
+> In other words, I think the bug has always been there and just never hit
+> (yet).
 
-Davide Libenzi wrote:
-> On Thu, 23 Apr 2009, Gregory Haskins wrote:
->
->  =20
->> This allows synchronous notifications to register with the eventfd
->> infrastructure.  Unlike traditional vfs based eventfd readers, notifie=
-es
->> do not implictly clear the counter on reception.  However, the clearin=
-g
->> is primarily important to allowing threads to block waiting for events=
+Hmm, I can't seem to get the warning on an x86_64 allyesconfig build
+with gcc-4.4.0.  Did all the archs other than powerpc miss this warning?
+Thanks,
 
->> anyway, so its an acceptable trade-off since blocking doesn't apply to=
-
->> notifiers.
->>    =20
->
-> Do you really need to add a notifier? Eventfd already has a wait queue,=
-=20
-> and we support callback-based wakeups, so is there any reason we should=
-n't=20
-> use those and rely on the already existing wakeups?
->  =20
-Well, IIUC the issue is that a wait queue implies that you are in fact
-waiting...which we may not. :)
-
-The target in this particular application with kvm-irqfd is a vcpu
-context, which *may* be sleeping in something like a HLT, but it also
-could be in a number of other states such as non-root (guest) mode, it
-could be running in the kernel, it could be up in userspace, etc.
-
-That said: I am not married to the concept that this has to be a
-notifier callback, but I do want to be able to meet the target
-application.  So if there is some way to do that within the existing
-wait-queue contstruct, I am open to suggestions.
-
-Thanks Davide,
--Greg
-
->
->
-> - Davide
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  =20
+Alex
 
 
-
---------------enigA4C8D3D84102D26A54819969
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknwm3kACgkQlOSOBdgZUxkw9wCfTl/cwrwkr0v2j+ZkFLuk2InT
-ackAoIME19jnipNbGzZF256HaGP0ve8j
-=oJgO
------END PGP SIGNATURE-----
-
---------------enigA4C8D3D84102D26A54819969--
