@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbZDWOw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbZDWOwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759293AbZDWOw4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 10:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759007AbZDWOwe
+	id S1758984AbZDWOwl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 10:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbZDWOwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 10:52:34 -0400
-Received: from mailbox2.myri.com ([64.172.73.26]:1993 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759117AbZDWOwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 10:52:33 -0400
-X-Greylist: delayed 1966 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 10:52:33 EDT
-Message-ID: <49F078FA.6010507@myri.com>
-Date: Thu, 23 Apr 2009 10:19:38 -0400
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 23 Apr 2009 10:52:18 -0400
+Received: from kroah.org ([198.145.64.141]:39717 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758861AbZDWOwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 10:52:17 -0400
+Date: Thu, 23 Apr 2009 07:49:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Eugene Teo <eteo@redhat.com>, Justin Forbes <jmforbes@linuxtx.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Jake Edge <jake@lwn.net>, Chuck Wolber <chuckw@quantumlinux.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
+Subject: Re: [stable] [patch 000/100] 2.6.29.2 -stable review
+Message-ID: <20090423144918.GA26433@kroah.com>
+References: <20090423072020.428683652@sous-sol.org> <200904231447.50809.tvrtko.ursulin@sophos.com>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Rick Jones <rick.jones2@hp.com>, Brice Goglin <brice@myri.com>
-Subject: IRQ / SoftIRQ CPU time accounting broken by 457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904231447.50809.tvrtko.ursulin@sophos.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When running netperf for some 10GbE tests, I noticed
-that  IRQ and SOFTIRQ CPU time is no longer reported for an
-otherwise idle CPU on recent kernels, at least for x86_64.
+On Thu, Apr 23, 2009 at 02:47:50PM +0100, Tvrtko Ursulin wrote:
+> On Thursday 23 April 2009 08:20:20 Chris Wright wrote:
+> > This is the start of the stable review cycle for the 2.6.29.2 release.
+> > There are 100 patches in this series, all will be posted as a response
+> > to this one.  If anyone has any issues with these being applied, please
+> > let us know.  If anyone is a maintainer of the proper subsystem, and
+> > wants to add a Signed-off-by: line to the patch, please respond with it.
+> >
+> > These patches are sent out with a number of different people on the
+> > Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+> > to add your name to the list.  If you want to be off the reviewer list,
+> > also email us.
+> >
+> > Responses should be made by Sat, Apr 25, 07:00 UTC.  Anything received
+> > after that time might be too late.
+> 
+> Hi,
+> 
+> Could you please include a fix for forcedeth resume from hibernation 
+> regression as well?
+> 
+> http://marc.info/?l=linux-netdev&m=123885046818928&w=4
 
-If I take a 2-CPU system, and bind the NIC IRQ to CPU0, and
-bind the user-space netserver daemon to CPU1, the problem
-is obvious when blasting 10Gb/s of traffic at it.  I see
-no CPU used for irq or softirq on CPU0, even though it is
-handling 13K interrupts/sec:
+Do you have the git commit id of this patch in Linus's tree?
 
+thanks,
 
-
-% mpstat -P 0 1
-Linux 2.6.30-rc1 (venice)       04/22/09
-
-11:25:25     CPU   %user   %nice %system %iowait    %irq   %soft   %idle 
-    intr/s
-11:25:26       0    0.00    0.00    0.00    0.00    0.00    0.00  100.00 
-  13248.00
-11:25:27       0    0.00    0.00    0.00    0.00    0.00    0.00  100.00 
-  13280.00
-
-Common sense tells me that is wrong, and oprofile verifies there is
-a lot happening on CPU0.  Further, when I run a cpu-soaker in
-usermode bound to CPU0, I start to see irq, softirq, etc,
-being correctly identified:
-
-11:28:02     CPU   %user   %nice %system %iowait    %irq   %soft   %idle 
-    intr/s
-11:28:03       0   45.10    0.00    0.00    0.00    1.96   52.94    0.00 
-  13019.61
-11:28:04       0   46.46    0.00    0.00    0.00    2.02   51.52    0.00 
-  13414.14
-
-The problem is observable, but much less obvious when using a more
-common, e1000 1GbE NIC (15% softirq is missing, rather than 50%).
-
-I spent a few hours git-bisecting until I finally got here:
-
-% git-bisect bad
-Bisecting: 0 revisions left to test after this
-[457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4] fix scaled & unscaled cputime 
-accounting
-
-I have neither CONFIG_NO_HZ, CONFIG_VIRT_CPU_ACCOUNTING, or XEN configured.
-
-Drew
+greg k-h
