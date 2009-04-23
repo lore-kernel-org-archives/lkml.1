@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbZDWOwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZDWOyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbZDWOwl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 10:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbZDWOwS
+	id S1758593AbZDWOyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 10:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZDWOyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 10:52:18 -0400
-Received: from kroah.org ([198.145.64.141]:39717 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758861AbZDWOwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 10:52:17 -0400
-Date: Thu, 23 Apr 2009 07:49:18 -0700
-From: Greg KH <greg@kroah.com>
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Eugene Teo <eteo@redhat.com>, Justin Forbes <jmforbes@linuxtx.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Jake Edge <jake@lwn.net>, Chuck Wolber <chuckw@quantumlinux.com>,
-       "stable@kernel.org" <stable@kernel.org>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
-Subject: Re: [stable] [patch 000/100] 2.6.29.2 -stable review
-Message-ID: <20090423144918.GA26433@kroah.com>
-References: <20090423072020.428683652@sous-sol.org> <200904231447.50809.tvrtko.ursulin@sophos.com>
+	Thu, 23 Apr 2009 10:54:08 -0400
+Received: from relay03-haj2.antispameurope.com ([83.246.65.53]:39070 "EHLO
+	relay03-haj2.antispameurope.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752250AbZDWOyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 10:54:07 -0400
+X-Greylist: delayed 352 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 10:54:06 EDT
+Date: Thu, 23 Apr 2009 16:48:08 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: adi@hexapodia.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.30-rc2] CD-R: wodim intermittent failures: [sr0] Add. Sense: Logical block address out of range, sector 0
+Message-ID: <49f07fa8.UFHStOXJD5eYq3ER%Joerg.Schilling@fokus.fraunhofer.de>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904231447.50809.tvrtko.ursulin@sophos.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 23 Apr 2009 14:48:08.0673 (UTC) FILETIME=[84717510:01C9C422]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 02:47:50PM +0100, Tvrtko Ursulin wrote:
-> On Thursday 23 April 2009 08:20:20 Chris Wright wrote:
-> > This is the start of the stable review cycle for the 2.6.29.2 release.
-> > There are 100 patches in this series, all will be posted as a response
-> > to this one.  If anyone has any issues with these being applied, please
-> > let us know.  If anyone is a maintainer of the proper subsystem, and
-> > wants to add a Signed-off-by: line to the patch, please respond with it.
-> >
-> > These patches are sent out with a number of different people on the
-> > Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-> > to add your name to the list.  If you want to be off the reviewer list,
-> > also email us.
-> >
-> > Responses should be made by Sat, Apr 25, 07:00 UTC.  Anything received
-> > after that time might be too late.
-> 
-> Hi,
-> 
-> Could you please include a fix for forcedeth resume from hibernation 
-> regression as well?
-> 
-> http://marc.info/?l=linux-netdev&m=123885046818928&w=4
+I see two possible problems that should be first resolved.
 
-Do you have the git commit id of this patch in Linus's tree?
+1)	You are using "wodim" instead of cdrecord.
+	"wodim" is a very old version (4+ years) of cdrecord with
+	additional bugs. Due to Copyright & GPL violations, it cannot
+	even be legally distributed.
 
-thanks,
+2)	You may be using the linux hald version
 
-greg k-h
+I recommend to first get a recent original cdrtools package from
+
+ftp://ftp.berlios.de/pub/cdrecord/alpha/
+
+and to try with this after running "make install" as root.
+As Linux requires root privileges for many SCSI commands, you need to 
+install cdreord suid root which is automatically done via "make install"
+as root.
+
+If your problem persists, try to kill hald. Hald on Linux has many problems:
+
+-	It looks for the wrong state transitions on the CD drive 
+	and thus distrurbes CD/DVD/BD writing. It may e.g. try to mount a CD 
+	that has not yet been fully written.
+
+-	The O_EXCL metod it believes on just cannot ever work correctly:
+
+	-	You would not be able to read out written media CD-DA or CD-ROM
+
+	-	You would not be able to deal with multi-session media
+
+	-	As Linux offers to access CD/DVD/BD-drives vie more than one
+		device driver and as these device drivers don't know each other
+		O_EXCL cannot work anyway.
+
+If your problem still persists, you may have a Linux kernel problem.
+
+BTW: please keep me on CC:
+
+Jörg
+
+-- 
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       joerg.schilling@fokus.fraunhofer.de (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/private/ ftp://ftp.berlios.de/pub/schily
