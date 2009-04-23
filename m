@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbZDWFWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZDWFXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbZDWFWX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 01:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZDWFWO
+	id S1753943AbZDWFXA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 01:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZDWFWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 01:22:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55687 "EHLO
+	Thu, 23 Apr 2009 01:22:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45124 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751002AbZDWFWN (ORCPT
+	by vger.kernel.org with ESMTP id S1751002AbZDWFWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 01:22:13 -0400
-Date: Wed, 22 Apr 2009 22:20:31 -0700
+	Thu, 23 Apr 2009 01:22:48 -0400
+Date: Wed, 22 Apr 2009 22:17:48 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Crash in v2.6.30-rc3 (regression from 30-rc2)
-Message-Id: <20090422222031.17d9d72e.akpm@linux-foundation.org>
-In-Reply-To: <49EFD2A4.6080801@novell.com>
-References: <49EFD2A4.6080801@novell.com>
+To: Valerie Aurora Henson <vaurora@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Sandeen <sandeen@redhat.com>, Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
+Message-Id: <20090422221748.8c9022d1.akpm@linux-foundation.org>
+In-Reply-To: <20090423001257.GA16540@shell>
+References: <20090423001257.GA16540@shell>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,37 +28,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 22:29:56 -0400 Gregory Haskins <ghaskins@novell.com> wrote:
+On Wed, 22 Apr 2009 20:12:57 -0400 Valerie Aurora Henson <vaurora@redhat.com> wrote:
 
-> Hi All,
+> In the default mode for ext3 and btrfs, fsync() is both slow and
+> unnecessary for some important application use cases - at the same
+> time that it is absolutely required for correctness for other modes of
+> ext3, ext4, XFS, etc.  If applications could easilyl distinguish
+> between the two cases, they would be more likely to be correct and
+> fast.
 > 
->  FYI: I am seeing this when moving from 30-rc2 to 30-rc3 on a 4-way
-> x86_64 box.
+> How about an fpathconf() variable, something like _PC_ORDERED?  E.g.:
 > 
-> I have since reverted back to rc2, but can easily spin up the new kernel
-> again to decode more info or try a fix, if desired.
+> 	/* Unoptimized example optional fsync() demo */
+> 	write(fd);
+> 	/* Only fsync() if we need it */
+> 	if (fpath_conf(fd, _PC_ORDERED) != 1)
+> 		fsync(fd);
+> 	rename(tmp_path, new_path);
 > 
-> One data point I do have is that the box seemed to have booted when I
-> forgot to add console=ttyS0 to the kernel args.  I suspect the serial
-> console is just changing timing, but its 100% reproducible in this setup.
+> I know of two specific real-world cases in which this would
+> significantly improve performance: (a) fsync() before rename(), (b)
+> fsync() of the parent directory of a newly created file.  Case (b) is
+> particularly nasty when you have multiple threads creating files in
+> the same directory because the dir's i_mutex is held across fsync() -
+> file creates become limited to the speed of sequential fsync()s.
 > 
-> BUG: unable to handle kernel NULL pointer dereference at (null)
-> IP: [<ffffffff803863f8>] rb_erase+0x132/0x28c
-> PGD 13a11e067 PUD 13dd1d067 PMD 0
-> Oops: 0000 [#1] SMP
-> last sysfs file:
-> /sys/devices/pci0000:00/0000:00:1f.1/host6/target6:0:0/6:0:0:0/type
-> CPU 0
-> Modules linked in: i5000_edac shpchp rtc_core soundcore thermal sr_mod
-> parport_pc processor button libphy natsemi cdrom i2c_core edac_core
-> parport snd_page_alloc pcspkr serio_raw pci_hotplug rtc_lib kvm_intel sg
-> joydev kvm usbhid hid linear ehci_hcd uhci_hcd sd_mod crc_t10dif usbcore
-> dm_snapshot edd fan thermal_sys hwmon dm_mod ext3 mbcache jbd
-> ide_pci_generic piix ide_core ata_generic ata_piix ahci libata scsi_mod
-> Pid: 1561, comm: vgchange Not tainted 2.6.30-rc3-vbus #30 Precision
-> WorkStation 490   
-> RIP: 0010:[<ffffffff803863f8>]  [<ffffffff803863f8>] rb_erase+0x132/0x28c
+> Conceptual libc patch below.
 
-I believe this is being worked on over in the thread titled "[BUG]
-rbtree bug with mmotm 2009-04-14-17-24".
+Would it be better to implement new syscall(s) with finer-grained control
+and better semantics?  Then userspace would just need to to:
+
+	fsync_on_steroids(fd, FSYNC_BEFORE_RENAME);
+
+and that all gets down into the filesystem which can then work out what
+it needs to do to implement the command.
 
