@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760719AbZDWWKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932210AbZDWWK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760719AbZDWWKo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZDWWKf
+	id S932210AbZDWWK5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbZDWWKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:10:35 -0400
-Received: from bay0-omc3-s31.bay0.hotmail.com ([65.54.246.231]:22534 "EHLO
-	bay0-omc3-s31.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752455AbZDWWKf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:10:35 -0400
-X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Apr 2009 18:10:34 EDT
-Message-ID: <BAY109-W38D2EA5A4AC1AC4BA23193C3750@phx.gbl>
-X-Originating-IP: [96.253.143.103]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <andi@firstfloor.org>, <macro@linux-mips.org>, <mingo@elte.hu>,
-       <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
-Subject: RE: I/O APIC: Timer through 8259A revamp
-Date: Thu, 23 Apr 2009 15:04:24 -0700
-Importance: Normal
-In-Reply-To: <20090423180419.GT13896@one.firstfloor.org>
-References: <fa.LVGNb1leZ16O2EUrcLYbCwtL9mc@ifi.uio.no>
- <fa.DPrbiibT7M43HJi+nTdM88e1eOQ@ifi.uio.no>
- <fa.p4mWFgWCFwhnKR83MseIShfc6uQ@ifi.uio.no>
- <fb0aeafb-a24b-413f-8d74-19c28de7faff@u9g2000pre.googlegroups.com>
- <20090423180419.GT13896@one.firstfloor.org>
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 23 Apr 2009 22:04:25.0369 (UTC) FILETIME=[76F84890:01C9C45F]
+	Thu, 23 Apr 2009 18:10:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:35040 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759987AbZDWWKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 18:10:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=GAd3FRu44zCR3HVQpjTkdCgrhFsyWqj7WOaELudfWKPYjp8yXByK5Z04zdkWYyFwVR
+         sBx+kENMaTHg3FJfBrHDkbKtBYhITtZzkMHff1lH7+nmhD21njOOornC0y0c7Kb1xBU8
+         grUE5X4cs/i25aUkc1CsQpYWig6axAdIyNYEo=
+Subject: Re: SDHCI driver runnining in aspire one, allows to write to R/O
+ SD cards
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: sdhci-devel@lists.ossman.eu, pierre@ossman.eu,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <49ED0865.9030603@gmail.com>
+References: <1240219764.13640.5.camel@maxim-laptop>
+	 <49ED0865.9030603@gmail.com>
+Content-Type: text/plain
+Date: Fri, 24 Apr 2009 01:10:32 +0300
+Message-Id: <1240524632.20871.0.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-04-20 at 17:42 -0600, Robert Hancock wrote:
+> Maxim Levitsky wrote:
+> > Hi,
+> > 
+> > I am an owner of aspire one, and it has a card reader.
+> > when I take a sd card, and pull down the protection tab, it still allows
+> > to write to the card (I tested with my main notebook that indeed, it did
+> > write there).
+> > 
+> > My main notebook, acer aspire 5720, doesn't have this problem.
+> > Kernel version in use is 2.6.28 vanilla, but this did happen in former
+> > version as well.
+> > 
+> > 
+> > Attached lspci, on acer one.
+> 
+> Do you know if it worked in any kernel version or OS? It's known that 
+> some SD card readers are too cheap to actually implement the 
+> write-protect detection.
 
-> I'm not sure what you mean here. The ATI timer fixes were done
-> on both i386 and x86-64.
-See this thread:
-http://lkml.org/lkml/2006/2/28/256
+I'll test in windows, but in linux it never did work.
 
-Yuhong Bao
+Best regards,
+	Maxim Levitsky
 
-_________________________________________________________________
-Create a cool, new character for your Windows Live™ Messenger.
-http://go.microsoft.com/?linkid=9656621
