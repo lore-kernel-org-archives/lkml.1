@@ -1,93 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZDWI3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZDWIbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZDWI3t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZDWI3b
+	id S1756748AbZDWIbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZDWIbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 04:29:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55469 "EHLO mx3.mail.elte.hu"
+	Thu, 23 Apr 2009 04:31:21 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37413 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbZDWI33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 04:29:29 -0400
-Date: Thu, 23 Apr 2009 10:28:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-Message-ID: <20090423082810.GE599@elte.hu>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <20090422114750.GA14202@nowhere> <alpine.DEB.2.00.0904220943280.24310@gandalf.stny.rr.com> <20090422171047.GA5975@nowhere> <49EF5138.3030408@goop.org> <alpine.DEB.2.00.0904221321410.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904221731240.24310@gandalf.stny.rr.com>
+	id S1752799AbZDWIbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 04:31:20 -0400
+Date: Thu, 23 Apr 2009 10:31:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christof Schmitt <christof.schmitt@de.ibm.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH] block: fix intermittent dm timeout based oops
+Message-ID: <20090423083118.GQ4593@kernel.dk>
+References: <20090324071730.53D7118C7A2@pentland.suse.de> <20090403143208.GA10005@schmichrtp.de.ibm.com> <20090403180106.GA5178@kernel.dk> <20090423082108.GA4376@schmichrtp.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904221731240.24310@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090423082108.GA4376@schmichrtp.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> 
-> On Wed, 22 Apr 2009, Steven Rostedt wrote:
-> 
-> > 
-> > On Wed, 22 Apr 2009, Jeremy Fitzhardinge wrote:
-> > 
+On Thu, Apr 23 2009, Christof Schmitt wrote:
+> On Fri, Apr 03, 2009 at 08:01:06PM +0200, Jens Axboe wrote:
+> > On Fri, Apr 03 2009, Christof Schmitt wrote:
+> > > On Tue, Mar 24, 2009 at 08:17:30AM +0100, Hannes Reinecke wrote:
+> > > > Very rarely under stress testing of dm, oopses are occuring as
+> > > > something tampers with an old stack frame.  This has been traced back
+> > > > to blk_abort_queue() leaving a timeout_list pointing to the stack.
+> > > > The reason is that sometimes blk_abort_request() won't delete the
+> > > > timer (if the request is marked as complete but before the timer has
+> > > > been removed, a small race window).  Fix this by splicing back from
+> > > > the ususally empty list to the q->timeout_list.
 > > > > 
-> > > >    
-> > > > > Do you have CONFIG_PARAVIRT on?  When I disabled it, I have yet to
-> > > > > reproduce the bug. But I've only rebooted a few times. I'm going to
-> > > > > continue to reboot to see if I can trigger it.
-> > > > >     
+> > > > Signed-off-by: Hannes Reinecke <hare@suse.de>
+> > > > ---
+> > > >  block/blk-timeout.c |    6 ++++++
+> > > >  1 files changed, 6 insertions(+), 0 deletions(-)
 > > > > 
+> > > > diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+> > > > index bbbdc4b..6213123 100644
+> > > > --- a/block/blk-timeout.c
+> > > > +++ b/block/blk-timeout.c
+> > > > @@ -224,6 +224,12 @@ void blk_abort_queue(struct request_queue *q)
+> > > >  	list_for_each_entry_safe(rq, tmp, &list, timeout_list)
+> > > >  		blk_abort_request(rq);
 > > > > 
-> > > > Yes it is enabled.
+> > > > +	/*
+> > > > +	 * Occasionally, blk_abort_request() will return without
+> > > > +	 * deleting the element from the list
+> > > > +	 */
+> > > > +	list_splice(&list, &q->timeout_list);
+> > > > +
+> > > >  	spin_unlock_irqrestore(q->queue_lock, flags);
 > > > > 
-> > > > 
-> > > > 
-> > > >   
-> > > > > I'm thinking that the paravirt alternative code may have clobbered a
-> > > > > register in either the enable or disabling of interrupts. This might cause
-> > > > > a strange value to go into the hardirqs_enabled flag.
-> > > > >     
-> > > > 
-> > > > 
-> > > > 
-> > > > Ok I will try it without PARAVIRT and tell you if I can reproduce it.
-> > > >   
+> > > >  }
+> > > > -- 
+> > > > 1.5.3.2
 > > > 
-> > > Interesting.  What code is generated for native_irq_enable/disable?
+> > > I just noticed that this fix is not upstream yet and i have seen test
+> > > cases hitting this problem.
+> > > 
+> > > Jens, are you going to included this patch, or should this go through
+> > > the SCSI tree?
 > > 
-> > Note, when I take my standard config and enable PARAVIRT and LOCKDEP it 
-> > still boots up fine. It may be a combination of some configs :-/
-> > 
-> > I'm currently doing a "config bisect" to find out what configs are needed.
+> > I will include it, and CC stable as well.
 > 
-> I just finished the config bisect, and it came down to 
-> CONFIG_DEBUG_PAGEALLOC (set is bad, not set is good). I'm sure 
-> this is not the only config that is at issue. It is probably a 
-> combination of configs
-> :-/
-> 
-> I'll try others to see if things change.
+> Any update on this? 2.6.30-rc3 does not have the patch.
 
-It could also be the timing of an incoming IRQ to hit a particular 
-race window. PAGEALLOC might trigger the right kind of delays to 
-make it trigger.
+I'll be sure to include it today, I need to fix one more thing before
+sending a new pull request.
 
-	Ingo
+-- 
+Jens Axboe
+
