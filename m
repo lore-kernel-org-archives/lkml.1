@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbZDWUiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZDWUij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbZDWUiX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZDWUiO
+	id S1755220AbZDWUij (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZDWUiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:38:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49211 "EHLO mx2.redhat.com"
+	Thu, 23 Apr 2009 16:38:16 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48528 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753375AbZDWUiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:38:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0904231004120.3101@localhost.localdomain>
-References: <alpine.LFD.2.00.0904231004120.3101@localhost.localdomain> <20090422175753.GA14236@elte.hu> <20090415162712.342d4c07.akpm@linux-foundation.org> <1239649429.16771.9.camel@heimdal.trondhjem.org> <20090413181733.GA10424@redhat.com> <32260.1239658818@redhat.com> <20090413214852.GA1127@redhat.com> <1239659841.16771.26.camel@heimdal.trondhjem.org> <20090413222451.GA2758@redhat.com> <14561.1239873018@redhat.com> <21239.1240407420@redhat.com> <5591.1240417398@redhat.com> <21209.1240504344@redhat.com> 
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, serue@us.ibm.com,
-       viro@zeniv.linux.org.uk,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] It may not be assumed that wake_up(), finish_wait() and co. imply a memory barrier
-Date: Thu, 23 Apr 2009 21:35:45 +0100
-Message-ID: <22170.1240518945@redhat.com>
+	id S1752741AbZDWUiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 16:38:15 -0400
+Subject: Re: [PATCH V3] Fix Committed_AS underflow
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Eric B Munson <ebmunson@us.ibm.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mel@csn.ul.ie, cl@linux-foundation.org
+In-Reply-To: <20090423163148.GB5044@us.ibm.com>
+References: <1240218590-16714-1-git-send-email-ebmunson@us.ibm.com>
+	 <1240244120.32604.278.camel@nimitz> <1240256999.32604.330.camel@nimitz>
+	 <20090423163148.GB5044@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 23 Apr 2009 13:38:08 -0700
+Message-Id: <1240519088.10627.196.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 2009-04-23 at 17:31 +0100, Eric B Munson wrote:
+> On Mon, 20 Apr 2009, Dave Hansen wrote:
+> 
+> > On Mon, 2009-04-20 at 09:15 -0700, Dave Hansen wrote:
+> > > On Mon, 2009-04-20 at 10:09 +0100, Eric B Munson wrote:
+> > > > 1. Change NR_CPUS to min(64, NR_CPUS)
+> > > >    This will limit the amount of possible skew on kernels compiled for very
+> > > >    large SMP machines.  64 is an arbitrary number selected to limit the worst
+> > > >    of the skew without using more cache lines.  min(64, NR_CPUS) is used
+> > > >    instead of nr_online_cpus() because nr_online_cpus() requires a shared
+> > > >    cache line and a call to hweight to make the calculation.  Its runtime
+> > > >    overhead and keeping this counter accurate showed up in profiles and it's
+> > > >    possible that nr_online_cpus() would also show.
+> > 
+> > Wow, that empty reply was really informative, wasn't it? :)
+> > 
+> > My worry with this min(64, NR_CPUS) approach is that you effectively
+> > ensure that you're going to be doing a lot more cacheline bouncing, but
+> > it isn't quite as explicit.
+> 
+> Unfortunately this is a choice we have to make, do we want to avoid cache
+> line bouncing of fork-heavy workloads using more than 64 pages or bad
+> information being used for overcommit decisions?
 
-> I think we _have_ to imply a smp_wmb() in the wakup semantics, because 
-> otherwise sleepers can't do anything sane (no amount of barriers on the 
-> sleeping side will help). IOW, there basically has to be an implied write 
-> barrier between the thing that causes an event to become true, and the 
-> thing that turns 'task->state' back to RUNNING.
+On SLES11, a new bash shell has ~9MB of mapped space.  A cat(1) has
+~6.7MB.  The ACCT_THRESHOLD=64*2 pages with a 64k page is 8MB.  So,
+you're basically *guaranteed* to go off-cpu every time a shell command
+is performed.  So, I'd say 8MB is a bit on the low side.
 
-Well, Ingo's point is it could be left up to the caller of wake_up() to supply
-the barrier:
+Note that even with your suggested patch, we can still have 8GB of skew
+on a 1024-way machine since there are still num_online_cpus()*8MB.  This
+is better than what we have now, certainly.
 
-	*my_variable = 1234;
-	smp_wmb();
-	wake_up(&my_queue);
+> > Now, every time there's a mapping (or set of them) created or destroyed
+> > that nets greater than 64 pages, you've got to go get a r/w cacheline to
+> > a possibly highly contended atomic.  With a number this low, you're
+> > almost guaranteed to hit it at fork() and exec().  Could you
+> > double-check that this doesn't hurt any of the fork() AIM tests?
+> 
+> It is unlikely that the aim9 benchmarks would show if this patch was a
+> problem because it forks in a tight loop and in a process that is not
+> necessarily beig enough to hit ACCT_THRESHOLD, likely on a single CPU.
+> In order to show any problems here we need a fork heavy workload with
+> many threads on many CPUs.
 
-or:
+That's true.  I'd suspect that aim is somewhere around the size of
+'cat'.  It's a best-case scenario.  But, if you see degradation on the
+best-case workload, we'll certainly see issues on worse workloads.
 
-	spin_lock(&my_lock);
-	*my_variable = 1234;
-	wake_up(&my_queue);
-	spin_unlock(&my_lock);
+Also, I used fork as an obvious example here.  This issue will present
+itself any time there is a mapping or set of mappings with a net change
+in size of 8MB.
 
-on the condition that the sleeper also gets the lock.
+There's another alternative.  We could temporarily add statistics to
+count how many times we go over ACCT_THRESHOLD to see just how bad the
+situation is.  For instance, 64 causes 342.43 times as many touches of
+the global counter as 8192 (or whatever it is).  You could also make
+ACCT_THRESHOLD a tunable, at least for the duration of this testing.
 
-Also, he points out that wake_up() and co. may not insert useful memory barrier
-at all, for three reasons:
+There are also ways you can bias the global counter in controlled ways.
+You could ensure, for instance, that a local counter never gets a
+positive bias, causing the global one to be biased negatively.  That
+would guarantee no underflows, although it would still be possible to
+see vm_committed_space in an temporary *inflated* state.
 
- (1) If there's no-one to wake up, then certain wake functions will return
-     immediately.
+-- Dave
 
- (2) If there's no-one to wake up, then other wake functions will only impose
-     LOCK and UNLOCK barriers.
-
- (3) If someone supplies a special awakener instead of default_wake_function(),
-     then they can bypass try_to_wake_up() and whatever barrier that implies.
-
-     Though as far as I can see, if you want to wake someone up, you *have* to
-     go through try_to_wake_up().
-
-What I'd like to say is that wake_up() and friends _will_ interpose at least a
-write barrier _if_ they wake anything up (which is more or less what you said
-above).  If they don't wake anything up, then there's no need for a memory
-barrier between the assignment to my_variable and the non-existent alterations
-to the state of the task not being awoken.
-
-David
