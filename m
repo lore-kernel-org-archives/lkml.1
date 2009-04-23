@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbZDWHdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbZDWHld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757131AbZDWHdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 03:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbZDWH1t
+	id S1758340AbZDWHld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZDWHaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:27:49 -0400
-Received: from sous-sol.org ([216.99.217.87]:48255 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:30:19 -0400
+Received: from sous-sol.org ([216.99.217.87]:50388 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755403AbZDWH1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:27:46 -0400
-Message-Id: <20090423072342.945510052@sous-sol.org>
+	id S1756394AbZDWHaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:30:18 -0400
+Message-Id: <20090423072542.417763086@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:20:46 -0700
+Date: Thu, 23 Apr 2009 00:21:06 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 026/100] V4L/DVB (10943): cx88: Prevent general protection fault on rmmod
+       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
+       Yehuda Sadeh <yehuda@hq.newdream.net>
+Subject: [patch 046/100] crypto: shash - Fix unaligned calculation with short length
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=v4l-dvb-cx88-prevent-general-protection-fault-on-rmmod.patch
+Content-Disposition: inline; filename=crypto-shash-fix-unaligned-calculation-with-short-length.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,77 +36,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Yehuda Sadeh <yehuda@hq.newdream.net>
 
-upstream commit: 569b7ec73abf576f9a9e4070d213aadf2cce73cb
+upstream commit: f4f689933c63e0fbfba62f2a80efb2b424b139ae
 
-When unloading the cx8800 driver I sometimes get a general protection
-fault. Analysis revealed a race in cx88_ir_stop(). It can be solved by
-using a delayed work instead of a timer for infrared input polling.
+When the total length is shorter than the calculated number of unaligned bytes, the call to shash->update breaks. For example, calling crc32c on unaligned buffer with length of 1 can result in a system crash.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Yehuda Sadeh <yehuda@hq.newdream.net>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
----
- drivers/media/video/cx88/cx88-input.c |   25 +++++++------------------
- 1 file changed, 7 insertions(+), 18 deletions(-)
 
---- a/drivers/media/video/cx88/cx88-input.c
-+++ b/drivers/media/video/cx88/cx88-input.c
-@@ -48,8 +48,7 @@ struct cx88_IR {
+ crypto/shash.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/crypto/shash.c
++++ b/crypto/shash.c
+@@ -82,6 +82,9 @@ static int shash_update_unaligned(struct
+ 	u8 buf[shash_align_buffer_size(unaligned_len, alignmask)]
+ 		__attribute__ ((aligned));
  
- 	/* poll external decoder */
- 	int polling;
--	struct work_struct work;
--	struct timer_list timer;
-+	struct delayed_work work;
- 	u32 gpio_addr;
- 	u32 last_gpio;
- 	u32 mask_keycode;
-@@ -143,27 +142,19 @@ static void cx88_ir_handle_key(struct cx
- 	}
- }
++	if (unaligned_len > len)
++		unaligned_len = len;
++
+ 	memcpy(buf, data, unaligned_len);
  
--static void ir_timer(unsigned long data)
--{
--	struct cx88_IR *ir = (struct cx88_IR *)data;
--
--	schedule_work(&ir->work);
--}
--
- static void cx88_ir_work(struct work_struct *work)
- {
--	struct cx88_IR *ir = container_of(work, struct cx88_IR, work);
-+	struct cx88_IR *ir = container_of(work, struct cx88_IR, work.work);
- 
- 	cx88_ir_handle_key(ir);
--	mod_timer(&ir->timer, jiffies + msecs_to_jiffies(ir->polling));
-+	schedule_delayed_work(&ir->work, msecs_to_jiffies(ir->polling));
- }
- 
- void cx88_ir_start(struct cx88_core *core, struct cx88_IR *ir)
- {
- 	if (ir->polling) {
--		setup_timer(&ir->timer, ir_timer, (unsigned long)ir);
--		INIT_WORK(&ir->work, cx88_ir_work);
--		schedule_work(&ir->work);
-+		INIT_DELAYED_WORK(&ir->work, cx88_ir_work);
-+		schedule_delayed_work(&ir->work, 0);
- 	}
- 	if (ir->sampling) {
- 		core->pci_irqmask |= PCI_INT_IR_SMPINT;
-@@ -179,10 +170,8 @@ void cx88_ir_stop(struct cx88_core *core
- 		core->pci_irqmask &= ~PCI_INT_IR_SMPINT;
- 	}
- 
--	if (ir->polling) {
--		del_timer_sync(&ir->timer);
--		flush_scheduled_work();
--	}
-+	if (ir->polling)
-+		cancel_delayed_work_sync(&ir->work);
- }
- 
- /* ---------------------------------------------------------------------- */
+ 	return shash->update(desc, buf, unaligned_len) ?:
 
