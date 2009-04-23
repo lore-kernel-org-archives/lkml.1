@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbZDWICe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbZDWIB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760798AbZDWICe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbZDWHhS
+	id S1759629AbZDWIB5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 04:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbZDWHhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:37:18 -0400
-Received: from sous-sol.org ([216.99.217.87]:47522 "EHLO x200.localdomain"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757776AbZDWHhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Apr 2009 03:37:16 -0400
-Message-Id: <20090423073135.490055568@sous-sol.org>
+Received: from sous-sol.org ([216.99.217.87]:47518 "EHLO x200.localdomain"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756291AbZDWHhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:37:13 -0400
+Message-Id: <20090423073124.059922463@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:22:00 -0700
+Date: Thu, 23 Apr 2009 00:21:58 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -24,11 +24,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Brian Haley <brian.haley@hp.com>,
-       Jay Vosburgh <fubar@us.ibm.com>, David S Miller <davem@davemloft.net>
-Subject: [patch 100/100] Bonding: fix zero address hole bug in arp_ip_target list
+       alan@lxorguk.ukuu.org.uk, Eric Paris <eparis@parisplace.org>
+Subject: [patch 098/100] scsi: mpt: suppress debugobjects warning
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=bonding-fix-zero-address-hole-bug-in-arp_ip_target-list.patch
+Content-Disposition: inline; filename=scsi-mpt-suppress-debugobjects-warning.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,113 +35,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Brian Haley <brian.haley@hp.com>
+From: Eric Paris <eparis@parisplace.org>
 
-upstream commit: 5a31bec014449dc9ca994e4c1dbf2802b7ca458a
+upstream commit: b298cecb3deddf76d60022473a57f1cb776cbdcd
 
-Fix a zero address hole bug in the bonding arp_ip_target list
-that was causing the bond to ignore ARP replies (bugz 13006).
-Instead of just setting the array entry to zero, we now
-copy any additional entries down one slot, putting the
-zero entry at the end.  With this change we can now have
-all the loops that walk the array stop when they hit a zero
-since there will be no addresses after it.
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13133
 
-Changes are based in part on code fragment provided in kernel:
-bugzilla 13006:
+ODEBUG: object is on stack, but not annotated
+------------[ cut here ]------------
+WARNING: at lib/debugobjects.c:253 __debug_object_init+0x1f3/0x276()
+Hardware name: VMware Virtual Platform
+Modules linked in: mptspi(+) mptscsih mptbase scsi_transport_spi ext3 jbd mbcache
+Pid: 540, comm: insmod Not tainted 2.6.28-mm1 #2
+Call Trace:
+ [<c042c51c>] warn_slowpath+0x74/0x8a
+ [<c0469600>] ? start_critical_timing+0x96/0xb7
+ [<c060c8ea>] ? _spin_unlock_irqrestore+0x2f/0x3c
+ [<c0446fad>] ? trace_hardirqs_off_caller+0x18/0xaf
+ [<c044704f>] ? trace_hardirqs_off+0xb/0xd
+ [<c060c8ea>] ? _spin_unlock_irqrestore+0x2f/0x3c
+ [<c042cb84>] ? release_console_sem+0x1a5/0x1ad
+ [<c05013e6>] __debug_object_init+0x1f3/0x276
+ [<c0501494>] debug_object_init+0x13/0x17
+ [<c0433c56>] init_timer+0x10/0x1a
+ [<e08e5b54>] mpt_config+0x1c1/0x2b7 [mptbase]
+ [<e08e3b82>] ? kmalloc+0x8/0xa [mptbase]
+ [<e08e3b82>] ? kmalloc+0x8/0xa [mptbase]
+ [<e08e6fa2>] mpt_do_ioc_recovery+0x950/0x1212 [mptbase]
+ [<c04496c2>] ? __lock_acquire+0xa69/0xacc
+ [<c060c8f1>] ? _spin_unlock_irqrestore+0x36/0x3c
+ [<c060c3af>] ? _spin_unlock_irq+0x22/0x26
+ [<c04f2d8b>] ? string+0x2b/0x76
+ [<c04f310e>] ? vsnprintf+0x338/0x7b3
+ [<c04496c2>] ? __lock_acquire+0xa69/0xacc
+ [<c060c8ea>] ? _spin_unlock_irqrestore+0x2f/0x3c
+ [<c04496c2>] ? __lock_acquire+0xa69/0xacc
+ [<c044897d>] ? debug_check_no_locks_freed+0xeb/0x105
+ [<c060c8f1>] ? _spin_unlock_irqrestore+0x36/0x3c
+ [<c04488bc>] ? debug_check_no_locks_freed+0x2a/0x105
+ [<c0446b8c>] ? lock_release_holdtime+0x43/0x48
+ [<c043f742>] ? up_read+0x16/0x29
+ [<c05076f8>] ? pci_get_slot+0x66/0x72
+ [<e08e89ca>] mpt_attach+0x881/0x9b1 [mptbase]
+ [<e091c8e5>] mptspi_probe+0x11/0x354 [mptspi]
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=13006
+Noticing that every caller of mpt_config has its CONFIGPARMS struct
+declared on the stack and thus the &pCfg->timer is always on the stack I
+changed init_timer() to init_timer_on_stack() and it seems to have shut
+up.....
 
-by Steve Howard <steve@astutenetworks.com>
-
-Signed-off-by: Brian Haley <brian.haley@hp.com>
-Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: "Moore, Eric Dean" <Eric.Moore@lsil.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- Documentation/networking/bonding.txt |    2 +-
- drivers/net/bonding/bond_main.c      |    5 ++---
- drivers/net/bonding/bond_sysfs.c     |   14 ++++++++------
- 3 files changed, 11 insertions(+), 10 deletions(-)
+ drivers/message/fusion/mptbase.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/Documentation/networking/bonding.txt
-+++ b/Documentation/networking/bonding.txt
-@@ -1242,7 +1242,7 @@ monitoring is enabled, and vice-versa.
- To add ARP targets:
- # echo +192.168.0.100 > /sys/class/net/bond0/bonding/arp_ip_target
- # echo +192.168.0.101 > /sys/class/net/bond0/bonding/arp_ip_target
--	NOTE:  up to 10 target addresses may be specified.
-+	NOTE:  up to 16 target addresses may be specified.
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -5934,7 +5934,7 @@ mpt_config(MPT_ADAPTER *ioc, CONFIGPARMS
  
- To remove an ARP target:
- # echo -192.168.0.100 > /sys/class/net/bond0/bonding/arp_ip_target
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -2565,7 +2565,7 @@ static void bond_arp_send_all(struct bon
- 
- 	for (i = 0; (i < BOND_MAX_ARP_TARGETS); i++) {
- 		if (!targets[i])
--			continue;
-+			break;
- 		pr_debug("basa: target %x\n", targets[i]);
- 		if (list_empty(&bond->vlan_list)) {
- 			pr_debug("basa: empty vlan: arp_send\n");
-@@ -2672,7 +2672,6 @@ static void bond_validate_arp(struct bon
- 	int i;
- 	__be32 *targets = bond->params.arp_targets;
- 
--	targets = bond->params.arp_targets;
- 	for (i = 0; (i < BOND_MAX_ARP_TARGETS) && targets[i]; i++) {
- 		pr_debug("bva: sip %pI4 tip %pI4 t[%d] %pI4 bhti(tip) %d\n",
- 			&sip, &tip, i, &targets[i], bond_has_this_ip(bond, tip));
-@@ -3294,7 +3293,7 @@ static void bond_info_show_master(struct
- 
- 		for(i = 0; (i < BOND_MAX_ARP_TARGETS) ;i++) {
- 			if (!bond->params.arp_targets[i])
--				continue;
-+				break;
- 			if (printed)
- 				seq_printf(seq, ",");
- 			seq_printf(seq, " %pI4", &bond->params.arp_targets[i]);
---- a/drivers/net/bonding/bond_sysfs.c
-+++ b/drivers/net/bonding/bond_sysfs.c
-@@ -684,17 +684,15 @@ static ssize_t bonding_store_arp_targets
- 			goto out;
- 		}
- 		/* look for an empty slot to put the target in, and check for dupes */
--		for (i = 0; (i < BOND_MAX_ARP_TARGETS); i++) {
-+		for (i = 0; (i < BOND_MAX_ARP_TARGETS) && !done; i++) {
- 			if (targets[i] == newtarget) { /* duplicate */
- 				printk(KERN_ERR DRV_NAME
- 				       ": %s: ARP target %pI4 is already present\n",
- 				       bond->dev->name, &newtarget);
--				if (done)
--					targets[i] = 0;
- 				ret = -EINVAL;
- 				goto out;
- 			}
--			if (targets[i] == 0 && !done) {
-+			if (targets[i] == 0) {
- 				printk(KERN_INFO DRV_NAME
- 				       ": %s: adding ARP target %pI4.\n",
- 				       bond->dev->name, &newtarget);
-@@ -720,12 +718,16 @@ static ssize_t bonding_store_arp_targets
- 			goto out;
- 		}
- 
--		for (i = 0; (i < BOND_MAX_ARP_TARGETS); i++) {
-+		for (i = 0; (i < BOND_MAX_ARP_TARGETS) && !done; i++) {
- 			if (targets[i] == newtarget) {
-+				int j;
- 				printk(KERN_INFO DRV_NAME
- 				       ": %s: removing ARP target %pI4.\n",
- 				       bond->dev->name, &newtarget);
--				targets[i] = 0;
-+				for (j = i; (j < (BOND_MAX_ARP_TARGETS-1)) && targets[j+1]; j++)
-+					targets[j] = targets[j+1];
-+
-+				targets[j] = 0;
- 				done = 1;
- 			}
- 		}
+ 	/* Initalize the timer
+ 	 */
+-	init_timer(&pCfg->timer);
++	init_timer_on_stack(&pCfg->timer);
+ 	pCfg->timer.data = (unsigned long) ioc;
+ 	pCfg->timer.function = mpt_timer_expired;
+ 	pCfg->wait_done = 0;
 
