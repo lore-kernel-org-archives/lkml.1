@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbZDWVHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZDWVHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758867AbZDWVHS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 17:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758722AbZDWVGp
+	id S1759009AbZDWVHk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 17:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758458AbZDWVGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 17:06:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38747 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758501AbZDWVGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 17:06:44 -0400
-Date: Thu, 23 Apr 2009 17:04:45 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
+	Thu, 23 Apr 2009 17:06:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40445 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758759AbZDWVGv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 17:06:51 -0400
+Date: Thu, 23 Apr 2009 22:06:22 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch] serial: add parameter to force skipping the test for
- the TXEN bug
-Message-ID: <20090423170445.7ce43951@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090421124745.a641b1eb.akpm@linux-foundation.org>
-References: <20090420180549.335552bb@dhcp-100-2-144.bos.redhat.com>
-	<20090421124745.a641b1eb.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
+Cc: Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] Add CONFIG_FB_PRE_INIT_FB option to VT and fbcon
+Message-ID: <20090423220622.313090a1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090423134952.5328923a.akpm@linux-foundation.org>
+References: <1240348380-15674-1-git-send-email-agust@denx.de>
+	<20090423134952.5328923a.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,26 +28,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Apr 2009 12:47:45 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+This looks to be a complete mess. It puts a large pile of ifdefs all over
+core kernel code for a single hack specific to one environment.
 
-> On Mon, 20 Apr 2009 18:05:49 -0400
-> Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > serial: add parameter to force skipping the test for the TXEN bug
-> > 
-> > Allow users to force skipping the TXEN test at init time. Applies
-> > to all serial ports. Intended for debugging only.
-> > 
-> 
-> <scratches head @ changelog>
-> 
-> 
-> Why is this useful?  What is the problem which you're solving here?
+If you don't want the vt layer using the frame buffer then don't use the
+vt layer.
 
-There is a blacklist for devices where we need to skip the test but the list is
-not complete. This lets users force skipping the test so we can determine if they
-need to be added to the list.
-
-Some HP machines with weird serial consoles have this problem and there may be more.
-
+Alan
