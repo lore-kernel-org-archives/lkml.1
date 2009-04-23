@@ -1,120 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbZDWWMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932147AbZDWWNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760510AbZDWWMd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 18:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbZDWWMW
+	id S932147AbZDWWNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 18:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbZDWWNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 18:12:22 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:46524 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757592AbZDWWMU (ORCPT
+	Thu, 23 Apr 2009 18:13:00 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33037 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753390AbZDWWNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 18:12:20 -0400
-Message-ID: <49F0E7B4.90702@novell.com>
-Date: Thu, 23 Apr 2009 18:12:04 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 23 Apr 2009 18:13:00 -0400
+Message-ID: <49F0E6FD.8030108@zytor.com>
+Date: Thu, 23 Apr 2009 15:09:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH 2/3] eventfd: add a notifier mechanism
-References: <20090423150910.14094.73708.stgit@dev.haskins.net> <20090423151436.14094.35875.stgit@dev.haskins.net> <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com> <49F09B78.7000403@novell.com> <alpine.DEB.1.10.0904231500570.18603@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0904231500570.18603@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig45A6F8E6017C6B4D14AC332C"
+To: Joe Damato <ice799@gmail.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org
+Subject: Re: [PATCH] X86-32: Let gcc decide whether to inline memcpy was Re:
+ 	New x86 warning
+References: <49EEBD3C.3060009@garzik.org> <20090422070157.GA28438@elte.hu>	 <8763gxoz50.fsf_-_@basil.nowhere.org>	 <3605561d0904221649n169dc579xb0694297154d97fa@mail.gmail.com>	 <49EFC8FE.7010403@zytor.com> <3605561d0904231422s57bd4cedl722be1dabf27428f@mail.gmail.com>
+In-Reply-To: <3605561d0904231422s57bd4cedl722be1dabf27428f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig45A6F8E6017C6B4D14AC332C
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Joe Damato wrote:
+> 
+> Looks like this thread is dead/dying, but figured I should reply with
+> my test findings. The number of out-of-line calls (as determined by:
+> make mrproper && make defconfig && make && objdump -d vmlinux | grep
+> "call.*\<memset" | wc -l))
+> 
+> gcc 4.2.4 - withOUT memset patch: 20
+> gcc 4.2.4 - with memset patch: 365
+> 
+> gcc 3.4 - withOUT memset patch: 17
+> gcc 3.4 - with memset patch: 349
+> 
+> I'm guessing this is probably not acceptable, so I won't bother
+> installing/trying gcc-3.2 unless anyone thinks that a 300+ increase in
+> out-of-line calls is OK.
+> 
 
-Davide Libenzi wrote:
-> On Thu, 23 Apr 2009, Gregory Haskins wrote:
->
->  =20
->> Davide Libenzi wrote:
->>    =20
->>> On Thu, 23 Apr 2009, Gregory Haskins wrote:
->>>
->>>  =20
->>>      =20
->>>> This allows synchronous notifications to register with the eventfd
->>>> infrastructure.  Unlike traditional vfs based eventfd readers, notif=
-iees
->>>> do not implictly clear the counter on reception.  However, the clear=
-ing
->>>> is primarily important to allowing threads to block waiting for even=
-ts
->>>> anyway, so its an acceptable trade-off since blocking doesn't apply =
-to
->>>> notifiers.
->>>>    =20
->>>>        =20
->>> Do you really need to add a notifier? Eventfd already has a wait queu=
-e,=20
->>> and we support callback-based wakeups, so is there any reason we shou=
-ldn't=20
->>> use those and rely on the already existing wakeups?
->>>  =20
->>>      =20
->> Well, IIUC the issue is that a wait queue implies that you are in fact=
+Not unless it can be proven those calls are in non-performance-critical 
+contexts.  That's a lot of work to go through, though.
 
->> waiting...which we may not. :)
->>
->> The target in this particular application with kvm-irqfd is a vcpu
->> context, which *may* be sleeping in something like a HLT, but it also
->> could be in a number of other states such as non-root (guest) mode, it=
+	-hpa
 
->> could be running in the kernel, it could be up in userspace, etc.
->>
->> That said: I am not married to the concept that this has to be a
->> notifier callback, but I do want to be able to meet the target
->> application.  So if there is some way to do that within the existing
->> wait-queue contstruct, I am open to suggestions.
->>    =20
->
-> Take a look at init_waitqueue_func_entry(), in particula at that "func"=
-=20
-> parameter. Then look at how __wake_up_common() does its thing.
-> You don't need to be "waiting" for our wakeup system to work. Callbacks=
-=20
-> works just fine, otherwise things like epoll could not work at all.
->  =20
-
-Yeah, I was looking at that this afternoon after you mentioned it.  That
-makes sense.
-
-As of right now the wqh is embedded in the eventfd, accessible only by
-the .read() vtable entry.  In order to do this as you suggest, I imagine
-I need to slightly modify the eventfd interface to allow waiters other
-than the embedded readers to join the wait-queue.  How would you like to
-see that interface look?
-
-Thanks Davide,
--Greg
-
-
-
-
---------------enig45A6F8E6017C6B4D14AC332C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknw57UACgkQlOSOBdgZUxmrmACcD+AAiHcoBtn+TYLcVazbu8rd
-EC8An1Sa6XV5bSzNwmAEnIGmgsgcALwe
-=XjPF
------END PGP SIGNATURE-----
-
---------------enig45A6F8E6017C6B4D14AC332C--
