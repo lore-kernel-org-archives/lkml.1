@@ -1,53 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbZDWUxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbZDWU52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758604AbZDWUxm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 16:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbZDWUxe
+	id S1755744AbZDWU52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 16:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZDWU5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 16:53:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55009 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754550AbZDWUxd (ORCPT
+	Thu, 23 Apr 2009 16:57:19 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:39447 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752038AbZDWU5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 16:53:33 -0400
-Date: Thu, 23 Apr 2009 13:51:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: hartleys@visionengravers.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm/vmalloc.c: fix sparse warning
-Message-Id: <20090423135146.89026a2b.akpm@linux-foundation.org>
-In-Reply-To: <20090423203557.GY8633@ZenIV.linux.org.uk>
-References: <BD79186B4FD85F4B8E60E381CAEE1909015F9239@mi8nycmail19.Mi8.com>
-	<20090423132358.2adf4611.akpm@linux-foundation.org>
-	<20090423203557.GY8633@ZenIV.linux.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Apr 2009 16:57:18 -0400
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Arnold <jbarnold@MIT.EDU>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       =?utf-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
+       Anders Kaseorg <andersk@MIT.EDU>
+Subject: [PATCH v3 2/3] modpost: Check the section flags, not name, to catch missing "ax"/"aw"
+Date: Thu, 23 Apr 2009 16:49:33 -0400
+Message-Id: <1240519774-20307-2-git-send-email-tabbott@mit.edu>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1240519774-20307-1-git-send-email-tabbott@mit.edu>
+References: <alpine.DEB.1.10.0904221826180.24694@vinegar-pot.mit.edu>
+ <1240519774-20307-1-git-send-email-tabbott@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009 21:35:57 +0100
-Al Viro <viro@ZenIV.linux.org.uk> wrote:
+From: Anders Kaseorg <andersk@mit.edu>
 
-> On Thu, Apr 23, 2009 at 01:23:58PM -0700, Andrew Morton wrote:
-> > On Fri, 17 Apr 2009 20:55:06 -0400
-> > "H Hartley Sweeten" <hartleys@visionengravers.com> wrote:
-> > 
-> > > Fix sparse warning in mm/vmalloc.c.
-> > > 
-> > >   warning: symbol 'tmp' shadows an earlier one
-> 
-> Folks, could we please add to appropriate documentation (SubmittingPatches,
-> perhaps) a bit about using descriptive subjects?
+When you put
+  .section ".foo"
+in an assembly file instead of
+  .section "foo", "ax"
+, one of the possible symptoms is that modpost will see an
+ld-generated section name ".foo.1" in section_rel() or section_rela().
+But this heuristic has two problems: it will miss a bad section that
+has no relocations, and it will incorrectly flag many gcc-generated
+sections as bad when compiling with -ffunction-sections
+-fdata-sections.
 
-If everyone did that, my typing skillz would deteriorate.
+So instead of checking whether the section name matches a particular
+pattern, we directly check for a missing SHF_ALLOC in the section
+flags.
 
-> In general, "$TOOL warning in $FILE" says nothing useful.  In this case
-> "Get rid of shadowed variable in mm/vmalloc.c:<function>" would be far
-> more useful, with "found by sparse" _maybe_ showing up in the commit
-> message more or less as a footnote.  Or even "shadowed variable in
-> mm/vmalloc.c:<function>".
+Signed-off-by: Anders Kaseorg <andersk@mit.edu>
+---
+ scripts/mod/modpost.c |   49 ++++++++++++++++++-------------------------------
+ 1 files changed, 18 insertions(+), 31 deletions(-)
 
-yup.
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index f39132b..3e6ff75 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -716,41 +716,27 @@ int match(const char *sym, const char * const pat[])
+ 
+ /* sections that we do not want to do full section mismatch check on */
+ static const char *section_white_list[] =
+-	{ ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
++	{ ".comment", ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
+ 
+ /*
+- * Is this section one we do not want to check?
+- * This is often debug sections.
+- * If we are going to check this section then
+- * test if section name ends with a dot and a number.
+- * This is used to find sections where the linker have
+- * appended a dot-number to make the name unique.
++ * This is used to find sections missing the SHF_ALLOC flag.
+  * The cause of this is often a section specified in assembler
+- * without "ax" / "aw" and the same section used in .c
+- * code where gcc add these.
++ * without "ax" / "aw".
+  */
+-static int check_section(const char *modname, const char *sec)
+-{
+-	const char *e = sec + strlen(sec) - 1;
+-	if (match(sec, section_white_list))
+-		return 1;
+-
+-	if (*e && isdigit(*e)) {
+-		/* consume all digits */
+-		while (*e && e != sec && isdigit(*e))
+-			e--;
+-		if (*e == '.' && !strstr(sec, ".linkonce")) {
+-			warn("%s (%s): unexpected section name.\n"
+-			     "The (.[number]+) following section name are "
+-			     "ld generated and not expected.\n"
+-			     "Did you forget to use \"ax\"/\"aw\" "
+-			     "in a .S file?\n"
+-			     "Note that for example <linux/init.h> contains\n"
+-			     "section definitions for use in .S files.\n\n",
+-			     modname, sec);
+-		}
++static void check_section(const char *modname, struct elf_info *elf,
++                          Elf_Shdr *sechdr)
++{
++	const char *sec = sech_name(elf, sechdr);
++
++	if (sechdr->sh_type == SHT_PROGBITS &&
++	    !(sechdr->sh_flags & SHF_ALLOC) &&
++	    !match(sec, section_white_list)) {
++		warn("%s (%s): unexpected non-allocatable section.\n"
++		     "Did you forget to use \"ax\"/\"aw\" in a .S file?\n"
++		     "Note that for example <linux/init.h> contains\n"
++		     "section definitions for use in .S files.\n\n",
++		     modname, sec);
+ 	}
+-	return 0;
+ }
+ 
+ 
+@@ -1377,7 +1363,7 @@ static void section_rela(const char *modname, struct elf_info *elf,
+ 	fromsec = sech_name(elf, sechdr);
+ 	fromsec += strlen(".rela");
+ 	/* if from section (name) is know good then skip it */
+-	if (check_section(modname, fromsec))
++	if (match(fromsec, section_white_list))
+ 		return;
+ 
+ 	for (rela = start; rela < stop; rela++) {
+@@ -1421,7 +1407,7 @@ static void section_rel(const char *modname, struct elf_info *elf,
+ 	fromsec = sech_name(elf, sechdr);
+ 	fromsec += strlen(".rel");
+ 	/* if from section (name) is know good then skip it */
+-	if (check_section(modname, fromsec))
++	if (match(fromsec, section_white_list))
+ 		return;
+ 
+ 	for (rel = start; rel < stop; rel++) {
+@@ -1484,6 +1470,7 @@ static void check_sec_ref(struct module *mod, const char *modname,
+ 
+ 	/* Walk through all sections */
+ 	for (i = 0; i < elf->hdr->e_shnum; i++) {
++		check_section(modname, elf, &elf->sechdrs[i]);
+ 		/* We want to process only relocation sections and not .init */
+ 		if (sechdrs[i].sh_type == SHT_RELA)
+ 			section_rela(modname, elf, &elf->sechdrs[i]);
+-- 
+1.6.2.1
+
