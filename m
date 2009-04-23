@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZDWQnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZDWQrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbZDWQnx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 12:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757399AbZDWQng
+	id S1755890AbZDWQrQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 12:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZDWQq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 12:43:36 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:34167 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756832AbZDWQne (ORCPT
+	Thu, 23 Apr 2009 12:46:58 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:37352 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbZDWQq5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 12:43:34 -0400
-Date: Thu, 23 Apr 2009 17:43:30 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Valerie Aurora Henson <vaurora@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
-Message-ID: <20090423164330.GA9399@shareable.org>
-References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org> <20090423112105.GA1589@shareable.org> <20090423124230.GF2723@mit.edu>
+	Thu, 23 Apr 2009 12:46:57 -0400
+Message-ID: <49F09B78.7000403@novell.com>
+Date: Thu, 23 Apr 2009 12:46:48 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423124230.GF2723@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH 2/3] eventfd: add a notifier mechanism
+References: <20090423150910.14094.73708.stgit@dev.haskins.net> <20090423151436.14094.35875.stgit@dev.haskins.net> <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0904230922180.18603@makko.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA4C8D3D84102D26A54819969"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, Apr 23, 2009 at 12:21:05PM +0100, Jamie Lokier wrote:
-> > Maybe it's time to do fsync properly?
-> 
-> Application writers don't care about OS portability (it only has to
-> work on Linux), or working on multiple filesystems (it only has work
-> on ext3, and any filesystems which doesn't do automagic fsync's at the
-> right magic times automagically is broken by design).  This includes
-> many GNOME and KDE developers.  So as we concluded at the filesystem
-> and storage workshop, we probably will have to keep automagic
-> hueristics out there, for all of the broken applications.  Heck, Linus
-> even refused to call those applications "broken".
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA4C8D3D84102D26A54819969
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Sure, most apps are low quality in all respects. Many don't care about
-a bit of corruption when the battery runs out.  There's no pressure to
-get that right, and it's quite hard to get right without good practice
-to follow, and good APIs which encourage good practice naturally.
+Davide Libenzi wrote:
+> On Thu, 23 Apr 2009, Gregory Haskins wrote:
+>
+>  =20
+>> This allows synchronous notifications to register with the eventfd
+>> infrastructure.  Unlike traditional vfs based eventfd readers, notifie=
+es
+>> do not implictly clear the counter on reception.  However, the clearin=
+g
+>> is primarily important to allowing threads to block waiting for events=
 
-Imho, the rename-automagic-safety rule now in ext3/4 is _better_ than
-requiring apps to call fsync, because it doesn't require an immediate,
-synchronous disk flush and hardware cache flush.  Fsync requires those
-things, to be useful for databases and mail servers.  If you're
-renaming a lot of files, 1000s of explicit fsyncs serialises badly on
-rotating media.
+>> anyway, so its an acceptable trade-off since blocking doesn't apply to=
 
-> So we can create a more finer-grained controlled system call ---
-> although I would suggest that we just add some extra flags to
-> sync_file_range() --- but it's doubtful that many application
-> programmers will use it.
+>> notifiers.
+>>    =20
+>
+> Do you really need to add a notifier? Eventfd already has a wait queue,=
+=20
+> and we support callback-based wakeups, so is there any reason we should=
+n't=20
+> use those and rely on the already existing wakeups?
+>  =20
+Well, IIUC the issue is that a wait queue implies that you are in fact
+waiting...which we may not. :)
 
-I proposed some flags to sync_file_range() last year, and got very
-little response.  Mind you there's been a lot of fsync issues coming
-up since then, so maybe it stirred something :-)
+The target in this particular application with kvm-irqfd is a vcpu
+context, which *may* be sleeping in something like a HLT, but it also
+could be in a number of other states such as non-root (guest) mode, it
+could be running in the kernel, it could be up in userspace, etc.
 
-sync_file_range() itself is just too weird to use.  Reading the man
-page many times, I still couldn't be sure what it does or is meant to
-do until asking on l-k a few years ago.  My guess, from reading the
-man page, turned out to be wrong.  The recommended way to use it for a
-database-like application was quite convoluted and required the app to
-apply its own set of mm-style heuristics.  I never did find out if it
-commits data-locating metadata and file size after extending a file or
-filling a hole.  It never seemed to emit I/O barriers.
+That said: I am not married to the concept that this has to be a
+notifier callback, but I do want to be able to meet the target
+application.  So if there is some way to do that within the existing
+wait-queue contstruct, I am open to suggestions.
 
-Does anything at all use it?  Maybe sync_file_range() can be improved
-though.
+Thanks Davide,
+-Greg
 
-I hold more hope for Nick Piggins work on fsync_range() - which at
-least is comprehensible :-)
+>
+>
+> - Davide
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  =20
 
-It says something that instead of writing a small wrapper around
-sync_file_range() which is _supposed_ to be usable as range fsync, and
-fixing sync_file_range() to behave properly, Nick found it easier to
-start a separate implementation :-)
 
--- Jamie
+
+--------------enigA4C8D3D84102D26A54819969
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknwm3kACgkQlOSOBdgZUxkw9wCfTl/cwrwkr0v2j+ZkFLuk2InT
+ackAoIME19jnipNbGzZF256HaGP0ve8j
+=oJgO
+-----END PGP SIGNATURE-----
+
+--------------enigA4C8D3D84102D26A54819969--
