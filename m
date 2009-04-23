@@ -1,94 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZDWJ7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZDWKDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZDWJ7H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 05:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbZDWJ6w
+	id S1755927AbZDWKDt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 06:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZDWKDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 05:58:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:19234 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755153AbZDWJ6v (ORCPT
+	Thu, 23 Apr 2009 06:03:40 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43304 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbZDWKDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 05:58:51 -0400
+	Thu, 23 Apr 2009 06:03:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=T74Gkv6oQxRnulXu22HTkW7+cwhv68S6HNcqx8OaRvC/ufJeWypdW7n7ca96UCHaUN
-         Srmgk6kDLUOxngzOTcVCOIDz3lSLo1e/p8+kJCyxDQi88+ZKBZCCdSrTKJVt3wEie5oH
-         hCoerF86TDluOWBHC+Axfgs0TqI0V64Pmf4O0=
-Message-ID: <49F03C12.1040507@gmail.com>
-Date: Thu, 23 Apr 2009 18:59:46 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=p58evZoccYprRxz7qXwvLkOqRvHHgT4W2/AoSiol7+eup3O40nR778f2SJ9ivCS1kW
+         V5S9clhlrBs5Q3Vn1YUvHv/fP1muqAXRI8rNSFICWkzEyHD7ps72uPybcnmHdw5cVJG8
+         W8Y1jT0huTrQIiG1wLdz51bjdjW+h0iOnVxsI=
+Date: Thu, 23 Apr 2009 12:03:35 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Jens Axboe <jens.axboe@oracle.com>, eric.rannaud@gmail.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, fernando@oss.ntt.co.jp,
+       dradford@bluehost.com, Gui@smtp1.linux-foundation.org,
+       agk@sourceware.org, subrata@linux.vnet.ibm.com,
+       Paul Menage <menage@google.com>, Theodore Tso <tytso@mit.edu>,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       matt@bluehost.com, roberto@unbit.it, ngupta@google.com
+Subject: Re: [PATCH 9/9] ext3: do not throttle metadata and journal IO
+Message-ID: <20090423100314.GB9756@linux>
+References: <20090421163537.GI19186@mit.edu> <20090421172317.GM19637@balbir.in.ibm.com> <20090421174620.GD15541@mit.edu> <20090421181429.GO19637@balbir.in.ibm.com> <20090421191401.GF15541@mit.edu> <20090421204905.GA5573@linux> <20090422093349.1ee9ae82.kamezawa.hiroyu@jp.fujitsu.com> <20090422102153.9aec17b9.kamezawa.hiroyu@jp.fujitsu.com> <20090422102239.GA1935@linux> <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Christoph Hellwig <hch@infradead.org>, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, bzolnier@gmail.com
-Subject: Re: [PATCH UPDATED 09/14] block: clean up request completion API
-References: <1240331881-28218-1-git-send-email-tj@kernel.org> <1240331881-28218-10-git-send-email-tj@kernel.org> <20090421175919.GA11671@infradead.org> <49EFC360.3010109@kernel.org> <49EFCD82.4050000@gmail.com> <49F0382A.6050306@panasas.com>
-In-Reply-To: <49F0382A.6050306@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090423090535.ec419269.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Boaz.
-
-Boaz Harrosh wrote:
-> Rrrr.
+On Thu, Apr 23, 2009 at 09:05:35AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 22 Apr 2009 12:22:41 +0200
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+>  
+> > Actually I was proposing something quite similar, if I've understood
+> > well. Just add a hook in balance_dirty_pages() to throttle tasks in
+> > cgroups that exhausted their IO BW.
+> > 
+> > The way to do so will be similar to the per-bdi write throttling, taking
+> > in account the IO requests previously submitted per cgroup, the pages
+> > dirtied per cgroup (considering that are not necessarily dirtied by the
+> > owner of the page) and apply something like congestion_wait() to
+> > throttle the tasks in the cgroups that exceeded the BW limit.
+> > 
+> > Maybe we can just introduce cgroup_dirty_limit() simply replicating what
+> > we're doing for task_dirty_limit(), but using per cgroup statistics of
+> > course.
+> > 
+> > I can change the io-throttle controller to do so. This feature should be
+> > valid also for the proportional BW approach.
+> > 
+> > BTW Vivek's proposal to also dispatch IO requests according to cgroup
+> > proportional BW limits can be still valid and it is worth to be tested
+> > IMHO. But we must also find a way to say to the right cgroup: hey! stop
+> > to waste the memory with dirty pages, because you've directly or
+> > indirectly generated too much IO in the system and I'm throttling and/or
+> > not scheduling your IO requests.
+> > 
+> > Objections?
+> > 
+> No objections. plz let me know my following understanding is right.
 > 
-> This patch could be nice, but not after I've seen the previous one.
-> The first one was much^3 nicer.
-
-Heh... can't make everyone happy.  :-)
-
-> Maybe all you need to do is push the lock flag into blk_finish_request()
+>   1. dirty_ratio should be supported per cgroup.
+>      - Memory cgroup should support dirty_ratio or dirty_ratio cgroup should be implemented.
+>        For doing this, we can make use of page_cgroup.
 > 
-> <original patch>
-> +	if (!locked) {
->> +		spin_lock_irqsave(q->queue_lock, flags);
->> +		finish_request(rq, error);
->> +		spin_unlock_irqrestore(q->queue_lock, flags);
->> +	} else
->> +		finish_request(rq, error);
->>
-> </original patch>
+>        One good point of dirty-ratio cgroup is that dirty-ratio accounting is done
+>        against a cgroup which made pages dirty not against a owner of the page. But
+>        if dirty_ratio cgroup is completely independent from mem_cgroup, it cannot
+>        be a help for memory reclaiming.
+>        Then,
+>          - memcg itself should have dirty_ratio check.
+>          - like bdi/task_dirty_limit(), a cgroup (which is not memcg) can be used
+>            another filter for dirty_ratio.
+
+Agreed. We probably need two different dirty_ratio statistics: one to
+check the dirty pages inside a memcg for memory reclaim, and another to
+check how many dirty pages a cgroup has generated in the system.
+Something similar to the task_struct->dirties and global dirty
+statistics.
+
 > 
-> Then you have only one call site to finish_request() inside blk_end_io().
+>   2. dirty_ratio is not I/O BW control.
+
+Agreed. They are two different problems. Maybe they could be connected,
+but the connection can be made in userspace mounting dirty_ratio cgroup
+and blockio subsystems together.
+
+For example: give 10MB/s IO BW to cgroup A and also set a upper limit of
+dirty pages this cgroup can generate in the system, i.e. 10% of the
+system-wide reclaimable memory. If the dirty limit is exceeded the tasks
+in this cgroup will start to actively writeback system-wide dirty pages
+at the rate defined by the IO controller.
+
 > 
-> finish_request() will become the ugly site, but if looking at the
-> alternative I think it is worth it. Code is smaller, cleaner, and
-> clearer. (Sometimes principles must be sacrificed)
+>   3. I/O BW(limit) control cgroup should be implemented and it should be exsiting
+>      in I/O scheduling layer or somewhere around. But it's not easy.
+
+Agreed. Expecially for the "it's not easy" part. :)
+
 > 
-> At the end, I hate that lock around finish_request(), I wish the
-> req->end_io() was not called with the lock held and the plain
-> blk_put_request() (locking version) could be called. Having
-> req->end_io() under lock is a pain in the ass that makes you go
-> through loops when you need proper error handling. One day I will
-> get rid of it.
->
-> Tejun? now that you done both, which one do you like better? or is
-> it just me?
+>   4. To track bufferred I/O, we have to add "tag" to pages which tell us who
+>      generated the I/O. Now it's called blockio-cgroup and implementation details
+>      are still under discussion.
 
-Frankly, I don't care one way or the other as long as there's no
-duplication in code paths.  Pros and cons of both approaches are
-minimal and/or cosmetic.  One might remove a branch at the cost of
-minutely larger code.  It just doesn't matter all that much.
+OK.
 
-I think it's best to let the maintainer have his/her way on things
-like this.  I mean, maintainership is a hard work.  There gotta be
-some perks.  :-)
+> 
+> So, current status is.
+> 
+>   A. memcg should support dirty_ratio for its own memory reclaim.
+>      in plan.
+> 
+>   B. another cgroup can be implemnted to support cgroup_dirty_limit().
+>      But relationship with "A" should be discussed.
+>      no plan yet.
+> 
+>   C. I/O cgroup and bufferred I/O tracking system.
+>      Now under patch review.
 
-Joke aside, I think it's a good idea to follow maintainer's decisions
-on things like this as it helps making the subsystem code more
-consistent which is usually way more important than minute technical
-or cosmetic advantages.
+    D. I/O tracking system must be implemented as a common
+       infrastructure and not a separate cgroup subsystem. This would
+       allow to be easily reused also by other potential cgroup
+       controllers, and avoid to introduce oddity, complexity in
+       userspace (separate mountpoints, etc.)
 
-Thanks.
+> 
+> And this I/O throttle is mainly for "C" discussion. 
+> 
+> Right ?
 
--- 
-tejun
+Right. In io-throttle v14 I also merged some of the blockio-cgroup
+functionality, so IO throttle is mainly for C and D, but D should be
+probably considered as a separate patchset.
+
+-Andrea
