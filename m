@@ -1,84 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZDWRwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbZDWR7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbZDWRwf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 13:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZDWRw0
+	id S1754913AbZDWR7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 13:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbZDWR7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 13:52:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:38105 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751782AbZDWRwZ (ORCPT
+	Thu, 23 Apr 2009 13:59:24 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:20325 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753681AbZDWR7X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 13:52:25 -0400
-Date: Thu, 23 Apr 2009 13:52:22 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various bug fixes
-In-Reply-To: <49F09C35.1080006@goop.org>
-Message-ID: <alpine.DEB.2.00.0904231311090.24293@gandalf.stny.rr.com>
-References: <20090420222257.267399830@goodmis.org> <20090421082354.GC12512@elte.hu> <20090421094616.GA14561@elte.hu> <alpine.DEB.2.00.0904220237330.9714@gandalf.stny.rr.com> <alpine.DEB.2.00.0904222200350.24310@gandalf.stny.rr.com> <20090423082031.GA599@elte.hu>
- <alpine.DEB.2.00.0904230935060.24310@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231019001.24293@gandalf.stny.rr.com> <alpine.DEB.2.00.0904231101030.24293@gandalf.stny.rr.com> <49F09C35.1080006@goop.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 23 Apr 2009 13:59:23 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Reddi3SFUCioH+/hOEoQdOlaJvFGAxCDNx7sIGqCpzeodHuGRdSEAX/IB/1HyRzkv
+	ObeZxp05hBtOSKkJiEtuA==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <49F04A66.4080303@garzik.org>
+References: <20090422090929.GA14928@havoc.gtf.org>
+	 <da824cf30904221208l42e41d38g5af52b1b3b5ea9a1@mail.gmail.com>
+	 <49F04A66.4080303@garzik.org>
+Date: Thu, 23 Apr 2009 10:59:13 -0700
+Message-ID: <da824cf30904231059v64328d47qa9e535ee194e65e@mail.gmail.com>
+Subject: Re: [PATCH] libata: rewrite SCSI host scheme to be one per ATA host
+From: Grant Grundler <grundler@google.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 23, 2009 at 4:00 AM, Jeff Garzik <jeff@garzik.org> wrote:
+...
+> Sure there are compat issues, just like there are compat issues with the
+> existing consensus goal of moving libata to the block layer -- part of which
+> implies that ATA disks would be served via a "native" block device rather
+> than drivers/scsi/sd.c.
+>
+> So at least to me, it is axiomatic that these issues will be examined.
 
-On Thu, 23 Apr 2009, Jeremy Fitzhardinge wrote:
+agree
 
-> Steven Rostedt wrote:
-> > Ah, this is a lockdep thing.
-> > 
-> > The raw_local_irq_save/restore in __native_flush_tlb_global does not update
-> > hardirqs_enabled.
-> > 
-> > When we call into ftrace, when we cross page bounderies, we disable
-> > interrupts using the normal local_irq_save/restore calls.
-> > 
-> > But when we restore, it detects that interrupts are not going to be enabled,
-> > and keeps hardirqs_enabled off.
-> > 
-> > The printk solved the issue because it called local_irq_restore, which set
-> > the variable back.
-> > 
-> > I guess there's two solutions here. One, we can change the
-> > raw_local_irq_enable/disable variants in __native_flush_tlb_global to the
-> > non-raw type (it should protect against recursion).
-> > 
-> > or we can try to make the ring buffer use the raw_local_irq variants too. I
-> > tried this once before, and it did cause issues.
-> > 
-> > Note, there's a "check_flags" in lockdep, but it is only called on locking,
-> > it is not called when we only disable/enable interrupts.
-> >   
-> 
-> OK, the good news is that its not a callee-save calling convention problem,
-> which is what I feared.  But it does sound pretty awkward to fix.  Does
-> __native_flush_tlb_global() have to use raw_local_irq_save/restore?
+>
+> As to benefits, the phrase "more natural" means the code naturally aligns
+> with existing object topologies (ata_host becomes analagous to Scsi_Host),
+> which always has a long list of technical benefits.
+>
+> - we get to remove all the ugly hacks currently in place that assume
+> ata_port is _the_ first class object.
+> - we get to remove all the workarounds where SCSI assumes it manipulates all
+> devices on a controller (not true in current libata)
+> - SCSI (soon block) host-wide busy, block etc functionality now works as
+> expected
+> - it makes the libata conversion from SCSI to block layer easier
+> - it makes integration with SAS+SATA devices such as mvsas or ipr easier
+> - the list goes on; that is just off the top of my head, before my morning
+> Mountain Dew
 
-No, I just investigated (and booted) without the raw versions (using the 
-normal disable instead). The hooks just update variables in the task 
-struct. I see no reason to have use it.
+Your initial list is good. In particular the issue around "SCSI Host-wide busy"
+working as expected. Of all the things listed, this is the only one that *I* can
+clearly identify as a user visible functional change.
 
-I use to use it with ftrace, but I found that issues are caused if ftrace 
-called something internal that used local_irq_save.
+I'm not familiar with the the "workarounds where SCSI assumes it manipulates
+all devices on a controller" issue. The few SATA controllers I've looked at can
+deal with each port independently - e.g.  discovery and phy reset. Anyway, this
+seems to be closely tied with "SCSI Host-wide Busy".
 
-Perhaps that is the issue. If something uses raw_local_irq_save then calls 
-flush_tlb_global you might get a problem with the flags again (like we did 
-here). But the only user of raw_* should be lockdep and irqsoff, and they 
-should be able to deal with recursion. I don't think there should be any 
-other user.
+One reason I was thinking of NOT list above: "wide port" in SAS 2.0 controllers.
+aka "port aggregation". E.g. http://www.pmc-sierra.com/products/details/pm8005/
 
--- Steve
+To change port aggregation on the fly requires the SCSI host controller to be
+manageable object. This should be a change in transport and not a change
+in devices available....and there are some other problems with implementing
+this but this is the main one I initially see.
 
+
+> "more natural" also solves a longstanding user confusion/complaint about
+> libata:  users expected that libata would export each ATA "channel" (bus) as
+> a SCSI channel.
+
+I haven't seen that complaint. And I'd be impressed by any "normal users" that
+know the difference between "host" and "channel". This sounds like a developer
+complaint to me. AFAICT, users just accepted the initial mapping.
+
+If the mapping is going to change, it makes sense to address
+outstanding complaints.
+But it'd be helpful to attribute the complaint/problem report to a real person
+and which HW they saw the issue on.
+
+>> Mark already pointed out this might cause issues with Error Handling
+>> (forcing a review of all that code). So before triggering other
+>> developers (e.g. HW vendors) do that kind of work I'd like to hear
+>> what the reward is going to be at the end.
+>
+> Are you aware that EH is already receiving a stream of updates, moving it
+> from SCSI to the block layer?  This area has been in constant motion since,
+> well, Tejun arrived and started improving things!  :)
+
+Yes, I have been following (and in generally very impressed with) Tejun's work.
+I've read through about 1/2 of his patches. I clearly don't understand the
+libata/SCSI subsystems as well he does.
+
+But Tejun isn't the only person working on SATA drivers. AFAICT, the HW vendors
+are doing most of the work to support new SAS/SATA controllers. I'm
+thinking of Marvell,
+Intel, LSI, and Broadcom off the top of my head.   I'm sure there are others
+(Silicon Image?). Having a moving target will just make it harder for them
+to focus on their core business (building/supporting controllers)
+instead of trying
+to keep up with kernel.org. I think has historically been a bigger problem.
+
+thanks,
+grant
