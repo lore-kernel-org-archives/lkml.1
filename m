@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbZDWIAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbZDWHrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758725AbZDWIAj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 04:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZDWHgq
+	id S1759243AbZDWHrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Apr 2009 03:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbZDWHcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 03:36:46 -0400
-Received: from sous-sol.org ([216.99.217.87]:47510 "EHLO x200.localdomain"
+	Thu, 23 Apr 2009 03:32:32 -0400
+Received: from sous-sol.org ([216.99.217.87]:50756 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757743AbZDWHgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Apr 2009 03:36:45 -0400
-Message-Id: <20090423072916.611454394@sous-sol.org>
+	id S1756950AbZDWHcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 03:32:31 -0400
+Message-Id: <20090423072700.322939119@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Thu, 23 Apr 2009 00:21:38 -0700
+Date: Thu, 23 Apr 2009 00:21:17 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 078/100] usb gadget: fix ethernet link reports to ethtool
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Peter Lojkin <ia6432@inbox.ru>,
+       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 057/100] posix-timers: fix RLIMIT_CPU && fork()
 References: <20090423072020.428683652@sous-sol.org>
-Content-Disposition: inline; filename=usb-gadget-fix-ethernet-link-reports-to-ethtool.patch
+Content-Disposition: inline; filename=posix-timers-fix-rlimit_cpu-fork.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,48 +37,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jonathan McDowell <noodles@earth.li>
+From: Oleg Nesterov <oleg@redhat.com>
 
-upstream commit: 237e75bf1e558f7330f8deb167fa3116405bef2c
+upstream commit: 6279a751fe096a21dc7704e918d570d3ff06e769
 
-The g_ether USB gadget driver currently decides whether or not there's a
-link to report back for eth_get_link based on if the USB link speed is
-set. The USB gadget speed is however often set even before the device is
-enumerated. It seems more sensible to only report a "link" if we're
-actually connected to a host that wants to talk to us. The patch below
-does this for me - tested with the PXA27x UDC driver.
+See http://bugzilla.kernel.org/show_bug.cgi?id=12911
 
-Signed-off-by: Jonathan McDowell <noodles@earth.li>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+copy_signal() copies signal->rlim, but RLIMIT_CPU is "lost". Because
+posix_cpu_timers_init_group() sets cputime_expires.prof_exp = 0 and thus
+fastpath_timer_check() returns false unless we have other expired cpu timers.
+
+Change copy_signal() to set cputime_expires.prof_exp if we have RLIMIT_CPU.
+Also, set cputimer.running = 1 in that case. This is not strictly necessary,
+but imho makes sense.
+
+Reported-by: Peter Lojkin <ia6432@inbox.ru>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Peter Lojkin <ia6432@inbox.ru>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: stable@kernel.org
+LKML-Reference: <20090327000607.GA10104@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/gadget/u_ether.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ kernel/fork.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/gadget/u_ether.c
-+++ b/drivers/usb/gadget/u_ether.c
-@@ -175,12 +175,6 @@ static void eth_get_drvinfo(struct net_d
- 	strlcpy(p->bus_info, dev_name(&dev->gadget->dev), sizeof p->bus_info);
- }
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -808,6 +808,12 @@ static void posix_cpu_timers_init_group(
+ 	sig->cputime_expires.virt_exp = cputime_zero;
+ 	sig->cputime_expires.sched_exp = 0;
  
--static u32 eth_get_link(struct net_device *net)
--{
--	struct eth_dev	*dev = netdev_priv(net);
--	return dev->gadget->speed != USB_SPEED_UNKNOWN;
--}
++	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
++		sig->cputime_expires.prof_exp =
++			secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
++		sig->cputimer.running = 1;
++	}
++
+ 	/* The timer lists. */
+ 	INIT_LIST_HEAD(&sig->cpu_timers[0]);
+ 	INIT_LIST_HEAD(&sig->cpu_timers[1]);
+@@ -823,11 +829,8 @@ static int copy_signal(unsigned long clo
+ 		atomic_inc(&current->signal->live);
+ 		return 0;
+ 	}
+-	sig = kmem_cache_alloc(signal_cachep, GFP_KERNEL);
 -
- /* REVISIT can also support:
-  *   - WOL (by tracking suspends and issuing remote wakeup)
-  *   - msglevel (implies updated messaging)
-@@ -189,7 +183,7 @@ static u32 eth_get_link(struct net_devic
+-	if (sig)
+-		posix_cpu_timers_init_group(sig);
  
- static struct ethtool_ops ops = {
- 	.get_drvinfo = eth_get_drvinfo,
--	.get_link = eth_get_link
-+	.get_link = ethtool_op_get_link,
- };
++	sig = kmem_cache_alloc(signal_cachep, GFP_KERNEL);
+ 	tsk->signal = sig;
+ 	if (!sig)
+ 		return -ENOMEM;
+@@ -865,6 +868,8 @@ static int copy_signal(unsigned long clo
+ 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
+ 	task_unlock(current->group_leader);
  
- static void defer_kevent(struct eth_dev *dev, int flag)
++	posix_cpu_timers_init_group(sig);
++
+ 	acct_init_pacct(&sig->pacct);
+ 
+ 	tty_audit_fork(sig);
 
