@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZDWMna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbZDWMmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbZDWMna (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Apr 2009 08:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbZDWMms
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Apr 2009 08:42:48 -0400
-Received: from thunk.org ([69.25.196.29]:60835 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758645AbZDWMmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758648AbZDWMmq (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 23 Apr 2009 08:42:46 -0400
-Date: Thu, 23 Apr 2009 08:42:30 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Valerie Aurora Henson <vaurora@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Mason <chris.mason@oracle.com>, Eric Sandeen <sandeen@redhat.com>,
-       Ric Wheeler <rwheeler@redhat.com>
-Subject: Re: [RFC PATCH] fpathconf() for fsync() behavior
-Message-ID: <20090423124230.GF2723@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jamie Lokier <jamie@shareable.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Valerie Aurora Henson <vaurora@redhat.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Chris Mason <chris.mason@oracle.com>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Ric Wheeler <rwheeler@redhat.com>
-References: <20090423001257.GA16540@shell> <20090422221748.8c9022d1.akpm@linux-foundation.org> <20090423112105.GA1589@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090423112105.GA1589@shareable.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758136AbZDWMly
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 23 Apr 2009 08:41:54 -0400
+Received: from mailout05.t-online.de ([194.25.134.82]:36886 "EHLO
+	mailout05.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758255AbZDWMlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Apr 2009 08:41:50 -0400
+Message-Id: <992698ead1b2fe18791b0a25609310c89fa0adc9.1240489461.git.keil@b1-systems.de>
+In-Reply-To: <cover.1240489461.git.keil@b1-systems.de>
+References: <cover.1240489461.git.keil@b1-systems.de>
+From: Karsten Keil <karsten-keil@t-online.de>
+Date: Thu, 23 Apr 2009 14:24:21 +0200
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/3] update Documentation/isdn/00-INDEX
+Cc: Randy Dunlap <rdunlap@xenotime.net>, David Miller <davem@davemloft.net>,
+       tilman@imap.cc, isdn4linux@listserv.isdn4linux.de,
+       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org
+X-ID: ZZwNoZZfwh79g9rvTn9NMmuJimh7p4bLnTvvZ24aA3q2WP+TvVdpYSw-mtQv1lbgnR
+X-TOI-MSGID: 41f7aeb4-d95c-4361-a20f-4c3cabf92734
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 23, 2009 at 12:21:05PM +0100, Jamie Lokier wrote:
-> Andrew Morton wrote:
-> > Would it be better to implement new syscall(s) with finer-grained control
-> > and better semantics?  Then userspace would just need to to:
-> > 
-> > 	fsync_on_steroids(fd, FSYNC_BEFORE_RENAME);
-> > 
-> > and that all gets down into the filesystem which can then work out what
-> > it needs to do to implement the command.
-> 
-> +1 from me.  Several flags come to mind for discussion.
-> FSYNC_HARDWARE.  FSYNC_ORDER_ONLY, FSYNC_FLUSH.
-> FSYNC_DATA_BEFORE_SIZE.  FSYNC_BEFORE_NEW_FILE.
-> 
-> Nick Piggin was working on  fsync_range().
-> 
-> Maybe it's time to do fsync properly?
+From: Tilman Schmidt <tilman@imap.cc>
+Date: Tue, 7 Apr 2009 17:51:32 +0200
+After the merging of mISDN, state which files refer only to the
+old isdn4linux subsystem.  Also add a few missing files.
 
-We could create such a thing, but how many application programmers
-will actually *use* them?  People need to check out my blog, where my
-competence, my judgement, even my paternity was questioned about this
-issue.
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Karsten Keil <keil@b1-systems.de>
+---
+ Documentation/isdn/00-INDEX |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-Application writers don't care about OS portability (it only has to
-work on Linux), or working on multiple filesystems (it only has work
-on ext3, and any filesystems which doesn't do automagic fsync's at the
-right magic times automagically is broken by design).  This includes
-many GNOME and KDE developers.  So as we concluded at the filesystem
-and storage workshop, we probably will have to keep automagic
-hueristics out there, for all of the broken applications.  Heck, Linus
-even refused to call those applications "broken".  
+diff --git a/Documentation/isdn/00-INDEX b/Documentation/isdn/00-INDEX
+index 9fee5f2..d9660ee 100644
+--- a/Documentation/isdn/00-INDEX
++++ b/Documentation/isdn/00-INDEX
+@@ -2,8 +2,12 @@
+ 	- this file (info on ISDN implementation for Linux)
+ CREDITS
+ 	- list of the kind folks that brought you this stuff.
++HiSax.cert
++	- information about the ITU approval certification of the HiSax driver.
+ INTERFACE
+-	- description of Linklevel and Hardwarelevel ISDN interface.
++	- description of isdn4linux Link Level and Hardware Level interfaces.
++INTERFACE.fax
++	- description of the fax subinterface of isdn4linux.
+ README
+ 	- general info on what you need and what to do for Linux ISDN.
+ README.FAQ
+@@ -12,6 +16,8 @@ README.audio
+ 	- info for running audio over ISDN.
+ README.fax
+ 	- info for using Fax over ISDN.
++README.gigaset
++	- info on the drivers for Siemens Gigaset ISDN adapters.
+ README.icn
+ 	- info on the ICN-ISDN-card and its driver.
+ README.HiSax
+@@ -37,7 +43,8 @@ README.diversion
+ README.sc
+ 	- info on driver for Spellcaster cards.
+ README.x25
+-    _ info for running X.25 over ISDN.
++	- info for running X.25 over ISDN.
+ README.hysdn
+-        - info on driver for Hypercope active HYSDN cards
+- 
++	- info on driver for Hypercope active HYSDN cards
++README.mISDN
++	- info on the Modular ISDN subsystem (mISDN).
+-- 
+1.6.0.2
 
-So we can create a more finer-grained controlled system call ---
-although I would suggest that we just add some extra flags to
-sync_file_range() --- but it's doubtful that many application
-programmers will use it.
-
-					- Ted
